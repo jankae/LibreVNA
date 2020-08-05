@@ -387,41 +387,6 @@ Source: DCJ0202.pdf</description>
 <text x="0" y="2.9996" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-2.9996" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
-<package name="FA-128" urn="urn:adsk.eagle:footprint:22367241/1" library_version="1">
-<description>&lt;b&gt;&lt;b&gt;MHZ RANGE CRYSTASL UNIT&lt;/b&gt;&lt;/b&gt; FA-128&lt;p&gt;
-ULTRA MINIATURE SIZE LOW PROFILE SMD&lt;br&gt;
-Source: Epson Toyocom FA128.pdf</description>
-<wire x1="-0.9" y1="0.7" x2="0.9" y2="0.7" width="0.2032" layer="51"/>
-<wire x1="0.9" y1="0.7" x2="0.9" y2="-0.7" width="0.2032" layer="51"/>
-<wire x1="0.9" y1="-0.7" x2="-0.9" y2="-0.7" width="0.2032" layer="51"/>
-<wire x1="-0.9" y1="-0.7" x2="-0.9" y2="0.7" width="0.2032" layer="51"/>
-<rectangle x1="-1.25" y1="0.1" x2="-0.2" y2="1.05" layer="29"/>
-<rectangle x1="0.2" y1="0.1" x2="1.25" y2="1.05" layer="29"/>
-<rectangle x1="-1.25" y1="-1.05" x2="-0.2" y2="-0.1" layer="29"/>
-<rectangle x1="-1.15" y1="0.2" x2="-0.3" y2="0.95" layer="31"/>
-<rectangle x1="0.3" y1="0.2" x2="1.15" y2="0.95" layer="31"/>
-<rectangle x1="-1.15" y1="-0.95" x2="-0.3" y2="-0.2" layer="31"/>
-<smd name="1" x="-0.725" y="-0.575" dx="0.95" dy="0.85" layer="1" stop="no" cream="no"/>
-<smd name="2" x="0.725" y="-0.575" dx="0.95" dy="0.85" layer="1" stop="no" cream="no"/>
-<smd name="3" x="0.725" y="0.575" dx="0.95" dy="0.85" layer="1" rot="R180" stop="no" cream="no"/>
-<smd name="4" x="-0.725" y="0.575" dx="0.95" dy="0.85" layer="1" rot="R180" stop="no" cream="no"/>
-<text x="-1.27" y="1.27" size="1.27" layer="25">&gt;NAME</text>
-<text x="-1.27" y="-2.54" size="1.27" layer="27">&gt;VALUE</text>
-<polygon width="0.0508" layer="31">
-<vertex x="0.325" y="-0.475"/>
-<vertex x="0.575" y="-0.225"/>
-<vertex x="1.125" y="-0.225"/>
-<vertex x="1.125" y="-0.925"/>
-<vertex x="0.325" y="-0.925"/>
-</polygon>
-<polygon width="0.0508" layer="29">
-<vertex x="0.225" y="-1.025"/>
-<vertex x="0.225" y="-0.45"/>
-<vertex x="0.55" y="-0.125"/>
-<vertex x="1.225" y="-0.125"/>
-<vertex x="1.225" y="-1.025"/>
-</polygon>
-</package>
 <package name="J502-ND-142-0711-821/826" urn="urn:adsk.eagle:footprint:22367243/1" library_version="1">
 <description>&lt;b&gt;SMA 50 Ohm&lt;/b&gt; Board Thickness &lt;b&gt;0.062&lt;/b&gt; Inch, End Launch Jack Receptacle&lt;p&gt;
 Johnson Components&lt;br&gt;
@@ -1770,14 +1735,6 @@ Source: DCJ0202.pdf</description>
 <packageinstance name="QFN50P400X400X90-21T270N"/>
 </packageinstances>
 </package3d>
-<package3d name="FA-128" urn="urn:adsk.eagle:package:22367298/2" type="model" library_version="1" library_locally_modified="yes">
-<description>&lt;b&gt;&lt;b&gt;MHZ RANGE CRYSTASL UNIT&lt;/b&gt;&lt;/b&gt; FA-128&lt;p&gt;
-ULTRA MINIATURE SIZE LOW PROFILE SMD&lt;br&gt;
-Source: Epson Toyocom FA128.pdf</description>
-<packageinstances>
-<packageinstance name="FA-128"/>
-</packageinstances>
-</package3d>
 <package3d name="J502-ND-142-0711-821/826" urn="urn:adsk.eagle:package:22367296/2" type="model" library_version="1" library_locally_modified="yes">
 <description>&lt;b&gt;SMA 50 Ohm&lt;/b&gt; Board Thickness &lt;b&gt;0.062&lt;/b&gt; Inch, End Launch Jack Receptacle&lt;p&gt;
 Johnson Components&lt;br&gt;
@@ -2156,30 +2113,6 @@ Source: http://www.cypressindustries.com/pdf/32005-301.pdf</description>
 <pin name="XB" x="-20.32" y="7.62" length="middle"/>
 <text x="-15.24" y="-15.24" size="1.778" layer="95">&gt;Name</text>
 <text x="5.08" y="-15.24" size="1.778" layer="96">&gt;Value</text>
-</symbol>
-<symbol name="Q-SHIELD2" urn="urn:adsk.eagle:symbol:22367182/1" library_version="1">
-<wire x1="2.286" y1="0" x2="2.54" y2="0" width="0.1524" layer="94"/>
-<wire x1="0" y1="0" x2="0.254" y2="0" width="0.1524" layer="94"/>
-<wire x1="0.889" y1="1.524" x2="0.889" y2="-1.524" width="0.254" layer="94"/>
-<wire x1="0.889" y1="-1.524" x2="1.651" y2="-1.524" width="0.254" layer="94"/>
-<wire x1="1.651" y1="-1.524" x2="1.651" y2="1.524" width="0.254" layer="94"/>
-<wire x1="1.651" y1="1.524" x2="0.889" y2="1.524" width="0.254" layer="94"/>
-<wire x1="2.286" y1="1.778" x2="2.286" y2="0" width="0.254" layer="94"/>
-<wire x1="2.286" y1="0" x2="2.286" y2="-1.778" width="0.254" layer="94"/>
-<wire x1="0.254" y1="1.778" x2="0.254" y2="0" width="0.254" layer="94"/>
-<wire x1="0.254" y1="0" x2="0.254" y2="-1.778" width="0.254" layer="94"/>
-<wire x1="-1.778" y1="1.905" x2="-1.778" y2="2.54" width="0.1524" layer="94"/>
-<wire x1="-1.778" y1="2.54" x2="4.318" y2="2.54" width="0.1524" layer="94"/>
-<wire x1="4.318" y1="2.54" x2="4.318" y2="1.905" width="0.1524" layer="94"/>
-<wire x1="4.318" y1="-1.905" x2="4.318" y2="-2.54" width="0.1524" layer="94"/>
-<wire x1="-1.778" y1="-2.54" x2="4.318" y2="-2.54" width="0.1524" layer="94"/>
-<wire x1="-1.778" y1="-2.54" x2="-1.778" y2="-1.905" width="0.1524" layer="94"/>
-<pin name="1" x="-2.54" y="0" visible="pad" length="short" direction="pas" swaplevel="1"/>
-<pin name="2" x="0" y="-5.08" visible="pad" length="short" direction="pas" rot="R90"/>
-<pin name="3" x="5.08" y="0" visible="pad" length="short" direction="pas" swaplevel="1" rot="R180"/>
-<pin name="4" x="2.54" y="-5.08" visible="pad" length="short" direction="pas" rot="R90"/>
-<text x="-2.54" y="6.096" size="1.778" layer="95">&gt;NAME</text>
-<text x="-2.54" y="3.81" size="1.778" layer="96">&gt;VALUE</text>
 </symbol>
 <symbol name="BNC-FGND" urn="urn:adsk.eagle:symbol:22367194/1" library_version="1">
 <wire x1="0" y1="-2.54" x2="-0.762" y2="-1.778" width="0.254" layer="94"/>
@@ -3308,29 +3241,6 @@ Source: DCJ0202.pdf</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="FA-" urn="urn:adsk.eagle:component:22367326/1" locally_modified="yes" prefix="Q" library_version="1" library_locally_modified="yes">
-<description>&lt;b&gt;MHz RANGE CRYSTAL UNIT&lt;/b&gt; &lt;p&gt;
-Source: Epson Toyocom</description>
-<gates>
-<gate name="G$1" symbol="Q-SHIELD2" x="0" y="0"/>
-</gates>
-<devices>
-<device name="128" package="FA-128">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-<connect gate="G$1" pin="3" pad="3"/>
-<connect gate="G$1" pin="4" pad="4"/>
-</connects>
-<package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:22367298/2"/>
-</package3dinstances>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
 <deviceset name="SMA_CONNECTOR" urn="urn:adsk.eagle:component:22367315/1" locally_modified="yes" prefix="X" library_version="1" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="BNC-FGND" x="0" y="0"/>
@@ -4307,6 +4217,365 @@ Source: www.cypressindustries.com</description>
 </deviceset>
 </devicesets>
 </library>
+<library name="crystal-geyer_V1_0" urn="urn:adsk.eagle:library:203">
+<description>&lt;BR&gt;&lt;big&gt;&lt;b&gt;GEYER ELECTRONIC --- Your producer for quartz crystals and oscillators&lt;/B&gt;&lt;/big&gt;&lt;br&gt;&lt;Hr&gt;
+
+Version 1.0, 07.06.2016
+&lt;hr&gt;
+&lt;BR&gt;&lt;BR&gt; 
+
+&lt;br&gt;&lt;a href="http://www.geyer-electronic.de/fileadmin/template/img/logo-geyer-electronic.png" title="Enlarge picture"&gt;
+&lt;img src="http://www.geyer-electronic.de/fileadmin/template/img/logo-geyer-electronic.png" width="320"&gt;&lt;/a&gt;&lt;p&gt;
+
+&lt;HR&gt;&lt;BR&gt;
+&lt;b&gt;GEYER ELECTRONIC e.K.&lt;/b&gt;&lt;br&gt;
+
+
+Lochhamer Schlag 5&lt;br&gt;
+D-82166 Gräfelfing/München&lt;br&gt;
+&lt;br&gt;
+Tel:   +49 89 546868-0&lt;br&gt;
+Fax: +49 89 546868-90 für Batterien und Ladetechnik&lt;br&gt;
+Fax: +49 89 546868-91 für Quarzprodukte&lt;br&gt;
+&lt;br&gt;
+&lt;a href="http://www.geyer-electronic.de"&gt;http://www.geyer-electronic.de&lt;/a&gt;&lt;br&gt;
+&lt;a href="mailto:info@geyer-electronic.de"&gt;info@geyer-electronic.de&lt;/a&gt; &lt;BR&gt;&lt;BR&gt;
+&lt;br&gt;&lt;HR&gt;&lt;BR&gt;
+Neither CadSoft nor Geyer-Electronic does warrant that this library is error-free or &lt;br&gt;
+that it meets your specific requirements.&lt;br&gt;&lt;BR&gt;
+Please contact us for more information.&lt;br&gt;&lt;BR&gt;&lt;br&gt;
+
+&lt;HR&gt;
+Copyright: Geyer-Electronic</description>
+<packages>
+<package name="2.5X2.0_KXO-86-TCXO" urn="urn:adsk.eagle:footprint:11906/1" library_version="1">
+<description>4 Pad</description>
+<text x="-1.411" y="1.338" size="1.016" layer="25">&gt;NAME</text>
+<text x="-1.411" y="-2.384" size="1.016" layer="27">&gt;VALUE</text>
+<text x="-0.62" y="0.46" size="0.4064" layer="51">KXO</text>
+<text x="-0.34" y="-0.61" size="0.3048" layer="51" ratio="19">RG</text>
+<text x="-0.24" y="0.09" size="0.3048" layer="51" ratio="19">86</text>
+<wire x1="-0.57" y1="1" x2="0.57" y2="1" width="0.1524" layer="21"/>
+<wire x1="-1.25" y1="-0.17" x2="-1.25" y2="0.17" width="0.1524" layer="21"/>
+<wire x1="1.25" y1="-0.17" x2="1.25" y2="0.17" width="0.1524" layer="21"/>
+<wire x1="-0.57" y1="-1" x2="0.57" y2="-1" width="0.1524" layer="21"/>
+<wire x1="-1.25" y1="-1" x2="1.25" y2="-1" width="0.1524" layer="51"/>
+<wire x1="1.25" y1="-1" x2="1.25" y2="1" width="0.1524" layer="51"/>
+<wire x1="1.25" y1="1" x2="-1.25" y2="1" width="0.1524" layer="51"/>
+<wire x1="-1.25" y1="1" x2="-1.25" y2="-1" width="0.1524" layer="51"/>
+<smd name="1" x="-1.05" y="-0.725" dx="0.75" dy="0.9" layer="1"/>
+<smd name="2" x="1.05" y="-0.725" dx="0.75" dy="0.9" layer="1"/>
+<smd name="3" x="1.05" y="0.725" dx="0.75" dy="0.9" layer="1"/>
+<smd name="4" x="-1.05" y="0.725" dx="0.75" dy="0.9" layer="1"/>
+<circle x="-0.85" y="-0.6" radius="0.2" width="0" layer="51"/>
+</package>
+<package name="3.2X2.5_KXO-84-TCXO" urn="urn:adsk.eagle:footprint:11903/1" library_version="1">
+<description>4 Pad</description>
+<smd name="4" x="-1.4" y="0.9" dx="0.9" dy="1.1" layer="1"/>
+<smd name="2" x="1.4" y="-0.9" dx="0.9" dy="1.1" layer="1"/>
+<smd name="3" x="1.4" y="0.9" dx="0.9" dy="1.1" layer="1"/>
+<smd name="1" x="-1.4" y="-0.9" dx="0.9" dy="1.1" layer="1"/>
+<circle x="-1.17" y="-0.85" radius="0.2" width="0" layer="51"/>
+<text x="-1.87" y="1.6" size="1.016" layer="25">&gt;NAME</text>
+<text x="-1.87" y="-2.6" size="1.016" layer="27">&gt;VALUE</text>
+<text x="-1.02" y="0.65" size="0.4064" layer="51">KXO-84</text>
+<text x="-0.32" y="0.1" size="0.3048" layer="51" ratio="19">RG</text>
+<wire x1="-1.6" y1="-1.25" x2="1.6" y2="-1.25" width="0.1524" layer="51"/>
+<wire x1="1.6" y1="-1.25" x2="1.6" y2="1.25" width="0.1524" layer="51"/>
+<wire x1="1.6" y1="1.25" x2="-1.6" y2="1.25" width="0.1524" layer="51"/>
+<wire x1="-1.6" y1="1.25" x2="-1.6" y2="-1.25" width="0.1524" layer="51"/>
+<wire x1="-0.82" y1="1.25" x2="0.83" y2="1.25" width="0.127" layer="21"/>
+<wire x1="-0.82" y1="-1.25" x2="0.78" y2="-1.25" width="0.127" layer="21"/>
+<wire x1="-1.6" y1="0.25" x2="-1.6" y2="-0.25" width="0.127" layer="21"/>
+<wire x1="1.6" y1="0.25" x2="1.6" y2="-0.25" width="0.127" layer="21"/>
+</package>
+<package name="5.0X3.2_KXO-83-TCXO" urn="urn:adsk.eagle:footprint:11907/1" library_version="1">
+<description>4 Pad</description>
+<smd name="4" x="-2" y="1.3" dx="1.4" dy="1.2" layer="1"/>
+<smd name="2" x="2" y="-1.3" dx="1.4" dy="1.2" layer="1"/>
+<smd name="3" x="2" y="1.3" dx="1.4" dy="1.2" layer="1"/>
+<smd name="1" x="-2" y="-1.3" dx="1.4" dy="1.2" layer="1"/>
+<circle x="-2.05" y="-1.15" radius="0.2" width="0" layer="51"/>
+<text x="-2.75" y="2.1" size="1.016" layer="25">&gt;NAME</text>
+<text x="-2.75" y="-3.1" size="1.016" layer="27">&gt;VALUE</text>
+<text x="-1.05" y="0.95" size="0.4064" layer="51">KXO-83</text>
+<text x="-0.4" y="0.4" size="0.3048" layer="51" ratio="19">RG</text>
+<wire x1="-2.5" y1="-0.56" x2="-2.5" y2="0.54" width="0.1524" layer="21"/>
+<wire x1="-1.16" y1="-1.6" x2="1.14" y2="-1.6" width="0.1524" layer="21"/>
+<wire x1="-2.5" y1="-1.6" x2="2.5" y2="-1.6" width="0.1524" layer="51"/>
+<wire x1="2.5" y1="-1.6" x2="2.5" y2="1.6" width="0.1524" layer="51"/>
+<wire x1="2.5" y1="1.6" x2="-2.5" y2="1.6" width="0.1524" layer="51"/>
+<wire x1="-2.5" y1="1.6" x2="-2.5" y2="-1.6" width="0.1524" layer="51"/>
+<wire x1="-1.16" y1="1.6" x2="1.14" y2="1.6" width="0.1524" layer="21"/>
+<wire x1="2.5" y1="-0.56" x2="2.5" y2="0.54" width="0.1524" layer="21"/>
+</package>
+<package name="7.0X5.0_KXO-82-TCXO" urn="urn:adsk.eagle:footprint:11908/1" library_version="1">
+<description>4 Pad</description>
+<smd name="4" x="-2.54" y="2.1" dx="1.6" dy="2" layer="1"/>
+<smd name="2" x="2.54" y="-2.1" dx="1.6" dy="2" layer="1"/>
+<smd name="3" x="2.54" y="2.1" dx="1.6" dy="2" layer="1"/>
+<smd name="1" x="-2.54" y="-2.1" dx="1.6" dy="2" layer="1"/>
+<circle x="-2.96" y="-1.99" radius="0.2" width="0" layer="51"/>
+<text x="-3.56" y="2.96" size="1.016" layer="25">&gt;NAME</text>
+<text x="-3.56" y="-3.94" size="1.016" layer="27">&gt;VALUE</text>
+<text x="-0.96" y="1.81" size="0.4064" layer="51">KXO-82</text>
+<text x="-0.31" y="1.26" size="0.3048" layer="51" ratio="19">RG</text>
+<wire x1="-3.5" y1="-2.5" x2="-3.5" y2="2.5" width="0.1524" layer="21"/>
+<wire x1="3.5" y1="2.5" x2="-3.5" y2="2.5" width="0.1524" layer="51"/>
+<wire x1="-3.5" y1="2.5" x2="-3.5" y2="-2.5" width="0.1524" layer="51"/>
+<wire x1="3.5" y1="-2.5" x2="3.5" y2="2.5" width="0.1524" layer="21"/>
+<wire x1="-1.6" y1="2.5" x2="1.6" y2="2.5" width="0.1524" layer="21"/>
+<wire x1="-1.6" y1="-2.5" x2="1.6" y2="-2.5" width="0.1524" layer="21"/>
+<wire x1="-3.5" y1="-2.5" x2="3.5" y2="-2.5" width="0.1524" layer="51"/>
+<wire x1="3.5" y1="-2.5" x2="3.5" y2="2.5" width="0.1524" layer="51"/>
+</package>
+</packages>
+<packages3d>
+<package3d name="2.5X2.0_KXO-86-TCXO" urn="urn:adsk.eagle:package:11955/1" type="box" library_version="1">
+<description>4 Pad</description>
+<packageinstances>
+<packageinstance name="2.5X2.0_KXO-86-TCXO"/>
+</packageinstances>
+</package3d>
+<package3d name="3.2X2.5_KXO-84-TCXO" urn="urn:adsk.eagle:package:11953/1" type="box" library_version="1">
+<description>4 Pad</description>
+<packageinstances>
+<packageinstance name="3.2X2.5_KXO-84-TCXO"/>
+</packageinstances>
+</package3d>
+<package3d name="5.0X3.2_KXO-83-TCXO" urn="urn:adsk.eagle:package:11966/1" type="box" library_version="1">
+<description>4 Pad</description>
+<packageinstances>
+<packageinstance name="5.0X3.2_KXO-83-TCXO"/>
+</packageinstances>
+</package3d>
+<package3d name="7.0X5.0_KXO-82-TCXO" urn="urn:adsk.eagle:package:11956/1" type="box" library_version="1">
+<description>4 Pad</description>
+<packageinstances>
+<packageinstance name="7.0X5.0_KXO-82-TCXO"/>
+</packageinstances>
+</package3d>
+</packages3d>
+<symbols>
+<symbol name="QTCXO-HCMOS" urn="urn:adsk.eagle:symbol:11909/1" library_version="1">
+<wire x1="-7.62" y1="7.62" x2="-7.62" y2="-7.62" width="0.4064" layer="94"/>
+<wire x1="7.62" y1="-7.62" x2="-7.62" y2="-7.62" width="0.4064" layer="94"/>
+<wire x1="7.62" y1="-7.62" x2="7.62" y2="0" width="0.4064" layer="94"/>
+<wire x1="7.62" y1="0" x2="7.62" y2="7.62" width="0.4064" layer="94"/>
+<wire x1="-7.62" y1="7.62" x2="7.62" y2="7.62" width="0.4064" layer="94"/>
+<wire x1="-1.27" y1="5.08" x2="6.35" y2="0" width="0.4064" layer="94"/>
+<wire x1="6.35" y1="0" x2="-1.27" y2="-5.08" width="0.4064" layer="94"/>
+<wire x1="-1.27" y1="-5.08" x2="-1.27" y2="3.175" width="0.4064" layer="94"/>
+<wire x1="-1.27" y1="3.175" x2="-1.27" y2="5.08" width="0.4064" layer="94"/>
+<wire x1="-3.81" y1="3.175" x2="-1.27" y2="3.175" width="0.1524" layer="94"/>
+<wire x1="6.35" y1="0" x2="7.62" y2="0" width="0.1524" layer="94"/>
+<wire x1="-4.826" y1="-0.381" x2="-4.826" y2="0.381" width="0.254" layer="94"/>
+<wire x1="-4.826" y1="0.381" x2="-2.794" y2="0.381" width="0.254" layer="94"/>
+<wire x1="-2.794" y1="0.381" x2="-2.794" y2="-0.381" width="0.254" layer="94"/>
+<wire x1="-4.826" y1="-0.381" x2="-2.794" y2="-0.381" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-1.016" x2="-3.81" y2="-1.016" width="0.254" layer="94"/>
+<wire x1="-3.81" y1="-1.016" x2="-2.54" y2="-1.016" width="0.254" layer="94"/>
+<wire x1="-3.81" y1="1.016" x2="-3.81" y2="3.175" width="0.1524" layer="94"/>
+<wire x1="-3.81" y1="-3.175" x2="-3.81" y2="-1.016" width="0.1524" layer="94"/>
+<wire x1="-5.08" y1="1.016" x2="-2.54" y2="1.016" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-3.175" x2="-2.54" y2="-3.175" width="0.254" layer="94"/>
+<text x="-7.62" y="8.255" size="1.778" layer="95">&gt;NAME</text>
+<text x="2.54" y="3.302" size="1.524" layer="95">OUT</text>
+<text x="-6.985" y="-5.842" size="1.524" layer="95">GND</text>
+<text x="-6.985" y="4.318" size="1.524" layer="95">VDD</text>
+<text x="6.985" y="-4.953" size="1.27" layer="95" rot="R180">GND/NC</text>
+<pin name="GND" x="-10.16" y="-5.08" visible="pad" length="short" direction="pwr"/>
+<pin name="VDD" x="-10.16" y="5.08" visible="pad" length="short" direction="pwr"/>
+<pin name="OUT" x="10.16" y="0" visible="pad" length="short" direction="out" rot="R180"/>
+<pin name="GND/NC" x="10.16" y="-5.08" visible="pad" length="short" direction="pwr" rot="R180"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="KXO-TCXO-CMOS" urn="urn:adsk.eagle:component:11979/1" prefix="Q" uservalue="yes" library_version="1">
+<description>&lt;P&gt;
+
+&lt;table border=0 cellspacing=0 cellpadding=0 width="80%" cellpaddding=0&gt;
+&lt;tr valign="top"&gt;
+&lt;! &lt;td width="10"&gt;&amp;nbsp;&lt;/td&gt;
+&lt;td width="90%"&gt;
+
+&lt;th&gt;
+&lt;b&gt;&lt;big&gt; TCXO :&lt;/big&gt;&lt;/B&gt;
+&lt;b&gt;&lt;font color="#0000FF" size="4"&gt;&amp;nbsp;CMOS - Serie&lt;/font&gt;&lt;/b&gt;
+&lt;P&gt;
+&lt;/th&gt;
+&lt;TABLE BORDER=1 CELLSPACING=2 CELLPADDING=2&gt;
+  &lt;TR&gt;
+    &lt;TD COLSPAN=8&gt;&amp;nbsp;
+    &lt;/TD&gt;
+  &lt;/TR&gt;
+  &lt;TR&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Model&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Size&amp;nbsp;l/w/h&amp;nbsp;[mm]&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Frequency&amp;nbsp;Range&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Frequency&lt;br&gt;&lt;/B&gt;&lt;/FONT&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Stability&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Temp.&amp;nbsp;Range&amp;nbsp;[°C]&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Output&lt;br&gt;&lt;/B&gt;&lt;/FONT&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;AECQ 200&lt;br&gt;&lt;/B&gt;&lt;/FONT&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;availabel&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD ALIGN=CENTER&gt;
+      &lt;FONT SIZE=3 FACE=ARIAL&gt;&lt;B&gt;Datasheet&lt;/B&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+  &lt;/TR&gt;
+  &lt;TR&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;
+      KXO-86&lt;BR&gt;
+      KXO-84&lt;BR&gt;
+      KXO-83&lt;BR&gt;
+      KXO-82&lt;BR&gt;
+      &lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;    
+      2.5/2.0/0.7&lt;BR&gt; 
+      3.2/2.5/1.0 &lt;BR&gt;
+      5.0/3.2/1.5&lt;BR&gt; 
+      7.0/5.0/2.4 &lt;BR&gt;
+&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;
+       13,0 ~ 40,0 MHz&lt;BR&gt;
+       10,0 ~ 40,0 MHz&lt;BR&gt;
+       10,0 ~ 40,0 MHz&lt;BR&gt;
+       10,0 ~ 30,0 MHz&lt;BR&gt;
+&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;
+      ±1,0 … ±2,5ppm&lt;BR&gt;
+      ±1,0 … ±2,5ppm&lt;BR&gt;
+      ±1,0 … ±3,0ppm&lt;BR&gt;
+      ±1,0 … ±3,0ppm&lt;BR&gt;
+&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;
+       (*) -30°C …+75°C&lt;BR&gt;
+       (*) -40°C …+85°C&lt;BR&gt;
+       (*) -40°C …+85°C&lt;BR&gt;
+       (*) -30°C …+80°C&lt;BR&gt;
+&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;
+       CMOS&lt;BR&gt;
+       CMOS&lt;BR&gt;
+       CMOS&lt;BR&gt;
+       CMOS&lt;BR&gt;
+&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;
+      -&lt;BR&gt;
+      -&lt;BR&gt;
+      -&lt;BR&gt;
+      -&lt;BR&gt;&lt;/FONT&gt;
+    &lt;/TD&gt;
+    &lt;TD BGCOLOR="#cccccc" ALIGN=CENTER&gt;&lt;FONT FACE=ARIAL SIZE=3&gt;
+      &lt;a href="http://www.geyer-electronic.de/uploads/tx_userartikelfrequenz/GEYER-KXO-86-TCXO-HCMOS.pdf"&gt;KXO-86.pdf&lt;/a&gt;&lt;BR&gt;
+      &lt;a href="http://www.geyer-electronic.de/uploads/tx_userartikelfrequenz/GEYER-KXO-84-TCXO-HCMOS.pdf"&gt;KXO-84.pdf&lt;/a&gt;&lt;BR&gt;
+      &lt;a href="http://www.geyer-electronic.de/uploads/tx_userartikelfrequenz/GEYER-KXO-83-TCXO-HCMOS.pdf"&gt;KXO-83.pdf&lt;/a&gt;&lt;BR&gt;
+      &lt;a href="http://www.geyer-electronic.de/uploads/tx_userartikelfrequenz/GEYER-KXO-82-TCXO-HCMOS.pdf"&gt;KXO-82.pdf&lt;/a&gt;&lt;BR&gt;
+&lt;/FONT&gt;
+    &lt;/TD&gt;
+  &lt;/TR&gt;
+&lt;/TABLE&gt;
+
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+
+
+&lt;P&gt;
+&lt;br&gt;&lt;a href="http://www.geyer-electronic.de/fileadmin/template/img/logo-geyer-electronic.png" title="Enlarge picture"&gt;
+&lt;img src="http://www.geyer-electronic.de/fileadmin/template/img/logo-geyer-electronic.png" width="150"&gt;&lt;/a&gt;&lt;p&gt;
+
+Details see: &lt;a href="http://www.geyer-electronic.de/Frequenz-Produkte.9.0.html"&gt;http://www.geyer-electronic.de/Frequenz-Produkte.9.0.html&lt;/a&gt;&lt;p&gt;
+
+Created 2016-06-07, Hans Locher&lt;br&gt;
+2016 (C) Geyer Quartz Technology
+&lt;br&gt;
+&lt;b&gt;&lt;font color="#ffffff" size="1"&gt;&amp;nbsp;KXO86,KXO84,KXO83,KXO82;2550;3225;5032;7050;2,5x2,0;3,2x2,5;2.5x2.0;3.2x2.5,5,0x3,2;7,0x5,0,5.0x3.2,7.0x5.0&lt;/font&gt;&lt;/b&gt;</description>
+<gates>
+<gate name="G$1" symbol="QTCXO-HCMOS" x="0" y="0"/>
+</gates>
+<devices>
+<device name="-86" package="2.5X2.0_KXO-86-TCXO">
+<connects>
+<connect gate="G$1" pin="GND" pad="2"/>
+<connect gate="G$1" pin="GND/NC" pad="1"/>
+<connect gate="G$1" pin="OUT" pad="3"/>
+<connect gate="G$1" pin="VDD" pad="4"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:11955/1"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-84" package="3.2X2.5_KXO-84-TCXO">
+<connects>
+<connect gate="G$1" pin="GND" pad="2"/>
+<connect gate="G$1" pin="GND/NC" pad="1"/>
+<connect gate="G$1" pin="OUT" pad="3"/>
+<connect gate="G$1" pin="VDD" pad="4"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:11953/1"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-83" package="5.0X3.2_KXO-83-TCXO">
+<connects>
+<connect gate="G$1" pin="GND" pad="2"/>
+<connect gate="G$1" pin="GND/NC" pad="1"/>
+<connect gate="G$1" pin="OUT" pad="3"/>
+<connect gate="G$1" pin="VDD" pad="4"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:11966/1"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-82" package="7.0X5.0_KXO-82-TCXO">
+<connects>
+<connect gate="G$1" pin="GND" pad="2"/>
+<connect gate="G$1" pin="GND/NC" pad="1"/>
+<connect gate="G$1" pin="OUT" pad="3"/>
+<connect gate="G$1" pin="VDD" pad="4"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:11956/1"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -4579,9 +4848,8 @@ Source: www.cypressindustries.com</description>
 <part name="C30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
 <part name="R6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
 <part name="GND47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="Q1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FA-" device="128" package3d_urn="urn:adsk.eagle:package:22367298/2" value="FA-128 26MHz"/>
-<part name="C31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="4p"/>
-<part name="C34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="4p"/>
+<part name="C31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="GND45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="L10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
 <part name="+3V32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
@@ -5158,6 +5426,9 @@ Source: www.cypressindustries.com</description>
 <part name="R125" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
 <part name="C6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="GND13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
+<part name="Q1" library="crystal-geyer_V1_0" library_urn="urn:adsk.eagle:library:203" deviceset="KXO-TCXO-CMOS" device="-86" package3d_urn="urn:adsk.eagle:package:11955/1" value="DSB221SDN/26MHz"/>
+<part name="GND262" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
+<part name="+3V1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -6263,20 +6534,16 @@ Source: www.cypressindustries.com</description>
 <instance part="GND47" gate="1" x="93.98" y="109.22" smashed="yes">
 <attribute name="VALUE" x="91.44" y="106.68" size="1.778" layer="96"/>
 </instance>
-<instance part="Q1" gate="G$1" x="83.82" y="165.1" smashed="yes">
-<attribute name="NAME" x="81.28" y="171.196" size="1.778" layer="95"/>
-<attribute name="VALUE" x="81.28" y="168.91" size="1.778" layer="96"/>
+<instance part="C31" gate="G$1" x="68.58" y="160.02" smashed="yes" rot="R180">
+<attribute name="NAME" x="67.056" y="159.639" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="67.056" y="164.719" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="C31" gate="G$1" x="73.66" y="157.48" smashed="yes" rot="R180">
-<attribute name="NAME" x="72.136" y="157.099" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="72.136" y="162.179" size="1.778" layer="96" rot="R180"/>
+<instance part="C34" gate="G$1" x="101.6" y="154.94" smashed="yes" rot="R180">
+<attribute name="NAME" x="100.076" y="154.559" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="100.076" y="159.639" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="C34" gate="G$1" x="96.52" y="157.48" smashed="yes" rot="R180">
-<attribute name="NAME" x="94.996" y="157.099" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="94.996" y="162.179" size="1.778" layer="96" rot="R180"/>
-</instance>
-<instance part="GND45" gate="1" x="83.82" y="149.86" smashed="yes">
-<attribute name="VALUE" x="81.28" y="147.32" size="1.778" layer="96"/>
+<instance part="GND45" gate="1" x="68.58" y="152.4" smashed="yes">
+<attribute name="VALUE" x="66.04" y="149.86" size="1.778" layer="96"/>
 </instance>
 <instance part="L10" gate="G$1" x="71.12" y="195.58" smashed="yes" rot="R90">
 <attribute name="NAME" x="74.93" y="194.0814" size="1.778" layer="95" rot="R180"/>
@@ -6451,6 +6718,15 @@ Source: www.cypressindustries.com</description>
 <instance part="GND61" gate="1" x="259.08" y="88.9" smashed="yes">
 <attribute name="VALUE" x="256.54" y="86.36" size="1.778" layer="96"/>
 </instance>
+<instance part="Q1" gate="G$1" x="81.28" y="162.56" smashed="yes">
+<attribute name="NAME" x="73.66" y="170.815" size="1.778" layer="95"/>
+</instance>
+<instance part="GND262" gate="1" x="93.98" y="152.4" smashed="yes">
+<attribute name="VALUE" x="91.44" y="149.86" size="1.778" layer="96"/>
+</instance>
+<instance part="+3V1" gate="G$1" x="68.58" y="172.72" smashed="yes">
+<attribute name="VALUE" x="66.04" y="167.64" size="1.778" layer="96" rot="R90"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -6475,23 +6751,6 @@ Source: www.cypressindustries.com</description>
 <pinref part="R6" gate="G$1" pin="1"/>
 <pinref part="GND47" gate="1" pin="GND"/>
 <wire x1="93.98" y1="114.3" x2="93.98" y2="111.76" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="Q1" gate="G$1" pin="2"/>
-<wire x1="83.82" y1="160.02" x2="83.82" y2="157.48" width="0.1524" layer="91"/>
-<pinref part="GND45" gate="1" pin="GND"/>
-<wire x1="83.82" y1="152.4" x2="83.82" y2="154.94" width="0.1524" layer="91"/>
-<pinref part="C31" gate="G$1" pin="1"/>
-<wire x1="83.82" y1="154.94" x2="83.82" y2="157.48" width="0.1524" layer="91"/>
-<wire x1="73.66" y1="154.94" x2="83.82" y2="154.94" width="0.1524" layer="91"/>
-<junction x="83.82" y="154.94"/>
-<pinref part="C34" gate="G$1" pin="1"/>
-<wire x1="83.82" y1="154.94" x2="86.36" y2="154.94" width="0.1524" layer="91"/>
-<pinref part="Q1" gate="G$1" pin="4"/>
-<wire x1="86.36" y1="154.94" x2="96.52" y2="154.94" width="0.1524" layer="91"/>
-<wire x1="86.36" y1="157.48" x2="86.36" y2="160.02" width="0.1524" layer="91"/>
-<wire x1="86.36" y1="157.48" x2="86.36" y2="154.94" width="0.1524" layer="91"/>
-<junction x="86.36" y="154.94"/>
 </segment>
 <segment>
 <pinref part="GND43" gate="1" pin="GND"/>
@@ -6564,6 +6823,20 @@ Source: www.cypressindustries.com</description>
 <segment>
 <pinref part="C47" gate="G$1" pin="2"/>
 <pinref part="GND61" gate="1" pin="GND"/>
+</segment>
+<segment>
+<pinref part="Q1" gate="G$1" pin="GND/NC"/>
+<pinref part="GND262" gate="1" pin="GND"/>
+<wire x1="91.44" y1="157.48" x2="93.98" y2="157.48" width="0.1524" layer="91"/>
+<wire x1="93.98" y1="157.48" x2="93.98" y2="154.94" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="GND45" gate="1" pin="GND"/>
+<pinref part="C31" gate="G$1" pin="1"/>
+<wire x1="68.58" y1="154.94" x2="68.58" y2="157.48" width="0.1524" layer="91"/>
+<pinref part="Q1" gate="G$1" pin="GND"/>
+<wire x1="71.12" y1="157.48" x2="68.58" y2="157.48" width="0.1524" layer="91"/>
+<junction x="68.58" y="157.48"/>
 </segment>
 </net>
 <net name="SOURCE_REF" class="0">
@@ -6644,32 +6917,6 @@ Source: www.cypressindustries.com</description>
 <pinref part="R6" gate="G$1" pin="2"/>
 </segment>
 </net>
-<net name="N$113" class="0">
-<segment>
-<pinref part="C34" gate="G$1" pin="2"/>
-<pinref part="Q1" gate="G$1" pin="3"/>
-<wire x1="96.52" y1="162.56" x2="96.52" y2="165.1" width="0.1524" layer="91"/>
-<wire x1="96.52" y1="165.1" x2="88.9" y2="165.1" width="0.1524" layer="91"/>
-<wire x1="96.52" y1="165.1" x2="101.6" y2="165.1" width="0.1524" layer="91"/>
-<wire x1="101.6" y1="165.1" x2="101.6" y2="147.32" width="0.1524" layer="91"/>
-<junction x="96.52" y="165.1"/>
-<pinref part="IC7" gate="G$1" pin="XA"/>
-<wire x1="101.6" y1="147.32" x2="104.14" y2="147.32" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$114" class="0">
-<segment>
-<pinref part="Q1" gate="G$1" pin="1"/>
-<pinref part="C31" gate="G$1" pin="2"/>
-<wire x1="81.28" y1="165.1" x2="73.66" y2="165.1" width="0.1524" layer="91"/>
-<wire x1="73.66" y1="165.1" x2="73.66" y2="162.56" width="0.1524" layer="91"/>
-<pinref part="IC7" gate="G$1" pin="XB"/>
-<wire x1="104.14" y1="144.78" x2="66.04" y2="144.78" width="0.1524" layer="91"/>
-<wire x1="66.04" y1="144.78" x2="66.04" y2="165.1" width="0.1524" layer="91"/>
-<wire x1="66.04" y1="165.1" x2="73.66" y2="165.1" width="0.1524" layer="91"/>
-<junction x="73.66" y="165.1"/>
-</segment>
-</net>
 <net name="N$109" class="0">
 <segment>
 <pinref part="L10" gate="G$1" pin="2"/>
@@ -6715,6 +6962,15 @@ Source: www.cypressindustries.com</description>
 <pinref part="+3V33" gate="G$1" pin="+3V3"/>
 <pinref part="IC7" gate="G$1" pin="VDD"/>
 <wire x1="119.38" y1="162.56" x2="119.38" y2="154.94" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="Q1" gate="G$1" pin="VDD"/>
+<wire x1="71.12" y1="167.64" x2="68.58" y2="167.64" width="0.1524" layer="91"/>
+<pinref part="C31" gate="G$1" pin="2"/>
+<wire x1="68.58" y1="167.64" x2="68.58" y2="165.1" width="0.1524" layer="91"/>
+<pinref part="+3V1" gate="G$1" pin="+3V3"/>
+<wire x1="68.58" y1="170.18" x2="68.58" y2="167.64" width="0.1524" layer="91"/>
+<junction x="68.58" y="167.64"/>
 </segment>
 </net>
 <net name="SCL" class="0">
@@ -6888,6 +7144,22 @@ Source: www.cypressindustries.com</description>
 <wire x1="259.08" y1="139.7" x2="269.24" y2="139.7" width="0.1524" layer="91"/>
 <junction x="259.08" y="139.7"/>
 <label x="269.24" y="139.7" size="2.1844" layer="95" xref="yes"/>
+</segment>
+</net>
+<net name="N$113" class="0">
+<segment>
+<pinref part="Q1" gate="G$1" pin="OUT"/>
+<pinref part="C34" gate="G$1" pin="2"/>
+<wire x1="91.44" y1="162.56" x2="101.6" y2="162.56" width="0.1524" layer="91"/>
+<wire x1="101.6" y1="162.56" x2="101.6" y2="160.02" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$114" class="0">
+<segment>
+<pinref part="IC7" gate="G$1" pin="XA"/>
+<pinref part="C34" gate="G$1" pin="1"/>
+<wire x1="104.14" y1="147.32" x2="101.6" y2="147.32" width="0.1524" layer="91"/>
+<wire x1="101.6" y1="147.32" x2="101.6" y2="152.4" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
