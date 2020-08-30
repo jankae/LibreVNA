@@ -89,7 +89,7 @@ void Error_Handler(void);
 #define EN_6V_GPIO_Port GPIOB
 #define LED1_Pin GPIO_PIN_15
 #define LED1_GPIO_Port GPIOA
-#define FPGA_RESET_Pin GPIO_PIN_7
+#define FPGA_RESET_Pin GPIO_PIN_5
 #define FPGA_RESET_GPIO_Port GPIOB
 #define FPGA_DONE_Pin GPIO_PIN_9
 #define FPGA_DONE_GPIO_Port GPIOB

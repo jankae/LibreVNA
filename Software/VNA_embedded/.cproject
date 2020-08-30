@@ -133,7 +133,7 @@
                                 								
                                 <option id="gnu.c.compiler.option.dialect.std.295832639" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
                                 								
-                                <option id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.fdata.915472139" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.fdata" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                <option id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.fdata.915472139" name="Place the data in their own section (-fdata-sections)" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.fdata" useByScannerDiscovery="false" value="true" valueType="boolean"/>
                                 								
                                 <inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.1184125608" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c"/>
                                 								
@@ -205,7 +205,7 @@
                                 								
                                 <option id="fr.ac6.managedbuild.gnu.cpp.compiler.option.misc.other.1734449160" name="Other flags" superClass="fr.ac6.managedbuild.gnu.cpp.compiler.option.misc.other" useByScannerDiscovery="false" value="-fmessage-length=0" valueType="string"/>
                                 								
-                                <option id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.fdata.2099053827" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.fdata" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                <option id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.fdata.2099053827" name="Place the data in their own section (-fdata-sections)" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.fdata" useByScannerDiscovery="false" value="true" valueType="boolean"/>
                                 								
                                 <inputType id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp.1826809538" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.input.cpp"/>
                                 								
@@ -775,7 +775,7 @@
         		
         <configuration configurationName="Debug">
             			
-            <resource resourceType="PROJECT" workspacePath="VNA_embedded"/>
+            <resource resourceType="PROJECT" workspacePath="/VNA_embedded"/>
             		
         </configuration>
         		

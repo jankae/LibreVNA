@@ -161,3 +161,7 @@ void HANDLER(void) {
 	}
 }
 }
+
+void Log_Flush() {
+	while(USART_BASE->CR1 & USART_CR1_TCIE);
+}

@@ -9,6 +9,8 @@
 #include <complex>
 #include <cstring>
 #include "USB/usb.h"
+#include "Flash.hpp"
+#include "Firmware.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -29,6 +31,9 @@ static Protocol::ManualControl manual;
 #define FW_MAJOR			0
 #define FW_MINOR			01
 
+extern SPI_HandleTypeDef hspi1;
+static Flash flash = Flash(&hspi1, FLASH_CS_GPIO_Port, FLASH_CS_Pin);
+
 void VNACallback(Protocol::Datapoint res) {
 	result = res;
 	newResult = true;
@@ -45,9 +50,21 @@ void App_Start() {
 	Log_SetRedirect(usb_log);
 	LOG_INFO("Start");
 	Exti::Init();
+	if(!flash.isPresent()) {
+		LOG_CRIT("Failed to detect onboard FLASH");
+	}
+	auto fw_info = Firmware::GetFlashContentInfo(&flash);
+	if(fw_info.valid) {
+		if(fw_info.CPU_need_update) {
+			// Function will not return, the device will reboot with the new firmware instead
+			Firmware::PerformUpdate(&flash);
+		}
+		FPGA::Configure(&flash, fw_info.FPGA_bitstream_address, fw_info.FPGA_bitstream_size);
+	} else {
+		LOG_CRIT("Invalid bitstream/firmware, not configuring FPGA");
+	}
 	if (!VNA::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
-		return;
 	}
 	// Allow USB enumeration
 //	USB_EN_GPIO_Port->BSRR = USB_EN_Pin;

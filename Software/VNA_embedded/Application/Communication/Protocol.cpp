@@ -15,7 +15,7 @@ static constexpr uint8_t header = 0x5A;
 static constexpr uint8_t header_size = 4;
 
 #define CRC32_POLYGON 0xEDB88320
-uint32_t CRC32(uint32_t crc, const void *data, uint32_t len) {
+uint32_t Protocol::CRC32(uint32_t crc, const void *data, uint32_t len) {
 	uint8_t *u8buf = (uint8_t*) data;
 	int k;
 

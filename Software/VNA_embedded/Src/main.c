@@ -56,6 +56,8 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_FS;
 
 osThreadId defaultTaskHandle;
+uint32_t defaultTaskBuffer[ 4096 ];
+osStaticThreadDef_t defaultTaskControlBlock;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -143,7 +145,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 4096, defaultTaskBuffer, &defaultTaskControlBlock);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
