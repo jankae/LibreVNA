@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CalkitDialog</class>
+ <widget class="QDialog" name="CalkitDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1121</width>
+    <height>345</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Calibration Kit Coefficients</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_9">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_17">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Open</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QRadioButton" name="open_coefficients">
+           <property name="text">
+            <string>Coefficients</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">OpenType</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="open_measurement">
+           <property name="text">
+            <string>Measurement file</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">OpenType</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="open_stack">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="page">
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <layout class="QFormLayout" name="formLayout">
+             <item row="1" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Offset delay [ps]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="open_delay"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Offset loss [GΩ/s]: </string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="open_loss"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>C0 [10&lt;sup&gt;-15&lt;/sup&gt;F]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="open_C0"/>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>C1 [10&lt;sup&gt;-27&lt;/sup&gt;F/Hz]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="open_C1"/>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>C2 [10&lt;sup&gt;-36&lt;/sup&gt;F/Hz&lt;sup&gt;2&lt;/sup&gt;]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QLineEdit" name="open_C2"/>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>C0 [10&lt;sup&gt;-45&lt;/sup&gt;F/Hz&lt;sup&gt;3&lt;/sup&gt;]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QLineEdit" name="open_C3"/>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="open_Z0"/>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_15">
+               <property name="text">
+                <string>Z0 [Ω]:</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_2">
+          <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
+           <item>
+            <widget class="TouchstoneImport" name="open_touchstone" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Short</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QRadioButton" name="short_coefficients">
+           <property name="text">
+            <string>Coefficients</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">ShortType</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="short_measurement">
+           <property name="text">
+            <string>Measurement file</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">ShortType</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="short_stack">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="page_3">
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <layout class="QFormLayout" name="formLayout_2">
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Offset delay [ps]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="short_delay"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_10">
+               <property name="text">
+                <string>Offset loss [GΩ/s]: </string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="short_loss"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L0 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-12&lt;/span&gt;F]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="short_L0"/>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L1 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-24&lt;/span&gt;F/Hz]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="short_L1"/>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L2 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-33&lt;/span&gt;F/Hz&lt;span style=&quot; vertical-align:super;&quot;&gt;2&lt;/span&gt;]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QLineEdit" name="short_L2"/>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L3 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-42&lt;/span&gt;F/Hz&lt;span style=&quot; vertical-align:super;&quot;&gt;3&lt;/span&gt;]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QLineEdit" name="short_L3"/>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="short_Z0"/>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_16">
+               <property name="text">
+                <string>Z0 [Ω]:</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_4">
+          <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0">
+           <item>
+            <widget class="TouchstoneImport" name="short_touchstone" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_19">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Load</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <item>
+          <widget class="QRadioButton" name="load_coefficients">
+           <property name="text">
+            <string>Coefficients</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">LoadType</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="load_measurement">
+           <property name="text">
+            <string>Measurement file</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">LoadType</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="load_stack">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="page_5">
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <item>
+            <layout class="QFormLayout" name="formLayout_3">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_30">
+               <property name="text">
+                <string>Z0 [Ω]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="load_Z0"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_6">
+          <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0">
+           <item>
+            <widget class="TouchstoneImport" name="load_touchstone" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_20">
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Through</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <item>
+          <widget class="QRadioButton" name="through_coefficients">
+           <property name="text">
+            <string>Coefficients</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">ThroughType</string>
+           </attribute>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="through_measurement">
+           <property name="text">
+            <string>Measurement file</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">ThroughType</string>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="through_stack">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="page_7">
+          <layout class="QHBoxLayout" name="horizontalLayout_14">
+           <item>
+            <layout class="QFormLayout" name="formLayout_4">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_35">
+               <property name="text">
+                <string>Z0 [Ω]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="through_Z0"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_21">
+               <property name="text">
+                <string>Offset delay [ps]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="through_delay"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Offset loss [GΩ/s]: </string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="through_loss"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_8">
+          <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0">
+           <item>
+            <widget class="TouchstoneImport" name="through_touchstone" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::Save</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TouchstoneImport</class>
+   <extends>QWidget</extends>
+   <header>CustomWidgets/touchstoneimport.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>open_Z0</tabstop>
+  <tabstop>open_delay</tabstop>
+  <tabstop>open_loss</tabstop>
+  <tabstop>open_C0</tabstop>
+  <tabstop>open_C1</tabstop>
+  <tabstop>open_C2</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>OpenType</sender>
+   <signal>buttonClicked(int)</signal>
+   <receiver>open_stack</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>141</x>
+     <y>187</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ShortType</sender>
+   <signal>buttonClicked(int)</signal>
+   <receiver>short_stack</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>420</x>
+     <y>187</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>LoadType</sender>
+   <signal>buttonClicked(int)</signal>
+   <receiver>load_stack</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>187</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ThroughType</sender>
+   <signal>buttonClicked(int)</signal>
+   <receiver>through_stack</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>978</x>
+     <y>187</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <buttongroups>
+  <buttongroup name="LoadType"/>
+  <buttongroup name="OpenType"/>
+  <buttongroup name="ShortType"/>
+  <buttongroup name="ThroughType"/>
+ </buttongroups>
+</ui>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuDevice">
+    <property name="title">
+     <string>Device</string>
+    </property>
+    <widget class="QMenu" name="menuConnect_to">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Connect to</string>
+     </property>
+     <addaction name="actionDummy"/>
+    </widget>
+    <widget class="QMenu" name="menuDefault_Calibration">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Default Calibration</string>
+     </property>
+     <addaction name="actionAssignDefaultCal"/>
+     <addaction name="actionRemoveDefaultCal"/>
+    </widget>
+    <addaction name="actionUpdate_Device_List"/>
+    <addaction name="menuConnect_to"/>
+    <addaction name="actionDisconnect"/>
+    <addaction name="separator"/>
+    <addaction name="actionManual_Control"/>
+    <addaction name="menuDefault_Calibration"/>
+    <addaction name="actionFirmware_Update"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionImpedance_Matching"/>
+   </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <widget class="QMenu" name="menuDocks">
+     <property name="title">
+      <string>Docks</string>
+     </property>
+     <addaction name="actionDummy_2"/>
+    </widget>
+    <widget class="QMenu" name="menuToolbars">
+     <property name="title">
+      <string>Toolbars</string>
+     </property>
+     <addaction name="actionDummy_3"/>
+    </widget>
+    <addaction name="menuDocks"/>
+    <addaction name="menuToolbars"/>
+   </widget>
+   <widget class="QMenu" name="menuCalibration">
+    <property name="title">
+     <string>Calibration</string>
+    </property>
+    <addaction name="actionCalDisabled"/>
+    <addaction name="separator"/>
+    <addaction name="actionTracedata"/>
+    <addaction name="actionImport_error_terms_as_traces"/>
+    <addaction name="actionEdit_Calibration_Kit"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuDevice"/>
+   <addaction name="menuCalibration"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuWindow"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset theme="application-exit">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionUpdate_Device_List">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-refresh">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Update Device List</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="actionDummy">
+   <property name="text">
+    <string>Dummy</string>
+   </property>
+  </action>
+  <action name="actionImpedance_Matching">
+   <property name="text">
+    <string>Impedance Matching</string>
+   </property>
+  </action>
+  <action name="actionManual_Control">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Manual Control</string>
+   </property>
+  </action>
+  <action name="actionDummy_2">
+   <property name="text">
+    <string>Dummy</string>
+   </property>
+  </action>
+  <action name="actionDummy_3">
+   <property name="text">
+    <string>Dummy</string>
+   </property>
+  </action>
+  <action name="actionCalDisabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Disabled</string>
+   </property>
+  </action>
+  <action name="actionTracedata">
+   <property name="text">
+    <string>Calibration Data</string>
+   </property>
+  </action>
+  <action name="actionEdit_Calibration_Kit">
+   <property name="text">
+    <string>Edit Calibration Kit</string>
+   </property>
+  </action>
+  <action name="actionImport_error_terms_as_traces">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Import error terms as traces</string>
+   </property>
+  </action>
+  <action name="actionAssignDefaultCal">
+   <property name="text">
+    <string>Assign...</string>
+   </property>
+  </action>
+  <action name="actionRemoveDefaultCal">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="actionFirmware_Update">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Firmware Update</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -83,6 +83,13 @@ using ManualControl = struct _manualControl {
     uint32_t Samples;
 };
 
+
+static constexpr uint16_t FirmwareChunkSize = 256;
+using FirmwarePacket = struct _firmwarePacket {
+    uint32_t address;
+    uint8_t data[FirmwareChunkSize];
+};
+
 enum class PacketType : uint8_t {
 	None,
 	Datapoint,
@@ -90,6 +97,8 @@ enum class PacketType : uint8_t {
     Status,
     ManualControl,
     DeviceInfo,
+    FirmwarePacket,
+    Ack,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -100,6 +109,7 @@ using PacketInfo = struct _packetinfo {
         DeviceInfo info;
         ManualControl manual;
         ManualStatus status;
+        FirmwarePacket firmware;
 	};
 };
 

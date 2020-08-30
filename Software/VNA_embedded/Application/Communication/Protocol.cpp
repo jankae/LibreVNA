@@ -150,7 +150,7 @@ static Protocol::Datapoint DecodeDatapoint(uint8_t *buf) {
     e.get<uint16_t>(d.pointNum);
     return d;
 }
-static uint16_t EncodeDatapoint(Protocol::Datapoint d, uint8_t *buf,
+static int16_t EncodeDatapoint(Protocol::Datapoint d, uint8_t *buf,
 		uint16_t bufSize) {
     Encoder e(buf, bufSize);
     e.add<float>(d.real_S11);
@@ -176,7 +176,7 @@ static Protocol::SweepSettings DecodeSweepSettings(uint8_t *buf) {
     e.get<int16_t>(d.cdbm_excitation);
     return d;
 }
-static uint16_t EncodeSweepSettings(Protocol::SweepSettings d, uint8_t *buf,
+static int16_t EncodeSweepSettings(Protocol::SweepSettings d, uint8_t *buf,
 		uint16_t bufSize) {
     Encoder e(buf, bufSize);
     e.add<uint64_t>(d.f_start);
@@ -204,7 +204,7 @@ static Protocol::DeviceInfo DecodeDeviceInfo(uint8_t *buf) {
     e.get<uint8_t>(d.temperatures.MCU);
     return d;
 }
-static uint16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
+static int16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
                                                    uint16_t bufSize) {
     Encoder e(buf, bufSize);
     e.add<uint16_t>(d.FW_major);
@@ -243,7 +243,7 @@ static Protocol::ManualStatus DecodeStatus(uint8_t *buf) {
     d.LO_locked = e.getBits(1);
     return d;
 }
-static uint16_t EncodeStatus(Protocol::ManualStatus d, uint8_t *buf,
+static int16_t EncodeStatus(Protocol::ManualStatus d, uint8_t *buf,
                                      uint16_t bufSize) {
     Encoder e(buf, bufSize);
     e.add<int16_t>(d.port1min);
@@ -291,7 +291,7 @@ static Protocol::ManualControl DecodeManualControl(uint8_t *buf) {
     e.get<uint32_t>(d.Samples);
     return d;
 }
-static uint16_t EncodeManualControl(Protocol::ManualControl d, uint8_t *buf,
+static int16_t EncodeManualControl(Protocol::ManualControl d, uint8_t *buf,
                                                    uint16_t bufSize) {
     Encoder e(buf, bufSize);
     e.addBits(d.SourceHighCE, 1);
@@ -316,6 +316,26 @@ static uint16_t EncodeManualControl(Protocol::ManualControl d, uint8_t *buf,
     e.addBits(d.RefEN, 1);
     e.add<uint32_t>(d.Samples);
     return e.getSize();
+}
+
+static Protocol::FirmwarePacket DecodeFirmwarePacket(uint8_t *buf) {
+    Protocol::FirmwarePacket d;
+    // simple packet format, memcpy is faster than using the decoder
+    memcpy(&d.address, buf, 4);
+    buf += 4;
+    memcpy(d.data, buf, Protocol::FirmwareChunkSize);
+    return d;
+}
+static int16_t EncodeFirmwarePacket(const Protocol::FirmwarePacket &d, uint8_t *buf, uint16_t bufSize) {
+    if(bufSize < 4 + Protocol::FirmwareChunkSize) {
+        // unable to encode, not enough space
+        return -1;
+    }
+    // simple packet format, memcpy is faster than using the encoder
+    memcpy(buf, &d.address, 4);
+    buf += 4;
+    memcpy(buf, d.data, Protocol::FirmwareChunkSize);
+    return 4 + Protocol::FirmwareChunkSize;
 }
 
 uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
@@ -377,6 +397,12 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::ManualControl:
         info->manual = DecodeManualControl(&data[4]);
         break;
+    case PacketType::FirmwarePacket:
+        info->firmware = DecodeFirmwarePacket(&data[4]);
+        break;
+    case PacketType::Ack:
+        // no payload, nothing to do
+        break;
     case PacketType::None:
         break;
 	}
@@ -385,7 +411,7 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 }
 
 uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t destsize) {
-	uint16_t payload_size = 0;
+    int16_t payload_size = 0;
 	switch (packet.type) {
 	case PacketType::Datapoint:
         payload_size = EncodeDatapoint(packet.datapoint, &dest[4], destsize - 8);
@@ -402,10 +428,16 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
     case PacketType::ManualControl:
         payload_size = EncodeManualControl(packet.manual, &dest[4], destsize - 8);
         break;
+    case PacketType::FirmwarePacket:
+        payload_size = EncodeFirmwarePacket(packet.firmware, &dest[4], destsize - 8);
+        break;
+    case PacketType::Ack:
+        // no payload, nothing to do
+        break;
     case PacketType::None:
         break;
     }
-	if (payload_size == 0 || payload_size + 8 > destsize) {
+    if (payload_size < 0 || payload_size + 8 > destsize) {
 		// encoding failed, buffer too small
 		return 0;
 	}
