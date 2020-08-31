@@ -48,6 +48,7 @@ public:
     bool Configure(Protocol::SweepSettings settings);
     bool SetManual(Protocol::ManualControl manual);
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
+    bool SendCommandWithoutPayload(Protocol::PacketType type);
     // Returns serial numbers of all connected devices
     static std::vector<QString> GetDevices();
     QString serial() const;

@@ -157,6 +157,30 @@ bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)
     }
 }
 
+bool Device::SendCommandWithoutPayload(Protocol::PacketType type)
+{
+    if(m_connected) {
+        unsigned char buffer[32];
+        Protocol::PacketInfo p;
+        p.type = type;
+        unsigned int length = Protocol::EncodePacket(p, buffer, sizeof(buffer));
+        if(!length) {
+            qCritical() << "Failed to encode packet";
+            return false;
+        }
+        int actual_length;
+        auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
+        if(ret < 0) {
+            qCritical() << "Error sending data: "
+                                    << libusb_strerror((libusb_error) ret);
+            return false;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
 std::vector<QString> Device::GetDevices()
 {
     std::vector<QString> serials;

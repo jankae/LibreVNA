@@ -9,10 +9,12 @@ static uint8_t inputBuffer[1024];
 uint16_t inputCnt = 0;
 static uint8_t outputBuffer[1024];
 
-//#include "usbd_def.h"
-//#include "usbd_cdc_if.h"
+static Communication::Callback callback = nullptr;
 
-//extern USBD_HandleTypeDef hUsbDeviceFS;
+void Communication::SetCallback(Callback cb) {
+	callback = cb;
+}
+
 
 void Communication::Input(const uint8_t *buf, uint16_t len) {
 	if (inputCnt + len < sizeof(inputBuffer)) {
@@ -33,13 +35,10 @@ void Communication::Input(const uint8_t *buf, uint16_t len) {
 			memmove(inputBuffer, &inputBuffer[handled_len], remaining);
 			inputCnt = remaining;
 		}
-		switch(packet.type) {
-		case Protocol::PacketType::SweepSettings:
-			App::NewSettings(packet.settings);
-			break;
-		case Protocol::PacketType::ManualControl:
-			App::SetManual(packet.manual);
-			break;
+		if(packet.type != Protocol::PacketType::None) {
+			if(callback) {
+				callback(packet);
+			}
 		}
 	} while (handled_len > 0);
 }
@@ -63,3 +62,4 @@ bool Communication::Send(Protocol::PacketInfo packet) {
 void communication_usb_input(const uint8_t *buf, uint16_t len) {
 	Communication::Input(buf, len);
 }
+

@@ -62,7 +62,7 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     }
     state = State::ErasingFLASH;
     addStatus("Erasing device memory...");
-    // TODO issue write command
+    dev.SendCommandWithoutPayload(Protocol::PacketType::ClearFlash);
     timer.start(10000);
 }
 
@@ -105,7 +105,7 @@ void FirmwareUpdateDialog::receivedAck()
             // complete file transferred
             addStatus("Triggering device update...");
             state = State::TriggeringUpdate;
-            // TODO trigger update
+            dev.SendCommandWithoutPayload(Protocol::PacketType::PerformFirmwareUpdate);
             timer.start(5000);
         }
         sendNextFirmwareChunk();
@@ -113,7 +113,7 @@ void FirmwareUpdateDialog::receivedAck()
         break;
     case State::TriggeringUpdate:
         addStatus("Rebooting device...");
-        // TODO listen for detected device
+        // TODO delete current device and listen for reconnect
         state = State::Idle;
         break;
     }
@@ -124,4 +124,5 @@ void FirmwareUpdateDialog::sendNextFirmwareChunk()
     Protocol::FirmwarePacket fw;
     fw.address = transferredBytes;
     file->read((char*) &fw.data, Protocol::FirmwareChunkSize);
+    dev.SendFirmwareChunk(fw);
 }

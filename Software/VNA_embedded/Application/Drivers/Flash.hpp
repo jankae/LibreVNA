@@ -21,7 +21,7 @@ public:
 	bool eraseChip();
 	// Starts the reading process without actually reading any bytes
 	void initiateRead(uint32_t address);
-	const SPI_HandleTypeDef* const& getSpi() const {
+	const SPI_HandleTypeDef* const getSpi() const {
 		return spi;
 	}
 

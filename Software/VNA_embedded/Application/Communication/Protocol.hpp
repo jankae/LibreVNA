@@ -91,14 +91,16 @@ using FirmwarePacket = struct _firmwarePacket {
 };
 
 enum class PacketType : uint8_t {
-	None,
-	Datapoint,
-	SweepSettings,
-    Status,
-    ManualControl,
-    DeviceInfo,
-    FirmwarePacket,
-    Ack,
+	None = 0,
+	Datapoint = 1,
+	SweepSettings = 2,
+    Status = 3,
+    ManualControl = 4,
+    DeviceInfo = 5,
+    FirmwarePacket = 6,
+    Ack = 7,
+	ClearFlash = 8,
+	PerformFirmwareUpdate = 9,
 };
 
 using PacketInfo = struct _packetinfo {

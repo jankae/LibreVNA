@@ -401,6 +401,8 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
         info->firmware = DecodeFirmwarePacket(&data[4]);
         break;
     case PacketType::Ack:
+    case PacketType::PerformFirmwareUpdate:
+    case PacketType::ClearFlash:
         // no payload, nothing to do
         break;
     case PacketType::None:
@@ -432,6 +434,8 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
         payload_size = EncodeFirmwarePacket(packet.firmware, &dest[4], destsize - 8);
         break;
     case PacketType::Ack:
+    case PacketType::PerformFirmwareUpdate:
+    case PacketType::ClearFlash:
         // no payload, nothing to do
         break;
     case PacketType::None:
