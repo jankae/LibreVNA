@@ -7,6 +7,7 @@
 #include <thread>
 #include <QObject>
 #include <condition_variable>
+#include <set>
 
 Q_DECLARE_METATYPE(Protocol::Datapoint);
 Q_DECLARE_METATYPE(Protocol::ManualStatus);
@@ -50,7 +51,7 @@ public:
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
     bool SendCommandWithoutPayload(Protocol::PacketType type);
     // Returns serial numbers of all connected devices
-    static std::vector<QString> GetDevices();
+    static std::set<QString> GetDevices();
     QString serial() const;
     Protocol::DeviceInfo getLastInfo() const;
     QString getLastDeviceInfoString();

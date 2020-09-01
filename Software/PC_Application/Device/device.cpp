@@ -181,15 +181,15 @@ bool Device::SendCommandWithoutPayload(Protocol::PacketType type)
     }
 }
 
-std::vector<QString> Device::GetDevices()
+std::set<QString> Device::GetDevices()
 {
-    std::vector<QString> serials;
+    std::set<QString> serials;
 
     libusb_context *ctx;
     libusb_init(&ctx);
 
     SearchDevices([&serials](libusb_device_handle *, QString serial) -> bool {
-        serials.push_back(serial);
+        serials.insert(serial);
         return true;
     }, ctx);
 

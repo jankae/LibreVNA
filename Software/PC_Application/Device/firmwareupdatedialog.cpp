@@ -2,7 +2,7 @@
 #include "ui_firmwareupdatedialog.h"
 #include <QFileDialog>
 
-FirmwareUpdateDialog::FirmwareUpdateDialog(Device &dev, QWidget *parent) :
+FirmwareUpdateDialog::FirmwareUpdateDialog(Device *&dev, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FirmwareUpdateDialog),
     dev(dev),
@@ -13,10 +13,7 @@ FirmwareUpdateDialog::FirmwareUpdateDialog(Device &dev, QWidget *parent) :
     ui->setupUi(this);
     ui->bFile->setIcon(this->style()->standardPixmap(QStyle::SP_FileDialogStart));
     ui->bStart->setIcon(this->style()->standardPixmap(QStyle::SP_MediaPlay));
-    timer.setSingleShot(true);
-    connect(&timer, &QTimer::timeout, [=](){
-       abortWithError("Response timed out");
-    });
+    connect(&timer, &QTimer::timeout, this, &FirmwareUpdateDialog::timerCallback);
 }
 
 FirmwareUpdateDialog::~FirmwareUpdateDialog()
@@ -62,7 +59,8 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     }
     state = State::ErasingFLASH;
     addStatus("Erasing device memory...");
-    dev.SendCommandWithoutPayload(Protocol::PacketType::ClearFlash);
+    dev->SendCommandWithoutPayload(Protocol::PacketType::ClearFlash);
+    timer.setSingleShot(true);
     timer.start(10000);
 }
 
@@ -82,6 +80,22 @@ void FirmwareUpdateDialog::abortWithError(QString error)
     ui->status->setCurrentCharFormat(tf);
     ui->bStart->setEnabled(true);
     state = State::Idle;
+}
+
+void FirmwareUpdateDialog::timerCallback()
+{
+    if(state != State::WaitingForReboot) {
+        abortWithError("Response timed out");
+    } else {
+        // Currently waiting for the reboot, check device list
+        auto devices = Device::GetDevices();
+        if(devices.find(serialnumber) != devices.end()) {
+            // the device rebooted and is available again
+            dev = new Device(serialnumber);
+            addStatus("...device reattached, update complete");
+            timer.stop();
+        }
+    }
 }
 
 void FirmwareUpdateDialog::receivedAck()
@@ -105,7 +119,7 @@ void FirmwareUpdateDialog::receivedAck()
             // complete file transferred
             addStatus("Triggering device update...");
             state = State::TriggeringUpdate;
-            dev.SendCommandWithoutPayload(Protocol::PacketType::PerformFirmwareUpdate);
+            dev->SendCommandWithoutPayload(Protocol::PacketType::PerformFirmwareUpdate);
             timer.start(5000);
         }
         sendNextFirmwareChunk();
@@ -113,8 +127,14 @@ void FirmwareUpdateDialog::receivedAck()
         break;
     case State::TriggeringUpdate:
         addStatus("Rebooting device...");
-        // TODO delete current device and listen for reconnect
-        state = State::Idle;
+        serialnumber = dev->serial();
+        delete dev;
+        dev = nullptr;
+        state = State::WaitingForReboot;
+        timer.setSingleShot(false);
+        timer.start(1000);
+        break;
+    default:
         break;
     }
 }
@@ -124,5 +144,5 @@ void FirmwareUpdateDialog::sendNextFirmwareChunk()
     Protocol::FirmwarePacket fw;
     fw.address = transferredBytes;
     file->read((char*) &fw.data, Protocol::FirmwareChunkSize);
-    dev.SendFirmwareChunk(fw);
+    dev->SendFirmwareChunk(fw);
 }

@@ -109,7 +109,7 @@ VNA::VNA(QWidget *parent)
     });
     connect(ui->actionFirmware_Update, &QAction::triggered, [=](){
         if(device) {
-            auto fw_update = new FirmwareUpdateDialog(*device);
+            auto fw_update = new FirmwareUpdateDialog(device);
             fw_update->exec();
         }
     });
