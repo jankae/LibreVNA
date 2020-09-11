@@ -34,7 +34,9 @@ HEADERS += \
     Traces/tracesmithchart.h \
     Traces/tracewidget.h \
     averaging.h \
+    preferences.h \
     qwtplotpiecewisecurve.h \
+    signalgenerator.h \
     touchstone.h \
     unit.h \
     valueinput.h \
@@ -77,7 +79,9 @@ SOURCES += \
     Traces/tracewidget.cpp \
     averaging.cpp \
     main.cpp \
+    preferences.cpp \
     qwtplotpiecewisecurve.cpp \
+    signalgenerator.cpp \
     touchstone.cpp \
     unit.cpp \
     valueinput.cpp \
@@ -106,7 +110,9 @@ FORMS += \
     Traces/traceexportdialog.ui \
     Traces/traceimportdialog.ui \
     Traces/tracewidget.ui \
-    main.ui
+    main.ui \
+    preferencesdialog.ui \
+    signalgenerator.ui
 
 DISTFILES +=
 

@@ -58,6 +58,8 @@ void FirmwareUpdateDialog::on_bStart_clicked()
         return;
     }
     state = State::ErasingFLASH;
+    connect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
+    connect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
     addStatus("Erasing device memory...");
     dev->SendCommandWithoutPayload(Protocol::PacketType::ClearFlash);
     timer.setSingleShot(true);
@@ -71,6 +73,9 @@ void FirmwareUpdateDialog::addStatus(QString line)
 
 void FirmwareUpdateDialog::abortWithError(QString error)
 {
+    disconnect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
+    disconnect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
+
     QTextCharFormat tf;
     tf = ui->status->currentCharFormat();
     tf.setForeground(QBrush(Qt::red));
@@ -94,6 +99,9 @@ void FirmwareUpdateDialog::timerCallback()
             dev = new Device(serialnumber);
             addStatus("...device reattached, update complete");
             timer.stop();
+            ui->bStart->setEnabled(true);
+            disconnect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
+            disconnect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
         }
     }
 }
@@ -137,6 +145,11 @@ void FirmwareUpdateDialog::receivedAck()
     default:
         break;
     }
+}
+
+void FirmwareUpdateDialog::receivedNack()
+{
+    abortWithError("Nack received, device does not support firmware update");
 }
 
 void FirmwareUpdateDialog::sendNextFirmwareChunk()

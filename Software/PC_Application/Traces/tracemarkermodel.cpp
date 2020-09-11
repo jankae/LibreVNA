@@ -47,6 +47,8 @@ void TraceMarkerModel::removeMarker(unsigned int index, bool delete_marker)
     if (index < markers.size()) {
         beginRemoveRows(QModelIndex(), index, index);
         if(delete_marker) {
+            // disconnect from deleted signal prior to deleting the marker. Otherwise a second (possibly non-existent) will be erased from the list
+            disconnect(markers[index], &TraceMarker::deleted, this, qOverload<TraceMarker*>(&TraceMarkerModel::removeMarker));
             delete markers[index];
         }
         markers.erase(markers.begin() + index);

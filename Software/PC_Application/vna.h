@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QComboBox>
+#include <QStackedWidget>
 #include "Device/device.h"
 #include "Traces/traceplot.h"
 #include "Calibration/calibration.h"
@@ -14,6 +15,8 @@
 #include "Traces/tracemarkermodel.h"
 #include "averaging.h"
 #include "Device/devicelog.h"
+#include "preferences.h"
+#include <QButtonGroup>
 
 namespace Ui {
 class MainWindow;
@@ -70,10 +73,47 @@ private:
     void DeviceConnectionLost();
     void CreateToolbars();
     void ConstrainAndUpdateFrequencies();
+    void LoadSweepSettings();
+    void StoreSweepSettings();
+
+    class GUIMode {
+        friend class VNA;
+    public:
+        GUIMode(VNA *vna, QString name, QWidget *centralWidget);;
+        void addHiddenElement(QAction* a) {
+            hiddenActions.insert(a);
+        }
+        void addHiddenElement(QToolBar* a) {
+            hiddenToolbars.insert(a);
+        }
+        void addHiddenElement(QDockWidget* a) {
+            hiddenDocks.insert(a);
+        }
+        void activate();
+        void deactivate();
+        QString getName() const;
+        static GUIMode *getActiveMode();
+
+    private:
+        static GUIMode *activeMode;
+        static QWidget *cornerWidget;
+        static QButtonGroup *modeButtonGroup;
+        std::set<QAction*> hiddenActions;
+        std::set<QToolBar*> hiddenToolbars;
+        std::set<QDockWidget*> hiddenDocks;
+        VNA *vna;
+        const QString name;
+        QWidget *central;
+    };
+    GUIMode *modeVNA, *modeSGen;
+
+    QStackedWidget *central;
 
     struct {
         QComboBox *referenceType;
     } toolbars;
+
+    Preferences pref;
 
     Device *device;
     DeviceLog deviceLog;
@@ -92,9 +132,6 @@ private:
     bool calMeasuring;
     bool calWaitFirst;
     QProgressDialog calDialog;
-
-    // Calibration menu
-    MenuAction *mCalSOL1, *mCalSOL2, *mCalFullSOLT;
 
     // Status Labels
     QLabel lStart, lCenter, lStop, lSpan, lPoints, lBandwidth;

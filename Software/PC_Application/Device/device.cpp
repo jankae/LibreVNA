@@ -305,17 +305,26 @@ void Device::ReceivedData()
     do {
         handled_len = Protocol::DecodeBuffer(dataBuffer->getBuffer(), dataBuffer->getReceived(), &packet);
         dataBuffer->removeBytes(handled_len);
-        if(packet.type == Protocol::PacketType::Datapoint) {
+        switch(packet.type) {
+        case Protocol::PacketType::Datapoint:
             emit DatapointReceived(packet.datapoint);
-        } else if(packet.type == Protocol::PacketType::Status) {
-            qDebug() << "Got status";
+            break;
+        case Protocol::PacketType::Status:
             emit ManualStatusReceived(packet.status);
-        } else if(packet.type == Protocol::PacketType::DeviceInfo) {
+            break;
+        case Protocol::PacketType::DeviceInfo:
             lastInfo = packet.info;
             lastInfoValid = true;
             emit DeviceInfoUpdated();
-        } else if(packet.type == Protocol::PacketType::Ack) {
+            break;
+        case Protocol::PacketType::Ack:
             emit AckReceived();
+            break;
+        case Protocol::PacketType::Nack:
+            emit NackReceived();
+            break;
+        default:
+            break;
         }
     } while (handled_len > 0);
 }

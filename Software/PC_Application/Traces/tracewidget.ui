@@ -92,7 +92,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-add"/>
+        <iconset theme="list-add">
+         <normaloff>.</normaloff>.</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -117,12 +118,19 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-remove"/>
+        <iconset theme="list-remove">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="bImport">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="toolTip">
         <string>Import</string>
        </property>
@@ -137,6 +145,12 @@
      </item>
      <item>
       <widget class="QPushButton" name="bExport">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="toolTip">
         <string>Export</string>
        </property>
@@ -164,7 +178,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="accessories-text-editor"/>
+        <iconset theme="accessories-text-editor">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

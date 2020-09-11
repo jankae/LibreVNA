@@ -39,6 +39,10 @@
 #include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
 #include "Device/firmwareupdatedialog.h"
+#include "preferences.h"
+#include "signalgenerator.h"
+#include <QDesktopWidget>
+#include <QApplication>
 
 using namespace std;
 
@@ -50,9 +54,10 @@ VNA::VNA(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     QCoreApplication::setOrganizationName("VNA");
-    QCoreApplication::setOrganizationName("Application");
+    QCoreApplication::setApplicationName("Application");
 
-    settings = defaultSweep;
+    pref.load();
+
     averages = 1;
     calValid = false;
     calMeasuring = false;
@@ -69,6 +74,48 @@ VNA::VNA(QWidget *parent)
     ui->statusbar->addWidget(&lDeviceInfo);
     ui->statusbar->addWidget(new QLabel, 1);
     //ui->statusbar->setStyleSheet("QStatusBar::item { border: 1px solid black; };");
+
+    // Create default traces
+    auto tS11 = new Trace("S11", Qt::yellow);
+    tS11->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S11);
+    traceModel.addTrace(tS11);
+    auto tS12 = new Trace("S12", Qt::blue);
+    tS12->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S12);
+    traceModel.addTrace(tS12);
+    auto tS21 = new Trace("S21", Qt::green);
+    tS21->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S21);
+    traceModel.addTrace(tS21);
+    auto tS22 = new Trace("S22", Qt::red);
+    tS22->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S22);
+    traceModel.addTrace(tS22);
+
+    auto tracesmith1 = new TraceSmithChart(traceModel);
+    tracesmith1->enableTrace(tS11, true);
+    auto tracesmith2 = new TraceSmithChart(traceModel);
+    tracesmith2->enableTrace(tS22, true);
+
+    auto tracebode1 = new TraceBodePlot(traceModel);
+    tracebode1->enableTrace(tS12, true);
+    auto tracebode2 = new TraceBodePlot(traceModel);
+    tracebode2->enableTrace(tS21, true);
+
+    auto tiles = new TileWidget(traceModel);
+    tiles->splitVertically();
+    tiles->Child1()->splitHorizontally();
+    tiles->Child2()->splitHorizontally();
+    tiles->Child1()->Child1()->setPlot(tracesmith1);
+    tiles->Child1()->Child2()->setPlot(tracebode1);
+    tiles->Child2()->Child1()->setPlot(tracebode2);
+    tiles->Child2()->Child2()->setPlot(tracesmith2);
+
+    // Create GUI modes
+    central = new QStackedWidget;
+    setCentralWidget(central);
+    modeVNA = new GUIMode(this, "Vector Network Analyzer", tiles);
+    auto signalGenWidget = new Signalgenerator;
+    modeSGen = new GUIMode(this, "Signal Generator", signalGenWidget);
+    modeSGen->addHiddenElement(ui->menuTools->menuAction());
+    modeSGen->addHiddenElement(ui->menuCalibration->menuAction());
 
     CreateToolbars();
     // UI connections
@@ -112,6 +159,9 @@ VNA::VNA(QWidget *parent)
             auto fw_update = new FirmwareUpdateDialog(device);
             fw_update->exec();
         }
+    });
+    connect(ui->actionPreferences, &QAction::triggered, [=](){
+       pref.edit();
     });
 
 
@@ -194,312 +244,73 @@ VNA::VNA(QWidget *parent)
     }
     statusLayout->addStretch();
 
-    auto tw = new TraceWidget(traceModel);
-    // Create default traces
-    auto tS11 = new Trace("S11", Qt::yellow);
-    tS11->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S11);
-    traceModel.addTrace(tS11);
-    auto tS12 = new Trace("S12", Qt::blue);
-    tS12->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S12);
-    traceModel.addTrace(tS12);
-    auto tS21 = new Trace("S21", Qt::green);
-    tS21->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S21);
-    traceModel.addTrace(tS21);
-    auto tS22 = new Trace("S22", Qt::red);
-    tS22->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S22);
-    traceModel.addTrace(tS22);
-
-    auto tracesmith1 = new TraceSmithChart(traceModel);
-    tracesmith1->enableTrace(tS11, true);
-    auto tracesmith2 = new TraceSmithChart(traceModel);
-    tracesmith2->enableTrace(tS22, true);
-
-    auto tracebode1 = new TraceBodePlot(traceModel);
-    tracebode1->enableTrace(tS12, true);
-    auto tracebode2 = new TraceBodePlot(traceModel);
-    tracebode2->enableTrace(tS21, true);
-
-    auto tiles = new TileWidget(traceModel);
-    tiles->splitVertically();
-    tiles->Child1()->splitHorizontally();
-    tiles->Child2()->splitHorizontally();
-    tiles->Child1()->Child1()->setPlot(tracesmith1);
-    tiles->Child1()->Child2()->setPlot(tracebode1);
-    tiles->Child2()->Child1()->setPlot(tracebode2);
-    tiles->Child2()->Child2()->setPlot(tracesmith2);
-
-    auto menuLayout = new QStackedLayout;
-    auto mMain = new Menu(*menuLayout);
-
-    auto mFrequency = new Menu(*menuLayout, "Frequency");
-    auto mCenter = new MenuValue("Center Frequency", (settings.f_start + settings.f_stop)/2, "Hz", " kMG", 6);
-    mFrequency->addItem(mCenter);
-    auto mStart = new MenuValue("Start Frequency", settings.f_start, "Hz", " kMG", 6);
-    mFrequency->addItem(mStart);
-    auto mStop = new MenuValue("Stop Frequency", settings.f_stop, "Hz", " kMG", 6);
-    mFrequency->addItem(mStop);
-    mFrequency->finalize();
-    mMain->addMenu(mFrequency);
-
-    auto mSpan = new Menu(*menuLayout, "Span");
-    auto mSpanWidth = new MenuValue("Span", settings.f_stop - settings.f_start, "Hz", " kMG", 6);
-    mSpan->addItem(mSpanWidth);
-    auto mSpanZoomIn = new MenuAction("Zoom in");
-    mSpan->addItem(mSpanZoomIn);
-    auto mSpanZoomOut = new MenuAction("Zoom out");
-    mSpan->addItem(mSpanZoomOut);
-    auto mSpanFull = new MenuAction("Full span");
-    mSpan->addItem(mSpanFull);
-    mSpan->finalize();
-    mMain->addMenu(mSpan);
-
-    auto mAcquisition = new Menu(*menuLayout, "Acquisition");
-    auto mdbm = new MenuValue("Source Level", -10, "dbm", " ");
-    mAcquisition->addItem(mdbm);
-    auto mPoints = new MenuValue("Points", settings.points, "", " ");
-    mAcquisition->addItem(mPoints);
-    auto mBandwidth = new MenuValue("IF Bandwidth", settings.if_bandwidth, "Hz", " k", 3);
-    mAcquisition->addItem(mBandwidth);
-    auto mAverages = new MenuValue("Averages", averages);
-    mAcquisition->addItem(mAverages);
-    mAcquisition->finalize();
-    mMain->addMenu(mAcquisition);
-
-    auto mCalibration = new Menu(*menuLayout, "Calibration");
-    auto mCalPort1 = new Menu(*menuLayout, "Port 1");
-    auto mCalPort1Open = new MenuAction("Port 1 Open");
-    auto mCalPort1Short = new MenuAction("Port 1 Short");
-    auto mCalPort1Load = new MenuAction("Port 1 Load");
-    mCalPort1->addItem(mCalPort1Short);
-    mCalPort1->addItem(mCalPort1Open);
-    mCalPort1->addItem(mCalPort1Load);
-    mCalPort1->finalize();
-    mCalibration->addMenu(mCalPort1);
-    auto mCalPort2 = new Menu(*menuLayout, "Port 2");
-    auto mCalPort2Open = new MenuAction("Port 2 Open");
-    auto mCalPort2Short = new MenuAction("Port 2 Short");
-    auto mCalPort2Load = new MenuAction("Port 2 Load");
-    mCalPort2->addItem(mCalPort2Short);
-    mCalPort2->addItem(mCalPort2Open);
-    mCalPort2->addItem(mCalPort2Load);
-    mCalPort2->finalize();
-    mCalibration->addMenu(mCalPort2);
-    auto mCalThrough = new MenuAction("Through");
-    auto mCalIsolation = new MenuAction("Isolation");
-    mCalibration->addItem(mCalThrough);
-    mCalibration->addItem(mCalIsolation);
-
-    mCalSOL1 = new MenuAction("Apply Port 1 SOL");
-    mCalibration->addItem(mCalSOL1);
-    mCalSOL1->setDisabled(true);
-
-    mCalSOL2 = new MenuAction("Apply Port 2 SOL");
-    mCalibration->addItem(mCalSOL2);
-    mCalSOL2->setDisabled(true);
-
-    mCalFullSOLT = new MenuAction("Apply full SOLT");
-    mCalibration->addItem(mCalFullSOLT);
-    mCalFullSOLT->setDisabled(true);
-
-    auto mCalSave = new MenuAction("Save to file");
-    mCalibration->addItem(mCalSave);
-
-    auto mCalLoad = new MenuAction("Load from file");
-    mCalibration->addItem(mCalLoad);
-
-    auto mEditKit = new MenuAction("Edit CalKit");
-    mCalibration->addItem(mEditKit);
-
-    mCalibration->finalize();
-    mMain->addMenu(mCalibration);
-
-    auto mSystem = new Menu(*menuLayout, "System");
-    auto aManual = new MenuAction("Manual Control");
-    auto aMatchDialog = new MenuAction("Impedance Matching");
-    mSystem->addItem(aManual);
-    mSystem->addItem(aMatchDialog);
-    mSystem->finalize();
-    mMain->addMenu(mSystem);
-
-    mMain->finalize();
-
-    // Frequency and span connections
-    // setting values
-    connect(mCenter, &MenuValue::valueChanged, this, &VNA::SetCenterFreq);
-    connect(mStart, &MenuValue::valueChanged, this, &VNA::SetStartFreq);
-    connect(mStop, &MenuValue::valueChanged, this, &VNA::SetStopFreq);
-    connect(mSpanWidth, &MenuValue::valueChanged, this, &VNA::SetSpan);
-    connect(mSpanZoomIn, &MenuAction::triggered, this, &VNA::SpanZoomIn);
-    connect(mSpanZoomOut, &MenuAction::triggered, this, &VNA::SpanZoomOut);
-    connect(mSpanFull, &MenuAction::triggered, this, &VNA::SetFullSpan);
-    // readback and update line edits
-    connect(this, &VNA::startFreqChanged, mStart, &MenuValue::setValueQuiet);
-    connect(this, &VNA::stopFreqChanged, mStop, &MenuValue::setValueQuiet);
-    connect(this, &VNA::centerFreqChanged, mCenter, &MenuValue::setValueQuiet);
-    connect(this, &VNA::spanChanged, mSpanWidth, &MenuValue::setValueQuiet);
-
-    // Acquisition connections
-    // setting values
-    connect(mPoints, &MenuValue::valueChanged, [=](double newval){
-        SetPoints(newval);
-    });
-    connect(mdbm, &MenuValue::valueChanged, this, &VNA::SetSourceLevel);
-    connect(mBandwidth, &MenuValue::valueChanged, this, &VNA::SetIFBandwidth);
-    connect(mAverages, &MenuValue::valueChanged, [=](double newval){
-       SetAveraging(newval);
-    });
-    // readback and update line edits
-    connect(this, &VNA::sourceLevelChanged, mdbm, &MenuValue::setValueQuiet);
-    connect(this, &VNA::pointsChanged, [=](int newval) {
-        mPoints->setValueQuiet(newval);
-    });
-    connect(this, &VNA::IFBandwidthChanged, mBandwidth, &MenuValue::setValueQuiet);
-    connect(this, &VNA::averagingChanged, [=](int newval) {
-        mAverages->setValueQuiet(newval);
-    });
-
-    connect(mCalPort1Open, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Port1Open);
-    });
-    connect(mCalPort1Short, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Port1Short);
-    });
-    connect(mCalPort1Load, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Port1Load);
-    });
-    connect(mCalPort2Open, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Port2Open);
-    });
-    connect(mCalPort2Short, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Port2Short);
-    });
-    connect(mCalPort2Load, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Port2Load);
-    });
-    connect(mCalThrough, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Through);
-    });
-    connect(mCalIsolation, &MenuAction::triggered, [=](){
-       StartCalibrationMeasurement(Calibration::Measurement::Isolation);
-    });
-    connect(mCalSOL1, &MenuAction::triggered, [=](){
-        ApplyCalibration(Calibration::Type::Port1SOL);
-    });
-    connect(mCalSOL2, &MenuAction::triggered, [=](){
-        ApplyCalibration(Calibration::Type::Port2SOL);
-    });
-    connect(mCalFullSOLT, &MenuAction::triggered, [=](){
-        ApplyCalibration(Calibration::Type::FullSOLT);
-    });
-
-    connect(mCalSave, &MenuAction::triggered, [=](){
-        cal.saveToFile();
-    });
-
-    connect(mCalLoad, &MenuAction::triggered, [=](){
-        if(cal.openFromFile()) {
-            // Check if applying calibration is available
-            if(cal.calculationPossible(Calibration::Type::Port1SOL)) {
-                mCalSOL1->setEnabled(true);
-            }
-            if(cal.calculationPossible(Calibration::Type::Port2SOL)) {
-                mCalSOL2->setEnabled(true);
-            }
-            if(cal.calculationPossible(Calibration::Type::FullSOLT)) {
-                mCalFullSOLT->setEnabled(true);
-            }
-        }
-    });
-
-    connect(mEditKit, &MenuAction::triggered, [=](){
-        cal.getCalibrationKit().edit();
-    });
-
-    // Manual control trigger
-    connect(aManual, &MenuAction::triggered, this, &VNA::StartManualControl);
-    connect(aMatchDialog, &MenuAction::triggered, this, &VNA::StartImpedanceMatching);
-
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-    auto mainWidget = new QWidget;
-    auto mainLayout = new QHBoxLayout;
-    mainWidget->setLayout(mainLayout);
     auto statusWidget = new QWidget;
     statusWidget->setLayout(statusLayout);
 //    statusWidget->setFixedWidth(150);
     auto statusDock = new QDockWidget("Status");
     statusDock->setWidget(statusWidget);
-//    statusDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::LeftDockWidgetArea, statusDock);
 
     auto tracesDock = new QDockWidget("Traces");
-    tracesDock->setWidget(tw);
-//    tracesDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    tracesDock->setWidget(new TraceWidget(traceModel));
     addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
 
-//    mainLayout->addWidget(statusWidget);
-    mainLayout->addWidget(tiles);
-    auto menuWidget = new QWidget;
-    menuWidget->setLayout(menuLayout);
-//    menuWidget->setFixedWidth(180);
-    auto menuDock = new QDockWidget("Menu");
-    menuDock->setWidget(menuWidget);
-//    menuDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    addDockWidget(Qt::RightDockWidgetArea, menuDock);
-//    mainLayout->addWidget(menuWidget);
 
     auto markerWidget = new MarkerWidget(*markerModel);
 
     auto markerDock = new QDockWidget("Marker");
     markerDock->setWidget(markerWidget);
-//    markerDock->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::BottomDockWidgetArea, markerDock);
 
     auto logDock = new QDockWidget("Device Log");
     logDock->setWidget(&deviceLog);
     addDockWidget(Qt::BottomDockWidgetArea, logDock);
 
-    setCentralWidget(mainWidget);
+    modeSGen->addHiddenElement(markerDock);
+    modeSGen->addHiddenElement(tracesDock);
+    modeSGen->addHiddenElement(statusDock);
 
     // status and menu dock hidden by default
-    menuDock->close();
     statusDock->close();
 
-    // fill dock/toolbar hide/show menu and set initial state if available
-    QSettings settings;
-    ui->menuDocks->clear();
-    for(auto d : findChildren<QDockWidget*>()) {
-        ui->menuDocks->addAction(d->toggleViewAction());
-        bool hidden = settings.value("dock_"+d->windowTitle(), d->isHidden()).toBool();
-        if(hidden) {
-            d->close();
-        } else {
-            d->show();
-        }
-    }
-    ui->menuToolbars->clear();
-    for(auto t : findChildren<QToolBar*>()) {
-        ui->menuToolbars->addAction(t->toggleViewAction());
-        bool hidden = settings.value("toolbar_"+t->windowTitle(), t->isHidden()).toBool();
-        if(hidden) {
-            t->close();
-        } else {
-            t->show();
-        }
+    {
+        QSettings settings;
+        restoreGeometry(settings.value("geometry").toByteArray());
     }
 
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("windowState").toByteArray());
+    // Set ObjectName for toolbars and docks
+    for(auto d : findChildren<QDockWidget*>()) {
+        d->setObjectName(d->windowTitle());
+    }
+    for(auto t : findChildren<QToolBar*>()) {
+        t->setObjectName(t->windowTitle());
+    }
+
+    // Set default mode
+    modeVNA->activate();
 
     qRegisterMetaType<Protocol::Datapoint>("Datapoint");
 
-    ConstrainAndUpdateFrequencies();
+
+    // Set initial sweep settings
+    if(pref.Startup.RememberSweepSettings) {
+        LoadSweepSettings();
+    } else {
+        settings.f_start = pref.Startup.DefaultSweep.start;
+        settings.f_stop = pref.Startup.DefaultSweep.stop;
+        ConstrainAndUpdateFrequencies();
+        SetSourceLevel(pref.Startup.DefaultSweep.excitation);
+        SetIFBandwidth(pref.Startup.DefaultSweep.bandwidth);
+        SetPoints(pref.Startup.DefaultSweep.points);
+    }
 
     // List available devices
-    if(UpdateDeviceList()) {
+    if(UpdateDeviceList() && pref.Startup.ConnectToFirstDevice) {
         // at least one device available
         ConnectToDevice();
     }
@@ -508,16 +319,11 @@ VNA::VNA(QWidget *parent)
 void VNA::closeEvent(QCloseEvent *event)
 {
     QSettings settings;
-    // save dock/toolbar visibility
-    for(auto d : findChildren<QDockWidget*>()) {
-        settings.setValue("dock_"+d->windowTitle(), d->isHidden());
-    }
-    ui->menuToolbars->clear();
-    for(auto t : findChildren<QToolBar*>()) {
-        settings.setValue("toolbar_"+t->windowTitle(), t->isHidden());
-    }
     settings.setValue("geometry", saveGeometry());
-    settings.setValue("windowState", saveState());
+    // deactivate currently used mode (stores mode state in settings)
+    GUIMode::getActiveMode()->deactivate();
+    StoreSweepSettings();
+    pref.store();
     QMainWindow::closeEvent(event);
 }
 
@@ -530,16 +336,6 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
             if(d.pointNum == settings.points - 1) {
                 calMeasuring = false;
                 emit CalibrationMeasurementComplete(calMeasurement);
-                // Check if applying calibration is available
-                if(cal.calculationPossible(Calibration::Type::Port1SOL)) {
-                    mCalSOL1->setEnabled(true);
-                }
-                if(cal.calculationPossible(Calibration::Type::Port2SOL)) {
-                    mCalSOL2->setEnabled(true);
-                }
-                if(cal.calculationPossible(Calibration::Type::FullSOLT)) {
-                    mCalFullSOLT->setEnabled(true);
-                }
             }
             calDialog.setValue(d.pointNum + 1);
         }
@@ -715,6 +511,7 @@ void VNA::CreateToolbars()
     tb_sweep->addWidget(bZoomOut);
 
     addToolBar(tb_sweep);
+    modeSGen->addHiddenElement(tb_sweep);
 
     // Acquisition toolbar
     auto tb_acq = new QToolBar("Acquisition", this);
@@ -751,6 +548,7 @@ void VNA::CreateToolbars()
     tb_acq->addWidget(eBandwidth);
 
     addToolBar(tb_acq);
+    modeSGen->addHiddenElement(tb_acq);
 
     // Reference toolbar
     auto tb_reference = new QToolBar("Reference", this);
@@ -840,6 +638,7 @@ void VNA::CreateToolbars()
     tb_cal->addWidget(cbType);
 
     addToolBar(tb_cal);
+    modeSGen->addHiddenElement(tb_cal);
 }
 
 int VNA::UpdateDeviceList()
@@ -1074,4 +873,145 @@ void VNA::ConstrainAndUpdateFrequencies()
     emit spanChanged(settings.f_stop - settings.f_start);
     emit centerFreqChanged((settings.f_stop + settings.f_start)/2);
     SettingsChanged();
+}
+
+void VNA::LoadSweepSettings()
+{
+    QSettings s;
+    settings.f_start = s.value("SweepStart", pref.Startup.DefaultSweep.start).toULongLong();
+    settings.f_stop = s.value("SweepStop", pref.Startup.DefaultSweep.stop).toULongLong();
+    ConstrainAndUpdateFrequencies();
+    SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
+    SetPoints(s.value("SweepPoints", pref.Startup.DefaultSweep.points).toInt());
+    SetSourceLevel(s.value("SweepLevel", pref.Startup.DefaultSweep.excitation).toDouble());
+}
+
+void VNA::StoreSweepSettings()
+{
+    QSettings s;
+    s.setValue("SweepStart", static_cast<unsigned long long>(settings.f_start));
+    s.setValue("SweepStop", static_cast<unsigned long long>(settings.f_stop));
+    s.setValue("SweepBandwidth", settings.if_bandwidth);
+    s.setValue("SweepPoints", settings.points);
+    s.setValue("SweepLevel", (double) settings.cdbm_excitation / 100.0);
+}
+
+VNA::GUIMode* VNA::GUIMode::activeMode = nullptr;
+QWidget* VNA::GUIMode::cornerWidget = nullptr;
+QButtonGroup* VNA::GUIMode::modeButtonGroup = nullptr;
+
+VNA::GUIMode::GUIMode(VNA *vna, QString name, QWidget *centralWidget)
+    : vna(vna),
+      name(name),
+      central(centralWidget)
+{
+    vna->central->addWidget(central);
+    // Create mode switch button
+    auto modeSwitch = new QPushButton(name);
+    modeSwitch->setCheckable(true);
+    modeSwitch->setMaximumHeight(vna->ui->menubar->height());
+    if(!cornerWidget) {
+        // this is the first created mode, initialize corner widget and set this mode as active
+        modeSwitch->setChecked(true);
+        cornerWidget = new QWidget;
+        cornerWidget->setLayout(new QHBoxLayout);
+        cornerWidget->layout()->setSpacing(0);
+        cornerWidget->layout()->setMargin(0);
+        cornerWidget->layout()->setContentsMargins(0,0,0,0);
+        vna->menuBar()->setCornerWidget(cornerWidget);
+        modeButtonGroup = new QButtonGroup;
+        vna->ui->menubar->setMaximumHeight(vna->ui->menubar->height());
+    }
+    cornerWidget->layout()->addWidget(modeSwitch);
+    modeButtonGroup->addButton(modeSwitch);
+
+    connect(modeSwitch, &QPushButton::clicked, [=](){
+        activate();
+    });
+}
+
+void VNA::GUIMode::activate()
+{
+    if(activeMode == this) {
+        // already active;
+        return;
+    } else if(activeMode) {
+        activeMode->deactivate();
+    }
+    QSettings settings;
+    // hide menu actions that are not applicable to this mode
+    for(auto a : hiddenActions) {
+        a->setVisible(false);
+    }
+
+    vna->central->setCurrentWidget(central);
+
+    // restore dock and toolbar positions
+//    vna->restoreGeometry(settings.value("geometry_"+name).toByteArray());
+    vna->restoreState(settings.value("windowState_"+name).toByteArray());
+
+    // restore visibility of toolbars and docks
+    vna->ui->menuDocks->clear();
+    for(auto d : vna->findChildren<QDockWidget*>()) {
+        if(hiddenDocks.count(d)) {
+            // this dock is not applicable for the current state, hide and don't add menu entry
+            d->hide();
+            continue;
+        }
+        vna->ui->menuDocks->addAction(d->toggleViewAction());
+        bool hidden = settings.value("dock_"+name+"_"+d->windowTitle(), d->isHidden()).toBool();
+        if(hidden) {
+            d->hide();
+        } else {
+            d->show();
+        }
+    }
+    vna->ui->menuToolbars->clear();
+    for(auto t : vna->findChildren<QToolBar*>()) {
+        if(hiddenToolbars.count(t)) {
+            // this toolbar is not applicable for the current state, hide and don't add menu entry
+            t->hide();
+            continue;
+        }
+        vna->ui->menuToolbars->addAction(t->toggleViewAction());
+        bool hidden = settings.value("toolbar_"+name+"_"+t->windowTitle(), t->isHidden()).toBool();
+        if(hidden) {
+            t->hide();
+        } else {
+            t->show();
+        }
+    }
+
+    activeMode = this;
+}
+
+void VNA::GUIMode::deactivate()
+{
+    QSettings settings;
+    // save dock/toolbar visibility
+    for(auto d : vna->findChildren<QDockWidget*>()) {
+        settings.setValue("dock_"+name+"_"+d->windowTitle(), d->isHidden());
+    }
+    for(auto t : vna->findChildren<QToolBar*>()) {
+        settings.setValue("toolbar_"+name+"_"+t->windowTitle(), t->isHidden());
+    }
+//    settings.setValue("geometry_"+name, vna->saveGeometry());
+    settings.setValue("windowState_"+name, vna->saveState());
+
+    // restore hidden items
+    for(auto a : hiddenActions) {
+        a->setVisible(true);
+    }
+
+    activeMode = nullptr;
+}
+
+VNA::GUIMode *VNA::GUIMode::getActiveMode()
+{
+    return activeMode;
+}
+
+QString VNA::GUIMode::getName() const
+{
+    return name;
 }

@@ -62,6 +62,7 @@ signals:
     void DeviceInfoUpdated();
     void ConnectionLost();
     void AckReceived();
+    void NackReceived();
     void LogLineReceived(QString line);
 private slots:
     void ReceivedData();

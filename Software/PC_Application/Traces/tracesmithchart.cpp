@@ -63,6 +63,9 @@ void TraceSmithChart::mouseMoveEvent(QMouseEvent *event)
         auto t = selectedMarker->trace();
         auto mouseS = pixelToPlot(event->pos());
         auto samples = t->size();
+        if(!samples) {
+            return;
+        }
         double closestDistance = numeric_limits<double>::max();
         unsigned int closestIndex = 0;
         for(unsigned int i=0;i<samples;i++) {
@@ -138,13 +141,16 @@ void TraceSmithChart::draw(QPainter * painter, double width_factor) {
             // draw line
             painter->drawLine(std::real(last), -std::imag(last), std::real(now), -std::imag(now));
         }
-        auto markers = t.first->getMarkers();
-        for(auto m : markers) {
-            auto coords = m->getData();
-            coords *= smithCoordMax;
-            auto symbol = m->getSymbol();
-            symbol = symbol.scaled(symbol.width()*width_factor, symbol.height()*width_factor);
-            painter->drawPixmap(coords.real() - symbol.width()/2, -coords.imag() - symbol.height(), symbol);
+        if(trace->size() > 0) {
+            // only draw markers if the trace has at least one point
+            auto markers = t.first->getMarkers();
+            for(auto m : markers) {
+                auto coords = m->getData();
+                coords *= smithCoordMax;
+                auto symbol = m->getSymbol();
+                symbol = symbol.scaled(symbol.width()*width_factor, symbol.height()*width_factor);
+                painter->drawPixmap(coords.real() - symbol.width()/2, -coords.imag() - symbol.height(), symbol);
+            }
         }
     }
 }

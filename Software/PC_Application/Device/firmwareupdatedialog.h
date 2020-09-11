@@ -29,11 +29,12 @@ private slots:
     void on_bFile_clicked();
     void on_bStart_clicked();
     void timerCallback();
+    void receivedAck();
+    void receivedNack();
 
 private:
     void addStatus(QString line);
     void abortWithError(QString error);
-    void receivedAck();
     void sendNextFirmwareChunk();
     Ui::FirmwareUpdateDialog *ui;
     Device *&dev;

@@ -84,6 +84,7 @@
     </widget>
     <addaction name="menuDocks"/>
     <addaction name="menuToolbars"/>
+    <addaction name="actionPreferences"/>
    </widget>
    <widget class="QMenu" name="menuCalibration">
     <property name="title">
@@ -204,6 +205,16 @@
    </property>
    <property name="text">
     <string>Firmware Update</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionDummy_4">
+   <property name="text">
+    <string>Dummy</string>
    </property>
   </action>
  </widget>

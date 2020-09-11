@@ -396,7 +396,7 @@ bool TraceBodePlot::supported(Trace *t, TraceBodePlot::YAxisType type)
 
 void TraceBodePlot::updateXAxis()
 {
-    if(XAxis.autorange) {
+    if(XAxis.autorange && sweep_fmax-sweep_fmin > 0) {
         QList<double> tickList;
         for(double tick = sweep_fmin;tick <= sweep_fmax;tick+= (sweep_fmax-sweep_fmin)/10) {
             tickList.append(tick);
