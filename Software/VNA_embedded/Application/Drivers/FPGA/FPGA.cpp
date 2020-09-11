@@ -2,41 +2,17 @@
 #include "delay.hpp"
 #include "stm.hpp"
 #include "main.h"
+#include "FPGA_HAL.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_DEBUG
 #define LOG_MODULE	"FPGA"
 #include "Log.h"
 
-#define FPGA_SPI			hspi1
-#define CONFIGURATION_SPI	hspi2
-extern SPI_HandleTypeDef FPGA_SPI, CONFIGURATION_SPI;
-
-using GPIO = struct {
-	GPIO_TypeDef *gpio;
-	uint16_t pin;
-};
-static constexpr GPIO CS = {.gpio = FPGA_CS_GPIO_Port, .pin = FPGA_CS_Pin};
-static constexpr GPIO PROGRAM_B = {.gpio = FPGA_PROGRAM_B_GPIO_Port, .pin = FPGA_PROGRAM_B_Pin};
-static constexpr GPIO INIT_B = {.gpio = FPGA_INIT_B_GPIO_Port, .pin = FPGA_INIT_B_Pin};
-static constexpr GPIO DONE = {.gpio = FPGA_DONE_GPIO_Port, .pin = FPGA_DONE_Pin};
-static constexpr GPIO FPGA_RESET = {.gpio = FPGA_RESET_GPIO_Port, .pin = FPGA_RESET_Pin};
-static constexpr GPIO AUX1 = {.gpio = FPGA_AUX1_GPIO_Port, .pin = FPGA_AUX1_Pin};
-static constexpr GPIO AUX2 = {.gpio = FPGA_AUX2_GPIO_Port, .pin = FPGA_AUX2_Pin};
-static constexpr GPIO AUX3 = {.gpio = FPGA_AUX3_GPIO_Port, .pin = FPGA_AUX3_Pin};
-
-static inline void Low(GPIO g) {
-	g.gpio->BSRR = g.pin << 16;
-}
-static inline void High(GPIO g) {
-	g.gpio->BSRR = g.pin;
-}
-bool isHigh(GPIO g) {
-	return g.gpio->IDR & g.pin;
-}
-
 static FPGA::HaltedCallback halted_cb;
 static uint16_t SysCtrlReg = 0x0000;
 static uint16_t ISRMaskReg = 0x0000;
+
+using namespace FPGAHAL;
 
 void WriteRegister(FPGA::Reg reg, uint16_t value) {
 	uint16_t cmd[2] = {(uint16_t) (0x8000 | (uint16_t) reg), value};
@@ -46,6 +22,12 @@ void WriteRegister(FPGA::Reg reg, uint16_t value) {
 }
 
 bool FPGA::Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size) {
+	if(!PROGRAM_B.gpio) {
+		LOG_WARN("PROGRAM_B not defined, assuming FPGA configures itself in master configuration");
+		// wait too allow enough time for FPGA configuration
+		HAL_Delay(2000);
+		return true;
+	}
 	LOG_INFO("Loading bitstream of size %lu...", bitstream_size);
 	Low(PROGRAM_B);
 	while(isHigh(INIT_B));

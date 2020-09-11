@@ -3,20 +3,14 @@
 #include "max2871.hpp"
 #include "main.h"
 #include "delay.hpp"
-#include "FPGA.hpp"
+#include "FPGA/FPGA.hpp"
 #include <complex>
 #include "Exti.hpp"
+#include "VNA_HAL.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"VNA"
 #include "Log.h"
-
-extern I2C_HandleTypeDef hi2c2;
-extern SPI_HandleTypeDef hspi1;
-
-static Si5351C Si5351 = Si5351C(&hi2c2, 26000000);
-static MAX2871 Source = MAX2871(&hspi1, FPGA_CS_GPIO_Port, FPGA_CS_Pin, nullptr, 0, nullptr, 0, nullptr, 0, GPIOB, GPIO_PIN_4);
-static MAX2871 LO1 = MAX2871(&hspi1, FPGA_CS_GPIO_Port, FPGA_CS_Pin, nullptr, 0, nullptr, 0, nullptr, 0, GPIOB, GPIO_PIN_4);
 
 static constexpr uint32_t IF1 = 60100000;
 static constexpr uint32_t IF1_alternate = 57000000;
@@ -42,6 +36,8 @@ static uint16_t IFTableIndexCnt = 0;
 
 static constexpr uint32_t BandSwitchFrequency = 25000000;
 
+using namespace VNAHAL;
+
 static void HaltedCallback() {
 	LOG_DEBUG("Halted before point %d", pointCnt);
 	// Check if IF table has entry at this point
@@ -59,16 +55,16 @@ static void HaltedCallback() {
 					/ (settings.points - 1);
 	if (frequency < BandSwitchFrequency) {
 		// need the Si5351 as Source
-		Si5351.SetCLK(0, frequency, Si5351C::PLL::B,
+		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B,
 				Si5351C::DriveStrength::mA2);
 		if (pointCnt == 0) {
 			// First point in sweep, enable CLK
-			Si5351.Enable(0);
+			Si5351.Enable(SiChannel::LowbandSource);
 			FPGA::Disable(FPGA::Periphery::SourceRF);
 		}
 	} else {
 		// first sweep point in highband is also halted, disable lowband source
-		Si5351.Disable(0);
+		Si5351.Disable(SiChannel::LowbandSource);
 		FPGA::Enable(FPGA::Periphery::SourceRF);
 	}
 
@@ -122,8 +118,6 @@ static void FPGA_Interrupt(void*) {
 bool VNA::Init() {
 	LOG_DEBUG("Initializing...");
 
-	// Wait for FPGA to finish configuration
-	Delay::ms(2000);
 	manualMode = false;
 
 	Si5351.Init();
@@ -136,24 +130,25 @@ bool VNA::Init() {
 	while(!Si5351.Locked(Si5351C::PLL::B));
 
 	// Both MAX2871 get a 100MHz reference
-	Si5351.SetCLK(2, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
-	Si5351.Enable(2);
-	Si5351.SetCLK(3, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
-	Si5351.Enable(3);
+	Si5351.SetCLK(SiChannel::Source, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::Source);
+	Si5351.SetCLK(SiChannel::LO1, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::LO1);
 	// 16MHz FPGA clock
-	Si5351.SetCLK(7, 16000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
-	Si5351.Enable(7);
-	// 10 MHz external reference clock
-	Si5351.SetCLK(6, 10000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
-	Si5351.Enable(6);
+	Si5351.SetCLK(SiChannel::FPGA, 16000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::FPGA);
+	// TODO reference settings controllable through USB
+//	// 10 MHz external reference clock
+//	Si5351.SetCLK(6, 10000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
+//	Si5351.Enable(6);
 
 	// Generate second LO with Si5351
-	Si5351.SetCLK(1, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-	Si5351.Enable(1);
-	Si5351.SetCLK(4, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-	Si5351.Enable(4);
-	Si5351.SetCLK(5, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-	Si5351.Enable(5);
+	Si5351.SetCLK(SiChannel::Port1LO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::Port1LO2);
+	Si5351.SetCLK(SiChannel::Port2LO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::Port2LO2);
+	Si5351.SetCLK(SiChannel::RefLO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::RefLO2);
 
 	// PLL reset appears to realign phases of clock signals
 	Si5351.ResetPLL(Si5351C::PLL::B);
@@ -301,7 +296,7 @@ bool VNA::ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb) {
 			IFTable[IFTableIndexCnt].IF1 = used_IF;
 			// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
 			// the correct clock settings
-			Si5351.SetCLK(1, used_IF + IF2, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+			Si5351.SetCLK(SiChannel::RefLO2, used_IF + IF2, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 			// store calculated clock configuration for later change
 			Si5351.ReadRawCLKConfig(1, IFTable[IFTableIndexCnt].clkconfig);
 			IFTableIndexCnt++;
@@ -349,11 +344,11 @@ bool VNA::ConfigureManual(Protocol::ManualControl m, StatusCallback cb) {
 	FPGA::AbortSweep();
 	// Configure lowband source
 	if (m.SourceLowEN) {
-		Si5351.SetCLK(0, m.SourceLowFrequency, Si5351C::PLL::B,
+		Si5351.SetCLK(SiChannel::LowbandSource, m.SourceLowFrequency, Si5351C::PLL::B,
 				(Si5351C::DriveStrength) m.SourceLowPower);
-		Si5351.Enable(0);
+		Si5351.Enable(SiChannel::LowbandSource);
 	} else {
-		Si5351.Disable(0);
+		Si5351.Disable(SiChannel::LowbandSource);
 	}
 	// Configure highband source
 	Source.SetFrequency(m.SourceHighFrequency);
@@ -365,19 +360,19 @@ bool VNA::ConfigureManual(Protocol::ManualControl m, StatusCallback cb) {
 	// Configure LO2
 	if(m.LO2EN) {
 		// Generate second LO with Si5351
-		Si5351.SetCLK(1, m.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-		Si5351.Enable(1);
-		Si5351.SetCLK(4, m.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-		Si5351.Enable(4);
-		Si5351.SetCLK(5, m.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-		Si5351.Enable(5);
+		Si5351.SetCLK(SiChannel::Port1LO2, m.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+		Si5351.Enable(SiChannel::Port1LO2);
+		Si5351.SetCLK(SiChannel::Port2LO2, m.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+		Si5351.Enable(SiChannel::Port2LO2);
+		Si5351.SetCLK(SiChannel::RefLO2, m.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+		Si5351.Enable(SiChannel::RefLO2);
 
 		// PLL reset appears to realign phases of clock signals
 		Si5351.ResetPLL(Si5351C::PLL::B);
 	} else {
-		Si5351.Disable(1);
-		Si5351.Disable(4);
-		Si5351.Disable(5);
+		Si5351.Disable(SiChannel::Port1LO2);
+		Si5351.Disable(SiChannel::Port2LO2);
+		Si5351.Disable(SiChannel::RefLO2);
 	}
 
 	FPGA::WriteMAX2871Default(Source.GetRegisters());

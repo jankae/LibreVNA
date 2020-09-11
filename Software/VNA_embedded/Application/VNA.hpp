@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include "Protocol.hpp"
-#include "FPGA.hpp"
+#include "FPGA/FPGA.hpp"
 
 namespace VNA {
 

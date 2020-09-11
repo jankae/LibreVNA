@@ -5,12 +5,11 @@
 #include "Communication.h"
 #include "main.h"
 #include "Exti.hpp"
-#include "FPGA.hpp"
+#include "FPGA/FPGA.hpp"
 #include <complex>
 #include <cstring>
 #include "USB/usb.h"
 #include "Flash.hpp"
-#include "Firmware.hpp"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -28,12 +27,17 @@ static Protocol::PacketInfo packet;
 static TaskHandle_t handle;
 
 // TODO set proper values
-#define HW_REVISION			'A'
+//#define HW_REVISION			'A'
 #define FW_MAJOR			0
 #define FW_MINOR			01
 
+#if HW_REVISION >= 'B'
+// has MCU controllable flash chip, firmware update supported
+#define HAS_FLASH
+#include "Firmware.hpp"
 extern SPI_HandleTypeDef hspi1;
 static Flash flash = Flash(&hspi1, FLASH_CS_GPIO_Port, FLASH_CS_Pin);
+#endif
 
 #define FLAG_USB_PACKET		0x01
 #define FLAG_DATAPOINT		0x02
@@ -67,6 +71,7 @@ void App_Start() {
 	Log_SetRedirect(usb_log);
 	LOG_INFO("Start");
 	Exti::Init();
+#ifdef HAS_FLASH
 	if(!flash.isPresent()) {
 		LOG_CRIT("Failed to detect onboard FLASH");
 	}
@@ -80,9 +85,18 @@ void App_Start() {
 	} else {
 		LOG_CRIT("Invalid bitstream/firmware, not configuring FPGA");
 	}
+#else
+	// The FPGA configures itself from the flash, allow time for this
+	vTaskDelay(2000);
+#endif
 	if (!VNA::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
 	}
+
+#if HW_REVISION == 'A'
+	// Allow USB enumeration
+	USB_EN_GPIO_Port->BSRR = USB_EN_Pin;
+#endif
 
 	uint32_t lastNewPoint = HAL_GetTick();
 	bool sweepActive = false;
@@ -180,25 +194,23 @@ void App_Start() {
 					manual = packet.manual;
 					VNA::ConfigureManual(manual, VNAStatusCallback);
 					break;
+#ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:
 					FPGA::AbortSweep();
 					sweepActive = false;
 					LOG_DEBUG("Erasing FLASH in preparation for firmware update...");
 					if(flash.eraseChip()) {
 						LOG_DEBUG("...FLASH erased")
-						Protocol::PacketInfo p;
-						p.type = Protocol::PacketType::Ack;
-						Communication::Send(p);
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					} else {
 						LOG_ERR("Failed to erase FLASH");
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
 					}
 					break;
 				case Protocol::PacketType::FirmwarePacket:
 					LOG_INFO("Writing firmware packet at address %u", packet.firmware.address);
 					flash.write(packet.firmware.address, sizeof(packet.firmware.data), packet.firmware.data);
-					Protocol::PacketInfo p;
-					p.type = Protocol::PacketType::Ack;
-					Communication::Send(p);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::PerformFirmwareUpdate: {
 					auto fw_info = Firmware::GetFlashContentInfo(&flash);
@@ -209,12 +221,15 @@ void App_Start() {
 						// Some delay to allow communication to finish
 						vTaskDelay(1000);
 						Firmware::PerformUpdate(&flash);
-						// will never get here
+						// should never get here
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
 					}
 				}
 					break;
+#endif
 				default:
-					// ignore all other packets
+					// this packet type is not supported
+					Communication::SendWithoutPayload(Protocol::PacketType::Nack);
 					break;
 				}
 			}

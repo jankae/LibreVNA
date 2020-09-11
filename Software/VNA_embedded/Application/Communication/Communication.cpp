@@ -63,3 +63,8 @@ void communication_usb_input(const uint8_t *buf, uint16_t len) {
 	Communication::Input(buf, len);
 }
 
+bool Communication::SendWithoutPayload(Protocol::PacketType type) {
+	Protocol::PacketInfo p;
+	p.type = type;
+	return Send(p);
+}

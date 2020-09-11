@@ -101,6 +101,7 @@ enum class PacketType : uint8_t {
     Ack = 7,
 	ClearFlash = 8,
 	PerformFirmwareUpdate = 9,
+	Nack = 10,
 };
 
 using PacketInfo = struct _packetinfo {
