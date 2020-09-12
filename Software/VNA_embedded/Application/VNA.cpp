@@ -36,6 +36,9 @@ static uint16_t IFTableIndexCnt = 0;
 
 static constexpr uint32_t BandSwitchFrequency = 25000000;
 
+static uint32_t extOutFreq = 0;
+static bool extRefInUse = false;
+
 using namespace VNAHAL;
 
 static void HaltedCallback() {
@@ -129,6 +132,10 @@ bool VNA::Init() {
 	Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::XTAL);
 	while(!Si5351.Locked(Si5351C::PLL::B));
 
+	extRefInUse = 0;
+	extOutFreq = 0;
+	Si5351.Disable(SiChannel::ReferenceOut);
+
 	// Both MAX2871 get a 100MHz reference
 	Si5351.SetCLK(SiChannel::Source, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::Source);
@@ -137,10 +144,6 @@ bool VNA::Init() {
 	// 16MHz FPGA clock
 	Si5351.SetCLK(SiChannel::FPGA, 16000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::FPGA);
-	// TODO reference settings controllable through USB
-//	// 10 MHz external reference clock
-//	Si5351.SetCLK(6, 10000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
-//	Si5351.Enable(6);
 
 	// Generate second LO with Si5351
 	Si5351.SetCLK(SiChannel::Port1LO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
@@ -409,4 +412,81 @@ bool VNA::GetTemps(uint8_t *source, uint8_t *lo) {
 	*lo = LO1.GetTemp();
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	return true;
+}
+
+void VNA::fillDeviceInfo(Protocol::DeviceInfo *info) {
+	// read PLL temperatures
+	uint8_t tempSource, tempLO;
+	VNA::GetTemps(&tempSource, &tempLO);
+	LOG_INFO("PLL temperatures: %u/%u", tempSource, tempLO);
+	// Read ADC min/max
+	auto limits = FPGA::GetADCLimits();
+	LOG_INFO("ADC limits: P1: %d/%d P2: %d/%d R: %d/%d",
+			limits.P1min, limits.P1max, limits.P2min, limits.P2max,
+			limits.Rmin, limits.Rmax);
+#define ADC_LIMIT 		30000
+	// Set VNA related member of info struct
+	if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
+			|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
+			|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
+		info->ADC_overload = true;
+	} else {
+		info->ADC_overload = false;
+	}
+	auto status = FPGA::GetStatus();
+	info->LO1_locked = (status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
+	info->source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
+	info->extRefAvailable = Ref::available();
+	info->extRefInUse = extRefInUse;
+	info->temperatures.LO1 = tempLO;
+	info->temperatures.source = tempSource;
+	info->temperatures.MCU = 0;
+	FPGA::ResetADCLimits();
+}
+
+bool VNA::Ref::available() {
+	return Si5351.ExtCLKAvailable();
+}
+
+bool VNA::Ref::applySettings(Protocol::ReferenceSettings s) {
+	if(extOutFreq != s.ExtRefOuputFreq) {
+		extOutFreq = s.ExtRefOuputFreq;
+		if(extOutFreq == 0) {
+			Si5351.Disable(SiChannel::ReferenceOut);
+			LOG_INFO("External reference output disabled");
+		} else {
+			Si5351.SetCLK(SiChannel::ReferenceOut, extOutFreq, Si5351C::PLL::A);
+			Si5351.Enable(SiChannel::ReferenceOut);
+			LOG_INFO("External reference output set to %luHz", extOutFreq);
+		}
+	}
+	bool useExternal = s.UseExternalRef || (s.AutomaticSwitch && Ref::available());
+	if(useExternal != extRefInUse) {
+		// switch between internal and external reference
+		extRefInUse = useExternal;
+		if(extRefInUse) {
+			if(!Ref::available()) {
+				LOG_WARN("Forced switch to external reference but no signal detected");
+			}
+			Si5351.ConfigureCLKIn(10000000);
+			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::CLKIN);
+			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::CLKIN);
+			LOG_INFO("Switched to external reference");
+			FPGA::Enable(FPGA::Periphery::ExtRefLED);
+		} else {
+			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::XTAL);
+			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::XTAL);
+			LOG_INFO("Switched to internal reference");
+			FPGA::Disable(FPGA::Periphery::ExtRefLED);
+		}
+	}
+	constexpr uint32_t lock_timeout = 10;
+	uint32_t start = HAL_GetTick();
+	while(!Si5351.Locked(Si5351C::PLL::A) || !Si5351.Locked(Si5351C::PLL::A)) {
+		if(HAL_GetTick() - start > lock_timeout) {
+			LOG_ERR("Clock distributor PLLs failed to lock");
+			return false;
+		}
+	}
+	return false;
 }

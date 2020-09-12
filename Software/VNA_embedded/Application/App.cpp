@@ -100,6 +100,7 @@ void App_Start() {
 
 	uint32_t lastNewPoint = HAL_GetTick();
 	bool sweepActive = false;
+	Protocol::ReferenceSettings reference;
 
 	while (1) {
 		uint32_t notification;
@@ -113,39 +114,16 @@ void App_Start() {
 				lastNewPoint = HAL_GetTick();
 				if(result.pointNum == settings.points - 1) {
 					// end of sweep
-					// read PLL temperatures
-					uint8_t tempSource, tempLO;
-					VNA::GetTemps(&tempSource, &tempLO);
-					LOG_INFO("PLL temperatures: %u/%u", tempSource, tempLO);
-					// Read ADC min/max
-					auto limits = FPGA::GetADCLimits();
-	#define ADC_LIMIT 		30000
+					VNA::Ref::applySettings(reference);
 					// Compile info packet
 					packet.type = Protocol::PacketType::DeviceInfo;
 					packet.info.FPGA_configured = 1;
-					if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
-							|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
-							|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
-						packet.info.ADC_overload = true;
-					} else {
-						packet.info.ADC_overload = false;
-					}
 					packet.info.FW_major = FW_MAJOR;
 					packet.info.FW_minor = FW_MINOR;
 					packet.info.HW_Revision = HW_REVISION;
-					auto status = FPGA::GetStatus();
-					packet.info.LO1_locked = (status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
-					packet.info.source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
-					packet.info.extRefAvailable = 0;
-					packet.info.extRefInUse = 0;
-					packet.info.temperatures.LO1 = tempLO;
-					packet.info.temperatures.source = tempSource;
-					packet.info.temperatures.MCU = 0;
+					VNA::fillDeviceInfo(&packet.info);
 					Communication::Send(packet);
 					FPGA::ResetADCLimits();
-					LOG_INFO("ADC limits: P1: %d/%d P2: %d/%d R: %d/%d",
-							limits.P1min, limits.P1max, limits.P2min, limits.P2max,
-							limits.Rmin, limits.Rmax);
 					// Start next sweep
 					FPGA::StartSweep();
 				}
@@ -194,6 +172,13 @@ void App_Start() {
 					manual = packet.manual;
 					VNA::ConfigureManual(manual, VNAStatusCallback);
 					break;
+				case Protocol::PacketType::Reference:
+					reference = packet.reference;
+					if(!sweepActive) {
+						// can update right now
+						VNA::Ref::applySettings(reference);
+					}
+					break;
 #ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:
 					FPGA::AbortSweep();
@@ -238,7 +223,10 @@ void App_Start() {
 		if(sweepActive && HAL_GetTick() - lastNewPoint > 1000) {
 			LOG_WARN("Timed out waiting for point, last received point was %d", result.pointNum);
 			LOG_WARN("FPGA status: 0x%04x", FPGA::GetStatus());
+			FPGA::AbortSweep();
 			// restart the current sweep
+			VNA::Init();
+			VNA::Ref::applySettings(reference);
 			VNA::ConfigureSweep(settings, VNACallback);
 			sweepActive = true;
 			lastNewPoint = HAL_GetTick();

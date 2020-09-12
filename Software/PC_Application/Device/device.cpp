@@ -82,14 +82,11 @@ Device::~Device()
     }
 }
 
-bool Device::Configure(Protocol::SweepSettings settings)
+bool Device::SendPacket(Protocol::PacketInfo packet)
 {
     if(m_connected) {
-        unsigned char buffer[128];
-        Protocol::PacketInfo p;
-        p.type = Protocol::PacketType::SweepSettings;
-        p.settings = settings;
-        unsigned int length = Protocol::EncodePacket(p, buffer, sizeof(buffer));
+        unsigned char buffer[1024];
+        unsigned int length = Protocol::EncodePacket(packet, buffer, sizeof(buffer));
         if(!length) {
             qCritical() << "Failed to encode packet";
             return false;
@@ -105,80 +102,37 @@ bool Device::Configure(Protocol::SweepSettings settings)
     } else {
         return false;
     }
+}
+
+bool Device::Configure(Protocol::SweepSettings settings)
+{
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::SweepSettings;
+    p.settings = settings;
+    return SendPacket(p);
 }
 
 bool Device::SetManual(Protocol::ManualControl manual)
 {
-    if(m_connected) {
-        unsigned char buffer[128];
-        Protocol::PacketInfo p;
-        p.type = Protocol::PacketType::ManualControl;
-        p.manual = manual;
-        unsigned int length = Protocol::EncodePacket(p, buffer, sizeof(buffer));
-        if(!length) {
-            qCritical() << "Failed to encode packet";
-            return false;
-        }
-        int actual_length;
-        auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
-        if(ret < 0) {
-            qCritical() << "Error sending data: "
-                                    << libusb_strerror((libusb_error) ret);
-            return false;
-        }
-        return true;
-    } else {
-        return false;
-    }
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::ManualControl;
+    p.manual = manual;
+    return SendPacket(p);
 }
 
 bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)
 {
-    if(m_connected) {
-        unsigned char buffer[Protocol::FirmwareChunkSize + 4 + 8];
-        Protocol::PacketInfo p;
-        p.type = Protocol::PacketType::FirmwarePacket;
-        p.firmware = fw;
-        unsigned int length = Protocol::EncodePacket(p, buffer, sizeof(buffer));
-        if(!length) {
-            qCritical() << "Failed to encode packet";
-            return false;
-        }
-        int actual_length;
-        auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
-        if(ret < 0) {
-            qCritical() << "Error sending data: "
-                                    << libusb_strerror((libusb_error) ret);
-            return false;
-        }
-        return true;
-    } else {
-        return false;
-    }
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::FirmwarePacket;
+    p.firmware = fw;
+    return SendPacket(p);
 }
 
 bool Device::SendCommandWithoutPayload(Protocol::PacketType type)
 {
-    if(m_connected) {
-        unsigned char buffer[32];
-        Protocol::PacketInfo p;
-        p.type = type;
-        unsigned int length = Protocol::EncodePacket(p, buffer, sizeof(buffer));
-        if(!length) {
-            qCritical() << "Failed to encode packet";
-            return false;
-        }
-        int actual_length;
-        auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
-        if(ret < 0) {
-            qCritical() << "Error sending data: "
-                                    << libusb_strerror((libusb_error) ret);
-            return false;
-        }
-        return true;
-    } else {
-        return false;
-    }
+    Protocol::PacketInfo p;
+    p.type = type;
+    return SendPacket(p);
 }
 
 std::set<QString> Device::GetDevices()

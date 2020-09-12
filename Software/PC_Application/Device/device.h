@@ -46,6 +46,7 @@ public:
     // connect to a VNA device. If serial is specified only connecting to this device, otherwise to the first one found
     Device(QString serial = QString());
     ~Device();
+    bool SendPacket(Protocol::PacketInfo packet);
     bool Configure(Protocol::SweepSettings settings);
     bool SetManual(Protocol::ManualControl manual);
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);

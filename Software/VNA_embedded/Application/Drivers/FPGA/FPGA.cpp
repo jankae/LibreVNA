@@ -63,6 +63,8 @@ bool FPGA::Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size) 
 
 bool FPGA::Init(HaltedCallback cb) {
 	halted_cb = cb;
+	SysCtrlReg = 0;
+	ISRMaskReg = 0;
 	// Reset FPGA
 	High(FPGA_RESET);
 	SetMode(Mode::FPGA);

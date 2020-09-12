@@ -187,6 +187,23 @@ static int16_t EncodeSweepSettings(Protocol::SweepSettings d, uint8_t *buf,
     return e.getSize();
 }
 
+static Protocol::ReferenceSettings DecodeReferenceSettings(uint8_t *buf) {
+    Protocol::ReferenceSettings d;
+    Decoder e(buf);
+    e.get<uint32_t>(d.ExtRefOuputFreq);
+    d.AutomaticSwitch = e.getBits(1);
+    d.UseExternalRef = e.getBits(1);
+    return d;
+}
+static int16_t EncodeReferenceSettings(Protocol::ReferenceSettings d, uint8_t *buf,
+		uint16_t bufSize) {
+    Encoder e(buf, bufSize);
+    e.add<uint32_t>(d.ExtRefOuputFreq);
+    e.addBits(d.AutomaticSwitch, 1);
+    e.addBits(d.UseExternalRef, 1);
+    return e.getSize();
+}
+
 static Protocol::DeviceInfo DecodeDeviceInfo(uint8_t *buf) {
     Protocol::DeviceInfo d;
     Decoder e(buf);
@@ -388,6 +405,9 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 	case PacketType::SweepSettings:
 		info->settings = DecodeSweepSettings(&data[4]);
 		break;
+	case PacketType::Reference:
+		info->reference = DecodeReferenceSettings(&data[4]);
+		break;
     case PacketType::DeviceInfo:
         info->info = DecodeDeviceInfo(&data[4]);
         break;
@@ -403,6 +423,7 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
+    case PacketType::Nack:
         // no payload, nothing to do
         break;
     case PacketType::None:
@@ -421,6 +442,9 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
 	case PacketType::SweepSettings:
         payload_size = EncodeSweepSettings(packet.settings, &dest[4], destsize - 8);
 		break;
+	case PacketType::Reference:
+		payload_size = EncodeReferenceSettings(packet.reference, &dest[4], destsize - 8);
+        break;
     case PacketType::DeviceInfo:
         payload_size = EncodeDeviceInfo(packet.info, &dest[4], destsize - 8);
         break;
@@ -436,6 +460,7 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
+    case PacketType::Nack:
         // no payload, nothing to do
         break;
     case PacketType::None:

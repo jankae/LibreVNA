@@ -403,7 +403,6 @@ void VNA::ConnectToDevice(QString serial)
         lConnectionStatus.setText("Connected to " + device->serial());
         qInfo() << "Connected to " << device->serial();
         lDeviceInfo.setText(device->getLastDeviceInfoString());
-        device->Configure(settings);
         connect(device, &Device::DatapointReceived, this, &VNA::NewDatapoint);
         connect(device, &Device::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &Device::ConnectionLost, this, &VNA::DeviceConnectionLost);
@@ -414,21 +413,26 @@ void VNA::ConnectToDevice(QString serial)
         ui->actionManual_Control->setEnabled(true);
         ui->menuDefault_Calibration->setEnabled(true);
         ui->actionFirmware_Update->setEnabled(true);
-        // Check if default calibration exists and attempt to load it
-        QSettings settings;
-        auto key = "DefaultCalibration"+device->serial();
-        if (settings.contains(key)) {
-            auto filename = settings.value(key).toString();
-            qDebug() << "Attempting to load default calibration file \"" << filename << "\"";
-            if(QFile::exists(filename)) {
-                cal.openFromFile(filename);
-                ApplyCalibration(cal.getType());
+        {
+            // Check if default calibration exists and attempt to load it
+            QSettings settings;
+            auto key = "DefaultCalibration"+device->serial();
+            if (settings.contains(key)) {
+                auto filename = settings.value(key).toString();
+                qDebug() << "Attempting to load default calibration file \"" << filename << "\"";
+                if(QFile::exists(filename)) {
+                    cal.openFromFile(filename);
+                    ApplyCalibration(cal.getType());
+                }
+                ui->actionRemoveDefaultCal->setEnabled(true);
+            } else {
+                qDebug() << "No default calibration file set for this device";
+                ui->actionRemoveDefaultCal->setEnabled(false);
             }
-            ui->actionRemoveDefaultCal->setEnabled(true);
-        } else {
-            qDebug() << "No default calibration file set for this device";
-            ui->actionRemoveDefaultCal->setEnabled(false);
         }
+        // Configure initial state of device
+        device->Configure(settings);
+        UpdateReference();
     } catch (const runtime_error e) {
         DisconnectDevice();
         UpdateDeviceList();
@@ -553,26 +557,28 @@ void VNA::CreateToolbars()
     // Reference toolbar
     auto tb_reference = new QToolBar("Reference", this);
     tb_reference->addWidget(new QLabel("Ref:"));
-    toolbars.referenceType = new QComboBox();
-    toolbars.referenceType->addItem("Int");
-    toolbars.referenceType->addItem("Ext");
-    auto refInAuto = new QCheckBox("Auto");
-    refInAuto->setChecked(true);
-    toolbars.referenceType->setEnabled(false);
-    connect(refInAuto, &QCheckBox::clicked, [this](bool checked) {
-        // TODO change device settings
-        toolbars.referenceType->setEnabled(!checked);
+    toolbars.reference.type = new QComboBox();
+    toolbars.reference.type->addItem("Int");
+    toolbars.reference.type->addItem("Ext");
+    toolbars.reference.automatic = new QCheckBox("Auto");
+    connect(toolbars.reference.automatic, &QCheckBox::clicked, [this](bool checked) {
+        toolbars.reference.type->setEnabled(!checked);
+        UpdateReference();
     });
-    tb_reference->addWidget(toolbars.referenceType);
-    tb_reference->addWidget(refInAuto);
+    //    toolbars.reference.automatic->setChecked(true);
+    tb_reference->addWidget(toolbars.reference.type);
+    tb_reference->addWidget(toolbars.reference.automatic);
     tb_reference->addSeparator();
     tb_reference->addWidget(new QLabel("Ref out:"));
-    auto refOutEnabled = new QCheckBox();
-    auto refOutFreq = new QComboBox();
-    refOutFreq->addItem("10 MHz");
-    refOutFreq->addItem("100 MHz");
-    tb_reference->addWidget(refOutEnabled);
-    tb_reference->addWidget(refOutFreq);
+    toolbars.reference.outputEnabled = new QCheckBox();
+    toolbars.reference.outFreq = new QComboBox();
+    toolbars.reference.outFreq->addItem("10 MHz");
+    toolbars.reference.outFreq->addItem("100 MHz");
+    tb_reference->addWidget(toolbars.reference.outputEnabled);
+    tb_reference->addWidget(toolbars.reference.outFreq);
+    connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &VNA::UpdateReference);
+    connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &VNA::UpdateReference);
+    connect(toolbars.reference.outputEnabled, &QCheckBox::clicked, this, &VNA::UpdateReference);
 
     addToolBar(tb_reference);
 
@@ -858,6 +864,35 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
         calMeasuring = false;
         cal.clearMeasurement(calMeasurement);
     });
+}
+
+void VNA::UpdateReference()
+{
+    if(!device) {
+        // can't update without a device connected
+        return;
+    }
+    Protocol::ReferenceSettings s = {};
+    if(toolbars.reference.automatic->isChecked()) {
+        s.AutomaticSwitch = 1;
+    }
+    if(toolbars.reference.type->currentText()=="Ext") {
+        s.UseExternalRef = 1;
+    }
+    if(toolbars.reference.outputEnabled->isChecked()) {
+        switch(toolbars.reference.outFreq->currentIndex()) {
+        case 0:
+            s.ExtRefOuputFreq = 10000000;
+            break;
+        case 1:
+            s.ExtRefOuputFreq = 100000000;
+            break;
+        }
+    }
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::Reference;
+    p.reference = s;
+    device->SendPacket(p);
 }
 
 void VNA::ConstrainAndUpdateFrequencies()

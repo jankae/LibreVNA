@@ -17,6 +17,7 @@
 #include "Device/devicelog.h"
 #include "preferences.h"
 #include <QButtonGroup>
+#include <QCheckBox>
 
 namespace Ui {
 class MainWindow;
@@ -63,6 +64,7 @@ private slots:
     void DisableCalibration(bool force = false);
     void ApplyCalibration(Calibration::Type type);
     void StartCalibrationMeasurement(Calibration::Measurement m);
+    void UpdateReference();
 
 signals:
     void CalibrationMeasurementComplete(Calibration::Measurement m);
@@ -110,7 +112,12 @@ private:
     QStackedWidget *central;
 
     struct {
-        QComboBox *referenceType;
+        struct {
+            QComboBox *type;
+            QCheckBox *automatic;
+            QCheckBox *outputEnabled;
+            QComboBox *outFreq;
+        } reference;
     } toolbars;
 
     Preferences pref;

@@ -23,6 +23,12 @@ using SweepSettings = struct _sweepSettings {
     int16_t cdbm_excitation; // in 1/100 dbm
 };
 
+using ReferenceSettings = struct _referenceSettings {
+	uint32_t ExtRefOuputFreq;
+	uint8_t AutomaticSwitch:1;
+	uint8_t UseExternalRef:1;
+};
+
 using DeviceInfo = struct _deviceInfo {
     uint16_t FW_major;
     uint16_t FW_minor;
@@ -102,6 +108,7 @@ enum class PacketType : uint8_t {
 	ClearFlash = 8,
 	PerformFirmwareUpdate = 9,
 	Nack = 10,
+	Reference = 11,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -109,6 +116,7 @@ using PacketInfo = struct _packetinfo {
 	union {
 		Datapoint datapoint;
 		SweepSettings settings;
+		ReferenceSettings reference;
         DeviceInfo info;
         ManualControl manual;
         ManualStatus status;

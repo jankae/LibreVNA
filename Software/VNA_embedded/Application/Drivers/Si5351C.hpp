@@ -30,6 +30,7 @@ public:
 		FreqCLKINDiv(0) {
 	};
 	bool Init(uint32_t clkin_freq = 0);
+	bool ConfigureCLKIn(uint32_t clkin_freq);
 	bool SetPLL(PLL pll, uint32_t frequency, PLLSource src);
 	bool SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStrength strength = DriveStrength::mA2, uint32_t PLLFreqOverride = 0);
 	bool SetCLKtoXTAL(uint8_t clknum);
@@ -38,6 +39,7 @@ public:
 	bool Disable(uint8_t clknum);
 	bool Locked(PLL pll);
 	bool ResetPLL(PLL pll);
+	bool ExtCLKAvailable();
 
 	// Direct register access of clk configuration registers
 	// config has to point to a buffer containing at least 8 bytes

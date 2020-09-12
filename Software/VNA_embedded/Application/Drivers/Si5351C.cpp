@@ -2,11 +2,31 @@
 
 #include <cmath>
 
-#define LOG_LEVEL	LOG_LEVEL_INFO
+#define LOG_LEVEL	LOG_LEVEL_DEBUG
 #define LOG_MODULE	"SI5351"
 #include "Log.h"
 
 bool Si5351C::Init(uint32_t clkin_freq) {
+	bool success = true;
+	FreqCLKINDiv = 0;
+
+	// Disable OEB pin functionality
+	success &= WriteRegister(Reg::OEBPinMask, 0xFF);
+	// Disable all outputs
+	success &= WriteRegister(Reg::OutputEnableControl, 0xFF);
+
+	// Enable fanouts
+	success &= WriteRegister(Reg::FanoutEnable, 0xD0);
+
+	if(success) {
+		LOG_INFO("Initialized");
+	} else {
+		LOG_ERR("Initialization failed");
+	}
+	return success;
+}
+
+bool Si5351C::ConfigureCLKIn(uint32_t clkin_freq) {
 	bool success = true;
 
 	uint8_t clkinDiv = 0;
@@ -26,19 +46,6 @@ bool Si5351C::Init(uint32_t clkin_freq) {
 	value |= clkinDiv << 6;
 	success &= WriteRegister(Reg::PLLInputSource, value);
 
-	// Disable OEB pin functionality
-	success &= WriteRegister(Reg::OEBPinMask, 0xFF);
-	// Disable all outputs
-	success &= WriteRegister(Reg::OutputEnableControl, 0xFF);
-
-	// Enable fanouts
-	success &= WriteRegister(Reg::FanoutEnable, 0xD0);
-
-	if(success) {
-		LOG_INFO("Initialized");
-	} else {
-		LOG_ERR("Initialization failed");
-	}
 	return success;
 }
 
@@ -278,6 +285,17 @@ bool Si5351C::WriteRegisterRange(Reg start, const uint8_t *data, uint8_t len) {
 	I2C_MEMADD_SIZE_8BIT, (uint8_t*) data, len, 100) == HAL_OK;
 }
 
+bool Si5351C::ExtCLKAvailable() {
+	uint8_t value;
+	ReadRegister(Reg::DeviceStatus, &value);
+	LOG_DEBUG("Device status: 0x%02x", value);
+	if (value & 0x10) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 bool Si5351C::ReadRegisterRange(Reg start, uint8_t *data, uint8_t len) {
 	return HAL_I2C_Mem_Read(i2c, address, (int) start,
 	I2C_MEMADD_SIZE_8BIT, data, len, 100) == HAL_OK;
@@ -338,3 +356,5 @@ bool Si5351C::ReadRawCLKConfig(uint8_t clknum, uint8_t *config) {
 	auto reg = (Reg) ((int) Reg::MS0_CONFIG + 8 * clknum);
 	return ReadRegisterRange(reg, config, 8);
 }
+
+
