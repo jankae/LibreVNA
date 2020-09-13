@@ -29,7 +29,8 @@
         <string>To File</string>
        </property>
        <property name="icon">
-        <iconset theme="document-save"/>
+        <iconset theme="document-save">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -39,7 +40,8 @@
         <string>Clear</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-clear"/>
+        <iconset theme="edit-clear">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -47,6 +49,9 @@
       <widget class="QCheckBox" name="cbAutoscroll">
        <property name="text">
         <string>Autoscroll</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

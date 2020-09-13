@@ -60,12 +60,6 @@
     <addaction name="menuDefault_Calibration"/>
     <addaction name="actionFirmware_Update"/>
    </widget>
-   <widget class="QMenu" name="menuTools">
-    <property name="title">
-     <string>Tools</string>
-    </property>
-    <addaction name="actionImpedance_Matching"/>
-   </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
      <string>Window</string>
@@ -86,20 +80,8 @@
     <addaction name="menuToolbars"/>
     <addaction name="actionPreferences"/>
    </widget>
-   <widget class="QMenu" name="menuCalibration">
-    <property name="title">
-     <string>Calibration</string>
-    </property>
-    <addaction name="actionCalDisabled"/>
-    <addaction name="separator"/>
-    <addaction name="actionTracedata"/>
-    <addaction name="actionImport_error_terms_as_traces"/>
-    <addaction name="actionEdit_Calibration_Kit"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuDevice"/>
-   <addaction name="menuCalibration"/>
-   <addaction name="menuTools"/>
    <addaction name="menuWindow"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -137,11 +119,6 @@
     <string>Dummy</string>
    </property>
   </action>
-  <action name="actionImpedance_Matching">
-   <property name="text">
-    <string>Impedance Matching</string>
-   </property>
-  </action>
   <action name="actionManual_Control">
    <property name="enabled">
     <bool>false</bool>
@@ -158,32 +135,6 @@
   <action name="actionDummy_3">
    <property name="text">
     <string>Dummy</string>
-   </property>
-  </action>
-  <action name="actionCalDisabled">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Disabled</string>
-   </property>
-  </action>
-  <action name="actionTracedata">
-   <property name="text">
-    <string>Calibration Data</string>
-   </property>
-  </action>
-  <action name="actionEdit_Calibration_Kit">
-   <property name="text">
-    <string>Edit Calibration Kit</string>
-   </property>
-  </action>
-  <action name="actionImport_error_terms_as_traces">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Import error terms as traces</string>
    </property>
   </action>
   <action name="actionAssignDefaultCal">
@@ -210,11 +161,6 @@
   <action name="actionPreferences">
    <property name="text">
     <string>Preferences</string>
-   </property>
-  </action>
-  <action name="actionDummy_4">
-   <property name="text">
-    <string>Dummy</string>
    </property>
   </action>
  </widget>

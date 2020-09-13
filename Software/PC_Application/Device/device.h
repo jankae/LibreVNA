@@ -1,4 +1,4 @@
-#ifndef DEVICE_H
+﻿#ifndef DEVICE_H
 #define DEVICE_H
 
 #include "../VNA_embedded/Application/Communication/Protocol.hpp"
@@ -8,6 +8,8 @@
 #include <QObject>
 #include <condition_variable>
 #include <set>
+#include <QQueue>
+#include <QTimer>
 
 Q_DECLARE_METATYPE(Protocol::Datapoint);
 Q_DECLARE_METATYPE(Protocol::ManualStatus);
@@ -43,10 +45,17 @@ class Device : public QObject
 {
     Q_OBJECT
 public:
+    enum class TransmissionResult {
+        Ack,
+        Nack,
+        Timeout,
+        InternalError,
+    };
+
     // connect to a VNA device. If serial is specified only connecting to this device, otherwise to the first one found
     Device(QString serial = QString());
     ~Device();
-    bool SendPacket(Protocol::PacketInfo packet);
+    bool SendPacket(Protocol::PacketInfo packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 10);
     bool Configure(Protocol::SweepSettings settings);
     bool SetManual(Protocol::ManualControl manual);
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
@@ -68,6 +77,9 @@ signals:
 private slots:
     void ReceivedData();
     void ReceivedLog();
+    void transmissionTimeout() {
+        transmissionFinished(TransmissionResult::Timeout);
+    }
 
 private:
     static constexpr int VID = 0x0483;
@@ -86,6 +98,17 @@ private:
     USBInBuffer *dataBuffer;
     USBInBuffer *logBuffer;
 
+    using Transmission = struct {
+        Protocol::PacketInfo packet;
+        unsigned int timeout;
+        std::function<void(TransmissionResult)> callback;
+    };
+
+    QQueue<Transmission> transmissionQueue;
+    void startNextTransmission();
+    void transmissionFinished(TransmissionResult result);
+    QTimer transmissionTimer;
+    bool transmissionActive;
 
     QString m_serial;
     bool m_connected;

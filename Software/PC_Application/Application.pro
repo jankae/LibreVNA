@@ -13,11 +13,8 @@ HEADERS += \
     Device/devicelog.h \
     Device/firmwareupdatedialog.h \
     Device/manualcontroldialog.h \
-    Menu/menu.h \
-    Menu/menuaction.h \
-    Menu/menubool.h \
-    Menu/menuitem.h \
-    Menu/menuvalue.h \
+    Generator/generator.h \
+    Generator/signalgenwidget.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
     Traces/bodeplotaxisdialog.h \
@@ -33,14 +30,14 @@ HEADERS += \
     Traces/traceplot.h \
     Traces/tracesmithchart.h \
     Traces/tracewidget.h \
+    VNA/vna.h \
+    appwindow.h \
     averaging.h \
+    mode.h \
     preferences.h \
     qwtplotpiecewisecurve.h \
-    signalgenerator.h \
     touchstone.h \
-    unit.h \
-    valueinput.h \
-    vna.h
+    unit.h
 
 SOURCES += \
     ../VNA_embedded/Application/Communication/Protocol.cpp \
@@ -49,6 +46,7 @@ SOURCES += \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
     Calibration/measurementmodel.cpp \
+    CustomWidgets/qwtplotpiecewisecurve.cpp \
     CustomWidgets/siunitedit.cpp \
     CustomWidgets/tilewidget.cpp \
     CustomWidgets/toggleswitch.cpp \
@@ -57,11 +55,8 @@ SOURCES += \
     Device/devicelog.cpp \
     Device/firmwareupdatedialog.cpp \
     Device/manualcontroldialog.cpp \
-    Menu/menu.cpp \
-    Menu/menuaction.cpp \
-    Menu/menubool.cpp \
-    Menu/menuitem.cpp \
-    Menu/menuvalue.cpp \
+    Generator/generator.cpp \
+    Generator/signalgenwidget.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
     Traces/bodeplotaxisdialog.cpp \
@@ -77,15 +72,14 @@ SOURCES += \
     Traces/traceplot.cpp \
     Traces/tracesmithchart.cpp \
     Traces/tracewidget.cpp \
+    VNA/vna.cpp \
+    appwindow.cpp \
     averaging.cpp \
     main.cpp \
+    mode.cpp \
     preferences.cpp \
-    qwtplotpiecewisecurve.cpp \
-    signalgenerator.cpp \
     touchstone.cpp \
-    unit.cpp \
-    valueinput.cpp \
-    vna.cpp
+    unit.cpp
 
 LIBS += -lusb-1.0
 unix:INCLUDEPATH += /usr/include/qwt
@@ -103,6 +97,7 @@ FORMS += \
     Device/devicelog.ui \
     Device/firmwareupdatedialog.ui \
     Device/manualcontroldialog.ui \
+    Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
     Traces/bodeplotaxisdialog.ui \
     Traces/markerwidget.ui \
@@ -111,8 +106,7 @@ FORMS += \
     Traces/traceimportdialog.ui \
     Traces/tracewidget.ui \
     main.ui \
-    preferencesdialog.ui \
-    signalgenerator.ui
+    preferencesdialog.ui
 
 DISTFILES +=
 
