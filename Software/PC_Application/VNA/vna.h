@@ -15,6 +15,7 @@ public:
 
     void deactivate() override;
     void initializeDevice() override;
+    void deviceDisconnected() override;
 private slots:
     void NewDatapoint(Protocol::Datapoint d);
     void StartImpedanceMatching();
@@ -62,6 +63,9 @@ private:
     bool calMeasuring;
     bool calWaitFirst;
     QProgressDialog calDialog;
+
+    QMenu *defaultCalMenu;
+    QAction *assignDefaultCal, *removeDefaultCal;
 
     // Status Labels
     QLabel *lStart, *lCenter, *lStop, *lSpan, *lPoints, *lBandwidth;

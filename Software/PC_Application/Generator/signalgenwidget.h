@@ -16,7 +16,7 @@ public:
     explicit SignalgeneratorWidget(QWidget *parent = nullptr);
     ~SignalgeneratorWidget();
 
-    Protocol::ManualControl getDeviceStatus();
+    Protocol::GeneratorSettings getDeviceStatus();
 
 signals:
     void SettingsChanged();

@@ -204,6 +204,23 @@ static int16_t EncodeReferenceSettings(Protocol::ReferenceSettings d, uint8_t *b
     return e.getSize();
 }
 
+static Protocol::GeneratorSettings DecodeGeneratorSettings(uint8_t *buf) {
+    Protocol::GeneratorSettings d;
+    Decoder e(buf);
+    e.get<uint64_t>(d.frequency);
+    e.get<int16_t>(d.cdbm_level);
+    e.get<uint8_t>(d.activePort);
+    return d;
+}
+static int16_t EncodeGeneratorSettings(Protocol::GeneratorSettings d, uint8_t *buf,
+		uint16_t bufSize) {
+    Encoder e(buf, bufSize);
+    e.add<uint64_t>(d.frequency);
+    e.add<int16_t>(d.cdbm_level);
+    e.add<uint8_t>(d.activePort);
+    return e.getSize();
+}
+
 static Protocol::DeviceInfo DecodeDeviceInfo(uint8_t *buf) {
     Protocol::DeviceInfo d;
     Decoder e(buf);
@@ -420,6 +437,9 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::FirmwarePacket:
         info->firmware = DecodeFirmwarePacket(&data[4]);
         break;
+    case PacketType::Generator:
+    	info->generator = DecodeGeneratorSettings(&data[4]);
+    	break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
@@ -444,7 +464,7 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
 		break;
 	case PacketType::Reference:
 		payload_size = EncodeReferenceSettings(packet.reference, &dest[4], destsize - 8);
-        break;
+		break;
     case PacketType::DeviceInfo:
         payload_size = EncodeDeviceInfo(packet.info, &dest[4], destsize - 8);
         break;
@@ -457,6 +477,9 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
     case PacketType::FirmwarePacket:
         payload_size = EncodeFirmwarePacket(packet.firmware, &dest[4], destsize - 8);
         break;
+    case PacketType::Generator:
+    	payload_size = EncodeGeneratorSettings(packet.generator, &dest[4], destsize - 8);
+    	break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:

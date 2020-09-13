@@ -12,6 +12,7 @@ using StatusCallback = void(*)(FPGA::SamplingResult);
 bool Init();
 bool ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb);
 bool ConfigureManual(Protocol::ManualControl m, StatusCallback cb);
+bool ConfigureGenerator(Protocol::GeneratorSettings g);
 
 // Only call the following function when the sweep is inactive
 bool GetTemps(uint8_t *source, uint8_t *lo);

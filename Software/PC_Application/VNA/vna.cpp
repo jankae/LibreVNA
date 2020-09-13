@@ -126,21 +126,31 @@ VNA::VNA(AppWindow *window)
     auto impedanceMatching = toolsMenu->addAction("Impedance Matching");
     connect(impedanceMatching, &QAction::triggered, this, &VNA::StartImpedanceMatching);
 
-    connect(window->getUi()->actionAssignDefaultCal, &QAction::triggered, [=](){
+    defaultCalMenu = new QMenu("Default Calibration");
+    assignDefaultCal = defaultCalMenu->addAction("Assign...");
+    removeDefaultCal = defaultCalMenu->addAction("Remove");
+    removeDefaultCal->setEnabled(false);
+    defaultCalMenu->setEnabled(false);
+
+    actions.insert(window->getUi()->menuDevice->addSeparator());
+    window->getUi()->menuDevice->addMenu(defaultCalMenu);
+    actions.insert(defaultCalMenu->menuAction());
+
+    connect(assignDefaultCal, &QAction::triggered, [=](){
        if(window->getDevice()) {
            auto key = "DefaultCalibration"+window->getDevice()->serial();
            QSettings settings;
            auto filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", settings.value(key).toString(), "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
            if(!filename.isEmpty()) {
                settings.setValue(key, filename);
-               window->getUi()->actionRemoveDefaultCal->setEnabled(true);
+               removeDefaultCal->setEnabled(true);
            }
        }
     });
-    connect(window->getUi()->actionRemoveDefaultCal, &QAction::triggered, [=](){
+    connect(removeDefaultCal, &QAction::triggered, [=](){
         QSettings settings;
         settings.remove("DefaultCalibration"+window->getDevice()->serial());
-        window->getUi()->actionRemoveDefaultCal->setEnabled(false);
+        removeDefaultCal->setEnabled(false);
     });
 
 
@@ -432,6 +442,7 @@ void VNA::deactivate()
 
 void VNA::initializeDevice()
 {
+    defaultCalMenu->setEnabled(true);
     connect(window->getDevice(), &Device::DatapointReceived, this, &VNA::NewDatapoint, Qt::UniqueConnection);
     // Check if default calibration exists and attempt to load it
     QSettings s;
@@ -443,13 +454,18 @@ void VNA::initializeDevice()
             cal.openFromFile(filename);
             ApplyCalibration(cal.getType());
         }
-        window->getUi()->actionRemoveDefaultCal->setEnabled(true);
+        removeDefaultCal->setEnabled(true);
     } else {
         qDebug() << "No default calibration file set for this device";
-        window->getUi()->actionRemoveDefaultCal->setEnabled(false);
+        removeDefaultCal->setEnabled(false);
     }
     // Configure initial state of device
     window->getDevice()->Configure(settings);
+}
+
+void VNA::deviceDisconnected()
+{
+    defaultCalMenu->setEnabled(false);
 }
 
 using namespace std;

@@ -166,11 +166,13 @@ void App_Start() {
 					VNA::ConfigureSweep(settings, VNACallback);
 					sweepActive = true;
 					lastNewPoint = HAL_GetTick();
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ManualControl:
 					sweepActive = false;
 					manual = packet.manual;
 					VNA::ConfigureManual(manual, VNAStatusCallback);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::Reference:
 					reference = packet.reference;
@@ -178,6 +180,13 @@ void App_Start() {
 						// can update right now
 						VNA::Ref::applySettings(reference);
 					}
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
+				case Protocol::PacketType::Generator:
+					sweepActive = false;
+					LOG_INFO("Updating generator setting");
+					VNA::ConfigureGenerator(packet.generator);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 #ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:

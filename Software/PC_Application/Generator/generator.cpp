@@ -19,7 +19,9 @@ void Generator::updateDevice()
         // can't updat if not connected
         return;
     }
-    auto status = central->getDeviceStatus();
     // TODO comment in once status is filled with valid values
-//    window->getDevice()->SetManual(status);
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::Generator;
+    p.generator = central->getDeviceStatus();
+    window->getDevice()->SendPacket(p);
 }

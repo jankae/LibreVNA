@@ -168,11 +168,19 @@ void AppWindow::ConnectToDevice(QString serial)
         });
         ui->actionDisconnect->setEnabled(true);
         ui->actionManual_Control->setEnabled(true);
-        ui->menuDefault_Calibration->setEnabled(true);
         ui->actionFirmware_Update->setEnabled(true);
 
         Mode::getActiveMode()->initializeDevice();
         UpdateReference();
+
+        for(auto d : deviceActionGroup->actions()) {
+            if(d->text() == device->serial()) {
+                d->blockSignals(true);
+                d->setChecked(true);
+                d->blockSignals(false);
+                break;
+            }
+        }
     } catch (const runtime_error e) {
         DisconnectDevice();
         UpdateDeviceList();
@@ -187,13 +195,13 @@ void AppWindow::DisconnectDevice()
     }
     ui->actionDisconnect->setEnabled(false);
     ui->actionManual_Control->setEnabled(false);
-    ui->menuDefault_Calibration->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);
     if(deviceActionGroup->checkedAction()) {
         deviceActionGroup->checkedAction()->setChecked(false);
     }
     lConnectionStatus.setText("No device connected");
     lDeviceInfo.setText("No device information available yet");
+    Mode::getActiveMode()->deviceDisconnected();
 }
 
 void AppWindow::DeviceConnectionLost()

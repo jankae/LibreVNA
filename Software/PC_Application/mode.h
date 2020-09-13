@@ -19,6 +19,7 @@ public:
     static Mode *getActiveMode();
 
     virtual void initializeDevice() = 0;
+    virtual void deviceDisconnected(){};
 
 protected:
     // call once the derived class is fully initialized

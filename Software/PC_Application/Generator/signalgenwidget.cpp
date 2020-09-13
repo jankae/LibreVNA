@@ -42,10 +42,18 @@ SignalgeneratorWidget::~SignalgeneratorWidget()
     delete ui;
 }
 
-Protocol::ManualControl SignalgeneratorWidget::getDeviceStatus()
+Protocol::GeneratorSettings SignalgeneratorWidget::getDeviceStatus()
 {
-    // TODO
-    Protocol::ManualControl s = {};
+    Protocol::GeneratorSettings s = {};
+    s.frequency = ui->frequency->value();
+    s.cdbm_level = ui->levelSpin->value() * 100.0;
+    if(ui->EnablePort1->isChecked()) {
+        s.activePort = 1;
+    } else if(ui->EnablePort2->isChecked()) {
+        s.activePort = 2;
+    } else {
+        s.activePort = 0;
+    }
     return s;
 }
 

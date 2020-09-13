@@ -29,6 +29,12 @@ using ReferenceSettings = struct _referenceSettings {
 	uint8_t UseExternalRef:1;
 };
 
+using GeneratorSettings = struct _generatorSettings {
+	uint64_t frequency;
+	int16_t cdbm_level;
+	uint8_t activePort;
+};
+
 using DeviceInfo = struct _deviceInfo {
     uint16_t FW_major;
     uint16_t FW_minor;
@@ -109,6 +115,7 @@ enum class PacketType : uint8_t {
 	PerformFirmwareUpdate = 9,
 	Nack = 10,
 	Reference = 11,
+	Generator = 12,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -117,6 +124,7 @@ using PacketInfo = struct _packetinfo {
 		Datapoint datapoint;
 		SweepSettings settings;
 		ReferenceSettings reference;
+		GeneratorSettings generator;
         DeviceInfo info;
         ManualControl manual;
         ManualStatus status;
