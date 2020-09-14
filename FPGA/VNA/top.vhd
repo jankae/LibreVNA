@@ -365,10 +365,10 @@ begin
 	LEDS(2) <= SOURCE_LD;
 	LEDS(3) <= LO1_LD;
 	-- Sweep and active port
-	PORT_SELECT2 <= sweep_port_select;
-	PORT2_SELECT <= sweep_port_select;
-	PORT_SELECT1 <= not sweep_port_select;
-	PORT1_SELECT <= not sweep_port_select;
+	PORT_SELECT2 <= not sweep_port_select;
+	PORT2_SELECT <= not sweep_port_select;
+	PORT_SELECT1 <= sweep_port_select;
+	PORT1_SELECT <= sweep_port_select;
 	BAND_SELECT_HIGH <= not sweep_band;
 	BAND_SELECT_LOW <= sweep_band;
 	PORT1_MIX2_EN <= port1mix_en;
@@ -377,8 +377,8 @@ begin
 	PORT2_MIX1_EN <= not port2mix_en;
 	REF_MIX2_EN <= refmix_en;
 	REF_MIX1_EN <= not refmix_en;
-	LEDS(4) <= not (not sweep_reset and sweep_port_select);
-	LEDS(5) <= not (not sweep_reset and not sweep_port_select);
+	LEDS(4) <= not (not sweep_reset and not sweep_port_select);
+	LEDS(5) <= not (not sweep_reset and sweep_port_select);
 	-- Uncommitted LEDs
 	LEDS(7 downto 6) <= user_leds(1 downto 0);	
 	--LEDS(7) <= '0';
@@ -608,7 +608,10 @@ begin
 	LO1_MOSI <= MCU_MOSI when aux2_sync = '1' else fpga_LO1_MOSI;
 	LO1_LE <= MCU_NSS when aux2_sync = '1' else fpga_LO1_LE;
 	-- select MISO source
-	MCU_MISO <= SOURCE_MUX when aux1_sync = '1' else LO1_MUX when aux2_sync = '1' else fpga_miso;
+	MCU_MISO <= SOURCE_MUX when aux1_sync = '1' else
+					LO1_MUX when aux2_sync = '1' else
+					fpga_miso when MCU_NSS = '0' else
+					'Z';
 
 	lo_unlocked <= not lo_ld_sync;
 	source_unlocked <= not source_ld_sync;

@@ -22,7 +22,7 @@ using Info = struct info {
 };
 
 Info GetFlashContentInfo(Flash *f);
-void PerformUpdate(Flash *f);
+void PerformUpdate(Flash *f, Info info);
 
 }
 

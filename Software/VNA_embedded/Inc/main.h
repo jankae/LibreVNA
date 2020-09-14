@@ -61,6 +61,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -73,10 +75,10 @@ void Error_Handler(void);
 #define FPGA_INIT_B_GPIO_Port GPIOF
 #define FPGA_AUX1_Pin GPIO_PIN_1
 #define FPGA_AUX1_GPIO_Port GPIOA
-#define FPGA_AUX2_Pin GPIO_PIN_2
-#define FPGA_AUX2_GPIO_Port GPIOA
-#define FPGA_AUX3_Pin GPIO_PIN_3
+#define FPGA_AUX3_Pin GPIO_PIN_2
 #define FPGA_AUX3_GPIO_Port GPIOA
+#define FPGA_AUX2_Pin GPIO_PIN_3
+#define FPGA_AUX2_GPIO_Port GPIOA
 #define FPGA_CS_Pin GPIO_PIN_4
 #define FPGA_CS_GPIO_Port GPIOA
 #define FLASH_CS_Pin GPIO_PIN_0
@@ -87,8 +89,6 @@ void Error_Handler(void);
 #define FPGA_PROGRAM_B_GPIO_Port GPIOB
 #define EN_6V_Pin GPIO_PIN_12
 #define EN_6V_GPIO_Port GPIOB
-#define LED1_Pin GPIO_PIN_15
-#define LED1_GPIO_Port GPIOA
 #define FPGA_RESET_Pin GPIO_PIN_5
 #define FPGA_RESET_GPIO_Port GPIOB
 #define FPGA_DONE_Pin GPIO_PIN_9

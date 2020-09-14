@@ -296,12 +296,14 @@ void MAX2871::UpdateFrequency() {
 }
 
 void MAX2871::Write(uint8_t reg, uint32_t val) {
-	uint16_t data[2];
+	uint8_t data[4];
 	// split value into two 16 bit words
-	data[0] = val >> 16;
-	data[1] = (val & 0xFFF8) | reg;
+	data[0] = (val >> 24) & 0xFF;
+	data[1] = (val >> 16) & 0xFF;
+	data[2] = (val >> 8) & 0xFF;
+	data[3] = (val & 0xF8) | reg;
 	Delay::us(1);
-	HAL_SPI_Transmit(hspi, (uint8_t*) data, 2, 20);
+	HAL_SPI_Transmit(hspi, (uint8_t*) data, 4, 20);
 	LE->BSRR = LEpin;
 	Delay::us(1);
 	LE->BSRR = LEpin << 16;
@@ -309,15 +311,16 @@ void MAX2871::Write(uint8_t reg, uint32_t val) {
 
 // Assumes that the MUX pin is already configured as "Read register 6" and connected to MISO
 uint32_t MAX2871::Read() {
-	uint16_t transmit[2] = {0x0000, 0x0006};
-	HAL_SPI_Transmit(hspi, (uint8_t*) transmit, 2, 20);
+	uint8_t transmit[4] = {0x00, 0x00, 0x00, 0x06};
+	HAL_SPI_Transmit(hspi, (uint8_t*) transmit, 4, 20);
 	LE->BSRR = LEpin;
 	memset(transmit, 0, sizeof(transmit));
-	uint16_t recv[2];
-	HAL_SPI_TransmitReceive(hspi, (uint8_t*) transmit, (uint8_t*) recv, 2, 20);
+	uint8_t recv[4];
+	HAL_SPI_TransmitReceive(hspi, (uint8_t*) transmit, (uint8_t*) recv, 4, 20);
 	LE->BSRR = LEpin << 16;
 	// assemble readback result
-	uint32_t result = ((uint32_t) recv[0] << 16) | (recv[1] & 0xFFFF);
+	uint32_t result = ((uint32_t) recv[0] << 24) | ((uint32_t) recv[1] << 16
+	) | ((uint32_t) recv[2] << 8) | (recv[3] & 0xFF);
 	result <<= 2;
 	LOG_DEBUG("Readback: 0x%08x", result);
 	return result;

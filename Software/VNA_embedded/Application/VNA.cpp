@@ -568,3 +568,16 @@ bool VNA::ConfigureGenerator(Protocol::GeneratorSettings g) {
 	m.attenuator = attval;
 	return ConfigureManual(m, nullptr);
 }
+
+void VNA::SetIdle() {
+	FPGA::AbortSweep();
+	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::Enable(FPGA::Periphery::SourceChip, false);
+	FPGA::Enable(FPGA::Periphery::SourceRF, false);
+	FPGA::Enable(FPGA::Periphery::LO1Chip, false);
+	FPGA::Enable(FPGA::Periphery::LO1RF, false);
+	FPGA::Enable(FPGA::Periphery::Amplifier, false);
+	FPGA::Enable(FPGA::Periphery::Port1Mixer, false);
+	FPGA::Enable(FPGA::Periphery::Port2Mixer, false);
+	FPGA::Enable(FPGA::Periphery::RefMixer, false);
+}

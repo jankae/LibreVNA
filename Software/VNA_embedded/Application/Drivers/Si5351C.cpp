@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#define LOG_LEVEL	LOG_LEVEL_DEBUG
+#define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"SI5351"
 #include "Log.h"
 

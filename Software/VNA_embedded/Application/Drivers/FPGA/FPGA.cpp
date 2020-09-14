@@ -14,10 +14,17 @@ static uint16_t ISRMaskReg = 0x0000;
 
 using namespace FPGAHAL;
 
+static void SwitchBytes(uint16_t &value) {
+	value = (value & 0xFF00) >> 8 | (value & 0x00FF) << 8;
+}
+static void SwitchBytes(int16_t &value) {
+	value = (value & 0xFF00) >> 8 | (value & 0x00FF) << 8;
+}
+
 void WriteRegister(FPGA::Reg reg, uint16_t value) {
-	uint16_t cmd[2] = {(uint16_t) (0x8000 | (uint16_t) reg), value};
+	uint8_t cmd[4] = {0x80, (uint8_t) reg, (uint8_t) (value >> 8), (uint8_t) (value & 0xFF)};
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) cmd, 2, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) cmd, 4, 100);
 	High(CS);
 }
 
@@ -34,8 +41,18 @@ bool FPGA::Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size) 
 	High(PROGRAM_B);
 	while(!isHigh(INIT_B));
 
+	if(isHigh(DONE)) {
+		LOG_ERR("DONE not asserted, aborting configuration");
+		return false;
+	}
+
+	uint32_t lastmessage = HAL_GetTick();
 	uint8_t buf[256];
 	while(bitstream_size > 0) {
+		if(HAL_GetTick() - lastmessage > 100) {
+			LOG_DEBUG("Remaining: %lu", bitstream_size);
+			lastmessage = HAL_GetTick();
+		}
 		uint16_t size = sizeof(buf);
 		if(size > bitstream_size) {
 			size = bitstream_size;
@@ -73,18 +90,20 @@ bool FPGA::Init(HaltedCallback cb) {
 	Delay::ms(10);
 
 	// Check if FPGA response is as expected
-	uint16_t cmd[2] = {0x4000, 0x0000};
-	uint16_t recv[2];
+	uint8_t cmd[4] = {0x40, 0x00, 0x00, 0x00};
+	uint8_t recv[4];
 	Low(CS);
-	HAL_SPI_TransmitReceive(&FPGA_SPI, (uint8_t*) cmd, (uint8_t*) recv, 2, 100);
+	HAL_SPI_TransmitReceive(&FPGA_SPI, (uint8_t*) cmd, (uint8_t*) recv, 4, 100);
 	High(CS);
 
-	if(recv[1] != 0xF0A5) {
-		LOG_ERR("Initialization failed, got 0x%04x instead of 0xF0A5", recv[1]);
+	uint16_t resp = (uint16_t) recv[2] << 8 | recv[3];
+	uint16_t status = (uint16_t) recv[0] << 8 | recv[1];
+	if(resp != 0xF0A5) {
+		LOG_ERR("Initialization failed, got 0x%04x instead of 0xF0A5", resp);
 		return false;
 	}
 
-	LOG_DEBUG("Initialized, status register: 0x%04x", recv[0]);
+	LOG_DEBUG("Initialized, status register: 0x%04x", status);
 	return true;
 }
 
@@ -183,8 +202,15 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 	}
 	send[5] = (Source_M & 0x000F) << 12 | Source_FRAC;
 	send[6] = Source_DIV_A << 13 | Source_VCO << 7 | Source_N;
+	SwitchBytes(send[0]);
+	SwitchBytes(send[1]);
+	SwitchBytes(send[2]);
+	SwitchBytes(send[3]);
+	SwitchBytes(send[4]);
+	SwitchBytes(send[5]);
+	SwitchBytes(send[6]);
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 7, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 14, 100);
 	High(CS);
 }
 
@@ -194,17 +220,18 @@ static inline int64_t sign_extend_64(int64_t x, uint16_t bits) {
 }
 
 static FPGA::ReadCallback callback;
-static uint16_t raw[18];
+static uint8_t raw[36];
 static bool halted;
 
 bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	callback = cb;
-	uint16_t cmd = 0xC000;
+	uint8_t cmd[2] = {0xC0, 0x00};
 	uint16_t status;
 
 	Low(CS);
-	HAL_SPI_TransmitReceive(&FPGA_SPI, (uint8_t*) &cmd, (uint8_t*) &status, 1,
-			100);
+	HAL_SPI_TransmitReceive(&FPGA_SPI, cmd, (uint8_t*) &status, 2, 100);
+
+	SwitchBytes(status);
 
 	if (status & 0x0010) {
 		halted = true;
@@ -227,8 +254,15 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	}
 
 	// Start data read
-	HAL_SPI_Receive_DMA(&FPGA_SPI, (uint8_t*) raw, 18);
+	HAL_SPI_Receive_DMA(&FPGA_SPI, raw, 36);
 	return true;
+}
+
+static int64_t assembleSampleResultValue(uint8_t *raw) {
+	return sign_extend_64(
+			(uint16_t) raw[0] << 8 | raw[1] | (uint32_t) raw[2] << 24
+					| (uint32_t) raw[3] << 16 | (uint64_t) raw[4] << 40
+					| (uint64_t) raw[5] << 32, 48);
 }
 
 extern "C" {
@@ -236,18 +270,12 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 	FPGA::SamplingResult result;
 	High(CS);
 	// Assemble data from words
-	result.P1I = sign_extend_64(
-			(uint64_t) raw[17] << 32 | (uint32_t) raw[16] << 16 | raw[15], 48);
-	result.P1Q = sign_extend_64(
-			(uint64_t) raw[14] << 32 | (uint32_t) raw[13] << 16 | raw[12], 48);
-	result.P2I = sign_extend_64(
-			(uint64_t) raw[11] << 32 | (uint32_t) raw[10] << 16 | raw[9], 48);
-	result.P2Q = sign_extend_64(
-			(uint64_t) raw[8] << 32 | (uint32_t) raw[7] << 16 | raw[6], 48);
-	result.RefI = sign_extend_64(
-			(uint64_t) raw[5] << 32 | (uint32_t) raw[4] << 16 | raw[3], 48);
-	result.RefQ = sign_extend_64(
-			(uint64_t) raw[2] << 32 | (uint32_t) raw[1] << 16 | raw[0], 48);
+	result.P1I = assembleSampleResultValue(&raw[30]);
+	result.P1Q = assembleSampleResultValue(&raw[24]);
+	result.P2I = assembleSampleResultValue(&raw[18]);
+	result.P2Q = assembleSampleResultValue(&raw[12]);
+	result.RefI = assembleSampleResultValue(&raw[6]);
+	result.RefQ = assembleSampleResultValue(&raw[0]);
 	if (callback) {
 		callback(result);
 	}
@@ -293,36 +321,45 @@ void FPGA::SetMode(Mode mode) {
 }
 
 uint16_t FPGA::GetStatus() {
-	uint16_t cmd = 0x4000;
-	uint16_t status;
+	uint8_t cmd[2] = {0x40, 0x00};
+	uint8_t status[2];
 	Low(CS);
-	HAL_SPI_TransmitReceive(&FPGA_SPI, (uint8_t*) &cmd, (uint8_t*) &status, 1,
+	HAL_SPI_TransmitReceive(&FPGA_SPI, (uint8_t*) &cmd, (uint8_t*) &status, 2,
 			100);
 	High(CS);
-	return status;
+	return (uint16_t) status[0] << 8 | status[1];
 }
 
 FPGA::ADCLimits FPGA::GetADCLimits() {
 	uint16_t cmd = 0xE000;
+	SwitchBytes(cmd);
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 1, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 2, 100);
 	ADCLimits limits;
-	HAL_SPI_Receive(&FPGA_SPI, (uint8_t*) &limits, 6, 100);
+	HAL_SPI_Receive(&FPGA_SPI, (uint8_t*) &limits, 12, 100);
 	High(CS);
+	SwitchBytes(limits.P1max);
+	SwitchBytes(limits.P1min);
+	SwitchBytes(limits.P2max);
+	SwitchBytes(limits.P2min);
+	SwitchBytes(limits.Rmax);
+	SwitchBytes(limits.Rmin);
 	return limits;
 }
 
 void FPGA::ResetADCLimits() {
 	uint16_t cmd = 0x6000;
+	SwitchBytes(cmd);
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 1, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 2, 100);
 	High(CS);
 }
 
 void FPGA::ResumeHaltedSweep() {
 	uint16_t cmd = 0x2000;
+	SwitchBytes(cmd);
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 1, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 2, 100);
 	High(CS);
 }
 

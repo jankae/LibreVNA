@@ -7,4 +7,5 @@
 */ipcore_dir
 !*.gise
 !*.xise
+!*.py
 

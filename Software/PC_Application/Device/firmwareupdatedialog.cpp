@@ -57,6 +57,7 @@ void FirmwareUpdateDialog::on_bStart_clicked()
         abortWithError("Invalid magic header constant");
         return;
     }
+    file->seek(0);
     state = State::ErasingFLASH;
     connect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
     connect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
@@ -73,6 +74,7 @@ void FirmwareUpdateDialog::addStatus(QString line)
 
 void FirmwareUpdateDialog::abortWithError(QString error)
 {
+    timer.stop();
     disconnect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
     disconnect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
 
@@ -129,9 +131,10 @@ void FirmwareUpdateDialog::receivedAck()
             state = State::TriggeringUpdate;
             dev->SendCommandWithoutPayload(Protocol::PacketType::PerformFirmwareUpdate);
             timer.start(5000);
+        } else {
+            sendNextFirmwareChunk();
+            timer.start(1000);
         }
-        sendNextFirmwareChunk();
-        timer.start(1000);
         break;
     case State::TriggeringUpdate:
         addStatus("Rebooting device...");
@@ -149,7 +152,15 @@ void FirmwareUpdateDialog::receivedAck()
 
 void FirmwareUpdateDialog::receivedNack()
 {
-    abortWithError("Nack received, device does not support firmware update");
+    switch(state) {
+    case State::ErasingFLASH:
+        abortWithError("Nack received, device does not support firmware update");
+        break;
+    default:
+        abortWithError("Nack received, something went wrong");
+        break;
+    }
+
 }
 
 void FirmwareUpdateDialog::sendNextFirmwareChunk()

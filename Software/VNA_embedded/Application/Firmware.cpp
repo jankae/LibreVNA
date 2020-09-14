@@ -42,6 +42,7 @@ Firmware::Info Firmware::GetFlashContentInfo(Flash *f) {
 		}
 		f->read(h.FPGA_start + checked_size, read_size, buf);
 		crc = Protocol::CRC32(crc, buf, read_size);
+		checked_size += read_size;
 	}
 	if (crc != h.crc) {
 		LOG_ERR("CRC mismatch, invalid FPGA bitstream/CPU firmware");
@@ -54,12 +55,13 @@ Firmware::Info Firmware::GetFlashContentInfo(Flash *f) {
 		if (h.CPU_size - checked_size < read_size) {
 			read_size = h.CPU_size - checked_size;
 		}
-		f->read(h.FPGA_start + checked_size, read_size, buf);
+		f->read(h.CPU_start + checked_size, read_size, buf);
 		if(memcmp(buf, (void*)(0x8000000+checked_size), read_size)) {
 			LOG_WARN("Difference to CPU firmware in external FLASH detected, update required");
 			ret.CPU_need_update = true;
 			break;
 		}
+		checked_size += read_size;
 	}
 	ret.valid = true;
 	ret.FPGA_bitstream_address = h.FPGA_start;
@@ -100,9 +102,12 @@ static void copy_flash(uint32_t size, SPI_TypeDef *spi) {
 	 * content into the internal MCU flash */
 	uint32_t written = 0;
 
+	// Enable FIFO notifications for 8 bit
+	SET_BIT(spi->CR2, SPI_RXFIFO_THRESHOLD);
+
 	/* Enable FLASH write */
 	FLASH->CR |= FLASH_CR_PG;
-	uint32_t to = 0x80000000;
+	uint32_t *to = (uint32_t*) 0x8000000;
 	while (written < size) {
 		uint8_t buf[8];
 		// Get 64bit from external flash
@@ -110,14 +115,15 @@ static void copy_flash(uint32_t size, SPI_TypeDef *spi) {
 			// wait for SPI ready to transmit dummy data
 			while(!(spi->SR & SPI_FLAG_TXE));
 			// send dummy byte
-			*(__IO uint8_t *)spi->DR = 0x00;
+			*(__IO uint8_t *)&spi->DR = 0x00;
 			// wait for received byte to be ready
 			while(!(spi->SR & SPI_FLAG_RXNE));
 			// get received byte
-			buf[i] = *(__IO uint8_t *)spi->DR;
+			buf[i] = *(__IO uint8_t *)&spi->DR;
 		}
 		// program received data into flash
 		*(__IO uint32_t*) to++ = *(uint32_t*)&buf[0];
+		__ISB();
 		*(__IO uint32_t*) to++ = *(uint32_t*)&buf[4];
 		/* Wait for it to finish */
 		while (FLASH->SR & FLASH_SR_BSY)
@@ -152,8 +158,7 @@ static void copy_flash(uint32_t size, SPI_TypeDef *spi) {
 	}
 }
 
-void Firmware::PerformUpdate(Flash *f) {
-	auto info = GetFlashContentInfo(f);
+void Firmware::PerformUpdate(Flash *f, Info info) {
 	if(!info.valid) {
 		LOG_ERR("Invalid firmware data, not performing update");
 		return;

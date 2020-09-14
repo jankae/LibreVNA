@@ -12,6 +12,7 @@
 #include "Flash.hpp"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "Led.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -66,6 +67,8 @@ void App_Start() {
 	handle = xTaskGetCurrentTaskHandle();
 	usb_init(communication_usb_input);
 	Log_Init();
+	LED::Init();
+	LED::Pulsating();
 	Communication::SetCallback(USBPacketReceived);
 	// Pass on logging output to USB
 	Log_SetRedirect(usb_log);
@@ -74,23 +77,34 @@ void App_Start() {
 #ifdef HAS_FLASH
 	if(!flash.isPresent()) {
 		LOG_CRIT("Failed to detect onboard FLASH");
+		LED::Error(1);
 	}
 	auto fw_info = Firmware::GetFlashContentInfo(&flash);
 	if(fw_info.valid) {
 		if(fw_info.CPU_need_update) {
 			// Function will not return, the device will reboot with the new firmware instead
-			Firmware::PerformUpdate(&flash);
+//			Firmware::PerformUpdate(&flash, fw_info);
 		}
-		FPGA::Configure(&flash, fw_info.FPGA_bitstream_address, fw_info.FPGA_bitstream_size);
+		if(!FPGA::Configure(&flash, fw_info.FPGA_bitstream_address, fw_info.FPGA_bitstream_size)) {
+			LOG_CRIT("FPGA configuration failed");
+			LED::Error(3);
+		}
 	} else {
 		LOG_CRIT("Invalid bitstream/firmware, not configuring FPGA");
+		LED::Error(2);
 	}
 #else
 	// The FPGA configures itself from the flash, allow time for this
 	vTaskDelay(2000);
 #endif
+#if HW_REVISION == 'B'
+	// Enable supply to RF circuit
+	EN_6V_GPIO_Port->BSRR = EN_6V_Pin;
+#endif
+
 	if (!VNA::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
+		LED::Error(4);
 	}
 
 #if HW_REVISION == 'A'
@@ -102,6 +116,7 @@ void App_Start() {
 	bool sweepActive = false;
 	Protocol::ReferenceSettings reference;
 
+	LED::Off();
 	while (1) {
 		uint32_t notification;
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
@@ -190,7 +205,7 @@ void App_Start() {
 					break;
 #ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:
-					FPGA::AbortSweep();
+					VNA::SetIdle();
 					sweepActive = false;
 					LOG_DEBUG("Erasing FLASH in preparation for firmware update...");
 					if(flash.eraseChip()) {
@@ -203,10 +218,15 @@ void App_Start() {
 					break;
 				case Protocol::PacketType::FirmwarePacket:
 					LOG_INFO("Writing firmware packet at address %u", packet.firmware.address);
-					flash.write(packet.firmware.address, sizeof(packet.firmware.data), packet.firmware.data);
-					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					if(flash.write(packet.firmware.address, sizeof(packet.firmware.data), packet.firmware.data)) {
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					} else {
+						LOG_ERR("Failed to write FLASH");
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
+					}
 					break;
 				case Protocol::PacketType::PerformFirmwareUpdate: {
+					LOG_INFO("Firmware update process triggered");
 					auto fw_info = Firmware::GetFlashContentInfo(&flash);
 					if(fw_info.valid) {
 						Protocol::PacketInfo p;
@@ -214,7 +234,7 @@ void App_Start() {
 						Communication::Send(p);
 						// Some delay to allow communication to finish
 						vTaskDelay(1000);
-						Firmware::PerformUpdate(&flash);
+						Firmware::PerformUpdate(&flash, fw_info);
 						// should never get here
 						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
 					}
@@ -230,8 +250,7 @@ void App_Start() {
 		}
 
 		if(sweepActive && HAL_GetTick() - lastNewPoint > 1000) {
-			LOG_WARN("Timed out waiting for point, last received point was %d", result.pointNum);
-			LOG_WARN("FPGA status: 0x%04x", FPGA::GetStatus());
+			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", result.pointNum, FPGA::GetStatus());
 			FPGA::AbortSweep();
 			// restart the current sweep
 			VNA::Init();

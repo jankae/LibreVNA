@@ -357,9 +357,11 @@ void Device::ReceivedData()
             break;
         case Protocol::PacketType::Ack:
             emit AckReceived();
+//            transmissionFinished(TransmissionResult::Ack);
             break;
         case Protocol::PacketType::Nack:
             emit NackReceived();
+//            transmissionFinished(TransmissionResult::Nack);
             break;
         default:
             break;
@@ -389,7 +391,7 @@ QString Device::serial() const
 
 void Device::startNextTransmission()
 {
-    if(transmissionQueue.empty() || !m_connected) {
+    if(transmissionQueue.isEmpty() || !m_connected) {
         // nothing more to transmit
         transmissionActive = false;
         return;
@@ -416,9 +418,13 @@ void Device::transmissionFinished(TransmissionResult result)
 {
     transmissionTimer.stop();
     // remove transmitted packet
-    auto t = transmissionQueue.dequeue();
-    if(t.callback) {
-        t.callback(result);
+    if(!transmissionQueue.isEmpty()) {
+        auto t = transmissionQueue.dequeue();
+        if(t.callback) {
+            t.callback(result);
+        }
+        startNextTransmission();
+    } else {
+        transmissionActive = false;
     }
-    startNextTransmission();
 }
