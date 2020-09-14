@@ -95,23 +95,11 @@ void FPGA::SetNumberOfPoints(uint16_t npoints) {
 }
 
 void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
-	// register has to be set to number of nsamples - 1
-	nsamples--;
+	// register is in multiples of 128
+	nsamples /= 128;
 	// constrain to maximum value
-	nsamples &= 0x1FFFF;
-	// highest bit is located at the system control register
-	SysCtrlReg &= ~0x0001;
-	SysCtrlReg |= nsamples >> 16;
-	WriteRegister(Reg::SystemControl, SysCtrlReg);
-	WriteRegister(Reg::SamplesPerPoint, nsamples & 0xFFFF);
-}
-
-void FPGA::SetSettlingTime(uint16_t us) {
-	if (us > 639) {
-		us = 639;
-	}
-	uint16_t regval = (uint32_t) us * 1024 / 10;
-	WriteRegister(Reg::SettlingTime, regval);
+	nsamples &= 0x03FF;
+	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
 
 void FPGA::Enable(Periphery p, bool enable) {
@@ -150,42 +138,53 @@ void FPGA::WriteMAX2871Default(uint32_t *DefaultRegs) {
 }
 
 void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, bool halt, LowpassFilter filter) {
-	uint16_t send[8];
+		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt, LowpassFilter filter) {
+	uint16_t send[7];
 	// select which point this sweep config is for
 	send[0] = pointnum & 0x1FFF;
 	// assemble sweep config from required fields of PLL registers
-	send[1] = (LORegs[4] & 0x00700000) >> 14 | (LORegs[3] & 0xFC000000) >> 26;
+	uint16_t LO_N = (LORegs[0] & 0x7FFF8000) >> 15;
+	uint16_t LO_FRAC = (LORegs[0] & 0x00007FF8) >> 3;
+	uint16_t LO_M = (LORegs[1] & 0x00007FF8) >> 3;
+	uint16_t LO_VCO = (LORegs[3] & 0xFC000000) >> 26;
+	uint16_t LO_DIV_A = (LORegs[4] & 0x00700000) >> 20;
+
+	uint16_t Source_N = (SourceRegs[0] & 0x7FFF8000) >> 15;
+	uint16_t Source_FRAC = (SourceRegs[0] & 0x00007FF8) >> 3;
+	uint16_t Source_M = (SourceRegs[1] & 0x00007FF8) >> 3;
+	uint16_t Source_VCO = (SourceRegs[3] & 0xFC000000) >> 26;
+	uint16_t Source_DIV_A = (SourceRegs[4] & 0x00700000) >> 20;
+
+	send[1] = LO_M >> 4;
 	if (halt) {
 		send[1] |= 0x8000;
 	}
-	if (lowband) {
-		send[1] |= 0x4000;
-	}
-	switch(filter) {
-	case LowpassFilter::Auto:
+	send[1] |= (int) settling << 13;
+	send[1] |= (int) samples << 10;
+	if(filter == LowpassFilter::Auto) {
 		// Select source LP filter
 		if (frequency >= 3500000000) {
-			send[1] |= 0x0600;
+			send[1] |= (int) LowpassFilter::None << 8;
 		} else if (frequency >= 1800000000) {
-			send[1] |= 0x0400;
+			send[1] |= (int) LowpassFilter::M3500 << 8;
 		} else if (frequency >= 900000000) {
-			send[1] |= 0x0200;
+			send[1] |= (int) LowpassFilter::M1880 << 8;
+		} else {
+			send[1] |= (int) LowpassFilter::M947 << 8;
 		}
-		break;
-	case LowpassFilter::M947: break;
-	case LowpassFilter::M1880: send[1] |= 0x0200; break;
-	case LowpassFilter::M3500: send[1] |= 0x0400; break;
-	case LowpassFilter::None: send[1] |= 0x0600; break;
+	} else {
+		send[1] |= (int) filter << 8;
 	}
-	send[2] = (LORegs[1] & 0x00007FF8) << 1 | (LORegs[0] & 0x00007800) >> 11;
-	send[3] = (LORegs[0] & 0x000007F8) << 5 | (LORegs[0] & 0x7F800000) >> 23;
-	send[4] = (LORegs[0] & 0x007F8000) >> 7 | (attenuation & 0x7F) << 1 | (SourceRegs[4] & 0x00400000) >> 22;
-	send[5] = (SourceRegs[4] & 0x00300000) >> 6 | (SourceRegs[3] & 0xFC000000) >> 18 | (SourceRegs[1] & 0x00007F80) >> 7;
-	send[6] = (SourceRegs[1] & 0x00000078) << 9 | (SourceRegs[0] & 0x00007FF8) >> 3;
-	send[7] = (SourceRegs[0] & 0x7FFF8000) >> 15;
+	send[2] = (LO_M & 0x000F) << 12 | LO_FRAC;
+	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | LO_N;
+	send[4] = (uint16_t) attenuation << 8 | Source_M >> 4;
+	if (lowband) {
+		send[4] |= 0x8000;
+	}
+	send[5] = (Source_M & 0x000F) << 12 | Source_FRAC;
+	send[6] = Source_DIV_A << 13 | Source_VCO << 7 | Source_N;
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 8, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 7, 100);
 	High(CS);
 }
 

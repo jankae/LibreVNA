@@ -111,7 +111,9 @@ architecture Behavioral of top is
 		CLK : IN std_logic;
 		RESET : IN std_logic;
 		NPOINTS : IN std_logic_vector(12 downto 0);
-		CONFIG_DATA : IN std_logic_vector(111 downto 0);
+		CONFIG_DATA : IN std_logic_vector(95 downto 0);
+		USER_NSAMPLES : in STD_LOGIC_VECTOR (9 downto 0);
+		NSAMPLES : out STD_LOGIC_VECTOR (9 downto 0);
 		SAMPLING_BUSY : in STD_LOGIC;
 		SAMPLING_DONE : IN std_logic;
 		MAX2871_DEF_4 : IN std_logic_vector(31 downto 0);
@@ -119,8 +121,7 @@ architecture Behavioral of top is
 		MAX2871_DEF_1 : IN std_logic_vector(31 downto 0);
 		MAX2871_DEF_0 : IN std_logic_vector(31 downto 0);
 		PLL_RELOAD_DONE : IN std_logic;
-		PLL_LOCKED : IN std_logic;
-		SETTLING_TIME : IN std_logic_vector(15 downto 0);          
+		PLL_LOCKED : IN std_logic; 
 		CONFIG_ADDRESS : OUT std_logic_vector(12 downto 0);
 		START_SAMPLING : OUT std_logic;
 		PORT_SELECT : OUT std_logic;
@@ -138,8 +139,8 @@ architecture Behavioral of top is
 		SWEEP_RESUME : in STD_LOGIC;
 		ATTENUATOR : OUT std_logic_vector(6 downto 0);
 		SOURCE_FILTER : OUT std_logic_vector(1 downto 0);
-		EXCITE_PORT1 : out STD_LOGIC;
-		EXCITE_PORT2 : out STD_LOGIC;
+		EXCITE_PORT1 : in STD_LOGIC;
+		EXCITE_PORT2 : in STD_LOGIC;
 		DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
 		);
 	END COMPONENT;
@@ -156,7 +157,7 @@ architecture Behavioral of top is
 		REF : IN std_logic_vector(15 downto 0);
 		NEW_SAMPLE : IN std_logic;
 		START : IN std_logic;
-		SAMPLES : IN std_logic_vector(16 downto 0);          
+		SAMPLES : IN std_logic_vector(9 downto 0);          
 		ADC_START : OUT std_logic;
 		DONE : OUT std_logic;
 		PRE_DONE : OUT std_logic;
@@ -219,12 +220,11 @@ architecture Behavioral of top is
 		MAX2871_DEF_3 : OUT std_logic_vector(31 downto 0);
 		MAX2871_DEF_1 : OUT std_logic_vector(31 downto 0);
 		MAX2871_DEF_0 : OUT std_logic_vector(31 downto 0);
-		SWEEP_DATA : OUT std_logic_vector(111 downto 0);
+		SWEEP_DATA : OUT std_logic_vector(95 downto 0);
 		SWEEP_ADDRESS : OUT std_logic_vector(12 downto 0);
 		SWEEP_WRITE : OUT std_logic_vector(0 to 0);
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
-		NSAMPLES : OUT std_logic_vector(16 downto 0);
-		SETTLING_TIME : out STD_LOGIC_VECTOR (15 downto 0);
+		NSAMPLES : OUT std_logic_vector(9 downto 0);
 		EXCITE_PORT1 : out STD_LOGIC;
 		EXCITE_PORT2 : out STD_LOGIC;
 		PORT1_EN : out STD_LOGIC;
@@ -236,7 +236,7 @@ architecture Behavioral of top is
 		SOURCE_CE_EN : out STD_LOGIC;
 		LO_CE_EN : out STD_LOGIC;		
 		LEDS : out STD_LOGIC_VECTOR(2 downto 0);
-		SYNC_SETTING : out STD_LOGIC_VECTOR(1 downto 0);
+		WINDOW_SETTING : out STD_LOGIC_VECTOR(1 downto 0);
 		INTERRUPT_ASSERTED : OUT std_logic;
 		RESET_MINMAX : out STD_LOGIC;
 		SWEEP_HALTED : in STD_LOGIC;
@@ -251,10 +251,10 @@ architecture Behavioral of top is
 		ena : IN STD_LOGIC;
 		wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
 		addra : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
-		dina : IN STD_LOGIC_VECTOR(111 DOWNTO 0);
+		dina : IN STD_LOGIC_VECTOR(95 DOWNTO 0);
 		clkb : IN STD_LOGIC;
 		addrb : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
-		doutb : OUT STD_LOGIC_VECTOR(111 DOWNTO 0)
+		doutb : OUT STD_LOGIC_VECTOR(95 DOWNTO 0)
 		);
 	END COMPONENT;
 	
@@ -302,18 +302,19 @@ architecture Behavioral of top is
 	signal sampling_busy : std_logic;
 	signal sampling_done : std_logic;
 	signal sampling_start : std_logic;
-	signal sampling_samples : std_logic_vector(16 downto 0);
+	signal sampling_samples : std_logic_vector(9 downto 0);
+	signal sampling_user_samples : std_logic_vector(9 downto 0);
 	signal sampling_result : std_logic_vector(287 downto 0);
 	
 	-- Sweep signals
 	signal sweep_points : std_logic_vector(12 downto 0);
-	signal sweep_config_data : std_logic_vector(111 downto 0);
+	signal sweep_config_data : std_logic_vector(95 downto 0);
 	signal sweep_config_address : std_logic_vector(12 downto 0);
 	signal source_filter : std_logic_vector(1 downto 0);
 	signal sweep_port_select : std_logic;
 	
 	signal sweep_config_write_address : std_logic_vector(12 downto 0);
-	signal sweep_config_write_data : std_logic_vector(111 downto 0);
+	signal sweep_config_write_data : std_logic_vector(95 downto 0);
 	signal sweep_config_write : std_logic_vector(0 downto 0);
 	
 	signal sweep_reset : std_logic;
@@ -558,6 +559,8 @@ begin
 		NPOINTS => sweep_points,
 		CONFIG_ADDRESS => sweep_config_address,
 		CONFIG_DATA => sweep_config_data,
+		USER_NSAMPLES => sampling_user_samples,
+		NSAMPLES => sampling_user_samples,
 		SAMPLING_BUSY => sampling_busy,
 		SAMPLING_DONE => sampling_done,
 		START_SAMPLING => sampling_start,
@@ -582,7 +585,6 @@ begin
 		SWEEP_RESUME => sweep_resume,
 		ATTENUATOR => ATTENUATION,
 		SOURCE_FILTER => source_filter,
-		SETTLING_TIME => settling_time,
 		EXCITE_PORT1 => sweep_excite_port1,
 		EXCITE_PORT2 => sweep_excite_port2,
 		DEBUG_STATUS => debug
@@ -632,7 +634,6 @@ begin
 		SWEEP_WRITE => sweep_config_write,
 		SWEEP_POINTS => sweep_points,
 		NSAMPLES => sampling_samples,
-		SETTLING_TIME => settling_time,
 		PORT1_EN => port1mix_en,
 		PORT2_EN => port2mix_en,
 		REF_EN => refmix_en,
@@ -642,7 +643,7 @@ begin
 		SOURCE_CE_EN => SOURCE_CE,
 		LO_CE_EN => LO1_CE,
 		LEDS => user_leds,
-		SYNC_SETTING => open,
+		WINDOW_SETTING => open,
 		INTERRUPT_ASSERTED => intr,
 		RESET_MINMAX => adc_reset_minmax,
 		SWEEP_HALTED => sweep_halted,

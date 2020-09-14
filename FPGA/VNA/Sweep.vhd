@@ -34,7 +34,9 @@ entity Sweep is
            RESET : in  STD_LOGIC;
 			  NPOINTS : in STD_LOGIC_VECTOR (12 downto 0);
            CONFIG_ADDRESS : out  STD_LOGIC_VECTOR (12 downto 0);
-           CONFIG_DATA : in  STD_LOGIC_VECTOR (111 downto 0);
+           CONFIG_DATA : in  STD_LOGIC_VECTOR (95 downto 0);
+			  USER_NSAMPLES : in STD_LOGIC_VECTOR (9 downto 0);
+			  NSAMPLES : out STD_LOGIC_VECTOR (9 downto 0);
            SAMPLING_BUSY : in STD_LOGIC;
 			  SAMPLING_DONE : in  STD_LOGIC;
 			  START_SAMPLING : out STD_LOGIC;
@@ -63,7 +65,7 @@ entity Sweep is
 			  ATTENUATOR : out STD_LOGIC_VECTOR(6 downto 0);
 			  SOURCE_FILTER : out STD_LOGIC_VECTOR(1 downto 0);
 			  
-			  SETTLING_TIME : in STD_LOGIC_VECTOR (15 downto 0);
+			  --SETTLING_TIME : in STD_LOGIC_VECTOR (15 downto 0);
 			  
 			  EXCITE_PORT1 : in STD_LOGIC;
 			  EXCITE_PORT2 : in STD_LOGIC;
@@ -78,40 +80,47 @@ architecture Behavioral of Sweep is
 	type Point_states is (TriggerSetup, SettingUp, SettlingPort1, ExcitingPort1, SettlingPort2, ExcitingPort2, Done);
 	signal state : Point_states;
 	signal settling_cnt : unsigned(15 downto 0);
+	signal settling_time : unsigned(15 downto 0);
 begin
 	
 	CONFIG_ADDRESS <= std_logic_vector(point_cnt);
 	
 	-- assemble registers
-	-- sweep config content:
-	-- 15 downto 0: Source N divider
-	-- 27 downto 16: Source Frac
-	-- 39 downto 28: Source M
-	-- 45 downto 40: Source VCO selection
-	-- 48 downto 46: Source DIVA
-	-- 55 downto 49: Attenuator selection
-	-- 71 downto 56: LO N divider
-	-- 83 downto 72: LO Frac
-	-- 95 downto 84: LO M
-	-- 101 downto 96: LO VCO selection
-	-- 104 downto 102: LO DIVA
-	-- 106 downto 105: Source filter selection
-	-- 111 downto 107: reserved
-	SOURCE_REG_0 <= MAX2871_DEF_0(31) & CONFIG_DATA(15 downto 0) & CONFIG_DATA(27 downto 16) & "000";
+	-- source register 0: N divider and fractional division value
+	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "000000000" & CONFIG_DATA(6 downto 0) & CONFIG_DATA(27 downto 16) & "000";
+	-- source register 1: Modulus value
 	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & CONFIG_DATA(39 downto 28) & "001";
-	SOURCE_REG_3 <= CONFIG_DATA(45 downto 40) & MAX2871_DEF_3(25 downto 3) & "011";
+	-- source register 3: VCO selection
+	SOURCE_REG_3 <= CONFIG_DATA(12 downto 7) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- output power A passed on from default registers, output B disabled
-	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(48 downto 46) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5 downto 3) & "100";
+	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(15 downto 13) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5 downto 3) & "100";
 	
-	LO_REG_0 <= MAX2871_DEF_0(31) & CONFIG_DATA(71 downto 56) & CONFIG_DATA(83 downto 72) & "000";
-	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & CONFIG_DATA(95 downto 84) & "001";
-	LO_REG_3 <= CONFIG_DATA(101 downto 96) & MAX2871_DEF_3(25 downto 3) & "011";
+	-- LO register 0: N divider and fractional division value
+	LO_REG_0 <= MAX2871_DEF_0(31) & "000000000" & CONFIG_DATA(54 downto 48) & CONFIG_DATA(75 downto 64) & "000";
+	-- LO register 1: Modulus value
+	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & CONFIG_DATA(87 downto 76) & "001";
+	-- LO register 3: VCO selection
+	LO_REG_3 <= CONFIG_DATA(60 downto 55) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- both outputs enabled at -1dbm
-	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(104 downto 102) & MAX2871_DEF_4(19 downto 9) & "101101100";
+	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(63 downto 61) & MAX2871_DEF_4(19 downto 9) & "101101100";
 	
-	ATTENUATOR <= CONFIG_DATA(55 downto 49);
-	SOURCE_FILTER <= CONFIG_DATA(106 downto 105);
-	BAND_SELECT <= CONFIG_DATA(110);
+	ATTENUATOR <= CONFIG_DATA(46 downto 40);
+	SOURCE_FILTER <= CONFIG_DATA(89 downto 88);
+	BAND_SELECT <= CONFIG_DATA(47);
+	
+	settling_time <= 	to_unsigned(2048, 16) when CONFIG_DATA(94 downto 93) = "00" else -- 20us
+							to_unsigned(6144, 16) when CONFIG_DATA(94 downto 93) = "01" else -- 60us
+							to_unsigned(18432, 16) when CONFIG_DATA(94 downto 93) = "10" else -- 180us
+							to_unsigned(55296, 16); -- 540us
+							
+	NSAMPLES <= USER_NSAMPLES when CONFIG_DATA(92 downto 90) = "000" else
+					std_logic_vector(to_unsigned(1, 10)) when CONFIG_DATA(92 downto 90) = "001" else
+					std_logic_vector(to_unsigned(3, 10)) when CONFIG_DATA(92 downto 90) = "010" else
+					std_logic_vector(to_unsigned(7, 10)) when CONFIG_DATA(92 downto 90) = "011" else
+					std_logic_vector(to_unsigned(24, 10)) when CONFIG_DATA(92 downto 90) = "100" else
+					std_logic_vector(to_unsigned(71, 10)) when CONFIG_DATA(92 downto 90) = "101" else
+					std_logic_vector(to_unsigned(238, 10)) when CONFIG_DATA(92 downto 90) = "110" else
+					std_logic_vector(to_unsigned(714, 10));
 	
 	DEBUG_STATUS(10 downto 8) <= "000" when state = TriggerSetup else
 											"001" when state = SettingUp else
@@ -134,6 +143,7 @@ begin
 				state <= TriggerSetup;
 				START_SAMPLING <= '0';
 				RELOAD_PLL_REGS <= '0';
+				SWEEP_HALTED <= '0';
 			else
 				case state is
 					when TriggerSetup =>
@@ -143,11 +153,11 @@ begin
 						end if;
 					when SettingUp =>
 						-- highest bit in CONFIG_DATA determines whether the sweep should be halted prior to sampling
-						SWEEP_HALTED <= CONFIG_DATA(111);
+						SWEEP_HALTED <= CONFIG_DATA(95);
 						RELOAD_PLL_REGS <= '0';
 						if PLL_RELOAD_DONE = '1' and PLL_LOCKED = '1' then
 							-- check if halted sweep is resumed
-							if CONFIG_DATA(111) = '0' or SWEEP_RESUME = '1' then
+							if CONFIG_DATA(95) = '0' or SWEEP_RESUME = '1' then
 								SWEEP_HALTED <= '0';
 								if EXCITE_PORT1 = '1' then
 									state <= SettlingPort1;
@@ -156,7 +166,7 @@ begin
 								else
 									state <= Done;
 								end if;
-								settling_cnt <= unsigned(SETTLING_TIME);
+								settling_cnt <= settling_time;
 							end if;
 						end if;
 					when SettlingPort1 =>

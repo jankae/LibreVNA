@@ -67,20 +67,37 @@ enum class LowpassFilter {
 	Auto = 0xFF,
 };
 
+enum class SettlingTime {
+	us20 = 0x00,
+	us60 = 0x01,
+	us180 = 0x02,
+	us540 = 0x03,
+};
+
+enum class Samples {
+	SPPRegister = 0x00,
+    S128 = 0x01,
+	S384 = 0x02,
+	S896 = 0x03,
+	S3072 = 0x04,
+	S9088 = 0x05,
+	S30464 = 0x06,
+	S91392 = 0x07,
+};
+
 bool Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size);
 
 using HaltedCallback = void(*)(void);
 bool Init(HaltedCallback cb = nullptr);
 void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
-void SetSettlingTime(uint16_t us);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
 void EnableInterrupt(Interrupt i);
 void DisableInterrupt(Interrupt i);
 void WriteMAX2871Default(uint32_t *DefaultRegs);
 void WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
+		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
 using ReadCallback = void(*)(SamplingResult result);
 bool InitiateSampleRead(ReadCallback cb);
 ADCLimits GetADCLimits();

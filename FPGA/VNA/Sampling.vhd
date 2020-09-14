@@ -44,7 +44,7 @@ entity Sampling is
            DONE : out  STD_LOGIC;
            PRE_DONE : out  STD_LOGIC;
            START : in  STD_LOGIC;
-           SAMPLES : in  STD_LOGIC_VECTOR (16 downto 0);
+           SAMPLES : in  STD_LOGIC_VECTOR (9 downto 0);
            PORT1_I : out  STD_LOGIC_VECTOR (47 downto 0);
            PORT1_Q : out  STD_LOGIC_VECTOR (47 downto 0);
            PORT2_I : out  STD_LOGIC_VECTOR (47 downto 0);
@@ -80,6 +80,7 @@ END COMPONENT;
 	signal r_Q : signed(47 downto 0);
 	signal clk_cnt : integer range 0 to CLK_DIV - 1;
 	signal sample_cnt : integer range 0 to 131071;
+	signal samples_to_take : integer range 0 to 131071;
 	
 	constant phase_inc : integer := IF_FREQ * 4096 * CLK_DIV / CLK_FREQ;
 	signal phase : std_logic_vector(11 downto 0);
@@ -194,6 +195,7 @@ begin
 						phase <= (others => '0');
 						if START = '1' then
 							state <= Sampling;
+							samples_to_take <= to_integer(unsigned(SAMPLES & "0000000"));
 						end if;
 					when Sampling =>
 						DONE <= '0';
@@ -220,7 +222,7 @@ begin
 						DONE <= '0';
 						PRE_DONE <= '0';
 						phase <= std_logic_vector(unsigned(phase) + phase_inc);
-						if sample_cnt < unsigned(SAMPLES) then
+						if sample_cnt < samples_to_take then
 							sample_cnt <= sample_cnt + 1;
 							state <= Sampling;
 						else

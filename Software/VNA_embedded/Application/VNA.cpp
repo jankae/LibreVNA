@@ -224,7 +224,6 @@ bool VNA::ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb) {
 	FPGA::AbortSweep();
 	uint16_t points = settings.points <= FPGA::MaxPoints ? settings.points : FPGA::MaxPoints;
 	// Configure sweep
-	FPGA::SetSettlingTime(500);
 	FPGA::SetNumberOfPoints(points);
 	uint32_t samplesPerPoint = (1000000 / s.if_bandwidth);
 	// round up to next multiple of 128 (128 samples are spread across 35 IF2 periods)
@@ -316,7 +315,9 @@ bool VNA::ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb) {
 			needs_halt = true;
 		}
 		LO1.SetFrequency(freq + used_IF);
-		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(), LO1.GetRegisters(), attenuator, freq, needs_halt);
+		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
+				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us540,
+				FPGA::Samples::SPPRegister, needs_halt);
 		last_lowband = lowband;
 	}
 //	// revert clk configuration to previous value (might have been changed in sweep calculation)
@@ -382,11 +383,11 @@ bool VNA::ConfigureManual(Protocol::ManualControl m, StatusCallback cb) {
 
 	FPGA::SetNumberOfPoints(1);
 	FPGA::SetSamplesPerPoint(m.Samples);
-	FPGA::SetSettlingTime(1);
 
 	// Configure single sweep point
 	FPGA::WriteSweepConfig(0, !m.SourceHighband, Source.GetRegisters(),
-			LO1.GetRegisters(), m.attenuator, 0, 0,
+			LO1.GetRegisters(), m.attenuator, 0, FPGA::SettlingTime::us20,
+			FPGA::Samples::SPPRegister, 0,
 			(FPGA::LowpassFilter) m.SourceHighLowpass);
 
 	// Enable/Disable periphery
