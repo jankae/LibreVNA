@@ -1,5 +1,5 @@
 #include "signalgenwidget.h"
-#include "ui_signalgenerator.h"
+#include "ui_signalgenwidget.h"
 
 SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     QWidget(parent),

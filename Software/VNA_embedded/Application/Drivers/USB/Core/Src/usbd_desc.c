@@ -64,7 +64,7 @@
   */
 
 #define USBD_VID     					0x0483
-#define USBD_PID_FS     				0x564E
+#define USBD_PID_FS     				0x4121
 #define USBD_LANGID_STRING     			0x0409
 #define USBD_MANUFACTURER_STRING    	"STMicroelectronics"
 #define USBD_PRODUCT_STRING_FS     		"VNA"
@@ -123,6 +123,7 @@ uint8_t * USBD_FS_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length
 uint8_t * USBD_FS_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
 uint8_t * USBD_FS_ConfigStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
 uint8_t * USBD_FS_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
+uint8_t * USBD_FS_MicrosoftOSStrDescriptor(USBD_SpeedTypeDef speed , uint16_t *length);
 
 #ifdef USBD_SUPPORT_USER_STRING_DESC
 uint8_t * USBD_FS_USRStringDesc(USBD_SpeedTypeDef speed, uint8_t idx, uint16_t *length);
@@ -153,6 +154,7 @@ USBD_DescriptorsTypeDef FS_Desc =
 #if (USBD_LPM_ENABLED == 1)
 , USBD_FS_USR_BOSDescriptor
 #endif /* (USBD_LPM_ENABLED == 1) */
+, USBD_FS_MicrosoftOSStrDescriptor
 };
 
 #if defined ( __ICCARM__ ) /* IAR Compiler */
@@ -210,6 +212,21 @@ __ALIGN_BEGIN uint8_t USBD_FS_BOSDesc[USB_SIZ_BOS_DESC] __ALIGN_END =
   0x0
 };
 #endif /* (USBD_LPM_ENABLED == 1) */
+
+__ALIGN_BEGIN uint8_t USBD_FS_MicrosoftOSDescr[18] __ALIGN_END =
+{
+	0x12, /* length */
+	USB_DESC_TYPE_STRING,
+	0x4D, 0x00, /* 7 word unicode string "MSFT100" */
+	0x53, 0x00,
+	0x46, 0x00,
+	0x54, 0x00,
+	0x31, 0x00,
+	0x30, 0x00,
+	0x30, 0x00,
+	USB_WCID_VENDOR_CODE, /* Vendor code */
+	0x00, /* Padding */
+};
 
 /**
   * @}
@@ -384,6 +401,12 @@ uint8_t * USBD_FS_USR_BOSDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
   return (uint8_t*)USBD_FS_BOSDesc;
 }
 #endif /* (USBD_LPM_ENABLED == 1) */
+
+uint8_t * USBD_FS_MicrosoftOSStrDescriptor(USBD_SpeedTypeDef speed , uint16_t *length) {
+	UNUSED(speed);
+	*length = sizeof(USBD_FS_MicrosoftOSDescr);
+	return (uint8_t*)USBD_FS_MicrosoftOSDescr;
+}
 
 /**
   * @brief  Create the serial number string descriptor 

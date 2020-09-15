@@ -10,6 +10,7 @@ USBD_HandleTypeDef hUsbDeviceFS;
 
 static uint8_t  USBD_Class_Init (USBD_HandleTypeDef *pdev, uint8_t cfgidx);
 static uint8_t  USBD_Class_DeInit (USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+static uint8_t  USBD_Class_Setup(USBD_HandleTypeDef *pdev , USBD_SetupReqTypedef  *req);
 static uint8_t  USBD_Class_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum);
 static uint8_t  USBD_Class_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum);
 static uint8_t  *USBD_Class_GetFSCfgDesc (uint16_t *length);
@@ -24,7 +25,7 @@ USBD_ClassTypeDef  USBD_ClassDriver =
 {
   USBD_Class_Init,
   USBD_Class_DeInit,
-  NULL,
+  USBD_Class_Setup,
   NULL,
   NULL,
   USBD_Class_DataIn,
@@ -103,6 +104,22 @@ __ALIGN_BEGIN uint8_t USBD_CfgFSDesc[USB_CONFIG_DESC_SIZ] __ALIGN_END =
   0x00                              /* bInterval */
 };
 
+// See https://github.com/pbatard/libwdi/wiki/WCID-Devices for descriptor data
+// This requests to load the WinUSB driver for this device
+__ALIGN_BEGIN const uint8_t USBD_MicrosoftCompatibleID[40] __ALIGN_END =
+{
+	0x28, 0x00, 0x00, 0x00,
+	0x00, 0x01,
+	0x04, 0x00,
+	0x01,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00,
+	0x01,
+	0x57, 0x49, 0x4E, 0x55, 0x53, 0x42, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
 static uint8_t  USBD_Class_Init (USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 {
 	// Open endpoints and start reception
@@ -119,6 +136,13 @@ static uint8_t  USBD_Class_DeInit(USBD_HandleTypeDef *pdev,
   USBD_LL_CloseEP(pdev, EP_DATA_OUT_ADDRESS);
   USBD_LL_CloseEP(pdev, EP_LOG_IN_ADDRESS);
   return USBD_OK;
+}
+static uint8_t USBD_Class_Setup(USBD_HandleTypeDef *pdev , USBD_SetupReqTypedef  *req) {
+	if(req->wIndex == 0x0004 && req->bRequest == USB_WCID_VENDOR_CODE && req->bmRequest == 0xC0) {
+		// This is a request for the Microsoft Compatible IF Feature Descriptor
+		USBD_CtlSendData (pdev, (uint8_t *)(void *)USBD_MicrosoftCompatibleID, req->wLength);
+	}
+	return USBD_OK;
 }
 static uint8_t USBD_Class_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 	// A bulk transfer is complete when the endpoint does on of the following:

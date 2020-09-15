@@ -458,6 +458,14 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev ,
       pbuf = pdev->pDesc->GetInterfaceStrDescriptor(pdev->dev_speed, &len);
       break;
 
+    case 0xEE:
+    	// Windows specific OS string descriptor
+    	if(pdev->pDesc->GetMicrosoftOSStrDescriptor) {
+    		pbuf = pdev->pDesc->GetMicrosoftOSStrDescriptor(pdev->dev_speed, &len);
+    	} else {
+    		USBD_CtlError(pdev , req);
+    	}
+    	break;
     default:
 #if (USBD_SUPPORT_USER_STRING == 1U)
       pbuf = pdev->pClass->GetUsrStrDescriptor(pdev, (req->wValue) , &len);

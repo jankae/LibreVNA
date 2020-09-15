@@ -263,8 +263,15 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
             continue;
         }
 
-        if (desc.idVendor != VID || desc.idProduct != PID) {
-            /* Not the correct IDs */
+        bool correctID = false;
+        int numIDs = sizeof(IDs)/sizeof(IDs[0]);
+        for(int i=0;i<numIDs;i++) {
+            if(desc.idVendor == IDs[i].VID && desc.idProduct == IDs[i].PID) {
+                correctID = true;
+                break;
+            }
+        }
+        if(!correctID) {
             continue;
         }
 

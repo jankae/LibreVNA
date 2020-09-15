@@ -221,6 +221,8 @@ typedef struct
 #if (USBD_LPM_ENABLED == 1U)
   uint8_t  *(*GetBOSDescriptor)( USBD_SpeedTypeDef speed , uint16_t *length);
 #endif
+  // WCID descriptors
+  uint8_t  *(*GetMicrosoftOSStrDescriptor)( USBD_SpeedTypeDef speed , uint16_t *length);
 } USBD_DescriptorsTypeDef;
 
 /* USB Device handle structure */
