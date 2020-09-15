@@ -21,6 +21,8 @@ using SweepSettings = struct _sweepSettings {
     uint16_t points;
     uint32_t if_bandwidth;
     int16_t cdbm_excitation; // in 1/100 dbm
+	uint8_t excitePort1:1;
+	uint8_t excitePort2:1;
 };
 
 using ReferenceSettings = struct _referenceSettings {

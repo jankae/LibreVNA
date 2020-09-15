@@ -51,6 +51,7 @@ void TraceModel::togglePause(unsigned int index)
             traces[index]->pause();
         }
         emit dataChanged(createIndex(index, 1), createIndex(index, 1));
+        emit requiredExcitation(PortExcitationRequired(1), PortExcitationRequired(2));
     }
 }
 
@@ -107,6 +108,23 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
 std::vector<Trace *> TraceModel::getTraces()
 {
     return traces;
+}
+
+bool TraceModel::PortExcitationRequired(int port)
+{
+    for(auto t : traces) {
+        if(t->isLive() && !t->isPaused()) {
+            // this trace needs measurements from VNA, check if port has to be excited for its measurement
+            auto param = t->liveParameter();
+            if(port == 1 && (param == Trace::LiveParameter::S11 || param == Trace::LiveParameter::S21)) {
+                return true;
+            } else if(port == 2 && (param == Trace::LiveParameter::S22 || param == Trace::LiveParameter::S12)) {
+                return true;
+            }
+        }
+    }
+    // checked all traces, none requires this port to be excited
+    return false;
 }
 
 void TraceModel::clearVNAData()

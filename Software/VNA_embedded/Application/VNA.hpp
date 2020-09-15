@@ -10,6 +10,7 @@ using SweepCallback = void(*)(Protocol::Datapoint);
 using StatusCallback = void(*)(FPGA::SamplingResult);
 
 bool Init();
+// returns whether the sweep is actually started
 bool ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb);
 bool ConfigureManual(Protocol::ManualControl m, StatusCallback cb);
 bool ConfigureGenerator(Protocol::GeneratorSettings g);

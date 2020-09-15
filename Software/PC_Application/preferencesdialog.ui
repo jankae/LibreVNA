@@ -232,7 +232,7 @@
        <widget class="QWidget" name="Acquisition">
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="AcquisitionAlwaysExciteBoth">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If only S11/S21 or S22/S12 are enabled, faster sweeps are possible by only exciting one port. Checking this option forces the device to always excite both ports even when the measurements from one port will not be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>

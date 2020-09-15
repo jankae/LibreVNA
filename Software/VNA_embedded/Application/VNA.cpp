@@ -82,9 +82,9 @@ static void ReadComplete(FPGA::SamplingResult result) {
 		auto ref = std::complex<float>(result.RefI, result.RefQ);
 		auto port1 = port1_raw / ref;
 		auto port2 = port2_raw / ref;
+		data.pointNum = pointCnt;
+		data.frequency = settings.f_start + (settings.f_stop - settings.f_start) * pointCnt / (settings.points - 1);
 		if(excitingPort1) {
-			data.pointNum = pointCnt;
-			data.frequency = settings.f_start + (settings.f_stop - settings.f_start) * pointCnt / (settings.points - 1);
 			data.real_S11 = port1.real();
 			data.imag_S11 = port1.imag();
 			data.real_S21 = port2.real();
@@ -94,6 +94,19 @@ static void ReadComplete(FPGA::SamplingResult result) {
 			data.imag_S12 = port1.imag();
 			data.real_S22 = port2.real();
 			data.imag_S22 = port2.imag();
+		}
+		// figure out whether this sweep point is complete and which port gets excited next
+		bool pointComplete = false;
+		if(settings.excitePort1 == 1 && settings.excitePort2 == 1) {
+			// point is complete when port 2 was active
+			pointComplete = !excitingPort1;
+			// next measurement will be from other port
+			excitingPort1 = !excitingPort1;
+		} else {
+			// only one port active, point is complete after every measurement
+			pointComplete = true;
+		}
+		if(pointComplete) {
 			if (sweepCallback) {
 				sweepCallback(data);
 			}
@@ -102,10 +115,8 @@ static void ReadComplete(FPGA::SamplingResult result) {
 				// reached end of sweep, start again
 				pointCnt = 0;
 				IFTableIndexCnt = 0;
-	//			FPGA::StartSweep();
 			}
 		}
-		excitingPort1 = !excitingPort1;
 	} else {
 		// Manual control mode, simply pass on raw result
 		if(statusCallback) {
@@ -218,6 +229,11 @@ bool VNA::ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb) {
 		// was used in manual mode last, do full initialization before starting sweep
 		VNA::Init();
 	}
+	if(s.excitePort1 == 0 && s.excitePort2 == 0) {
+		// both ports disabled, set to idle
+		SetIdle();
+		return false;
+	}
 	sweepCallback = cb;
 	settings = s;
 	// Abort possible active sweep first
@@ -316,7 +332,7 @@ bool VNA::ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb) {
 		}
 		LO1.SetFrequency(freq + used_IF);
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
-				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us540,
+				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us20,
 				FPGA::Samples::SPPRegister, needs_halt);
 		last_lowband = lowband;
 	}
@@ -332,10 +348,11 @@ bool VNA::ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb) {
 	FPGA::Enable(FPGA::Periphery::SourceRF);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1);
-	FPGA::Enable(FPGA::Periphery::ExcitePort2);
+	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.excitePort1);
+	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.excitePort2);
 	pointCnt = 0;
-	excitingPort1 = true;
+	// starting port depends on whether port 1 is active in sweep
+	excitingPort1 = s.excitePort1;
 	IFTableIndexCnt = 0;
 	// Start the sweep
 	FPGA::StartSweep();
@@ -461,7 +478,10 @@ bool VNA::Ref::applySettings(Protocol::ReferenceSettings s) {
 			LOG_INFO("External reference output set to %luHz", extOutFreq);
 		}
 	}
-	bool useExternal = s.UseExternalRef || (s.AutomaticSwitch && Ref::available());
+	bool useExternal = s.UseExternalRef;
+	if (s.AutomaticSwitch) {
+		useExternal = Ref::available();
+	}
 	if(useExternal != extRefInUse) {
 		// switch between internal and external reference
 		extRefInUse = useExternal;

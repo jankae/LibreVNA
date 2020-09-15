@@ -178,8 +178,7 @@ void App_Start() {
 				case Protocol::PacketType::SweepSettings:
 					LOG_INFO("New settings received");
 					settings = packet.settings;
-					VNA::ConfigureSweep(settings, VNACallback);
-					sweepActive = true;
+					sweepActive = VNA::ConfigureSweep(settings, VNACallback);
 					lastNewPoint = HAL_GetTick();
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;

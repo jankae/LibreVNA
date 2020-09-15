@@ -105,7 +105,9 @@ AppWindow::AppWindow(QWidget *parent)
         }
     });
     connect(ui->actionPreferences, &QAction::triggered, [=](){
+       qDebug() << pref.Acquisition.alwaysExciteBothPorts;
        pref.edit();
+       qDebug() << pref.Acquisition.alwaysExciteBothPorts;
     });
 
     setWindowTitle("VNA");
@@ -246,6 +248,11 @@ void AppWindow::CreateToolbars()
     connect(toolbars.reference.outputEnabled, &QCheckBox::clicked, this, &AppWindow::UpdateReference);
 
     addToolBar(tb_reference);
+}
+
+Preferences &AppWindow::getPreferenceRef()
+{
+    return pref;
 }
 
 int AppWindow::UpdateDeviceList()

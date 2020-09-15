@@ -43,13 +43,9 @@
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
+      pref(window->getPreferenceRef()),
       central(new TileWidget(traceModel))
 {
-    QCoreApplication::setOrganizationName("VNA");
-    QCoreApplication::setApplicationName("Application");
-
-    pref.load();
-
     averages = 1;
     calValid = false;
     calMeasuring = false;
@@ -78,6 +74,8 @@ VNA::VNA(AppWindow *window)
     tracebode1->enableTrace(tS12, true);
     auto tracebode2 = new TraceBodePlot(traceModel);
     tracebode2->enableTrace(tS21, true);
+
+    connect(&traceModel, &TraceModel::requiredExcitation, this, &VNA::ExcitationRequired);
 
     central->splitVertically();
     central->Child1()->splitHorizontally();
@@ -422,6 +420,13 @@ VNA::VNA(AppWindow *window)
     qRegisterMetaType<Protocol::Datapoint>("Datapoint");
 
     // Set initial sweep settings
+    if(pref.Acquisition.alwaysExciteBothPorts) {
+        settings.excitePort1 = 1;
+        settings.excitePort2 = 1;
+    } else {
+        settings.excitePort1 = traceModel.PortExcitationRequired(1);
+        settings.excitePort2 = traceModel.PortExcitationRequired(2);
+    }
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
@@ -652,6 +657,22 @@ void VNA::SetAveraging(unsigned int averages)
     average.setAverages(averages);
     emit averagingChanged(averages);
     SettingsChanged();
+}
+
+void VNA::ExcitationRequired(bool port1, bool port2)
+{
+    qDebug() << pref.Acquisition.alwaysExciteBothPorts;
+    if(pref.Acquisition.alwaysExciteBothPorts) {
+        port1 = true;
+        port2 = true;
+    }
+    // check if settings actually changed
+    if(settings.excitePort1 != port1
+        || settings.excitePort2 != port2) {
+        settings.excitePort1 = port1;
+        settings.excitePort2 = port2;
+        SettingsChanged();
+    }
 }
 
 void VNA::DisableCalibration(bool force)

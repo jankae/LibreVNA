@@ -77,7 +77,7 @@ end Sweep;
 
 architecture Behavioral of Sweep is
 	signal point_cnt : unsigned(12 downto 0);
-	type Point_states is (TriggerSetup, SettingUp, SettlingPort1, ExcitingPort1, SettlingPort2, ExcitingPort2, Done);
+	type Point_states is (TriggerSetup, SettingUp, SettlingPort1, ExcitingPort1, SettlingPort2, ExcitingPort2, NextPoint, Done);
 	signal state : Point_states;
 	signal settling_cnt : unsigned(15 downto 0);
 	signal settling_time : unsigned(15 downto 0);
@@ -187,7 +187,7 @@ begin
 							if EXCITE_PORT2 = '1' then
 								state <= SettlingPort2;
 							else
-								state <= Done;
+								state <= NextPoint;
 							end if;
 							settling_cnt <= unsigned(SETTLING_TIME);
 						end if;
@@ -206,15 +206,18 @@ begin
 						-- wait for sampling to finish
 						START_SAMPLING <= '0';
 						if SAMPLING_BUSY = '0' then
-							if point_cnt < unsigned(NPOINTS) then
-								point_cnt <= point_cnt + 1;
-								state <= TriggerSetup;
-								PORT_SELECT <= '1';
-							else 
-								point_cnt <= (others => '0');
-								state <= Done;
-							end if;
+							state <= NextPoint;
 						end if;
+					when NextPoint =>
+						if point_cnt < unsigned(NPOINTS) then
+							point_cnt <= point_cnt + 1;
+							state <= TriggerSetup;
+							-- initial port depends on whether port 1 is exited
+							PORT_SELECT <= EXCITE_PORT1;
+						else 
+							point_cnt <= (others => '0');
+							state <= Done;
+						end if;					
 					when others =>
 				end case;
 			end if;

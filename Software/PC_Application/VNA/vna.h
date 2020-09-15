@@ -32,6 +32,7 @@ private slots:
     void SetPoints(unsigned int points);
     void SetIFBandwidth(double bandwidth);
     void SetAveraging(unsigned int averages);
+    void ExcitationRequired(bool port1, bool port2);
     // Calibration
     void DisableCalibration(bool force = false);
     void ApplyCalibration(Calibration::Type type);
@@ -47,9 +48,8 @@ private:
     void LoadSweepSettings();
     void StoreSweepSettings();
 
-    Preferences pref;
+    Preferences &pref;
 
-    QActionGroup *deviceActionGroup;
     Protocol::SweepSettings settings;
     unsigned int averages;
     TraceModel traceModel;

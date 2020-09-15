@@ -279,7 +279,12 @@ Calibration::InterpolationType Calibration::getInterpolation(Protocol::SweepSett
         return InterpolationType::Extrapolate;
     }
     // Either exact or interpolation, check individual frequencies
-    uint32_t f_step = (settings.f_stop - settings.f_start) / (settings.points - 1);
+    uint32_t f_step;
+    if(settings.points > 1) {
+        f_step = (settings.f_stop - settings.f_start) / (settings.points - 1);
+    } else {
+        f_step = settings.f_stop - settings.f_start;
+    }
     for(uint64_t f = settings.f_start; f <= settings.f_stop; f += f_step) {
         if(find_if(points.begin(), points.end(), [&f](const Point& p){
             return abs(f - p.frequency) < 100;
@@ -549,8 +554,8 @@ istream& operator >>(istream &in, Calibration &c)
                 } else {
                     throw runtime_error("Incomplete calibration data, the requested \"" + line + "\"-Calibration could not be performed.");
                 }
+                break;
             }
-            break;
         }
     }
     return in;

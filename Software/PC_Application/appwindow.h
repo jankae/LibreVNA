@@ -34,6 +34,8 @@ public:
     QStackedWidget *getCentral() const;
     Device *getDevice() const;
 
+    Preferences &getPreferenceRef();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:

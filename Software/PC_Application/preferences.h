@@ -46,13 +46,16 @@ public:
             double excitation;
         } DefaultSweep;
     } Startup;
+    struct {
+        bool alwaysExciteBothPorts;
+    } Acquisition;
 private:
     using SettingDescription = struct {
         QPointerVariant var;
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 7> descr = {{
+    const std::array<SettingDescription, 8> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
@@ -60,6 +63,7 @@ private:
         {&Startup.DefaultSweep.points, "Startup.DefaultSweep.points", 501},
         {&Startup.DefaultSweep.bandwidth, "Startup.DefaultSweep.bandwidth", 1000.0},
         {&Startup.DefaultSweep.excitation, "Startup.DefaultSweep.excitation", -10.00},
+        {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", false},
     }};
 };
 
