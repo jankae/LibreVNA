@@ -2,7 +2,7 @@
 #include "ui_firmwareupdatedialog.h"
 #include <QFileDialog>
 
-FirmwareUpdateDialog::FirmwareUpdateDialog(Device *&dev, QWidget *parent) :
+FirmwareUpdateDialog::FirmwareUpdateDialog(Device *dev, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FirmwareUpdateDialog),
     dev(dev),
@@ -98,12 +98,9 @@ void FirmwareUpdateDialog::timerCallback()
         auto devices = Device::GetDevices();
         if(devices.find(serialnumber) != devices.end()) {
             // the device rebooted and is available again
-            dev = new Device(serialnumber);
-            addStatus("...device reattached, update complete");
+            addStatus("...device enumerated, update complete");
             timer.stop();
-            ui->bStart->setEnabled(true);
-            disconnect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
-            disconnect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
+            emit DeviceRebooted(serialnumber);
         }
     }
 }
@@ -139,11 +136,10 @@ void FirmwareUpdateDialog::receivedAck()
     case State::TriggeringUpdate:
         addStatus("Rebooting device...");
         serialnumber = dev->serial();
-        delete dev;
-        dev = nullptr;
+        emit DeviceRebooting();
         state = State::WaitingForReboot;
         timer.setSingleShot(false);
-        timer.start(1000);
+        timer.start(2000);
         break;
     default:
         break;

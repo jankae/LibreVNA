@@ -8,6 +8,15 @@
 
 using namespace std;
 
+using USBID = struct {
+    int VID;
+    int PID;
+};
+static constexpr USBID IDs[] = {
+    {0x0483, 0x564e},
+    {0x0483, 0x4121},
+};
+
 USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size) :
     buffer_size(buffer_size),
     received_size(0),
@@ -22,13 +31,11 @@ USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, i
 USBInBuffer::~USBInBuffer()
 {
     if(transfer) {
-        qDebug() << "Start cancellation";
         libusb_cancel_transfer(transfer);
         // wait for cancellation to complete
         mutex mtx;
         unique_lock<mutex> lck(mtx);
         cv.wait(lck);
-        qDebug() << "Cancellation complete";
     }
     delete buffer;
 }

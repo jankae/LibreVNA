@@ -117,7 +117,9 @@ void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
 	// register is in multiples of 128
 	nsamples /= 128;
 	// constrain to maximum value
-	nsamples &= 0x03FF;
+	if(nsamples >= 1024) {
+		nsamples = 1023;
+	}
 	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
 

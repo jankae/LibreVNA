@@ -22,8 +22,12 @@ public:
      * - If the update fails during device reboot, the device pointer is set to zero and the device deleted
      * - If the update succeeds, the device pointer will be set to the new device instance
      */
-    explicit FirmwareUpdateDialog(Device *&dev, QWidget *parent = nullptr);
+    explicit FirmwareUpdateDialog(Device *dev, QWidget *parent = nullptr);
     ~FirmwareUpdateDialog();
+
+signals:
+    void DeviceRebooting(); // emitted when the update process is triggered, the device should be disconnected
+    void DeviceRebooted(QString serial); // emitted when an updated device is enumerated after the update
 
 private slots:
     void on_bFile_clicked();
@@ -37,7 +41,7 @@ private:
     void abortWithError(QString error);
     void sendNextFirmwareChunk();
     Ui::FirmwareUpdateDialog *ui;
-    Device *&dev;
+    Device *dev;
     QFile *file;
     QTimer timer;
 

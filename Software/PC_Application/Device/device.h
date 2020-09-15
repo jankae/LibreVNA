@@ -82,14 +82,6 @@ private slots:
     }
 
 private:
-    using USBID = struct {
-        int VID;
-        int PID;
-    };
-    static constexpr USBID IDs[] = {
-        {0x0483, 0x5640},
-        {0x0483, 0x4121},
-    };
     static constexpr int EP_Data_Out_Addr = 0x01;
     static constexpr int EP_Data_In_Addr = 0x81;
     static constexpr int EP_Log_In_Addr = 0x82;

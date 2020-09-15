@@ -26,9 +26,9 @@ void DeviceLog::addLine(QString line)
     if(line.contains(",CRT]")) {
         color = Qt::red;
     } else if(line.contains(",ERR]")) {
-        color = QColor("orange");
+        color = QColor(255, 94, 0);
     } else if(line.contains(",WRN]")) {
-        color = Qt::darkYellow;
+        color = QColor(255, 174, 26);
     } else if(line.contains(",DBG")) {
         color = Qt::gray;
     }

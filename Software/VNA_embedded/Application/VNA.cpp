@@ -493,6 +493,11 @@ bool VNA::Ref::applySettings(Protocol::ReferenceSettings s) {
 }
 
 bool VNA::ConfigureGenerator(Protocol::GeneratorSettings g) {
+	if(g.activePort == 0) {
+		// both ports disabled, no need to configure PLLs
+		SetIdle();
+		return true;
+	}
 	Protocol::ManualControl m;
 	// LOs not required
 	m.LO1CE = 0;
@@ -533,13 +538,6 @@ bool VNA::ConfigureGenerator(Protocol::GeneratorSettings g) {
 		m.SourceHighband = true;
 	}
 	switch(g.activePort) {
-	case 0:
-		// no output signal, disable
-		m.AmplifierEN = 0;
-		m.SourceHighCE = 0;
-		m.SourceHighRFEN = 0;
-		m.SourceLowEN = 0;
-		break;
 	case 1:
 		m.AmplifierEN = 1;
 		m.PortSwitch = 0;

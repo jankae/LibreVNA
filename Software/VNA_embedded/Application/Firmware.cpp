@@ -57,7 +57,7 @@ Firmware::Info Firmware::GetFlashContentInfo(Flash *f) {
 		}
 		f->read(h.CPU_start + checked_size, read_size, buf);
 		if(memcmp(buf, (void*)(0x8000000+checked_size), read_size)) {
-			LOG_WARN("Difference to CPU firmware in external FLASH detected, update required");
+			LOG_INFO("Difference to CPU firmware in external FLASH detected, update required");
 			ret.CPU_need_update = true;
 			break;
 		}

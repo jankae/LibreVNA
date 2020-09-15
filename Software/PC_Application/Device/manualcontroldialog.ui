@@ -523,13 +523,13 @@
                   <number>128</number>
                  </property>
                  <property name="maximum">
-                  <number>131072</number>
+                  <number>130944</number>
                  </property>
                  <property name="singleStep">
                   <number>128</number>
                  </property>
                  <property name="value">
-                  <number>131072</number>
+                  <number>130944</number>
                  </property>
                 </widget>
                </item>

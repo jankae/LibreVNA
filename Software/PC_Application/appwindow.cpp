@@ -99,6 +99,8 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionFirmware_Update, &QAction::triggered, [=](){
         if(device) {
             auto fw_update = new FirmwareUpdateDialog(device);
+            connect(fw_update, &FirmwareUpdateDialog::DeviceRebooting, this, &AppWindow::DisconnectDevice);
+            connect(fw_update, &FirmwareUpdateDialog::DeviceRebooted, this, &AppWindow::ConnectToDevice);
             fw_update->exec();
         }
     });
@@ -196,12 +198,16 @@ void AppWindow::DisconnectDevice()
     ui->actionDisconnect->setEnabled(false);
     ui->actionManual_Control->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);
+    for(auto a : deviceActionGroup->actions()) {
+        a->setChecked(false);
+    }
     if(deviceActionGroup->checkedAction()) {
         deviceActionGroup->checkedAction()->setChecked(false);
     }
     lConnectionStatus.setText("No device connected");
     lDeviceInfo.setText("No device information available yet");
     Mode::getActiveMode()->deviceDisconnected();
+    qDebug() << "Disconnected device";
 }
 
 void AppWindow::DeviceConnectionLost()
@@ -244,22 +250,19 @@ void AppWindow::CreateToolbars()
 
 int AppWindow::UpdateDeviceList()
 {
+    deviceActionGroup->setExclusive(true);
     ui->menuConnect_to->clear();
     auto devices = Device::GetDevices();
     if(devices.size()) {
         for(auto d : devices) {
             auto connectAction = ui->menuConnect_to->addAction(d);
-            deviceActionGroup->addAction(connectAction);
             connectAction->setCheckable(true);
+            connectAction->setActionGroup(deviceActionGroup);
             if(device && d == device->serial()) {
                 connectAction->setChecked(true);
             }
-            connect(connectAction, &QAction::triggered, [this, connectAction, d]() {
+            connect(connectAction, &QAction::triggered, [this, d]() {
                ConnectToDevice(d);
-               if(device) {
-                   // connectAction might have been unchecked if it was a reconnect to the already connected device
-                   connectAction->setChecked(true);
-               }
             });
         }
         ui->menuConnect_to->setEnabled(true);

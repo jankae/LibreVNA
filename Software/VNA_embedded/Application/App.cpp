@@ -229,11 +229,9 @@ void App_Start() {
 					LOG_INFO("Firmware update process triggered");
 					auto fw_info = Firmware::GetFlashContentInfo(&flash);
 					if(fw_info.valid) {
-						Protocol::PacketInfo p;
-						p.type = Protocol::PacketType::Ack;
-						Communication::Send(p);
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 						// Some delay to allow communication to finish
-						vTaskDelay(1000);
+						vTaskDelay(100);
 						Firmware::PerformUpdate(&flash, fw_info);
 						// should never get here
 						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
