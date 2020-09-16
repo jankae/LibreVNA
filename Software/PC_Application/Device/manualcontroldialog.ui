@@ -533,6 +533,37 @@
                  </property>
                 </widget>
                </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_15">
+                 <property name="text">
+                  <string>Window:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="cbWindow">
+                 <item>
+                  <property name="text">
+                   <string>None</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Kaiser</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Hann</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Flat Top</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
               </layout>
              </item>
             </layout>

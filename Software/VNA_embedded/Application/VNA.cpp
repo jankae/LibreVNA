@@ -340,6 +340,7 @@ bool VNA::ConfigureSweep(Protocol::SweepSettings s, SweepCallback cb) {
 //	Si5351.SetCLK(1, IF1 + IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 //	Si5351.ResetPLL(Si5351C::PLL::B);
 	// Enable mixers/amplifier/PLLs
+	FPGA::SetWindow(FPGA::Window::None);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 	FPGA::Enable(FPGA::Periphery::RefMixer);
@@ -406,6 +407,8 @@ bool VNA::ConfigureManual(Protocol::ManualControl m, StatusCallback cb) {
 			LO1.GetRegisters(), m.attenuator, 0, FPGA::SettlingTime::us20,
 			FPGA::Samples::SPPRegister, 0,
 			(FPGA::LowpassFilter) m.SourceHighLowpass);
+
+	FPGA::SetWindow((FPGA::Window) m.WindowType);
 
 	// Enable/Disable periphery
 	FPGA::Enable(FPGA::Periphery::SourceChip, m.SourceHighCE);
@@ -530,6 +533,7 @@ bool VNA::ConfigureGenerator(Protocol::GeneratorSettings g) {
 	m.Port2EN = 0;
 	m.RefEN = 0;
 	m.Samples = 131072;
+	m.WindowType = (int) FPGA::Window::None;
 	// Select correct source
 	if(g.frequency < BandSwitchFrequency) {
 		m.SourceLowEN = 1;

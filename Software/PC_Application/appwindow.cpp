@@ -284,7 +284,9 @@ void AppWindow::StartManualControl()
 {
     auto control = new ManualControlDialog(*device, this);
     connect(control, &QDialog::finished, [=](){
-        Mode::getActiveMode()->initializeDevice();
+        if(device) {
+            Mode::getActiveMode()->initializeDevice();
+        }
     });
     control->show();
 }

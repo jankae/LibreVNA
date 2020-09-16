@@ -85,6 +85,13 @@ enum class Samples {
 	S91392 = 0x07,
 };
 
+enum class Window {
+	None = 0x00,
+	Kaiser = 0x01,
+	Hann = 0x02,
+	Flattop = 0x03,
+};
+
 bool Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size);
 
 using HaltedCallback = void(*)(void);
@@ -93,6 +100,7 @@ void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
+void SetWindow(Window w);
 void EnableInterrupt(Interrupt i);
 void DisableInterrupt(Interrupt i);
 void WriteMAX2871Default(uint32_t *DefaultRegs);

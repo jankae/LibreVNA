@@ -327,6 +327,7 @@ static Protocol::ManualControl DecodeManualControl(uint8_t *buf) {
     d.Port2EN = e.getBits(1);
     d.RefEN = e.getBits(1);
     e.get<uint32_t>(d.Samples);
+    d.WindowType = e.getBits(2);
     return d;
 }
 static int16_t EncodeManualControl(Protocol::ManualControl d, uint8_t *buf,
@@ -353,6 +354,7 @@ static int16_t EncodeManualControl(Protocol::ManualControl d, uint8_t *buf,
     e.addBits(d.Port2EN, 1);
     e.addBits(d.RefEN, 1);
     e.add<uint32_t>(d.Samples);
+    e.addBits(d.WindowType, 2);
     return e.getSize();
 }
 

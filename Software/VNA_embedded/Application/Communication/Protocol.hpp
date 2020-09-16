@@ -95,6 +95,7 @@ using ManualControl = struct _manualControl {
     uint8_t Port2EN :1;
     uint8_t RefEN :1;
     uint32_t Samples;
+    uint8_t WindowType :2;
 };
 
 

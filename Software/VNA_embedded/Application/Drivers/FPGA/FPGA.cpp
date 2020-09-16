@@ -137,6 +137,12 @@ void FPGA::Disable(Periphery p) {
 	WriteRegister(Reg::SystemControl, SysCtrlReg);
 }
 
+void FPGA::SetWindow(Window w) {
+	SysCtrlReg &= ~0x0060;
+	SysCtrlReg |= (int) w << 5;
+	WriteRegister(Reg::SystemControl, SysCtrlReg);
+}
+
 void FPGA::EnableInterrupt(Interrupt i) {
 	ISRMaskReg |= (uint16_t) i;
 	WriteRegister(Reg::InterruptMask, ISRMaskReg);

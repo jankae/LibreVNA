@@ -157,7 +157,8 @@ architecture Behavioral of top is
 		REF : IN std_logic_vector(15 downto 0);
 		NEW_SAMPLE : IN std_logic;
 		START : IN std_logic;
-		SAMPLES : IN std_logic_vector(9 downto 0);          
+		SAMPLES : IN std_logic_vector(9 downto 0);
+		WINDOW_TYPE : in STD_LOGIC_VECTOR (1 downto 0);		
 		ADC_START : OUT std_logic;
 		DONE : OUT std_logic;
 		PRE_DONE : OUT std_logic;
@@ -305,6 +306,7 @@ architecture Behavioral of top is
 	signal sampling_samples : std_logic_vector(9 downto 0);
 	signal sampling_user_samples : std_logic_vector(9 downto 0);
 	signal sampling_result : std_logic_vector(287 downto 0);
+	signal sampling_window : std_logic_vector(1 downto 0);
 	
 	-- Sweep signals
 	signal sweep_points : std_logic_vector(12 downto 0);
@@ -542,6 +544,7 @@ begin
 		PRE_DONE => open,
 		START => sampling_start,
 		SAMPLES => sampling_samples,
+		WINDOW_TYPE => sampling_window,
 		PORT1_I => sampling_result(287 downto 240),
 		PORT1_Q => sampling_result(239 downto 192),
 		PORT2_I => sampling_result(191 downto 144),
@@ -646,7 +649,7 @@ begin
 		SOURCE_CE_EN => SOURCE_CE,
 		LO_CE_EN => LO1_CE,
 		LEDS => user_leds,
-		WINDOW_SETTING => open,
+		WINDOW_SETTING => sampling_window,
 		INTERRUPT_ASSERTED => intr,
 		RESET_MINMAX => adc_reset_minmax,
 		SWEEP_HALTED => sweep_halted,

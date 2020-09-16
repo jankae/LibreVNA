@@ -45,6 +45,7 @@ entity Sampling is
            PRE_DONE : out  STD_LOGIC;
            START : in  STD_LOGIC;
            SAMPLES : in  STD_LOGIC_VECTOR (9 downto 0);
+			  WINDOW_TYPE : in STD_LOGIC_VECTOR (1 downto 0);
            PORT1_I : out  STD_LOGIC_VECTOR (47 downto 0);
            PORT1_Q : out  STD_LOGIC_VECTOR (47 downto 0);
            PORT2_I : out  STD_LOGIC_VECTOR (47 downto 0);
@@ -71,6 +72,14 @@ COMPONENT SinCosMult
     p : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
   );
 END COMPONENT;
+COMPONENT window
+PORT(
+	CLK : IN std_logic;
+	INDEX : IN std_logic_vector(6 downto 0);
+	WINDOW_TYPE : IN std_logic_vector(1 downto 0);          
+	VALUE : OUT std_logic_vector(15 downto 0)
+	);
+END COMPONENT;
 
 	signal p1_I : signed(47 downto 0);
 	signal p1_Q : signed(47 downto 0);
@@ -86,6 +95,13 @@ END COMPONENT;
 	signal phase : std_logic_vector(11 downto 0);
 	signal sine : std_logic_vector(15 downto 0);
 	signal cosine : std_logic_vector(15 downto 0);
+	
+	signal windowed_sine : std_logic_vector(31 downto 0);
+	signal windowed_cosine : std_logic_vector(31 downto 0);
+	
+	signal window_index : std_logic_vector(6 downto 0);
+	signal window_value : std_logic_vector(15 downto 0);
+	signal window_sample_cnt : integer range 0 to 1023;
 	
 	signal mult1_I : std_logic_vector(31 downto 0);
 	signal mult1_Q : std_logic_vector(31 downto 0);
@@ -113,43 +129,64 @@ begin
 	PORT MAP (
 		clk => CLK,
 		a => PORT1,
-		b => cosine,
+		b => windowed_cosine(31 downto 16),
 		p => mult1_I
 	);
 	Port1_Q_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => PORT1,
-		b => sine,
+		b => windowed_sine(31 downto 16),
 		p => mult1_Q
 	);
 	Port2_I_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => PORT2,
-		b => cosine,
+		b => windowed_cosine(31 downto 16),
 		p => mult2_I
 	);
 	Port2_Q_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => PORT2,
-		b => sine,
+		b => windowed_sine(31 downto 16),
 		p => mult2_Q
 	);
 	Ref_I_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => REF,
-		b => cosine,
+		b => windowed_cosine(31 downto 16),
 		p => multR_I
 	);
 	Ref_Q_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => REF,
-		b => sine,
+		b => windowed_sine(31 downto 16),
 		p => multR_Q
+	);
+	
+	Sine_Mult : SinCosMult
+	PORT MAP (
+		clk => CLK,
+		a => window_value,
+		b => sine,
+		p => windowed_sine
+	);
+	Cosine_Mult : SinCosMult
+	PORT MAP (
+		clk => CLK,
+		a => window_value,
+		b => cosine,
+		p => windowed_cosine
+	);
+	WindowROM: window PORT MAP(
+		CLK => CLK,
+		INDEX => window_index,
+		WINDOW_TYPE => WINDOW_TYPE,
+		VALUE => window_value
 	);
 		
 	process(CLK, RESET)
@@ -163,6 +200,7 @@ begin
 				ACTIVE <= '0';
 				clk_cnt <= 0;
 				sample_cnt <= 0;
+				window_sample_cnt <= 0;
 				phase <= (others => '0');
 			else
 				-- when not idle, generate pulses for ADCs
@@ -227,6 +265,13 @@ begin
 							state <= Sampling;
 						else
 							state <= Ready;
+						end if;
+						-- keep track of window index
+						if window_sample_cnt < unsigned(SAMPLES) - 1 then
+							window_sample_cnt <= window_sample_cnt + 1;
+						else
+							window_sample_cnt <= 0;
+							window_index <= std_logic_vector( unsigned(window_index) + 1 );
 						end if;
 					when Ready =>
 						ACTIVE <= '1';

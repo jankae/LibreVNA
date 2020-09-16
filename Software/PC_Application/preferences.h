@@ -63,7 +63,7 @@ private:
         {&Startup.DefaultSweep.points, "Startup.DefaultSweep.points", 501},
         {&Startup.DefaultSweep.bandwidth, "Startup.DefaultSweep.bandwidth", 1000.0},
         {&Startup.DefaultSweep.excitation, "Startup.DefaultSweep.excitation", -10.00},
-        {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", false},
+        {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", true},
     }};
 };
 

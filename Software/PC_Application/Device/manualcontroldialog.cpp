@@ -174,6 +174,7 @@ ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
 
     connect(ui->Attenuator, qOverload<double>(&QDoubleSpinBox::valueChanged), [=](double) { UpdateDevice(); });
     connect(ui->Samples, qOverload<int>(&QSpinBox::valueChanged), [=](double) { UpdateDevice(); });
+    connect(ui->cbWindow, qOverload<int>(&QComboBox::activated), [=](int) { UpdateDevice(); });
 
     UpdateDevice();
 }
@@ -247,6 +248,7 @@ void ManualControlDialog::UpdateDevice()
     m.Port2EN = ui->Port2Enable->isChecked();
     m.RefEN = ui->RefEnable->isChecked();
     m.Samples = ui->Samples->value();
+    m.WindowType = ui->cbWindow->currentIndex();
 
     qDebug() << "Updating manual control state";
 
