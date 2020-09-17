@@ -13,6 +13,9 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "Led.hpp"
+#include "Hardware.hpp"
+#include "Manual.hpp"
+#include "Generator.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -21,16 +24,8 @@
 static Protocol::Datapoint result;
 static Protocol::SweepSettings settings;
 
-static FPGA::SamplingResult statusResult;
-static Protocol::ManualControl manual;
-
 static Protocol::PacketInfo packet;
 static TaskHandle_t handle;
-
-// TODO set proper values
-//#define HW_REVISION			'A'
-#define FW_MAJOR			0
-#define FW_MINOR			01
 
 #if HW_REVISION >= 'B'
 // has MCU controllable flash chip, firmware update supported
@@ -42,18 +37,11 @@ static Flash flash = Flash(&hspi1, FLASH_CS_GPIO_Port, FLASH_CS_Pin);
 
 #define FLAG_USB_PACKET		0x01
 #define FLAG_DATAPOINT		0x02
-#define FLAG_STATUSRESULT	0x04
 
 static void VNACallback(Protocol::Datapoint res) {
 	result = res;
 	BaseType_t woken = false;
 	xTaskNotifyFromISR(handle, FLAG_DATAPOINT, eSetBits, &woken);
-	portYIELD_FROM_ISR(woken);
-}
-static void VNAStatusCallback(FPGA::SamplingResult res) {
-	statusResult = res;
-	BaseType_t woken = false;
-	xTaskNotifyFromISR(handle, FLAG_STATUSRESULT, eSetBits, &woken);
 	portYIELD_FROM_ISR(woken);
 }
 static void USBPacketReceived(Protocol::PacketInfo p) {
@@ -102,7 +90,7 @@ void App_Start() {
 	EN_6V_GPIO_Port->BSRR = EN_6V_Pin;
 #endif
 
-	if (!VNA::Init()) {
+	if (!HW::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
 		LED::Error(4);
 	}
@@ -114,7 +102,6 @@ void App_Start() {
 
 	uint32_t lastNewPoint = HAL_GetTick();
 	bool sweepActive = false;
-	Protocol::ReferenceSettings reference;
 
 	LED::Off();
 	while (1) {
@@ -127,84 +114,38 @@ void App_Start() {
 				packet.datapoint = result;
 				Communication::Send(packet);
 				lastNewPoint = HAL_GetTick();
-				if(result.pointNum == settings.points - 1) {
-					// end of sweep
-					VNA::Ref::applySettings(reference);
-					// Compile info packet
-					packet.type = Protocol::PacketType::DeviceInfo;
-					packet.info.FPGA_configured = 1;
-					packet.info.FW_major = FW_MAJOR;
-					packet.info.FW_minor = FW_MINOR;
-					packet.info.HW_Revision = HW_REVISION;
-					VNA::fillDeviceInfo(&packet.info);
-					Communication::Send(packet);
-					FPGA::ResetADCLimits();
-					// Start next sweep
-					FPGA::StartSweep();
-				}
-			}
-			if(notification & FLAG_STATUSRESULT) {
-				Protocol::PacketInfo p;
-				p.type = Protocol::PacketType::Status;
-				memset(&p.status, 0, sizeof(p.status));
-				uint16_t isr_flags = FPGA::GetStatus();
-				if (!(isr_flags & 0x0002)) {
-					p.status.source_locked = 1;
-				}
-				if (!(isr_flags & 0x0001)) {
-					p.status.LO_locked = 1;
-				}
-				auto limits = FPGA::GetADCLimits();
-				FPGA::ResetADCLimits();
-				p.status.port1min = limits.P1min;
-				p.status.port1max = limits.P1max;
-				p.status.port2min = limits.P2min;
-				p.status.port2max = limits.P2max;
-				p.status.refmin = limits.Rmin;
-				p.status.refmax = limits.Rmax;
-				p.status.port1real = (float) statusResult.P1I / manual.Samples;
-				p.status.port1imag = (float) statusResult.P1Q / manual.Samples;
-				p.status.port2real = (float) statusResult.P2I / manual.Samples;
-				p.status.port2imag = (float) statusResult.P2Q / manual.Samples;
-				p.status.refreal = (float) statusResult.RefI / manual.Samples;
-				p.status.refimag = (float) statusResult.RefQ / manual.Samples;
-				VNA::GetTemps(&p.status.temp_source, &p.status.temp_LO);
-				Communication::Send(p);
-				// Trigger next status update
-				FPGA::StartSweep();
 			}
 			if(notification & FLAG_USB_PACKET) {
 				switch(packet.type) {
 				case Protocol::PacketType::SweepSettings:
 					LOG_INFO("New settings received");
 					settings = packet.settings;
-					sweepActive = VNA::ConfigureSweep(settings, VNACallback);
+					sweepActive = VNA::Setup(settings, VNACallback);
 					lastNewPoint = HAL_GetTick();
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ManualControl:
 					sweepActive = false;
-					manual = packet.manual;
-					VNA::ConfigureManual(manual, VNAStatusCallback);
+					Manual::Setup(packet.manual);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::Reference:
-					reference = packet.reference;
+					HW::Ref::set(packet.reference);
 					if(!sweepActive) {
 						// can update right now
-						VNA::Ref::applySettings(reference);
+						HW::Ref::update();
 					}
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::Generator:
 					sweepActive = false;
 					LOG_INFO("Updating generator setting");
-					VNA::ConfigureGenerator(packet.generator);
+					Generator::Setup(packet.generator);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 #ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:
-					VNA::SetIdle();
+					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;
 					LOG_DEBUG("Erasing FLASH in preparation for firmware update...");
 					if(flash.eraseChip()) {
@@ -250,9 +191,9 @@ void App_Start() {
 			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", result.pointNum, FPGA::GetStatus());
 			FPGA::AbortSweep();
 			// restart the current sweep
-			VNA::Init();
-			VNA::Ref::applySettings(reference);
-			VNA::ConfigureSweep(settings, VNACallback);
+			HW::Init();
+			HW::Ref::update();
+			VNA::Setup(settings, VNACallback);
 			sweepActive = true;
 			lastNewPoint = HAL_GetTick();
 		}

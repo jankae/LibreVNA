@@ -98,6 +98,14 @@ using ManualControl = struct _manualControl {
     uint8_t WindowType :2;
 };
 
+using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
+	uint64_t f_start;
+	uint64_t f_stop;
+	uint32_t RBW;
+	uint8_t WindowType :2;
+	uint8_t SignalID :1;
+};
+
 
 static constexpr uint16_t FirmwareChunkSize = 256;
 using FirmwarePacket = struct _firmwarePacket {

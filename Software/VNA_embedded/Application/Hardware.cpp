@@ -1,0 +1,293 @@
+#include <HW_HAL.hpp>
+#include "Hardware.hpp"
+#include "Si5351C.hpp"
+#include "max2871.hpp"
+#include "FPGA/FPGA.hpp"
+#include "Exti.hpp"
+#include "VNA.hpp"
+#include "Manual.hpp"
+
+#define LOG_LEVEL	LOG_LEVEL_INFO
+#define LOG_MODULE	"HW"
+#include "Log.h"
+
+static uint32_t extOutFreq = 0;
+static bool extRefInUse = false;
+HW::Mode activeMode;
+
+static constexpr uint32_t IF1 = 60100000;
+static constexpr uint32_t IF2 = 250000;
+static Protocol::ReferenceSettings ref;
+
+using namespace HWHAL;
+
+static void HaltedCallback() {
+	switch(activeMode) {
+	case HW::Mode::VNA:
+		VNA::SweepHalted();
+		break;
+	default:
+		break;
+	}
+}
+static void ReadComplete(FPGA::SamplingResult result) {
+	bool needs_work = false;
+	switch(activeMode) {
+	case HW::Mode::VNA:
+		needs_work = VNA::MeasurementDone(result);
+		break;
+	case HW::Mode::Manual:
+		needs_work = Manual::MeasurementDone(result);
+		break;
+	default:
+		break;
+	}
+	if(needs_work) {
+		HAL_NVIC_SetPendingIRQ(COMP4_IRQn);
+	}
+}
+
+static void FPGA_Interrupt(void*) {
+	FPGA::InitiateSampleRead(ReadComplete);
+}
+
+/* low priority interrupt to handle additional workload after FPGA interrupt */
+extern "C" {
+void COMP4_IRQHandler(void) {
+	switch(activeMode) {
+	case HW::Mode::VNA:
+		VNA::Work();
+		break;
+	case HW::Mode::Manual:
+		Manual::Work();
+		break;
+	default:
+		break;
+	}
+}
+}
+
+bool HW::Init() {
+	LOG_DEBUG("Initializing...");
+	HAL_NVIC_SetPriority(COMP4_IRQn, 15, 0);
+	HAL_NVIC_EnableIRQ(COMP4_IRQn);
+
+	activeMode = Mode::Idle;
+
+	Si5351.Init();
+
+	// Use Si5351 to generate reference frequencies for other PLLs and ADC
+	Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::XTAL);
+	while(!Si5351.Locked(Si5351C::PLL::A));
+
+	Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::XTAL);
+	while(!Si5351.Locked(Si5351C::PLL::B));
+
+	extRefInUse = 0;
+	extOutFreq = 0;
+	Si5351.Disable(SiChannel::ReferenceOut);
+
+	// Both MAX2871 get a 100MHz reference
+	Si5351.SetCLK(SiChannel::Source, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::Source);
+	Si5351.SetCLK(SiChannel::LO1, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::LO1);
+	// 16MHz FPGA clock
+	Si5351.SetCLK(SiChannel::FPGA, 16000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::FPGA);
+
+	// Generate second LO with Si5351
+	Si5351.SetCLK(SiChannel::Port1LO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::Port1LO2);
+	Si5351.SetCLK(SiChannel::Port2LO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::Port2LO2);
+	Si5351.SetCLK(SiChannel::RefLO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::RefLO2);
+
+	// PLL reset appears to realign phases of clock signals
+	Si5351.ResetPLL(Si5351C::PLL::B);
+
+	LOG_DEBUG("Si5351 locked");
+
+	// FPGA clock is now present, can initialize
+	if (!FPGA::Init(HaltedCallback)) {
+		LOG_ERR("Aborting due to uninitialized FPGA");
+		return false;
+	}
+
+	// Enable new data and sweep halt interrupt
+	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
+	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
+
+	Exti::SetCallback(FPGA_INTR_GPIO_Port, FPGA_INTR_Pin, Exti::EdgeType::Rising, Exti::Pull::Down, FPGA_Interrupt);
+
+	// Initialize PLLs and build VCO maps
+	// enable source synthesizer
+	FPGA::Enable(FPGA::Periphery::SourceChip);
+	FPGA::SetMode(FPGA::Mode::SourcePLL);
+	Source.Init(100000000, false, 1, false);
+	Source.SetPowerOutA(MAX2871::Power::n4dbm);
+	// output B is not used
+	Source.SetPowerOutB(MAX2871::Power::n4dbm, false);
+	if(!Source.BuildVCOMap()) {
+		LOG_WARN("Source VCO map failed");
+	} else {
+		LOG_INFO("Source VCO map complete");
+	}
+	Source.SetFrequency(1000000000);
+	Source.UpdateFrequency();
+	LOG_DEBUG("Source temp: %u", Source.GetTemp());
+	// disable source synthesizer/enable LO synthesizer
+	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::Disable(FPGA::Periphery::SourceChip);
+	FPGA::Enable(FPGA::Periphery::LO1Chip);
+	FPGA::SetMode(FPGA::Mode::LOPLL);
+	LO1.Init(100000000, false, 1, false);
+	LO1.SetPowerOutA(MAX2871::Power::n4dbm);
+	LO1.SetPowerOutB(MAX2871::Power::n4dbm);
+	if(!LO1.BuildVCOMap()) {
+		LOG_WARN("LO1 VCO map failed");
+	} else {
+		LOG_INFO("LO1 VCO map complete");
+	}
+	LO1.SetFrequency(1000000000 + IF1);
+	LO1.UpdateFrequency();
+	LOG_DEBUG("LO temp: %u", LO1.GetTemp());
+
+	FPGA::SetMode(FPGA::Mode::FPGA);
+	// disable both synthesizers
+	FPGA::Disable(FPGA::Periphery::LO1Chip);
+	FPGA::WriteMAX2871Default(Source.GetRegisters());
+
+	LOG_INFO("Initialized");
+	FPGA::Enable(FPGA::Periphery::ReadyLED);
+	return true;
+}
+
+void HW::SetMode(Mode mode) {
+	if(activeMode == mode) {
+		// already the correct mode
+		return;
+	}
+	switch(activeMode) {
+	case Mode::Manual:
+		Manual::Stop();
+		break;
+	case Mode::VNA:
+		VNA::Stop();
+		break;
+	default:
+		break;
+	}
+	if(activeMode == Mode::Manual && mode != Mode::Idle) {
+		// do a full initialization when switching from manual mode to anything else than idle
+		// (making sure that any changes made in manual mode are reverted)
+		HW::Init();
+	}
+	SetIdle();
+	activeMode = mode;
+}
+
+bool HW::GetTemps(uint8_t *source, uint8_t *lo) {
+	FPGA::SetMode(FPGA::Mode::SourcePLL);
+	*source = Source.GetTemp();
+	FPGA::SetMode(FPGA::Mode::LOPLL);
+	*lo = LO1.GetTemp();
+	FPGA::SetMode(FPGA::Mode::FPGA);
+	return true;
+}
+
+void HW::SetIdle() {
+	FPGA::AbortSweep();
+	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::Enable(FPGA::Periphery::SourceChip, false);
+	FPGA::Enable(FPGA::Periphery::SourceRF, false);
+	FPGA::Enable(FPGA::Periphery::LO1Chip, false);
+	FPGA::Enable(FPGA::Periphery::LO1RF, false);
+	FPGA::Enable(FPGA::Periphery::Amplifier, false);
+	FPGA::Enable(FPGA::Periphery::Port1Mixer, false);
+	FPGA::Enable(FPGA::Periphery::Port2Mixer, false);
+	FPGA::Enable(FPGA::Periphery::RefMixer, false);
+}
+
+void HW::fillDeviceInfo(Protocol::DeviceInfo *info) {
+	// read PLL temperatures
+	uint8_t tempSource, tempLO;
+	GetTemps(&tempSource, &tempLO);
+	LOG_INFO("PLL temperatures: %u/%u", tempSource, tempLO);
+	// Read ADC min/max
+	auto limits = FPGA::GetADCLimits();
+	LOG_INFO("ADC limits: P1: %d/%d P2: %d/%d R: %d/%d",
+			limits.P1min, limits.P1max, limits.P2min, limits.P2max,
+			limits.Rmin, limits.Rmax);
+#define ADC_LIMIT 		30000
+	if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
+			|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
+			|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
+		info->ADC_overload = true;
+	} else {
+		info->ADC_overload = false;
+	}
+	auto status = FPGA::GetStatus();
+	info->LO1_locked = (status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
+	info->source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
+	info->extRefAvailable = Ref::available();
+	info->extRefInUse = extRefInUse;
+	info->temperatures.LO1 = tempLO;
+	info->temperatures.source = tempSource;
+	info->temperatures.MCU = 0;
+	FPGA::ResetADCLimits();
+}
+
+bool HW::Ref::available() {
+	return Si5351.ExtCLKAvailable();
+}
+
+void HW::Ref::set(Protocol::ReferenceSettings s) {
+	ref = s;
+}
+
+void HW::Ref::update() {
+	if(extOutFreq != ref.ExtRefOuputFreq) {
+		extOutFreq = ref.ExtRefOuputFreq;
+		if(extOutFreq == 0) {
+			Si5351.Disable(SiChannel::ReferenceOut);
+			LOG_INFO("External reference output disabled");
+		} else {
+			Si5351.SetCLK(SiChannel::ReferenceOut, extOutFreq, Si5351C::PLL::A);
+			Si5351.Enable(SiChannel::ReferenceOut);
+			LOG_INFO("External reference output set to %luHz", extOutFreq);
+		}
+	}
+	bool useExternal = ref.UseExternalRef;
+	if (ref.AutomaticSwitch) {
+		useExternal = Ref::available();
+	}
+	if(useExternal != extRefInUse) {
+		// switch between internal and external reference
+		extRefInUse = useExternal;
+		if(extRefInUse) {
+			if(!Ref::available()) {
+				LOG_WARN("Forced switch to external reference but no signal detected");
+			}
+			Si5351.ConfigureCLKIn(10000000);
+			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::CLKIN);
+			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::CLKIN);
+			LOG_INFO("Switched to external reference");
+			FPGA::Enable(FPGA::Periphery::ExtRefLED);
+		} else {
+			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::XTAL);
+			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::XTAL);
+			LOG_INFO("Switched to internal reference");
+			FPGA::Disable(FPGA::Periphery::ExtRefLED);
+		}
+	}
+	constexpr uint32_t lock_timeout = 10;
+	uint32_t start = HAL_GetTick();
+	while(!Si5351.Locked(Si5351C::PLL::A) || !Si5351.Locked(Si5351C::PLL::A)) {
+		if(HAL_GetTick() - start > lock_timeout) {
+			LOG_ERR("Clock distributor PLLs failed to lock");
+			return;
+		}
+	}
+}

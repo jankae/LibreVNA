@@ -8,11 +8,11 @@
 extern I2C_HandleTypeDef hi2c2;
 extern SPI_HandleTypeDef hspi1;
 
-namespace VNAHAL {
+namespace HWHAL {
 
-static Si5351C Si5351 = Si5351C(&hi2c2, 26000000);
-static MAX2871 Source = MAX2871(&hspi1, FPGA_CS_GPIO_Port, FPGA_CS_Pin, nullptr, 0, nullptr, 0, nullptr, 0, GPIOA, GPIO_PIN_6);
-static MAX2871 LO1 = MAX2871(&hspi1, FPGA_CS_GPIO_Port, FPGA_CS_Pin, nullptr, 0, nullptr, 0, nullptr, 0, GPIOA, GPIO_PIN_6);
+extern Si5351C Si5351;
+extern MAX2871 Source;
+extern MAX2871 LO1;
 
 // Mapping of the Si5351 channels to PLLs/Mixers
 namespace SiChannel {
