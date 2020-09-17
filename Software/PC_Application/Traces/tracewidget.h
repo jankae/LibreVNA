@@ -13,7 +13,7 @@ class TraceWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit TraceWidget(TraceModel &model, QWidget *parent = nullptr);
+    explicit TraceWidget(TraceModel &model, QWidget *parent = nullptr, bool SA = false);
     ~TraceWidget();
 
 public slots:
@@ -36,6 +36,7 @@ private:
     Ui::TraceWidget *ui;
     TraceModel &model;
     int createCount;
+    bool SA;
 };
 
 #endif // TRACEWIDGET_H

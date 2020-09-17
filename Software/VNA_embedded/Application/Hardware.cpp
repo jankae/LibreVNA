@@ -6,6 +6,7 @@
 #include "Exti.hpp"
 #include "VNA.hpp"
 #include "Manual.hpp"
+#include "SpectrumAnalyzer.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"HW"
@@ -15,8 +16,6 @@ static uint32_t extOutFreq = 0;
 static bool extRefInUse = false;
 HW::Mode activeMode;
 
-static constexpr uint32_t IF1 = 60100000;
-static constexpr uint32_t IF2 = 250000;
 static Protocol::ReferenceSettings ref;
 
 using namespace HWHAL;
@@ -30,6 +29,9 @@ static void HaltedCallback() {
 		break;
 	}
 }
+
+static HW::WorkRequest requestWork;
+
 static void ReadComplete(FPGA::SamplingResult result) {
 	bool needs_work = false;
 	switch(activeMode) {
@@ -39,11 +41,14 @@ static void ReadComplete(FPGA::SamplingResult result) {
 	case HW::Mode::Manual:
 		needs_work = Manual::MeasurementDone(result);
 		break;
+	case HW::Mode::SA:
+		needs_work = SA::MeasurementDone(result);
+		break;
 	default:
 		break;
 	}
-	if(needs_work) {
-		HAL_NVIC_SetPendingIRQ(COMP4_IRQn);
+	if(needs_work && requestWork) {
+		requestWork();
 	}
 }
 
@@ -51,9 +56,7 @@ static void FPGA_Interrupt(void*) {
 	FPGA::InitiateSampleRead(ReadComplete);
 }
 
-/* low priority interrupt to handle additional workload after FPGA interrupt */
-extern "C" {
-void COMP4_IRQHandler(void) {
+void HW::Work() {
 	switch(activeMode) {
 	case HW::Mode::VNA:
 		VNA::Work();
@@ -61,16 +64,17 @@ void COMP4_IRQHandler(void) {
 	case HW::Mode::Manual:
 		Manual::Work();
 		break;
+	case HW::Mode::SA:
+		SA::Work();
+		break;
 	default:
 		break;
 	}
 }
-}
 
-bool HW::Init() {
+bool HW::Init(WorkRequest wr) {
+	requestWork = wr;
 	LOG_DEBUG("Initializing...");
-	HAL_NVIC_SetPriority(COMP4_IRQn, 15, 0);
-	HAL_NVIC_EnableIRQ(COMP4_IRQn);
 
 	activeMode = Mode::Idle;
 
@@ -179,10 +183,9 @@ void HW::SetMode(Mode mode) {
 	default:
 		break;
 	}
-	if(activeMode == Mode::Manual && mode != Mode::Idle) {
-		// do a full initialization when switching from manual mode to anything else than idle
-		// (making sure that any changes made in manual mode are reverted)
-		HW::Init();
+	if(mode != Mode::Idle && activeMode != Mode::Idle) {
+		// do a full initialization when switching directly between modes
+		HW::Init(requestWork);
 	}
 	SetIdle();
 	activeMode = mode;

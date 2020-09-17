@@ -201,6 +201,7 @@ begin
 				clk_cnt <= 0;
 				sample_cnt <= 0;
 				window_sample_cnt <= 0;
+				window_index <= (others => '0');
 				phase <= (others => '0');
 			else
 				-- when not idle, generate pulses for ADCs

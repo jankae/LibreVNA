@@ -14,6 +14,7 @@
 Q_DECLARE_METATYPE(Protocol::Datapoint);
 Q_DECLARE_METATYPE(Protocol::ManualStatus);
 Q_DECLARE_METATYPE(Protocol::DeviceInfo);
+Q_DECLARE_METATYPE(Protocol::SpectrumAnalyzerResult);
 
 class USBInBuffer : public QObject {
     Q_OBJECT;
@@ -57,6 +58,7 @@ public:
     ~Device();
     bool SendPacket(Protocol::PacketInfo packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 10);
     bool Configure(Protocol::SweepSettings settings);
+    bool Configure(Protocol::SpectrumAnalyzerSettings settings);
     bool SetManual(Protocol::ManualControl manual);
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
     bool SendCommandWithoutPayload(Protocol::PacketType type);
@@ -69,6 +71,7 @@ public:
 signals:
     void DatapointReceived(Protocol::Datapoint);
     void ManualStatusReceived(Protocol::ManualStatus);
+    void SpectrumResultReceived(Protocol::SpectrumAnalyzerResult);
     void DeviceInfoUpdated();
     void ConnectionLost();
     void AckReceived();

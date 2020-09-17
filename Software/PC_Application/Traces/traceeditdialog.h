@@ -24,6 +24,7 @@ private:
     void setColor(QColor c);
     Ui::TraceEditDialog *ui;
     Trace &trace;
+    bool VNAtrace;
 };
 
 #endif // TRACEEDITDIALOG_H

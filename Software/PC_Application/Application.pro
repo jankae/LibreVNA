@@ -15,6 +15,7 @@ HEADERS += \
     Device/manualcontroldialog.h \
     Generator/generator.h \
     Generator/signalgenwidget.h \
+    SpectrumAnalyzer/spectrumanalyzer.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
     Traces/bodeplotaxisdialog.h \
@@ -57,6 +58,7 @@ SOURCES += \
     Device/manualcontroldialog.cpp \
     Generator/generator.cpp \
     Generator/signalgenwidget.cpp \
+    SpectrumAnalyzer/spectrumanalyzer.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
     Traces/bodeplotaxisdialog.cpp \

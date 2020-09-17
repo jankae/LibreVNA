@@ -68,6 +68,40 @@ Protocol::Datapoint Averaging::process(Protocol::Datapoint d)
     return d;
 }
 
+Protocol::SpectrumAnalyzerResult Averaging::process(Protocol::SpectrumAnalyzerResult d)
+{
+    if (d.pointNum == avg.size()) {
+        // add moving average entry
+        deque<array<complex<double>, 4>> deque;
+        avg.push_back(deque);
+    }
+
+    if (d.pointNum < avg.size()) {
+        // can compute average
+        // get correct queue
+        auto deque = &avg[d.pointNum];
+        // add newest sample to queue
+        array<complex<double>, 4> sample = {d.port1, d.port2, 0, 0};
+        deque->push_back(sample);
+        if(deque->size() > averages) {
+            deque->pop_front();
+        }
+
+        // calculate average
+        complex<double> sum[4];
+        for(auto s : *deque) {
+            sum[0] += s[0];
+            sum[1] += s[1];
+            sum[2] += s[2];
+            sum[3] += s[3];
+        }
+        d.port1 = abs(sum[0] / (double) (deque->size()));
+        d.port2 = abs(sum[1] / (double) (deque->size()));
+    }
+
+    return d;
+}
+
 unsigned int Averaging::getLevel()
 {
     if(avg.size() > 0) {

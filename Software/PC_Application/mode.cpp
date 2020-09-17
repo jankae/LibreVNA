@@ -68,7 +68,7 @@ void Mode::activate()
 
     // restore visibility of toolbars and docks
 //    window->getUi()->menuDocks->clear();
-    for(auto d : window->findChildren<QDockWidget*>()) {
+    for(auto d : docks) {
 //        window->getUi()->menuDocks->addAction(d->toggleViewAction());
         bool hidden = settings.value("dock_"+name+"_"+d->windowTitle(), d->isHidden()).toBool();
         if(hidden) {
@@ -78,7 +78,7 @@ void Mode::activate()
         }
     }
 //    window->getUi()->menuToolbars->clear();
-    for(auto t : window->findChildren<QToolBar*>()) {
+    for(auto t : toolbars) {
 //        window->getUi()->menuToolbars->addAction(t->toggleViewAction());
         bool hidden = settings.value("toolbar_"+name+"_"+t->windowTitle(), t->isHidden()).toBool();
         if(hidden) {
@@ -99,10 +99,10 @@ void Mode::deactivate()
 {
     QSettings settings;
     // save dock/toolbar visibility
-    for(auto d : window->findChildren<QDockWidget*>()) {
+    for(auto d : docks) {
         settings.setValue("dock_"+name+"_"+d->windowTitle(), d->isHidden());
     }
-    for(auto t : window->findChildren<QToolBar*>()) {
+    for(auto t : toolbars) {
         settings.setValue("toolbar_"+name+"_"+t->windowTitle(), t->isHidden());
     }
 //    settings.setValue("geometry_"+name, window->saveGeometry());
@@ -133,6 +133,13 @@ void Mode::finalize(QWidget *centralWidget)
 {
     central = centralWidget;
     window->getCentral()->addWidget(central);
+    // Set ObjectName for toolbars and docks
+    for(auto d : docks) {
+        d->setObjectName(d->windowTitle()+name);
+    }
+    for(auto t : toolbars) {
+        t->setObjectName(t->windowTitle()+name);
+    }
     // hide all mode specific GUI elements
     for(auto t : toolbars) {
         t->hide();

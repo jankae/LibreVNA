@@ -4,7 +4,7 @@
 
 #include "delay.hpp"
 #include <cmath>
-#define LOG_LEVEL	LOG_LEVEL_WARN
+#define LOG_LEVEL	LOG_LEVEL_ERR
 #define LOG_MODULE	"MAX2871"
 #include "Log.h"
 
@@ -198,7 +198,7 @@ bool MAX2871::SetFrequency(uint64_t f) {
 				approx.num, approx.denom, abs(rem_f - rem_approx));
 	}
 
-	uint64_t f_set = (uint64_t) N * f_PFD + (f_PFD * approx.num) / approx.denom;
+	uint64_t f_set = (uint64_t) N * f_PFD + rem_approx;
 	f_set /= (1UL << div);
 
 	// write values to registers

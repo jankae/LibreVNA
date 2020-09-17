@@ -16,6 +16,7 @@
 #include "Hardware.hpp"
 #include "Manual.hpp"
 #include "Generator.hpp"
+#include "SpectrumAnalyzer.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -37,6 +38,7 @@ static Flash flash = Flash(&hspi1, FLASH_CS_GPIO_Port, FLASH_CS_Pin);
 
 #define FLAG_USB_PACKET		0x01
 #define FLAG_DATAPOINT		0x02
+#define FLAG_WORK_REQUIRED	0x04
 
 static void VNACallback(Protocol::Datapoint res) {
 	result = res;
@@ -48,6 +50,11 @@ static void USBPacketReceived(Protocol::PacketInfo p) {
 	packet = p;
 	BaseType_t woken = false;
 	xTaskNotifyFromISR(handle, FLAG_USB_PACKET, eSetBits, &woken);
+	portYIELD_FROM_ISR(woken);
+}
+static void HardwareWorkRequired() {
+	BaseType_t woken = false;
+	xTaskNotifyFromISR(handle, FLAG_WORK_REQUIRED, eSetBits, &woken);
 	portYIELD_FROM_ISR(woken);
 }
 
@@ -90,7 +97,7 @@ void App_Start() {
 	EN_6V_GPIO_Port->BSRR = EN_6V_Pin;
 #endif
 
-	if (!HW::Init()) {
+	if (!HW::Init(HardwareWorkRequired)) {
 		LOG_CRIT("Initialization failed, unable to start");
 		LED::Error(4);
 	}
@@ -108,6 +115,9 @@ void App_Start() {
 		uint32_t notification;
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
 			// something happened
+			if(notification & FLAG_WORK_REQUIRED) {
+				HW::Work();
+			}
 			if(notification & FLAG_DATAPOINT) {
 				Protocol::PacketInfo packet;
 				packet.type = Protocol::PacketType::Datapoint;
@@ -141,6 +151,12 @@ void App_Start() {
 					sweepActive = false;
 					LOG_INFO("Updating generator setting");
 					Generator::Setup(packet.generator);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
+				case Protocol::PacketType::SpectrumAnalyzerSettings:
+					sweepActive = false;
+					LOG_INFO("Updating spectrum analyzer settings");
+					SA::Setup(packet.spectrumSettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 #ifdef HAS_FLASH
@@ -191,7 +207,7 @@ void App_Start() {
 			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", result.pointNum, FPGA::GetStatus());
 			FPGA::AbortSweep();
 			// restart the current sweep
-			HW::Init();
+			HW::Init(HardwareWorkRequired);
 			HW::Ref::update();
 			VNA::Setup(settings, VNACallback);
 			sweepActive = true;

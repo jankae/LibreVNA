@@ -13,6 +13,7 @@ public:
     void reset();
     void setAverages(unsigned int a);
     Protocol::Datapoint process(Protocol::Datapoint d);
+    Protocol::SpectrumAnalyzerResult process(Protocol::SpectrumAnalyzerResult d);
     unsigned int getLevel();
 private:
     std::vector<std::deque<std::array<std::complex<double>, 4>>> avg;

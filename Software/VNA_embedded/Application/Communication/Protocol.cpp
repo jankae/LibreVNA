@@ -358,6 +358,50 @@ static int16_t EncodeManualControl(Protocol::ManualControl d, uint8_t *buf,
     return e.getSize();
 }
 
+static Protocol::SpectrumAnalyzerSettings DecodeSpectrumAnalyzerSettings(uint8_t *buf) {
+    Protocol::SpectrumAnalyzerSettings d;
+    Decoder e(buf);
+    e.get<uint64_t>(d.f_start);
+    e.get<uint64_t>(d.f_stop);
+    e.get<uint32_t>(d.RBW);
+    e.get<uint16_t>(d.pointNum);
+    d.WindowType = e.getBits(2);
+    d.SignalID = e.getBits(1);
+    d.Detector = e.getBits(3);
+    return d;
+}
+static int16_t EncodeSpectrumAnalyzerSettings(Protocol::SpectrumAnalyzerSettings d, uint8_t *buf,
+                                                   uint16_t bufSize) {
+    Encoder e(buf, bufSize);
+    e.add<uint64_t>(d.f_start);
+    e.add<uint64_t>(d.f_stop);
+    e.add<uint32_t>(d.RBW);
+    e.add<uint16_t>(d.pointNum);
+    e.addBits(d.WindowType, 2);
+    e.addBits(d.SignalID, 1);
+    e.addBits(d.Detector, 3);
+    return e.getSize();
+}
+
+static Protocol::SpectrumAnalyzerResult DecodeSpectrumAnalyzerResult(uint8_t *buf) {
+    Protocol::SpectrumAnalyzerResult d;
+    Decoder e(buf);
+    e.get<float>(d.port1);
+    e.get<float>(d.port2);
+    e.get<uint64_t>(d.frequency);
+    e.get<uint16_t>(d.pointNum);
+    return d;
+}
+static int16_t EncodeSpectrumAnalyzerResult(Protocol::SpectrumAnalyzerResult d, uint8_t *buf,
+                                                   uint16_t bufSize) {
+    Encoder e(buf, bufSize);
+    e.add<float>(d.port1);
+    e.add<float>(d.port2);
+    e.add<uint64_t>(d.frequency);
+    e.add<uint16_t>(d.pointNum);
+    return e.getSize();
+}
+
 static Protocol::FirmwarePacket DecodeFirmwarePacket(uint8_t *buf) {
     Protocol::FirmwarePacket d;
     // simple packet format, memcpy is faster than using the decoder
@@ -446,6 +490,12 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::Generator:
     	info->generator = DecodeGeneratorSettings(&data[4]);
     	break;
+    case PacketType::SpectrumAnalyzerSettings:
+    	info->spectrumSettings = DecodeSpectrumAnalyzerSettings(&data[4]);
+    	break;
+    case PacketType::SpectrumAnalyzerResult:
+    	info->spectrumResult = DecodeSpectrumAnalyzerResult(&data[4]);
+    	break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
@@ -486,6 +536,12 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
     case PacketType::Generator:
     	payload_size = EncodeGeneratorSettings(packet.generator, &dest[4], destsize - 8);
     	break;
+    case PacketType::SpectrumAnalyzerSettings:
+    	payload_size = EncodeSpectrumAnalyzerSettings(packet.spectrumSettings, &dest[4], destsize - 8);
+    	break;
+    case PacketType::SpectrumAnalyzerResult:
+		payload_size = EncodeSpectrumAnalyzerResult(packet.spectrumResult, &dest[4], destsize - 8);
+		break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:

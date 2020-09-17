@@ -57,6 +57,9 @@ public:
 	uint32_t* GetRegisters() {
 		return regs;
 	}
+	uint64_t GetActualFrequency() {
+		return outputFrequency;
+	}
 private:
 	static constexpr uint64_t MaxFreq = 6100000000; // 6GHz according to datasheet, but slight overclocking is possible
 

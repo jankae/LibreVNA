@@ -203,6 +203,14 @@ bool Device::Configure(Protocol::SweepSettings settings)
     return SendPacket(p);
 }
 
+bool Device::Configure(Protocol::SpectrumAnalyzerSettings settings)
+{
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
+    p.spectrumSettings = settings;
+    return SendPacket(p);
+}
+
 bool Device::SetManual(Protocol::ManualControl manual)
 {
     Protocol::PacketInfo p;
@@ -363,6 +371,9 @@ void Device::ReceivedData()
             break;
         case Protocol::PacketType::Status:
             emit ManualStatusReceived(packet.status);
+            break;
+        case Protocol::PacketType::SpectrumAnalyzerResult:
+            emit SpectrumResultReceived(packet.spectrumResult);
             break;
         case Protocol::PacketType::DeviceInfo:
             lastInfo = packet.info;

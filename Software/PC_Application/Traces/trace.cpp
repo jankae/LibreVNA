@@ -2,10 +2,11 @@
 
 using namespace std;
 
-Trace::Trace(QString name, QColor color)
+Trace::Trace(QString name, QColor color, LiveParameter live)
     : _name(name),
       _color(color),
       _liveType(LivedataType::Overwrite),
+      _liveParam(live),
       reflection(true),
       visible(true),
       paused(false),

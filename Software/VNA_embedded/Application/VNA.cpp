@@ -55,7 +55,7 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	uint16_t points = settings.points <= FPGA::MaxPoints ? settings.points : FPGA::MaxPoints;
 	// Configure sweep
 	FPGA::SetNumberOfPoints(points);
-	uint32_t samplesPerPoint = (1000000 / s.if_bandwidth);
+	uint32_t samplesPerPoint = (HW::ADCSamplerate / s.if_bandwidth);
 	// round up to next multiple of 128 (128 samples are spread across 35 IF2 periods)
 	samplesPerPoint = ((uint32_t) ((samplesPerPoint + 127) / 128)) * 128;
 	// has to be one less than actual number of samples

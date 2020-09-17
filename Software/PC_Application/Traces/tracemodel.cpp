@@ -148,6 +148,27 @@ void TraceModel::addVNAData(Protocol::Datapoint d)
             case Trace::LiveParameter::S12: td.S = complex<double>(d.real_S12, d.imag_S12); break;
             case Trace::LiveParameter::S21: td.S = complex<double>(d.real_S21, d.imag_S21); break;
             case Trace::LiveParameter::S22: td.S = complex<double>(d.real_S22, d.imag_S22); break;
+            default:
+                // not a VNA trace, skip
+                continue;
+            }
+            t->addData(td);
+        }
+    }
+}
+
+void TraceModel::addSAData(Protocol::SpectrumAnalyzerResult d)
+{
+    for(auto t : traces) {
+        if (t->isLive()) {
+            Trace::Data td;
+            td.frequency = d.frequency;
+            switch(t->liveParameter()) {
+            case Trace::LiveParameter::Port1: td.S = complex<double>(d.port1, 0); break;
+            case Trace::LiveParameter::Port2: td.S = complex<double>(d.port2, 0); break;
+            default:
+                // not a SA trace, skip
+                continue;
             }
             t->addData(td);
         }

@@ -33,6 +33,7 @@ signals:
 public slots:
     void clearVNAData();
     void addVNAData(Protocol::Datapoint d);
+    void addSAData(Protocol::SpectrumAnalyzerResult d);
 
 private:
     std::vector<Trace*> traces;

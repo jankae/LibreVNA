@@ -102,10 +102,18 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 	uint64_t f_start;
 	uint64_t f_stop;
 	uint32_t RBW;
+	uint16_t pointNum;
 	uint8_t WindowType :2;
 	uint8_t SignalID :1;
+	uint8_t Detector :3;
 };
 
+using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
+	float port1;
+	float port2;
+	uint64_t frequency;
+	uint16_t pointNum;
+};
 
 static constexpr uint16_t FirmwareChunkSize = 256;
 using FirmwarePacket = struct _firmwarePacket {
@@ -127,6 +135,8 @@ enum class PacketType : uint8_t {
 	Nack = 10,
 	Reference = 11,
 	Generator = 12,
+	SpectrumAnalyzerSettings = 13,
+	SpectrumAnalyzerResult =  14,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -138,8 +148,10 @@ using PacketInfo = struct _packetinfo {
 		GeneratorSettings generator;
         DeviceInfo info;
         ManualControl manual;
-        ManualStatus status;
         FirmwarePacket firmware;
+        ManualStatus status;
+        SpectrumAnalyzerSettings spectrumSettings;
+        SpectrumAnalyzerResult spectrumResult;
 	};
 };
 

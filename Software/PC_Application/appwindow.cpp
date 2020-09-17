@@ -43,6 +43,7 @@
 #include <mode.h>
 #include "VNA/vna.h"
 #include "Generator/generator.h"
+#include "SpectrumAnalyzer/spectrumanalyzer.h"
 
 using namespace std;
 
@@ -71,6 +72,7 @@ AppWindow::AppWindow(QWidget *parent)
     CreateToolbars();
     auto logDock = new QDockWidget("Device Log");
     logDock->setWidget(&deviceLog);
+    logDock->setObjectName("Log Dock");
     addDockWidget(Qt::BottomDockWidgetArea, logDock);
 
     // fill toolbar/dock menu
@@ -88,6 +90,7 @@ AppWindow::AppWindow(QWidget *parent)
     setCentralWidget(central);
     auto vna = new VNA(this);
     new Generator(this);
+    new SpectrumAnalyzer(this);
 //    auto signalGenWidget = new Signalgenerator;
 //    modeSGen = new GUIMode(this, "Signal Generator", signalGenWidget);
 
@@ -120,14 +123,6 @@ AppWindow::AppWindow(QWidget *parent)
     {
         QSettings settings;
         restoreGeometry(settings.value("geometry").toByteArray());
-    }
-
-    // Set ObjectName for toolbars and docks
-    for(auto d : findChildren<QDockWidget*>()) {
-        d->setObjectName(d->windowTitle());
-    }
-    for(auto t : findChildren<QToolBar*>()) {
-        t->setObjectName(t->windowTitle());
     }
 
     // Set default mode
@@ -248,6 +243,7 @@ void AppWindow::CreateToolbars()
     connect(toolbars.reference.outputEnabled, &QCheckBox::clicked, this, &AppWindow::UpdateReference);
 
     addToolBar(tb_reference);
+    tb_reference->setObjectName("Reference Toolbar");
 }
 
 Preferences &AppWindow::getPreferenceRef()

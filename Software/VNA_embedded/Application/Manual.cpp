@@ -97,6 +97,7 @@ void Manual::Work() {
 	}
 	Protocol::PacketInfo p;
 	p.type = Protocol::PacketType::Status;
+	p.status = status;
 	uint16_t isr_flags = FPGA::GetStatus();
 	if (!(isr_flags & 0x0002)) {
 		p.status.source_locked = 1;

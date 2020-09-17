@@ -7,10 +7,11 @@
 #include "traceexportdialog.h"
 #include <QFileDialog>
 
-TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
+TraceWidget::TraceWidget(TraceModel &model, QWidget *parent, bool SA) :
     QWidget(parent),
     ui(new Ui::TraceWidget),
-    model(model)
+    model(model),
+    SA(SA)
 {
     ui->setupUi(this);
     ui->view->setModel(&model);
@@ -27,7 +28,8 @@ TraceWidget::~TraceWidget()
 void TraceWidget::on_add_clicked()
 {
     createCount++;
-    auto t = new Trace("Trace #"+QString::number(createCount));
+    auto liveParam = SA ? Trace::LiveParameter::Port1 : Trace::LiveParameter::S11;
+    auto t = new Trace("Trace #"+QString::number(createCount), Qt::darkYellow, liveParam);
     t->setColor(QColor::fromHsl((createCount * 50) % 360, 250, 128));
     model.addTrace(t);
 }

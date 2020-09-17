@@ -85,9 +85,6 @@ VNA::VNA(AppWindow *window)
     central->Child2()->Child1()->setPlot(tracebode2);
     central->Child2()->Child2()->setPlot(tracesmith2);
 
-    // central widget is constructed, mode can be finalized
-    finalize(central);
-
     // Create menu entries and connections
     auto calMenu = new QMenu("Calibration");
     window->menuBar()->insertMenu(window->getUi()->menuWindow->menuAction(), calMenu);
@@ -437,6 +434,16 @@ VNA::VNA(AppWindow *window)
         SetIFBandwidth(pref.Startup.DefaultSweep.bandwidth);
         SetPoints(pref.Startup.DefaultSweep.points);
     }
+
+    // Set ObjectName for toolbars and docks
+    for(auto d : findChildren<QDockWidget*>()) {
+        d->setObjectName(d->windowTitle());
+    }
+    for(auto t : findChildren<QToolBar*>()) {
+        t->setObjectName(t->windowTitle());
+    }
+
+    finalize(central);
 }
 
 void VNA::deactivate()

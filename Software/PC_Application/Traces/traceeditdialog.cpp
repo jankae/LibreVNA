@@ -59,10 +59,31 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     }
 
     switch(t.liveParameter()) {
+    case Trace::LiveParameter::S11:
+    case Trace::LiveParameter::S12:
+    case Trace::LiveParameter::S21:
+    case Trace::LiveParameter::S22:
+        VNAtrace = true;
+        ui->CLiveParam->addItem("S11");
+        ui->CLiveParam->addItem("S12");
+        ui->CLiveParam->addItem("S21");
+        ui->CLiveParam->addItem("S22");
+        break;
+    case Trace::LiveParameter::Port1:
+    case Trace::LiveParameter::Port2:
+        ui->CLiveParam->addItem("Port 1");
+        ui->CLiveParam->addItem("Port 2");
+        VNAtrace = false;
+        break;
+    }
+
+    switch(t.liveParameter()) {
     case Trace::LiveParameter::S11: ui->CLiveParam->setCurrentIndex(0); break;
     case Trace::LiveParameter::S12: ui->CLiveParam->setCurrentIndex(1); break;
     case Trace::LiveParameter::S21: ui->CLiveParam->setCurrentIndex(2); break;
     case Trace::LiveParameter::S22: ui->CLiveParam->setCurrentIndex(3); break;
+    case Trace::LiveParameter::Port1: ui->CLiveParam->setCurrentIndex(0); break;
+    case Trace::LiveParameter::Port2: ui->CLiveParam->setCurrentIndex(1); break;
     }
 
     connect(ui->GSource, qOverload<int>(&QButtonGroup::buttonClicked), updateFileStatus);
@@ -100,11 +121,18 @@ void TraceEditDialog::on_buttonBox_accepted()
             case 1: type = Trace::LivedataType::MaxHold; break;
             case 2: type = Trace::LivedataType::MinHold; break;
             }
-            switch(ui->CLiveParam->currentIndex()) {
-            case 0: param = Trace::LiveParameter::S11; break;
-            case 1: param = Trace::LiveParameter::S12; break;
-            case 2: param = Trace::LiveParameter::S21; break;
-            case 3: param = Trace::LiveParameter::S22; break;
+            if(VNAtrace) {
+                switch(ui->CLiveParam->currentIndex()) {
+                case 0: param = Trace::LiveParameter::S11; break;
+                case 1: param = Trace::LiveParameter::S12; break;
+                case 2: param = Trace::LiveParameter::S21; break;
+                case 3: param = Trace::LiveParameter::S22; break;
+                }
+            } else {
+                switch(ui->CLiveParam->currentIndex()) {
+                case 0: param = Trace::LiveParameter::Port1; break;
+                case 1: param = Trace::LiveParameter::Port2; break;
+                }
             }
             trace.fromLivedata(type, param);
         }

@@ -21,7 +21,16 @@ public:
         std::complex<double> S;
     };
 
-    Trace(QString name = QString(), QColor color = Qt::darkYellow);
+    enum class LiveParameter {
+        S11,
+        S12,
+        S21,
+        S22,
+        Port1,
+        Port2,
+    };
+
+    Trace(QString name = QString(), QColor color = Qt::darkYellow, LiveParameter live = LiveParameter::S11);
     ~Trace();
 
     enum class LivedataType {
@@ -29,12 +38,7 @@ public:
         MaxHold,
         MinHold,
     };
-    enum class LiveParameter {
-        S11,
-        S12,
-        S21,
-        S22,
-    };
+
 
     void clear();
     void addData(Data d);
