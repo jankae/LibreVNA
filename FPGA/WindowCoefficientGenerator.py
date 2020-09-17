@@ -22,6 +22,8 @@ class Window:
         self.name = name
         self.function = function
         self.correction = correction
+        self.sum = 0
+        self.num_coeff = 0
     
     def StartFile(self):
         self.file = open(self.name+".dat", "w")
@@ -30,6 +32,8 @@ class Window:
         if not hasattr(self, 'file'):
             self.StartFile()
         value = self.function(normalized_index)
+        self.sum = self.sum + value
+        self.num_coeff = self.num_coeff + 1
         if INCLUDE_AMPLITUDE_CORRECTION:
             value = value * self.correction / 8.0
         value = int(value * (2 ** (BITS_PER_COEFFICIENT-1)))
@@ -38,6 +42,9 @@ class Window:
             value = value - 1
         output = bindigits(value, BITS_PER_COEFFICIENT)
         self.file.write(output+"\n")
+
+    def CorrectionFactor(self):
+        return 1.0 / (self.sum / self.num_coeff)
 
 def calc_hann(i):
     return math.sin(math.pi * i) ** 2   
@@ -54,12 +61,15 @@ def calc_flattop(i):
     return a0 - a1 * math.cos(2*math.pi*i) + a2 * math.cos(4*math.pi*i) - a3 * math.cos(6*math.pi*i) + a4 * math.cos(8*math.pi*i)
 
 WindowList = []
-WindowList.append(Window("Hann", calc_hann, 2.0))
-WindowList.append(Window("Kaiser", calc_kaiser, 2.49))
-WindowList.append(Window("Flattop", calc_flattop, 4.18))
+WindowList.append(Window("Hann", calc_hann, 2.00))
+WindowList.append(Window("Kaiser", calc_kaiser, 2.50))
+WindowList.append(Window("Flattop", calc_flattop, 4.64))
 
 
 for i in range(NUMBER_OF_COEFFICIENTS):
     norm_i = (i+0.5) / NUMBER_OF_COEFFICIENTS
     for w in WindowList:
         w.AddCoefficient(norm_i)
+
+for w in WindowList:
+    print(w.CorrectionFactor())
