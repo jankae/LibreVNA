@@ -544,7 +544,7 @@ void VNA::SettingsChanged()
     average.reset();
     traceModel.clearVNAData();
     UpdateStatusPanel();
-    TracePlot::UpdateSpan(settings.f_start, settings.f_stop);
+    emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
 
 void VNA::StartImpedanceMatching()

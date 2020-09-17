@@ -19,7 +19,6 @@ public:
     virtual void setXAxis(double min, double max){Q_UNUSED(min);Q_UNUSED(max)};
 
     static std::set<TracePlot *> getPlots();
-    static void UpdateSpan(double fmin, double fmax);
 
 signals:
     void doubleClicked(QWidget *w);

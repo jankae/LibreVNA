@@ -189,8 +189,8 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
 //    if(pref.Startup.RememberSweepSettings) {
 //        LoadSweepSettings();
 //    } else {
-        settings.f_start = pref.Startup.DefaultSweep.start;
-        settings.f_stop = pref.Startup.DefaultSweep.stop;
+        settings.f_start = 950000000;
+        settings.f_stop = 1050000000;
         ConstrainAndUpdateFrequencies();
         SetRBW(10000);
         settings.WindowType = 1;
@@ -235,7 +235,7 @@ void SpectrumAnalyzer::SettingsChanged()
     }
     average.reset();
     traceModel.clearVNAData();
-    TracePlot::UpdateSpan(settings.f_start, settings.f_stop);
+    emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
 
 void SpectrumAnalyzer::StartImpedanceMatching()

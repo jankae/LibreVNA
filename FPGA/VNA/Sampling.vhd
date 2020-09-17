@@ -30,12 +30,11 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity Sampling is
-	 Generic(CLK_DIV : integer;
-				CLK_FREQ : integer;
-				IF_FREQ : integer;
-				CLK_CYCLES_PRE_DONE : integer);
+	 Generic(CLK_CYCLES_PRE_DONE : integer);
     Port ( CLK : in  STD_LOGIC;
            RESET : in  STD_LOGIC;
+			  ADC_PRESCALER : in STD_LOGIC_VECTOR(7 downto 0);
+			  PHASEINC : in STD_LOGIC_VECTOR(11 downto 0);
            PORT1 : in  STD_LOGIC_VECTOR (15 downto 0);
            PORT2 : in  STD_LOGIC_VECTOR (15 downto 0);
            REF : in  STD_LOGIC_VECTOR (15 downto 0);
@@ -87,11 +86,10 @@ END COMPONENT;
 	signal p2_Q : signed(47 downto 0);
 	signal r_I : signed(47 downto 0);
 	signal r_Q : signed(47 downto 0);
-	signal clk_cnt : integer range 0 to CLK_DIV - 1;
+	signal clk_cnt : integer range 0 to 255;
 	signal sample_cnt : integer range 0 to 131071;
 	signal samples_to_take : integer range 0 to 131071;
 	
-	constant phase_inc : integer := IF_FREQ * 4096 * CLK_DIV / CLK_FREQ;
 	signal phase : std_logic_vector(11 downto 0);
 	signal sine : std_logic_vector(15 downto 0);
 	signal cosine : std_logic_vector(15 downto 0);
@@ -206,7 +204,7 @@ begin
 			else
 				-- when not idle, generate pulses for ADCs
 				if state /= Idle then
-					if clk_cnt = CLK_DIV - 1 then
+					if clk_cnt = unsigned(ADC_PRESCALER) - 1 then
 						ADC_START <= '1';
 						clk_cnt <= 0;
 					else
@@ -234,7 +232,7 @@ begin
 						phase <= (others => '0');
 						if START = '1' then
 							state <= Sampling;
-							samples_to_take <= to_integer(unsigned(SAMPLES & "0000000"));
+							samples_to_take <= to_integer(unsigned(SAMPLES & "0000000") - 1);
 						end if;
 					when Sampling =>
 						DONE <= '0';
@@ -260,7 +258,7 @@ begin
 						ACTIVE <= '1';
 						DONE <= '0';
 						PRE_DONE <= '0';
-						phase <= std_logic_vector(unsigned(phase) + phase_inc);
+						phase <= std_logic_vector(unsigned(phase) + unsigned(PHASEINC));
 						if sample_cnt < samples_to_take then
 							sample_cnt <= sample_cnt + 1;
 							state <= Sampling;

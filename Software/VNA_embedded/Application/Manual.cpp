@@ -71,6 +71,7 @@ void Manual::Setup(Protocol::ManualControl m) {
 	FPGA::Enable(FPGA::Periphery::RefMixer, m.RefEN);
 	FPGA::Enable(FPGA::Periphery::ExcitePort1, m.PortSwitch == 0);
 	FPGA::Enable(FPGA::Periphery::ExcitePort2, m.PortSwitch == 1);
+	FPGA::Enable(FPGA::Periphery::PortSwitch);
 
 	active = true;
 	FPGA::StartSweep();

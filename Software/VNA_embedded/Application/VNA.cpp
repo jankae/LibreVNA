@@ -165,6 +165,7 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	FPGA::Enable(FPGA::Periphery::LO1RF);
 	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.excitePort1);
 	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.excitePort2);
+	FPGA::Enable(FPGA::Periphery::PortSwitch);
 	pointCnt = 0;
 	// starting port depends on whether port 1 is active in sweep
 	excitingPort1 = s.excitePort1;

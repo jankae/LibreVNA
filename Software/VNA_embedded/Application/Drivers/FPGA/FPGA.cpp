@@ -21,7 +21,7 @@ static void SwitchBytes(int16_t &value) {
 	value = (value & 0xFF00) >> 8 | (value & 0x00FF) << 8;
 }
 
-void WriteRegister(FPGA::Reg reg, uint16_t value) {
+void FPGA::WriteRegister(FPGA::Reg reg, uint16_t value) {
 	uint8_t cmd[4] = {0x80, (uint8_t) reg, (uint8_t) (value >> 8), (uint8_t) (value & 0xFF)};
 	Low(CS);
 	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) cmd, 4, 100);

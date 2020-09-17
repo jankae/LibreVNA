@@ -79,7 +79,7 @@ BEGIN
 	-- Instantiate the Unit Under Test (UUT)
    uut: MCP33131
 	GENERIC MAP(CLK_DIV => 2,
-					CONVCYCLES => 71)
+					CONVCYCLES => 77)
 	PORT MAP (
           CLK => CLK,
           RESET => RESET,
@@ -106,13 +106,13 @@ BEGIN
    begin		
       -- hold reset state for 100 ns.
       RESET <= '1';
-		wait for 100 ns;	
+		wait for CLK_period*10.5;
 		RESET <= '0';
       wait for CLK_period*10;
 		
       -- insert stimulus here
 		while True loop
-			wait for CLK_period*105;
+			wait for CLK_period*111;
 			START <= '1';
 			wait for CLK_period;
 			START <= '0';

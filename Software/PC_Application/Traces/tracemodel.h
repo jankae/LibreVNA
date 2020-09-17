@@ -25,7 +25,9 @@ public:
     std::vector<Trace*> getTraces();
 
     bool PortExcitationRequired(int port);
+
 signals:
+    void SpanChanged(double fmin, double fmax);
     void traceAdded(Trace *t);
     void traceRemoved(Trace *t);
     void requiredExcitation(bool excitePort1, bool excitePort2);

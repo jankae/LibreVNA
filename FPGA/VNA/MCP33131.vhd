@@ -50,7 +50,7 @@ architecture Behavioral of MCP33131 is
 	signal div_cnt : integer range 0 to (CLK_DIV/2)-1;
 	signal sclk_phase : std_logic;
 	signal adc_data : std_logic_vector(15 downto 0);
-	type States is (Idle, Conversion, Transmission);
+	type States is (Idle, Conversion, WAIT_tEN, Transmission);
 	signal state : States;
 	signal min_int, max_int, data_int : signed(15 downto 0);
 begin
@@ -100,8 +100,10 @@ begin
 							div_cnt <= 0;
 							CONVSTART <= '0';
 							adc_data <= "0000000000000001";
-							state <= Transmission;
+							state <= WAIT_tEN;
 						end if;
+					when WAIT_tEN =>
+						state <= Transmission;
 					when Transmission =>
 						if(div_cnt < (CLK_DIV/2)-1) then
 							div_cnt <= div_cnt + 1;

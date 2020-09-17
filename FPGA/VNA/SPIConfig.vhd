@@ -60,8 +60,11 @@ entity SPICommands is
 			  LO_RF_EN : out STD_LOGIC;
 			  SOURCE_CE_EN : out STD_LOGIC;
 			  LO_CE_EN : out STD_LOGIC;
+			  PORTSWITCH_EN : out STD_LOGIC;
 			  LEDS : out STD_LOGIC_VECTOR(2 downto 0);
 			  WINDOW_SETTING : out STD_LOGIC_VECTOR(1 downto 0);
+			  ADC_PRESCALER : out STD_LOGIC_VECTOR(7 downto 0);
+			  ADC_PHASEINC : out STD_LOGIC_VECTOR(11 downto 0);
 			  INTERRUPT_ASSERTED : out STD_LOGIC;
 			  RESET_MINMAX : out STD_LOGIC;
 			  SWEEP_HALTED : in STD_LOGIC;
@@ -139,10 +142,13 @@ begin
 				LO_RF_EN <= '0';
 				SOURCE_CE_EN <= '0';
 				LO_CE_EN <= '0';
+				PORTSWITCH_EN <= '0';
 				LEDS <= (others => '1');
 				WINDOW_SETTING <= "00";
 				unread_sampling_data <= '0';
 				interrupt_mask <= (others => '0');
+				ADC_PRESCALER <= std_logic_vector(to_unsigned(112, 8));
+				ADC_PHASEINC <= std_logic_vector(to_unsigned(1120, 12));
 				RESET_MINMAX <= '0';
 			else
 				if sweep_config_write = '1' then
@@ -191,7 +197,7 @@ begin
 								when 0 => interrupt_mask <= spi_buf_out;
 								when 1 => SWEEP_POINTS <= spi_buf_out(12 downto 0);
 								when 2 => NSAMPLES <= spi_buf_out(9 downto 0);
-								when 3 => --NSAMPLES(16) <= spi_buf_out(0);
+								when 3 => PORTSWITCH_EN <= spi_buf_out(0);
 											PORT1_EN <= spi_buf_out(15);
 											PORT2_EN <= spi_buf_out(14);
 											REF_EN <= spi_buf_out(13);
@@ -204,8 +210,8 @@ begin
 											LO_CE_EN <= spi_buf_out(3);
 											EXCITE_PORT1 <= spi_buf_out(1);
 											EXCITE_PORT2 <= spi_buf_out(2);
-								--when 4 => SETTLING_TIME <= spi_buf_out;
-								
+								when 4 => ADC_PRESCALER <= spi_buf_out(7 downto 0);
+								when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
 								when 8 => MAX2871_DEF_0(15 downto 0) <= spi_buf_out;
 								when 9 => MAX2871_DEF_0(31 downto 16) <= spi_buf_out;
 								when 10 => MAX2871_DEF_1(15 downto 0) <= spi_buf_out;

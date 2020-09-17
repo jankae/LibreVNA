@@ -119,6 +119,10 @@ bool HW::Init(WorkRequest wr) {
 		return false;
 	}
 
+	// Set default ADC samplerate
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 112);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
+
 	// Enable new data and sweep halt interrupt
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
 	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
@@ -211,6 +215,7 @@ void HW::SetIdle() {
 	FPGA::Enable(FPGA::Periphery::Port1Mixer, false);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer, false);
 	FPGA::Enable(FPGA::Periphery::RefMixer, false);
+	FPGA::Enable(FPGA::Periphery::PortSwitch, false);
 }
 
 void HW::fillDeviceInfo(Protocol::DeviceInfo *info) {

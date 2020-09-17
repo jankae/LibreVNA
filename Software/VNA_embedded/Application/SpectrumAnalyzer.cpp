@@ -17,6 +17,7 @@ static uint8_t signalIDstep;
 static uint32_t sampleNum;
 static Protocol::PacketInfo p;
 static bool active = false;
+static uint32_t lastLO2;
 
 static float port1Measurement, port2Measurement;
 
@@ -32,30 +33,44 @@ static void StartNextSample() {
 		// reset minimum amplitudes in first signal ID step
 		port1Measurement = std::numeric_limits<float>::max();
 		port2Measurement = std::numeric_limits<float>::max();
+		// Use default LO frequencies
 		LO1freq = freq + HW::IF1;
 		LO2freq = HW::IF1 - HW::IF2;
+		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 112);
+		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
 		break;
 	case 1:
+		// Shift first LO to other side
 		LO1freq = freq - HW::IF1;
 		LO2freq = HW::IF1 - HW::IF2;
 		break;
 	case 2:
+		// Shift both LOs to other side
 		LO1freq = freq + HW::IF1;
 		LO2freq = HW::IF1 + HW::IF2;
 		break;
 	case 3:
+		// Shift second LO to other side
 		LO1freq = freq - HW::IF1;
 		LO2freq = HW::IF1 + HW::IF2;
 		break;
+	case 4:
+		// Use default frequencies with different ADC samplerate to remove images in final IF
+		LO1freq = freq + HW::IF1;
+		LO2freq = HW::IF1 - HW::IF2;
+		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 120);
+		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1200);
 	}
 	LO1.SetFrequency(LO1freq);
 	// LO1 is not able to reach all frequencies with the required precision, adjust LO2 to account for deviation
 	int32_t LO1deviation = (int64_t) LO1.GetActualFrequency() - LO1freq;
 	LO2freq += LO1deviation;
-	// Adjust LO2 PLL
-	// Generate second LO with Si5351
-	Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-	Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	// only adjust LO2 PLL if necessary (if the deviation is significantly less than the RBW it does not matter)
+	if((uint32_t) abs(LO2freq - lastLO2) > s.RBW / 2) {
+		Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+		lastLO2 = LO2freq;
+	}
 	// Configure the sampling in the FPGA
 	FPGA::WriteSweepConfig(0, 0, Source.GetRegisters(), LO1.GetRegisters(), 0,
 			0, FPGA::SettlingTime::us20, FPGA::Samples::SPPRegister, 0,
@@ -74,7 +89,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	// individually start each point and do the sweep in the uC
 	FPGA::SetNumberOfPoints(1);
 	// calculate amount of required points
-	points = (s.f_stop - s.f_start) / s.RBW;
+	points = 2 * (s.f_stop - s.f_start) / s.RBW;
 	// adjust to integer multiple of requested result points (in order to have the same amount of measurements in each bin)
 	points += s.pointNum - points % s.pointNum;
 	binSize = points / s.pointNum;
@@ -97,6 +112,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::Enable(FPGA::Periphery::ExcitePort1);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
+	lastLO2 = 0;
 	active = true;
 	StartNextSample();
 }
@@ -121,7 +137,7 @@ void SA::Work() {
 	if(!active) {
 		return;
 	}
-	if(!s.SignalID || signalIDstep >= 3) {
+	if(!s.SignalID || signalIDstep >= 4) {
 		// this measurement point is done, handle result according to detector
 		uint16_t binIndex = pointCnt / binSize;
 		uint32_t pointInBin = pointCnt % binSize;

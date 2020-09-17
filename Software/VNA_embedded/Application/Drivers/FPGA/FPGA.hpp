@@ -12,7 +12,8 @@ enum class Reg {
 	SweepPoints = 0x01,
 	SamplesPerPoint = 0x02,
 	SystemControl = 0x03,
-	SettlingTime = 0x04,
+	ADCPrescaler = 0x04,
+	PhaseIncrement = 0x05,
 	MAX2871Def0LSB = 0x08,
 	MAX2871Def0MSB = 0x09,
 	MAX2871Def1LSB = 0x0A,
@@ -49,6 +50,7 @@ enum class Periphery {
 	LO1Chip = 0x0008,
 	ExcitePort2 = 0x0004,
 	ExcitePort1 = 0x0002,
+	PortSwitch = 0x0001,
 };
 
 enum class Interrupt {
@@ -96,6 +98,7 @@ bool Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size);
 
 using HaltedCallback = void(*)(void);
 bool Init(HaltedCallback cb = nullptr);
+void WriteRegister(FPGA::Reg reg, uint16_t value);
 void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
 void Enable(Periphery p, bool enable = true);

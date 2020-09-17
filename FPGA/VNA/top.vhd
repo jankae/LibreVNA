@@ -145,13 +145,12 @@ architecture Behavioral of top is
 		);
 	END COMPONENT;
 	COMPONENT Sampling
-	Generic(CLK_DIV : integer;
-		CLK_FREQ : integer;
-		IF_FREQ : integer;
-		CLK_CYCLES_PRE_DONE : integer);
+	Generic(CLK_CYCLES_PRE_DONE : integer);
 	PORT(
 		CLK : IN std_logic;
 		RESET : IN std_logic;
+		ADC_PRESCALER : in STD_LOGIC_VECTOR(7 downto 0);
+		PHASEINC : in STD_LOGIC_VECTOR(11 downto 0);
 		PORT1 : IN std_logic_vector(15 downto 0);
 		PORT2 : IN std_logic_vector(15 downto 0);
 		REF : IN std_logic_vector(15 downto 0);
@@ -236,8 +235,11 @@ architecture Behavioral of top is
 		LO_RF_EN : out STD_LOGIC;
 		SOURCE_CE_EN : out STD_LOGIC;
 		LO_CE_EN : out STD_LOGIC;		
+		PORTSWITCH_EN : out STD_LOGIC;
 		LEDS : out STD_LOGIC_VECTOR(2 downto 0);
 		WINDOW_SETTING : out STD_LOGIC_VECTOR(1 downto 0);
+		ADC_PRESCALER : out STD_LOGIC_VECTOR(7 downto 0);
+		ADC_PHASEINC : out STD_LOGIC_VECTOR(11 downto 0);
 		INTERRUPT_ASSERTED : OUT std_logic;
 		RESET_MINMAX : out STD_LOGIC;
 		SWEEP_HALTED : in STD_LOGIC;
@@ -307,6 +309,8 @@ architecture Behavioral of top is
 	signal sampling_user_samples : std_logic_vector(9 downto 0);
 	signal sampling_result : std_logic_vector(287 downto 0);
 	signal sampling_window : std_logic_vector(1 downto 0);
+	signal sampling_prescaler : std_logic_vector(7 downto 0);
+	signal sampling_phaseinc : std_logic_vector(11 downto 0);
 	
 	-- Sweep signals
 	signal sweep_points : std_logic_vector(12 downto 0);
@@ -338,6 +342,7 @@ architecture Behavioral of top is
 	signal port1mix_en : std_logic;
 	signal port2mix_en : std_logic;
 	signal refmix_en : std_logic;	
+	signal portswitch_en : std_logic;
 	
 	-- PLL/SPI internal mux
 	signal fpga_select : std_logic;
@@ -367,10 +372,10 @@ begin
 	LEDS(2) <= SOURCE_LD;
 	LEDS(3) <= LO1_LD;
 	-- Sweep and active port
-	PORT_SELECT2 <= not sweep_port_select;
-	PORT2_SELECT <= not sweep_port_select;
-	PORT_SELECT1 <= sweep_port_select;
-	PORT1_SELECT <= sweep_port_select;
+	PORT_SELECT2 <= not sweep_port_select and portswitch_en;
+	PORT2_SELECT <= not sweep_port_select and portswitch_en;
+	PORT_SELECT1 <= sweep_port_select and portswitch_en;
+	PORT1_SELECT <= sweep_port_select and portswitch_en;
 	BAND_SELECT_HIGH <= not sweep_band;
 	BAND_SELECT_LOW <= sweep_band;
 	PORT1_MIX2_EN <= port1mix_en;
@@ -379,8 +384,8 @@ begin
 	PORT2_MIX1_EN <= not port2mix_en;
 	REF_MIX2_EN <= refmix_en;
 	REF_MIX1_EN <= not refmix_en;
-	LEDS(4) <= not (not sweep_reset and not sweep_port_select);
-	LEDS(5) <= not (not sweep_reset and sweep_port_select);
+	LEDS(4) <= not (not sweep_reset and not sweep_port_select and portswitch_en);
+	LEDS(5) <= not (not sweep_reset and sweep_port_select and portswitch_en);
 	-- Uncommitted LEDs
 	LEDS(7 downto 6) <= user_leds(1 downto 0);	
 	--LEDS(7) <= '0';
@@ -480,7 +485,7 @@ begin
 
 	Port1ADC: MCP33131
 	GENERIC MAP(CLK_DIV => 2,
-				CONVCYCLES => 73)
+				CONVCYCLES => 77)
 	PORT MAP(
 		CLK => clk160,
 		RESET => int_reset,
@@ -496,7 +501,7 @@ begin
 	);
 	Port2ADC: MCP33131
 	GENERIC MAP(CLK_DIV => 2,
-				CONVCYCLES => 73)
+				CONVCYCLES => 77)
 	PORT MAP(
 		CLK => clk160,
 		RESET => int_reset,
@@ -512,7 +517,7 @@ begin
 	);
 	RefADC: MCP33131
 	GENERIC MAP(CLK_DIV => 2,
-				CONVCYCLES => 73)
+				CONVCYCLES => 77)
 	PORT MAP(
 		CLK => clk160,
 		RESET => int_reset,
@@ -528,13 +533,12 @@ begin
 	);
 	
 	Sampler: Sampling
-	GENERIC MAP(CLK_DIV => 112,
-			CLK_FREQ => 102400000,
-			IF_FREQ => 250000,
-			CLK_CYCLES_PRE_DONE => 0)
+	GENERIC MAP(CLK_CYCLES_PRE_DONE => 0)
 	PORT MAP(
 		CLK => clk160,
 		RESET => sweep_reset,
+		ADC_PRESCALER => sampling_prescaler,
+		PHASEINC => sampling_phaseinc,
 		PORT1 => adc_port1_data,
 		PORT2 => adc_port2_data,
 		REF => adc_ref_data,
@@ -648,8 +652,11 @@ begin
 		LO_RF_EN => LO1_RF_EN,
 		SOURCE_CE_EN => SOURCE_CE,
 		LO_CE_EN => LO1_CE,
+		PORTSWITCH_EN => portswitch_en,
 		LEDS => user_leds,
 		WINDOW_SETTING => sampling_window,
+		ADC_PRESCALER => sampling_prescaler,
+		ADC_PHASEINC => sampling_phaseinc,
 		INTERRUPT_ASSERTED => intr,
 		RESET_MINMAX => adc_reset_minmax,
 		SWEEP_HALTED => sweep_halted,

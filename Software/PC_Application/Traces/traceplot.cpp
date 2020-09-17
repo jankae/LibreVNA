@@ -48,13 +48,6 @@ void TracePlot::mouseDoubleClickEvent(QMouseEvent *) {
     emit doubleClicked(this);
 }
 
-void TracePlot::UpdateSpan(double fmin, double fmax)
-{
-    for(auto p : plots) {
-        p->setXAxis(fmin, fmax);
-    }
-}
-
 void TracePlot::initializeTraceInfo(TraceModel &model)
 {
     // Populate already present traces

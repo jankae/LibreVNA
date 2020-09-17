@@ -146,6 +146,8 @@ TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
     // enable autoscaling and set for full span (no information about actual span available yet)
     setXAxis(0, 6000000000);
     setXAxis(true, 0, 6000000000, 600000000);
+    // get notified when the span changes
+    connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TraceBodePlot::setXAxis));
 }
 
 TraceBodePlot::~TraceBodePlot()
