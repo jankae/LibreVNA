@@ -3,6 +3,7 @@
 #include "usbd_core.h"
 
 USBD_HandleTypeDef hUsbDeviceFS;
+extern PCD_HandleTypeDef hpcd_USB_FS;
 
 #define EP_DATA_IN_ADDRESS		0x81
 #define EP_DATA_OUT_ADDRESS		0x01
@@ -186,7 +187,9 @@ void usb_init(usbd_callback_t callback) {
 	USBD_Init(&hUsbDeviceFS, &FS_Desc, 0);
 	USBD_RegisterClass(&hUsbDeviceFS, &USBD_ClassDriver);
 	USBD_Start(&hUsbDeviceFS);
-	HAL_NVIC_EnableIRQ(USB_HP_IRQn);
+    HAL_NVIC_SetPriority(USB_HP_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(USB_HP_IRQn);
+    HAL_NVIC_SetPriority(USB_LP_IRQn, 6, 0);
 	HAL_NVIC_EnableIRQ(USB_LP_IRQn);
 }
 
@@ -216,4 +219,13 @@ void usb_log(const char *log, uint16_t length) {
 	} else {
 		// still busy, unable to send log
 	}
+}
+
+void USB_HP_IRQHandler(void)
+{
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
+}
+void USB_LP_IRQHandler(void)
+{
+  HAL_PCD_IRQHandler(&hpcd_USB_FS);
 }

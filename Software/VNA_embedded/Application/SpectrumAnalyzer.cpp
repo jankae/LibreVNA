@@ -18,6 +18,7 @@ static uint32_t sampleNum;
 static Protocol::PacketInfo p;
 static bool active = false;
 static uint32_t lastLO2;
+static uint32_t actualRBW;
 
 static float port1Measurement, port2Measurement;
 
@@ -40,20 +41,42 @@ static void StartNextSample() {
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
 		break;
 	case 1:
-		// Shift first LO to other side
-		LO1freq = freq - HW::IF1;
 		LO2freq = HW::IF1 - HW::IF2;
-		break;
+		// Shift first LO to other side
+		// depending on the measurement frequency this is not possible or additive mixing has to be used
+		if(freq >= HW::IF1 + HW::LO1_minFreq) {
+			// frequency is high enough to shift 1.LO below measurement frequency
+			LO1freq = freq - HW::IF1;
+			break;
+		} else if(freq <= HW::IF1 - HW::LO1_minFreq) {
+			// frequency is low enough to add 1.LO to measurement frequency
+			LO1freq = HW::IF1 - freq;
+			break;
+		}
+		// unable to reach required frequency with 1.LO, skip this signal ID step
+		signalIDstep++;
+		/* no break */
 	case 2:
 		// Shift both LOs to other side
 		LO1freq = freq + HW::IF1;
 		LO2freq = HW::IF1 + HW::IF2;
 		break;
 	case 3:
-		// Shift second LO to other side
-		LO1freq = freq - HW::IF1;
 		LO2freq = HW::IF1 + HW::IF2;
-		break;
+		// Shift second LO to other side
+		// depending on the measurement frequency this is not possible or additive mixing has to be used
+		if(freq >= HW::IF1 + HW::LO1_minFreq) {
+			// frequency is high enough to shift 1.LO below measurement frequency
+			LO1freq = freq - HW::IF1;
+			break;
+		} else if(freq <= HW::IF1 - HW::LO1_minFreq) {
+			// frequency is low enough to add 1.LO to measurement frequency
+			LO1freq = HW::IF1 - freq;
+			break;
+		}
+		// unable to reach required frequency with 1.LO, skip this signal ID step
+		signalIDstep++;
+		/* no break */
 	case 4:
 		// Use default frequencies with different ADC samplerate to remove images in final IF
 		LO1freq = freq + HW::IF1;
@@ -66,7 +89,7 @@ static void StartNextSample() {
 	int32_t LO1deviation = (int64_t) LO1.GetActualFrequency() - LO1freq;
 	LO2freq += LO1deviation;
 	// only adjust LO2 PLL if necessary (if the deviation is significantly less than the RBW it does not matter)
-	if((uint32_t) abs(LO2freq - lastLO2) > s.RBW / 2) {
+	if((uint32_t) abs(LO2freq - lastLO2) > actualRBW / 2) {
 		Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		lastLO2 = LO2freq;
@@ -88,19 +111,23 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	// in almost all cases a full sweep requires more points than the FPGA can handle at a time
 	// individually start each point and do the sweep in the uC
 	FPGA::SetNumberOfPoints(1);
-	// calculate amount of required points
-	points = 2 * (s.f_stop - s.f_start) / s.RBW;
-	// adjust to integer multiple of requested result points (in order to have the same amount of measurements in each bin)
-	points += s.pointNum - points % s.pointNum;
-	binSize = points / s.pointNum;
-	LOG_DEBUG("%u displayed points, resulting in %lu points and bins of size %u", s.pointNum, points, binSize);
 	// calculate required samples per measurement for requested RBW
 	// see https://www.tek.com/blog/window-functions-spectrum-analyzers for window factors
 	constexpr float window_factors[4] = {0.89f, 2.23f, 1.44f, 3.77f};
 	sampleNum = HW::ADCSamplerate * window_factors[s.WindowType] / s.RBW;
 	// round up to next multiple of 128
 	sampleNum += 128 - sampleNum%128;
+	if(sampleNum >= HW::MaxSamples) {
+		sampleNum = HW::MaxSamples;
+	}
+	actualRBW = HW::ADCSamplerate * window_factors[s.WindowType] / sampleNum;
 	FPGA::SetSamplesPerPoint(sampleNum);
+	// calculate amount of required points
+	points = 2 * (s.f_stop - s.f_start) / actualRBW;
+	// adjust to integer multiple of requested result points (in order to have the same amount of measurements in each bin)
+	points += s.pointNum - points % s.pointNum;
+	binSize = points / s.pointNum;
+	LOG_DEBUG("%u displayed points, resulting in %lu points and bins of size %u", s.pointNum, points, binSize);
 	// set initial state
 	pointCnt = 0;
 	// enable the required hardware resources

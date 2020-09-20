@@ -14,10 +14,6 @@
 #define LOG_MODULE	"VNA"
 #include "Log.h"
 
-static constexpr uint32_t IF1 = 60100000;
-static constexpr uint32_t IF1_alternate = 57000000;
-static constexpr uint32_t IF2 = 250000;
-
 static VNA::SweepCallback sweepCallback;
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
@@ -27,11 +23,10 @@ static bool active = false;
 
 using IFTableEntry = struct {
 	uint16_t pointCnt;
-	uint32_t IF1;
 	uint8_t clkconfig[8];
 };
 
-static constexpr uint16_t IFTableNumEntries = 100;
+static constexpr uint16_t IFTableNumEntries = 500;
 static IFTableEntry IFTable[IFTableNumEntries];
 static uint16_t IFTableIndexCnt = 0;
 
@@ -58,6 +53,7 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	uint32_t samplesPerPoint = (HW::ADCSamplerate / s.if_bandwidth);
 	// round up to next multiple of 128 (128 samples are spread across 35 IF2 periods)
 	samplesPerPoint = ((uint32_t) ((samplesPerPoint + 127) / 128)) * 128;
+	uint32_t actualBandwidth = HW::ADCSamplerate / samplesPerPoint;
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
@@ -70,11 +66,20 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 		attenuator = (-1000 - s.cdbm_excitation) / 25;
 	}
 
-	uint32_t last_IF1 = IF1;
+	uint32_t last_LO2 = HW::IF1 - HW::IF2;
+	Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.ResetPLL(Si5351C::PLL::B);
 
 	IFTableIndexCnt = 0;
 
 	bool last_lowband = false;
+
+	if(!s.suppressPeaks) {
+		// invalidate first entry of IFTable, preventing switing of 2.LO in halted callback
+		IFTable[0].pointCnt = 0xFFFF;
+	}
 
 	// Transfer PLL configuration to FPGA
 	for (uint16_t i = 0; i < points; i++) {
@@ -82,77 +87,61 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 		// SetFrequency only manipulates the register content in RAM, no SPI communication is done.
 		// No mode-switch of FPGA necessary here.
 
-		// Check which IF frequency is a better fit
-		uint32_t used_IF = IF1;
-//		if (freq < 290000000) {
-//			// for low frequencies the harmonics of the IF and source frequency should not be too close
-//			uint32_t dist_primary;
-//			if(freq < IF1) {
-//				dist_primary = IF1 - freq * (IF1 / freq);
-//				if (dist_primary > freq / 2) {
-//					dist_primary = freq - dist_primary;
-//				}
-//			} else {
-//				dist_primary = freq - IF1 * (freq / IF1);
-//				if (dist_primary > IF1 / 2) {
-//					dist_primary = IF1 - dist_primary;
-//				}
-//			}
-//			uint32_t dist_alternate;
-//			if(freq < IF1_alternate) {
-//				dist_alternate = IF1_alternate - freq * (IF1_alternate / freq);
-//				if (dist_alternate > freq / 2) {
-//					dist_alternate = freq - dist_primary;
-//				}
-//			} else {
-//				dist_alternate = freq - IF1_alternate * (freq / IF1_alternate);
-//				if (dist_alternate > IF1_alternate / 2) {
-//					dist_alternate = IF1_alternate - dist_primary;
-//				}
-//			}
-//			if(dist_alternate > dist_primary) {
-//				used_IF = IF1_alternate;
-//			}
-//			LOG_INFO("Distance: %lu/%lu", dist_primary, dist_alternate);
-//		}
 		bool needs_halt = false;
-		if (used_IF != last_IF1) {
-			last_IF1 = used_IF;
-			LOG_INFO("Changing IF1 to %lu at point %u (f=%lu)", used_IF, i, (uint32_t) freq);
-			needs_halt = true;
-			if (IFTableIndexCnt >= IFTableNumEntries) {
-				LOG_ERR("IF table full, unable to add new entry");
-				return false;
-			}
-			IFTable[IFTableIndexCnt].pointCnt = i;
-			IFTable[IFTableIndexCnt].IF1 = used_IF;
-			// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
-			// the correct clock settings
-			Si5351.SetCLK(SiChannel::RefLO2, used_IF + IF2, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
-			// store calculated clock configuration for later change
-			Si5351.ReadRawCLKConfig(1, IFTable[IFTableIndexCnt].clkconfig);
-			IFTableIndexCnt++;
-		}
+		uint64_t actualSourceFreq;
 		bool lowband = false;
 		if (freq < BandSwitchFrequency) {
 			needs_halt = true;
 			lowband = true;
+			actualSourceFreq = freq;
 		} else {
 			Source.SetFrequency(freq);
+			actualSourceFreq = Source.GetActualFrequency();
 		}
 		if (last_lowband && !lowband) {
 			// additional halt before first highband point to enable highband source
 			needs_halt = true;
 		}
-		LO1.SetFrequency(freq + used_IF);
+		LO1.SetFrequency(freq + HW::IF1);
+		uint32_t actualFirstIF = LO1.GetActualFrequency() - actualSourceFreq;
+		uint32_t actualFinalIF = actualFirstIF - last_LO2;
+		uint32_t IFdeviation = abs(actualFinalIF - HW::IF2);
+		bool needs_LO2_shift = false;
+		if(IFdeviation > actualBandwidth / 2) {
+			needs_LO2_shift = true;
+		}
+		if (s.suppressPeaks && needs_LO2_shift) {
+			if (IFTableIndexCnt < IFTableNumEntries) {
+				// still room in table
+				LOG_INFO("Changing 2.LO at point %lu to reach correct 2.IF frequency");
+				needs_halt = true;
+				IFTable[IFTableIndexCnt].pointCnt = i;
+				// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
+				// the correct clock settings
+				last_LO2 = actualFirstIF - HW::IF2;
+				Si5351.SetCLK(SiChannel::RefLO2, last_LO2,
+						Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+				// store calculated clock configuration for later change
+				Si5351.ReadRawCLKConfig(1, IFTable[IFTableIndexCnt].clkconfig);
+				IFTableIndexCnt++;
+				needs_LO2_shift = false;
+			}
+		}
+		if(needs_LO2_shift) {
+			// if shift is still needed either peak suppression is disabled or no more room in IFTable was available
+			LOG_WARN(
+					"PLL deviation of %luHz for measurement at %lu%06luHz, will cause a peak",
+					IFdeviation, (uint32_t ) (freq / 1000000), (uint32_t ) (freq % 1000000));
+		}
+
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
 				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us20,
 				FPGA::Samples::SPPRegister, needs_halt);
 		last_lowband = lowband;
 	}
-//	// revert clk configuration to previous value (might have been changed in sweep calculation)
-//	Si5351.SetCLK(1, IF1 + IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-//	Si5351.ResetPLL(Si5351C::PLL::B);
+	// revert clk configuration to previous value (might have been changed in sweep calculation)
+	Si5351.SetCLK(SiChannel::RefLO2, HW::IF1 - HW::IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.ResetPLL(Si5351C::PLL::B);
 	// Enable mixers/amplifier/PLLs
 	FPGA::SetWindow(FPGA::Window::None);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
@@ -249,15 +238,15 @@ void VNA::SweepHalted() {
 	}
 	LOG_DEBUG("Halted before point %d", pointCnt);
 	// Check if IF table has entry at this point
-//	if (IFTable[IFTableIndexCnt].pointCnt == pointCnt) {
-//		LOG_DEBUG("Shifting IF to %lu at point %u",
-//				IFTable[IFTableIndexCnt].IF1, pointCnt);
-//		Si5351.WriteRawCLKConfig(1, IFTable[IFTableIndexCnt].clkconfig);
-//		Si5351.WriteRawCLKConfig(4, IFTable[IFTableIndexCnt].clkconfig);
-//		Si5351.WriteRawCLKConfig(5, IFTable[IFTableIndexCnt].clkconfig);
-//		Si5351.ResetPLL(Si5351C::PLL::B);
-//		IFTableIndexCnt++;
-//	}
+	if (IFTable[IFTableIndexCnt].pointCnt == pointCnt) {
+		Si5351.WriteRawCLKConfig(SiChannel::Port1LO2, IFTable[IFTableIndexCnt].clkconfig);
+		Si5351.WriteRawCLKConfig(SiChannel::Port2LO2, IFTable[IFTableIndexCnt].clkconfig);
+		Si5351.WriteRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);
+		Si5351.ResetPLL(Si5351C::PLL::B);
+		IFTableIndexCnt++;
+		// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
+		Delay::us(1300);
+	}
 	uint64_t frequency = settings.f_start
 			+ (settings.f_stop - settings.f_start) * pointCnt
 					/ (settings.points - 1);

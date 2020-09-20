@@ -20,6 +20,7 @@
 #include <fstream>
 #include <QDateTime>
 #include "unit.h"
+#include <queue>
 #include "CustomWidgets/toggleswitch.h"
 #include "Device/manualcontroldialog.h"
 #include "Traces/tracemodel.h"
@@ -472,7 +473,7 @@ void VNA::initializeDevice()
         removeDefaultCal->setEnabled(false);
     }
     // Configure initial state of device
-    window->getDevice()->Configure(settings);
+    SettingsChanged();
 }
 
 void VNA::deviceDisconnected()
@@ -538,6 +539,7 @@ void VNA::UpdateStatusPanel()
 
 void VNA::SettingsChanged()
 {
+    settings.suppressPeaks = pref.Acquisition.suppressPeaks ? 1 : 0;
     if(window->getDevice()) {
         window->getDevice()->Configure(settings);
     }

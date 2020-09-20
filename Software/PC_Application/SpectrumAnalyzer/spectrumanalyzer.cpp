@@ -193,9 +193,9 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
         settings.f_stop = 1050000000;
         ConstrainAndUpdateFrequencies();
         SetRBW(10000);
+        settings.pointNum = 1001;
         settings.WindowType = 1;
         settings.Detector = 0;
-        settings.pointNum = 1001;
         settings.SignalID = 0;
 //    }
 
@@ -230,6 +230,12 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 
 void SpectrumAnalyzer::SettingsChanged()
 {
+    if(settings.f_stop - settings.f_start >= 1000) {
+        settings.pointNum = 1001;
+    } else {
+        settings.pointNum = settings.f_stop - settings.f_start + 1;
+    }
+
     if(window->getDevice()) {
         window->getDevice()->Configure(settings);
     }

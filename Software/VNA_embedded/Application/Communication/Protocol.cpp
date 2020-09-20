@@ -176,6 +176,7 @@ static Protocol::SweepSettings DecodeSweepSettings(uint8_t *buf) {
     e.get<int16_t>(d.cdbm_excitation);
     d.excitePort1 = e.getBits(1);
     d.excitePort2 = e.getBits(1);
+    d.suppressPeaks = e.getBits(1);
     return d;
 }
 static int16_t EncodeSweepSettings(Protocol::SweepSettings d, uint8_t *buf,
@@ -188,6 +189,7 @@ static int16_t EncodeSweepSettings(Protocol::SweepSettings d, uint8_t *buf,
     e.add<int16_t>(d.cdbm_excitation);
     e.addBits(d.excitePort1, 1);
     e.addBits(d.excitePort2, 1);
+    e.addBits(d.suppressPeaks, 1);
     return e.getSize();
 }
 

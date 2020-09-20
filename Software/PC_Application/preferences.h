@@ -48,6 +48,7 @@ public:
     } Startup;
     struct {
         bool alwaysExciteBothPorts;
+        bool suppressPeaks;
     } Acquisition;
 private:
     using SettingDescription = struct {
@@ -55,7 +56,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 8> descr = {{
+    const std::array<SettingDescription, 9> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
@@ -64,6 +65,7 @@ private:
         {&Startup.DefaultSweep.bandwidth, "Startup.DefaultSweep.bandwidth", 1000.0},
         {&Startup.DefaultSweep.excitation, "Startup.DefaultSweep.excitation", -10.00},
         {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", true},
+        {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
     }};
 };
 

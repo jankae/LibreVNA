@@ -39,6 +39,9 @@ bool MAX2871::Init(uint32_t f_ref, bool doubler, uint16_t r, bool div2) {
 	// automatically switch to integer mode if F = 0
 	regs[5] |= (1UL << 24);
 
+	// recommended phase setting
+	regs[1] |= (1UL << 15);
+
 	SetMode(Mode::LowSpur2);
 	// for all other CP modes the PLL reports unlock condition (output signal appears to be locked)
 	SetCPMode(CPMode::CP20);

@@ -242,6 +242,16 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="AcquisitionSuppressPeaks">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Due to limited fractional divider settings, the source and 1.LO PLLs are not able to reach every frequency exactly. At some specific frequencies this causes the final IF to shift. At these frequencies there will be a positive or negative peak in the trace measurement that is not actually there.&lt;br/&gt;&lt;br/&gt;Checking this option shifts the 2.LO for points where this could be an issue. This will remove the peaks but slow down the sweep slightly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Suppress invalid peaks</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer_2">
            <property name="orientation">
             <enum>Qt::Vertical</enum>

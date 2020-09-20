@@ -6,8 +6,11 @@
 namespace HW {
 
 static constexpr uint32_t ADCSamplerate = 914000;
-static constexpr uint32_t IF1 = 60100000;
+static constexpr uint32_t IF1 = 60000000;
 static constexpr uint32_t IF2 = 250000;
+static constexpr uint32_t LO1_minFreq = 25000000;
+static constexpr uint32_t MaxSamples = 130944;
+static constexpr uint32_t PLLRef = 100000000;
 
 enum class Mode {
 	Idle,

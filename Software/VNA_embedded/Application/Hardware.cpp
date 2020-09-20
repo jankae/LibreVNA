@@ -92,9 +92,9 @@ bool HW::Init(WorkRequest wr) {
 	Si5351.Disable(SiChannel::ReferenceOut);
 
 	// Both MAX2871 get a 100MHz reference
-	Si5351.SetCLK(SiChannel::Source, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::Source, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::Source);
-	Si5351.SetCLK(SiChannel::LO1, 100000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::LO1, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::LO1);
 	// 16MHz FPGA clock
 	Si5351.SetCLK(SiChannel::FPGA, 16000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
@@ -133,7 +133,7 @@ bool HW::Init(WorkRequest wr) {
 	// enable source synthesizer
 	FPGA::Enable(FPGA::Periphery::SourceChip);
 	FPGA::SetMode(FPGA::Mode::SourcePLL);
-	Source.Init(100000000, false, 1, false);
+	Source.Init(HW::PLLRef, false, 1, false);
 	Source.SetPowerOutA(MAX2871::Power::n4dbm);
 	// output B is not used
 	Source.SetPowerOutB(MAX2871::Power::n4dbm, false);
@@ -150,7 +150,7 @@ bool HW::Init(WorkRequest wr) {
 	FPGA::Disable(FPGA::Periphery::SourceChip);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::SetMode(FPGA::Mode::LOPLL);
-	LO1.Init(100000000, false, 1, false);
+	LO1.Init(HW::PLLRef, false, 1, false);
 	LO1.SetPowerOutA(MAX2871::Power::n4dbm);
 	LO1.SetPowerOutB(MAX2871::Power::n4dbm);
 	if(!LO1.BuildVCOMap()) {

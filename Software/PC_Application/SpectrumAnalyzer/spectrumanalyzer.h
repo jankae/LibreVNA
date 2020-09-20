@@ -41,7 +41,7 @@ private:
 
     Preferences &pref;
 
-    Protocol::SpectrumAnalyzerSettings settings;
+    Protocol::SpectrumAnalyzerSettings  settings;
     unsigned int averages;
     TraceModel traceModel;
     TraceMarkerModel *markerModel;

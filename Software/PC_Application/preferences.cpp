@@ -67,6 +67,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Startup.DefaultSweep.points = ui->StartupSweepPoints->value();
         p->Startup.DefaultSweep.excitation = ui->StartupSweepLevel->value();
         p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
+        p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
         accept();
     });
 
@@ -93,6 +94,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupSweepLevel->setValue(p->Startup.DefaultSweep.excitation);
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteBothPorts);
+    ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
 }
 
 void Preferences::load()
