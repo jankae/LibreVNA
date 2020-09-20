@@ -292,19 +292,19 @@ Source: DCJ0202.pdf</description>
 <text x="-3.81" y="5.08" size="1.27" layer="25">&gt;NAME</text>
 <text x="-5.08" y="-10.16" size="1.27" layer="27" rot="R90">&gt;VALUE</text>
 </package>
-<package name="R0402:1" urn="urn:adsk.eagle:footprint:22367271/1" library_version="1">
+<package name="L0402" urn="urn:adsk.eagle:footprint:22367271/1" locally_modified="yes" library_version="1" library_locally_modified="yes">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
 <wire x1="-0.245" y1="0.224" x2="0.245" y2="0.224" width="0.1524" layer="51"/>
 <wire x1="0.245" y1="-0.224" x2="-0.245" y2="-0.224" width="0.1524" layer="51"/>
-<wire x1="-1.473" y1="0.483" x2="1.473" y2="0.483" width="0.0508" layer="39"/>
-<wire x1="1.473" y1="0.483" x2="1.473" y2="-0.483" width="0.0508" layer="39"/>
-<wire x1="1.473" y1="-0.483" x2="-1.473" y2="-0.483" width="0.0508" layer="39"/>
-<wire x1="-1.473" y1="-0.483" x2="-1.473" y2="0.483" width="0.0508" layer="39"/>
+<wire x1="-1.0158" y1="0.483" x2="1.0158" y2="0.483" width="0.0508" layer="39"/>
+<wire x1="1.0158" y1="0.483" x2="1.0158" y2="-0.483" width="0.0508" layer="39"/>
+<wire x1="1.0158" y1="-0.483" x2="-1.0158" y2="-0.483" width="0.0508" layer="39"/>
+<wire x1="-1.0158" y1="-0.483" x2="-1.0158" y2="0.483" width="0.0508" layer="39"/>
 <rectangle x1="-0.554" y1="-0.3048" x2="-0.254" y2="0.2951" layer="51"/>
 <rectangle x1="0.2588" y1="-0.3048" x2="0.5588" y2="0.2951" layer="51"/>
 <rectangle x1="-0.1999" y1="-0.4001" x2="0.1999" y2="0.4001" layer="35"/>
-<smd name="1" x="-0.65" y="0" dx="0.7" dy="0.9" layer="1"/>
-<smd name="2" x="0.65" y="0" dx="0.7" dy="0.9" layer="1"/>
+<smd name="1" x="-0.5484" y="0" dx="0.7" dy="0.9" layer="1"/>
+<smd name="2" x="0.5484" y="0" dx="0.7" dy="0.9" layer="1"/>
 <text x="-0.635" y="0.635" size="1.27" layer="25">&gt;NAME</text>
 <text x="-0.635" y="-1.905" size="1.27" layer="27">&gt;VALUE</text>
 </package>
@@ -690,30 +690,30 @@ Source: www.johnsoncomponents.com .. J502-ND.pdf</description>
 <text x="0" y="2.274" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-2.139" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
-<package name="MSOP8" urn="urn:adsk.eagle:footprint:22367267/1" library_version="1">
-<circle x="-1" y="-1" radius="0.2" width="0" layer="21"/>
-<wire x1="-1.4" y1="1.4" x2="1.4" y2="1.4" width="0.2032" layer="21"/>
-<wire x1="1.4" y1="1.4" x2="1.4" y2="-1.4" width="0.2032" layer="21"/>
-<wire x1="1.4" y1="-1.4" x2="-1.4" y2="-1.4" width="0.2032" layer="21"/>
-<wire x1="-1.4" y1="-1.4" x2="-1.4" y2="1.4" width="0.2032" layer="21"/>
-<rectangle x1="-1.1254" y1="-2.45" x2="-0.8254" y2="-1.5" layer="51"/>
-<rectangle x1="-0.4751" y1="-2.45" x2="-0.1751" y2="-1.5" layer="51"/>
-<rectangle x1="0.1751" y1="-2.45" x2="0.4751" y2="-1.5" layer="51"/>
-<rectangle x1="0.8253" y1="-2.45" x2="1.1253" y2="-1.5" layer="51"/>
-<rectangle x1="0.8254" y1="1.5" x2="1.1254" y2="2.45" layer="51"/>
-<rectangle x1="0.1751" y1="1.5" x2="0.4751" y2="2.45" layer="51"/>
-<rectangle x1="-0.4751" y1="1.5" x2="-0.1751" y2="2.45" layer="51"/>
-<rectangle x1="-1.1253" y1="1.5" x2="-0.8253" y2="2.45" layer="51"/>
-<smd name="1" x="-0.975" y="-2.05" dx="0.45" dy="1" layer="1"/>
-<smd name="2" x="-0.325" y="-2.05" dx="0.45" dy="1" layer="1"/>
-<smd name="3" x="0.325" y="-2.05" dx="0.45" dy="1" layer="1"/>
-<smd name="4" x="0.975" y="-2.05" dx="0.45" dy="1" layer="1"/>
-<smd name="5" x="0.975" y="2.05" dx="0.45" dy="1" layer="1"/>
-<smd name="6" x="0.325" y="2.05" dx="0.45" dy="1" layer="1"/>
-<smd name="7" x="-0.325" y="2.05" dx="0.45" dy="1" layer="1"/>
-<smd name="8" x="-0.975" y="2.05" dx="0.45" dy="1" layer="1"/>
-<text x="-1.15" y="0.15" size="1.016" layer="25">&gt;NAME</text>
-<text x="-0.65" y="-1.05" size="1.016" layer="27">&gt;VALUE</text>
+<package name="SOP65P490X110-8N" urn="urn:adsk.eagle:footprint:23390815/1" library_version="1" library_locally_modified="yes">
+<description>8-SOP, 0.65 mm pitch, 4.90 mm span, 3.00 X 3.00 X 1.10 mm body
+&lt;p&gt;8-pin SOP package with 0.65 mm pitch, 4.90 mm span with body size 3.00 X 3.00 X 1.10 mm&lt;/p&gt;</description>
+<circle x="-2.2175" y="1.7197" radius="0.25" width="0" layer="21"/>
+<wire x1="-1.55" y1="1.4697" x2="-1.55" y2="1.55" width="0.12" layer="21"/>
+<wire x1="-1.55" y1="1.55" x2="1.55" y2="1.55" width="0.12" layer="21"/>
+<wire x1="1.55" y1="1.55" x2="1.55" y2="1.4697" width="0.12" layer="21"/>
+<wire x1="-1.55" y1="-1.4697" x2="-1.55" y2="-1.55" width="0.12" layer="21"/>
+<wire x1="-1.55" y1="-1.55" x2="1.55" y2="-1.55" width="0.12" layer="21"/>
+<wire x1="1.55" y1="-1.55" x2="1.55" y2="-1.4697" width="0.12" layer="21"/>
+<wire x1="1.55" y1="-1.55" x2="-1.55" y2="-1.55" width="0.12" layer="51"/>
+<wire x1="-1.55" y1="-1.55" x2="-1.55" y2="1.55" width="0.12" layer="51"/>
+<wire x1="-1.55" y1="1.55" x2="1.55" y2="1.55" width="0.12" layer="51"/>
+<wire x1="1.55" y1="1.55" x2="1.55" y2="-1.55" width="0.12" layer="51"/>
+<smd name="1" x="-2.1496" y="0.975" dx="1.4709" dy="0.4815" layer="1"/>
+<smd name="2" x="-2.1496" y="0.325" dx="1.4709" dy="0.4815" layer="1"/>
+<smd name="3" x="-2.1496" y="-0.325" dx="1.4709" dy="0.4815" layer="1"/>
+<smd name="4" x="-2.1496" y="-0.975" dx="1.4709" dy="0.4815" layer="1"/>
+<smd name="5" x="2.1496" y="-0.975" dx="1.4709" dy="0.4815" layer="1"/>
+<smd name="6" x="2.1496" y="-0.325" dx="1.4709" dy="0.4815" layer="1"/>
+<smd name="7" x="2.1496" y="0.325" dx="1.4709" dy="0.4815" layer="1"/>
+<smd name="8" x="2.1496" y="0.975" dx="1.4709" dy="0.4815" layer="1"/>
+<text x="0" y="2.6047" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
+<text x="0" y="-2.185" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
 <package name="SOP50P490X110-10N" urn="urn:adsk.eagle:footprint:22367252/1" library_version="1">
 <description>10-SOP, 0.50 mm pitch, 4.90 mm span, 3.00 X 3.00 X 1.10 mm body
@@ -1705,10 +1705,10 @@ Source: DCJ0202.pdf</description>
 <packageinstance name="DCJ0202"/>
 </packageinstances>
 </package3d>
-<package3d name="R0402:1" urn="urn:adsk.eagle:package:22367307/2" type="model" library_version="1" library_locally_modified="yes">
+<package3d name="R0402:1" urn="urn:adsk.eagle:package:22367307/2" locally_modified="yes" type="model" library_version="1" library_locally_modified="yes">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
 <packageinstances>
-<packageinstance name="R0402:1"/>
+<packageinstance name="L0402"/>
 </packageinstances>
 </package3d>
 <package3d name="SRN5040" urn="urn:adsk.eagle:package:22367284/2" type="model" library_version="1" library_locally_modified="yes">
@@ -1806,9 +1806,11 @@ Source: www.johnsoncomponents.com .. J502-ND.pdf</description>
 <packageinstance name="SON50P300X300X80-9T165X238"/>
 </packageinstances>
 </package3d>
-<package3d name="MSOP8" urn="urn:adsk.eagle:package:22367303/2" type="model" library_version="1" library_locally_modified="yes">
+<package3d name="SOP65P490X110-8N" urn="urn:adsk.eagle:package:23390808/1" type="model" library_version="1" library_locally_modified="yes">
+<description>8-SOP, 0.65 mm pitch, 4.90 mm span, 3.00 X 3.00 X 1.10 mm body
+&lt;p&gt;8-pin SOP package with 0.65 mm pitch, 4.90 mm span with body size 3.00 X 3.00 X 1.10 mm&lt;/p&gt;</description>
 <packageinstances>
-<packageinstance name="MSOP8"/>
+<packageinstance name="SOP65P490X110-8N"/>
 </packageinstances>
 </package3d>
 <package3d name="SOP50P490X110-10N" urn="urn:adsk.eagle:package:22367287/2" type="model" library_version="1" library_locally_modified="yes">
@@ -3059,12 +3061,31 @@ Source: DCJ0202.pdf</description>
 </device>
 </devices>
 </deviceset>
+<deviceset name="FERRITE" prefix="L" library_version="1" library_locally_modified="yes">
+<gates>
+<gate name="G$1" symbol="L-EU:1" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="R0402">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:22367274/2"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
 <deviceset name="INDUCTOR" urn="urn:adsk.eagle:component:22367349/1" locally_modified="yes" prefix="L" library_version="1" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="L-EU:1" x="0" y="0"/>
 </gates>
 <devices>
-<device name="0402" package="R0402:1">
+<device name="0402" package="L0402">
 <connects>
 <connect gate="G$1" pin="1" pad="1"/>
 <connect gate="G$1" pin="2" pad="2"/>
@@ -3519,7 +3540,7 @@ Source: DCJ0202.pdf</description>
 <gate name="G$1" symbol="OPAMPDIFF_SHDN" x="5.08" y="0"/>
 </gates>
 <devices>
-<device name="" package="MSOP8">
+<device name="" package="SOP65P490X110-8N">
 <connects>
 <connect gate="G$1" pin="+IN" pad="8"/>
 <connect gate="G$1" pin="+OUT" pad="4"/>
@@ -3531,7 +3552,7 @@ Source: DCJ0202.pdf</description>
 <connect gate="G$1" pin="VOCM" pad="2"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:22367303/2"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:23390808/1"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -4621,7 +4642,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND162" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="IC22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LT5560" device="" package3d_urn="urn:adsk.eagle:package:22367289/2"/>
-<part name="IC23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:22367303/2"/>
+<part name="IC23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:23390808/1"/>
 <part name="GND143" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND155" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="C97" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
@@ -4695,7 +4716,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND221" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="IC36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LT5560" device="" package3d_urn="urn:adsk.eagle:package:22367289/2"/>
-<part name="IC32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:22367303/2"/>
+<part name="IC32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:23390808/1"/>
 <part name="GND229" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND208" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="C199" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
@@ -4782,7 +4803,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND198" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="IC27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LT5560" device="" package3d_urn="urn:adsk.eagle:package:22367289/2"/>
-<part name="IC28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:22367303/2"/>
+<part name="IC28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:23390808/1"/>
 <part name="GND179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND191" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="C134" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
@@ -4851,7 +4872,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="C31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="C34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="GND45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="+3V32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="C29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="GND43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -4931,8 +4952,8 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND71" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AP2114" device="H" package3d_urn="urn:adsk.eagle:package:22367285/2"/>
 <part name="+3V34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="L19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
-<part name="L20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="SUPPLY5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/4" device=""/>
 <part name="IC11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="RFSW6042" device="" package3d_urn="urn:adsk.eagle:package:22367295/2"/>
 <part name="R14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
@@ -4993,8 +5014,8 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND119" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AP2114" device="H" package3d_urn="urn:adsk.eagle:package:22367285/2"/>
 <part name="+3V311" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="L28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
-<part name="L29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="SUPPLY6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/4" device=""/>
 <part name="R34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
 <part name="R35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
@@ -5003,11 +5024,11 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND132" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="GND96" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="+3V35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="C69" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="GND95" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="+3V36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="C70" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="GND97" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -5021,7 +5042,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="C72" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="GND101" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND102" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="+3V37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="C74" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
 <part name="R26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="2R7"/>
@@ -5032,7 +5053,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND105" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND109" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND108" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="+3V310" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="C77" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
 <part name="C75" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
@@ -5347,9 +5368,9 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND178" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="J3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AMPHENOL_132289" device="" package3d_urn="urn:adsk.eagle:package:22367282/2"/>
 <part name="GND180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="+3V39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="L25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite"/>
+<part name="L25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
 <part name="+3V38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="L18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n"/>
 <part name="C47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="56p"/>
@@ -12863,13 +12884,14 @@ current consumption</text>
 <pinref part="C197" gate="G$1" pin="1"/>
 <wire x1="241.3" y1="177.8" x2="243.84" y2="177.8" width="0.1524" layer="91"/>
 <wire x1="243.84" y1="177.8" x2="243.84" y2="175.26" width="0.1524" layer="91"/>
-<pinref part="IC36" gate="G$1" pin="IN+"/>
 <wire x1="243.84" y1="177.8" x2="254" y2="177.8" width="0.1524" layer="91"/>
 <junction x="243.84" y="177.8"/>
 <pinref part="L52" gate="G$1" pin="1"/>
-<wire x1="254" y1="177.8" x2="269.24" y2="177.8" width="0.1524" layer="91"/>
-<wire x1="254" y1="162.56" x2="254" y2="177.8" width="0.1524" layer="91"/>
-<junction x="254" y="177.8"/>
+<wire x1="254" y1="162.56" x2="254" y2="172.72" width="0.1524" layer="91"/>
+<pinref part="IC36" gate="G$1" pin="IN-"/>
+<wire x1="254" y1="172.72" x2="254" y2="177.8" width="0.1524" layer="91"/>
+<wire x1="269.24" y1="172.72" x2="254" y2="172.72" width="0.1524" layer="91"/>
+<junction x="254" y="172.72"/>
 </segment>
 </net>
 <net name="N$87" class="0">
@@ -12881,11 +12903,12 @@ current consumption</text>
 <wire x1="243.84" y1="165.1" x2="261.62" y2="165.1" width="0.1524" layer="91"/>
 <wire x1="261.62" y1="165.1" x2="261.62" y2="172.72" width="0.1524" layer="91"/>
 <junction x="243.84" y="165.1"/>
-<pinref part="IC36" gate="G$1" pin="IN-"/>
-<wire x1="261.62" y1="172.72" x2="269.24" y2="172.72" width="0.1524" layer="91"/>
 <pinref part="L53" gate="G$1" pin="1"/>
 <wire x1="261.62" y1="162.56" x2="261.62" y2="165.1" width="0.1524" layer="91"/>
 <junction x="261.62" y="165.1"/>
+<wire x1="261.62" y1="172.72" x2="261.62" y2="177.8" width="0.1524" layer="91"/>
+<pinref part="IC36" gate="G$1" pin="IN+"/>
+<wire x1="261.62" y1="177.8" x2="269.24" y2="177.8" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$88" class="0">
@@ -14574,9 +14597,9 @@ slave configuration</text>
 <label x="55.88" y="170.18" size="1.778" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
-<pinref part="IC37" gate="G$1" pin="PB13"/>
-<wire x1="119.38" y1="25.4" x2="124.46" y2="25.4" width="0.1524" layer="91"/>
-<label x="124.46" y="25.4" size="1.778" layer="95" xref="yes"/>
+<pinref part="IC37" gate="G$1" pin="PB15"/>
+<wire x1="119.38" y1="20.32" x2="124.46" y2="20.32" width="0.1524" layer="91"/>
+<label x="124.46" y="20.32" size="1.778" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="SWDIO" class="0">
@@ -14605,14 +14628,14 @@ slave configuration</text>
 </net>
 <net name="MCU_FPGA_CCLK" class="0">
 <segment>
-<pinref part="IC37" gate="G$1" pin="PB15"/>
-<wire x1="119.38" y1="20.32" x2="124.46" y2="20.32" width="0.1524" layer="91"/>
-<label x="124.46" y="20.32" size="1.778" layer="95" xref="yes"/>
-</segment>
-<segment>
 <pinref part="R109" gate="G$1" pin="1"/>
 <wire x1="60.96" y1="175.26" x2="55.88" y2="175.26" width="0.1524" layer="91"/>
 <label x="55.88" y="175.26" size="1.778" layer="95" rot="R180" xref="yes"/>
+</segment>
+<segment>
+<pinref part="IC37" gate="G$1" pin="PB13"/>
+<wire x1="119.38" y1="25.4" x2="124.46" y2="25.4" width="0.1524" layer="91"/>
+<label x="124.46" y="25.4" size="1.778" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="N$190" class="0">
