@@ -259,7 +259,7 @@ void VNA::SweepHalted() {
 			Si5351.Enable(SiChannel::LowbandSource);
 			FPGA::Disable(FPGA::Periphery::SourceRF);
 		}
-	} else {
+	} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
 		// first sweep point in highband is also halted, disable lowband source
 		Si5351.Disable(SiChannel::LowbandSource);
 		FPGA::Enable(FPGA::Periphery::SourceRF);

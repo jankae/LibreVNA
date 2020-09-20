@@ -103,6 +103,7 @@ void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
+bool IsEnabled(Periphery p);
 void SetWindow(Window w);
 void EnableInterrupt(Interrupt i);
 void DisableInterrupt(Interrupt i);

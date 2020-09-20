@@ -137,6 +137,14 @@ void FPGA::Disable(Periphery p) {
 	WriteRegister(Reg::SystemControl, SysCtrlReg);
 }
 
+bool FPGA::IsEnabled(Periphery p) {
+	if(SysCtrlReg & (uint16_t) p) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void FPGA::SetWindow(Window w) {
 	SysCtrlReg &= ~0x0060;
 	SysCtrlReg |= (int) w << 5;
