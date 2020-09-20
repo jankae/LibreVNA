@@ -8,7 +8,7 @@ MCU_FW = "Software/VNA_embedded/Debug/VNA_embedded.bin"
 
 HEADER_SIZE = 24
 
-f = open("test.vnafw", "wb")
+f = open("combined.vnafw", "wb")
 f.write(bytes("VNA!", 'utf-8'))
 
 bitstream = open(FPGA_BITSTREAM, "rb")
