@@ -1,0 +1,246 @@
+\documentclass[border=10pt]{standalone}  
+\usepackage{tikz}
+\usepackage[european,siunitx,rotatelabels]{circuitikzgit}
+\usetikzlibrary{arrows,calc,positioning}
+
+\newcommand{\divider}[1] 
+{  % #1 = name 
+\begin{scope}[transform shape]
+\draw[thick] (#1)node[](a){} +(-12pt,-12pt) rectangle +(12pt,12pt);
+\draw (a)+(12pt, 12pt)--+(-12pt,-12pt);
+\draw (a)+(-5pt,6pt) node[](){\footnotesize -45};
+\draw (a)+(4pt,-7pt) node[](){\footnotesize +45};
+\end{scope}
+}
+
+
+\newlength{\ResUp} \newlength{\ResDown}
+\newlength{\ResLeft} \newlength{\ResRight}
+\newlength{\ResRadius} \newlength{\ResMiddle}
+
+\makeatletter
+%%%% new anchors: "out A" and "out B"
+\expandafter\def\csname pgf@anchor@rectangle@out A\endcsname{% output A: below .east
+    \pgf@process{\southwest}%
+    \pgf@ya=0.25\pgf@y%
+    \pgf@process{\northeast}%
+    \pgf@y=0.75\pgf@y%
+    \advance\pgf@y by\pgf@ya    }% end of out A
+\expandafter\def\csname pgf@anchor@rectangle@out B\endcsname{% output B: above .east
+    \pgf@process{\southwest}%
+    \pgf@ya=0.75\pgf@y%
+    \pgf@process{\northeast}%
+    \pgf@y=0.25\pgf@y%
+    \advance\pgf@y by\pgf@ya    } % end of out B
+\expandafter\def\csname pgf@anchor@rectangle@DUT\endcsname{% output DUT: above .east
+    \pgf@process{\southwest}%
+    \pgf@ya=0.1\pgf@y%
+    \pgf@process{\northeast}%
+    \pgf@y=0.9\pgf@y%
+    \advance\pgf@y by\pgf@ya    } % end of DUT
+\expandafter\def\csname pgf@anchor@rectangle@ret p\endcsname{% output ret p: above .east
+    \pgf@process{\northeast}%
+    \pgf@ya=0.9\pgf@y%
+    \pgf@process{\southwest}%
+    \pgf@y=0.1\pgf@y%
+    \advance\pgf@y by\pgf@ya    } % end of ret p
+\expandafter\def\csname pgf@anchor@rectangle@ret n\endcsname{% output ret n: above .east
+    \pgf@process{\northeast}%
+    \pgf@ya=0.7\pgf@y%
+    \pgf@process{\southwest}%
+    \pgf@y=0.3\pgf@y%
+    \advance\pgf@y by\pgf@ya    } % end of ret n
+\expandafter\def\csname pgf@anchor@rectangle@ret c\endcsname{% output ret c: above .east
+    \pgf@process{\northeast}%
+    \pgf@ya=0.8\pgf@y%
+    \pgf@process{\southwest}%
+    \pgf@y=0.2\pgf@y%
+    \advance\pgf@y by\pgf@ya    } % end of ret c
+
+
+\def\TikzBipolePath#1#2{\pgf@circ@bipole@path{#1}{#2}}
+\def\CircDirection{\pgf@circ@direction}
+%\pgf@circ@Rlen = \pgfkeysvalueof{/tikz/circuitikz/bipoles/length}
+\let\ResLen=\pgf@circ@Rlen
+\makeatother
+
+\newcommand{\Compass}% define anchors for compass points
+{\anchor{north east}{\northeast}
+\anchor{south west}{\southwest}
+\anchor{north}{\pgfextracty{\ResUp}{\northeast}\pgfpoint{0cm}{\ResUp}}
+\anchor{north west}{\pgfextracty{\ResUp}{\northeast}\pgfextractx{\ResLeft}{\southwest}\pgfpoint{\ResLeft}{\ResUp}}
+\anchor{west}{\pgfextractx{\ResLeft}{\southwest}\pgfpoint{\ResLeft}{0cm}}
+\anchor{south}{\pgfextracty{\ResDown}{\southwest}\pgfpoint{0cm}{\ResDown}}
+\anchor{south east}{\pgfextracty{\ResDown}{\southwest}\pgfextractx{\ResRight}{\northeast}\pgfpoint{\ResRight}{\ResDown}}
+\anchor{east}{\pgfextractx{\ResRight}{\northeast}\pgfpoint{\ResRight}{0cm}}}
+
+% ***************************** ADC *********************************
+% extra anchors out,in1,in2,vref
+
+\ctikzset{bipoles/ADC/width/.initial=1}
+\ctikzset{bipoles/ADC/height/.initial=.5}
+\ctikzset{bipoles/ADC/middle/.initial=-.25}
+\ctikzset{bipoles/ADC/part/.initial={}}
+
+\def\drawADC{% used by both bipole and node
+  \ResRight=\ctikzvalof{bipoles/ADC/width}\ResLen
+  \ResRight=0.5\ResRight
+  \ResLeft=-\ResRight
+  \ResUp=\ctikzvalof{bipoles/ADC/height}\ResLen
+  \ResUp=0.5\ResUp
+  \ResDown=-\ResUp
+  \ResMiddle=\ctikzvalof{bipoles/ADC/middle}\ResLen
+  \pgfpathmoveto{\pgfpoint{\ResLeft}{0pt}}
+  \pgfpathlineto{\pgfpoint{\ResMiddle}{\ResUp}}
+  \pgfpathlineto{\pgfpoint{\ResRight}{\ResUp}}
+  \pgfpathlineto{\pgfpoint{\ResRight}{\ResDown}}
+  \pgfpathlineto{\pgfpoint{\ResMiddle}{\ResDown}}
+  \pgfpathlineto{\pgfpoint{\ResLeft}{0pt}}
+  \pgfpathclose
+  \pgfusepath{draw}
+  \pgftext{\texttt{\ctikzvalof{bipoles/ADC/part}}}
+}
+
+\pgfcircdeclarebipole{}% no extra anchors for bipole version
+  {\ctikzvalof{bipoles/ADC/height}}
+  {ADC}
+  {\ctikzvalof{bipoles/ADC/height}}
+  {\ctikzvalof{bipoles/ADC/width}}
+  {\pgfsetlinewidth{\ctikzvalof{bipoles/thickness}\pgfstartlinewidth}\drawADC}
+
+\def\ADCpath#1{\TikzBipolePath{ADC}{#1}}
+\tikzset{ADC/.style = {\circuitikzbasekey, /tikz/to path=\ADCpath, l_=#1}}
+
+\pgfdeclareshape{dADC}{%
+\anchor{center}{\pgfpointorigin}    % within the node, (0,0) is the center
+
+\anchor{text}   % this is used to center the text in the node
+    {\pgfpoint{-.5\wd\pgfnodeparttextbox}{-.5\ht\pgfnodeparttextbox}}
+
+\savedmacro{\resize}{   % called automatically
+  \ResRight=\ctikzvalof{bipoles/ADC/width}\ResLen
+  \ResRight=0.5\ResRight
+  \ResLeft=-\ResRight
+  \ResUp=\ctikzvalof{bipoles/ADC/height}\ResLen
+  \ResUp=0.5\ResUp
+  \ResDown=-\ResUp
+  \ResMiddle=\ctikzvalof{bipoles/ADC/middle}\ResLen
+  \ResRadius=\ResMiddle% location of in1 and in2
+  \advance\ResRadius by \ResLeft
+  \ResRadius=0.5\ResRadius
+}% while these can be used for savedanchors, they will be fogotten by anchors
+
+\savedanchor{\northeast}{\pgfpoint{\ResRight}{\ResUp}}
+\savedanchor{\southwest}{\pgfpoint{\ResLeft}{\ResDown}}
+
+\savedanchor\InOne{\pgfpoint{\ResRadius}{0.5\ResUp}}
+\savedanchor\InTwo{\pgfpoint{\ResRadius}{0.5\ResDown}}
+\savedanchor\Out{\pgfpoint{\ResRight}{0pt}}
+\savedanchor\Vref{\pgfpoint{0pt}{\ResDown}}
+
+\Compass% standard anchors
+
+\anchor{in1}{\InOne}
+\anchor{in2}{\InTwo}
+\anchor{out}{\Out}
+\anchor{vref}{\Vref}
+
+\foregroundpath{
+  \pgfsetlinewidth{\pgfkeysvalueof{/tikz/circuitikz/bipoles/thickness}\pgflinewidth}
+  \drawADC}
+}
+
+\begin{document}  
+
+\begin{circuitikz}
+% Microcontroller
+\node[draw, align=center] (pwrswitch) at (0,0) {Power\\Selector};
+\node[anchor=east, below left=1cm and 1cm of pwrswitch] (usb) {USB C};
+\draw[-latex] (usb.east)-|(pwrswitch.south);
+\node[anchor=east, left=1cm of pwrswitch, align=center] (ext) {External\\Power};
+\draw[-latex] (ext.east)--(pwrswitch.west);
+\coordinate (5V) at (1.5,0);
+\draw(pwrswitch.east) to[short, -*](5V);
+\node[above] at (5V) {\SI{5}{\volt}};
+
+\node[draw] (boost) at (3,0) {MIC2253};
+\node[anchor=south, font=\footnotesize] at (boost.north){Boost converter};
+\draw[latex-](boost.west)--(5V);
+
+\node[draw,minimum height=1cm] (buck) at (3,-3) {LM3370};
+\node[anchor=south, font=\footnotesize] at (buck.north){Buck converter};
+\draw[latex-](buck.west)-|(5V);
+\draw[-latex]([yshift=3mm]buck.east)--++(0.5,0)node[anchor=west](){$\SI{3.3}{\volt}_{digital}$};
+\draw[-latex]([yshift=-3mm]buck.east)--++(0.5,0)node[anchor=west](){$\SI{1.8}{\volt}_{FPGA}$};
+
+\coordinate (6V) at (7,0);
+\draw(boost.east) to[short, -*](6V);
+\node[above] at (6V) {\SI{6}{\volt}};
+
+\node[draw] (ldo1) at (9,0) {LDL212PU};
+\node[anchor=south, font=\footnotesize] at (ldo1.north){LDO};
+\draw[latex-](ldo1.west)--(6V);
+
+\coordinate (5VPLL) at (11,0);
+\draw(ldo1.east) to[short, -*](5VPLL);
+\node[above] at (5VPLL) {$\SI{5}{\volt}_{PLLs}$};
+
+\node[draw] (ldo2) at (13,0) {NCP702};
+\node[anchor=south, font=\footnotesize] at (ldo2.north){LDO};
+\draw[latex-](ldo2.west)--(5VPLL);
+\draw[-latex](ldo2.east)--++(0.5,0)node[anchor=west](){$\SI{3.3}{\volt}_{Source~CP}$};
+
+\node[draw] (ldo3) at (13,-1) {AP2114H};
+\node[anchor=south, font=\footnotesize] at (ldo3.north){LDO};
+\draw[latex-] (ldo3.west) -- (ldo3.west-|5VPLL);
+\draw (5VPLL) to [short, -*] (ldo3.west-|5VPLL);
+\draw[-latex](ldo3.east)--++(0.5,0)node[anchor=west](){$\SI{3.3}{\volt}_{Source~RF}$};
+
+\node[draw] (ldo4) at (13,-2) {NCP702};
+\node[anchor=south, font=\footnotesize] at (ldo4.north){LDO};
+\draw[latex-] (ldo4.west) -- (ldo4.west-|5VPLL);
+\draw (5VPLL) to [short, -*] (ldo4.west-|5VPLL);
+\draw[-latex](ldo4.east)--++(0.5,0)node[anchor=west](){$\SI{3.3}{\volt}_{1.LO~CP}$};
+
+\node[draw] (ldo5) at (13,-3) {AP2114H};
+\node[anchor=south, font=\footnotesize] at (ldo5.north){LDO};
+\draw[latex-] (ldo5.west) -| (ldo4.west-|5VPLL);
+\draw[-latex](ldo5.east)--++(0.5,0)node[anchor=west](){$\SI{3.3}{\volt}_{1.LO~RF}$};
+
+\node[draw] (ldo6) at (9,-4) {LDL212PU};
+\node[anchor=south, font=\footnotesize] at (ldo6.north){LDO};
+\draw[latex-] (ldo6.west) -- (ldo6.west-|6V);
+\draw (6V) to [short, -*] (ldo6.west-|6V);
+\coordinate (5VADC1) at (11, -4);
+\draw(ldo6.east) to [short, -*](5VADC1);
+\draw[-latex](5VADC1)--++(3.3,0)node[anchor=west](){$\SI{5}{\volt}_{Port~1~ADC}$};
+\node[draw] (ldo7) at (13,-5) {NCP702};
+\node[anchor=south, font=\footnotesize] at (ldo7.north){LDO};
+\draw[latex-] (ldo7.west) -| (5VADC1);
+\draw[-latex](ldo7.east)--++(0.5,0)node[anchor=west](){$\SI{1.8}{\volt}_{Port~1~ADC}$};
+
+\node[draw] (ldo8) at (9,-6) {LDL212PU};
+\node[anchor=south, font=\footnotesize] at (ldo8.north){LDO};
+\draw[latex-] (ldo8.west) -- (ldo8.west-|6V);
+\draw (6V) to [short, -*] (ldo8.west-|6V);
+\coordinate (5VADC2) at (11, -6);
+\draw(ldo8.east) to [short, -*](5VADC2);
+\draw[-latex](5VADC2)--++(3.3,0)node[anchor=west](){$\SI{5}{\volt}_{Port~2~ADC}$};
+\node[draw] (ldo9) at (13,-7) {NCP702};
+\node[anchor=south, font=\footnotesize] at (ldo9.north){LDO};
+\draw[latex-] (ldo9.west) -| (5VADC2);
+\draw[-latex](ldo9.east)--++(0.5,0)node[anchor=west](){$\SI{1.8}{\volt}_{Port~2~ADC}$};
+
+\node[draw] (ldo10) at (9,-8) {LDL212PU};
+\node[anchor=south, font=\footnotesize] at (ldo10.north){LDO};
+\draw[latex-] (ldo10.west) -| (ldo8.west-|6V);
+\coordinate (5VADC3) at (11, -8);
+\draw(ldo10.east) to [short, -*](5VADC3);
+\draw[-latex](5VADC3)--++(3.3,0)node[anchor=west](){$\SI{5}{\volt}_{Reference~ADC}$};
+\node[draw] (ldo11) at (13,-9) {NCP702};
+\node[anchor=south, font=\footnotesize] at (ldo11.north){LDO};
+\draw[latex-] (ldo11.west) -| (5VADC3);
+\draw[-latex](ldo11.east)--++(0.5,0)node[anchor=west](){$\SI{1.8}{\volt}_{Reference~ADC}$};
+
+\end{circuitikz}
+\end{document}
