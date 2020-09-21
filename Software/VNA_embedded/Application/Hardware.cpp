@@ -243,7 +243,7 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info) {
 	info->extRefInUse = extRefInUse;
 	info->temperatures.LO1 = tempLO;
 	info->temperatures.source = tempSource;
-	info->temperatures.MCU = 0;
+	info->temperatures.MCU = STM::getTemperature();
 	FPGA::ResetADCLimits();
 }
 

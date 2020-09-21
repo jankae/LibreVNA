@@ -36,6 +36,8 @@ extern SPI_HandleTypeDef hspi1;
 static Flash flash = Flash(&hspi1, FLASH_CS_GPIO_Port, FLASH_CS_Pin);
 #endif
 
+extern ADC_HandleTypeDef hadc1;
+
 #define FLAG_USB_PACKET		0x01
 #define FLAG_DATAPOINT		0x02
 #define FLAG_WORK_REQUIRED	0x04
@@ -59,6 +61,7 @@ static void HardwareWorkRequired() {
 }
 
 void App_Start() {
+	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 	handle = xTaskGetCurrentTaskHandle();
 	usb_init(communication_usb_input);
 	Log_Init();
