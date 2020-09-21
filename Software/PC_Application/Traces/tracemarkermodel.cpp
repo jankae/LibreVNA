@@ -64,9 +64,14 @@ void TraceMarkerModel::removeMarker(TraceMarker *m)
     }
 }
 
-void TraceMarkerModel::markerDataChanged(TraceMarker *)
+void TraceMarkerModel::markerDataChanged(TraceMarker *m)
 {
-    emit dataChanged(index(0, ColIndexFreq), index(markers.size()-1, ColIndexData));
+    if(m->editingFrequeny) {
+        // only update the other columns, do not override editor data
+        emit dataChanged(index(0, ColIndexData), index(markers.size()-1, ColIndexData));
+    } else {
+        emit dataChanged(index(0, ColIndexFreq), index(markers.size()-1, ColIndexData));
+    }
 }
 
 TraceMarker *TraceMarkerModel::marker(int index)
@@ -227,4 +232,20 @@ void TraceChooserDelegate::setModelData(QWidget *editor, QAbstractItemModel *mod
     auto markerModel = (TraceMarkerModel*) model;
     auto c = (QComboBox*) editor;
     markerModel->setData(index, c->itemData(c->currentIndex()));
+}
+
+QWidget *TraceFrequencyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    auto model = (TraceMarkerModel*) index.model();
+    auto marker = model->getMarker()[index.row()];
+    marker->editingFrequeny = true;
+    return QStyledItemDelegate::createEditor(parent, option, index);
+}
+
+void TraceFrequencyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    auto markerModel = (TraceMarkerModel*) model;
+    auto marker = markerModel->getMarker()[index.row()];
+    marker->editingFrequeny = false;
+    QStyledItemDelegate::setModelData(editor, model, index);
 }

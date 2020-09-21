@@ -5,13 +5,20 @@
 #include "tracemarker.h"
 #include <vector>
 #include "tracemodel.h"
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 
-class TraceChooserDelegate : public QItemDelegate
+class TraceChooserDelegate : public QStyledItemDelegate
 {
     Q_OBJECT;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     void setEditorData(QWidget * editor, const QModelIndex & index) const override;
+    void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+};
+
+class TraceFrequencyDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT;
+    QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 };
 

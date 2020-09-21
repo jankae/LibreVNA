@@ -22,7 +22,7 @@ public:
     QPixmap& getSymbol();
 
     int getNumber() const;
-
+    bool editingFrequeny;
 public slots:
     void setFrequency(double freq);
 signals:

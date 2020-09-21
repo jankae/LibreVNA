@@ -2,7 +2,8 @@
 #include <QPainter>
 
 TraceMarker::TraceMarker()
-    : parentTrace(nullptr),
+    : editingFrequeny(false),
+      parentTrace(nullptr),
       frequency(1000000000),
       number(1),
       data(0)
