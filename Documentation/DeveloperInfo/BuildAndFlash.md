@@ -13,9 +13,20 @@ Creating all the different parts from the source code requires quite a few tools
   * [Xilinx ISE](https://www.xilinx.com/products/design-tools/ise-design-suite.html) with support for Spartan 6 FPGA
  
 ## Building the PC application:
-* Open Software/PC_Application/Application.pro with Qt Creator
-* Install the required libraries (Qwt and libusb-1.0)
-* Build the application with Qt Creator
+* Install the required tools (Qt, Qwt and libusb-1.0):
+  ```
+  sudo apt-get install qt5-default qt5-qmake qtbase5-dev libqwt-qt5-dev libusb-1.0-0-dev 
+  ```
+* Build the application:
+  * either:
+  ```
+  cd Software/PC_Application
+  qmake
+  make
+  ```
+  * or:
+    * Open Software/PC_Application/Application.pro with Qt Creator
+    * Build the application with Qt Creator
 
 ## Building the MCU firmware:
 * Generating initialization code (only required when changes to CubeMX have been made):
