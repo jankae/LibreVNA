@@ -1,6 +1,7 @@
 #include "firmwareupdatedialog.h"
 #include "ui_firmwareupdatedialog.h"
 #include <QFileDialog>
+#include <QStyle>
 
 FirmwareUpdateDialog::FirmwareUpdateDialog(Device *dev, QWidget *parent) :
     QDialog(parent),

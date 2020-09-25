@@ -4,7 +4,7 @@ import os
 import binascii
 
 FPGA_BITSTREAM = "FPGA/VNA/top.bin"
-MCU_FW = "Software/VNA_embedded/Debug/VNA_embedded.bin"
+MCU_FW = ["Software/VNA_embedded/Debug/VNA_embedded.bin", "Software/VNA_embedded/Release/VNA_embedded.bin", "Software/VNA_embedded/build/VNA_embedded.bin"]
 
 HEADER_SIZE = 24
 
@@ -12,10 +12,24 @@ f = open("combined.vnafw", "wb")
 f.write(bytes("VNA!", 'utf-8'))
 
 bitstream = open(FPGA_BITSTREAM, "rb")
-firmware = open(MCU_FW, "rb")
+latest_modification = 0
+newest_mcu = ""
+for path in MCU_FW:
+    try:
+        modified_time = os.path.getmtime(path)
+        if modified_time >= latest_modification:
+            latest_modification = modified_time
+            newest_mcu = path
+    except:
+        pass
+if latest_modification == 0:
+    print("Couldn't find MCU firmware file")
+    exit(-1)
+print("Using "+newest_mcu+" as MCU firmware")
+firmware = open(newest_mcu, "rb")
 
 size_FPGA = os.path.getsize(FPGA_BITSTREAM)
-size_MCU = os.path.getsize(MCU_FW)
+size_MCU = os.path.getsize(newest_mcu)
 print("Got FPGA bitstream of size "+str(size_FPGA))
 print("Got MCU firmware of size "+str(size_MCU))
 
@@ -37,7 +51,7 @@ def CRC32_from_file(filename, initial_CRC):
 
 print("Calculating CRC...", end="")
 CRC = CRC32_from_file(FPGA_BITSTREAM, 0xFFFFFFFF)
-CRC = CRC32_from_file(MCU_FW, CRC)
+CRC = CRC32_from_file(newest_mcu, CRC)
 print(":"+hex(CRC))
 f.write(CRC.to_bytes(4, byteorder='little'))
 
