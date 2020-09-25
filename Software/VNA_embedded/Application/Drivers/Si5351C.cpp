@@ -1,6 +1,7 @@
 #include "Si5351C.hpp"
 
 #include <cmath>
+#include <cstdlib>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"SI5351"

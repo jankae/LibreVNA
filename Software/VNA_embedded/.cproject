@@ -55,9 +55,11 @@
                             							
                             <option id="fr.ac6.managedbuild.option.gnu.cross.floatabi.1331315324" name="Floating-point ABI" superClass="fr.ac6.managedbuild.option.gnu.cross.floatabi" useByScannerDiscovery="false" value="fr.ac6.managedbuild.option.gnu.cross.floatabi.hard" valueType="enumerated"/>
                             							
+                            <option id="fr.ac6.managedbuild.option.gnu.cross.path.2023424783" name="Path" superClass="fr.ac6.managedbuild.option.gnu.cross.path" useByScannerDiscovery="false" value="/usr/bin" valueType="string"/>
+                            							
                             <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="fr.ac6.managedbuild.targetPlatform.gnu.cross.424800885" isAbstract="false" osList="all" superClass="fr.ac6.managedbuild.targetPlatform.gnu.cross"/>
                             							
-                            <builder arguments="-j5" buildPath="${workspace_loc:/VNA_embedded}/Debug" command="make" id="fr.ac6.managedbuild.builder.gnu.cross.1807206174" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="fr.ac6.managedbuild.builder.gnu.cross">
+                            <builder arguments="-j5" buildPath="${workspace_loc:/VNA_embedded}/" command="make" id="fr.ac6.managedbuild.builder.gnu.cross.1807206174" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="fr.ac6.managedbuild.builder.gnu.cross">
                                 								
                                 <outputEntries>
                                     									
@@ -69,7 +71,7 @@
                             							
                             <tool id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.1927263688" name="MCU GCC Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler">
                                 								
-                                <option defaultValue="gnu.c.optimization.level.none" id="fr.ac6.managedbuild.gnu.c.compiler.option.optimization.level.1492730557" name="Optimization Level" superClass="fr.ac6.managedbuild.gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="fr.ac6.managedbuild.gnu.c.optimization.level.debug" valueType="enumerated"/>
+                                <option defaultValue="gnu.c.optimization.level.none" id="fr.ac6.managedbuild.gnu.c.compiler.option.optimization.level.1492730557" name="Optimization Level" superClass="fr.ac6.managedbuild.gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="fr.ac6.managedbuild.gnu.c.optimization.level.more" valueType="enumerated"/>
                                 								
                                 <option id="gnu.c.compiler.option.debugging.level.24507088" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
                                 								
@@ -143,7 +145,7 @@
                             							
                             <tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1186634618" name="MCU G++ Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler">
                                 								
-                                <option defaultValue="gnu.cpp.optimization.level.none" id="fr.ac6.managedbuild.gnu.cpp.compiler.option.optimization.level.1296454962" name="Optimization Level" superClass="fr.ac6.managedbuild.gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="fr.ac6.managedbuild.gnu.cpp.optimization.level.debug" valueType="enumerated"/>
+                                <option defaultValue="gnu.cpp.optimization.level.none" id="fr.ac6.managedbuild.gnu.cpp.compiler.option.optimization.level.1296454962" name="Optimization Level" superClass="fr.ac6.managedbuild.gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="fr.ac6.managedbuild.gnu.cpp.optimization.level.more" valueType="enumerated"/>
                                 								
                                 <option id="gnu.cpp.compiler.option.debugging.level.1713488101" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
                                 								
@@ -267,7 +269,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="gnu.cpp.link.option.flags.1016696662" name="Linker flags" superClass="gnu.cpp.link.option.flags" useByScannerDiscovery="false" value="-specs=nosys.specs -specs=nano.specs" valueType="string"/>
+                                <option id="gnu.cpp.link.option.flags.1016696662" name="Linker flags" superClass="gnu.cpp.link.option.flags" useByScannerDiscovery="false" value="-specs=nosys.specs -specs=nano.specs " valueType="string"/>
                                 								
                                 <option id="gnu.cpp.link.option.other.1827976887" name="Other options (-Xlinker [option])" superClass="gnu.cpp.link.option.other" useByScannerDiscovery="false"/>
                                 								
@@ -783,7 +785,7 @@
         		
         <configuration configurationName="Debug">
             			
-            <resource resourceType="PROJECT" workspacePath="VNA_embedded"/>
+            <resource resourceType="PROJECT" workspacePath="/VNA_embedded"/>
             		
         </configuration>
         		

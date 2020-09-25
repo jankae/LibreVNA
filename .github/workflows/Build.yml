@@ -1,0 +1,131 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  PC_Application_Ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y libusb-1.0-0-dev libqwt-qt5-dev qt5-default qt5-qmake qtbase5-dev
+          
+      - name: Build application
+        run: |
+          cd Software/PC_Application
+          qmake
+          make -j9
+        shell: bash
+        
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Application_Ubuntu
+          path: Software/PC_Application/Application
+          
+  PC_Application_Windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Cache Qt
+        id: cache-qt
+        uses: pat-s/always-upload-cache@v2.1.0
+        with:
+          path: ${{ runner.workspace }}/Qt
+          key: ${{ runner.os }}-QtCache
+          
+      - name: Cache Qwt
+        id: cache-qwt
+        uses: pat-s/always-upload-cache@v2.1.0
+        with:
+          path: C:\Qwt-6.1.4
+          key: ${{ runner.os }}-QwtCache         
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          arch: 'win64_mingw73'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+                 
+      - name: Download and Install Qwt
+        if: steps.cache-qwt.outputs.cache-hit != 'true'
+        run: |
+          curl -o qwt.zip -L https://sourceforge.net/projects/qwt/files/qwt/6.1.4/qwt-6.1.4.zip/download
+          7z x qwt.zip -r -oQwt
+          cd Qwt\qwt-6.1.4
+          qmake qwt.pro
+          make install
+        shell: cmd
+      
+      - name: Download libusb
+        run: |
+          curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
+          7z x libusb.7z -r -olibusb
+          Xcopy /E /I /Y libusb\include ..\Qt\5.12.9\mingw73_64\include
+          Xcopy /E /I /Y libusb\MinGW64\static C:\Qwt-6.1.4\lib
+          dir
+          dir ..\Qt\5.12.9
+          dir ..\Qt\5.12.9\mingw73_64
+          dir C:\Qwt-6.1.4\lib
+          dir ..\Qt\5.12.9\mingw73_64\bin
+        shell: cmd
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application
+          qmake
+          make -j9
+          cd release
+          del *.o *.cpp
+          windeployqt.exe .
+          copy ..\..\..\..\Qt\5.12.9\mingw73_64\bin\libwinpthread-1.dll .
+          copy ..\..\..\..\Qt\5.12.9\mingw73_64\bin\libgcc_s_seh-1.dll .
+          copy "..\..\..\..\Qt\5.12.9\mingw73_64\bin\libstdc++-6.dll" .
+          copy ..\..\..\..\Qt\5.12.9\mingw73_64\bin\Qt5OpenGL.dll .
+          copy C:\Qwt-6.1.4\lib\qwt.dll .
+        shell: cmd
+        
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Application_Windows
+          path: Software/PC_Application/release
+          
+  Embedded_Firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+          
+      - name: Build application
+        run: |
+          cd Software/VNA_embedded
+          make -j9
+          cp build/VNA_embedded.elf ../../
+        shell: bash
+
+      - name: Combine with FPGA bitstream
+        run: |
+          python3 AssembleFirmware.py
+        shell: bash
+        
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: EmbeddedFirmware
+          path: |
+            VNA_embedded.elf
+            combined.vnafw
+        
