@@ -4,6 +4,8 @@
 #include <complex.h>
 #include <limits>
 #include "Communication.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #define LOG_LEVEL	LOG_LEVEL_DEBUG
 #define LOG_MODULE	"SA"
@@ -104,9 +106,10 @@ static void StartNextSample() {
 
 void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	LOG_DEBUG("Setting up...");
+	SA::Stop();
+	vTaskDelay(5);
 	s = settings;
 	HW::SetMode(HW::Mode::SA);
-	FPGA::AbortSweep();
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	// in almost all cases a full sweep requires more points than the FPGA can handle at a time
 	// individually start each point and do the sweep in the uC
@@ -115,8 +118,10 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	// see https://www.tek.com/blog/window-functions-spectrum-analyzers for window factors
 	constexpr float window_factors[4] = {0.89f, 2.23f, 1.44f, 3.77f};
 	sampleNum = HW::ADCSamplerate * window_factors[s.WindowType] / s.RBW;
-	// round up to next multiple of 128
-	sampleNum += 128 - sampleNum%128;
+	// round up to next multiple of 16
+	if(sampleNum%16) {
+		sampleNum += 16 - sampleNum%16;
+	}
 	if(sampleNum >= HW::MaxSamples) {
 		sampleNum = HW::MaxSamples;
 	}
@@ -148,6 +153,7 @@ bool SA::MeasurementDone(FPGA::SamplingResult result) {
 	if(!active) {
 		return false;
 	}
+	FPGA::AbortSweep();
 	float port1 = abs(std::complex<float>(result.P1I, result.P1Q))/sampleNum;
 	float port2 = abs(std::complex<float>(result.P2I, result.P2Q))/sampleNum;
 	if(port1 < port1Measurement) {

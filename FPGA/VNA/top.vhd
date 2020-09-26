@@ -112,8 +112,8 @@ architecture Behavioral of top is
 		RESET : IN std_logic;
 		NPOINTS : IN std_logic_vector(12 downto 0);
 		CONFIG_DATA : IN std_logic_vector(95 downto 0);
-		USER_NSAMPLES : in STD_LOGIC_VECTOR (9 downto 0);
-		NSAMPLES : out STD_LOGIC_VECTOR (9 downto 0);
+		USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
+		NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
 		SAMPLING_BUSY : in STD_LOGIC;
 		SAMPLING_DONE : IN std_logic;
 		MAX2871_DEF_4 : IN std_logic_vector(31 downto 0);
@@ -156,7 +156,7 @@ architecture Behavioral of top is
 		REF : IN std_logic_vector(15 downto 0);
 		NEW_SAMPLE : IN std_logic;
 		START : IN std_logic;
-		SAMPLES : IN std_logic_vector(9 downto 0);
+		SAMPLES : IN std_logic_vector(12 downto 0);
 		WINDOW_TYPE : in STD_LOGIC_VECTOR (1 downto 0);		
 		ADC_START : OUT std_logic;
 		DONE : OUT std_logic;
@@ -224,7 +224,7 @@ architecture Behavioral of top is
 		SWEEP_ADDRESS : OUT std_logic_vector(12 downto 0);
 		SWEEP_WRITE : OUT std_logic_vector(0 to 0);
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
-		NSAMPLES : OUT std_logic_vector(9 downto 0);
+		NSAMPLES : OUT std_logic_vector(12 downto 0);
 		EXCITE_PORT1 : out STD_LOGIC;
 		EXCITE_PORT2 : out STD_LOGIC;
 		PORT1_EN : out STD_LOGIC;
@@ -305,8 +305,8 @@ architecture Behavioral of top is
 	signal sampling_busy : std_logic;
 	signal sampling_done : std_logic;
 	signal sampling_start : std_logic;
-	signal sampling_samples : std_logic_vector(9 downto 0);
-	signal sampling_user_samples : std_logic_vector(9 downto 0);
+	signal sampling_samples : std_logic_vector(12 downto 0);
+	signal sampling_user_samples : std_logic_vector(12 downto 0);
 	signal sampling_result : std_logic_vector(287 downto 0);
 	signal sampling_window : std_logic_vector(1 downto 0);
 	signal sampling_prescaler : std_logic_vector(7 downto 0);

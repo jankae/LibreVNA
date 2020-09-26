@@ -61,6 +61,7 @@ static void HardwareWorkRequired() {
 }
 
 void App_Start() {
+	STM::Init();
 	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 	handle = xTaskGetCurrentTaskHandle();
 	usb_init(communication_usb_input);
@@ -161,6 +162,12 @@ void App_Start() {
 					LOG_INFO("Updating spectrum analyzer settings");
 					SA::Setup(packet.spectrumSettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
+				case Protocol::PacketType::RequestDeviceLimits:
+					Protocol::PacketInfo p;
+					p.type = Protocol::PacketType::DeviceLimits;
+					p.limits = HW::Limits;
+					Communication::Send(p);
 					break;
 #ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:

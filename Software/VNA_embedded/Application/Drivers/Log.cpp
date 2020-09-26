@@ -79,7 +79,7 @@ void Log_Init() {
 #endif
 
 	/* USART interrupt Init */
-	HAL_NVIC_SetPriority(NVIC_ISR, 5, 0);
+	HAL_NVIC_SetPriority(NVIC_ISR, 0, 0);
 	HAL_NVIC_EnableIRQ(NVIC_ISR);
 }
 

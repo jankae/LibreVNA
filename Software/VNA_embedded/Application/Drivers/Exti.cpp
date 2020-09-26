@@ -11,13 +11,13 @@ static constexpr uint8_t MaxEntries = 16;
 static Entry entries[MaxEntries];
 
 void Exti::Init() {
-	HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
-	HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-	HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
-	HAL_NVIC_SetPriority(EXTI3_IRQn, 5, 0);
-	HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
-	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
-	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+	HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
+	HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 0);
+	HAL_NVIC_SetPriority(EXTI2_IRQn, 1, 0);
+	HAL_NVIC_SetPriority(EXTI3_IRQn, 1, 0);
+	HAL_NVIC_SetPriority(EXTI4_IRQn, 1, 0);
+	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 1, 0);
+	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
 	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 	HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 	HAL_NVIC_EnableIRQ(EXTI2_IRQn);

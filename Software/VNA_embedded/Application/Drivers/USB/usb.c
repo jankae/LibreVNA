@@ -187,9 +187,9 @@ void usb_init(usbd_callback_t callback) {
 	USBD_Init(&hUsbDeviceFS, &FS_Desc, 0);
 	USBD_RegisterClass(&hUsbDeviceFS, &USBD_ClassDriver);
 	USBD_Start(&hUsbDeviceFS);
-    HAL_NVIC_SetPriority(USB_HP_IRQn, 6, 0);
+    HAL_NVIC_SetPriority(USB_HP_IRQn, 7, 0);
     HAL_NVIC_EnableIRQ(USB_HP_IRQn);
-    HAL_NVIC_SetPriority(USB_LP_IRQn, 6, 0);
+    HAL_NVIC_SetPriority(USB_LP_IRQn, 7, 0);
 	HAL_NVIC_EnableIRQ(USB_LP_IRQn);
 }
 

@@ -404,6 +404,35 @@ static int16_t EncodeSpectrumAnalyzerResult(Protocol::SpectrumAnalyzerResult d, 
     return e.getSize();
 }
 
+static Protocol::DeviceLimits DecodeDeviceLimits(uint8_t *buf) {
+    Protocol::DeviceLimits d;
+    Decoder e(buf);
+    e.get(d.minFreq);
+    e.get(d.maxFreq);
+    e.get(d.minIFBW);
+    e.get(d.maxIFBW);
+    e.get(d.maxPoints);
+    e.get(d.cdbm_min);
+    e.get(d.cdbm_max);
+    e.get(d.minRBW);
+    e.get(d.maxRBW);
+    return d;
+}
+static int16_t EncodeDeviceLimits(Protocol::DeviceLimits d, uint8_t *buf,
+                                                   uint16_t bufSize) {
+    Encoder e(buf, bufSize);
+    e.add(d.minFreq);
+    e.add(d.maxFreq);
+    e.add(d.minIFBW);
+    e.add(d.maxIFBW);
+    e.add(d.maxPoints);
+    e.add(d.cdbm_min);
+    e.add(d.cdbm_max);
+    e.add(d.minRBW);
+    e.add(d.maxRBW);
+    return e.getSize();
+}
+
 static Protocol::FirmwarePacket DecodeFirmwarePacket(uint8_t *buf) {
     Protocol::FirmwarePacket d;
     // simple packet format, memcpy is faster than using the decoder
@@ -498,10 +527,14 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::SpectrumAnalyzerResult:
     	info->spectrumResult = DecodeSpectrumAnalyzerResult(&data[4]);
     	break;
+    case PacketType::DeviceLimits:
+        info->limits = DecodeDeviceLimits(&data[4]);
+        break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
     case PacketType::Nack:
+    case PacketType::RequestDeviceLimits:
         // no payload, nothing to do
         break;
     case PacketType::None:
@@ -544,10 +577,14 @@ uint16_t Protocol::EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t dests
     case PacketType::SpectrumAnalyzerResult:
 		payload_size = EncodeSpectrumAnalyzerResult(packet.spectrumResult, &dest[4], destsize - 8);
 		break;
+    case PacketType::DeviceLimits:
+        payload_size = EncodeDeviceLimits(packet.limits, &dest[4], destsize - 8);
+        break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
     case PacketType::Nack:
+    case PacketType::RequestDeviceLimits:
         // no payload, nothing to do
         break;
     case PacketType::None:

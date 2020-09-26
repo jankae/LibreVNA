@@ -105,6 +105,18 @@ uint8_t *USBInBuffer::getBuffer() const
     return buffer;
 }
 
+static Protocol::DeviceLimits limits = {
+    .minFreq = 1000000,
+    .maxFreq = 6000000000,
+    .minIFBW = 10,
+    .maxIFBW = 10000,
+    .maxPoints = 4501,
+    .cdbm_min = -4000,
+    .cdbm_max = -1000,
+    .minRBW = 10,
+    .maxRBW = 10000,
+};
+
 Device::Device(QString serial)
 {
     qDebug() << "Starting device connection...";
@@ -162,6 +174,8 @@ Device::Device(QString serial)
     connect(&transmissionTimer, &QTimer::timeout, this, &Device::transmissionTimeout);
     transmissionTimer.setSingleShot(true);
     transmissionActive = false;
+    // got a new connection, request limits
+    SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceLimits);
 }
 
 Device::~Device()
@@ -249,6 +263,11 @@ std::set<QString> Device::GetDevices()
     libusb_exit(ctx);
 
     return serials;
+}
+
+Protocol::DeviceLimits Device::Limits()
+{
+    return limits;
 }
 
 void Device::USBHandleThread()
@@ -387,6 +406,9 @@ void Device::ReceivedData()
         case Protocol::PacketType::Nack:
             emit NackReceived();
 //            transmissionFinished(TransmissionResult::Nack);
+            break;
+        case Protocol::PacketType::DeviceLimits:
+            limits = packet.limits;
             break;
         default:
             break;

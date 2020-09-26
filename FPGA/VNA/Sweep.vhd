@@ -35,8 +35,8 @@ entity Sweep is
 			  NPOINTS : in STD_LOGIC_VECTOR (12 downto 0);
            CONFIG_ADDRESS : out  STD_LOGIC_VECTOR (12 downto 0);
            CONFIG_DATA : in  STD_LOGIC_VECTOR (95 downto 0);
-			  USER_NSAMPLES : in STD_LOGIC_VECTOR (9 downto 0);
-			  NSAMPLES : out STD_LOGIC_VECTOR (9 downto 0);
+			  USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
+			  NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
            SAMPLING_BUSY : in STD_LOGIC;
 			  SAMPLING_DONE : in  STD_LOGIC;
 			  START_SAMPLING : out STD_LOGIC;
@@ -114,13 +114,13 @@ begin
 							to_unsigned(55296, 16); -- 540us
 							
 	NSAMPLES <= USER_NSAMPLES when CONFIG_DATA(92 downto 90) = "000" else
-					std_logic_vector(to_unsigned(1, 10)) when CONFIG_DATA(92 downto 90) = "001" else
-					std_logic_vector(to_unsigned(3, 10)) when CONFIG_DATA(92 downto 90) = "010" else
-					std_logic_vector(to_unsigned(7, 10)) when CONFIG_DATA(92 downto 90) = "011" else
-					std_logic_vector(to_unsigned(24, 10)) when CONFIG_DATA(92 downto 90) = "100" else
-					std_logic_vector(to_unsigned(71, 10)) when CONFIG_DATA(92 downto 90) = "101" else
-					std_logic_vector(to_unsigned(238, 10)) when CONFIG_DATA(92 downto 90) = "110" else
-					std_logic_vector(to_unsigned(714, 10));
+					std_logic_vector(to_unsigned(6, 13)) when CONFIG_DATA(92 downto 90) = "001" else
+					std_logic_vector(to_unsigned(19, 13)) when CONFIG_DATA(92 downto 90) = "010" else
+					std_logic_vector(to_unsigned(57, 13)) when CONFIG_DATA(92 downto 90) = "011" else
+					std_logic_vector(to_unsigned(190, 13)) when CONFIG_DATA(92 downto 90) = "100" else
+					std_logic_vector(to_unsigned(571, 13)) when CONFIG_DATA(92 downto 90) = "101" else
+					std_logic_vector(to_unsigned(1904, 13)) when CONFIG_DATA(92 downto 90) = "110" else
+					std_logic_vector(to_unsigned(5712, 13));
 	
 	DEBUG_STATUS(10 downto 8) <= "000" when state = TriggerSetup else
 											"001" when state = SettingUp else
@@ -133,7 +133,7 @@ begin
 	DEBUG_STATUS(7) <= PLL_RELOAD_DONE;
 	DEBUG_STATUS(6) <= PLL_RELOAD_DONE and PLL_LOCKED;
 	DEBUG_STATUS(5) <= SAMPLING_BUSY;
-	DEBUG_STATUS(4 downto 0) <= (others => '0');
+	DEBUG_STATUS(4 downto 0) <= (others => '1');
 	
 	process(CLK, RESET)
 	begin

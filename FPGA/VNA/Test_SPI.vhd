@@ -216,7 +216,11 @@ BEGIN
 		
 		wait for CLK_period*10;
 		BUF_IN <= "0000111100001111";
-
+      wait for CLK_period*10;
+		CS <= '0';
+		SPI("0101010101010101");
+		CS <= '1';
+		
       wait;
    end process;
 

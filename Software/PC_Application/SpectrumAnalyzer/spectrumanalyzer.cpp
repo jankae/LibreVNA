@@ -295,8 +295,8 @@ void SpectrumAnalyzer::SetSpan(double span)
 
 void SpectrumAnalyzer::SetFullSpan()
 {
-    settings.f_start = 0;
-    settings.f_stop = 6000000000;
+    settings.f_start = Device::Limits().minFreq;
+    settings.f_stop = Device::Limits().maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -324,6 +324,11 @@ void SpectrumAnalyzer::SpanZoomOut()
 
 void SpectrumAnalyzer::SetRBW(double bandwidth)
 {
+    if(bandwidth > Device::Limits().maxRBW) {
+        bandwidth = Device::Limits().maxRBW;
+    } else if(bandwidth < Device::Limits().minRBW) {
+        bandwidth = Device::Limits().minRBW;
+    }
     settings.RBW = bandwidth;
     emit RBWChanged(settings.RBW);
     SettingsChanged();
@@ -339,12 +344,14 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
 
 void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 {
-    // TODO central hardware limits
-    if(settings.f_stop > 6000000000) {
-        settings.f_stop = 6000000000;
+    if(settings.f_stop > Device::Limits().maxFreq) {
+        settings.f_stop = Device::Limits().maxFreq;
     }
     if(settings.f_start > settings.f_stop) {
         settings.f_start = settings.f_stop;
+    }
+    if(settings.f_start < Device::Limits().minFreq) {
+        settings.f_start = Device::Limits().minFreq;
     }
     emit startFreqChanged(settings.f_start);
     emit stopFreqChanged(settings.f_stop);

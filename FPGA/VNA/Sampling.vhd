@@ -43,7 +43,7 @@ entity Sampling is
            DONE : out  STD_LOGIC;
            PRE_DONE : out  STD_LOGIC;
            START : in  STD_LOGIC;
-           SAMPLES : in  STD_LOGIC_VECTOR (9 downto 0);
+           SAMPLES : in  STD_LOGIC_VECTOR (12 downto 0);
 			  WINDOW_TYPE : in STD_LOGIC_VECTOR (1 downto 0);
            PORT1_I : out  STD_LOGIC_VECTOR (47 downto 0);
            PORT1_Q : out  STD_LOGIC_VECTOR (47 downto 0);
@@ -99,7 +99,10 @@ END COMPONENT;
 	
 	signal window_index : std_logic_vector(6 downto 0);
 	signal window_value : std_logic_vector(15 downto 0);
-	signal window_sample_cnt : integer range 0 to 1023;
+	signal window_sample_cnt : integer range 0 to 8191;
+	signal window_index_inc : integer range 0 to 8;
+	signal window_sample_compare : integer range 0 to 8191;
+	signal window_sample_cnt_inc : integer range 0 to 8;
 	
 	signal mult1_I : std_logic_vector(31 downto 0);
 	signal mult1_Q : std_logic_vector(31 downto 0);
@@ -232,7 +235,26 @@ begin
 						phase <= (others => '0');
 						if START = '1' then
 							state <= Sampling;
-							samples_to_take <= to_integer(unsigned(SAMPLES & "0000000") - 1);
+							samples_to_take <= to_integer(unsigned(SAMPLES & "0000") - 1);
+							window_sample_compare <= to_integer(unsigned(SAMPLES) - 1);
+							case SAMPLES is
+								when "0000000000001" =>
+									-- 16 samples, increment on every sample by 8
+									window_sample_cnt_inc <= 1;
+									window_index_inc <= 8;
+								when "0000000000010" | "0000000000011" =>
+									-- 32-48 samples, increment by 4
+									window_sample_cnt_inc <= 2;
+									window_index_inc <= 4;
+								when "0000000000100" | "0000000000101" | "0000000000110" | "0000000000111"=>
+									-- 64-112 samples, increment by 2
+									window_sample_cnt_inc <= 4;
+									window_index_inc <= 2;									
+								when others =>
+									-- 128 or more samples, increment by 1
+									window_sample_cnt_inc <= 8;
+									window_index_inc <= 1;
+								end case;
 						end if;
 					when Sampling =>
 						DONE <= '0';
@@ -266,11 +288,11 @@ begin
 							state <= Ready;
 						end if;
 						-- keep track of window index
-						if window_sample_cnt < unsigned(SAMPLES) - 1 then
-							window_sample_cnt <= window_sample_cnt + 1;
+						if window_sample_cnt < window_sample_compare then
+							window_sample_cnt <= window_sample_cnt + window_sample_cnt_inc;
 						else
-							window_sample_cnt <= 0;
-							window_index <= std_logic_vector( unsigned(window_index) + 1 );
+							window_sample_cnt <= window_sample_cnt - window_sample_compare;
+							window_index <= std_logic_vector( unsigned(window_index) + window_index_inc );
 						end if;
 					when Ready =>
 						ACTIVE <= '1';

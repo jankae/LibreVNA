@@ -49,7 +49,7 @@ entity SPICommands is
            SWEEP_ADDRESS : out  STD_LOGIC_VECTOR (12 downto 0);
            SWEEP_WRITE : out  STD_LOGIC_VECTOR (0 downto 0);
            SWEEP_POINTS : out  STD_LOGIC_VECTOR (12 downto 0);
-           NSAMPLES : out  STD_LOGIC_VECTOR (9 downto 0);
+           NSAMPLES : out  STD_LOGIC_VECTOR (12 downto 0);
 			  EXCITE_PORT1 : out STD_LOGIC;
 			  EXCITE_PORT2 : out STD_LOGIC;
 			  PORT1_EN : out STD_LOGIC;
@@ -196,7 +196,7 @@ begin
 							case selected_register is
 								when 0 => interrupt_mask <= spi_buf_out;
 								when 1 => SWEEP_POINTS <= spi_buf_out(12 downto 0);
-								when 2 => NSAMPLES <= spi_buf_out(9 downto 0);
+								when 2 => NSAMPLES <= spi_buf_out(12 downto 0);
 								when 3 => PORTSWITCH_EN <= spi_buf_out(0);
 											PORT1_EN <= spi_buf_out(15);
 											PORT2_EN <= spi_buf_out(14);

@@ -85,6 +85,7 @@ bool FPGA::Init(HaltedCallback cb) {
 	// Reset FPGA
 	High(FPGA_RESET);
 	SetMode(Mode::FPGA);
+	AbortSweep();
 	Delay::us(1);
 	Low(FPGA_RESET);
 	Delay::ms(10);
@@ -114,11 +115,11 @@ void FPGA::SetNumberOfPoints(uint16_t npoints) {
 }
 
 void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
-	// register is in multiples of 128
-	nsamples /= 128;
+	// register is in multiples of 16
+	nsamples /= 16;
 	// constrain to maximum value
-	if(nsamples >= 1024) {
-		nsamples = 1023;
+	if(nsamples >= 8192) {
+		nsamples = 8192;
 	}
 	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
@@ -238,8 +239,15 @@ static inline int64_t sign_extend_64(int64_t x, uint16_t bits) {
 static FPGA::ReadCallback callback;
 static uint8_t raw[36];
 static bool halted;
+static bool new_sample;
+static FPGA::SamplingResult result;
+static bool busy_reading = false;
 
 bool FPGA::InitiateSampleRead(ReadCallback cb) {
+	if(busy_reading) {
+		LOG_ERR("ISR while still reading old data");
+		return false;
+	}
 	callback = cb;
 	uint8_t cmd[2] = {0xC0, 0x00};
 	uint16_t status;
@@ -260,8 +268,9 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 		High(CS);
 
 		if (halted) {
-			if (halted_cb) {
+			if (halted && halted_cb) {
 				halted_cb();
+				halted = false;
 			}
 		} else {
 			LOG_WARN("ISR without new data, status: 0x%04x", status);
@@ -270,6 +279,7 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	}
 
 	// Start data read
+	busy_reading = true;
 	HAL_SPI_Receive_DMA(&FPGA_SPI, raw, 36);
 	return true;
 }
@@ -283,8 +293,6 @@ static int64_t assembleSampleResultValue(uint8_t *raw) {
 
 extern "C" {
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
-	FPGA::SamplingResult result;
-	High(CS);
 	// Assemble data from words
 	result.P1I = assembleSampleResultValue(&raw[30]);
 	result.P1Q = assembleSampleResultValue(&raw[24]);
@@ -292,11 +300,16 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
 	result.P2Q = assembleSampleResultValue(&raw[12]);
 	result.RefI = assembleSampleResultValue(&raw[6]);
 	result.RefQ = assembleSampleResultValue(&raw[0]);
-	if (callback) {
+	High(CS);
+	busy_reading = false;
+	new_sample = true;
+	if (new_sample && callback) {
 		callback(result);
+		new_sample = false;
 	}
 	if (halted && halted_cb) {
 		halted_cb();
+		halted = false;
 	}
 }
 }
@@ -319,18 +332,24 @@ void FPGA::SetMode(Mode mode) {
 		Low(AUX2);
 		Delay::us(1);
 		High(CS);
+		// Configure SPI to use faster speed of 32MHz
+		FPGA_SPI.Instance->CR1 = (FPGA_SPI.Instance->CR1 & ~SPI_CR1_BR_Msk) | SPI_BAUDRATEPRESCALER_4;
 		break;
 	case Mode::SourcePLL:
 		Low(CS);
 		Low(AUX2);
 		Delay::us(1);
 		High(AUX1);
+		// Configure SPI to use slower speed of 16MHz (MAX2871 is limited to 20MHz)
+		FPGA_SPI.Instance->CR1 = (FPGA_SPI.Instance->CR1 & ~SPI_CR1_BR_Msk) | SPI_BAUDRATEPRESCALER_8;
 		break;
 	case Mode::LOPLL:
 		Low(CS);
 		Low(AUX1);
 		Delay::us(1);
 		High(AUX2);
+		// Configure SPI to use slower speed of 16MHz (MAX2871 is limited to 20MHz)
+		FPGA_SPI.Instance->CR1 = (FPGA_SPI.Instance->CR1 & ~SPI_CR1_BR_Msk) | SPI_BAUDRATEPRESCALER_8;
 		break;
 	}
 	Delay::us(1);

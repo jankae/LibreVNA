@@ -248,11 +248,11 @@ The register contains the number of points per sweep negative one, e.g. set to 1
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
 \robits{0}{6}{reserved}
-\rwbits{6}{10}{SPP[9:0]}
+\rwbits{3}{13}{SPP[12:0]}
 \end{tikzpicture}
 \end{center}
 \begin{itemize}
-\item \textbf{SPP[9:0]:} The register contains the number of samples per point in increments of 128 samples (e.g. SPP=0b0000001000=0x08 uses 1024 samples per point). The value of this register is only used if SweepConfig[92:90] is set to 000. Otherwise it is overwritten for the sweep point with one of seven preselected values.
+\item \textbf{SPP[12:0]:} The register contains the number of samples per point in increments of 16 samples (e.g. SPP=0b0000001000=0x08 uses 128 samples per point). The value of this register is only used if SweepConfig[92:90] is set to 000. Otherwise it is overwritten for the sweep point with one of seven preselected values.
 \end{itemize}
 
 \subsection{System Control Register: 0x03}
@@ -432,11 +432,11 @@ Setting & Time\\
 Setting & Samples & Equivalent IF bandwidth\\
  \hline
 000 & Defined by SPP register & \SI{914}{\kilo\hertz}/SPP\\
-001 & 128 & \SI{10}{\kilo\hertz}\\
-010 & 384 & \SI{3}{\kilo\hertz}\\
-011 & 896 & \SI{1}{\kilo\hertz}\\
-100 & 3072 & \SI{300}{\hertz}\\
-101 & 9088 & \SI{100}{\hertz}\\
+001 & 96 & \SI{10}{\kilo\hertz}\\
+010 & 304 & \SI{3}{\kilo\hertz}\\
+011 & 912 & \SI{1}{\kilo\hertz}\\
+100 & 3040 & \SI{300}{\hertz}\\
+101 & 9136 & \SI{100}{\hertz}\\
 110 & 30464 & \SI{30}{\hertz}\\
 111 & 91392 & \SI{10}{\hertz}\\
 \end{tabular}

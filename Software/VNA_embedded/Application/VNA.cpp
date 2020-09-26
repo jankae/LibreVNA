@@ -9,6 +9,8 @@
 #include "Exti.hpp"
 #include "Hardware.hpp"
 #include "Communication.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"VNA"
@@ -35,6 +37,8 @@ static constexpr uint32_t BandSwitchFrequency = 25000000;
 using namespace HWHAL;
 
 bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
+	VNA::Stop();
+	vTaskDelay(5);
 	HW::SetMode(HW::Mode::VNA);
 	if(s.excitePort1 == 0 && s.excitePort2 == 0) {
 		// both ports disabled, nothing to do
@@ -45,14 +49,15 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	sweepCallback = cb;
 	settings = s;
 	// Abort possible active sweep first
-	FPGA::AbortSweep();
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	uint16_t points = settings.points <= FPGA::MaxPoints ? settings.points : FPGA::MaxPoints;
 	// Configure sweep
 	FPGA::SetNumberOfPoints(points);
 	uint32_t samplesPerPoint = (HW::ADCSamplerate / s.if_bandwidth);
-	// round up to next multiple of 128 (128 samples are spread across 35 IF2 periods)
-	samplesPerPoint = ((uint32_t) ((samplesPerPoint + 127) / 128)) * 128;
+	// round up to next multiple of 16 (16 samples are spread across 5 IF2 periods)
+	if(samplesPerPoint%16) {
+		samplesPerPoint += 16 - samplesPerPoint%16;
+	}
 	uint32_t actualBandwidth = HW::ADCSamplerate / samplesPerPoint;
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
@@ -76,10 +81,8 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 
 	bool last_lowband = false;
 
-	if(!s.suppressPeaks) {
-		// invalidate first entry of IFTable, preventing switing of 2.LO in halted callback
-		IFTable[0].pointCnt = 0xFFFF;
-	}
+	// invalidate first entry of IFTable, preventing switing of 2.LO in halted callback
+	IFTable[0].pointCnt = 0xFFFF;
 
 	// Transfer PLL configuration to FPGA
 	for (uint16_t i = 0; i < points; i++) {
@@ -122,7 +125,7 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 				Si5351.SetCLK(SiChannel::RefLO2, last_LO2,
 						Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 				// store calculated clock configuration for later change
-				Si5351.ReadRawCLKConfig(1, IFTable[IFTableIndexCnt].clkconfig);
+				Si5351.ReadRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);
 				IFTableIndexCnt++;
 				needs_LO2_shift = false;
 			}
@@ -165,6 +168,12 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	return true;
 }
 
+static void PassOnData() {
+	if (sweepCallback) {
+		sweepCallback(data);
+	}
+}
+
 bool VNA::MeasurementDone(FPGA::SamplingResult result) {
 	if(!active) {
 		return false;
@@ -200,9 +209,7 @@ bool VNA::MeasurementDone(FPGA::SamplingResult result) {
 		pointComplete = true;
 	}
 	if(pointComplete) {
-		if (sweepCallback) {
-			sweepCallback(data);
-		}
+		STM::DispatchToInterrupt(PassOnData);
 		pointCnt++;
 		if (pointCnt >= settings.points) {
 			// reached end of sweep, start again
@@ -258,6 +265,7 @@ void VNA::SweepHalted() {
 			// First point in sweep, enable CLK
 			Si5351.Enable(SiChannel::LowbandSource);
 			FPGA::Disable(FPGA::Periphery::SourceRF);
+			Delay::us(1300);
 		}
 	} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
 		// first sweep point in highband is also halted, disable lowband source

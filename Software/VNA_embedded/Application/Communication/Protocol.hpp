@@ -116,6 +116,18 @@ using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
 	uint16_t pointNum;
 };
 
+using DeviceLimits = struct _deviceLimits {
+    uint64_t minFreq;
+    uint64_t maxFreq;
+    uint32_t minIFBW;
+    uint32_t maxIFBW;
+    uint16_t maxPoints;
+    int16_t cdbm_min;
+    int16_t cdbm_max;
+    uint32_t minRBW;
+    uint32_t maxRBW;
+};
+
 static constexpr uint16_t FirmwareChunkSize = 256;
 using FirmwarePacket = struct _firmwarePacket {
     uint32_t address;
@@ -138,6 +150,8 @@ enum class PacketType : uint8_t {
 	Generator = 12,
 	SpectrumAnalyzerSettings = 13,
 	SpectrumAnalyzerResult =  14,
+    RequestDeviceLimits = 15,
+    DeviceLimits = 16,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -153,6 +167,7 @@ using PacketInfo = struct _packetinfo {
         ManualStatus status;
         SpectrumAnalyzerSettings spectrumSettings;
         SpectrumAnalyzerResult spectrumResult;
+        DeviceLimits limits;
 	};
 };
 

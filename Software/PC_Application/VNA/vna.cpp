@@ -600,8 +600,8 @@ void VNA::SetSpan(double span)
 
 void VNA::SetFullSpan()
 {
-    settings.f_start = 0;
-    settings.f_stop = 6000000000;
+    settings.f_start = Device::Limits().minFreq;
+    settings.f_stop = Device::Limits().maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -630,10 +630,10 @@ void VNA::SpanZoomOut()
 void VNA::SetSourceLevel(double level)
 {
     // TODO remove hardcoded limits
-    if(level > -10.0) {
-        level = -10.0;
-    } else if(level < -42.0) {
-        level = -42.0;
+    if(level > Device::Limits().cdbm_max / 100.0) {
+        level = Device::Limits().cdbm_max / 100.0;
+    } else if(level < Device::Limits().cdbm_min / 100.0) {
+        level = Device::Limits().cdbm_min / 100.0;
     }
     emit sourceLevelChanged(level);
     settings.cdbm_excitation = level * 100;
@@ -645,8 +645,8 @@ void VNA::SetPoints(unsigned int points)
     // TODO remove hardcoded limits
     if (points < 1) {
         points = 1;
-    } else if(points > 4501) {
-        points = 4501;
+    } else if(points > Device::Limits().maxPoints) {
+        points = Device::Limits().maxPoints;
     }
     emit pointsChanged(points);
     settings.points = points;
@@ -655,6 +655,11 @@ void VNA::SetPoints(unsigned int points)
 
 void VNA::SetIFBandwidth(double bandwidth)
 {
+    if(bandwidth > Device::Limits().maxIFBW) {
+        bandwidth = Device::Limits().maxIFBW;
+    } else if(bandwidth < Device::Limits().minIFBW) {
+        bandwidth = Device::Limits().minIFBW;
+    }
     settings.if_bandwidth = bandwidth;
     emit IFBandwidthChanged(bandwidth);
     SettingsChanged();
@@ -747,12 +752,14 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
 
 void VNA::ConstrainAndUpdateFrequencies()
 {
-    // TODO central hardware limits
-    if(settings.f_stop > 6000000000) {
-        settings.f_stop = 6000000000;
+    if(settings.f_stop > Device::Limits().maxFreq) {
+        settings.f_stop = Device::Limits().maxFreq;
     }
     if(settings.f_start > settings.f_stop) {
         settings.f_start = settings.f_stop;
+    }
+    if(settings.f_start < Device::Limits().minFreq) {
+        settings.f_start = Device::Limits().minFreq;
     }
     emit startFreqChanged(settings.f_start);
     emit stopFreqChanged(settings.f_stop);

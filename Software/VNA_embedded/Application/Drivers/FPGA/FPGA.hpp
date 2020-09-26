@@ -78,11 +78,11 @@ enum class SettlingTime {
 
 enum class Samples {
 	SPPRegister = 0x00,
-    S128 = 0x01,
-	S384 = 0x02,
-	S896 = 0x03,
-	S3072 = 0x04,
-	S9088 = 0x05,
+    S96 = 0x01,
+	S304 = 0x02,
+	S912 = 0x03,
+	S3040 = 0x04,
+	S9136 = 0x05,
 	S30464 = 0x06,
 	S91392 = 0x07,
 };

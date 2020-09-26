@@ -86,7 +86,7 @@ END COMPONENT;
 	signal port2_latch : std_logic_vector(15 downto 0);
 	
 	signal window_index : std_logic_vector(6 downto 0);
-	signal window_cnt : unsigned(
+
 	signal window_value : std_logic_vector(15 downto 0);
 	
 	signal phase : std_logic_vector(31 downto 0);

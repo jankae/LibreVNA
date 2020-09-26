@@ -48,7 +48,7 @@ static void ReadComplete(FPGA::SamplingResult result) {
 		break;
 	}
 	if(needs_work && requestWork) {
-		requestWork();
+		STM::DispatchToInterrupt(requestWork);
 	}
 }
 
@@ -120,8 +120,8 @@ bool HW::Init(WorkRequest wr) {
 	}
 
 	// Set default ADC samplerate
-	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 112);
-	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 128);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1280);
 
 	// Enable new data and sweep halt interrupt
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);

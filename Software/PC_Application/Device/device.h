@@ -62,12 +62,13 @@ public:
     bool SetManual(Protocol::ManualControl manual);
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
     bool SendCommandWithoutPayload(Protocol::PacketType type);
-    // Returns serial numbers of all connected devices
-    static std::set<QString> GetDevices();
     QString serial() const;
     Protocol::DeviceInfo getLastInfo() const;
     QString getLastDeviceInfoString();
 
+    // Returns serial numbers of all connected devices
+    static std::set<QString> GetDevices();
+    static Protocol::DeviceLimits Limits();
 signals:
     void DatapointReceived(Protocol::Datapoint);
     void ManualStatusReceived(Protocol::ManualStatus);
