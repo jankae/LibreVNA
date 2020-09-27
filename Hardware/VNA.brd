@@ -29,15 +29,15 @@
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
 <layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="22" name="bPlace" color="7" fill="1" visible="no" active="yes"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="26" name="bNames" color="7" fill="1" visible="no" active="yes"/>
 <layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="28" name="bValues" color="7" fill="1" visible="no" active="yes"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="yes" active="yes"/>
-<layer number="30" name="bStop" color="7" fill="6" visible="no" active="yes"/>
+<layer number="30" name="bStop" color="7" fill="6" visible="yes" active="yes"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="yes"/>
 <layer number="32" name="bCream" color="7" fill="5" visible="no" active="yes"/>
 <layer number="33" name="tFinish" color="6" fill="3" visible="no" active="yes"/>
@@ -47,19 +47,19 @@
 <layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
 <layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="yes" active="yes"/>
-<layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="yes"/>
+<layer number="40" name="bKeepout" color="1" fill="11" visible="yes" active="yes"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
-<layer number="42" name="bRestrict" color="1" fill="10" visible="no" active="yes"/>
+<layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="yes"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
-<layer number="45" name="Holes" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="yes"/>
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
 <layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
 <layer number="50" name="dxf" color="7" fill="1" visible="no" active="no"/>
 <layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="53" name="tPadExt" color="7" fill="1" visible="no" active="no"/>
 <layer number="54" name="bPadExt" color="1" fill="1" visible="no" active="no"/>
 <layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
@@ -141,7 +141,7 @@
 <layer number="254" name="cooling" color="7" fill="1" visible="no" active="yes"/>
 </layers>
 <board>
-<fusionsync huburn="a.cGVyc29uYWw6dWUyZDFiM2Ji" projecturn="a.cGVyc29uYWw6dWUyZDFiM2JiIzIwMjAwNTAyMjkzNTczNzU2" f3durn="urn:adsk.wipprod:dm.lineage:ZqQwWbwgR-iWVElj_E8saw" pcbguid="f5cfdced-a03e-40d5-910e-d339d2ff70cd" lastpulledtime="" lastsyncedchangeguid="6dd0ee42-010f-54fd-c3a0-6b9205c30dfd"/>
+<fusionsync huburn="a.cGVyc29uYWw6dWUyZDFiM2Ji" projecturn="a.cGVyc29uYWw6dWUyZDFiM2JiIzIwMjAwNTAyMjkzNTczNzU2" f3durn="urn:adsk.wipprod:dm.lineage:7dJU4f5iRsOYjtOdBrV7Tw" pcbguid="f91befd0-4797-493e-b5a1-b577b094b894" lastpulledtime="" lastsyncedchangeguid="8d42c4c8-3f6f-f1a0-248c-cff881d2236a"/>
 <plain>
 <wire x1="0" y1="-2" x2="122" y2="-2" width="0" layer="20"/>
 <wire x1="122" y1="-2" x2="122" y2="96" width="0" layer="20"/>
@@ -912,8 +912,8 @@
 <vertex x="3" y="62"/>
 <vertex x="3" y="89" curve="-90"/>
 <vertex x="7" y="93"/>
-<vertex x="58" y="93"/>
-<vertex x="58" y="96"/>
+<vertex x="47" y="93"/>
+<vertex x="47" y="96"/>
 <vertex x="0" y="96"/>
 <vertex x="0" y="-2"/>
 <vertex x="7" y="-2"/>
@@ -1132,7 +1132,7 @@
 <wire x1="92" y1="63" x2="68" y2="63" width="0" layer="30"/>
 <wire x1="57" y1="55" x2="59.4" y2="56.8" width="0" layer="30" curve="73.739795"/>
 <wire x1="68" y1="63" x2="59.4" y2="56.8" width="0" layer="30" curve="71.57795"/>
-<wire x1="0" y1="0" x2="0" y2="60" width="0" layer="30"/>
+<wire x1="0" y1="-2" x2="0" y2="60" width="0" layer="30"/>
 <wire x1="3" y1="4" x2="3" y2="3" width="0" layer="30"/>
 <wire x1="3" y1="53" x2="7" y2="57" width="0" layer="30" curve="-90"/>
 <wire x1="21" y1="29" x2="21" y2="28" width="0" layer="30"/>
@@ -1176,10 +1176,10 @@
 <wire x1="106" y1="93" x2="106" y2="96" width="0" layer="30"/>
 <wire x1="106" y1="96" x2="100" y2="96" width="0" layer="30"/>
 <wire x1="116" y1="96" x2="122" y2="96" width="0" layer="30"/>
-<wire x1="122" y1="96" x2="122" y2="0" width="0" layer="30"/>
-<wire x1="115" y1="0" x2="105" y2="0" width="0" layer="30"/>
-<wire x1="17" y1="0" x2="7" y2="0" width="0" layer="30"/>
-<wire x1="7" y1="0" x2="0" y2="0" width="0" layer="30"/>
+<wire x1="122" y1="96" x2="122" y2="-2" width="0" layer="30"/>
+<wire x1="115" y1="-2" x2="105" y2="-2" width="0" layer="30"/>
+<wire x1="17" y1="-2" x2="7" y2="-2" width="0" layer="30"/>
+<wire x1="7" y1="-2" x2="0" y2="-2" width="0" layer="30"/>
 <wire x1="119" y1="89" x2="119" y2="89.8" width="0" layer="30"/>
 <wire x1="119" y1="89.8" x2="116" y2="92.8" width="0" layer="30" curve="90"/>
 <wire x1="116" y1="92.8" x2="116" y2="96" width="0" layer="30"/>
@@ -1195,19 +1195,19 @@
 <vertex x="106" y="93"/>
 <vertex x="106" y="96"/>
 </polygon>
-<wire x1="7" y1="3" x2="7" y2="0" width="0" layer="30"/>
-<wire x1="7" y1="0" x2="0" y2="0" width="0" layer="30"/>
-<wire x1="122" y1="0" x2="115" y2="0" width="0" layer="30"/>
-<wire x1="115" y1="0" x2="115" y2="3" width="0" layer="30"/>
-<wire x1="105" y1="0" x2="105" y2="3" width="0" layer="30"/>
+<wire x1="7" y1="3" x2="7" y2="-2" width="0" layer="30"/>
+<wire x1="7" y1="-2" x2="0" y2="-2" width="0" layer="30"/>
+<wire x1="122" y1="-2" x2="115" y2="-2" width="0" layer="30"/>
+<wire x1="115" y1="-2" x2="115" y2="3" width="0" layer="30"/>
+<wire x1="105" y1="-2" x2="105" y2="3" width="0" layer="30"/>
 <wire x1="105" y1="3" x2="17" y2="3" width="0" layer="30"/>
-<wire x1="17" y1="3" x2="17" y2="0" width="0" layer="30"/>
-<wire x1="17" y1="0" x2="105" y2="0" width="0" layer="30"/>
+<wire x1="17" y1="3" x2="17" y2="-2" width="0" layer="30"/>
+<wire x1="17" y1="-2" x2="105" y2="-2" width="0" layer="30"/>
 <polygon width="0" layer="30">
-<vertex x="17" y="0"/>
+<vertex x="17" y="-2"/>
 <vertex x="17" y="3"/>
 <vertex x="105" y="3"/>
-<vertex x="105" y="0"/>
+<vertex x="105" y="-2"/>
 </polygon>
 <polygon width="0" layer="30">
 <vertex x="99" y="35"/>
@@ -1263,8 +1263,8 @@
 <vertex x="119" y="16"/>
 <vertex x="119" y="7" curve="-90"/>
 <vertex x="115" y="3"/>
-<vertex x="115" y="0"/>
-<vertex x="122" y="0"/>
+<vertex x="115" y="-2"/>
+<vertex x="122" y="-2"/>
 <vertex x="122" y="66"/>
 <vertex x="100" y="66" curve="41.112084"/>
 <vertex x="96" y="64.5" curve="-41.112123"/>
@@ -1366,8 +1366,8 @@
 <vertex x="81" y="93"/>
 <vertex x="81" y="96"/>
 <vertex x="0" y="96"/>
-<vertex x="0" y="0"/>
-<vertex x="7" y="0"/>
+<vertex x="0" y="-2"/>
+<vertex x="7" y="-2"/>
 <vertex x="7" y="3" curve="-90"/>
 <vertex x="3" y="7"/>
 <vertex x="3" y="23" curve="-61.927494"/>
@@ -1446,8 +1446,8 @@
 <vertex x="3" y="62"/>
 <vertex x="3" y="89" curve="-90"/>
 <vertex x="7" y="93"/>
-<vertex x="58" y="93"/>
-<vertex x="58" y="96"/>
+<vertex x="47" y="93"/>
+<vertex x="47" y="96"/>
 <vertex x="0" y="96"/>
 <vertex x="0" y="-2"/>
 <vertex x="7" y="-2"/>
@@ -1591,12 +1591,10 @@
 <polygon width="0" layer="29">
 <vertex x="49" y="3"/>
 <vertex x="49.5" y="3"/>
-<vertex x="49" y="3" curve="-53.130102"/>
 </polygon>
 <polygon width="0" layer="29">
 <vertex x="82.5" y="3"/>
 <vertex x="83" y="3"/>
-<vertex x="82.5" y="3" curve="-53.130102"/>
 </polygon>
 </plain>
 <libraries>
@@ -1715,7 +1713,7 @@ by exp-lbrs.ulp</description>
 <text x="0" y="2.5374" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-2.185" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
-<package name="L0402" urn="urn:adsk.eagle:footprint:22367271/1" locally_modified="yes" library_version="1" library_locally_modified="yes">
+<package name="L0402" urn="urn:adsk.eagle:footprint:22367271/2" library_version="2" library_locally_modified="yes">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
 <wire x1="-0.245" y1="0.224" x2="0.245" y2="0.224" width="0.1524" layer="51"/>
 <wire x1="0.245" y1="-0.224" x2="-0.245" y2="-0.224" width="0.1524" layer="51"/>
@@ -3070,7 +3068,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <packageinstance name="SON95P300X300X100-7T170X240N"/>
 </packageinstances>
 </package3d>
-<package3d name="R0402:1" urn="urn:adsk.eagle:package:22367307/2" locally_modified="yes" type="model" library_version="1" library_locally_modified="yes">
+<package3d name="R0402:1" urn="urn:adsk.eagle:package:22367307/3" type="model" library_version="2" library_locally_modified="yes">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
 <packageinstances>
 <packageinstance name="L0402"/>
@@ -4036,85 +4034,85 @@ design rules under a new name.</description>
 <element name="IC31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SOP50P490X110-10N" package3d_urn="urn:adsk.eagle:package:22367287/2" value="MCP33131D-10-E/MS" x="112.7" y="59.1" smashed="yes" rot="R90">
 <attribute name="VALUE" x="114.885" y="59.1" size="1.27" layer="27" rot="R90" align="top-center"/>
 </element>
-<element name="L32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="14.4" y="23.8" smashed="yes" rot="R180">
+<element name="L32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="14.4" y="23.8" smashed="yes" rot="R180">
 <attribute name="VALUE" x="15.035" y="25.705" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="L37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="33n" x="11.3" y="30.2" smashed="yes" rot="R90">
+<element name="L37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n" x="11.3" y="30.2" smashed="yes" rot="R90">
 <attribute name="VALUE" x="13.205" y="29.565" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="14.2" y="34.3" smashed="yes">
+<element name="L31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="14.2" y="34.3" smashed="yes">
 <attribute name="VALUE" x="13.565" y="32.395" size="1.27" layer="27"/>
 </element>
-<element name="L41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="108.2" y="26.7" smashed="yes" rot="R270">
+<element name="L41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="108.2" y="26.7" smashed="yes" rot="R270">
 <attribute name="VALUE" x="106.295" y="27.335" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="68n" x="114.7" y="26.8" smashed="yes" rot="R90">
+<element name="L42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n" x="114.7" y="26.8" smashed="yes" rot="R90">
 <attribute name="VALUE" x="116.605" y="26.165" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="68n" x="113.5" y="26.8" smashed="yes" rot="R90">
+<element name="L43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n" x="113.5" y="26.8" smashed="yes" rot="R90">
 <attribute name="VALUE" x="115.405" y="26.165" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="33n" x="114.7" y="30.4" smashed="yes" rot="R90">
+<element name="L44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n" x="114.7" y="30.4" smashed="yes" rot="R90">
 <attribute name="VALUE" x="116.605" y="29.765" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="33n" x="113.5" y="30.4" smashed="yes" rot="R90">
+<element name="L45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n" x="113.5" y="30.4" smashed="yes" rot="R90">
 <attribute name="VALUE" x="115.405" y="29.765" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="112.8" y="38.2" smashed="yes" rot="R180">
+<element name="L38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="112.8" y="38.2" smashed="yes" rot="R180">
 <attribute name="VALUE" x="113.435" y="40.105" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="L39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="115.4" y="38.2" smashed="yes">
+<element name="L39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="115.4" y="38.2" smashed="yes">
 <attribute name="VALUE" x="114.765" y="36.295" size="1.27" layer="27"/>
 </element>
-<element name="L33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="11.6" y="23.8" smashed="yes">
+<element name="L33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="11.6" y="23.8" smashed="yes">
 <attribute name="VALUE" x="10.965" y="21.895" size="1.27" layer="27"/>
 </element>
-<element name="L46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="43.2" y="19.2" smashed="yes" rot="R180">
+<element name="L46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="43.2" y="19.2" smashed="yes" rot="R180">
 <attribute name="VALUE" x="43.835" y="21.105" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="L47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="40.5" y="19.2" smashed="yes">
+<element name="L47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="40.5" y="19.2" smashed="yes">
 <attribute name="VALUE" x="39.865" y="17.295" size="1.27" layer="27"/>
 </element>
-<element name="L48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="68n" x="43.5" y="23.3" smashed="yes" rot="R90">
+<element name="L48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n" x="43.5" y="23.3" smashed="yes" rot="R90">
 <attribute name="VALUE" x="45.405" y="22.665" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L49" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="68n" x="40" y="23.3" smashed="yes" rot="R90">
+<element name="L49" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n" x="40" y="23.3" smashed="yes" rot="R90">
 <attribute name="VALUE" x="41.905" y="22.665" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L50" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="33n" x="43.5" y="25.6" smashed="yes" rot="R90">
+<element name="L50" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n" x="43.5" y="25.6" smashed="yes" rot="R90">
 <attribute name="VALUE" x="45.405" y="24.965" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L51" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="33n" x="40" y="25.6" smashed="yes" rot="R90">
+<element name="L51" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n" x="40" y="25.6" smashed="yes" rot="R90">
 <attribute name="VALUE" x="41.905" y="24.965" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L52" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="44.79" y="25.63" smashed="yes" rot="R270">
+<element name="L52" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="44.79" y="25.63" smashed="yes" rot="R270">
 <attribute name="VALUE" x="42.885" y="26.265" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L53" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="38.7" y="25.6" smashed="yes" rot="R270">
+<element name="L53" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="38.7" y="25.6" smashed="yes" rot="R270">
 <attribute name="VALUE" x="36.795" y="26.235" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="11.8" y="34.3" smashed="yes" rot="R180">
+<element name="L30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="11.8" y="34.3" smashed="yes" rot="R180">
 <attribute name="VALUE" x="12.435" y="36.205" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="L10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="92.2" y="44" smashed="yes" rot="R270">
 <attribute name="VALUE" x="90.295" y="44.635" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L15" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="120n" x="101.1" y="37.4" smashed="yes" rot="R90">
+<element name="L15" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="120n" x="101.1" y="37.4" smashed="yes" rot="R90">
 <attribute name="VALUE" x="103.005" y="36.765" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="120n" x="98.7" y="37.4" smashed="yes" rot="R270">
+<element name="L11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="120n" x="98.7" y="37.4" smashed="yes" rot="R270">
 <attribute name="VALUE" x="96.795" y="38.035" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="120n" x="83.2" y="39.6" smashed="yes" rot="R180">
+<element name="L16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="120n" x="83.2" y="39.6" smashed="yes" rot="R180">
 <attribute name="VALUE" x="83.835" y="41.505" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="L12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="120n" x="87.2" y="39.6" smashed="yes" rot="R180">
+<element name="L12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="120n" x="87.2" y="39.6" smashed="yes" rot="R180">
 <attribute name="VALUE" x="87.835" y="41.505" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="L17" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="120n" x="83.2" y="44" smashed="yes" rot="R180">
+<element name="L17" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="120n" x="83.2" y="44" smashed="yes" rot="R180">
 <attribute name="VALUE" x="83.835" y="45.905" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="L13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="120n" x="87.2" y="44" smashed="yes" rot="R180">
+<element name="L13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="120n" x="87.2" y="44" smashed="yes" rot="R180">
 <attribute name="VALUE" x="87.835" y="45.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="L19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="79.9" y="53" smashed="yes" rot="R180">
@@ -4135,7 +4133,7 @@ design rules under a new name.</description>
 <element name="L22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="65.2" y="32" smashed="yes" rot="R270">
 <attribute name="VALUE" x="63.295" y="32.635" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="61.6" y="18.4" smashed="yes" rot="R180">
+<element name="L24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="61.6" y="18.4" smashed="yes" rot="R180">
 <attribute name="VALUE" x="62.235" y="20.305" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="L23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="63.87" y="20.24" smashed="yes" rot="R180">
@@ -4144,16 +4142,16 @@ design rules under a new name.</description>
 <element name="L27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="24.8" y="10.5" smashed="yes" rot="R270">
 <attribute name="VALUE" x="22.895" y="11.135" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="108.2" y="24.25" smashed="yes" rot="R90">
+<element name="L40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="108.2" y="24.25" smashed="yes" rot="R90">
 <attribute name="VALUE" x="110.105" y="23.615" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="68n" x="14.7" y="27.9" smashed="yes" rot="R90">
+<element name="L34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n" x="14.7" y="27.9" smashed="yes" rot="R90">
 <attribute name="VALUE" x="16.605" y="27.265" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="68n" x="11.3" y="27.9" smashed="yes" rot="R90">
+<element name="L35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n" x="11.3" y="27.9" smashed="yes" rot="R90">
 <attribute name="VALUE" x="13.205" y="27.265" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="33n" x="14.7" y="30.2" smashed="yes" rot="R90">
+<element name="L36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n" x="14.7" y="30.2" smashed="yes" rot="R90">
 <attribute name="VALUE" x="16.605" y="29.565" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="LP1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="FILTRDFN160X84X70-4N" package3d_urn="urn:adsk.eagle:package:22367297/2" value="LP0603A0947ANTR" x="47.7" y="41.9" smashed="yes" rot="R90">
@@ -4402,22 +4400,22 @@ design rules under a new name.</description>
 <element name="C26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u" x="20" y="38.4" smashed="yes" rot="R270">
 <attribute name="VALUE" x="18.095" y="39.035" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite" x="22" y="38.4" smashed="yes" rot="R270">
+<element name="L6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="22" y="38.4" smashed="yes" rot="R270">
 <attribute name="VALUE" x="20.095" y="39.035" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u" x="103" y="59.3" smashed="yes" rot="R90">
 <attribute name="VALUE" x="104.905" y="58.665" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite" x="101" y="59.3" smashed="yes" rot="R90">
+<element name="L7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="101" y="59.3" smashed="yes" rot="R90">
 <attribute name="VALUE" x="102.905" y="58.665" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u" x="28.9" y="18.1" smashed="yes" rot="R270">
 <attribute name="VALUE" x="26.995" y="18.735" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite" x="30.9" y="17.8" smashed="yes" rot="R270">
+<element name="L8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="30.9" y="17.8" smashed="yes" rot="R270">
 <attribute name="VALUE" x="28.995" y="18.435" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="L9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="Ferrite" x="92" y="58" smashed="yes" rot="R180">
+<element name="L9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="92" y="58" smashed="yes" rot="R180">
 <attribute name="VALUE" x="92.635" y="59.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="L5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SRN5040" package3d_urn="urn:adsk.eagle:package:22367284/2" value="2u2" x="112.45" y="75.65" smashed="yes" rot="R90">
@@ -4941,7 +4939,7 @@ design rules under a new name.</description>
 <element name="L25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite" x="64.3" y="4.5" smashed="yes" rot="R90">
 <attribute name="VALUE" x="66.205" y="3.865" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="83.2" y="36" smashed="yes" rot="R180">
+<element name="L18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="83.2" y="36" smashed="yes" rot="R180">
 <attribute name="VALUE" x="83.835" y="37.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="56p" x="81.2" y="36.7" smashed="yes" rot="R90">
@@ -4950,7 +4948,7 @@ design rules under a new name.</description>
 <element name="C43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="180p" x="85.2" y="36.7" smashed="yes" rot="R90">
 <attribute name="VALUE" x="87.105" y="36.065" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="L14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/2" value="330n" x="87.2" y="36" smashed="yes" rot="R180">
+<element name="L14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="L0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n" x="87.2" y="36" smashed="yes" rot="R180">
 <attribute name="VALUE" x="87.835" y="37.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="56p" x="89.2" y="36.7" smashed="yes" rot="R90">
@@ -8183,6 +8181,11 @@ design rules under a new name.</description>
 <via x="4" y="-1" extent="1-16" drill="0.25"/>
 <via x="19" y="0" extent="1-16" drill="0.25"/>
 <contactref element="J1" pad="2"/>
+<via x="47" y="94" extent="1-16" drill="0.25"/>
+<via x="48" y="95" extent="1-16" drill="0.25"/>
+<via x="49" y="94" extent="1-16" drill="0.25"/>
+<via x="56" y="95" extent="1-16" drill="0.25"/>
+<via x="57" y="94" extent="1-16" drill="0.25"/>
 </signal>
 <signal name="SOURCE_REF">
 <contactref element="C51" pad="1"/>
@@ -9294,8 +9297,8 @@ design rules under a new name.</description>
 <via x="80.3" y="27.6" extent="1-16" drill="0.25"/>
 <wire x1="80.3" y1="27.6" x2="80.9" y2="27.6" width="1" layer="1"/>
 <via x="80.9" y="27.6" extent="1-16" drill="0.25"/>
-<wire x1="91.4516" y1="58" x2="89.4726" y2="58" width="0.8" layer="1"/>
-<wire x1="91.4516" y1="58" x2="91.35" y2="56.65" width="0.8" layer="1"/>
+<wire x1="91.35" y1="58" x2="89.4726" y2="58" width="0.8" layer="1"/>
+<wire x1="91.35" y1="58" x2="91.35" y2="56.65" width="0.8" layer="1"/>
 <wire x1="92" y1="56" x2="91.35" y2="56.65" width="0.8" layer="1"/>
 <wire x1="89.3726" y1="57.9" x2="83.9" y2="57.9" width="0.8" layer="1"/>
 <wire x1="83.9" y1="57.9" x2="83.4" y2="57.9" width="0.8" layer="1"/>
@@ -10358,7 +10361,7 @@ design rules under a new name.</description>
 <wire x1="11.4" y1="51.3504" x2="8.3504" y2="51.3504" width="0.3" layer="1"/>
 <wire x1="7" y1="50" x2="6.95" y2="50" width="0.3" layer="1"/>
 <wire x1="8.3504" y1="51.3504" x2="7" y2="50" width="0.3" layer="1"/>
-<wire x1="22" y1="37.8516" x2="21.8" y2="37.55" width="0.5" layer="1"/>
+<wire x1="22" y1="37.75" x2="21.8" y2="37.55" width="0.5" layer="1"/>
 <wire x1="14.8" y1="39.35" x2="15.65" y2="39.35" width="0.5" layer="1"/>
 <wire x1="15.65" y1="39.35" x2="15.7" y2="39.4" width="0.5" layer="1"/>
 <via x="15.7" y="39.4" extent="1-16" drill="0.25"/>
@@ -10374,7 +10377,7 @@ design rules under a new name.</description>
 <wire x1="20" y1="37.55" x2="19.55" y2="37.55" width="0.5" layer="1"/>
 <wire x1="19.55" y1="37.55" x2="19" y2="37" width="0.5" layer="1"/>
 <via x="19" y="37" extent="1-16" drill="0.25"/>
-<wire x1="22" y1="37.8516" x2="21.8" y2="37.55" width="0.5" layer="1"/>
+<wire x1="22" y1="37.75" x2="21.8" y2="37.55" width="0.5" layer="1"/>
 <wire x1="21.8" y1="37.55" x2="20" y2="37.55" width="0.5" layer="1"/>
 <wire x1="14.8923" y1="18.8923" x2="15.05" y2="19.05" width="0.5" layer="16"/>
 <wire x1="15.05" y1="19.05" x2="15.05" y2="22.9" width="0.5" layer="16"/>
@@ -10849,7 +10852,7 @@ design rules under a new name.</description>
 <via x="113.9" y="48.9" extent="1-16" drill="0.25"/>
 <wire x1="113.6" y1="50.35" x2="113.6" y2="49.2" width="0.3" layer="1"/>
 <wire x1="113.6" y1="49.2" x2="113.9" y2="48.9" width="0.3" layer="1"/>
-<wire x1="101" y1="59.8484" x2="102.8" y2="59.95" width="0.5" layer="1"/>
+<wire x1="101" y1="59.95" x2="102.8" y2="59.95" width="0.5" layer="1"/>
 <wire x1="102.8" y1="59.95" x2="103" y2="60.15" width="0.5" layer="1"/>
 <wire x1="106.4755" y1="60.05" x2="105" y2="60.05" width="0.5" layer="1"/>
 <wire x1="105" y1="60.05" x2="104.2" y2="60.05" width="0.5" layer="1"/>
@@ -11232,7 +11235,7 @@ design rules under a new name.</description>
 <wire x1="33.8" y1="33.35" x2="33.8" y2="32.2" width="0.3" layer="1"/>
 <wire x1="33.8" y1="32.2" x2="34" y2="32" width="0.3" layer="1"/>
 <wire x1="28.9" y1="17.25" x2="30.8989375" y2="17.25" width="0.5" layer="1"/>
-<wire x1="30.8989375" y1="17.25" x2="30.9" y2="17.2516" width="0.5" layer="1"/>
+<wire x1="30.8989375" y1="17.25" x2="30.9" y2="17.15" width="0.5" layer="1"/>
 <wire x1="38.05" y1="19.2" x2="38.9" y2="19.2" width="0.3" layer="1"/>
 <via x="38.9" y="19.2" extent="1-16" drill="0.25"/>
 <wire x1="39.9516" y1="19.2" x2="38.9" y2="19.2" width="0.3" layer="1"/>
@@ -11244,7 +11247,7 @@ design rules under a new name.</description>
 <wire x1="44.5" y1="13.3" x2="44.5" y2="12.35" width="0.3" layer="1"/>
 <wire x1="44.5" y1="12.35" x2="44.45" y2="12.3" width="0.3" layer="1"/>
 <via x="44.5" y="13.3" extent="1-16" drill="0.25"/>
-<wire x1="30.9" y1="17.2516" x2="31.15" y2="17.15" width="0.3" layer="1"/>
+<wire x1="30.9" y1="17.15" x2="31.15" y2="17.15" width="0.3" layer="1"/>
 <wire x1="31.15" y1="17.15" x2="31.7" y2="17.7" width="0.3" layer="1"/>
 <wire x1="31.7" y1="17.7" x2="31.7" y2="22.15" width="0.3" layer="1"/>
 <wire x1="31.7" y1="22.15" x2="32.6" y2="23.05" width="0.3" layer="1"/>
@@ -11263,10 +11266,10 @@ design rules under a new name.</description>
 <via x="31.2" y="40.9" extent="1-16" drill="0.25"/>
 <wire x1="36.35" y1="39.5" x2="35.5" y2="39.5" width="0.5" layer="1"/>
 <via x="35.5" y="39.5" extent="1-16" drill="0.25"/>
-<wire x1="30.9" y1="17.2516" x2="31.95" y2="17.15" width="0.5" layer="1"/>
+<wire x1="30.9" y1="17.15" x2="31.95" y2="17.15" width="0.5" layer="1"/>
 <wire x1="31.95" y1="17.15" x2="32" y2="17.2" width="0.5" layer="1"/>
 <via x="32" y="17.2" extent="1-16" drill="0.25"/>
-<wire x1="30.9" y1="17.2516" x2="32.65" y2="17.15" width="0.5" layer="1"/>
+<wire x1="30.9" y1="17.15" x2="32.65" y2="17.15" width="0.5" layer="1"/>
 <wire x1="32.65" y1="17.15" x2="32.7" y2="17.2" width="0.5" layer="1"/>
 <via x="32.7" y="17.2" extent="1-16" drill="0.25"/>
 <wire x1="44.5" y1="13.3" x2="40" y2="13.3" width="0.5" layer="16"/>
@@ -11416,7 +11419,7 @@ design rules under a new name.</description>
 <wire x1="21.95" y1="41" x2="21.85" y2="40.9" width="0.5" layer="1"/>
 <wire x1="21" y1="42.4654" x2="21" y2="41.95" width="0.5" layer="1"/>
 <wire x1="21" y1="41.95" x2="21.95" y2="41" width="0.5" layer="1"/>
-<wire x1="22" y1="38.9484" x2="22" y2="40.95" width="0.5" layer="1"/>
+<wire x1="22" y1="39.05" x2="22" y2="40.95" width="0.5" layer="1"/>
 <wire x1="22" y1="40.95" x2="21.95" y2="41" width="0.5" layer="1"/>
 </signal>
 <signal name="N$161">
@@ -11429,7 +11432,7 @@ design rules under a new name.</description>
 <wire x1="102" y1="55.2346" x2="102" y2="55.95" width="0.5" layer="1"/>
 <wire x1="102" y1="55.95" x2="101.15" y2="56.8" width="0.5" layer="1"/>
 <wire x1="101.15" y1="56.8" x2="101.15" y2="58.5" width="0.5" layer="1"/>
-<wire x1="101.15" y1="58.5" x2="101" y2="58.7516" width="0.5" layer="1"/>
+<wire x1="101.15" y1="58.5" x2="101" y2="58.65" width="0.5" layer="1"/>
 </signal>
 <signal name="N$163">
 <contactref element="IC4" pad="4"/>
@@ -11583,7 +11586,7 @@ design rules under a new name.</description>
 <wire x1="30.85" y1="20.4" x2="30.75" y2="20.3" width="0.5" layer="1"/>
 <wire x1="29.9" y1="21.8654" x2="29.9" y2="21.35" width="0.5" layer="1"/>
 <wire x1="29.9" y1="21.35" x2="30.85" y2="20.4" width="0.5" layer="1"/>
-<wire x1="30.9" y1="18.3484" x2="30.9" y2="20.35" width="0.5" layer="1"/>
+<wire x1="30.9" y1="18.45" x2="30.9" y2="20.35" width="0.5" layer="1"/>
 <wire x1="30.9" y1="20.35" x2="30.85" y2="20.4" width="0.5" layer="1"/>
 </signal>
 <signal name="N$166">
@@ -11595,7 +11598,7 @@ design rules under a new name.</description>
 <wire x1="94.05" y1="57.9" x2="94.15" y2="58" width="0.5" layer="1"/>
 <wire x1="95" y1="56.4346" x2="95" y2="56.95" width="0.5" layer="1"/>
 <wire x1="95" y1="56.95" x2="94.05" y2="57.9" width="0.5" layer="1"/>
-<wire x1="92.5484" y1="58" x2="93.95" y2="58" width="0.5" layer="1"/>
+<wire x1="92.65" y1="58" x2="93.95" y2="58" width="0.5" layer="1"/>
 <wire x1="93.95" y1="58" x2="94.05" y2="57.9" width="0.5" layer="1"/>
 </signal>
 <signal name="N$177">
@@ -15050,6 +15053,36 @@ design rules under a new name.</description>
 <approved hash="7,39,576394a314a0d760"/>
 <approved hash="7,39,576394a314a0d760"/>
 <approved hash="3,2,cdf1cff3cff3cdf1"/>
+<approved hash="7,39,09eb4d6581924d38"/>
+<approved hash="7,39,cb4bd54173bc71ce"/>
+<approved hash="7,39,c16e06e0c9124d3c"/>
+<approved hash="7,39,a5996460cfe44d3c"/>
+<approved hash="7,39,06e11ce5fae780ff"/>
+<approved hash="7,39,09eb4d6581924d38"/>
+<approved hash="7,39,cb4bd54173bc71ce"/>
+<approved hash="7,39,c16e06e0c9124d3c"/>
+<approved hash="7,39,a5996460cfe44d3c"/>
+<approved hash="7,39,06e11ce5fae780ff"/>
+<approved hash="7,39,7ee34f7d8182ab2f"/>
+<approved hash="7,39,204d584053accfd9"/>
+<approved hash="7,39,366e16f0c902ab22"/>
+<approved hash="7,39,1a995c70c7f4ab22"/>
+<approved hash="7,39,16f11cf5eaf780ff"/>
+<approved hash="7,39,7ee34f7d8182ab2f"/>
+<approved hash="7,39,16f11cf5eaf780ff"/>
+<approved hash="7,39,204d584053accfd9"/>
+<approved hash="7,39,366e16f0c902ab22"/>
+<approved hash="7,39,ebb6a6b83daa8cdc"/>
+<approved hash="7,39,63bd522fdcf4c3ab"/>
+<approved hash="7,39,63b825aaa4719b2b"/>
+<approved hash="7,39,63c7572aa687bfdd"/>
+<approved hash="7,39,56875884a6868081"/>
+<approved hash="7,39,63bd522fdcf4c3ab"/>
+<approved hash="7,39,63b825aaa4719b2b"/>
+<approved hash="7,39,63c7572aa687bfdd"/>
+<approved hash="7,39,56875884a6868081"/>
+<approved hash="7,39,1a995c70c7f4ab22"/>
+<approved hash="7,39,ebb6a6b83daa8cdc"/>
 </errors>
 </board>
 </drawing>
