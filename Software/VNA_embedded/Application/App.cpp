@@ -40,7 +40,6 @@ extern ADC_HandleTypeDef hadc1;
 
 #define FLAG_USB_PACKET		0x01
 #define FLAG_DATAPOINT		0x02
-#define FLAG_WORK_REQUIRED	0x04
 
 static void VNACallback(Protocol::Datapoint res) {
 	result = res;
@@ -52,11 +51,6 @@ static void USBPacketReceived(Protocol::PacketInfo p) {
 	packet = p;
 	BaseType_t woken = false;
 	xTaskNotifyFromISR(handle, FLAG_USB_PACKET, eSetBits, &woken);
-	portYIELD_FROM_ISR(woken);
-}
-static void HardwareWorkRequired() {
-	BaseType_t woken = false;
-	xTaskNotifyFromISR(handle, FLAG_WORK_REQUIRED, eSetBits, &woken);
 	portYIELD_FROM_ISR(woken);
 }
 
@@ -101,7 +95,7 @@ void App_Start() {
 	EN_6V_GPIO_Port->BSRR = EN_6V_Pin;
 #endif
 
-	if (!HW::Init(HardwareWorkRequired)) {
+	if (!HW::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
 		LED::Error(4);
 	}
@@ -119,9 +113,6 @@ void App_Start() {
 		uint32_t notification;
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
 			// something happened
-			if(notification & FLAG_WORK_REQUIRED) {
-				HW::Work();
-			}
 			if(notification & FLAG_DATAPOINT) {
 				Protocol::PacketInfo packet;
 				packet.type = Protocol::PacketType::Datapoint;
@@ -217,7 +208,7 @@ void App_Start() {
 			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", result.pointNum, FPGA::GetStatus());
 			FPGA::AbortSweep();
 			// restart the current sweep
-			HW::Init(HardwareWorkRequired);
+			HW::Init();
 			HW::Ref::update();
 			VNA::Setup(settings, VNACallback);
 			sweepActive = true;

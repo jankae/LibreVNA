@@ -30,8 +30,6 @@ static void HaltedCallback() {
 	}
 }
 
-static HW::WorkRequest requestWork;
-
 static void ReadComplete(FPGA::SamplingResult result) {
 	bool needs_work = false;
 	switch(activeMode) {
@@ -47,8 +45,8 @@ static void ReadComplete(FPGA::SamplingResult result) {
 	default:
 		break;
 	}
-	if(needs_work && requestWork) {
-		STM::DispatchToInterrupt(requestWork);
+	if(needs_work) {
+		STM::DispatchToInterrupt(HW::Work);
 	}
 }
 
@@ -72,8 +70,7 @@ void HW::Work() {
 	}
 }
 
-bool HW::Init(WorkRequest wr) {
-	requestWork = wr;
+bool HW::Init() {
 	LOG_DEBUG("Initializing...");
 
 	activeMode = Mode::Idle;
@@ -189,7 +186,7 @@ void HW::SetMode(Mode mode) {
 	}
 	if(mode != Mode::Idle && activeMode != Mode::Idle) {
 		// do a full initialization when switching directly between modes
-		HW::Init(requestWork);
+		HW::Init();
 	}
 	SetIdle();
 	activeMode = mode;

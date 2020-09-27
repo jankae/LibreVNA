@@ -33,9 +33,7 @@ enum class Mode {
 	SA,
 };
 
-using WorkRequest = void (*)(void);
-
-bool Init(WorkRequest wr);
+bool Init();
 void SetMode(Mode mode);
 void SetIdle();
 void Work();
