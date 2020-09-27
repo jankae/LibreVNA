@@ -240,7 +240,7 @@ RLBinv/.style ={rectangle, draw, semithick, minimum height=25mm, minimum width=3
 \draw (swfiltout.in) -- ++(0.5,0)
    node[rotary switch <->=2 in 30 wiper -30, anchor=out 2, xscale = -1](bandselect){};
 \node[above right=0.2cm and 0.3cm, rotate=90,font=\footnotesize] at (bandselect){QPC6324};
-\draw (Si5351.east)++(0,0.5)-|++(1,2)-|(bandselect.out 1)  node[midway,above, anchor=south east,font=\footnotesize]{\SIrange{1}{25}{\mega\hertz}} ;
+\draw (Si5351.east)++(0,0.5)-|++(1,2) to[lowpass, l=\SI{40}{\mega\hertz}, font=\footnotesize] ++(4,0) -|(bandselect.out 1)  node[midway,above, anchor=south east,font=\footnotesize]{\SIrange{1}{25}{\mega\hertz}} ;
 
 %Attenuation and amplifier and splitter
 \draw (bandselect.in) to[vpiattenuator,label={RFSA3714}, font=\footnotesize] ++(2,0) to[amp, font=\footnotesize, label={TRF37A73},n=amp]++(2,0) node[splitter, label={},anchor=west](s){};
@@ -265,17 +265,21 @@ RLBinv/.style ={rectangle, draw, semithick, minimum height=25mm, minimum width=3
 
 \node[mixer, box,left = 3cm of mix11](mix12){};
 \node[anchor=south, font=\footnotesize] at (mix12.north){LT5560};
-\draw(mix12.west)++(-1,0) to[lowpass, l_=\SI{300}{\kilo\hertz}, font=\footnotesize]++(-1,0);
+\draw(mix12.west)++(-2.5,0) to[lowpass, l_=\SI{300}{\kilo\hertz}, font=\footnotesize, n=lowpass1]++(-1,0);
 \draw[-latex]([yshift=-2mm]mix12.west)--++(-1,0);
 \draw[-latex]([yshift=2mm]mix12.west)--++(-1,0);
 \draw[latex-]([yshift=-2mm]mix12.east)--++(1,0);
 \draw[latex-]([yshift=2mm]mix12.east)--++(1,0);
 
-\node[dADC,left=4cm of mix12,xscale=-1] (ADC1) {};
+\draw(mix12.west)++(-1,0) to[amp, l_={THS4521}, font=\footnotesize, n=amp1]++(-1,0);
+
+\node[dADC,left=5.5cm of mix12,xscale=-1] (ADC1) {};
 \node[font=\footnotesize] at (ADC1){ADC};
 \node[anchor=south, font=\footnotesize] at (ADC1.north){MCP33131D-10};
-\draw[latex-](ADC1.in1)--([xshift=-2cm]ADC1.in1-|mix12.west);
-\draw[latex-](ADC1.in2)--([xshift=-2cm]ADC1.in2-|mix12.west);
+\draw[latex-](ADC1.in1)--(ADC1.in1-|lowpass1.east);
+\draw[latex-](ADC1.in2)--(ADC1.in2-|lowpass1.east);
+\draw[latex-](ADC1.in1-|lowpass1.west)--([xshift=0.3cm]ADC1.in1-|amp1.east);
+\draw[latex-](ADC1.in2-|lowpass1.west)--([xshift=0.3cm]ADC1.in2-|amp1.east);
 
 % Reference signal flow
 \node[mixer, box,below left = 9cm and 5cm of rlb1.ret c] (mixr1){};
@@ -286,17 +290,21 @@ RLBinv/.style ={rectangle, draw, semithick, minimum height=25mm, minimum width=3
 
 \node[mixer, box,left = 3cm of mixr1](mixr2){};
 \node[anchor=south, font=\footnotesize] at (mixr2.north){LT5560};
-\draw(mixr2.west)++(-1,0) to[lowpass, l_=\SI{300}{\kilo\hertz}, font=\footnotesize]++(-1,0);
+\draw(mixr2.west)++(-2.5,0) to[lowpass, l_=\SI{300}{\kilo\hertz}, font=\footnotesize, n=lowpass2]++(-1,0);
 \draw[-latex]([yshift=-2mm]mixr2.west)--++(-1,0);
 \draw[-latex]([yshift=2mm]mixr2.west)--++(-1,0);
 \draw[latex-]([yshift=-2mm]mixr2.east)--++(1,0);
 \draw[latex-]([yshift=2mm]mixr2.east)--++(1,0);
 
-\node[dADC,left=4cm of mixr2,xscale=-1] (ADC1) {};
+\draw(mixr2.west)++(-1,0) to[amp, l_={THS4521}, font=\footnotesize, n=amp2]++(-1,0);
+
+\node[dADC,left=5.5cm of mixr2,xscale=-1] (ADC1) {};
 \node[font=\footnotesize] at (ADC1){ADC};
 \node[anchor=south, font=\footnotesize] at (ADC1.north){MCP33131D-10};
-\draw[latex-](ADC1.in1)--([xshift=-2cm]ADC1.in1-|mixr2.west);
-\draw[latex-](ADC1.in2)--([xshift=-2cm]ADC1.in2-|mixr2.west);
+\draw[latex-](ADC1.in1)--(ADC1.in1-|lowpass2.east);
+\draw[latex-](ADC1.in2)--(ADC1.in2-|lowpass2.east);
+\draw[latex-](ADC1.in1-|lowpass2.west)--([xshift=0.3cm]ADC1.in1-|amp2.east);
+\draw[latex-](ADC1.in2-|lowpass2.west)--([xshift=0.3cm]ADC1.in2-|amp2.east);
 
 \draw[-latex] (s.out B)--++(0.25,0)|-(mixr1.east);
 
@@ -313,22 +321,26 @@ RLBinv/.style ={rectangle, draw, semithick, minimum height=25mm, minimum width=3
 
 \node[mixer, box,left = 3cm of mix21](mix22){};
 \node[anchor=north, font=\footnotesize] at (mix22.south){LT5560};
-\draw(mix22.west)++(-1,0) to[lowpass, l=\SI{300}{\kilo\hertz}, font=\footnotesize]++(-1,0);
+\draw(mix22.west)++(-2.5,0) to[lowpass, l=\SI{300}{\kilo\hertz}, font=\footnotesize,n=lowpass3]++(-1,0);
 \draw[-latex]([yshift=-2mm]mix22.west)--++(-1,0);
 \draw[-latex]([yshift=2mm]mix22.west)--++(-1,0);
 \draw[latex-]([yshift=-2mm]mix22.east)--++(1,0);
 \draw[latex-]([yshift=2mm]mix22.east)--++(1,0);
 
-\node[dADC,left=4cm of mix22,xscale=-1] (ADC1) {};
+\draw(mix22.west)++(-1,0) to[amp, l={THS4521}, font=\footnotesize, n=amp3]++(-1,0);
+
+\node[dADC,left=5.5cm of mix22,xscale=-1] (ADC1) {};
 \node[font=\footnotesize] at (ADC1){ADC};
 \node[anchor=north, font=\footnotesize] at (ADC1.south){MCP33131D-10};
-\draw[latex-](ADC1.in1)--([xshift=-2cm]ADC1.in1-|mix22.west);
-\draw[latex-](ADC1.in2)--([xshift=-2cm]ADC1.in2-|mix22.west);
+\draw[latex-](ADC1.in1)--(ADC1.in1-|lowpass3.east);
+\draw[latex-](ADC1.in2)--(ADC1.in2-|lowpass3.east);
+\draw[latex-](ADC1.in1-|lowpass3.west)--([xshift=0.3cm]ADC1.in1-|amp3.east);
+\draw[latex-](ADC1.in2-|lowpass3.west)--([xshift=0.3cm]ADC1.in2-|amp3.east);
 
 %LO1
 \node[synthesizer={MAX2871},label={[align=center]1.LO}] (lo1) at (1,-3) {};
 \draw[-latex] (Si5351.east)++(0,-0.5) --++(1,0) |- (lo1.west) node[midway,above,rotate=90,font=\footnotesize]{\SI{100}{\mega\hertz}} ;
-\draw[-latex] (lo1.east)--++(1,0) |- ([yshift=-1cm]mixr1.south) coordinate(lo1split) to[short,*-](mixr1.south);
+\draw[-latex] (lo1.east)--++(0.5,0) |- ([yshift=-1cm]mixr1.south) coordinate(lo1split) to[short,*-](mixr1.south);
 \draw[-latex] (lo1split)--(mix21.north);
 \draw[-latex] (lo1split)-|(mix11.south);
 
@@ -337,64 +349,5 @@ RLBinv/.style ={rectangle, draw, semithick, minimum height=25mm, minimum width=3
 \draw[-latex] (Si5351.east)++(0,-0.8) --++(0.5,0) |- ([yshift=-3cm]mixr2.south) coordinate(lo2split) to[short,*-](mixr2.south);
 \draw[-latex] (lo2split)--(mix22.north);
 
-%\path (0,0) node[](synth) {} to[vco=\SI{-3}{\decibel},label={[align=center]Resistive\\splitter}]node[above=0.5cm](){\SI{250}{\mega\hertz} to \SI{2.1}{\giga\hertz}} (0,0);
-%\path (2,0) node[](){} to[box]node(div){}(3,0);
-%\divider{div}
-%\draw[-latex] (synth)++(0.5,0)--++(1.57,0);
-%% I/Q mixer
-%\draw (4,1) node[mixer](mixeri){};
-%\draw (6,-1) node[mixer](mixerq){};
-%\draw[-latex] (div)++(0,12pt)|-(mixeri.west);
-%\draw[-latex] (div)++(0,-12pt)|-(mixerq.west);
-%\draw (7,0) node[adder](add){};
-%\draw[-latex] (mixeri.east)-|(add.north);
-%\draw[-latex] (mixerq.east)-|(add.south);
-%% I/Q DAC + filters
-%\draw (4,-4.5) to[dac, n=daci] (4,-3.5);
-%\draw[-latex] (4,-3) to[lowpass, n=lpfi] (4,-2) -- (mixeri.south);
-%\node[rotate=90] at (3.3,-2.5) {\SI{50}{\mega\hertz}};
-%\draw[-latex] (daci)++(0,0.5)--++(0,0.5);
-%\draw (6,-4.5) to[dac, n=dacq] (6,-3.5);
-%\draw[-latex] (6,-3) to[lowpass, n=lpfq] (6,-2) -- (mixerq.south);
-%\node[rotate=90] at (5.3,-2.5) {\SI{50}{\mega\hertz}};
-%\draw[-latex] (dacq)++(0,0.5)--++(0,0.5);
-%
-%% rotary switches and filter bank
-%\draw (add.east) -- ++(0.5,0)
-%    node[rotary switch <->=6 in 60 wiper 60, anchor=in](swfiltin){};
-%\draw (14.5,0) -- ++(-0.5,0)
-%    node[rotary switch <->=6 in 60 wiper 60, anchor=in, xscale = -1](swfiltout){};
-%
-%\draw (swfiltin.out 1) -| (9, 3) --  (10,3) to[lowpass, l=\SI{340}{\mega\hertz}] ++(2,0) -- ++(1,0) |- (swfiltout.out 1);
-%\draw (swfiltin.out 2) -| (9.5, 1.5) --  (10,1.5) to[lowpass, l=\SI{500}{\mega\hertz}] ++(2,0) -- ++(0.5,0) |- (swfiltout.out 2);
-%\draw (swfiltin.out 3) -| (10, 0) --  (10,0) to[lowpass, l=\SI{750}{\mega\hertz}] ++(2,0) -- ++(0,0) |- (swfiltout.out 3);
-%\draw (swfiltin.out 4) -| (9.5, -1.5) --  (10,-1.5) to[lowpass, l=\SI{1.1}{\giga\hertz}] ++(2,0) -- ++(0.5,0) |- (swfiltout.out 4);
-%\draw (swfiltin.out 5) -| (9, -3) --  (10,-3) to[lowpass, l=\SI{1.7}{\giga\hertz}] ++(2,0) -- ++(1,0) |- (swfiltout.out 5);
-%\draw (swfiltin.out 6) -| (8.5, -4.5) --  (10,-4.5) to[lowpass, l=\SI{2.5}{\giga\hertz}] ++(2,0) -- ++(1.5,0) |- (swfiltout.out 6);
-%
-%\node[spdt](switchin) at (17,0) {};
-%\node[spdt, xscale=-1](switchout) at (23,0) {};
-%\draw (swfiltout.in) to[vpiattenuator] (switchin.in);
-%\draw (switchin.out 1)--(switchout.out 1);
-%\draw (switchin.out 2)++(1,0) node[mixer](mixhet){};
-%\draw[-latex] (switchin.out 2)--(mixhet.west);
-%\draw (mixhet.east) to[amp] ++(2,0) to[lowpass, l_=\SI{250}{\mega\hertz}] (switchout.out 2);
-%\path (mixhet)++(0,-2) to[vco]node[below=0.5cm](){\SI{1}{\giga\hertz}} ++(0,0);
-%\draw[latex-] (mixhet.south)--++(0,-1);
-%
-%\node[splitter,label={[align=center]Resistive\\splitter}] (s) at (29,0) {};
-%\draw (switchout.in) to[vpiattenuator] ++(1.5,0) to[amp] ++(1.5,0) to[amp] (s.west);
-%\node[align=center] at (24.3,1) {\SIrange{0}{-45}{\decibel}\\in \SI{15}{\decibel} steps} ;
-%
-%\draw (15.2,-4.5) to[dac, n=daclvl] (15.2,-3.5);
-%\draw[-latex] (15.2,-3.5) to (15.2,-0.5);
-%
-%%\node[op amp, xscale=-1, yscale=-1](levelctrl) at (21,-3.5) {};
-%\draw[-latex] (s.out B) -| ++(0.5,-1) to[detector] ++(0,-2.13);
-%\draw (30.26,-4.5) to[adc, n=adc] (30.26,-3.5);
-%
-%%\draw (levelctrl.-)node[right]{Output amplitude setpoint};
-%%\draw[-latex, dashed] (levelctrl.out) -| (15.2,-0.5);
-%\draw[-o] (s.out A)--++(0.5,0)node[right]{Output};
 \end{circuitikz}
 \end{document}
