@@ -5341,6 +5341,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <text x="345.44" y="106.68" size="1.778" layer="97">Reference Mixers, up to 200mA</text>
 <text x="345.44" y="71.12" size="1.778" layer="97">Source and 1.LO, up to 350mA</text>
 <text x="198.12" y="88.9" size="1.778" layer="97">I2C address: 0x42</text>
+<text x="342.9" y="20.32" size="2.54" layer="94">Power Supply</text>
 </plain>
 <instances>
 <instance part="FRAME1" gate="G$1" x="0" y="0" smashed="yes">
@@ -7133,6 +7134,7 @@ current consumption</text>
 <text x="292.1" y="106.68" size="1.778" layer="97">ca. -1db</text>
 <text x="337.82" y="121.92" size="1.778" layer="97">ca. 2dbm</text>
 <text x="297.18" y="177.8" size="1.778" layer="97">C1/C2 should not be driven above 1.8V</text>
+<text x="342.9" y="20.32" size="2.54" layer="94">HF Source</text>
 </plain>
 <instances>
 <instance part="FRAME3" gate="G$1" x="0" y="0" smashed="yes">
@@ -8101,6 +8103,7 @@ CTL2 high: RF_COM-&gt;RF2</text>
 <text x="71.12" y="142.24" size="1.778" layer="97">-0.5db</text>
 <text x="142.24" y="129.54" size="1.778" layer="97">ca. -30 to 0dbm</text>
 <text x="172.72" y="185.42" size="1.778" layer="97">Up to 60mA on 3V3</text>
+<text x="342.9" y="20.32" size="2.1844" layer="94">Attenuator/Amplifier/Switches</text>
 </plain>
 <instances>
 <instance part="FRAME4" gate="G$1" x="0" y="0" smashed="yes">
@@ -8723,6 +8726,7 @@ current consumption</text>
 <text x="78.74" y="129.54" size="1.778" layer="97">All I/O using 3V3 levels</text>
 <text x="119.38" y="215.9" size="1.778" layer="97">3x 3V3</text>
 <text x="226.06" y="73.66" size="1.778" layer="97">Approx. 450kHz loop bandwidth</text>
+<text x="342.9" y="20.32" size="2.54" layer="94">1.LO</text>
 </plain>
 <instances>
 <instance part="FRAME5" gate="G$1" x="0" y="0" smashed="yes">
@@ -14544,6 +14548,7 @@ slave configuration</text>
 </sheet>
 <sheet>
 <plain>
+<text x="342.9" y="20.32" size="2.54" layer="94">FPGA Connections</text>
 </plain>
 <instances>
 <instance part="FRAME10" gate="G$1" x="0" y="0" smashed="yes">
