@@ -101,8 +101,8 @@ begin
 	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & CONFIG_DATA(87 downto 76) & "001";
 	-- LO register 3: VCO selection
 	LO_REG_3 <= CONFIG_DATA(60 downto 55) & MAX2871_DEF_3(25 downto 3) & "011";
-	-- both outputs enabled at -1dbm
-	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(63 downto 61) & MAX2871_DEF_4(19 downto 9) & "101101100";
+	-- both outputs enabled at +5dbm
+	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(63 downto 61) & MAX2871_DEF_4(19 downto 9) & "111111100";
 	
 	ATTENUATOR <= CONFIG_DATA(46 downto 40);
 	SOURCE_FILTER <= CONFIG_DATA(89 downto 88);

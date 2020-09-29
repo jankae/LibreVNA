@@ -207,7 +207,7 @@ VNA::VNA(AppWindow *window)
     auto dbm = new QDoubleSpinBox();
     dbm->setValue(settings.cdbm_excitation * 100);
     dbm->setFixedWidth(95);
-    dbm->setRange(-42.0, -10.0);
+    dbm->setRange(-100.0, 100.0);
     dbm->setSingleStep(0.25);
     dbm->setSuffix("dbm");
     dbm->setToolTip("Stimulus level");

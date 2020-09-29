@@ -17,8 +17,11 @@ static uint8_t  USBD_Class_DataOut (USBD_HandleTypeDef *pdev, uint8_t epnum);
 static uint8_t  *USBD_Class_GetFSCfgDesc (uint16_t *length);
 static uint8_t  *USBD_Class_GetDeviceQualifierDescriptor (uint16_t *length);
 
-static usbd_callback_t cb;
+static usbd_recv_callback_t cb;
 static uint8_t usb_receive_buffer[1024];
+static uint8_t usb_transmit_fifo[4096];
+static uint16_t usb_transmit_read_index = 0;
+static uint16_t usb_transmit_fifo_level = 0;
 static bool data_transmission_active = false;
 static bool log_transmission_active = true;
 
@@ -145,17 +148,43 @@ static uint8_t USBD_Class_Setup(USBD_HandleTypeDef *pdev , USBD_SetupReqTypedef 
 	}
 	return USBD_OK;
 }
+
+static bool trigger_next_fifo_transmission() {
+	data_transmission_active = true;
+	uint16_t continous_length = sizeof(usb_transmit_fifo) - usb_transmit_read_index;
+	if(continous_length > usb_transmit_fifo_level) {
+		continous_length = usb_transmit_fifo_level;
+	}
+	if(continous_length > sizeof(usb_transmit_fifo)/ 4) {
+		continous_length = sizeof(usb_transmit_fifo) / 4;
+	}
+	hUsbDeviceFS.ep_in[EP_DATA_IN_ADDRESS & 0x7F].total_length = continous_length;
+	return USBD_LL_Transmit(&hUsbDeviceFS, EP_DATA_IN_ADDRESS, &usb_transmit_fifo[usb_transmit_read_index], continous_length) == USBD_OK;
+}
+
 static uint8_t USBD_Class_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 	// A bulk transfer is complete when the endpoint does on of the following:
 	// - Has transferred exactly the amount of data expected
 	// - Transfers a packet with a payload size less than wMaxPacketSize or transfers a zero-length packet
+	if(epnum == (EP_DATA_IN_ADDRESS & 0x7F)) {
+		// transmission of fifo data, mark as empty
+		__disable_irq();
+		usb_transmit_fifo_level -= pdev->ep_in[epnum].total_length;
+		usb_transmit_read_index += pdev->ep_in[epnum].total_length;
+		usb_transmit_read_index %= sizeof(usb_transmit_fifo);
+		__enable_irq();
+	}
 	if (pdev->ep_in[epnum].total_length
 			&& !(pdev->ep_in[epnum].total_length % USB_FS_MAX_PACKET_SIZE)) {
 		pdev->ep_in[epnum].total_length = 0;
 		USBD_LL_Transmit(pdev, epnum, NULL, 0);
 	} else {
 		if(epnum == (EP_DATA_IN_ADDRESS & 0x7F)) {
-			data_transmission_active = false;
+			if(usb_transmit_fifo_level > 0) {
+				trigger_next_fifo_transmission();
+			} else {
+				data_transmission_active = false;
+			}
 		} else {
 			log_transmission_active = false;
 		}
@@ -182,30 +211,53 @@ static uint8_t  *USBD_Class_GetDeviceQualifierDescriptor(uint16_t *length)
   return USBD_DeviceQualifierDesc;
 }
 
-void usb_init(usbd_callback_t callback) {
-	cb = callback;
+void usb_init(usbd_recv_callback_t receive_callback) {
+	cb = receive_callback;
 	USBD_Init(&hUsbDeviceFS, &FS_Desc, 0);
 	USBD_RegisterClass(&hUsbDeviceFS, &USBD_ClassDriver);
 	USBD_Start(&hUsbDeviceFS);
-    HAL_NVIC_SetPriority(USB_HP_IRQn, 7, 0);
+    HAL_NVIC_SetPriority(USB_HP_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USB_HP_IRQn);
     HAL_NVIC_SetPriority(USB_LP_IRQn, 7, 0);
 	HAL_NVIC_EnableIRQ(USB_LP_IRQn);
 }
 
 bool usb_transmit(const uint8_t *data, uint16_t length) {
+	// attempt to add data to fifo
+	if(usb_transmit_fifo_level + length > sizeof(usb_transmit_fifo)) {
+		// data won't fit, abort
+		return false;
+	}
+	// grab pointer to write position
+	__disable_irq();
+	uint16_t write_index = usb_transmit_read_index + usb_transmit_fifo_level;
+	__enable_irq();
+	write_index %= sizeof(usb_transmit_fifo);
+	// copy the data to the fifo
+	uint16_t continous_length = sizeof(usb_transmit_fifo) - write_index;
+	if(continous_length > length) {
+		// can copy all data at once
+		memcpy(&usb_transmit_fifo[write_index], data, length);
+	} else {
+		// needs to copy two data segments
+		memcpy(&usb_transmit_fifo[write_index], data, continous_length);
+		memcpy(&usb_transmit_fifo[0], data + continous_length, length - continous_length);
+	}
+	// increment fifo level
+	__disable_irq();
+	usb_transmit_fifo_level += length;
+	__enable_irq();
+
 	static bool first = true;
 	if(first) {
 		log_transmission_active = false;
 		first = false;
 	}
 	if(!data_transmission_active) {
-		data_transmission_active = true;
-		hUsbDeviceFS.ep_in[EP_DATA_IN_ADDRESS & 0x7F].total_length = length;
-		return USBD_LL_Transmit(&hUsbDeviceFS, EP_DATA_IN_ADDRESS, (uint8_t*) data, length) == USBD_OK;
+		return trigger_next_fifo_transmission();
 	} else {
-		// already have an ongoing transmission
-		return false;
+		// still transmitting, no need to trigger
+		return true;
 	}
 }
 

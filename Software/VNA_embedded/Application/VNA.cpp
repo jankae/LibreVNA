@@ -22,6 +22,7 @@ static uint16_t pointCnt;
 static bool excitingPort1;
 static Protocol::Datapoint data;
 static bool active = false;
+static bool sourceHighPower;
 
 using IFTableEntry = struct {
 	uint16_t pointCnt;
@@ -62,14 +63,27 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
+	// Set level (not very accurate)
+	int16_t cdbm = s.cdbm_excitation;
+	if(cdbm > -1000) {
+		// use higher source power (approx 0dbm with no attenuation)
+		sourceHighPower = true;
+		Source.SetPowerOutA(MAX2871::Power::p5dbm, true);
+	} else {
+		// use lower source power (approx -10dbm with no attenuation)
+		sourceHighPower = false;
+		Source.SetPowerOutA(MAX2871::Power::n4dbm, true);
+		cdbm += 1000;
+	}
 	uint8_t attenuator;
-	if(s.cdbm_excitation >= -1000) {
+	if(cdbm >= 0) {
 		attenuator = 0;
-	} else if (s.cdbm_excitation <= -4175){
+	} else if (cdbm <= -3175){
 		attenuator = 127;
 	} else {
-		attenuator = (-1000 - s.cdbm_excitation) / 25;
+		attenuator = (-cdbm) / 25;
 	}
+	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
 	uint32_t last_LO2 = HW::IF1 - HW::IF2;
 	Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
@@ -116,12 +130,14 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 		if (s.suppressPeaks && needs_LO2_shift) {
 			if (IFTableIndexCnt < IFTableNumEntries) {
 				// still room in table
-				LOG_INFO("Changing 2.LO at point %lu to reach correct 2.IF frequency");
 				needs_halt = true;
 				IFTable[IFTableIndexCnt].pointCnt = i;
 				// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
 				// the correct clock settings
 				last_LO2 = actualFirstIF - HW::IF2;
+				LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency",
+						last_LO2, i, (uint32_t ) (freq / 1000000),
+						(uint32_t ) (freq % 1000000));
 				Si5351.SetCLK(SiChannel::RefLO2, last_LO2,
 						Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 				// store calculated clock configuration for later change
@@ -260,7 +276,7 @@ void VNA::SweepHalted() {
 	if (frequency < BandSwitchFrequency) {
 		// need the Si5351 as Source
 		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B,
-				Si5351C::DriveStrength::mA2);
+				sourceHighPower ? Si5351C::DriveStrength::mA8 : Si5351C::DriveStrength::mA2);
 		if (pointCnt == 0) {
 			// First point in sweep, enable CLK
 			Si5351.Enable(SiChannel::LowbandSource);
