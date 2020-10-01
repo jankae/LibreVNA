@@ -352,9 +352,7 @@ void TraceBodePlot::enableTraceAxis(Trace *t, int axis, bool enabled)
             tracesAxis[axis].erase(t);
             // clean up and delete
             if(curves[axis].find(t) != curves[axis].end()) {
-                if(curves[axis][t].curve) {
-                    delete curves[axis][t].curve;
-                }
+                delete curves[axis][t].curve;
                 curves[axis].erase(t);
             }
             int otherAxis = axis == 0 ? 1 : 0;

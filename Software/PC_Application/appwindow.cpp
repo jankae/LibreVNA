@@ -188,10 +188,8 @@ void AppWindow::ConnectToDevice(QString serial)
 
 void AppWindow::DisconnectDevice()
 {
-    if(device) {
-        delete device;
-        device = nullptr;
-    }
+    delete device;
+    device = nullptr;
     ui->actionDisconnect->setEnabled(false);
     ui->actionManual_Control->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);

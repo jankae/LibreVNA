@@ -28,9 +28,7 @@ void FirmwareUpdateDialog::on_bFile_clicked()
     auto filename = QFileDialog::getOpenFileName(nullptr, "Open firmware file", "", "Firmware file (*.vnafw)", nullptr, QFileDialog::DontUseNativeDialog);
     if (filename.length() > 0) {
         ui->lFile->setText(filename);
-        if(file) {
-            delete file;
-        }
+        delete file;
         file = new QFile(filename);
         ui->bStart->setEnabled(true);
     }

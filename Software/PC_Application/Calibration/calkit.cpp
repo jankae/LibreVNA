@@ -242,22 +242,14 @@ double Calkit::maxFreq()
 
 void Calkit::clearTouchstoneCache()
 {
-    if(ts_open) {
-        delete ts_open;
-        ts_open = nullptr;
-    }
-    if(ts_short) {
-        delete ts_short;
-        ts_short = nullptr;
-    }
-    if(ts_load) {
-        delete ts_load;
-        ts_load = nullptr;
-    }
-    if(ts_through) {
-        delete ts_through;
-        ts_through = nullptr;
-    }
+    delete ts_open;
+    ts_open = nullptr;
+    delete ts_short;
+    ts_short = nullptr;
+    delete ts_load;
+    ts_load = nullptr;
+    delete ts_through;
+    ts_through = nullptr;
     ts_cached = false;
 }
 
