@@ -3,7 +3,7 @@
 <eagle version="9.3.1">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="10" display="yes" altdistance="0.05" altunitdist="mm" altunit="mm"/>
@@ -141,7 +141,7 @@
 <layer number="254" name="cooling" color="7" fill="1" visible="no" active="yes"/>
 </layers>
 <board>
-<fusionsync huburn="a.cGVyc29uYWw6dWUyZDFiM2Ji" projecturn="a.cGVyc29uYWw6dWUyZDFiM2JiIzIwMjAwNTAyMjkzNTczNzU2" f3durn="urn:adsk.wipprod:dm.lineage:7dJU4f5iRsOYjtOdBrV7Tw" pcbguid="f91befd0-4797-493e-b5a1-b577b094b894" lastpulledtime="" lastsyncedchangeguid="5b01c19e-6698-8919-6774-a9ede273ea44"/>
+<fusionsync huburn="a.cGVyc29uYWw6dWUyZDFiM2Ji" projecturn="a.cGVyc29uYWw6dWUyZDFiM2JiIzIwMjAwNTAyMjkzNTczNzU2" f3durn="urn:adsk.wipprod:dm.lineage:7dJU4f5iRsOYjtOdBrV7Tw" pcbguid="f91befd0-4797-493e-b5a1-b577b094b894" lastpulledtime="" lastsyncedchangeguid="53f05b46-545c-d8d8-d4e1-af1686d902a6"/>
 <plain>
 <wire x1="0" y1="-2" x2="122" y2="-2" width="0" layer="20"/>
 <wire x1="122" y1="-2" x2="122" y2="96" width="0" layer="20"/>
@@ -1100,7 +1100,6 @@
 <text x="13" y="8" size="1.778" layer="22" font="vector" rot="MR270">Port 1</text>
 <text x="114.2" y="89.5" size="1.778" layer="22" font="vector" rot="MR0">Ref In</text>
 <text x="99.1" y="89.5" size="1.778" layer="22" font="vector" rot="MR0">Ref Out</text>
-<text x="79.8" y="90.3" size="1.778" layer="22" font="vector" rot="MR0">+5V In</text>
 <text x="44.7" y="88" size="1.016" layer="22" font="vector" rot="MR270">TX</text>
 <text x="42" y="88" size="1.016" layer="22" font="vector" rot="MR270">NRST</text>
 <text x="39.5" y="88" size="1.016" layer="22" font="vector" rot="MR270">SWDIO</text>
@@ -4641,420 +4640,316 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="11.145" y="63.7" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="IC2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SON50P400X500X80-17T260X400N" package3d_urn="urn:adsk.eagle:package:22389972/1" value="LM3370SD-4221" x="84.8" y="79" smashed="yes" rot="R180">
-<attribute name="NAME" x="84.8" y="75.726" size="1.27" layer="25" rot="R180" align="bottom-center"/>
 <attribute name="VALUE" x="84.8" y="82.185" size="1.27" layer="27" rot="R180" align="top-center"/>
 </element>
 <element name="L2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SRN5040" package3d_urn="urn:adsk.eagle:package:22367284/2" value="2u2" x="90.3" y="83" smashed="yes" rot="R90">
-<attribute name="NAME" x="87.5" y="81" size="0.8128" layer="25" rot="R90"/>
 <attribute name="VALUE" x="93.9" y="81.1" size="0.8128" layer="27" rot="R90"/>
 </element>
 <element name="IC1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SON50P300X300X90-13T170X240N" package3d_urn="urn:adsk.eagle:package:22391364/1" value="MIC2253" x="98.5" y="77" smashed="yes" rot="R90">
-<attribute name="NAME" x="95.736" y="77" size="1.27" layer="25" rot="R90" align="bottom-center"/>
 <attribute name="VALUE" x="100.824" y="77" size="1.27" layer="27" rot="R90" align="top-center"/>
 </element>
 <element name="L1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SRN5040" package3d_urn="urn:adsk.eagle:package:22367284/2" value="2u2" x="101.5" y="81.9" smashed="yes">
-<attribute name="NAME" x="99.5" y="84.7" size="0.8128" layer="25"/>
 <attribute name="VALUE" x="99.6" y="78.3" size="0.8128" layer="27"/>
 </element>
 <element name="D1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SMB" package3d_urn="urn:adsk.eagle:package:22367279/2" value="MBRS2040LT3G" x="102.9" y="75.7" smashed="yes" rot="R90">
-<attribute name="NAME" x="100.868" y="73.414" size="1.27" layer="25" ratio="10" rot="R90"/>
 <attribute name="VALUE" x="106.4814" y="73.414" size="1.27" layer="27" ratio="10" rot="R90"/>
 </element>
 <element name="R2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="4k7" x="99.5" y="70.2" smashed="yes">
-<attribute name="NAME" x="98.865" y="70.835" size="1.27" layer="25"/>
 <attribute name="VALUE" x="98.865" y="68.295" size="1.27" layer="27"/>
 </element>
 <element name="R3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="96.4" y="70.2" smashed="yes">
-<attribute name="NAME" x="95.765" y="70.835" size="1.27" layer="25"/>
 <attribute name="VALUE" x="95.765" y="68.295" size="1.27" layer="27"/>
 </element>
 <element name="C4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n" x="96.4" y="72.8" smashed="yes">
-<attribute name="NAME" x="95.765" y="73.435" size="1.27" layer="25"/>
 <attribute name="VALUE" x="95.765" y="70.895" size="1.27" layer="27"/>
 </element>
 <element name="C6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n" x="89.8" y="79" smashed="yes" rot="R180">
-<attribute name="NAME" x="90.435" y="78.365" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="90.435" y="80.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="Y1" library="crystal-geyer_V1_0" library_urn="urn:adsk.eagle:library:203" package="2.5X2.0_KXO-86-TCXO" package3d_urn="urn:adsk.eagle:package:11955/1" value="DSB221SDN/26MHz" x="102.1" y="41" smashed="yes" rot="R90">
-<attribute name="NAME" x="100.762" y="39.589" size="1.016" layer="25" rot="R90"/>
 <attribute name="VALUE" x="104.484" y="39.589" size="1.016" layer="27" rot="R90"/>
 </element>
 <element name="J1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="PJ-014D" package3d_urn="urn:adsk.eagle:package:23404883/2" value="PJ-014D" x="56" y="96" smashed="yes" rot="R180"/>
 <element name="Q1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SOTFL95P240X80-3N" package3d_urn="urn:adsk.eagle:package:23405723/1" value="SSM3J338R" x="70" y="86" smashed="yes" rot="R180">
-<attribute name="NAME" x="70" y="83.3903" size="1.27" layer="25" rot="R180" align="bottom-center"/>
 <attribute name="VALUE" x="70" y="88.185" size="1.27" layer="27" rot="R180" align="top-center"/>
 </element>
 <element name="Q2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="SOTFL95P240X80-3N" package3d_urn="urn:adsk.eagle:package:23405723/1" value="SSM3J338R" x="73.3" y="87.9" smashed="yes">
-<attribute name="NAME" x="73.3" y="90.5097" size="1.27" layer="25" align="bottom-center"/>
 <attribute name="VALUE" x="73.3" y="85.715" size="1.27" layer="27" align="top-center"/>
 </element>
 <element name="R125" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="70.9" y="89.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="71.535" y="90.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="68.995" y="90.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R143" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="28.4" y="41.2" smashed="yes" rot="R90">
-<attribute name="NAME" x="27.765" y="40.565" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="30.305" y="40.565" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C223" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="28.4" y="43.7" smashed="yes" rot="R90">
-<attribute name="NAME" x="27.765" y="43.065" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="30.305" y="43.065" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C224" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="28.9" y="39.4" smashed="yes" rot="R180">
-<attribute name="NAME" x="29.535" y="38.765" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="29.535" y="41.305" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R144" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="29.5" y="35" smashed="yes" rot="R270">
-<attribute name="NAME" x="30.135" y="35.635" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="27.595" y="35.635" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C225" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="28.9" y="36.8" smashed="yes" rot="R180">
-<attribute name="NAME" x="29.535" y="36.165" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="29.535" y="38.705" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C226" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="28.9" y="33.2" smashed="yes" rot="R180">
-<attribute name="NAME" x="29.535" y="32.565" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="29.535" y="35.105" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R145" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="16.6" y="53" smashed="yes" rot="R90">
-<attribute name="NAME" x="15.965" y="52.365" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="18.505" y="52.365" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C227" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="15.4" y="54.3" smashed="yes" rot="R90">
-<attribute name="NAME" x="14.765" y="53.665" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="17.305" y="53.665" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C228" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="15.4" y="51.7" smashed="yes" rot="R270">
-<attribute name="NAME" x="16.035" y="52.335" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="13.495" y="52.335" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R146" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="19.2" y="49.7" smashed="yes" rot="R270">
-<attribute name="NAME" x="19.835" y="50.335" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="17.295" y="50.335" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C229" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="18.5" y="51.5" smashed="yes" rot="R180">
-<attribute name="NAME" x="19.135" y="50.865" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="19.135" y="53.405" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C230" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="20.6" y="49.7" smashed="yes" rot="R90">
-<attribute name="NAME" x="19.965" y="49.065" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="22.505" y="49.065" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R147" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="109.3" y="52.1" smashed="yes" rot="R270">
-<attribute name="NAME" x="109.935" y="52.735" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="107.395" y="52.735" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C231" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="108.7" y="50.3" smashed="yes" rot="R180">
-<attribute name="NAME" x="109.335" y="49.665" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="109.335" y="52.205" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C232" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="108" y="52.1" smashed="yes" rot="R270">
-<attribute name="NAME" x="108.635" y="52.735" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="106.095" y="52.735" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R148" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="105.1" y="53.1" smashed="yes" rot="R90">
-<attribute name="NAME" x="104.465" y="52.465" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="107.005" y="52.465" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C233" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="105.8" y="51" smashed="yes">
-<attribute name="NAME" x="105.165" y="51.635" size="1.27" layer="25"/>
 <attribute name="VALUE" x="105.165" y="49.095" size="1.27" layer="27"/>
 </element>
 <element name="C234" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="105.5" y="55.1" smashed="yes">
-<attribute name="NAME" x="104.865" y="55.735" size="1.27" layer="25"/>
 <attribute name="VALUE" x="104.865" y="53.195" size="1.27" layer="27"/>
 </element>
 <element name="R149" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="85.4" y="10.8" smashed="yes" rot="R90">
-<attribute name="NAME" x="84.765" y="10.165" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="87.305" y="10.165" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C235" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="80" y="20.3" smashed="yes">
-<attribute name="NAME" x="79.365" y="20.935" size="1.27" layer="25"/>
 <attribute name="VALUE" x="79.365" y="18.395" size="1.27" layer="27"/>
 </element>
 <element name="C236" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="87.44141875" y="11.058578125" smashed="yes" rot="R45">
-<attribute name="NAME" x="86.54339375" y="11.058578125" size="1.27" layer="25" rot="R45"/>
 <attribute name="VALUE" x="88.339446875" y="9.262525" size="1.27" layer="27" rot="R45"/>
 </element>
 <element name="R150" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="49.3" y="21" smashed="yes" rot="R90">
-<attribute name="NAME" x="48.665" y="20.365" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="51.205" y="20.365" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C237" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="48.7" y="22.7" smashed="yes" rot="R180">
-<attribute name="NAME" x="49.335" y="22.065" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="49.335" y="24.605" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C238" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="48.7" y="19.2" smashed="yes" rot="R180">
-<attribute name="NAME" x="49.335" y="18.565" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="49.335" y="21.105" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R151" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="50.5" y="21" smashed="yes" rot="R90">
-<attribute name="NAME" x="49.865" y="20.365" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="52.405" y="20.365" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C239" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="51.1" y="22.7" smashed="yes">
-<attribute name="NAME" x="50.465" y="23.335" size="1.27" layer="25"/>
 <attribute name="VALUE" x="50.465" y="20.795" size="1.27" layer="27"/>
 </element>
 <element name="C240" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="51.1" y="19.2" smashed="yes">
-<attribute name="NAME" x="50.465" y="19.835" size="1.27" layer="25"/>
 <attribute name="VALUE" x="50.465" y="17.295" size="1.27" layer="27"/>
 </element>
 <element name="R152" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="18.9" y="31.3" smashed="yes" rot="R90">
-<attribute name="NAME" x="18.265" y="30.665" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="20.805" y="30.665" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C241" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="18.2" y="33.2" smashed="yes" rot="R180">
-<attribute name="NAME" x="18.835" y="32.565" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="18.835" y="35.105" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C242" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="18.2" y="29.5" smashed="yes" rot="R180">
-<attribute name="NAME" x="18.835" y="28.865" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="18.835" y="31.405" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R153" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="54" y="21.1" smashed="yes" rot="R90">
-<attribute name="NAME" x="53.365" y="20.465" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="55.905" y="20.465" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C243" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="54" y="23.5" smashed="yes" rot="R90">
-<attribute name="NAME" x="53.365" y="22.865" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="55.905" y="22.865" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C244" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="54" y="18.1" smashed="yes" rot="R270">
-<attribute name="NAME" x="54.635" y="18.735" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="52.095" y="18.735" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R154" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="67.3" y="38.5" smashed="yes" rot="R90">
-<attribute name="NAME" x="66.665" y="37.865" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="69.205" y="37.865" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C245" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="69.3" y="38.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="69.935" y="39.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="67.395" y="39.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C246" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="66" y="38.5" smashed="yes" rot="R90">
-<attribute name="NAME" x="65.365" y="37.865" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="67.905" y="37.865" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R155" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="72.4" y="38.5" smashed="yes" rot="R90">
-<attribute name="NAME" x="71.765" y="37.865" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="74.305" y="37.865" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C247" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="73.6" y="38.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="74.235" y="39.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="71.695" y="39.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C248" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="70.5" y="38.5" smashed="yes" rot="R90">
-<attribute name="NAME" x="69.865" y="37.865" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="72.405" y="37.865" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R156" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="48.5" y="29.2" smashed="yes" rot="R180">
-<attribute name="NAME" x="49.135" y="28.565" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="49.135" y="31.105" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C249" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="45.5" y="29.6" smashed="yes" rot="R180">
-<attribute name="NAME" x="46.135" y="28.965" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="46.135" y="31.505" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C250" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="66.5" y="33.5" smashed="yes" rot="R90">
-<attribute name="NAME" x="65.865" y="32.865" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="68.405" y="32.865" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R157" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="50.9" y="28.4" smashed="yes" rot="R180">
-<attribute name="NAME" x="51.535" y="27.765" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="51.535" y="30.305" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C251" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="45.9" y="28.4" smashed="yes" rot="R180">
-<attribute name="NAME" x="46.535" y="27.765" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="46.535" y="30.305" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C252" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="67" y="31.1" smashed="yes" rot="R90">
-<attribute name="NAME" x="66.365" y="30.465" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="68.905" y="30.465" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R158" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="48.5" y="27.6" smashed="yes" rot="R180">
-<attribute name="NAME" x="49.135" y="26.965" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="49.135" y="29.505" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C253" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="42" y="31.2" smashed="yes" rot="R180">
-<attribute name="NAME" x="42.635" y="30.565" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="42.635" y="33.105" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C254" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="66.3" y="29.2" smashed="yes">
-<attribute name="NAME" x="65.665" y="29.835" size="1.27" layer="25"/>
 <attribute name="VALUE" x="65.665" y="27.295" size="1.27" layer="27"/>
 </element>
 <element name="R159" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="50.9" y="26.8" smashed="yes" rot="R180">
-<attribute name="NAME" x="51.535" y="26.165" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="51.535" y="28.705" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C255" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="42" y="30" smashed="yes" rot="R180">
-<attribute name="NAME" x="42.635" y="29.365" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="42.635" y="31.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C256" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="66.3" y="28" smashed="yes">
-<attribute name="NAME" x="65.665" y="28.635" size="1.27" layer="25"/>
 <attribute name="VALUE" x="65.665" y="26.095" size="1.27" layer="27"/>
 </element>
 <element name="R160" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="48.5" y="24.4" smashed="yes">
-<attribute name="NAME" x="47.865" y="25.035" size="1.27" layer="25"/>
 <attribute name="VALUE" x="47.865" y="22.495" size="1.27" layer="27"/>
 </element>
 <element name="C257" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="63.9" y="24" smashed="yes" rot="R180">
-<attribute name="NAME" x="64.535" y="23.365" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="64.535" y="25.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C258" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="46.1" y="23.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="46.735" y="24.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="44.195" y="24.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R161" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="50.9" y="25.2" smashed="yes">
-<attribute name="NAME" x="50.265" y="25.835" size="1.27" layer="25"/>
 <attribute name="VALUE" x="50.265" y="23.295" size="1.27" layer="27"/>
 </element>
 <element name="C259" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="65.7" y="24.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="66.335" y="25.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="63.795" y="25.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C260" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="46.1" y="25.9" smashed="yes" rot="R90">
-<attribute name="NAME" x="45.465" y="25.265" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="48.005" y="25.265" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R162" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="48.5" y="26" smashed="yes">
-<attribute name="NAME" x="47.865" y="26.635" size="1.27" layer="25"/>
 <attribute name="VALUE" x="47.865" y="24.095" size="1.27" layer="27"/>
 </element>
 <element name="C261" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="66.9" y="24.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="67.535" y="25.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="64.995" y="25.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C262" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="42" y="28.8" smashed="yes" rot="R180">
-<attribute name="NAME" x="42.635" y="28.165" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="42.635" y="30.705" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C263" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="39.1" y="52.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="39.735" y="53.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="37.195" y="53.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C264" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="37.9" y="52.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="38.535" y="53.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="35.995" y="53.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="C265" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="53.4" y="42" smashed="yes">
-<attribute name="NAME" x="52.765" y="42.635" size="1.27" layer="25"/>
 <attribute name="VALUE" x="52.765" y="40.095" size="1.27" layer="27"/>
 </element>
 <element name="C266" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="36.7" y="52.5" smashed="yes" rot="R270">
-<attribute name="NAME" x="37.335" y="53.135" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="34.795" y="53.135" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R163" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="57.3" y="57.6" smashed="yes" rot="R180">
-<attribute name="NAME" x="57.935" y="56.965" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="57.935" y="59.505" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C267" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="59" y="60.3" smashed="yes">
-<attribute name="NAME" x="58.365" y="60.935" size="1.27" layer="25"/>
 <attribute name="VALUE" x="58.365" y="58.395" size="1.27" layer="27"/>
 </element>
 <element name="C268" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="70.2" y="55.6" smashed="yes" rot="R90">
-<attribute name="NAME" x="69.565" y="54.965" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="72.105" y="54.965" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R164" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="51.6" y="59.1" smashed="yes" rot="R180">
-<attribute name="NAME" x="52.235" y="58.465" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="52.235" y="61.005" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R165" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="55.8" y="60.3" smashed="yes" rot="R180">
-<attribute name="NAME" x="56.435" y="59.665" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="56.435" y="62.205" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C271" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="52.8" y="60.3" smashed="yes" rot="R180">
-<attribute name="NAME" x="53.435" y="59.665" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="53.435" y="62.205" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C272" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="74.2" y="47.3" smashed="yes">
-<attribute name="NAME" x="73.565" y="47.935" size="1.27" layer="25"/>
 <attribute name="VALUE" x="73.565" y="45.395" size="1.27" layer="27"/>
 </element>
 <element name="R166" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k" x="49" y="55.9" smashed="yes" rot="R180">
-<attribute name="NAME" x="49.635" y="55.265" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="49.635" y="57.805" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C273" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="46" y="55.9" smashed="yes" rot="R180">
-<attribute name="NAME" x="46.635" y="55.265" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="46.635" y="57.805" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C274" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p" x="74.2" y="46" smashed="yes">
-<attribute name="NAME" x="73.565" y="46.635" size="1.27" layer="25"/>
 <attribute name="VALUE" x="73.565" y="44.095" size="1.27" layer="27"/>
 </element>
 <element name="R167" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="52.8" y="55.9" smashed="yes" rot="R180">
-<attribute name="NAME" x="53.435" y="55.265" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="53.435" y="57.805" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R170" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="55.4" y="59.1" smashed="yes" rot="R180">
-<attribute name="NAME" x="56.035" y="58.465" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="56.035" y="61.005" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R171" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="56" y="55.9" smashed="yes" rot="R180">
-<attribute name="NAME" x="56.635" y="55.265" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="56.635" y="57.805" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R168" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="75" x="5.1" y="19.2" smashed="yes" rot="R270">
-<attribute name="NAME" x="5.735" y="19.835" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="3.195" y="19.835" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R169" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="4.4" y="21.1" smashed="yes" rot="R180">
-<attribute name="NAME" x="5.035" y="20.465" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="5.035" y="23.005" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R172" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="4.4" y="17.3" smashed="yes" rot="R180">
-<attribute name="NAME" x="5.035" y="16.665" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="5.035" y="19.205" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="C269" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n" x="5.1" y="15.4" smashed="yes" rot="R90">
-<attribute name="NAME" x="4.465" y="14.765" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="7.005" y="14.765" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R173" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="75" x="34.7" y="17.8" smashed="yes" rot="R180">
-<attribute name="NAME" x="35.335" y="17.165" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="35.335" y="19.705" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R174" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="35.4" y="19.6" smashed="yes" rot="R90">
-<attribute name="NAME" x="34.765" y="18.965" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="37.305" y="18.965" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="R175" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100" x="32.9" y="19" smashed="yes" rot="R90">
-<attribute name="NAME" x="32.265" y="18.365" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="34.805" y="18.365" size="1.27" layer="27" rot="R90"/>
 </element>
 <element name="C270" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n" x="34.7" y="15.9" smashed="yes" rot="R135">
-<attribute name="NAME" x="34.7" y="15.001971875" size="1.27" layer="25" rot="R135"/>
 <attribute name="VALUE" x="36.49605" y="16.798025" size="1.27" layer="27" rot="R135"/>
 </element>
 <element name="R176" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0" x="87.2" y="44" smashed="yes" rot="R180">
-<attribute name="NAME" x="87.835" y="43.365" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="87.835" y="45.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R177" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0" x="83.2" y="44" smashed="yes" rot="R180">
-<attribute name="NAME" x="83.835" y="43.365" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="83.835" y="45.905" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R178" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0" x="83.2" y="39.6" smashed="yes" rot="R180">
-<attribute name="NAME" x="83.835" y="38.965" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="83.835" y="41.505" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0" x="87.2" y="39.6" smashed="yes" rot="R180">
-<attribute name="NAME" x="87.835" y="38.965" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="87.835" y="41.505" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="R180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0" x="98.7" y="37.4" smashed="yes" rot="R270">
-<attribute name="NAME" x="99.335" y="38.035" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="96.795" y="38.035" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="R181" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0" x="101.1" y="37.4" smashed="yes" rot="R90">
-<attribute name="NAME" x="100.465" y="36.765" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="103.005" y="36.765" size="1.27" layer="27" rot="R90"/>
 </element>
 </elements>
@@ -6808,7 +6703,6 @@ design rules under a new name.</description>
 <via x="28" y="14" extent="1-16" drill="0.25"/>
 <via x="29" y="13" extent="1-16" drill="0.25"/>
 <via x="30" y="14" extent="1-16" drill="0.25"/>
-<via x="34" y="12" extent="1-16" drill="0.25"/>
 <via x="33" y="11" extent="1-16" drill="0.25"/>
 <via x="34" y="10" extent="1-16" drill="0.25"/>
 <via x="35" y="11" extent="1-16" drill="0.25"/>
@@ -6830,7 +6724,6 @@ design rules under a new name.</description>
 <via x="56" y="8" extent="1-16" drill="0.25"/>
 <via x="54" y="8" extent="1-16" drill="0.25"/>
 <via x="52" y="8" extent="1-16" drill="0.25"/>
-<via x="49.5" y="8" extent="1-16" drill="0.25"/>
 <via x="48" y="8" extent="1-16" drill="0.25"/>
 <via x="46" y="8" extent="1-16" drill="0.25"/>
 <via x="44" y="8" extent="1-16" drill="0.25"/>
@@ -7309,8 +7202,6 @@ design rules under a new name.</description>
 <via x="36" y="1" extent="1-16" drill="0.25"/>
 <via x="38" y="1" extent="1-16" drill="0.25"/>
 <via x="40" y="1" extent="1-16" drill="0.25"/>
-<via x="42" y="1" extent="1-16" drill="0.25"/>
-<via x="46" y="1" extent="1-16" drill="0.25"/>
 <via x="48" y="1" extent="1-16" drill="0.25"/>
 <via x="50" y="1" extent="1-16" drill="0.25"/>
 <via x="52" y="1" extent="1-16" drill="0.25"/>
@@ -7325,8 +7216,6 @@ design rules under a new name.</description>
 <via x="70" y="1" extent="1-16" drill="0.25"/>
 <via x="72" y="1" extent="1-16" drill="0.25"/>
 <via x="74" y="1" extent="1-16" drill="0.25"/>
-<via x="76" y="1" extent="1-16" drill="0.25"/>
-<via x="80" y="1" extent="1-16" drill="0.25"/>
 <via x="82" y="1" extent="1-16" drill="0.25"/>
 <via x="84" y="1" extent="1-16" drill="0.25"/>
 <via x="86" y="1" extent="1-16" drill="0.25"/>
@@ -7716,13 +7605,9 @@ design rules under a new name.</description>
 <via x="75.4" y="69.2" extent="1-16" drill="0.25"/>
 <via x="76.2" y="69.2" extent="1-16" drill="0.25"/>
 <via x="84.7" y="75.6" extent="1-16" drill="0.25"/>
-<via x="84.7" y="74.8" extent="1-16" drill="0.25"/>
 <via x="84.7" y="74" extent="1-16" drill="0.25"/>
-<via x="84.7" y="73.2" extent="1-16" drill="0.25"/>
 <via x="84.7" y="72.4" extent="1-16" drill="0.25"/>
-<via x="84.7" y="71.6" extent="1-16" drill="0.25"/>
 <via x="84.7" y="70.8" extent="1-16" drill="0.25"/>
-<via x="84.7" y="70" extent="1-16" drill="0.25"/>
 <via x="84.7" y="69.2" extent="1-16" drill="0.25"/>
 <via x="82" y="88.6" extent="1-16" drill="0.25"/>
 <via x="82" y="87.3" extent="1-16" drill="0.25"/>
@@ -7813,9 +7698,7 @@ design rules under a new name.</description>
 <via x="98.9" y="39.1" extent="1-16" drill="0.25"/>
 <via x="102.8" y="43.2" extent="1-16" drill="0.25"/>
 <via x="102.8" y="39" extent="1-16" drill="0.25"/>
-<via x="50.5" y="8" extent="1-16" drill="0.25"/>
 <via x="29" y="15" extent="1-16" drill="0.25"/>
-<via x="31" y="15" extent="1-16" drill="0.25"/>
 <via x="30.4" y="12.5" extent="1-16" drill="0.25"/>
 <via x="47.5" y="11" extent="1-16" drill="0.25"/>
 <via x="48.5" y="12" extent="1-16" drill="0.25"/>
@@ -8951,6 +8834,8 @@ design rules under a new name.</description>
 <wire x1="83.66" y1="26.16" x2="83.8" y2="26.3" width="0.3" layer="1"/>
 <wire x1="110.56" y1="61.3" x2="110.65" y2="61.21" width="0.3" layer="1"/>
 <wire x1="110.65" y1="61.21" x2="110.65" y2="60.65" width="0.3" layer="1"/>
+<wire x1="59.7" y1="65.8" x2="61.2" y2="67.3" width="0.5" layer="16"/>
+<wire x1="61.2" y1="67.3" x2="61.2" y2="72" width="0.5" layer="16"/>
 </signal>
 <signal name="SCL">
 <contactref element="IC7" pad="4"/>
