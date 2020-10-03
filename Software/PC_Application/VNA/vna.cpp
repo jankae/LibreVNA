@@ -702,10 +702,11 @@ void VNA::ApplyCalibration(Calibration::Type type)
 {
     if(cal.calculationPossible(type)) {
         try {
-            cal.constructErrorTerms(type);
-            calValid = true;
-            average.reset();
-            emit CalibrationApplied(type);
+            if(cal.constructErrorTerms(type)) {
+                calValid = true;
+                average.reset();
+                emit CalibrationApplied(type);
+            }
         } catch (runtime_error e) {
             QMessageBox::critical(this, "Calibration failure", e.what());
             DisableCalibration(true);

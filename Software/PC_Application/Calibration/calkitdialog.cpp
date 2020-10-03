@@ -38,9 +38,29 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     ui->load_touchstone->setPorts(1);
     ui->through_touchstone->setPorts(2);
 
+    ui->TRL_line_max->setUnit("Hz");
+    ui->TRL_line_max->setPrecision(4);
+    ui->TRL_line_max->setPrefixes(" kMG");
+    ui->TRL_line_min->setUnit("Hz");
+    ui->TRL_line_min->setPrecision(4);
+    ui->TRL_line_min->setPrefixes(" kMG");
+
     editKit.clearTouchstoneCache();
     ownKit = editKit;
     updateEntries();
+
+    connect(ui->TRL_line_min, &SIUnitEdit::valueChanged, [=](double newval){
+       ownKit.TRL_line_minfreq = newval;
+       updateEntries();
+    });
+    connect(ui->TRL_line_max, &SIUnitEdit::valueChanged, [=](double newval){
+       ownKit.TRL_line_maxfreq = newval;
+       updateEntries();
+    });
+    connect(ui->TRL_line_delay, &QLineEdit::editingFinished, [=](){
+        ownKit.TRL_line_delay = ui->TRL_line_delay->text().toDouble();
+        updateEntries();
+    });
 
     auto UpdateStatus = [=]() {
         bool ok = true;
@@ -110,7 +130,6 @@ CalkitDialog::~CalkitDialog()
 
 void CalkitDialog::parseEntries()
 {
-
     // type
     ownKit.open_measurements = ui->open_measurement->isChecked();
     ownKit.short_measurements = ui->short_measurement->isChecked();
@@ -151,6 +170,13 @@ void CalkitDialog::parseEntries()
     ownKit.load_Sparam = ui->load_touchstone->getPorts()[0];
     ownKit.through_Sparam1 = ui->through_touchstone->getPorts()[0];
     ownKit.through_Sparam2 = ui->through_touchstone->getPorts()[1];
+
+    // TRL
+    ownKit.TRL_through_Z0 = ui->TRL_through_Z0->text().toDouble();
+    ownKit.TRL_reflection_short = ui->TRL_R_short->isChecked();
+    ownKit.TRL_line_delay = ui->TRL_line_delay->text().toDouble();
+    ownKit.TRL_line_minfreq = ui->TRL_line_min->value();
+    ownKit.TRL_line_maxfreq = ui->TRL_line_max->value();
 }
 
 void CalkitDialog::updateEntries()
@@ -215,5 +241,26 @@ void CalkitDialog::updateEntries()
         ui->through_measurement->click();
     } else {
         ui->through_coefficients->click();
+    }
+
+    // TRL
+    ui->TRL_through_Z0->setText(QString::number(ownKit.TRL_through_Z0));
+    if(ownKit.TRL_reflection_short) {
+        ui->TRL_R_short->setChecked(true);
+    } else {
+        ui->TRL_R_open->setChecked(true);
+    }
+    ui->TRL_line_delay->setText(QString::number(ownKit.TRL_line_delay));
+    ui->TRL_line_min->setValueQuiet(ownKit.TRL_line_minfreq);
+    ui->TRL_line_max->setValueQuiet(ownKit.TRL_line_maxfreq);
+    // Check if line length is appropriate for frequencies
+    auto minDelay = 20.0/(ownKit.TRL_line_minfreq * 360.0) * 1e12;
+    auto maxDelay = 160.0/(ownKit.TRL_line_maxfreq * 360.0) * 1e12;
+    if(ownKit.TRL_line_delay < minDelay) {
+        ui->TRL_line_warning->setText("Line too short, minimum required delay is "+QString::number(minDelay, 'g', 3) + "ps");
+    } else if(ownKit.TRL_line_delay > maxDelay) {
+        ui->TRL_line_warning->setText("Line too long, maximum allowed delay is "+QString::number(maxDelay, 'g', 3) + "ps");
+    } else {
+        ui->TRL_line_warning->clear();
     }
 }

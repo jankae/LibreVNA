@@ -26,7 +26,6 @@ private:
         ColIndexDescription,
         ColIndexData,
         ColIndexDate,
-        ColIndexStatusSymbol,
         ColIndexLast
     };
     Calibration *cal;

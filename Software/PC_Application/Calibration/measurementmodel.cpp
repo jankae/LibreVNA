@@ -53,7 +53,6 @@ QVariant MeasurementModel::data(const QModelIndex &index, int role) const
         case ColIndexDescription: return 500; break;
         case ColIndexData: return 300; break;
         case ColIndexDate: return 300; break;
-        case ColIndexStatusSymbol: return 150; break;
         default: return QVariant(); break;
         }
     }
@@ -69,7 +68,6 @@ QVariant MeasurementModel::headerData(int section, Qt::Orientation orientation, 
         case ColIndexDescription: return "Prerequisites"; break;
         case ColIndexData: return "Statistics"; break;
         case ColIndexDate: return "Timestamp"; break;
-        case ColIndexStatusSymbol: return "Status"; break;
         default: return QVariant(); break;
         }
     } else {

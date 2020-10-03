@@ -51,6 +51,12 @@ Calkit::Calkit()
     load_Sparam = 0;
     through_Sparam1 = 0;
     through_Sparam2 = 1;
+
+    TRL_through_Z0 = 50.0;
+    TRL_reflection_short = true;
+    TRL_line_delay = 74;
+    TRL_line_maxfreq = 6000000000;
+    TRL_line_minfreq = 751000000;
 }
 
 void Calkit::toFile(std::string filename)
@@ -75,6 +81,11 @@ void Calkit::toFile(std::string filename)
     if(through_measurements) {
         file << through_file << "\n" << through_Sparam1 << "\n" << through_Sparam2 << "\n";
     }
+    file << TRL_through_Z0 << "\n";
+    file << TRL_reflection_short << "\n";
+    file << TRL_line_delay << "\n";
+    file << TRL_line_minfreq << "\n";
+    file << TRL_line_maxfreq << "\n";
     file.close();
 }
 
@@ -125,6 +136,11 @@ Calkit Calkit::fromFile(std::string filename)
         file >> c.through_Sparam1;
         file >> c.through_Sparam2;
     }
+    file >> c.TRL_through_Z0;
+    file >> c.TRL_reflection_short;
+    file >> c.TRL_line_delay;
+    file >> c.TRL_line_minfreq;
+    file >> c.TRL_line_maxfreq;
     file.close();
     return c;
 }
@@ -135,10 +151,10 @@ void Calkit::edit()
     dialog->show();
 }
 
-Calkit::Reflection Calkit::toReflection(double frequency)
+Calkit::SOLT Calkit::toSOLT(double frequency)
 {
     fillTouchstoneCache();
-    Reflection ref;
+    SOLT ref;
     if(load_measurements) {
         ref.Load = ts_load->interpolate(frequency).S[0];
     } else {
@@ -204,40 +220,66 @@ Calkit::Reflection Calkit::toReflection(double frequency)
     return ref;
 }
 
-double Calkit::minFreq()
+Calkit::TRL Calkit::toTRL(double)
 {
-    fillTouchstoneCache();
-    double min = std::numeric_limits<double>::min();
-    array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
-    // find the highest minimum frequency in all measurement files
-    for(auto ts : ts_list) {
-        if(!ts) {
-            // this calibration standard is defined by coefficients, no minimum frequency
-            continue;
-        }
-        if(ts->minFreq() > min) {
-            min = ts->minFreq();
-        }
-    }
-    return min;
+    TRL trl;
+    // reflection coefficent sign depends on whether an open or short is used
+    trl.reflectionIsNegative = TRL_reflection_short;
+    // assume ideal through for now
+    trl.ThroughS11 = 0.0;
+    trl.ThroughS12 = 1.0;
+    trl.ThroughS21 = 1.0;
+    trl.ThroughS22 = 0.0;
+    return trl;
 }
 
-double Calkit::maxFreq()
+double Calkit::minFreq(bool TRL)
 {
-    fillTouchstoneCache();
-    double max = std::numeric_limits<double>::max();
-    array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
-    // find the highest minimum frequency in all measurement files
-    for(auto ts : ts_list) {
-        if(!ts) {
-            // this calibration standard is defined by coefficients, no minimum frequency
-            continue;
+    if(TRL) {
+        return TRL_line_minfreq;
+    } else {
+        fillTouchstoneCache();
+        double min = std::numeric_limits<double>::min();
+        array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
+        // find the highest minimum frequency in all measurement files
+        for(auto ts : ts_list) {
+            if(!ts) {
+                // this calibration standard is defined by coefficients, no minimum frequency
+                continue;
+            }
+            if(ts->minFreq() > min) {
+                min = ts->minFreq();
+            }
         }
-        if(ts->maxFreq() < max) {
-            max = ts->maxFreq();
-        }
+        return min;
     }
-    return max;
+}
+
+double Calkit::maxFreq(bool TRL)
+{
+    if(TRL) {
+        return TRL_line_maxfreq;
+    } else {
+        fillTouchstoneCache();
+        double max = std::numeric_limits<double>::max();
+        array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
+        // find the highest minimum frequency in all measurement files
+        for(auto ts : ts_list) {
+            if(!ts) {
+                // this calibration standard is defined by coefficients, no minimum frequency
+                continue;
+            }
+            if(ts->maxFreq() < max) {
+                max = ts->maxFreq();
+            }
+        }
+        return max;
+    }
+}
+
+bool Calkit::isTRLReflectionShort() const
+{
+    return TRL_reflection_short;
 }
 
 void Calkit::clearTouchstoneCache()

@@ -26,6 +26,7 @@ public:
         Port2Load,
         Isolation,
         Through,
+        Line,
     };
     void clearMeasurements();
     void clearMeasurement(Measurement type);
@@ -35,6 +36,8 @@ public:
         Port1SOL,
         Port2SOL,
         FullSOLT,
+        TransmissionNormalization,
+        TRL,
         None,
     };
 
@@ -67,7 +70,7 @@ public:
     };
 
     static const std::vector<Type> Types();
-    static const std::vector<Measurement> Measurements(Type type = Type::None);
+    const std::vector<Measurement> Measurements(Type type = Type::None, bool optional_included = true);
     MeasurementInfo getMeasurementInfo(Measurement m);
 
     friend std::ostream& operator<<(std::ostream& os, const Calibration& c);
@@ -89,7 +92,9 @@ private:
     void construct12TermPoints();
     void constructPort1SOL();
     void constructPort2SOL();
-    bool SanityCheckSamples(std::vector<Measurement> &requiredMeasurements);
+    void constructTransmissionNormalization();
+    void constructTRL();
+    bool SanityCheckSamples(const std::vector<Measurement> &requiredMeasurements);
     class Point
     {
     public:
