@@ -30,7 +30,7 @@ static void HaltedCallback() {
 	}
 }
 
-static void ReadComplete(FPGA::SamplingResult result) {
+static void ReadComplete(const FPGA::SamplingResult &result) {
 	bool needs_work = false;
 	switch(activeMode) {
 	case HW::Mode::VNA:
@@ -71,6 +71,16 @@ void HW::Work() {
 }
 
 bool HW::Init() {
+#ifdef USE_DEBUG_PINS
+	// initialize debug pins
+	GPIO_InitTypeDef gpio;
+	gpio.Pin = DEBUG1_PIN;
+	gpio.Mode = GPIO_MODE_OUTPUT_PP;
+	gpio.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(DEBUG1_GPIO, &gpio);
+	gpio.Pin = DEBUG2_PIN;
+	HAL_GPIO_Init(DEBUG2_GPIO, &gpio);
+#endif
 	LOG_DEBUG("Initializing...");
 
 	activeMode = Mode::Idle;

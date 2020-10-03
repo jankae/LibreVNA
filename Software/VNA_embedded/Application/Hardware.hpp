@@ -3,6 +3,25 @@
 #include <cstdint>
 #include "Protocol.hpp"
 
+#define USE_DEBUG_PINS
+
+#ifdef USE_DEBUG_PINS
+#define DEBUG1_GPIO		GPIOA
+#define DEBUG1_PIN		GPIO_PIN_13
+#define DEBUG2_GPIO		GPIOA
+#define DEBUG2_PIN		GPIO_PIN_14
+
+#define DEBUG1_LOW() do {DEBUG1_GPIO->BSRR = DEBUG1_PIN<<16; }while(0)
+#define DEBUG1_HIGH() do {DEBUG1_GPIO->BSRR = DEBUG1_PIN; }while(0)
+#define DEBUG2_LOW() do {DEBUG2_GPIO->BSRR = DEBUG2_PIN<<16; }while(0)
+#define DEBUG2_HIGH() do {DEBUG2_GPIO->BSRR = DEBUG2_PIN; }while(0)
+#else
+#define DEBUG1_LOW()
+#define DEBUG1_HIGH()
+#define DEBUG2_LOW()
+#define DEBUG2_HIGH()
+#endif
+
 namespace HW {
 
 static constexpr uint32_t ADCSamplerate = 800000;

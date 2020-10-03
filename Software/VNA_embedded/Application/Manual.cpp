@@ -77,7 +77,7 @@ void Manual::Setup(Protocol::ManualControl m) {
 	FPGA::StartSweep();
 }
 
-bool Manual::MeasurementDone(FPGA::SamplingResult result) {
+bool Manual::MeasurementDone(const FPGA::SamplingResult &result) {
 	if(!active) {
 		return false;
 	}

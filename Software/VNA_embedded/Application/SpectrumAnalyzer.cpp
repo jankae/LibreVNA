@@ -149,7 +149,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	StartNextSample();
 }
 
-bool SA::MeasurementDone(FPGA::SamplingResult result) {
+bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 	if(!active) {
 		return false;
 	}

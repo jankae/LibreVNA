@@ -173,6 +173,6 @@ using PacketInfo = struct _packetinfo {
 
 uint32_t CRC32(uint32_t crc, const void *data, uint32_t len);
 uint16_t DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info);
-uint16_t EncodePacket(PacketInfo packet, uint8_t *dest, uint16_t destsize);
+uint16_t EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_t destsize);
 
 }

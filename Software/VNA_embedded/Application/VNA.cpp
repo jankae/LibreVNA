@@ -190,7 +190,7 @@ static void PassOnData() {
 	}
 }
 
-bool VNA::MeasurementDone(FPGA::SamplingResult result) {
+bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	if(!active) {
 		return false;
 	}

@@ -110,7 +110,7 @@ void DisableInterrupt(Interrupt i);
 void WriteMAX2871Default(uint32_t *DefaultRegs);
 void WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
 		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
-using ReadCallback = void(*)(SamplingResult result);
+using ReadCallback = void(*)(const SamplingResult &result);
 bool InitiateSampleRead(ReadCallback cb);
 ADCLimits GetADCLimits();
 void ResetADCLimits();

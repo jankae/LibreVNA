@@ -19,7 +19,7 @@ static uint8_t  *USBD_Class_GetDeviceQualifierDescriptor (uint16_t *length);
 
 static usbd_recv_callback_t cb;
 static uint8_t usb_receive_buffer[1024];
-static uint8_t usb_transmit_fifo[4096];
+static uint8_t usb_transmit_fifo[4092];
 static uint16_t usb_transmit_read_index = 0;
 static uint16_t usb_transmit_fifo_level = 0;
 static bool data_transmission_active = false;
@@ -218,10 +218,9 @@ void usb_init(usbd_recv_callback_t receive_callback) {
 	USBD_Start(&hUsbDeviceFS);
     HAL_NVIC_SetPriority(USB_HP_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USB_HP_IRQn);
-    HAL_NVIC_SetPriority(USB_LP_IRQn, 7, 0);
+    HAL_NVIC_SetPriority(USB_LP_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(USB_LP_IRQn);
 }
-
 bool usb_transmit(const uint8_t *data, uint16_t length) {
 	// attempt to add data to fifo
 	if(usb_transmit_fifo_level + length > sizeof(usb_transmit_fifo)) {

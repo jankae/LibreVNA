@@ -25,7 +25,7 @@
 static Protocol::Datapoint result;
 static Protocol::SweepSettings settings;
 
-static Protocol::PacketInfo packet;
+static Protocol::PacketInfo recv_packet, transmit_packet;
 static TaskHandle_t handle;
 
 #if HW_REVISION >= 'B'
@@ -41,14 +41,17 @@ extern ADC_HandleTypeDef hadc1;
 #define FLAG_USB_PACKET		0x01
 #define FLAG_DATAPOINT		0x02
 
-static void VNACallback(Protocol::Datapoint res) {
-	result = res;
+static void VNACallback(const Protocol::Datapoint &res) {
+	DEBUG2_HIGH();
+	transmit_packet.type = Protocol::PacketType::Datapoint;
+	transmit_packet.datapoint = res;
 	BaseType_t woken = false;
 	xTaskNotifyFromISR(handle, FLAG_DATAPOINT, eSetBits, &woken);
 	portYIELD_FROM_ISR(woken);
+	DEBUG2_LOW();
 }
-static void USBPacketReceived(Protocol::PacketInfo p) {
-	packet = p;
+static void USBPacketReceived(const Protocol::PacketInfo &p) {
+	recv_packet = p;
 	BaseType_t woken = false;
 	xTaskNotifyFromISR(handle, FLAG_USB_PACKET, eSetBits, &woken);
 	portYIELD_FROM_ISR(woken);
@@ -114,28 +117,25 @@ void App_Start() {
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
 			// something happened
 			if(notification & FLAG_DATAPOINT) {
-				Protocol::PacketInfo packet;
-				packet.type = Protocol::PacketType::Datapoint;
-				packet.datapoint = result;
-				Communication::Send(packet);
+				Communication::Send(transmit_packet);
 				lastNewPoint = HAL_GetTick();
 			}
 			if(notification & FLAG_USB_PACKET) {
-				switch(packet.type) {
+				switch(recv_packet.type) {
 				case Protocol::PacketType::SweepSettings:
 					LOG_INFO("New settings received");
-					settings = packet.settings;
+					settings = recv_packet.settings;
 					sweepActive = VNA::Setup(settings, VNACallback);
 					lastNewPoint = HAL_GetTick();
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ManualControl:
 					sweepActive = false;
-					Manual::Setup(packet.manual);
+					Manual::Setup(recv_packet.manual);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::Reference:
-					HW::Ref::set(packet.reference);
+					HW::Ref::set(recv_packet.reference);
 					if(!sweepActive) {
 						// can update right now
 						HW::Ref::update();
@@ -145,13 +145,13 @@ void App_Start() {
 				case Protocol::PacketType::Generator:
 					sweepActive = false;
 					LOG_INFO("Updating generator setting");
-					Generator::Setup(packet.generator);
+					Generator::Setup(recv_packet.generator);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::SpectrumAnalyzerSettings:
 					sweepActive = false;
 					LOG_INFO("Updating spectrum analyzer settings");
-					SA::Setup(packet.spectrumSettings);
+					SA::Setup(recv_packet.spectrumSettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::RequestDeviceLimits:
@@ -174,8 +174,8 @@ void App_Start() {
 					}
 					break;
 				case Protocol::PacketType::FirmwarePacket:
-					LOG_INFO("Writing firmware packet at address %u", packet.firmware.address);
-					if(flash.write(packet.firmware.address, sizeof(packet.firmware.data), packet.firmware.data)) {
+					LOG_INFO("Writing firmware packet at address %u", recv_packet.firmware.address);
+					if(flash.write(recv_packet.firmware.address, sizeof(recv_packet.firmware.data), recv_packet.firmware.data)) {
 						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					} else {
 						LOG_ERR("Failed to write FLASH");

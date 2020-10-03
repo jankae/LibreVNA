@@ -8,7 +8,7 @@ using namespace std;
 
 Calibration::Calibration()
 {
-    // Creator vectors for measurements
+    // Create vectors for measurements
     measurements[Measurement::Port1Open].datapoints = vector<Protocol::Datapoint>();
     measurements[Measurement::Port1Short].datapoints = vector<Protocol::Datapoint>();
     measurements[Measurement::Port1Load].datapoints = vector<Protocol::Datapoint>();
@@ -80,7 +80,6 @@ void Calibration::construct12TermPoints()
     requiredMeasurements.push_back(Measurement::Isolation);
     bool isolation_measured = SanityCheckSamples(requiredMeasurements);
 
-    // If we get here the calibration measurements are all okay
     points.clear();
     for(unsigned int i = 0;i<measurements[Measurement::Port1Open].datapoints.size();i++) {
         Point p;
@@ -334,7 +333,6 @@ void Calibration::constructTRL()
         auto c = a / a_over_c;
         auto Box_A = Tparam<complex<double>>(r22 * a, r22 * b, r22 * c, r22);
         auto Box_B = Tparam<complex<double>>(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
-        // e00 is S11_A, S11 = T12/T22 = r22*a/r22
         complex<double> dummy1, dummy2;
         Box_A.toSparam(p.fe00, dummy1, p.fe10e01, p.fe11);
         Box_B.toSparam(p.fe22, p.fe10e32, dummy1, dummy2);

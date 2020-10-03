@@ -14,7 +14,7 @@ enum class Detector {
 };
 
 void Setup(Protocol::SpectrumAnalyzerSettings settings);
-bool MeasurementDone(FPGA::SamplingResult result);
+bool MeasurementDone(const FPGA::SamplingResult &result);
 void Work();
 void Stop();
 

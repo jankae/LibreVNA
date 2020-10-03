@@ -42,10 +42,12 @@ void Communication::Input(const uint8_t *buf, uint16_t len) {
 		}
 	} while (handled_len > 0);
 }
-
-bool Communication::Send(Protocol::PacketInfo packet) {
+#include "Hardware.hpp"
+bool Communication::Send(const Protocol::PacketInfo &packet) {
+//	DEBUG1_HIGH();
 	uint16_t len = Protocol::EncodePacket(packet, outputBuffer,
 					sizeof(outputBuffer));
+//	DEBUG1_LOW();
 	return usb_transmit(outputBuffer, len);
 //	if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
 //		uint16_t len = Protocol::EncodePacket(packet, outputBuffer,

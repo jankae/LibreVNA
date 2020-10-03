@@ -237,9 +237,7 @@ static inline int64_t sign_extend_64(int64_t x, uint16_t bits) {
 }
 
 static FPGA::ReadCallback callback;
-static uint8_t raw[36];
-static bool halted;
-static bool new_sample;
+static uint8_t raw[38];
 static FPGA::SamplingResult result;
 static bool busy_reading = false;
 
@@ -249,38 +247,11 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 		return false;
 	}
 	callback = cb;
-	uint8_t cmd[2] = {0xC0, 0x00};
-	uint16_t status;
-
-	Low(CS);
-	HAL_SPI_TransmitReceive(&FPGA_SPI, cmd, (uint8_t*) &status, 2, 100);
-
-	SwitchBytes(status);
-
-	if (status & 0x0010) {
-		halted = true;
-	} else {
-		halted = false;
-	}
-
-	if (!(status & 0x0004)) {
-		// no new data available yet
-		High(CS);
-
-		if (halted) {
-			if (halted && halted_cb) {
-				halted_cb();
-				halted = false;
-			}
-		} else {
-			LOG_WARN("ISR without new data, status: 0x%04x", status);
-		}
-		return false;
-	}
-
+	uint8_t cmd[38] = {0xC0, 0x00};
 	// Start data read
+	Low(CS);
 	busy_reading = true;
-	HAL_SPI_Receive_DMA(&FPGA_SPI, raw, 36);
+	HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 38);
 	return true;
 }
 
@@ -292,24 +263,22 @@ static int64_t assembleSampleResultValue(uint8_t *raw) {
 }
 
 extern "C" {
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi) {
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
+	uint16_t status = (uint16_t) raw[0] << 8 | raw[1];
 	// Assemble data from words
-	result.P1I = assembleSampleResultValue(&raw[30]);
-	result.P1Q = assembleSampleResultValue(&raw[24]);
-	result.P2I = assembleSampleResultValue(&raw[18]);
-	result.P2Q = assembleSampleResultValue(&raw[12]);
-	result.RefI = assembleSampleResultValue(&raw[6]);
-	result.RefQ = assembleSampleResultValue(&raw[0]);
+	result.P1I = assembleSampleResultValue(&raw[32]);
+	result.P1Q = assembleSampleResultValue(&raw[26]);
+	result.P2I = assembleSampleResultValue(&raw[20]);
+	result.P2Q = assembleSampleResultValue(&raw[14]);
+	result.RefI = assembleSampleResultValue(&raw[8]);
+	result.RefQ = assembleSampleResultValue(&raw[2]);
 	High(CS);
 	busy_reading = false;
-	new_sample = true;
-	if (new_sample && callback) {
+	if ((status & 0x0004) && callback) {
 		callback(result);
-		new_sample = false;
 	}
-	if (halted && halted_cb) {
+	if ((status & 0x0010) && halted_cb) {
 		halted_cb();
-		halted = false;
 	}
 }
 }
