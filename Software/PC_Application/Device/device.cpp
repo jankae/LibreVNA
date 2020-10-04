@@ -24,7 +24,7 @@ USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, i
 {
     buffer = new unsigned char[buffer_size];
     transfer = libusb_alloc_transfer(0);
-    libusb_fill_bulk_transfer(transfer, handle, endpoint, buffer, 64, CallbackTrampoline, this, 100);
+    libusb_fill_bulk_transfer(transfer, handle, endpoint, buffer, buffer_size, CallbackTrampoline, this, 100);
     libusb_submit_transfer(transfer);
 }
 
@@ -91,6 +91,7 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
     }
     // Resubmit the transfer
     transfer->buffer = &buffer[received_size];
+    transfer->length = buffer_size - received_size;
     libusb_submit_transfer(transfer);
 }
 
