@@ -51,6 +51,7 @@ private:
         TransferringData,
         TriggeringUpdate,
         WaitingForReboot,
+        WaitBeforeInitializing,
     };
     State state;
     unsigned int transferredBytes;

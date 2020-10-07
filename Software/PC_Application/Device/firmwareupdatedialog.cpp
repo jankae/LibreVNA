@@ -90,17 +90,27 @@ void FirmwareUpdateDialog::abortWithError(QString error)
 
 void FirmwareUpdateDialog::timerCallback()
 {
-    if(state != State::WaitingForReboot) {
-        abortWithError("Response timed out");
-    } else {
+    switch(state) {
+    case State::WaitingForReboot: {
         // Currently waiting for the reboot, check device list
         auto devices = Device::GetDevices();
         if(devices.find(serialnumber) != devices.end()) {
             // the device rebooted and is available again
             addStatus("...device enumerated, update complete");
-            timer.stop();
-            emit DeviceRebooted(serialnumber);
+            state = State::WaitBeforeInitializing;
+            timer.start(3000);
         }
+    }
+        break;
+    case State::WaitBeforeInitializing:
+        // Device had enough time to initialize, indicate that rebooted device is ready
+        timer.stop();
+        emit DeviceRebooted(serialnumber);
+        delete this;
+        break;
+    default:
+        abortWithError("Response timed out");
+        break;
     }
 }
 
