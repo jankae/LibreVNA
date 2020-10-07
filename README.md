@@ -18,7 +18,7 @@ Main differences to first version:
   * above 3GHz: 50-60db
 * Sweep rate: up to 10k points/second (each point includes measurement of all four S-parameters)
 
-There are also some initial [example measurements](Documentation/Measurements).
+There are also some initial [example measurements](Documentation/Measurements/Measurements.md).
 
 ## How does it work?
 The PCB is really only the RF frontend with some processing power. Everything else is handled in the PC application once the data is transferred via USB. You can try out the application without the PCB (obviously no measurements are possible, but you can import provided example measurements and get an idea about what it can and can't do). Either [build it yourself](Documentation/DeveloperInfo/BuildAndFlash.md) or use a pre-built binary (only Windows/Ubuntu at the moment). Feel free to create issues (or even better pull-requests) if you find any bugs. An (incomplete) [manual](Documentation/UserManual/manual.pdf) is available.
