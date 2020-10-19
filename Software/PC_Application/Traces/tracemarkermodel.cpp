@@ -19,15 +19,14 @@ TraceMarker *TraceMarkerModel::createDefaultMarker()
         number++;
         used = false;
         for(auto m : markers) {
-            if(m->number == number) {
+            if(m->getNumber() == number) {
                 used = true;
                 break;
             }
         }
     } while (used);
-    auto marker = new TraceMarker();
-    marker->number = number;
-    marker->frequency = 2150000000;
+    auto marker = new TraceMarker(number);
+    marker->setFrequency(2150000000);
     marker->assignTrace(model.trace(0));
     return marker;
 }
@@ -95,19 +94,19 @@ QVariant TraceMarkerModel::data(const QModelIndex &index, int role) const
     switch(index.column()) {
     case ColIndexNumber:
         switch(role) {
-        case Qt::DisplayRole: return QVariant((unsigned int)marker->number); break;
+        case Qt::DisplayRole: return QVariant((unsigned int)marker->getNumber()); break;
         }
     case ColIndexTrace:
         switch(role) {
         case Qt::DisplayRole:
-            if(marker->parentTrace) {
-                return marker->parentTrace->name();
+            if(marker->getTrace()) {
+                return marker->getTrace()->name();
             }
             break;
         }
     case ColIndexFreq:
         switch(role) {
-        case Qt::DisplayRole: return Unit::ToString(marker->frequency, "Hz", " kMG", 6); break;
+        case Qt::DisplayRole: return Unit::ToString(marker->getFrequency(), "Hz", " kMG", 6); break;
         }
     case ColIndexData:
         switch(role) {
@@ -140,16 +139,6 @@ bool TraceMarkerModel::setData(const QModelIndex &index, const QVariant &value, 
     }
     auto m = markers[index.row()];
     switch(index.column()) {
-    case ColIndexNumber: {
-        bool convertOk;
-        unsigned int number;
-        number = value.toUInt(&convertOk);
-        if(convertOk) {
-            m->number = number;
-            return true;
-        }
-        break;
-    }
     case ColIndexTrace: {
         auto trace = qvariant_cast<Trace*>(value);
         m->assignTrace(trace);
@@ -171,7 +160,7 @@ Qt::ItemFlags TraceMarkerModel::flags(const QModelIndex &index) const
 {
     int flags = Qt::NoItemFlags;
     switch(index.column()) {
-    case ColIndexNumber: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
+    case ColIndexNumber: flags |= Qt::ItemIsEnabled; break;
     case ColIndexTrace: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexFreq: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexData: flags |= Qt::ItemIsEnabled; break;
@@ -188,7 +177,7 @@ std::vector<TraceMarker *> TraceMarkerModel::getMarker(Trace *t)
 {
     std::vector<TraceMarker*> attachedMarkers;
     for(auto m : markers) {
-        if(m->parentTrace == t) {
+        if(m->getTrace() == t) {
             attachedMarkers.push_back(m);
         }
     }

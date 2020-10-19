@@ -7,10 +7,9 @@
 
 class TraceMarker : public QObject
 {
-    friend class TraceMarkerModel;
     Q_OBJECT;
 public:
-    TraceMarker();
+    TraceMarker(int number = 1);
     ~TraceMarker();
     void assignTrace(Trace *t);
     Trace* trace();
@@ -23,6 +22,8 @@ public:
 
     int getNumber() const;
     bool editingFrequeny;
+    Trace *getTrace() const;
+
 public slots:
     void setFrequency(double freq);
 signals:

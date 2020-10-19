@@ -1,11 +1,11 @@
 #include "tracemarker.h"
 #include <QPainter>
 
-TraceMarker::TraceMarker()
+TraceMarker::TraceMarker(int number)
     : editingFrequeny(false),
       parentTrace(nullptr),
       frequency(1000000000),
-      number(1),
+      number(number),
       data(0)
 {
 
@@ -99,6 +99,11 @@ void TraceMarker::constrainFrequency()
         }
         traceDataChanged();
     }
+}
+
+Trace *TraceMarker::getTrace() const
+{
+    return parentTrace;
 }
 
 int TraceMarker::getNumber() const
