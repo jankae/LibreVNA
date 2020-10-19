@@ -11,7 +11,6 @@
 #include <qwt_plot_layout.h>
 #include "tracemarker.h"
 #include <qwt_symbol.h>
-#include <qwt_plot_picker.h>
 #include <qwt_picker_machine.h>
 #include "bodeplotaxisdialog.h"
 
@@ -54,19 +53,6 @@ private:
     Trace &t;
 };
 
-// Derived plotpicker, exposing transformation functions
-class BodeplotPicker : public QwtPlotPicker {
-public:
-    BodeplotPicker(int xAxis, int yAxis, RubberBand rubberBand, DisplayMode trackerMode, QWidget *w)
-        : QwtPlotPicker(xAxis, yAxis, rubberBand, trackerMode, w) {};
-    QPoint plotToPixel(const QPointF &pos) {
-        return transform(pos);
-    }
-    QPointF pixelToPlot(const QPoint &pos) {
-        return invTransform(pos);
-    }
-};
-
 TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
     : TracePlot(parent),
       selectedMarker(nullptr)
@@ -86,47 +72,14 @@ TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
     auto selectPicker = new BodeplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
     selectPicker->setStateMachine(new QwtPickerClickPointMachine);
 
-    auto drawPicker = new BodeplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
+    drawPicker = new BodeplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
     drawPicker->setStateMachine(new QwtPickerDragPointMachine);
     drawPicker->setTrackerPen(QPen(Qt::white));
 
     // Marker selection
-    connect(selectPicker, qOverload<const QPointF&>(&QwtPlotPicker::selected), [=](const QPointF pos) {
-        auto clickPoint = drawPicker->plotToPixel(pos);
-        unsigned int closestDistance = numeric_limits<unsigned int>::max();
-        TraceMarker *closestMarker = nullptr;
-        for(auto m : markers) {
-            auto markerPoint = drawPicker->plotToPixel(m.second->value());
-            auto yDiff = abs(markerPoint.y() - clickPoint.y());
-            auto xDiff = abs(markerPoint.x() - clickPoint.x());
-            unsigned int distance = xDiff * xDiff + yDiff * yDiff;
-            if(distance < closestDistance) {
-                closestDistance = distance;
-                closestMarker = m.first;
-            }
-        }
-        if(closestDistance <= 400) {
-            selectedMarker = closestMarker;
-            selectedCurve = curves[0][selectedMarker->trace()].curve;
-        } else {
-            selectedMarker = nullptr;
-            selectedCurve = nullptr;
-        }
-    });
+    connect(selectPicker, SIGNAL(selected(QPointF)), this, SLOT(clicked(QPointF)));;
     // Marker movement
-    connect(drawPicker, qOverload<const QPointF&>(&QwtPlotPicker::moved), [=](const QPointF pos) {
-        if(!selectedMarker || !selectedCurve) {
-            return;
-        }
-//        int index = selectedCurve->closestPoint(pos.toPoint());
-//        qDebug() << index;
-//        if(index < 0) {
-//            // unable to find closest point
-//            return;
-//        }
-//        selectedMarker->setFrequency(selectedCurve->sample(index).x());
-        selectedMarker->setFrequency(pos.x());
-    });
+    connect(drawPicker, SIGNAL(moved(QPointF)), this, SLOT(moved(QPointF)));
 
     QwtPlotGrid *grid = new QwtPlotGrid();
     grid->setMajorPen(QPen(Divisions, 1.0, Qt::DotLine));
@@ -157,6 +110,7 @@ TraceBodePlot::~TraceBodePlot()
             delete pd.second.curve;
         }
     }
+    delete drawPicker;
 }
 
 void TraceBodePlot::setXAxis(double min, double max)
@@ -485,5 +439,44 @@ void TraceBodePlot::markerDataChanged(TraceMarker *m)
     qwtMarker->setXValue(m->getFrequency());
     qwtMarker->setYValue(AxisTransformation(YAxis[0].type, m->getData()));
     triggerReplot();
+}
+
+void TraceBodePlot::clicked(const QPointF pos)
+{
+    auto clickPoint = drawPicker->plotToPixel(pos);
+    unsigned int closestDistance = numeric_limits<unsigned int>::max();
+    TraceMarker *closestMarker = nullptr;
+    for(auto m : markers) {
+        auto markerPoint = drawPicker->plotToPixel(m.second->value());
+        auto yDiff = abs(markerPoint.y() - clickPoint.y());
+        auto xDiff = abs(markerPoint.x() - clickPoint.x());
+        unsigned int distance = xDiff * xDiff + yDiff * yDiff;
+        if(distance < closestDistance) {
+            closestDistance = distance;
+            closestMarker = m.first;
+        }
+    }
+    if(closestDistance <= 400) {
+        selectedMarker = closestMarker;
+        selectedCurve = curves[0][selectedMarker->trace()].curve;
+    } else {
+        selectedMarker = nullptr;
+        selectedCurve = nullptr;
+    }
+}
+
+void TraceBodePlot::moved(const QPointF pos)
+{
+    if(!selectedMarker || !selectedCurve) {
+        return;
+    }
+//        int index = selectedCurve->closestPoint(pos.toPoint());
+//        qDebug() << index;
+//        if(index < 0) {
+//            // unable to find closest point
+//            return;
+//        }
+//        selectedMarker->setFrequency(selectedCurve->sample(index).x());
+    selectedMarker->setFrequency(pos.x());
 }
 

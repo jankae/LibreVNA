@@ -8,6 +8,22 @@
 #include <qwt_series_data.h>
 #include <qwt_plot_marker.h>
 
+#include <qwt_plot_picker.h>
+
+// Derived plotpicker, exposing transformation functions
+class BodeplotPicker : public QwtPlotPicker {
+    Q_OBJECT
+public:
+    BodeplotPicker(int xAxis, int yAxis, RubberBand rubberBand, DisplayMode trackerMode, QWidget *w)
+        : QwtPlotPicker(xAxis, yAxis, rubberBand, trackerMode, w) {};
+    QPoint plotToPixel(const QPointF &pos) {
+        return transform(pos);
+    }
+    QPointF pixelToPlot(const QPoint &pos) {
+        return invTransform(pos);
+    }
+};
+
 class TraceBodePlot : public TracePlot
 {
     friend class BodeplotAxisDialog;
@@ -39,6 +55,9 @@ private slots:
     void markerAdded(TraceMarker *m) override;
     void markerRemoved(TraceMarker *m) override;
     void markerDataChanged(TraceMarker *m);
+
+    void clicked(const QPointF pos);
+    void moved(const QPointF pos);
 private:
     QString AxisTypeToName(YAxisType type);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
@@ -71,6 +90,8 @@ private:
     QwtPlot *plot;
     TraceMarker *selectedMarker;
     QwtPlotCurve *selectedCurve;
+
+    BodeplotPicker *drawPicker;
 };
 
 #endif // TRACEBODEPLOT_H
