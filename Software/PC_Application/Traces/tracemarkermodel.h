@@ -22,7 +22,7 @@ class MarkerTypeDelegate : public QStyledItemDelegate
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 };
 
-class MarkerFrequencyDelegate : public QStyledItemDelegate
+class MarkerSettingsDelegate : public QStyledItemDelegate
 {
     Q_OBJECT;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
@@ -39,7 +39,7 @@ public:
         ColIndexNumber = 0,
         ColIndexTrace = 1,
         ColIndexType = 2,
-        ColIndexFreq = 3,
+        ColIndexSettings = 3,
         ColIndexData = 4,
         ColIndexLast,
     };

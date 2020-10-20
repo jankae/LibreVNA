@@ -72,7 +72,7 @@ void TraceMarkerModel::markerDataChanged(TraceMarker *m)
         // only update the other columns, do not override editor data
         emit dataChanged(index(row, ColIndexData), index(row, ColIndexData));
     } else {
-        emit dataChanged(index(row, ColIndexFreq), index(row, ColIndexData));
+        emit dataChanged(index(row, ColIndexSettings), index(row, ColIndexData));
     }
 }
 
@@ -107,9 +107,9 @@ QVariant TraceMarkerModel::data(const QModelIndex &index, int role) const
             }
             break;
         }
-    case ColIndexFreq:
+    case ColIndexSettings:
         switch(role) {
-        case Qt::DisplayRole: return Unit::ToString(marker->getFrequency(), "Hz", " kMG", 6); break;
+        case Qt::DisplayRole: return marker->readableSettings(); break;
         }
     case ColIndexData:
         switch(role) {
@@ -127,7 +127,7 @@ QVariant TraceMarkerModel::headerData(int section, Qt::Orientation orientation, 
         case ColIndexNumber: return "#"; break;
         case ColIndexTrace: return "Trace"; break;
         case ColIndexType: return "Type"; break;
-        case ColIndexFreq: return "Frequency"; break;
+        case ColIndexSettings: return "Settings"; break;
         case ColIndexData: return "Data"; break;
         default: return QVariant(); break;
         }
@@ -152,11 +152,8 @@ bool TraceMarkerModel::setData(const QModelIndex &index, const QVariant &value, 
         m->assignTrace(trace);
     }
         break;
-    case ColIndexFreq: {
-        auto newval = Unit::FromString(value.toString(), "Hz", " kMG");
-        if(!qIsNaN(newval)) {
-            m->setFrequency(newval);
-        }
+    case ColIndexSettings: {
+        m->adjustSettings(value.toDouble());
     }
         break;
     }
@@ -171,7 +168,7 @@ Qt::ItemFlags TraceMarkerModel::flags(const QModelIndex &index) const
     case ColIndexNumber: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexTrace: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexType: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
-    case ColIndexFreq: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
+    case ColIndexSettings: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexData: flags |= Qt::ItemIsEnabled; break;
     }
     return (Qt::ItemFlags) flags;
@@ -239,18 +236,18 @@ void MarkerTraceDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
     markerModel->setData(index, c->itemData(c->currentIndex()));
 }
 
-QWidget *MarkerFrequencyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     auto model = (TraceMarkerModel*) index.model();
     auto marker = model->getMarkers()[index.row()];
     marker->editingFrequeny = true;
     auto e = marker->getSettingsEditor();
     e->setParent(parent);
-    connect(e, &SIUnitEdit::valueUpdated, this, &MarkerFrequencyDelegate::commitData);
+    connect(e, &SIUnitEdit::valueUpdated, this, &MarkerSettingsDelegate::commitData);
     return e;
 }
 
-void MarkerFrequencyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void MarkerSettingsDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     auto markerModel = (TraceMarkerModel*) model;
     auto marker = markerModel->getMarkers()[index.row()];
