@@ -7,7 +7,7 @@
 #include "tracemodel.h"
 #include <QStyledItemDelegate>
 
-class TraceChooserDelegate : public QStyledItemDelegate
+class MarkerTraceDelegate : public QStyledItemDelegate
 {
     Q_OBJECT;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
@@ -15,7 +15,14 @@ class TraceChooserDelegate : public QStyledItemDelegate
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 };
 
-class TraceFrequencyDelegate : public QStyledItemDelegate
+class MarkerTypeDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT;
+    QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+    void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+};
+
+class MarkerFrequencyDelegate : public QStyledItemDelegate
 {
     Q_OBJECT;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
@@ -31,8 +38,10 @@ public:
     enum {
         ColIndexNumber = 0,
         ColIndexTrace = 1,
-        ColIndexFreq = 2,
-        ColIndexData = 3,
+        ColIndexType = 2,
+        ColIndexFreq = 3,
+        ColIndexData = 4,
+        ColIndexLast,
     };
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -44,9 +53,10 @@ public:
 
     TraceMarker* createDefaultMarker();
     TraceMarker *marker(int index);
-    std::vector<TraceMarker*> getMarker();
-    std::vector<TraceMarker*> getMarker(Trace *t);
+    std::vector<TraceMarker*> getMarkers();
+    std::vector<TraceMarker*> getMarkers(Trace *t);
     TraceModel& getModel();
+    void updateMarkers();
 
 public slots:
     void addMarker(TraceMarker *t);

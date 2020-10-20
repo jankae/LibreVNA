@@ -201,6 +201,21 @@ bool Trace::isReflection()
     return reflection;
 }
 
+double Trace::findExtremumFreq(bool max)
+{
+    double compare = max ? numeric_limits<double>::min() : numeric_limits<double>::max();
+    double freq = 0.0;
+    for(auto d : _data) {
+        double amplitude = abs(d.S);
+        if((max && (amplitude > compare)) || (!max && (amplitude < compare))) {
+            // higher/lower extremum found
+            compare = amplitude;
+            freq = d.frequency;
+        }
+    }
+    return freq;
+}
+
 QString Trace::getTouchstoneFilename() const
 {
     return touchstoneFilename;

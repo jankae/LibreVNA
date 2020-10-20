@@ -55,6 +55,7 @@ private slots:
     void markerAdded(TraceMarker *m) override;
     void markerRemoved(TraceMarker *m) override;
     void markerDataChanged(TraceMarker *m);
+    void markerSymbolChanged(TraceMarker *m);
 
     void clicked(const QPointF pos);
     void moved(const QPointF pos);

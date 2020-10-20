@@ -410,13 +410,11 @@ void TraceBodePlot::markerAdded(TraceMarker *m)
     if(markers.count(m)) {
         return;
     }
-    QwtSymbol *sym=new QwtSymbol;
-    sym->setPixmap(m->getSymbol());
-    sym->setPinPoint(QPointF(m->getSymbol().width()/2, m->getSymbol().height()));
     auto qwtMarker = new QwtPlotMarker;
-    qwtMarker->setSymbol(sym);
-    connect(m, &TraceMarker::dataChanged, this, &TraceBodePlot::markerDataChanged);
     markers[m] = qwtMarker;
+    markerSymbolChanged(m);
+    connect(m, &TraceMarker::symbolChanged, this, &TraceBodePlot::markerSymbolChanged);
+    connect(m, &TraceMarker::dataChanged, this, &TraceBodePlot::markerDataChanged);
     markerDataChanged(m);
     qwtMarker->attach(plot);
     triggerReplot();
@@ -424,6 +422,7 @@ void TraceBodePlot::markerAdded(TraceMarker *m)
 
 void TraceBodePlot::markerRemoved(TraceMarker *m)
 {
+    disconnect(m, &TraceMarker::symbolChanged, this, &TraceBodePlot::markerSymbolChanged);
     disconnect(m, &TraceMarker::dataChanged, this, &TraceBodePlot::markerDataChanged);
     if(markers.count(m)) {
         markers[m]->detach();
@@ -438,6 +437,20 @@ void TraceBodePlot::markerDataChanged(TraceMarker *m)
     auto qwtMarker = markers[m];
     qwtMarker->setXValue(m->getFrequency());
     qwtMarker->setYValue(AxisTransformation(YAxis[0].type, m->getData()));
+    triggerReplot();
+}
+
+void TraceBodePlot::markerSymbolChanged(TraceMarker *m)
+{
+    auto qwtMarker = markers[m];
+    auto old_sym = qwtMarker->symbol();
+    qwtMarker->setSymbol(nullptr);
+    delete old_sym;
+
+    QwtSymbol *sym=new QwtSymbol;
+    sym->setPixmap(m->getSymbol());
+    sym->setPinPoint(QPointF(m->getSymbol().width()/2, m->getSymbol().height()));
+    qwtMarker->setSymbol(sym);
     triggerReplot();
 }
 

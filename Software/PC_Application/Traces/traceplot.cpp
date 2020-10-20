@@ -129,10 +129,13 @@ void TracePlot::triggerReplot()
 void TracePlot::markerAdded(TraceMarker *m)
 {
     connect(m, &TraceMarker::dataChanged, this, &TracePlot::triggerReplot);
+    connect(m, &TraceMarker::symbolChanged, this, &TracePlot::triggerReplot);
     triggerReplot();
 }
 
-void TracePlot::markerRemoved(TraceMarker *)
+void TracePlot::markerRemoved(TraceMarker *m)
 {
+    disconnect(m, &TraceMarker::dataChanged, this, &TracePlot::triggerReplot);
+    disconnect(m, &TraceMarker::symbolChanged, this, &TracePlot::triggerReplot);
     triggerReplot();
 }

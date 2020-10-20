@@ -19,7 +19,7 @@ public:
 private slots:
     void on_bDelete_clicked();
     void on_bAdd_clicked();
-    void updatePersistentEditors(Trace *dummy = nullptr);
+    void updatePersistentEditors();
 
 private:
     Ui::MarkerWidget *ui;

@@ -37,7 +37,7 @@ ImpedanceMatchDialog::ImpedanceMatchDialog(TraceMarkerModel &model, TraceMarker 
     connect(ui->zGroup, qOverload<int>(&QButtonGroup::buttonClicked), this, &ImpedanceMatchDialog::calculateMatch);
 
     // populate marker options
-    auto markers = model.getMarker();
+    auto markers = model.getMarkers();
     for(auto m : markers) {
         if(!m->trace()->isReflection()) {
             // matching only possible for reflections

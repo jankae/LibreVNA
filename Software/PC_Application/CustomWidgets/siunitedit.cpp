@@ -29,6 +29,7 @@ void SIUnitEdit::setValue(double value)
 {
     setValueQuiet(value);
     emit valueChanged(value);
+    emit valueUpdated(this);
 }
 
 bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
@@ -38,6 +39,7 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         if(key == Qt::Key_Escape) {
             // abort editing process and set old value
             setValueQuiet(_value);
+            clearFocus();
             return true;
         }
         if(key == Qt::Key_Return) {
@@ -69,11 +71,11 @@ void SIUnitEdit::setValueQuiet(double value)
     _value = value;
     clear();
     setPlaceholderText(Unit::ToString(value, unit, prefixes, precision));
-    clearFocus();
 }
 
 void SIUnitEdit::parseNewValue(double factor)
 {
     double v = text().toDouble() * factor;
     setValue(v);
+    clearFocus();
 }

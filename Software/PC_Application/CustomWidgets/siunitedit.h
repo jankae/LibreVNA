@@ -19,6 +19,7 @@ public slots:
     void setValueQuiet(double value);
 signals:
     void valueChanged(double newvalue);
+    void valueUpdated(QWidget *w);
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private:

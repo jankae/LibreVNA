@@ -504,6 +504,7 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     emit dataChanged();
     if(d.pointNum == settings.points - 1) {
         UpdateStatusPanel();
+        markerModel->updateMarkers();
     }
 }
 

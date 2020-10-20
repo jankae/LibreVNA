@@ -8,8 +8,9 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tableView->setModel(&model);
-    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexTrace, new TraceChooserDelegate);
-    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexFreq, new TraceFrequencyDelegate);
+    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexTrace, new MarkerTraceDelegate);
+    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexType, new MarkerTypeDelegate);
+    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexFreq, new MarkerFrequencyDelegate);
 
     connect(&model.getModel(), &TraceModel::traceAdded, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceRemoved, this, &MarkerWidget::updatePersistentEditors);
@@ -28,15 +29,19 @@ void MarkerWidget::on_bDelete_clicked()
 void MarkerWidget::on_bAdd_clicked()
 {
     auto marker = model.createDefaultMarker();
+    connect(marker, &TraceMarker::typeChanged, this, &MarkerWidget::updatePersistentEditors);
     model.addMarker(marker);
     updatePersistentEditors();
 }
 
-void MarkerWidget::updatePersistentEditors(Trace *)
+void MarkerWidget::updatePersistentEditors()
 {
     for(int i=0;i<model.rowCount();i++) {
-        auto index = model.index(i, TraceMarkerModel::ColIndexTrace);
-        ui->tableView->closePersistentEditor(index);
-        ui->tableView->openPersistentEditor(index);
+        auto columns = {TraceMarkerModel::ColIndexTrace, TraceMarkerModel::ColIndexType};
+        for(auto c : columns) {
+            auto index = model.index(i, c);
+            ui->tableView->closePersistentEditor(index);
+            ui->tableView->openPersistentEditor(index);
+        }
     }
 }

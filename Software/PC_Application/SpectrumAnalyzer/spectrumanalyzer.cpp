@@ -226,6 +226,9 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
     d = average.process(d);
     traceModel.addSAData(d);
     emit dataChanged();
+    if(d.pointNum == settings.pointNum - 1) {
+        markerModel->updateMarkers();
+    }
 }
 
 void SpectrumAnalyzer::SettingsChanged()

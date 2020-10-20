@@ -60,6 +60,7 @@ public:
     unsigned int size() { return _data.size(); }
     double minFreq() { return _data.front().frequency; };
     double maxFreq() { return _data.back().frequency; };
+    double findExtremumFreq(bool max);
     Data sample(unsigned int index) { return _data.at(index); }
     QString getTouchstoneFilename() const;
     unsigned int getTouchstoneParameter() const;

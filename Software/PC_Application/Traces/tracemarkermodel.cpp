@@ -2,6 +2,8 @@
 #include "unit.h"
 #include <QComboBox>
 #include <QApplication>
+#include "CustomWidgets/siunitedit.h"
+#include <QDebug>
 
 TraceMarkerModel::TraceMarkerModel(TraceModel &model, QObject *parent)
     : QAbstractTableModel(parent),
@@ -25,7 +27,7 @@ TraceMarker *TraceMarkerModel::createDefaultMarker()
             }
         }
     } while (used);
-    auto marker = new TraceMarker(number);
+    auto marker = new TraceMarker(this, number);
     marker->setFrequency(2150000000);
     marker->assignTrace(model.trace(0));
     return marker;
@@ -65,11 +67,12 @@ void TraceMarkerModel::removeMarker(TraceMarker *m)
 
 void TraceMarkerModel::markerDataChanged(TraceMarker *m)
 {
+    auto row = find(markers.begin(), markers.end(), m) - markers.begin();
     if(m->editingFrequeny) {
         // only update the other columns, do not override editor data
-        emit dataChanged(index(0, ColIndexData), index(markers.size()-1, ColIndexData));
+        emit dataChanged(index(row, ColIndexData), index(row, ColIndexData));
     } else {
-        emit dataChanged(index(0, ColIndexFreq), index(markers.size()-1, ColIndexData));
+        emit dataChanged(index(row, ColIndexFreq), index(row, ColIndexData));
     }
 }
 
@@ -85,7 +88,7 @@ int TraceMarkerModel::rowCount(const QModelIndex &) const
 
 int TraceMarkerModel::columnCount(const QModelIndex &) const
 {
-    return 4;
+    return ColIndexLast;
 }
 
 QVariant TraceMarkerModel::data(const QModelIndex &index, int role) const
@@ -123,6 +126,7 @@ QVariant TraceMarkerModel::headerData(int section, Qt::Orientation orientation, 
         switch(section) {
         case ColIndexNumber: return "#"; break;
         case ColIndexTrace: return "Trace"; break;
+        case ColIndexType: return "Type"; break;
         case ColIndexFreq: return "Frequency"; break;
         case ColIndexData: return "Data"; break;
         default: return QVariant(); break;
@@ -139,6 +143,10 @@ bool TraceMarkerModel::setData(const QModelIndex &index, const QVariant &value, 
     }
     auto m = markers[index.row()];
     switch(index.column()) {
+    case ColIndexNumber: {
+        m->setNumber(value.toInt());
+    }
+        break;
     case ColIndexTrace: {
         auto trace = qvariant_cast<Trace*>(value);
         m->assignTrace(trace);
@@ -160,20 +168,21 @@ Qt::ItemFlags TraceMarkerModel::flags(const QModelIndex &index) const
 {
     int flags = Qt::NoItemFlags;
     switch(index.column()) {
-    case ColIndexNumber: flags |= Qt::ItemIsEnabled; break;
+    case ColIndexNumber: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexTrace: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
+    case ColIndexType: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexFreq: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexData: flags |= Qt::ItemIsEnabled; break;
     }
     return (Qt::ItemFlags) flags;
 }
 
-std::vector<TraceMarker *> TraceMarkerModel::getMarker()
+std::vector<TraceMarker *> TraceMarkerModel::getMarkers()
 {
     return markers;
 }
 
-std::vector<TraceMarker *> TraceMarkerModel::getMarker(Trace *t)
+std::vector<TraceMarker *> TraceMarkerModel::getMarkers(Trace *t)
 {
     std::vector<TraceMarker*> attachedMarkers;
     for(auto m : markers) {
@@ -189,7 +198,14 @@ TraceModel &TraceMarkerModel::getModel()
     return model;
 }
 
-QWidget *TraceChooserDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
+void TraceMarkerModel::updateMarkers()
+{
+    for(auto m : markers) {
+        m->update();
+    }
+}
+
+QWidget *MarkerTraceDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
 {
     auto model = (TraceMarkerModel*) index.model();
     auto c = new QComboBox(parent);
@@ -203,10 +219,10 @@ QWidget *TraceChooserDelegate::createEditor(QWidget *parent, const QStyleOptionV
     return c;
 }
 
-void TraceChooserDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+void MarkerTraceDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
     auto model = (TraceMarkerModel*) index.model();
-    auto marker = model->getMarker()[index.row()];
+    auto marker = model->getMarkers()[index.row()];
     auto c = (QComboBox*) editor;
     for(int i=0;i<c->count();i++) {
         if(qvariant_cast<Trace*>(c->itemData(i)) == marker->trace()) {
@@ -216,25 +232,46 @@ void TraceChooserDelegate::setEditorData(QWidget *editor, const QModelIndex &ind
     }
 }
 
-void TraceChooserDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void MarkerTraceDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     auto markerModel = (TraceMarkerModel*) model;
     auto c = (QComboBox*) editor;
     markerModel->setData(index, c->itemData(c->currentIndex()));
 }
 
-QWidget *TraceFrequencyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget *MarkerFrequencyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     auto model = (TraceMarkerModel*) index.model();
-    auto marker = model->getMarker()[index.row()];
+    auto marker = model->getMarkers()[index.row()];
     marker->editingFrequeny = true;
-    return QStyledItemDelegate::createEditor(parent, option, index);
+    auto e = marker->getSettingsEditor();
+    e->setParent(parent);
+    connect(e, &SIUnitEdit::valueUpdated, this, &MarkerFrequencyDelegate::commitData);
+    return e;
 }
 
-void TraceFrequencyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void MarkerFrequencyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     auto markerModel = (TraceMarkerModel*) model;
-    auto marker = markerModel->getMarker()[index.row()];
+    auto marker = markerModel->getMarkers()[index.row()];
     marker->editingFrequeny = false;
-    QStyledItemDelegate::setModelData(editor, model, index);
+    auto si = (SIUnitEdit*) editor;
+    markerModel->setData(index, si->value());
+}
+
+QWidget *MarkerTypeDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    auto model = (TraceMarkerModel*) index.model();
+    auto marker = model->getMarkers()[index.row()];
+    auto editor = marker->getTypeEditor(const_cast<MarkerTypeDelegate*>(this));
+    editor->setParent(parent);
+//    connect(editor, &QWidget::focusC)
+    return editor;
+}
+
+void MarkerTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    auto markerModel = (TraceMarkerModel*) model;
+    auto marker = markerModel->getMarkers()[index.row()];
+    marker->updateTypeFromEditor(editor);
 }
