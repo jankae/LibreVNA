@@ -43,7 +43,6 @@
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     : Mode(window, "Spectrum Analyzer"),
-      pref(window->getPreferenceRef()),
       central(new TileWidget(traceModel))
 {
     averages = 1;
@@ -130,7 +129,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_acq->addWidget(eBandwidth);
 
     tb_acq->addWidget(new QLabel("Window:"));
-    auto cbWindowType = new QComboBox();
+    cbWindowType = new QComboBox();
     cbWindowType->addItem("None");
     cbWindowType->addItem("Kaiser");
     cbWindowType->addItem("Hann");
@@ -143,7 +142,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_acq->addWidget(cbWindowType);
 
     tb_acq->addWidget(new QLabel("Detector:"));
-    auto cbDetector = new QComboBox();
+    cbDetector = new QComboBox();
     cbDetector->addItem("+Peak");
     cbDetector->addItem("-Peak");
     cbDetector->addItem("Sample");
@@ -156,7 +155,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     });
     tb_acq->addWidget(cbDetector);
 
-    auto cbSignalID = new QCheckBox("Signal ID");
+    cbSignalID = new QCheckBox("Signal ID");
     connect(cbSignalID, &QCheckBox::toggled, [=](bool enabled) {
         settings.SignalID = enabled;
         SettingsChanged();
@@ -185,19 +184,18 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumResult");
 
     // Set initial sweep settings
-    // TODO
-//    if(pref.Startup.RememberSweepSettings) {
-//        LoadSweepSettings();
-//    } else {
-        settings.f_start = 950000000;
-        settings.f_stop = 1050000000;
+    if(pref.Startup.RememberSweepSettings) {
+        LoadSweepSettings();
+    } else {
+        settings.f_start = pref.Startup.SA.start;
+        settings.f_stop = pref.Startup.SA.stop;
         ConstrainAndUpdateFrequencies();
-        SetRBW(10000);
+        SetRBW(pref.Startup.SA.RBW);
         settings.pointNum = 1001;
-        settings.WindowType = 1;
-        settings.Detector = 0;
-        settings.SignalID = 0;
-//    }
+        cbWindowType->setCurrentIndex(pref.Startup.SA.window);
+        cbDetector->setCurrentIndex(pref.Startup.SA.detector);
+        cbSignalID->setChecked(pref.Startup.SA.signalID);
+    }
 
     finalize(central);
 }
@@ -365,23 +363,24 @@ void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 
 void SpectrumAnalyzer::LoadSweepSettings()
 {
-    // TODO
-//    QSettings s;
-//    settings.f_start = s.value("SweepStart", pref.Startup.DefaultSweep.start).toULongLong();
-//    settings.f_stop = s.value("SweepStop", pref.Startup.DefaultSweep.stop).toULongLong();
-//    ConstrainAndUpdateFrequencies();
-//    SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
-//    SetPoints(s.value("SweepPoints", pref.Startup.DefaultSweep.points).toInt());
-//    SetSourceLevel(s.value("SweepLevel", pref.Startup.DefaultSweep.excitation).toDouble());
+    QSettings s;
+    settings.f_start = s.value("SAStart", pref.Startup.SA.start).toULongLong();
+    settings.f_stop = s.value("SAStop", pref.Startup.SA.stop).toULongLong();
+    ConstrainAndUpdateFrequencies();
+    SetRBW(s.value("SARBW", pref.Startup.SA.RBW).toUInt());
+    settings.pointNum = 1001;
+    cbWindowType->setCurrentIndex(s.value("SAWindow", pref.Startup.SA.window).toInt());
+    cbDetector->setCurrentIndex(s.value("SADetector", pref.Startup.SA.detector).toInt());
+    cbSignalID->setChecked(s.value("SASignalID", pref.Startup.SA.signalID).toBool());
 }
 
 void SpectrumAnalyzer::StoreSweepSettings()
 {
-    // TODO
-//    QSettings s;
-//    s.setValue("SweepStart", static_cast<unsigned long long>(settings.f_start));
-//    s.setValue("SweepStop", static_cast<unsigned long long>(settings.f_stop));
-//    s.setValue("SweepBandwidth", settings.if_bandwidth);
-//    s.setValue("SweepPoints", settings.points);
-//    s.setValue("SweepLevel", (double) settings.cdbm_excitation / 100.0);
+    QSettings s;
+    s.setValue("SAStart", static_cast<unsigned long long>(settings.f_start));
+    s.setValue("SAStop", static_cast<unsigned long long>(settings.f_stop));
+    s.setValue("SARBW", settings.RBW);
+    s.setValue("SAWindow", settings.WindowType);
+    s.setValue("SADetector", settings.Detector);
+    s.setValue("SASignalID", static_cast<bool>(settings.SignalID));
 }

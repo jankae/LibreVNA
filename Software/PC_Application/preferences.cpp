@@ -22,6 +22,14 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
        ui->StartupSweepPoints->setEnabled(false);
        ui->StartupSweepLevel->setEnabled(false);
        ui->StartupSweepBandwidth->setEnabled(false);
+       ui->StartupGeneratorFrequency->setEnabled(false);
+       ui->StartupGeneratorLevel->setEnabled(false);
+       ui->StartupSAStart->setEnabled(false);
+       ui->StartupSAStop->setEnabled(false);
+       ui->StartupSARBW->setEnabled(false);
+       ui->StartupSAWindow->setEnabled(false);
+       ui->StartupSADetector->setEnabled(false);
+       ui->StartupSASignalID->setEnabled(false);
     });
     connect(ui->StartupSweepDefault, &QPushButton::clicked, [=](){
        ui->StartupSweepStart->setEnabled(true);
@@ -29,6 +37,14 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
        ui->StartupSweepPoints->setEnabled(true);
        ui->StartupSweepLevel->setEnabled(true);
        ui->StartupSweepBandwidth->setEnabled(true);
+       ui->StartupGeneratorFrequency->setEnabled(true);
+       ui->StartupGeneratorLevel->setEnabled(true);
+       ui->StartupSAStart->setEnabled(true);
+       ui->StartupSAStop->setEnabled(true);
+       ui->StartupSARBW->setEnabled(true);
+       ui->StartupSAWindow->setEnabled(true);
+       ui->StartupSADetector->setEnabled(true);
+       ui->StartupSASignalID->setEnabled(true);
     });
     ui->StartupSweepStart->setUnit("Hz");
     ui->StartupSweepStart->setPrefixes(" kMG");
@@ -36,6 +52,14 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->StartupSweepStop->setPrefixes(" kMG");
     ui->StartupSweepBandwidth->setUnit("Hz");
     ui->StartupSweepBandwidth->setPrefixes(" k");
+    ui->StartupGeneratorFrequency->setUnit("Hz");
+    ui->StartupGeneratorFrequency->setPrefixes(" kMG");
+    ui->StartupSAStart->setUnit("Hz");
+    ui->StartupSAStart->setPrefixes(" kMG");
+    ui->StartupSAStop->setUnit("Hz");
+    ui->StartupSAStop->setPrefixes(" kMG");
+    ui->StartupSARBW->setUnit("Hz");
+    ui->StartupSARBW->setPrefixes(" k");
 
     // Page selection
     connect(ui->treeWidget, &QTreeWidget::currentItemChanged, [=](QTreeWidgetItem *current, QTreeWidgetItem *) {
@@ -66,6 +90,14 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Startup.DefaultSweep.bandwidth = ui->StartupSweepBandwidth->value();
         p->Startup.DefaultSweep.points = ui->StartupSweepPoints->value();
         p->Startup.DefaultSweep.excitation = ui->StartupSweepLevel->value();
+        p->Startup.Generator.frequency = ui->StartupGeneratorFrequency->value();
+        p->Startup.Generator.level = ui->StartupGeneratorLevel->value();
+        p->Startup.SA.start = ui->StartupSAStart->value();
+        p->Startup.SA.stop = ui->StartupSAStop->value();
+        p->Startup.SA.RBW = ui->StartupSARBW->value();
+        p->Startup.SA.window = ui->StartupSAWindow->currentIndex();
+        p->Startup.SA.detector = ui->StartupSADetector->currentIndex();
+        p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
         p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
         p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
         accept();
@@ -92,6 +124,14 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupSweepBandwidth->setValueQuiet(p->Startup.DefaultSweep.bandwidth);
     ui->StartupSweepPoints->setValue(p->Startup.DefaultSweep.points);
     ui->StartupSweepLevel->setValue(p->Startup.DefaultSweep.excitation);
+    ui->StartupGeneratorFrequency->setValue(p->Startup.Generator.frequency);
+    ui->StartupGeneratorLevel->setValue(p->Startup.Generator.level);
+    ui->StartupSAStart->setValue(p->Startup.SA.start);
+    ui->StartupSAStop->setValue(p->Startup.SA.stop);
+    ui->StartupSARBW->setValue(p->Startup.SA.RBW);
+    ui->StartupSAWindow->setCurrentIndex(p->Startup.SA.window);
+    ui->StartupSADetector->setCurrentIndex(p->Startup.SA.detector);
+    ui->StartupSASignalID->setChecked(p->Startup.SA.signalID);
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteBothPorts);
     ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);

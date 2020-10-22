@@ -29,6 +29,8 @@ protected:
     std::set<QToolBar*> toolbars;
     std::set<QDockWidget*> docks;
 
+    Preferences &pref;
+
 private:
     static Mode *activeMode;
     static QWidget *cornerWidget;

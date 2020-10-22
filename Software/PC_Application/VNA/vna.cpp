@@ -44,7 +44,6 @@
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
-      pref(window->getPreferenceRef()),
       central(new TileWidget(traceModel))
 {
     averages = 1;

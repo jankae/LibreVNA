@@ -68,3 +68,8 @@ void SignalgeneratorWidget::setLevel(double level)
     SettingsChanged();
 }
 
+void SignalgeneratorWidget::setFrequency(double frequency)
+{
+    ui->frequency->setValue(frequency);
+}
+

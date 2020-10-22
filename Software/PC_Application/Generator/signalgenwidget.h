@@ -21,8 +21,9 @@ public:
 signals:
     void SettingsChanged();
 
-private slots:
+public slots:
     void setLevel(double level);
+    void setFrequency(double frequency);
 private:
     Ui::SignalgeneratorWidget *ui;
 };

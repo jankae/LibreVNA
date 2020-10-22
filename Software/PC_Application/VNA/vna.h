@@ -48,8 +48,6 @@ private:
     void LoadSweepSettings();
     void StoreSweepSettings();
 
-    Preferences &pref;
-
     Protocol::SweepSettings settings;
     unsigned int averages;
     TraceModel traceModel;

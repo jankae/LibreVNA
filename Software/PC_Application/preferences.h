@@ -45,6 +45,18 @@ public:
             double bandwidth;
             double excitation;
         } DefaultSweep;
+        struct {
+            double frequency;
+            double level;
+        } Generator;
+        struct {
+            double start;
+            double stop;
+            double RBW;
+            int window;
+            int detector;
+            bool signalID;
+        } SA;
     } Startup;
     struct {
         bool alwaysExciteBothPorts;
@@ -56,7 +68,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 9> descr = {{
+    const std::array<SettingDescription, 17> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
@@ -64,8 +76,16 @@ private:
         {&Startup.DefaultSweep.points, "Startup.DefaultSweep.points", 501},
         {&Startup.DefaultSweep.bandwidth, "Startup.DefaultSweep.bandwidth", 1000.0},
         {&Startup.DefaultSweep.excitation, "Startup.DefaultSweep.excitation", -10.00},
+        {&Startup.Generator.frequency, "Startup.Generator.frequency", 1000000000.0},
+        {&Startup.Generator.level, "Startup.Generator.level", -10.00},
+        {&Startup.SA.start, "Startup.SA.start", 950000000.0},
+        {&Startup.SA.stop, "Startup.SA.stop", 1050000000.0},
+        {&Startup.SA.RBW, "Startup.SA.RBW", 10000.0},
+        {&Startup.SA.window, "Startup.SA.window", 1},
+        {&Startup.SA.detector, "Startup.SA.detector", 0},
+        {&Startup.SA.signalID, "Startup.SA.signalID", true},
         {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", true},
-        {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
+        {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},                               
     }};
 };
 

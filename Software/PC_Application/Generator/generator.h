@@ -8,6 +8,7 @@ class Generator : public Mode
 {
 public:
     Generator(AppWindow *window);
+    void deactivate() override;
     void initializeDevice() override;
 private slots:
     void updateDevice();

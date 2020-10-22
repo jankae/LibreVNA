@@ -6,6 +6,8 @@
 #include "appwindow.h"
 #include "mode.h"
 #include "CustomWidgets/tilewidget.h"
+#include <QComboBox>
+#include <QCheckBox>
 
 class SpectrumAnalyzer : public Mode
 {
@@ -39,8 +41,6 @@ private:
     void LoadSweepSettings();
     void StoreSweepSettings();
 
-    Preferences &pref;
-
     Protocol::SpectrumAnalyzerSettings  settings;
     unsigned int averages;
     TraceModel traceModel;
@@ -48,6 +48,8 @@ private:
     Averaging average;
 
     TileWidget *central;
+    QCheckBox *cbSignalID;
+    QComboBox *cbWindowType, *cbDetector;
 
 signals:
     void dataChanged();
