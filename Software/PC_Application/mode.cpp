@@ -10,7 +10,6 @@ QButtonGroup* Mode::modeButtonGroup = nullptr;
 
 Mode::Mode(AppWindow *window, QString name)
     : window(window),
-      pref(window->getPreferenceRef()),
       name(name),
       central(nullptr)
 {

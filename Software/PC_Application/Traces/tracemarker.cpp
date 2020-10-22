@@ -117,6 +117,8 @@ QString TraceMarker::readableData()
             return ret;
         }
         break;
+    default:
+        return "Unknown marker type";
     }
 }
 
@@ -378,6 +380,7 @@ void TraceMarker::adjustSettings(double value)
     case Type::Delta:
     default:
         setFrequency(value);
+        /* no break */
     case Type::Lowpass:
     case Type::Highpass:
     case Type::Bandpass:
@@ -396,6 +399,7 @@ void TraceMarker::update()
     }
     switch(type) {
     case Type::Manual:
+    case Type::Delta:
         // nothing to do
         break;
     case Type::Maximum:

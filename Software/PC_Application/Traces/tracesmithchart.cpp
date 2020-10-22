@@ -4,6 +4,7 @@
 #include <math.h>
 #include "tracemarker.h"
 #include <QDebug>
+#include "preferences.h"
 
 using namespace std;
 
@@ -92,13 +93,15 @@ void TraceSmithChart::draw(QPainter * painter, double width_factor) {
 //    painter->setFont(font);
 //    painter->drawText(-512, -512, title);
 
+    auto pref = Preferences::getInstance();
+
     // Outer circle
-    painter->setPen(QPen(Border, 1.5 * width_factor));
+    painter->setPen(QPen(pref.General.graphColors.axis, 1.5 * width_factor));
     QRectF rectangle(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
     painter->drawArc(rectangle, 0, 5760);
 
     constexpr int Circles = 6;
-    painter->setPen(QPen(Divisions, 0.5 * width_factor, Qt::DashLine));
+    painter->setPen(QPen(pref.General.graphColors.divisions, 0.5 * width_factor, Qt::DashLine));
     for(int i=1;i<Circles;i++) {
         rectangle.adjust(2*smithCoordMax/Circles, smithCoordMax/Circles, 0, -smithCoordMax/Circles);
         painter->drawArc(rectangle, 0, 5760);
@@ -162,10 +165,11 @@ void TraceSmithChart::replot()
 
 void TraceSmithChart::paintEvent(QPaintEvent * /* the event */)
 {
+    auto pref = Preferences::getInstance();
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setBackground(QBrush(Background));
-    painter.fillRect(0, 0, width(), height(), QBrush(Background));
+    painter.setBackground(QBrush(pref.General.graphColors.background));
+    painter.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
 
     double side = qMin(width(), height()) * screenUsage;
 

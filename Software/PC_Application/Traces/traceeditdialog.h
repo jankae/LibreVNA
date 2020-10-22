@@ -17,11 +17,9 @@ public:
     ~TraceEditDialog();
 
 private slots:
-    void on_color_clicked();
     void on_buttonBox_accepted();
 
 private:
-    void setColor(QColor c);
     Ui::TraceEditDialog *ui;
     Trace &trace;
     bool VNAtrace;

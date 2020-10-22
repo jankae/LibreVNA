@@ -30,6 +30,9 @@ private:
 
 class Preferences {
 public:
+    static Preferences& getInstance() {
+        return instance;
+    }
     void load();
     void store();
     void edit();
@@ -62,13 +65,22 @@ public:
         bool alwaysExciteBothPorts;
         bool suppressPeaks;
     } Acquisition;
+    struct {
+        struct {
+            QColor background;
+            QColor axis;
+            QColor divisions;
+        } graphColors;
+    } General;
 private:
+    Preferences(){};
+    static Preferences instance;
     using SettingDescription = struct {
         QPointerVariant var;
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 17> descr = {{
+    const std::array<SettingDescription, 20> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
@@ -85,7 +97,10 @@ private:
         {&Startup.SA.detector, "Startup.SA.detector", 0},
         {&Startup.SA.signalID, "Startup.SA.signalID", true},
         {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", true},
-        {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},                               
+        {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
+        {&General.graphColors.background, "General.graphColors.background", QColor(Qt::black)},
+        {&General.graphColors.axis, "General.graphColors.axis", QColor(Qt::white)},
+        {&General.graphColors.divisions, "General.graphColors.divisions", QColor(Qt::gray)},
     }};
 };
 

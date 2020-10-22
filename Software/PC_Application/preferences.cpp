@@ -7,6 +7,8 @@
 
 using namespace std;
 
+Preferences Preferences::instance;
+
 PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PreferencesDialog),
@@ -100,6 +102,9 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
         p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
         p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
+        p->General.graphColors.background = ui->GeneralGraphBackground->getColor();
+        p->General.graphColors.axis = ui->GeneralGraphAxis->getColor();
+        p->General.graphColors.divisions = ui->GeneralGraphDivisions->getColor();
         accept();
     });
 
@@ -135,6 +140,10 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteBothPorts);
     ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
+
+    ui->GeneralGraphBackground->setColor(p->General.graphColors.background);
+    ui->GeneralGraphAxis->setColor(p->General.graphColors.axis);
+    ui->GeneralGraphDivisions->setColor(p->General.graphColors.divisions);
 }
 
 void Preferences::load()

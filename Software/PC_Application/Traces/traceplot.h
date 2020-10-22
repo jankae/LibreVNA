@@ -25,9 +25,9 @@ signals:
     void deleted(TracePlot*);
 
 protected:
-    static const QColor Background;// = QColor(0,0,0);
-    static const QColor Border;// = QColor(255,255,255);
-    static const QColor Divisions;// = QColor(255,255,255);
+//    static const QColor Background;// = QColor(0,0,0);
+//    static const QColor Border;// = QColor(255,255,255);
+//    static const QColor Divisions;// = QColor(255,255,255);
     static constexpr int MinUpdateInterval = 100;
     // need to be called in derived class constructor
     void initializeTraceInfo(TraceModel &model);

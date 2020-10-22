@@ -37,7 +37,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QPushButton" name="color">
+      <widget class="ColorPickerButton" name="color">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -161,6 +161,11 @@
    <extends>QWidget</extends>
    <header>CustomWidgets/touchstoneimport.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ColorPickerButton</class>
+   <extends>QPushButton</extends>
+   <header>CustomWidgets/colorpickerbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

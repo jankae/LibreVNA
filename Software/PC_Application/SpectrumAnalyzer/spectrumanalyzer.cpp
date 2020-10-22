@@ -184,6 +184,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumResult");
 
     // Set initial sweep settings
+    auto pref = Preferences::getInstance();
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
@@ -364,6 +365,7 @@ void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 void SpectrumAnalyzer::LoadSweepSettings()
 {
     QSettings s;
+    auto pref = Preferences::getInstance();
     settings.f_start = s.value("SAStart", pref.Startup.SA.start).toULongLong();
     settings.f_stop = s.value("SAStop", pref.Startup.SA.stop).toULongLong();
     ConstrainAndUpdateFrequencies();

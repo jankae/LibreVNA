@@ -417,6 +417,7 @@ VNA::VNA(AppWindow *window)
     qRegisterMetaType<Protocol::Datapoint>("Datapoint");
 
     // Set initial sweep settings
+    auto pref = Preferences::getInstance();
     if(pref.Acquisition.alwaysExciteBothPorts) {
         settings.excitePort1 = 1;
         settings.excitePort2 = 1;
@@ -539,7 +540,7 @@ void VNA::UpdateStatusPanel()
 
 void VNA::SettingsChanged()
 {
-    settings.suppressPeaks = pref.Acquisition.suppressPeaks ? 1 : 0;
+    settings.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
     if(window->getDevice()) {
         window->getDevice()->Configure(settings);
     }
@@ -675,8 +676,7 @@ void VNA::SetAveraging(unsigned int averages)
 
 void VNA::ExcitationRequired(bool port1, bool port2)
 {
-    qDebug() << pref.Acquisition.alwaysExciteBothPorts;
-    if(pref.Acquisition.alwaysExciteBothPorts) {
+    if(Preferences::getInstance().Acquisition.alwaysExciteBothPorts) {
         port1 = true;
         port2 = true;
     }
@@ -771,6 +771,7 @@ void VNA::ConstrainAndUpdateFrequencies()
 
 void VNA::LoadSweepSettings()
 {
+    auto pref = Preferences::getInstance();
     QSettings s;
     settings.f_start = s.value("SweepStart", pref.Startup.DefaultSweep.start).toULongLong();
     settings.f_stop = s.value("SweepStop", pref.Startup.DefaultSweep.stop).toULongLong();

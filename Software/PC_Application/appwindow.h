@@ -34,8 +34,6 @@ public:
     QStackedWidget *getCentral() const;
     Device *getDevice() const;
 
-    Preferences &getPreferenceRef();
-
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
@@ -59,8 +57,6 @@ private:
             QComboBox *outFreq;
         } reference;
     } toolbars;
-
-    Preferences pref;
 
     Device *device;
     DeviceLog deviceLog;

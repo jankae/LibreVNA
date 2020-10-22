@@ -10,7 +10,10 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 {
     ui->setupUi(this);
     ui->name->setText(t.name());
-    setColor(trace.color());
+    ui->color->setColor(trace.color());
+    connect(ui->color, &ColorPickerButton::colorChanged, [=](const QColor& color){
+       trace.setColor(color);
+    });
 
     ui->GSource->setId(ui->bLive, 0);
     ui->GSource->setId(ui->bFile, 1);
@@ -98,13 +101,6 @@ TraceEditDialog::~TraceEditDialog()
     delete ui;
 }
 
-void TraceEditDialog::on_color_clicked()
-{
-    auto color = QColorDialog::getColor(trace.color(), this, "Select color", QColorDialog::DontUseNativeDialog);
-    setColor(color);
-}
-
-
 void TraceEditDialog::on_buttonBox_accepted()
 {
     trace.setName(ui->name->text());
@@ -138,14 +134,4 @@ void TraceEditDialog::on_buttonBox_accepted()
         }
     }
     delete this;
-}
-
-void TraceEditDialog::setColor(QColor c)
-{
-    QPalette pal = ui->color->palette();
-    pal.setColor(QPalette::Button, c);
-    ui->color->setAutoFillBackground(true);
-    ui->color->setPalette(pal);
-    ui->color->update();
-    trace.setColor(c);
 }

@@ -55,7 +55,7 @@ AppWindow::AppWindow(QWidget *parent)
     QCoreApplication::setOrganizationName("VNA");
     QCoreApplication::setApplicationName("Application");
 
-    pref.load();
+    Preferences::getInstance().load();
     device = nullptr;
 
     ui->setupUi(this);
@@ -108,9 +108,9 @@ AppWindow::AppWindow(QWidget *parent)
         }
     });
     connect(ui->actionPreferences, &QAction::triggered, [=](){
-       qDebug() << pref.Acquisition.alwaysExciteBothPorts;
-       pref.edit();
-       qDebug() << pref.Acquisition.alwaysExciteBothPorts;
+        Preferences::getInstance().edit();
+        // settings might have changed, update necessary stuff
+        TraceBodePlot::updateGraphColors();
     });
 
     setWindowTitle("VNA");
@@ -131,7 +131,7 @@ AppWindow::AppWindow(QWidget *parent)
     qRegisterMetaType<Protocol::Datapoint>("Datapoint");
 
     // List available devices
-    if(UpdateDeviceList() && pref.Startup.ConnectToFirstDevice) {
+    if(UpdateDeviceList() && Preferences::getInstance().Startup.ConnectToFirstDevice) {
         // at least one device available
         ConnectToDevice();
     }
@@ -145,7 +145,7 @@ void AppWindow::closeEvent(QCloseEvent *event)
     if(Mode::getActiveMode()) {
         Mode::getActiveMode()->deactivate();
     }
-    pref.store();
+    Preferences::getInstance().store();
     QMainWindow::closeEvent(event);
 }
 
@@ -242,11 +242,6 @@ void AppWindow::CreateToolbars()
 
     addToolBar(tb_reference);
     tb_reference->setObjectName("Reference Toolbar");
-}
-
-Preferences &AppWindow::getPreferenceRef()
-{
-    return pref;
 }
 
 int AppWindow::UpdateDeviceList()

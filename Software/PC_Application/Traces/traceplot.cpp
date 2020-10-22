@@ -1,8 +1,8 @@
 #include "traceplot.h"
 
-const QColor TracePlot::Background = QColor(0,0,0);
-const QColor TracePlot::Border = QColor(255,255,255);
-const QColor TracePlot::Divisions = QColor(255,255,255);
+//const QColor TracePlot::Background = QColor(0,0,0);
+//const QColor TracePlot::Border = QColor(255,255,255);
+//const QColor TracePlot::Divisions = QColor(255,255,255);
 #include "tracemarker.h"
 
 std::set<TracePlot*> TracePlot::plots;

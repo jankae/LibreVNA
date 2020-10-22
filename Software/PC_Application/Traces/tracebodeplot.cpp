@@ -1,6 +1,5 @@
 #include "tracebodeplot.h"
 #include <QGridLayout>
-#include <qwt_plot_grid.h>
 #include "qwtplotpiecewisecurve.h"
 #include "qwt_series_data.h"
 #include "trace.h"
@@ -13,8 +12,11 @@
 #include <qwt_symbol.h>
 #include <qwt_picker_machine.h>
 #include "bodeplotaxisdialog.h"
+#include <preferences.h>
 
 using namespace std;
+
+set<TraceBodePlot*> TraceBodePlot::allPlots;
 
 static double AxisTransformation(TraceBodePlot::YAxisType type, complex<double> data) {
     switch(type) {
@@ -58,16 +60,14 @@ TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
       selectedMarker(nullptr)
 {
     plot = new QwtPlot(this);
-    plot->setCanvasBackground(Background);
-    auto pal = plot->palette();
-    pal.setColor(QPalette::Window, Background);
-    pal.setColor(QPalette::WindowText, Border);
-    pal.setColor(QPalette::Text, Border);
+
     auto canvas = new QwtPlotCanvas(plot);
     canvas->setFrameStyle(QFrame::Plain);
     plot->setCanvas(canvas);
-    plot->setPalette(pal);
     plot->setAutoFillBackground(true);
+    grid = new QwtPlotGrid();
+    grid->attach(plot);
+    setColorFromPreferences();
 
     auto selectPicker = new BodeplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
     selectPicker->setStateMachine(new QwtPickerClickPointMachine);
@@ -81,15 +81,11 @@ TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
     // Marker movement
     connect(drawPicker, SIGNAL(moved(QPointF)), this, SLOT(moved(QPointF)));
 
-    QwtPlotGrid *grid = new QwtPlotGrid();
-    grid->setMajorPen(QPen(Divisions, 1.0, Qt::DotLine));
-    grid->attach(plot);
     auto layout = new QGridLayout;
     layout->addWidget(plot);
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
     plot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-//    plot->plotLayout()->setAlignCanvasToScales(true);
     initializeTraceInfo(model);
     setAutoFillBackground(true);
 
@@ -101,6 +97,8 @@ TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
     setXAxis(true, 0, 6000000000, 600000000);
     // get notified when the span changes
     connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TraceBodePlot::setXAxis));
+
+    allPlots.insert(this);
 }
 
 TraceBodePlot::~TraceBodePlot()
@@ -111,6 +109,7 @@ TraceBodePlot::~TraceBodePlot()
         }
     }
     delete drawPicker;
+    allPlots.erase(this);
 }
 
 void TraceBodePlot::setXAxis(double min, double max)
@@ -187,32 +186,16 @@ void TraceBodePlot::enableTrace(Trace *t, bool enabled)
     }
 }
 
+void TraceBodePlot::updateGraphColors()
+{
+    for(auto p : allPlots) {
+        p->setColorFromPreferences();
+    }
+}
+
 void TraceBodePlot::updateContextMenu()
 {
     contextmenu->clear();
-//    for(int axis = 0;axis < 2;axis++) {
-//        QMenu *axisMenu;
-//        if(axis == 0) {
-//            axisMenu = contextmenu->addMenu("Primary Axis");
-//        } else {
-//            axisMenu = contextmenu->addMenu("Secondary Axis");
-//        }
-//        auto group = new QActionGroup(this);
-//        for(int i=0;i<(int) YAxisType::Last;i++) {
-//            auto action = new QAction(AxisTypeToName((YAxisType) i));
-//            action->setCheckable(true);
-//            group->addAction(action);
-//            if(YAxis[axis].type == (YAxisType) i) {
-//                action->setChecked(true);
-//            }
-//            connect(action, &QAction::triggered, [=](bool active) {
-//                if(active) {
-//                    setYAxisType(axis, (YAxisType) i);
-//                }
-//            });
-//        }
-//        axisMenu->addActions(group->actions());
-//    }
     auto setup = new QAction("Axis setup...");
     connect(setup, &QAction::triggered, [this]() {
         auto setup = new BodeplotAxisDialog(this);
@@ -483,13 +466,18 @@ void TraceBodePlot::moved(const QPointF pos)
     if(!selectedMarker || !selectedCurve) {
         return;
     }
-//        int index = selectedCurve->closestPoint(pos.toPoint());
-//        qDebug() << index;
-//        if(index < 0) {
-//            // unable to find closest point
-//            return;
-//        }
-//        selectedMarker->setFrequency(selectedCurve->sample(index).x());
     selectedMarker->setFrequency(pos.x());
+}
+
+void TraceBodePlot::setColorFromPreferences()
+{
+    auto pref = Preferences::getInstance();
+    plot->setCanvasBackground(pref.General.graphColors.background);
+    auto pal = plot->palette();
+    pal.setColor(QPalette::Window, pref.General.graphColors.background);
+    pal.setColor(QPalette::WindowText, pref.General.graphColors.axis);
+    pal.setColor(QPalette::Text, pref.General.graphColors.axis);
+    plot->setPalette(pal);
+    grid->setPen(pref.General.graphColors.divisions);
 }
 
