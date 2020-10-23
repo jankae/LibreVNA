@@ -155,6 +155,17 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     });
     tb_acq->addWidget(cbDetector);
 
+    tb_acq->addWidget(new QLabel("Averaging:"));
+    lAverages = new QLabel("0/");
+    tb_acq->addWidget(lAverages);
+    auto sbAverages = new QSpinBox;
+    sbAverages->setRange(1, 100);
+    sbAverages->setRange(1, 99);
+    sbAverages->setFixedWidth(40);
+    connect(sbAverages, qOverload<int>(&QSpinBox::valueChanged), this, &SpectrumAnalyzer::SetAveraging);
+    connect(this, &SpectrumAnalyzer::averagingChanged, sbAverages, &QSpinBox::setValue);
+    tb_acq->addWidget(sbAverages);
+
     cbSignalID = new QCheckBox("Signal ID");
     connect(cbSignalID, &QCheckBox::toggled, [=](bool enabled) {
         settings.SignalID = enabled;
@@ -192,6 +203,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
         settings.f_stop = pref.Startup.SA.stop;
         ConstrainAndUpdateFrequencies();
         SetRBW(pref.Startup.SA.RBW);
+        SetAveraging(pref.Startup.SA.averaging);
         settings.pointNum = 1001;
         cbWindowType->setCurrentIndex(pref.Startup.SA.window);
         cbDetector->setCurrentIndex(pref.Startup.SA.detector);
@@ -226,6 +238,7 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
     traceModel.addSAData(d);
     emit dataChanged();
     if(d.pointNum == settings.pointNum - 1) {
+        UpdateAverageCount();
         markerModel->updateMarkers();
     }
 }
@@ -242,6 +255,7 @@ void SpectrumAnalyzer::SettingsChanged()
         window->getDevice()->Configure(settings);
     }
     average.reset();
+    UpdateAverageCount();
     traceModel.clearVNAData();
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
@@ -344,6 +358,11 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     SettingsChanged();
 }
 
+void SpectrumAnalyzer::UpdateAverageCount()
+{
+    lAverages->setText(QString::number(average.getLevel()) + "/");
+}
+
 void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 {
     if(settings.f_stop > Device::Limits().maxFreq) {
@@ -373,6 +392,7 @@ void SpectrumAnalyzer::LoadSweepSettings()
     settings.pointNum = 1001;
     cbWindowType->setCurrentIndex(s.value("SAWindow", pref.Startup.SA.window).toInt());
     cbDetector->setCurrentIndex(s.value("SADetector", pref.Startup.SA.detector).toInt());
+    SetAveraging(s.value("SAAveraging", pref.Startup.SA.averaging).toInt());
     cbSignalID->setChecked(s.value("SASignalID", pref.Startup.SA.signalID).toBool());
 }
 
@@ -384,5 +404,6 @@ void SpectrumAnalyzer::StoreSweepSettings()
     s.setValue("SARBW", settings.RBW);
     s.setValue("SAWindow", settings.WindowType);
     s.setValue("SADetector", settings.Detector);
+    s.setValue("SAAveraging", averages);
     s.setValue("SASignalID", static_cast<bool>(settings.SignalID));
 }

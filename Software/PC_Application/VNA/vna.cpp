@@ -235,6 +235,16 @@ VNA::VNA(AppWindow *window)
     tb_acq->addWidget(new QLabel("IF BW:"));
     tb_acq->addWidget(eBandwidth);
 
+    tb_acq->addWidget(new QLabel("Averaging:"));
+    lAverages = new QLabel("0/");
+    tb_acq->addWidget(lAverages);
+    auto sbAverages = new QSpinBox;
+    sbAverages->setRange(1, 99);
+    sbAverages->setFixedWidth(40);
+    connect(sbAverages, qOverload<int>(&QSpinBox::valueChanged), this, &VNA::SetAveraging);
+    connect(this, &VNA::averagingChanged, sbAverages, &QSpinBox::setValue);
+    tb_acq->addWidget(sbAverages);
+
     window->addToolBar(tb_acq);
     toolbars.insert(tb_acq);
 
@@ -307,97 +317,6 @@ VNA::VNA(AppWindow *window)
 
     markerModel = new TraceMarkerModel(traceModel);
 
-    // Create status panel
-    auto statusLayout = new QVBoxLayout();
-    statusLayout->setSpacing(0);
-    QFont statusFont( "Arial", 8);
-    {
-        auto l = new QLabel("Start Frequency:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lStart = new QLabel;
-        lStart->setAlignment(Qt::AlignRight);
-        lStart->setFont(statusFont);
-        statusLayout->addWidget(lStart);
-
-        l = new QLabel("Center Frequency:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lCenter = new QLabel;
-        lCenter->setAlignment(Qt::AlignRight);
-        lCenter->setFont(statusFont);
-        statusLayout->addWidget(lCenter);
-
-        l = new QLabel("Stop Frequency:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lStop = new QLabel;
-        lStop->setAlignment(Qt::AlignRight);
-        lStop->setFont(statusFont);
-        statusLayout->addWidget(lStop);
-
-        l = new QLabel("Span:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lSpan = new QLabel;
-        lSpan->setAlignment(Qt::AlignRight);
-        lSpan->setFont(statusFont);
-        statusLayout->addWidget(lSpan);
-
-        statusLayout->addStretch();
-
-        l = new QLabel("Points:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lPoints = new QLabel;
-        lPoints->setAlignment(Qt::AlignRight);
-        lPoints->setFont(statusFont);
-        statusLayout->addWidget(lPoints);
-
-        l = new QLabel("IF Bandwidth:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lBandwidth = new QLabel;
-        lBandwidth->setAlignment(Qt::AlignRight);
-        lBandwidth->setFont(statusFont);
-        statusLayout->addWidget(lBandwidth);
-
-        l = new QLabel("Averages:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lAverages = new QLabel;
-        lAverages->setAlignment(Qt::AlignRight);
-        lAverages->setFont(statusFont);
-        statusLayout->addWidget(lAverages);
-
-        statusLayout->addStretch();
-
-        l = new QLabel("Calibration:");
-        l->setAlignment(Qt::AlignLeft);
-        l->setFont(statusFont);
-        statusLayout->addWidget(l);
-        lCalibration = new QLabel;
-        lCalibration->setAlignment(Qt::AlignRight);
-        lCalibration->setFont(statusFont);
-        statusLayout->addWidget(lCalibration);
-    }
-    statusLayout->addStretch();
-
-    auto statusWidget = new QWidget;
-    statusWidget->setLayout(statusLayout);
-//    statusWidget->setFixedWidth(150);
-    auto statusDock = new QDockWidget("Status");
-    statusDock->setWidget(statusWidget);
-    window->addDockWidget(Qt::LeftDockWidgetArea, statusDock);
-    docks.insert(statusDock);
-
     auto tracesDock = new QDockWidget("Traces");
     tracesDock->setWidget(new TraceWidget(traceModel));
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
@@ -410,9 +329,6 @@ VNA::VNA(AppWindow *window)
     markerDock->setWidget(markerWidget);
     window->addDockWidget(Qt::BottomDockWidgetArea, markerDock);
     docks.insert(markerDock);
-
-    // status dock hidden by default
-    statusDock->hide();
 
     qRegisterMetaType<Protocol::Datapoint>("Datapoint");
 
@@ -433,6 +349,7 @@ VNA::VNA(AppWindow *window)
         ConstrainAndUpdateFrequencies();
         SetSourceLevel(pref.Startup.DefaultSweep.excitation);
         SetIFBandwidth(pref.Startup.DefaultSweep.bandwidth);
+        SetAveraging(pref.Startup.DefaultSweep.averaging);
         SetPoints(pref.Startup.DefaultSweep.points);
     }
 
@@ -503,39 +420,14 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     traceModel.addVNAData(d);
     emit dataChanged();
     if(d.pointNum == settings.points - 1) {
-        UpdateStatusPanel();
+        UpdateAverageCount();
         markerModel->updateMarkers();
     }
 }
 
-void VNA::UpdateStatusPanel()
+void VNA::UpdateAverageCount()
 {
-    lStart->setText(Unit::ToString(settings.f_start, "Hz", " kMG", 4));
-    lCenter->setText(Unit::ToString((settings.f_start + settings.f_stop)/2, "Hz", " kMG", 4));
-    lStop->setText(Unit::ToString(settings.f_stop, "Hz", " kMG", 4));
-    lSpan->setText(Unit::ToString(settings.f_stop - settings.f_start, "Hz", " kMG", 4));
-    lPoints->setText(QString::number(settings.points));
-    lBandwidth->setText(Unit::ToString(settings.if_bandwidth, "Hz", " k", 2));
-    lAverages->setText(QString::number(average.getLevel()) + "/" + QString::number(averages));
-    if(calValid) {
-        switch(cal.getInterpolation(settings)) {
-        case Calibration::InterpolationType::Extrapolate:
-            lCalibration->setText("Enabled/Extrapolating");
-            break;
-        case Calibration::InterpolationType::Interpolate:
-            lCalibration->setText("Enabled/Interpolating");
-            break;
-        case Calibration::InterpolationType::Exact:
-        case Calibration::InterpolationType::Unchanged:
-            lCalibration->setText("Enabled");
-            break;
-        default:
-            lCalibration->setText("Unknown");
-            break;
-        }
-    } else {
-        lCalibration->setText("Off");
-    }
+    lAverages->setText(QString::number(average.getLevel()) + "/");
 }
 
 void VNA::SettingsChanged()
@@ -546,7 +438,7 @@ void VNA::SettingsChanged()
     }
     average.reset();
     traceModel.clearVNAData();
-    UpdateStatusPanel();
+    UpdateAverageCount();
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
 
@@ -778,6 +670,7 @@ void VNA::LoadSweepSettings()
     ConstrainAndUpdateFrequencies();
     SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
     SetPoints(s.value("SweepPoints", pref.Startup.DefaultSweep.points).toInt());
+    SetAveraging(s.value("SweepAveraging", pref.Startup.DefaultSweep.averaging).toInt());
     SetSourceLevel(s.value("SweepLevel", pref.Startup.DefaultSweep.excitation).toDouble());
 }
 
@@ -788,5 +681,6 @@ void VNA::StoreSweepSettings()
     s.setValue("SweepStop", static_cast<unsigned long long>(settings.f_stop));
     s.setValue("SweepBandwidth", settings.if_bandwidth);
     s.setValue("SweepPoints", settings.points);
+    s.setValue("SweepAveraging", averages);
     s.setValue("SweepLevel", (double) settings.cdbm_excitation / 100.0);
 }

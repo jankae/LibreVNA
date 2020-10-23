@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>619</width>
-    <height>730</height>
+    <width>613</width>
+    <height>794</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -73,7 +73,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -218,6 +218,23 @@
                  </item>
                  <item row="4" column="1">
                   <widget class="SIUnitEdit" name="StartupSweepBandwidth"/>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="label_18">
+                   <property name="text">
+                    <string>Averaging:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QSpinBox" name="StartupSweepAveraging">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>99</number>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -367,17 +384,34 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="5" column="0">
+                 <item row="6" column="0">
                   <widget class="QLabel" name="label_14">
                    <property name="text">
                     <string>Signal Identification:</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="1">
+                 <item row="6" column="1">
                   <widget class="QCheckBox" name="StartupSASignalID">
                    <property name="text">
                     <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="label_19">
+                   <property name="text">
+                    <string>Averaging:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QSpinBox" name="StartupSAAveraging">
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>99</number>
                    </property>
                   </widget>
                  </item>

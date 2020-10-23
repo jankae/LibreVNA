@@ -42,7 +42,7 @@ signals:
     void CalibrationMeasurementComplete(Calibration::Measurement m);
 
 private:
-    void UpdateStatusPanel();
+    void UpdateAverageCount();
     void SettingsChanged();
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
@@ -66,8 +66,6 @@ private:
     QAction *assignDefaultCal, *removeDefaultCal;
 
     // Status Labels
-    QLabel *lStart, *lCenter, *lStop, *lSpan, *lPoints, *lBandwidth;
-    QLabel *lCalibration;
     QLabel *lAverages;
 
     TileWidget *central;

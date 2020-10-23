@@ -35,7 +35,7 @@ private slots:
 signals:
 
 private:
-    void UpdateStatusPanel();
+    void UpdateAverageCount();
     void SettingsChanged();
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
@@ -50,6 +50,7 @@ private:
     TileWidget *central;
     QCheckBox *cbSignalID;
     QComboBox *cbWindowType, *cbDetector;
+    QLabel *lAverages;
 
 signals:
     void dataChanged();
