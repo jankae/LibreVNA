@@ -64,10 +64,9 @@ private:
         Lowpass,
         Highpass,
         Bandpass,
+        TOI,
     };
-    static std::vector<Type> getTypes() {
-        return {Type::Manual, Type::Maximum, Type::Minimum, Type::Delta, Type::Lowpass, Type::Highpass, Type::Bandpass};
-    }
+    std::set<Type> getSupportedTypes();
     static QString typeToString(Type t) {
         switch(t) {
         case Type::Manual: return "Manual";
@@ -77,12 +76,15 @@ private:
         case Type::Lowpass: return "Lowpass";
         case Type::Highpass: return "Highpass";
         case Type::Bandpass: return "Bandpass";
+        case Type::TOI: return "TOI/IP3";
         default: return QString();
         }
     }
     void constrainFrequency();
     void assignDeltaMarker(TraceMarker *m);
     void deleteHelperMarkers();
+    void setType(Type t);
+    double toDecibel();
 
     TraceMarkerModel *model;
     Trace *parentTrace;

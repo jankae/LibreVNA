@@ -193,7 +193,7 @@ bool Trace::isCalibration()
 
 bool Trace::isLive()
 {
-    return !isCalibration() && !isTouchstone() && !isPaused();
+    return !isCalibration() && !isTouchstone();
 }
 
 bool Trace::isReflection()
@@ -214,6 +214,57 @@ double Trace::findExtremumFreq(bool max)
         }
     }
     return freq;
+}
+
+std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double minLevel, double minValley)
+{
+    using peakInfo = struct peakinfo {
+        double frequency;
+        double level_dbm;
+    };
+    vector<peakInfo> peaks;
+    double frequency = 0.0;
+    double max_dbm = -200.0;
+    double min_dbm = 200.0;
+    for(auto d : _data) {
+        double dbm = 20*log10(abs(d.S));
+        if((dbm >= max_dbm) && (min_dbm <= dbm - minValley)) {
+            // potential peak frequency
+            frequency = d.frequency;
+            max_dbm = dbm;
+        }
+        if(dbm <= min_dbm) {
+            min_dbm = dbm;
+        }
+        if((dbm <= max_dbm - minValley) && (max_dbm >= minLevel)) {
+            // peak was high enough and dropped below minValley afterwards
+            peakInfo peak;
+            peak.frequency = frequency;
+            peak.level_dbm = max_dbm;
+            peaks.push_back(peak);
+            // reset
+            frequency = 0.0;
+            max_dbm = min_dbm = dbm;
+        }
+    }
+    if(peaks.size() > maxPeaks) {
+        // found more peaks than requested, remove excess peaks
+        // sort with descending peak level
+        sort(peaks.begin(), peaks.end(), [](peakInfo higher, peakInfo lower) {
+           return higher.level_dbm >= lower.level_dbm;
+        });
+        // only keep the requested number of peaks
+        peaks.resize(maxPeaks);
+        // sort again with ascending frequencies
+        sort(peaks.begin(), peaks.end(), [](peakInfo lower, peakInfo higher) {
+           return higher.frequency >= lower.frequency;
+        });
+    }
+    vector<double> frequencies;
+    for(auto p : peaks) {
+        frequencies.push_back(p.frequency);
+    }
+    return frequencies;
 }
 
 QString Trace::getTouchstoneFilename() const

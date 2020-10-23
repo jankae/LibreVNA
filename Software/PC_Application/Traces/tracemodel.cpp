@@ -140,7 +140,7 @@ void TraceModel::clearVNAData()
 void TraceModel::addVNAData(Protocol::Datapoint d)
 {
     for(auto t : traces) {
-        if (t->isLive()) {
+        if (t->isLive() && !t->isPaused()) {
             Trace::Data td;
             td.frequency = d.frequency;
             switch(t->liveParameter()) {
@@ -160,7 +160,7 @@ void TraceModel::addVNAData(Protocol::Datapoint d)
 void TraceModel::addSAData(Protocol::SpectrumAnalyzerResult d)
 {
     for(auto t : traces) {
-        if (t->isLive()) {
+        if (t->isLive() && !t->isPaused()) {
             Trace::Data td;
             td.frequency = d.frequency;
             switch(t->liveParameter()) {

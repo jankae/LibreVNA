@@ -8,6 +8,8 @@
 #include "tracemarkermodel.h"
 #include "unit.h"
 
+using namespace std;
+
 TraceMarker::TraceMarker(TraceMarkerModel *model, int number)
     : editingFrequeny(false),
       model(model),
@@ -41,6 +43,11 @@ void TraceMarker::assignTrace(Trace *t)
         disconnect(parentTrace, &Trace::colorChanged, this, &TraceMarker::updateSymbol);
     }
     parentTrace = t;
+    if(!getSupportedTypes().count(type)) {
+        // new trace does not support the current type
+        setType(Type::Manual);
+    }
+
     connect(parentTrace, &Trace::deleted, this, &TraceMarker::parentTraceDeleted);
     connect(parentTrace, &Trace::dataChanged, this, &TraceMarker::traceDataChanged);
     connect(parentTrace, &Trace::colorChanged, this, &TraceMarker::updateSymbol);
@@ -64,9 +71,8 @@ QString TraceMarker::readableData()
     case Type::Manual:
     case Type::Maximum:
     case Type::Minimum: {
-        auto db = 20*log10(abs(data));
         auto phase = arg(data);
-        return QString::number(db, 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
+        return QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
     }
     case Type::Delta:
         if(!delta) {
@@ -75,17 +81,16 @@ QString TraceMarker::readableData()
             // calculate difference between markers
             auto freqDiff = frequency - delta->frequency;
             auto valueDiff = data / delta->data;
-            auto db = 20*log10(abs(valueDiff));
             auto phase = arg(valueDiff);
-            return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(db, 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
+            return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
         }
     case Type::Lowpass:
     case Type::Highpass:
         if(parentTrace->isReflection()) {
             return "Calculation not possible with reflection measurement";
         } else {
-            auto insertionLoss = 20*log10(abs(data));
-            auto cutoff = 20*log10(abs(helperMarkers[0]->data));
+            auto insertionLoss = toDecibel();
+            auto cutoff = helperMarkers[0]->toDecibel();
             QString ret = "fc: ";
             if(cutoff > insertionLoss + cutoffAmplitude) {
                 // the trace never dipped below the specified cutoffAmplitude, exact cutoff frequency unknown
@@ -100,9 +105,9 @@ QString TraceMarker::readableData()
         if(parentTrace->isReflection()) {
             return "Calculation not possible with reflection measurement";
         } else {
-            auto insertionLoss = 20*log10(abs(data));
-            auto cutoffL = 20*log10(abs(helperMarkers[0]->data));
-            auto cutoffH = 20*log10(abs(helperMarkers[1]->data));
+            auto insertionLoss = toDecibel();
+            auto cutoffL = helperMarkers[0]->toDecibel();
+            auto cutoffH = helperMarkers[1]->toDecibel();
             auto bandwidth = helperMarkers[1]->frequency - helperMarkers[0]->frequency;
             auto center = helperMarkers[2]->frequency;
             QString ret = "fc: ";
@@ -116,6 +121,13 @@ QString TraceMarker::readableData()
             ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
             return ret;
         }
+        break;
+    case Type::TOI: {
+        auto avgFundamental = (toDecibel() + helperMarkers[0]->toDecibel()) / 2;
+        auto avgDistortion = (helperMarkers[1]->toDecibel() + helperMarkers[2]->toDecibel()) / 2;
+        auto TOI = (3 * avgFundamental - avgDistortion) / 2;
+        return "Fundamental: " + Unit::ToString(avgFundamental, "dbm", " ", 3) + ", distortion: " + Unit::ToString(avgDistortion, "dbm", " ", 3) + ", TOI: "+Unit::ToString(TOI, "dbm", " ", 3);
+    }
         break;
     default:
         return "Unknown marker type";
@@ -134,8 +146,10 @@ QString TraceMarker::readableSettings()
     case Type::Highpass:
     case Type::Bandpass:
         return Unit::ToString(cutoffAmplitude, "db", " ", 3);
+    case Type::TOI:
+        return "none";
     default:
-        return "Invalid";
+        return "Unhandled case";
     }
 }
 
@@ -181,6 +195,37 @@ void TraceMarker::updateSymbol()
     emit symbolChanged(this);
 }
 
+std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
+{
+    set<TraceMarker::Type> supported;
+    if(parentTrace) {
+        // all traces support some basic markers
+        supported.insert(Type::Manual);
+        supported.insert(Type::Maximum);
+        supported.insert(Type::Minimum);
+        supported.insert(Type::Delta);
+        if(parentTrace->isLive()) {
+            switch(parentTrace->liveParameter()) {
+            case Trace::LiveParameter::S11:
+            case Trace::LiveParameter::S12:
+            case Trace::LiveParameter::S21:
+            case Trace::LiveParameter::S22:
+                // special VNA marker types
+                supported.insert(Type::Lowpass);
+                supported.insert(Type::Highpass);
+                supported.insert(Type::Bandpass);
+                break;
+            case Trace::LiveParameter::Port1:
+            case Trace::LiveParameter::Port2:
+                // special SA marker types
+                supported.insert(Type::TOI);
+                break;
+            }
+        }
+    }
+    return supported;
+}
+
 void TraceMarker::constrainFrequency()
 {
     if(parentTrace && parentTrace->size() > 0)  {
@@ -217,6 +262,64 @@ void TraceMarker::deleteHelperMarkers()
     helperMarkers.clear();
 }
 
+void TraceMarker::setType(TraceMarker::Type t)
+{
+    // remove any potential helper markers
+    deleteHelperMarkers();
+    type = t;
+    vector<QString> helperSuffixes;
+    switch(type) {
+    case Type::Delta:
+        if(!delta) {
+            // invalid delta marker assigned, attempt to find a matching marker
+            for(int pass = 0;pass < 3;pass++) {
+                for(auto m : model->getMarkers()) {
+                    if(pass == 0 && m->parentTrace != parentTrace) {
+                        // ignore markers on different traces in first pass
+                        continue;
+                    }
+                    if(pass <= 1 && m == this) {
+                        // ignore itself on second pass
+                        continue;
+                    }
+                    assignDeltaMarker(m);
+                    break;
+                }
+                if(delta) {
+                    break;
+                }
+            }
+        }
+        break;
+    case Type::Lowpass:
+    case Type::Highpass:
+        helperSuffixes = {"c"};
+        break;
+    case Type::Bandpass:
+        helperSuffixes = {"l", "h" ,"c"};
+        break;
+    case Type::TOI:
+        helperSuffixes = {"p", "l", "r"};
+    default:
+        break;
+    }
+    // create helper markers
+    for(auto suffix : helperSuffixes) {
+        auto helper = new TraceMarker(model);
+        helper->suffix = suffix;
+        helper->number = number;
+        helper->assignTrace(parentTrace);
+        helperMarkers.push_back(helper);
+    }
+    emit typeChanged(this);
+    update();
+}
+
+double TraceMarker::toDecibel()
+{
+    return 20*log10(abs(data));
+}
+
 void TraceMarker::setNumber(int value)
 {
     number = value;
@@ -226,7 +329,7 @@ void TraceMarker::setNumber(int value)
 QWidget *TraceMarker::getTypeEditor(QAbstractItemDelegate *delegate)
 {
     auto c = new QComboBox;
-    for(auto t : getTypes()) {
+    for(auto t : getSupportedTypes()) {
         c->addItem(typeToString(t));
         if(type == t) {
             // select this item
@@ -288,69 +391,10 @@ void TraceMarker::updateTypeFromEditor(QWidget *w)
     } else {
         c = (QComboBox*) w;
     }
-    for(auto t : getTypes()) {
+    for(auto t : getSupportedTypes()) {
         if(c->currentText() == typeToString(t)) {
             if(type != t) {
-                // remove any potential helper markers
-                deleteHelperMarkers();
-                type = t;
-                switch(type) {
-                case Type::Delta:
-                    if(!delta) {
-                        // invalid delta marker assigned, attempt to find a matching marker
-                        for(int pass = 0;pass < 3;pass++) {
-                            for(auto m : model->getMarkers()) {
-                                if(pass == 0 && m->parentTrace != parentTrace) {
-                                    // ignore markers on different traces in first pass
-                                    continue;
-                                }
-                                if(pass <= 1 && m == this) {
-                                    // ignore itself on second pass
-                                    continue;
-                                }
-                                assignDeltaMarker(m);
-                                break;
-                            }
-                            if(delta) {
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                case Type::Lowpass:
-                case Type::Highpass: {
-                    // Create helper marker for cutoff frequency
-                    auto cutoff = new TraceMarker(model);
-                    cutoff->suffix = "c";
-                    // same trace as this one
-                    cutoff->assignTrace(parentTrace);
-                    helperMarkers.push_back(cutoff);
-                }
-                    break;
-                case Type::Bandpass: {
-                    // Create helper markers for cutoff frequency
-                    auto lower = new TraceMarker(model);
-                    lower->suffix = "l";
-                    // same trace as this one
-                    lower->assignTrace(parentTrace);
-                    helperMarkers.push_back(lower);
-                    auto higher = new TraceMarker(model);
-                    higher->suffix = "h";
-                    // same trace as this one
-                    higher->assignTrace(parentTrace);
-                    helperMarkers.push_back(higher);
-                    auto center = new TraceMarker(model);
-                    center->suffix = "c";
-                    // same trace as this one
-                    center->assignTrace(parentTrace);
-                    helperMarkers.push_back(center);
-                }
-                    break;
-                default:
-                    break;
-                }
-                emit typeChanged(this);
-                update();
+                setType(t);
             }
         }
     }
@@ -368,6 +412,8 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
     case Type::Lowpass:
     case Type::Highpass:
         return new SIUnitEdit("db", " ");
+    case Type::TOI:
+        return nullptr;
     }
 }
 
@@ -483,6 +529,22 @@ void TraceMarker::update()
             // set center marker inbetween cutoff markers
             helperMarkers[2]->setFrequency((helperMarkers[0]->frequency + helperMarkers[1]->frequency) / 2);
         }
+        break;
+    case Type::TOI: {
+        auto peaks = parentTrace->findPeakFrequencies(2);
+        if(peaks.size() != 2) {
+            // error finding peaks, do nothing
+            break;
+        }
+        // assign marker frequenies:
+        // this marker is the left peak, first helper the right peak.
+        // 2nd and 3rd helpers are left and right TOI peaks
+        setFrequency(peaks[0]);
+        helperMarkers[0]->setFrequency(peaks[1]);
+        auto freqDiff = peaks[1] - peaks[0];
+        helperMarkers[1]->setFrequency(peaks[0] - freqDiff);
+        helperMarkers[2]->setFrequency(peaks[1] + freqDiff);
+    }
         break;
     }
     emit dataChanged(this);

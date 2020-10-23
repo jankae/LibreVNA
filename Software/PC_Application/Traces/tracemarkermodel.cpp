@@ -242,8 +242,10 @@ QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptio
     auto marker = model->getMarkers()[index.row()];
     marker->editingFrequeny = true;
     auto e = marker->getSettingsEditor();
-    e->setParent(parent);
-    connect(e, &SIUnitEdit::valueUpdated, this, &MarkerSettingsDelegate::commitData);
+    if(e) {
+        e->setParent(parent);
+        connect(e, &SIUnitEdit::valueUpdated, this, &MarkerSettingsDelegate::commitData);
+    }
     return e;
 }
 

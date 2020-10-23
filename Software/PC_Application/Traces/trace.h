@@ -61,6 +61,12 @@ public:
     double minFreq() { return _data.front().frequency; };
     double maxFreq() { return _data.back().frequency; };
     double findExtremumFreq(bool max);
+    /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
+     * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.
+     * Only peaks with at least minLevel will be considered.
+     * To detect the next peak, the signal first has to drop at least minValley below the peak level.
+     */
+    std::vector<double> findPeakFrequencies(unsigned int maxPeaks = 100, double minLevel = -100.0, double minValley = 3.0);
     Data sample(unsigned int index) { return _data.at(index); }
     QString getTouchstoneFilename() const;
     unsigned int getTouchstoneParameter() const;
