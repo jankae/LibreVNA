@@ -92,14 +92,23 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-add">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="list-add" resource="../icons.qrc">
+         <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
        </property>
-       <property name="iconSize">
-        <size>
-         <width>16</width>
-         <height>16</height>
-        </size>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="autoRepeat">
+        <bool>false</bool>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -118,8 +127,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-remove">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="list-remove" resource="../icons.qrc">
+         <normaloff>:/icons/remove.png</normaloff>:/icons/remove.png</iconset>
        </property>
       </widget>
      </item>
@@ -139,7 +148,7 @@
        </property>
        <property name="icon">
         <iconset resource="../icons.qrc">
-         <normaloff>:/icons/import.svg</normaloff>:/icons/import.svg</iconset>
+         <normaloff>:/icons/import.png</normaloff>:/icons/import.png</iconset>
        </property>
       </widget>
      </item>
@@ -159,7 +168,7 @@
        </property>
        <property name="icon">
         <iconset resource="../icons.qrc">
-         <normaloff>:/icons/export.svg</normaloff>:/icons/export.svg</iconset>
+         <normaloff>:/icons/export.png</normaloff>:/icons/export.png</iconset>
        </property>
       </widget>
      </item>
@@ -178,8 +187,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="accessories-text-editor">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="accessories-text-editor" resource="../icons.qrc">
+         <normaloff>:/icons/edit.png</normaloff>:/icons/edit.png</iconset>
        </property>
       </widget>
      </item>

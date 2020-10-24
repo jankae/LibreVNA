@@ -49,8 +49,8 @@
           <string>Measure</string>
          </property>
          <property name="icon">
-          <iconset theme="media-playback-start">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="media-playback-start" resource="../icons.qrc">
+           <normaloff>:/icons/play.png</normaloff>:/icons/play.png</iconset>
          </property>
         </widget>
        </item>
@@ -60,8 +60,8 @@
           <string>Delete</string>
          </property>
          <property name="icon">
-          <iconset theme="edit-delete">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="edit-delete" resource="../icons.qrc">
+           <normaloff>:/icons/trash.png</normaloff>:/icons/trash.png</iconset>
          </property>
         </widget>
        </item>
@@ -71,7 +71,8 @@
           <string>Open</string>
          </property>
          <property name="icon">
-          <iconset theme="document-open"/>
+          <iconset theme="document-open" resource="../icons.qrc">
+           <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
          </property>
         </widget>
        </item>
@@ -81,7 +82,8 @@
           <string>Save</string>
          </property>
          <property name="icon">
-          <iconset theme="document-save"/>
+          <iconset theme="document-save" resource="../icons.qrc">
+           <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
          </property>
         </widget>
        </item>
@@ -103,6 +105,10 @@
          <property name="text">
           <string>Apply Calibration</string>
          </property>
+         <property name="icon">
+          <iconset resource="../icons.qrc">
+           <normaloff>:/icons/ok.png</normaloff>:/icons/ok.png</iconset>
+         </property>
         </widget>
        </item>
       </layout>
@@ -111,6 +117,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -183,17 +183,17 @@ VNA::VNA(AppWindow *window)
     tb_sweep->addWidget(new QLabel("Span:"));
     tb_sweep->addWidget(eSpan);
 
-    auto bFull = new QPushButton(QIcon::fromTheme("zoom-fit-best"), "");
+    auto bFull = new QPushButton(QIcon::fromTheme("zoom-fit-best", QIcon(":/icons/zoom-fit.png")), "");
     bFull->setToolTip("Full span");
     connect(bFull, &QPushButton::clicked, this, &VNA::SetFullSpan);
     tb_sweep->addWidget(bFull);
 
-    auto bZoomIn = new QPushButton(QIcon::fromTheme("zoom-in"), "");
+    auto bZoomIn = new QPushButton(QIcon::fromTheme("zoom-in", QIcon(":/icons/zoom-in.png")), "");
     bZoomIn->setToolTip("Zoom in");
     connect(bZoomIn, &QPushButton::clicked, this, &VNA::SpanZoomIn);
     tb_sweep->addWidget(bZoomIn);
 
-    auto bZoomOut = new QPushButton(QIcon::fromTheme("zoom-out"), "");
+    auto bZoomOut = new QPushButton(QIcon::fromTheme("zoom-out", QIcon(":/icons/zoom-out.png")), "");
     bZoomOut->setToolTip("Zoom out");
     connect(bZoomOut, &QPushButton::clicked, this, &VNA::SpanZoomOut);
     tb_sweep->addWidget(bZoomOut);

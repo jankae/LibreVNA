@@ -44,7 +44,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-add"/>
+        <iconset theme="list-add" resource="../icons.qrc">
+         <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
        </property>
       </widget>
      </item>
@@ -63,7 +64,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-remove"/>
+        <iconset theme="list-remove" resource="../icons.qrc">
+         <normaloff>:/icons/remove.png</normaloff>:/icons/remove.png</iconset>
        </property>
       </widget>
      </item>
@@ -84,6 +86,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

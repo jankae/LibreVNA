@@ -29,8 +29,8 @@
         <string>To File</string>
        </property>
        <property name="icon">
-        <iconset theme="document-save">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="document-save" resource="../icons.qrc">
+         <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
        </property>
       </widget>
      </item>
@@ -40,8 +40,8 @@
         <string>Clear</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-clear">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="edit-clear" resource="../icons.qrc">
+         <normaloff>:/icons/clear.png</normaloff>:/icons/clear.png</iconset>
        </property>
       </widget>
      </item>
@@ -72,6 +72,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -2,15 +2,12 @@
     <qresource prefix="/icons"/>
     <qresource prefix="/">
         <file>icons/add.png</file>
-        <file>icons/delete.png</file>
         <file>icons/edit.png</file>
         <file>icons/invisible.svg</file>
         <file>icons/visible.svg</file>
         <file>icons/pause.svg</file>
         <file>icons/play.svg</file>
         <file>icons/plus.svg</file>
-        <file>icons/export.svg</file>
-        <file>icons/import.svg</file>
         <file>icons/close.svg</file>
         <file>icons/horizontal.svg</file>
         <file>icons/vertical.svg</file>
@@ -22,5 +19,19 @@
         <file>icons/sCpL_small.png</file>
         <file>icons/sLpC_small.png</file>
         <file>icons/sLpL_small.png</file>
+        <file>icons/remove.png</file>
+        <file>icons/cancel.png</file>
+        <file>icons/clear.png</file>
+        <file>icons/export.png</file>
+        <file>icons/import.png</file>
+        <file>icons/ok.png</file>
+        <file>icons/open.png</file>
+        <file>icons/play.png</file>
+        <file>icons/refresh.png</file>
+        <file>icons/save.png</file>
+        <file>icons/trash.png</file>
+        <file>icons/zoom-fit.png</file>
+        <file>icons/zoom-in.png</file>
+        <file>icons/zoom-out.png</file>
     </qresource>
 </RCC>
