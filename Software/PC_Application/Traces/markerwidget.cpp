@@ -12,6 +12,10 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
     ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexType, new MarkerTypeDelegate);
     ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexSettings, new MarkerSettingsDelegate);
 
+    ui->tableView->setColumnWidth(TraceMarkerModel::ColIndexNumber, 21);
+    ui->tableView->setColumnWidth(TraceMarkerModel::ColIndexTrace, 80);
+    ui->tableView->setColumnWidth(TraceMarkerModel::ColIndexType, 150);
+
     connect(&model.getModel(), &TraceModel::traceAdded, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceRemoved, this, &MarkerWidget::updatePersistentEditors);
 }

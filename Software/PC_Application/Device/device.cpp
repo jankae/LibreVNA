@@ -107,15 +107,15 @@ uint8_t *USBInBuffer::getBuffer() const
 }
 
 static Protocol::DeviceLimits limits = {
-    .minFreq = 1000000,
+    .minFreq = 0,
     .maxFreq = 6000000000,
     .minIFBW = 10,
-    .maxIFBW = 10000,
+    .maxIFBW = 50000,
     .maxPoints = 4501,
     .cdbm_min = -4000,
-    .cdbm_max = -1000,
+    .cdbm_max = 0,
     .minRBW = 10,
-    .maxRBW = 10000,
+    .maxRBW = 100000,
 };
 
 Device::Device(QString serial)
