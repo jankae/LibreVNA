@@ -176,8 +176,8 @@ Calkit::SOLT Calkit::toSOLT(double frequency)
             ref.Open = (imp_open - complex<double>(50.0)) / (imp_open + complex<double>(50.0));
         }
         // transform the delay into a phase shift for the given frequency
-        double open_phaseshift = -2 * M_PI * frequency * open_delay * 1e-12;
-        double open_att_db = open_loss * 1e9 * 4.3429 * open_delay * 1e-12 / open_Z0 * sqrt(frequency / 1e9);
+        double open_phaseshift = -2 * M_PI * frequency * 2 * open_delay * 1e-12;
+        double open_att_db = open_loss * 1e9 * 4.3429 * 2 * open_delay * 1e-12 / open_Z0 * sqrt(frequency / 1e9);
         double open_att = pow(10.0, -open_att_db / 10.0);
         auto open_correction = polar<double>(open_att, open_phaseshift);
         ref.Open *= open_correction;
@@ -192,8 +192,8 @@ Calkit::SOLT Calkit::toSOLT(double frequency)
         auto imp_short = complex<double>(0, frequency * 2 * M_PI * Lseries);
         ref.Short =  (imp_short - complex<double>(50.0)) / (imp_short + complex<double>(50.0));
         // transform the delay into a phase shift for the given frequency
-        double short_phaseshift = -2 * M_PI * frequency * short_delay * 1e-12;
-        double short_att_db = short_loss * 1e9 * 4.3429 * short_delay * 1e-12 / short_Z0 * sqrt(frequency / 1e9);;
+        double short_phaseshift = -2 * M_PI * frequency * 2 * short_delay * 1e-12;
+        double short_att_db = short_loss * 1e9 * 4.3429 * 2 * short_delay * 1e-12 / short_Z0 * sqrt(frequency / 1e9);;
         double short_att = pow(10.0, -short_att_db / 10.0);
         auto short_correction = polar<double>(short_att, short_phaseshift);
         ref.Short *= short_correction;

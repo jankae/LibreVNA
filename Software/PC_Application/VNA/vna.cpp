@@ -70,10 +70,10 @@ VNA::VNA(AppWindow *window)
     auto tracesmith2 = new TraceSmithChart(traceModel);
     tracesmith2->enableTrace(tS22, true);
 
-    auto tracebode1 = new TraceXYPlot(traceModel);
-    tracebode1->enableTrace(tS12, true);
-    auto tracebode2 = new TraceXYPlot(traceModel);
-    tracebode2->enableTrace(tS21, true);
+    auto traceXY1 = new TraceXYPlot(traceModel);
+    traceXY1->enableTrace(tS12, true);
+    auto traceXY2 = new TraceXYPlot(traceModel);
+    traceXY2->enableTrace(tS21, true);
 
     connect(&traceModel, &TraceModel::requiredExcitation, this, &VNA::ExcitationRequired);
 
@@ -81,8 +81,8 @@ VNA::VNA(AppWindow *window)
     central->Child1()->splitHorizontally();
     central->Child2()->splitHorizontally();
     central->Child1()->Child1()->setPlot(tracesmith1);
-    central->Child1()->Child2()->setPlot(tracebode1);
-    central->Child2()->Child1()->setPlot(tracebode2);
+    central->Child1()->Child2()->setPlot(traceXY1);
+    central->Child2()->Child1()->setPlot(traceXY2);
     central->Child2()->Child2()->setPlot(tracesmith2);
 
     // Create menu entries and connections

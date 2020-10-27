@@ -79,7 +79,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="bBodeplot">
+                 <widget class="QPushButton" name="bXYplot">
                   <property name="text">
                    <string>XY-plot</string>
                   </property>

@@ -55,13 +55,13 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tPort2->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::Port2);
     traceModel.addTrace(tPort2);
 
-    auto tracebode = new TraceXYPlot(traceModel);
-    tracebode->enableTrace(tPort1, true);
-    tracebode->enableTrace(tPort2, true);
-    tracebode->setYAxis(0, TraceXYPlot::YAxisType::Magnitude, false, false, -120,0,10);
-    tracebode->setYAxis(1, TraceXYPlot::YAxisType::Disabled, false, true, 0,0,1);
+    auto traceXY = new TraceXYPlot(traceModel);
+    traceXY->enableTrace(tPort1, true);
+    traceXY->enableTrace(tPort2, true);
+    traceXY->setYAxis(0, TraceXYPlot::YAxisType::Magnitude, false, false, -120,0,10);
+    traceXY->setYAxis(1, TraceXYPlot::YAxisType::Disabled, false, true, 0,0,1);
 
-    central->setPlot(tracebode);
+    central->setPlot(traceXY);
 
     // Create menu entries and connections
     // Sweep toolbar

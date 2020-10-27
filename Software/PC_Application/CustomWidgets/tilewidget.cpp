@@ -128,7 +128,7 @@ void TileWidget::on_bSmithchart_clicked()
     setContent(new TraceSmithChart(model));
 }
 
-void TileWidget::on_bBodeplot_clicked()
+void TileWidget::on_bXYplot_clicked()
 {
     setContent(new TraceXYPlot(model));
 }

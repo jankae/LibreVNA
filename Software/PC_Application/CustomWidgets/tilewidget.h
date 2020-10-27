@@ -28,7 +28,7 @@ public slots:
 
 private slots:
     void on_bSmithchart_clicked();
-    void on_bBodeplot_clicked();
+    void on_bXYplot_clicked();
     void traceDeleted(TracePlot *t);
 
 private:

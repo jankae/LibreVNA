@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>BodeplotAxisDialog</class>
- <widget class="QDialog" name="BodeplotAxisDialog">
+ <class>XYplotAxisDialog</class>
+ <widget class="QDialog" name="XYplotAxisDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -32,7 +32,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -510,7 +510,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>BodeplotAxisDialog</receiver>
+   <receiver>XYplotAxisDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -526,7 +526,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>BodeplotAxisDialog</receiver>
+   <receiver>XYplotAxisDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -541,7 +541,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="Y1group"/>
   <buttongroup name="Y2group"/>
+  <buttongroup name="Y1group"/>
  </buttongroups>
 </ui>
