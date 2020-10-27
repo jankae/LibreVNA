@@ -1,5 +1,5 @@
-#ifndef TRACEBODEPLOT_H
-#define TRACEBODEPLOT_H
+#ifndef TRACEXYPLOT_H
+#define TRACEXYPLOT_H
 
 #include "traceplot.h"
 #include <set>
@@ -11,10 +11,10 @@
 #include <qwt_plot_picker.h>
 
 // Derived plotpicker, exposing transformation functions
-class BodeplotPicker : public QwtPlotPicker {
+class XYplotPicker : public QwtPlotPicker {
     Q_OBJECT
 public:
-    BodeplotPicker(int xAxis, int yAxis, RubberBand rubberBand, DisplayMode trackerMode, QWidget *w)
+    XYplotPicker(int xAxis, int yAxis, RubberBand rubberBand, DisplayMode trackerMode, QWidget *w)
         : QwtPlotPicker(xAxis, yAxis, rubberBand, trackerMode, w) {};
     QPoint plotToPixel(const QPointF &pos) {
         return transform(pos);
@@ -24,33 +24,46 @@ public:
     }
 };
 
-class TraceBodePlot : public TracePlot
+class TraceXYPlot : public TracePlot
 {
-    friend class BodeplotAxisDialog;
+    friend class XYplotAxisDialog;
     Q_OBJECT
 public:
-    TraceBodePlot(TraceModel &model, QWidget *parent = nullptr);
-    ~TraceBodePlot();
+    TraceXYPlot(TraceModel &model, QWidget *parent = nullptr);
+    ~TraceXYPlot();
 
     enum class YAxisType {
         Disabled = 0,
+        // S parameter options
         Magnitude = 1,
         Phase = 2,
         VSWR = 3,
+        // TDR options
+        Impulse = 4,
+        Step = 5,
+        Impedance = 6,
         Last,
+    };
+    static const std::set<YAxisType> YAxisTypes;
+    enum class XAxisType {
+        Frequency,
+        Time,
+        Distance,
     };
 
     virtual void setXAxis(double min, double max) override;
     void setYAxis(int axis, YAxisType type, bool log, bool autorange, double min, double max, double div);
-    void setXAxis(bool autorange, double min, double max, double div);
+    void setXAxis(XAxisType type, bool autorange, double min, double max, double div);
     void enableTrace(Trace *t, bool enabled) override;
 
-    // Applies potentially changed colors to all bodeplots
+    // Applies potentially changed colors to all XY-plots
     static void updateGraphColors();
 
+    bool isTDRtype(YAxisType type);
+
 protected:
-    virtual void updateContextMenu();
-    virtual bool supported(Trace *t);
+    virtual void updateContextMenu() override;
+    virtual bool supported(Trace *t) override;
     void replot() override;
 
 private slots:
@@ -74,7 +87,10 @@ private:
 
     class Axis {
     public:
-        YAxisType type;
+        union {
+            YAxisType Ytype;
+            XAxisType Xtype;
+        };
         bool log;
         bool autorange;
         double rangeMin;
@@ -97,10 +113,10 @@ private:
     TraceMarker *selectedMarker;
     QwtPlotCurve *selectedCurve;
 
-    BodeplotPicker *drawPicker;
+    XYplotPicker *drawPicker;
 
     // keep track of all created plots for changing colors
-    static std::set<TraceBodePlot*> allPlots;
+    static std::set<TraceXYPlot*> allPlots;
 };
 
-#endif // TRACEBODEPLOT_H
+#endif // TRACEXYPLOT_H

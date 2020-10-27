@@ -1,7 +1,7 @@
 #include "tilewidget.h"
 #include "ui_tilewidget.h"
 #include <QDebug>
-#include "Traces/tracebodeplot.h"
+#include "Traces/tracexyplot.h"
 #include "Traces/tracesmithchart.h"
 
 TileWidget::TileWidget(TraceModel &model, QWidget *parent) :
@@ -130,7 +130,7 @@ void TileWidget::on_bSmithchart_clicked()
 
 void TileWidget::on_bBodeplot_clicked()
 {
-    setContent(new TraceBodePlot(model));
+    setContent(new TraceXYPlot(model));
 }
 
 void TileWidget::traceDeleted(TracePlot *)

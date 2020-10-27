@@ -19,10 +19,9 @@ HEADERS += \
     SpectrumAnalyzer/spectrumanalyzer.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
-    Traces/bodeplotaxisdialog.h \
+    Traces/fftcomplex.h \
     Traces/markerwidget.h \
     Traces/trace.h \
-    Traces/tracebodeplot.h \
     Traces/traceeditdialog.h \
     Traces/traceexportdialog.h \
     Traces/traceimportdialog.h \
@@ -32,6 +31,8 @@ HEADERS += \
     Traces/traceplot.h \
     Traces/tracesmithchart.h \
     Traces/tracewidget.h \
+    Traces/tracexyplot.h \
+    Traces/xyplotaxisdialog.h \
     VNA/vna.h \
     appwindow.h \
     averaging.h \
@@ -63,10 +64,9 @@ SOURCES += \
     SpectrumAnalyzer/spectrumanalyzer.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
-    Traces/bodeplotaxisdialog.cpp \
+    Traces/fftcomplex.cpp \
     Traces/markerwidget.cpp \
     Traces/trace.cpp \
-    Traces/tracebodeplot.cpp \
     Traces/traceeditdialog.cpp \
     Traces/traceexportdialog.cpp \
     Traces/traceimportdialog.cpp \
@@ -76,6 +76,8 @@ SOURCES += \
     Traces/traceplot.cpp \
     Traces/tracesmithchart.cpp \
     Traces/tracewidget.cpp \
+    Traces/tracexyplot.cpp \
+    Traces/xyplotaxisdialog.cpp \
     VNA/vna.cpp \
     appwindow.cpp \
     averaging.cpp \
@@ -103,12 +105,12 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
-    Traces/bodeplotaxisdialog.ui \
     Traces/markerwidget.ui \
     Traces/traceeditdialog.ui \
     Traces/traceexportdialog.ui \
     Traces/traceimportdialog.ui \
     Traces/tracewidget.ui \
+    Traces/xyplotaxisdialog.ui \
     main.ui \
     preferencesdialog.ui
 

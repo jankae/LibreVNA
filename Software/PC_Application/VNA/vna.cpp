@@ -26,7 +26,7 @@
 #include "Traces/tracemodel.h"
 #include "Traces/tracewidget.h"
 #include "Traces/tracesmithchart.h"
-#include "Traces/tracebodeplot.h"
+#include "Traces/tracexyplot.h"
 #include "Traces/traceimportdialog.h"
 #include "CustomWidgets/tilewidget.h"
 #include "CustomWidgets/siunitedit.h"
@@ -70,9 +70,9 @@ VNA::VNA(AppWindow *window)
     auto tracesmith2 = new TraceSmithChart(traceModel);
     tracesmith2->enableTrace(tS22, true);
 
-    auto tracebode1 = new TraceBodePlot(traceModel);
+    auto tracebode1 = new TraceXYPlot(traceModel);
     tracebode1->enableTrace(tS12, true);
-    auto tracebode2 = new TraceBodePlot(traceModel);
+    auto tracebode2 = new TraceXYPlot(traceModel);
     tracebode2->enableTrace(tS21, true);
 
     connect(&traceModel, &TraceModel::requiredExcitation, this, &VNA::ExcitationRequired);

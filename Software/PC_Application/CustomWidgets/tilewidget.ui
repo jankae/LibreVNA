@@ -81,7 +81,7 @@
                 <item>
                  <widget class="QPushButton" name="bBodeplot">
                   <property name="text">
-                   <string>Bodeplot</string>
+                   <string>XY-plot</string>
                   </property>
                  </widget>
                 </item>

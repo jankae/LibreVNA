@@ -1,9 +1,12 @@
 #include "trace.h"
+#include <math.h>
+#include "fftcomplex.h"
 
 using namespace std;
 
 Trace::Trace(QString name, QColor color, LiveParameter live)
-    : _name(name),
+    : tdr_users(0),
+      _name(name),
       _color(color),
       _liveType(LivedataType::Overwrite),
       _liveParam(live),
@@ -64,6 +67,12 @@ void Trace::addData(Trace::Data d) {
     }
     emit dataAdded(this, d);
     emit dataChanged();
+    if(lower == _data.begin()) {
+        // received the first point, which means the last sweep just finished
+        if(tdr_users) {
+            updateTimeDomainData();
+        }
+    }
 }
 
 void Trace::setName(QString name) {
@@ -137,10 +146,77 @@ void Trace::removeMarker(TraceMarker *m)
     markers.erase(m);
     emit markerRemoved(m);
 }
+//#include <iostream>
+//#include <chrono>
+
+void Trace::updateTimeDomainData()
+{
+//    using namespace std::chrono;
+//    auto starttime = duration_cast< milliseconds >(
+//        system_clock::now().time_since_epoch()
+//    ).count();
+    auto steps = size();
+    if(minFreq() * size() != maxFreq()) {
+        // data is not available with correct frequency spacing, calculate required steps
+        steps = maxFreq() / minFreq();
+    }
+    const double PI = 3.141592653589793238463;
+    // reserve vector for negative frequenies and DC as well
+    vector<complex<double>> frequencyDomain(2*steps + 1);
+    // copy frequencies, use the flipped conjugate for negative part
+    for(unsigned int i = 1;i<=steps;i++) {
+        auto S = getData(minFreq() * i);
+        constexpr double alpha0 = 0.54;
+        auto hamming = alpha0 - (1.0 - alpha0) * -cos(PI * i / steps);
+        S *= hamming;
+        frequencyDomain[2 * steps - i + 1] = conj(S);
+        frequencyDomain[i] = S;
+    }
+    // use simple extrapolation from lowest two points to extract DC value
+    auto abs_DC = 2.0 * abs(frequencyDomain[1]) - abs(frequencyDomain[2]);
+    auto phase_DC = 2.0 * arg(frequencyDomain[1]) - arg(frequencyDomain[2]);
+    frequencyDomain[0] = polar(abs_DC, phase_DC);
+
+    auto fft_bins = frequencyDomain.size();
+    timeDomain.clear();
+    timeDomain.resize(fft_bins);
+    const double fs = 1.0 / (minFreq() * fft_bins);
+    double last_step = 0.0;
+
+    Fft::transform(frequencyDomain, true);
+    for(unsigned int i = 0;i<fft_bins;i++) {
+        TimedomainData t;
+        t.time = fs * i;
+        t.impulseResponse = real(frequencyDomain[i]) / fft_bins;
+        t.stepResponse = last_step;
+        last_step += t.impulseResponse;
+        timeDomain.push_back(t);
+    }
+//    auto duration = duration_cast< milliseconds >(
+//        system_clock::now().time_since_epoch()
+//    ).count() - starttime;
+//    cout << "TDR: " << this << " (took " << duration << "ms)" <<endl;
+}
 
 void Trace::setReflection(bool value)
 {
     reflection = value;
+}
+
+void Trace::addTDRinterest()
+{
+    if(tdr_users == 0) {
+        // no recent time domain data available, calculate now
+        updateTimeDomainData();
+    }
+    tdr_users++;
+}
+
+void Trace::removeTDRinterest()
+{
+    if(tdr_users > 0) {
+        tdr_users--;
+    }
 }
 
 void Trace::setCalibration(bool value)
@@ -288,7 +364,16 @@ std::complex<double> Trace::getData(double frequency)
         return std::numeric_limits<std::complex<double>>::quiet_NaN();
     }
 
-    return sample(index(frequency)).S;
+    auto i = index(frequency);
+    if(_data.at(i).frequency == frequency) {
+        return _data[i].S;
+    } else {
+        // no exact frequency match, needs to interpolate
+        auto high = _data[i];
+        auto low = _data[i-1];
+        double alpha = (frequency - low.frequency) / (high.frequency - low.frequency);
+        return low.S * (1 - alpha) + high.S * alpha;
+    }
 }
 
 int Trace::index(double frequency)

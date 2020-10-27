@@ -25,7 +25,7 @@
 #include "Traces/tracemodel.h"
 #include "Traces/tracewidget.h"
 #include "Traces/tracesmithchart.h"
-#include "Traces/tracebodeplot.h"
+#include "Traces/tracexyplot.h"
 #include "Traces/traceimportdialog.h"
 #include "CustomWidgets/tilewidget.h"
 #include "CustomWidgets/siunitedit.h"
@@ -55,11 +55,11 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tPort2->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::Port2);
     traceModel.addTrace(tPort2);
 
-    auto tracebode = new TraceBodePlot(traceModel);
+    auto tracebode = new TraceXYPlot(traceModel);
     tracebode->enableTrace(tPort1, true);
     tracebode->enableTrace(tPort2, true);
-    tracebode->setYAxis(0, TraceBodePlot::YAxisType::Magnitude, false, false, -120,0,10);
-    tracebode->setYAxis(1, TraceBodePlot::YAxisType::Disabled, false, true, 0,0,1);
+    tracebode->setYAxis(0, TraceXYPlot::YAxisType::Magnitude, false, false, -120,0,10);
+    tracebode->setYAxis(1, TraceXYPlot::YAxisType::Disabled, false, true, 0,0,1);
 
     central->setPlot(tracebode);
 

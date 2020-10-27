@@ -25,7 +25,7 @@
 #include "Traces/tracemodel.h"
 #include "Traces/tracewidget.h"
 #include "Traces/tracesmithchart.h"
-#include "Traces/tracebodeplot.h"
+#include "Traces/tracexyplot.h"
 #include "Traces/traceimportdialog.h"
 #include "CustomWidgets/tilewidget.h"
 #include "CustomWidgets/siunitedit.h"
@@ -110,7 +110,7 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         Preferences::getInstance().edit();
         // settings might have changed, update necessary stuff
-        TraceBodePlot::updateGraphColors();
+        TraceXYPlot::updateGraphColors();
     });
 
     setWindowTitle("VNA");

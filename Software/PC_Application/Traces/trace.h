@@ -21,6 +21,13 @@ public:
         std::complex<double> S;
     };
 
+    class TimedomainData {
+    public:
+        double time;
+        double impulseResponse;
+        double stepResponse;
+    };
+
     enum class LiveParameter {
         S11,
         S12,
@@ -76,6 +83,14 @@ public:
     void setCalibration(bool value);
     void setReflection(bool value);
 
+    // TDR calculation can be ressource intensive, only perform when some other module is interested.
+    // Each interested module should call addTDRinterest(), read the data with getTDR() and finally
+    // call removeTDRinterest() once TDR updates are no longer required.
+    // The data is only updated at the end of a sweep and upon the first addTDRinterest() call.
+    void addTDRinterest();
+    void removeTDRinterest();
+    const std::vector<TimedomainData>& getTDR() { return timeDomain;}
+
 public slots:
     void setTouchstoneParameter(int value);
     void setTouchstoneFilename(const QString &value);
@@ -98,7 +113,11 @@ signals:
     void markerRemoved(TraceMarker *m);
 
 private:
+    void updateTimeDomainData();
+    void printTimeDomain();
     std::vector<Data> _data;
+    std::vector<TimedomainData> timeDomain;
+    unsigned int tdr_users;
     QString _name;
     QColor _color;
     LivedataType _liveType;

@@ -1,4 +1,4 @@
-#include "tracebodeplot.h"
+#include "tracexyplot.h"
 #include <QGridLayout>
 #include "qwtplotpiecewisecurve.h"
 #include "qwt_series_data.h"
@@ -11,18 +11,26 @@
 #include "tracemarker.h"
 #include <qwt_symbol.h>
 #include <qwt_picker_machine.h>
-#include "bodeplotaxisdialog.h"
+#include "xyplotaxisdialog.h"
 #include <preferences.h>
 
 using namespace std;
 
-set<TraceBodePlot*> TraceBodePlot::allPlots;
+set<TraceXYPlot*> TraceXYPlot::allPlots;
 
-static double AxisTransformation(TraceBodePlot::YAxisType type, complex<double> data) {
+const set<TraceXYPlot::YAxisType> TraceXYPlot::YAxisTypes = {TraceXYPlot::YAxisType::Disabled,
+                                           TraceXYPlot::YAxisType::Magnitude,
+                                           TraceXYPlot::YAxisType::Phase,
+                                           TraceXYPlot::YAxisType::VSWR,
+                                           TraceXYPlot::YAxisType::Impulse,
+                                           TraceXYPlot::YAxisType::Step,
+                                           TraceXYPlot::YAxisType::Impedance};
+
+static double FrequencyAxisTransformation(TraceXYPlot::YAxisType type, complex<double> data) {
     switch(type) {
-    case TraceBodePlot::YAxisType::Magnitude: return 20*log10(abs(data)); break;
-    case TraceBodePlot::YAxisType::Phase: return arg(data) * 180.0 / M_PI; break;
-    case TraceBodePlot::YAxisType::VSWR:
+    case TraceXYPlot::YAxisType::Magnitude: return 20*log10(abs(data)); break;
+    case TraceXYPlot::YAxisType::Phase: return arg(data) * 180.0 / M_PI; break;
+    case TraceXYPlot::YAxisType::VSWR:
         if(abs(data) < 1.0) {
             return (1+abs(data)) / (1-abs(data));
         }
@@ -31,31 +39,79 @@ static double AxisTransformation(TraceBodePlot::YAxisType type, complex<double> 
     }
     return numeric_limits<double>::quiet_NaN();
 }
+static double TimeAxisTransformation(TraceXYPlot::YAxisType type, Trace *t, int index) {
+    auto timeData = t->getTDR()[index];
+    switch(type) {
+    case TraceXYPlot::YAxisType::Impulse: return timeData.impulseResponse; break;
+    case TraceXYPlot::YAxisType::Step: return timeData.stepResponse; break;
+    case TraceXYPlot::YAxisType::Impedance:
+        if(abs(timeData.stepResponse) < 1.0) {
+            return 50 * (1+timeData.stepResponse) / (1-timeData.stepResponse);
+        }
+        break;
+    default: break;
+    }
+    return numeric_limits<double>::quiet_NaN();
+}
 
-template<TraceBodePlot::YAxisType E> class QwtTraceSeries : public QwtSeriesData<QPointF> {
+class QwtTraceSeries : public QwtSeriesData<QPointF> {
 public:
-    QwtTraceSeries(Trace &t)
+    QwtTraceSeries(Trace &t, TraceXYPlot::YAxisType Ytype, TraceXYPlot::XAxisType Xtype)
         : QwtSeriesData<QPointF>(),
-          t(t){};
+          Ytype(Ytype),
+          Xtype(Xtype),
+          t(t){}
     size_t size() const override {
-        return t.size();
+        switch(Ytype) {
+        case TraceXYPlot::YAxisType::Magnitude:
+        case TraceXYPlot::YAxisType::Phase:
+        case TraceXYPlot::YAxisType::VSWR:
+            return t.size();
+        case TraceXYPlot::YAxisType::Impulse:
+        case TraceXYPlot::YAxisType::Step:
+        case TraceXYPlot::YAxisType::Impedance:
+            return t.getTDR().size();
+        default:
+            return 0;
+        }
     }
     QPointF sample(size_t i) const override {
-        Trace::Data d = t.sample(i);
-        QPointF p;
-        p.setX(d.frequency);
-        p.setY(AxisTransformation(E, d.S));
-        return p;
+        switch(Ytype) {
+        case TraceXYPlot::YAxisType::Magnitude:
+        case TraceXYPlot::YAxisType::Phase:
+        case TraceXYPlot::YAxisType::VSWR: {
+            Trace::Data d = t.sample(i);
+            QPointF p;
+            p.setX(d.frequency);
+            p.setY(FrequencyAxisTransformation(Ytype, d.S));
+            return p;
+        }
+        case TraceXYPlot::YAxisType::Impulse:
+        case TraceXYPlot::YAxisType::Step:
+        case TraceXYPlot::YAxisType::Impedance: {
+            auto sample = t.getTDR()[i];
+            QPointF p;
+            // TODO set distance
+            p.setX(sample.time);
+            p.setY(TimeAxisTransformation(Ytype, &t, i));
+            return p;
+        }
+        default:
+            return QPointF();
+        }
+
     }
     QRectF boundingRect() const override {
         return qwtBoundingRect(*this);
     }
 
 private:
+    TraceXYPlot::YAxisType Ytype;
+    TraceXYPlot::XAxisType Xtype;
     Trace &t;
 };
 
-TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
+TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     : TracePlot(parent),
       selectedMarker(nullptr)
 {
@@ -69,10 +125,10 @@ TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
     grid->attach(plot);
     setColorFromPreferences();
 
-    auto selectPicker = new BodeplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
+    auto selectPicker = new XYplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
     selectPicker->setStateMachine(new QwtPickerClickPointMachine);
 
-    drawPicker = new BodeplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
+    drawPicker = new XYplotPicker(plot->xBottom, plot->yLeft, QwtPicker::NoRubberBand, QwtPicker::ActiveOnly, plot->canvas());
     drawPicker->setStateMachine(new QwtPickerDragPointMachine);
     drawPicker->setTrackerPen(QPen(Qt::white));
 
@@ -94,14 +150,14 @@ TraceBodePlot::TraceBodePlot(TraceModel &model, QWidget *parent)
     setYAxis(1, YAxisType::Phase, false, false, -180, 180, 30);
     // enable autoscaling and set for full span (no information about actual span available yet)
     setXAxis(0, 6000000000);
-    setXAxis(true, 0, 6000000000, 600000000);
+    setXAxis(XAxisType::Frequency, true, 0, 6000000000, 600000000);
     // get notified when the span changes
-    connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TraceBodePlot::setXAxis));
+    connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TraceXYPlot::setXAxis));
 
     allPlots.insert(this);
 }
 
-TraceBodePlot::~TraceBodePlot()
+TraceXYPlot::~TraceXYPlot()
 {
     for(int axis = 0;axis < 2;axis++) {
         for(auto pd : curves[axis]) {
@@ -112,17 +168,16 @@ TraceBodePlot::~TraceBodePlot()
     allPlots.erase(this);
 }
 
-void TraceBodePlot::setXAxis(double min, double max)
+void TraceXYPlot::setXAxis(double min, double max)
 {
     sweep_fmin = min;
     sweep_fmax = max;
     updateXAxis();
 }
 
-void TraceBodePlot::setYAxis(int axis, TraceBodePlot::YAxisType type, bool log, bool autorange, double min, double max, double div)
+void TraceXYPlot::setYAxis(int axis, TraceXYPlot::YAxisType type, bool log, bool autorange, double min, double max, double div)
 {
-    if(YAxis[axis].type != type) {
-        YAxis[axis].type = type;
+    if(YAxis[axis].Ytype != type) {
         // remove traces that are active but not supported with the new axis type
         bool erased = false;
         do {
@@ -136,6 +191,13 @@ void TraceBodePlot::setYAxis(int axis, TraceBodePlot::YAxisType type, bool log, 
             }
         } while(erased);
 
+        if(isTDRtype(YAxis[axis].Ytype)) {
+            for(auto t : tracesAxis[axis]) {
+                t->removeTDRinterest();
+            }
+        }
+        YAxis[axis].Ytype = type;
+
         for(auto t : tracesAxis[axis]) {
             // supported but needs an adjusted QwtSeriesData
             auto td = curves[axis][t];
@@ -148,6 +210,9 @@ void TraceBodePlot::setYAxis(int axis, TraceBodePlot::YAxisType type, bool log, 
                 for(auto m : marker) {
                     markerDataChanged(m);
                 }
+            }
+            if(isTDRtype(type)) {
+                t->addTDRinterest();
             }
         }
     }
@@ -168,8 +233,9 @@ void TraceBodePlot::setYAxis(int axis, TraceBodePlot::YAxisType type, bool log, 
     replot();
 }
 
-void TraceBodePlot::setXAxis(bool autorange, double min, double max, double div)
+void TraceXYPlot::setXAxis(XAxisType type, bool autorange, double min, double max, double div)
 {
+    XAxis.Xtype = type;
     XAxis.autorange = autorange;
     XAxis.rangeMin = min;
     XAxis.rangeMax = max;
@@ -177,33 +243,45 @@ void TraceBodePlot::setXAxis(bool autorange, double min, double max, double div)
     updateXAxis();
 }
 
-void TraceBodePlot::enableTrace(Trace *t, bool enabled)
+void TraceXYPlot::enableTrace(Trace *t, bool enabled)
 {
     for(int axis = 0;axis < 2;axis++) {
-        if(supported(t, YAxis[axis].type)) {
+        if(supported(t, YAxis[axis].Ytype)) {
             enableTraceAxis(t, axis, enabled);
         }
     }
 }
 
-void TraceBodePlot::updateGraphColors()
+void TraceXYPlot::updateGraphColors()
 {
     for(auto p : allPlots) {
         p->setColorFromPreferences();
     }
 }
 
-void TraceBodePlot::updateContextMenu()
+bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
+{
+    switch(type) {
+    case YAxisType::Impulse:
+    case YAxisType::Step:
+    case YAxisType::Impedance:
+        return true;
+    default:
+        return false;
+    }
+}
+
+void TraceXYPlot::updateContextMenu()
 {
     contextmenu->clear();
     auto setup = new QAction("Axis setup...");
     connect(setup, &QAction::triggered, [this]() {
-        auto setup = new BodeplotAxisDialog(this);
+        auto setup = new XYplotAxisDialog(this);
         setup->show();
     });
     contextmenu->addAction(setup);
     for(int axis = 0;axis < 2;axis++) {
-        if(YAxis[axis].type == YAxisType::Disabled) {
+        if(YAxis[axis].Ytype == YAxisType::Disabled) {
             continue;
         }
         if(axis == 0) {
@@ -213,7 +291,7 @@ void TraceBodePlot::updateContextMenu()
         }
         for(auto t : traces) {
             // Skip traces that are not applicable for the selected axis type
-            if(!supported(t.first, YAxis[axis].type)) {
+            if(!supported(t.first, YAxis[axis].Ytype)) {
                 continue;
             }
 
@@ -236,18 +314,18 @@ void TraceBodePlot::updateContextMenu()
     });
 }
 
-bool TraceBodePlot::supported(Trace *)
+bool TraceXYPlot::supported(Trace *)
 {
     // potentially possible to add every kind of trace (depends on axis)
     return true;
 }
 
-void TraceBodePlot::replot()
+void TraceXYPlot::replot()
 {
     plot->replot();
 }
 
-QString TraceBodePlot::AxisTypeToName(TraceBodePlot::YAxisType type)
+QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
 {
     switch(type) {
     case YAxisType::Disabled: return "Disabled"; break;
@@ -258,7 +336,7 @@ QString TraceBodePlot::AxisTypeToName(TraceBodePlot::YAxisType type)
     }
 }
 
-void TraceBodePlot::enableTraceAxis(Trace *t, int axis, bool enabled)
+void TraceXYPlot::enableTraceAxis(Trace *t, int axis, bool enabled)
 {
     bool alreadyEnabled = tracesAxis[axis].find(t) != tracesAxis[axis].end();
     if(alreadyEnabled != enabled) {
@@ -272,20 +350,26 @@ void TraceBodePlot::enableTraceAxis(Trace *t, int axis, bool enabled)
             cd.curve->setSamples(cd.data);
             curves[axis][t] = cd;
             // connect signals
-            connect(t, &Trace::dataChanged, this, &TraceBodePlot::triggerReplot);
-            connect(t, &Trace::colorChanged, this, &TraceBodePlot::traceColorChanged);
-            connect(t, &Trace::visibilityChanged, this, &TraceBodePlot::traceColorChanged);
-            connect(t, &Trace::visibilityChanged, this, &TraceBodePlot::triggerReplot);
+            connect(t, &Trace::dataChanged, this, &TraceXYPlot::triggerReplot);
+            connect(t, &Trace::colorChanged, this, &TraceXYPlot::traceColorChanged);
+            connect(t, &Trace::visibilityChanged, this, &TraceXYPlot::traceColorChanged);
+            connect(t, &Trace::visibilityChanged, this, &TraceXYPlot::triggerReplot);
             if(axis == 0) {
-                connect(t, &Trace::markerAdded, this, &TraceBodePlot::markerAdded);
-                connect(t, &Trace::markerRemoved, this, &TraceBodePlot::markerRemoved);
+                connect(t, &Trace::markerAdded, this, &TraceXYPlot::markerAdded);
+                connect(t, &Trace::markerRemoved, this, &TraceXYPlot::markerRemoved);
                 auto tracemarkers = t->getMarkers();
                 for(auto m : tracemarkers) {
                     markerAdded(m);
                 }
             }
+            if(isTDRtype(YAxis[axis].Ytype)) {
+                t->addTDRinterest();
+            }
             traceColorChanged(t);
         } else {
+            if(isTDRtype(YAxis[axis].Ytype)) {
+                t->removeTDRinterest();
+            }
             tracesAxis[axis].erase(t);
             // clean up and delete
             if(curves[axis].find(t) != curves[axis].end()) {
@@ -295,14 +379,14 @@ void TraceBodePlot::enableTraceAxis(Trace *t, int axis, bool enabled)
             int otherAxis = axis == 0 ? 1 : 0;
             if(curves[otherAxis].find(t) == curves[otherAxis].end()) {
                 // this trace is not used anymore, disconnect from notifications
-                disconnect(t, &Trace::dataChanged, this, &TraceBodePlot::triggerReplot);
-                disconnect(t, &Trace::colorChanged, this, &TraceBodePlot::traceColorChanged);
-                disconnect(t, &Trace::visibilityChanged, this, &TraceBodePlot::traceColorChanged);
-                disconnect(t, &Trace::visibilityChanged, this, &TraceBodePlot::triggerReplot);
+                disconnect(t, &Trace::dataChanged, this, &TraceXYPlot::triggerReplot);
+                disconnect(t, &Trace::colorChanged, this, &TraceXYPlot::traceColorChanged);
+                disconnect(t, &Trace::visibilityChanged, this, &TraceXYPlot::traceColorChanged);
+                disconnect(t, &Trace::visibilityChanged, this, &TraceXYPlot::triggerReplot);
             }
             if(axis == 0) {
-                disconnect(t, &Trace::markerAdded, this, &TraceBodePlot::markerAdded);
-                disconnect(t, &Trace::markerRemoved, this, &TraceBodePlot::markerRemoved);
+                disconnect(t, &Trace::markerAdded, this, &TraceXYPlot::markerAdded);
+                disconnect(t, &Trace::markerRemoved, this, &TraceXYPlot::markerRemoved);
                 auto tracemarkers = t->getMarkers();
                 for(auto m : tracemarkers) {
                     markerRemoved(m);
@@ -315,7 +399,7 @@ void TraceBodePlot::enableTraceAxis(Trace *t, int axis, bool enabled)
     }
 }
 
-bool TraceBodePlot::supported(Trace *t, TraceBodePlot::YAxisType type)
+bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
 {
     switch(type) {
     case YAxisType::Disabled:
@@ -331,7 +415,7 @@ bool TraceBodePlot::supported(Trace *t, TraceBodePlot::YAxisType type)
     return true;
 }
 
-void TraceBodePlot::updateXAxis()
+void TraceXYPlot::updateXAxis()
 {
     if(XAxis.autorange && sweep_fmax-sweep_fmin > 0) {
         QList<double> tickList;
@@ -346,21 +430,12 @@ void TraceBodePlot::updateXAxis()
     triggerReplot();
 }
 
-QwtSeriesData<QPointF> *TraceBodePlot::createQwtSeriesData(Trace &t, int axis)
+QwtSeriesData<QPointF> *TraceXYPlot::createQwtSeriesData(Trace &t, int axis)
 {
-    switch(YAxis[axis].type) {
-    case YAxisType::Magnitude:
-        return new QwtTraceSeries<YAxisType::Magnitude>(t);
-    case YAxisType::Phase:
-        return new QwtTraceSeries<YAxisType::Phase>(t);
-    case YAxisType::VSWR:
-        return new QwtTraceSeries<YAxisType::VSWR>(t);
-    default:
-        return nullptr;
-    }
+    return new QwtTraceSeries(t, YAxis[axis].Ytype, XAxis.Xtype);
 }
 
-void TraceBodePlot::traceColorChanged(Trace *t)
+void TraceXYPlot::traceColorChanged(Trace *t)
 {
     for(int axis = 0;axis < 2;axis++) {
         if(curves[axis].find(t) != curves[axis].end()) {
@@ -388,7 +463,7 @@ void TraceBodePlot::traceColorChanged(Trace *t)
     }
 }
 
-void TraceBodePlot::markerAdded(TraceMarker *m)
+void TraceXYPlot::markerAdded(TraceMarker *m)
 {
     if(markers.count(m)) {
         return;
@@ -396,17 +471,17 @@ void TraceBodePlot::markerAdded(TraceMarker *m)
     auto qwtMarker = new QwtPlotMarker;
     markers[m] = qwtMarker;
     markerSymbolChanged(m);
-    connect(m, &TraceMarker::symbolChanged, this, &TraceBodePlot::markerSymbolChanged);
-    connect(m, &TraceMarker::dataChanged, this, &TraceBodePlot::markerDataChanged);
+    connect(m, &TraceMarker::symbolChanged, this, &TraceXYPlot::markerSymbolChanged);
+    connect(m, &TraceMarker::dataChanged, this, &TraceXYPlot::markerDataChanged);
     markerDataChanged(m);
     qwtMarker->attach(plot);
     triggerReplot();
 }
 
-void TraceBodePlot::markerRemoved(TraceMarker *m)
+void TraceXYPlot::markerRemoved(TraceMarker *m)
 {
-    disconnect(m, &TraceMarker::symbolChanged, this, &TraceBodePlot::markerSymbolChanged);
-    disconnect(m, &TraceMarker::dataChanged, this, &TraceBodePlot::markerDataChanged);
+    disconnect(m, &TraceMarker::symbolChanged, this, &TraceXYPlot::markerSymbolChanged);
+    disconnect(m, &TraceMarker::dataChanged, this, &TraceXYPlot::markerDataChanged);
     if(markers.count(m)) {
         markers[m]->detach();
         delete markers[m];
@@ -415,15 +490,15 @@ void TraceBodePlot::markerRemoved(TraceMarker *m)
     triggerReplot();
 }
 
-void TraceBodePlot::markerDataChanged(TraceMarker *m)
+void TraceXYPlot::markerDataChanged(TraceMarker *m)
 {
     auto qwtMarker = markers[m];
     qwtMarker->setXValue(m->getFrequency());
-    qwtMarker->setYValue(AxisTransformation(YAxis[0].type, m->getData()));
+    qwtMarker->setYValue(FrequencyAxisTransformation(YAxis[0].Ytype, m->getData()));
     triggerReplot();
 }
 
-void TraceBodePlot::markerSymbolChanged(TraceMarker *m)
+void TraceXYPlot::markerSymbolChanged(TraceMarker *m)
 {
     auto qwtMarker = markers[m];
     auto old_sym = qwtMarker->symbol();
@@ -437,7 +512,7 @@ void TraceBodePlot::markerSymbolChanged(TraceMarker *m)
     triggerReplot();
 }
 
-void TraceBodePlot::clicked(const QPointF pos)
+void TraceXYPlot::clicked(const QPointF pos)
 {
     auto clickPoint = drawPicker->plotToPixel(pos);
     unsigned int closestDistance = numeric_limits<unsigned int>::max();
@@ -461,7 +536,7 @@ void TraceBodePlot::clicked(const QPointF pos)
     }
 }
 
-void TraceBodePlot::moved(const QPointF pos)
+void TraceXYPlot::moved(const QPointF pos)
 {
     if(!selectedMarker || !selectedCurve) {
         return;
@@ -469,7 +544,7 @@ void TraceBodePlot::moved(const QPointF pos)
     selectedMarker->setFrequency(pos.x());
 }
 
-void TraceBodePlot::setColorFromPreferences()
+void TraceXYPlot::setColorFromPreferences()
 {
     auto pref = Preferences::getInstance();
     plot->setCanvasBackground(pref.General.graphColors.background);
