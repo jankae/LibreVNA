@@ -4,7 +4,6 @@
 !*.vhd
 !*.ucf
 !*.ipf
-*/ipcore_dir
 !*.gise
 !*.xise
 !*.py

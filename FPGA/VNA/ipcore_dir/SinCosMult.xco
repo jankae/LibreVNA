@@ -1,0 +1,68 @@
+##############################################################
+#
+# Xilinx Core Generator version 14.6
+# Date: Tue May  5 15:41:30 2020
+#
+##############################################################
+#
+#  This file contains the customisation parameters for a
+#  Xilinx CORE Generator IP GUI. It is strongly recommended
+#  that you do not manually alter this file as it may cause
+#  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:mult_gen:11.2
+#
+##############################################################
+#
+# BEGIN Project Options
+SET addpads = false
+SET asysymbol = true
+SET busformat = BusFormatAngleBracketNotRipped
+SET createndf = false
+SET designentry = VHDL
+SET device = xc6slx9
+SET devicefamily = spartan6
+SET flowvendor = Other
+SET formalverification = false
+SET foundationsym = false
+SET implementationfiletype = Ngc
+SET package = tqg144
+SET removerpms = false
+SET simulationfiles = Behavioral
+SET speedgrade = -2
+SET verilogsim = false
+SET vhdlsim = true
+# END Project Options
+# BEGIN Select
+SELECT Multiplier xilinx.com:ip:mult_gen:11.2
+# END Select
+# BEGIN Parameters
+CSET ccmimp=Distributed_Memory
+CSET clockenable=false
+CSET component_name=SinCosMult
+CSET constvalue=129
+CSET internaluser=0
+CSET multiplier_construction=Use_Mults
+CSET multtype=Parallel_Multiplier
+CSET optgoal=Speed
+CSET outputwidthhigh=31
+CSET outputwidthlow=0
+CSET pipestages=2
+CSET portatype=Signed
+CSET portawidth=16
+CSET portbtype=Signed
+CSET portbwidth=16
+CSET roundpoint=0
+CSET sclrcepriority=SCLR_Overrides_CE
+CSET syncclear=false
+CSET use_custom_output_width=false
+CSET userounding=false
+CSET zerodetect=false
+# END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-11-05T14:23:07Z
+# END Extra information
+GENERATE
+# CRC: 7fa795cb

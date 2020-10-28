@@ -1,0 +1,142 @@
+##############################################################
+#
+# Xilinx Core Generator version 14.6
+# Date: Tue May  5 15:36:58 2020
+#
+##############################################################
+#
+#  This file contains the customisation parameters for a
+#  Xilinx CORE Generator IP GUI. It is strongly recommended
+#  that you do not manually alter this file as it may cause
+#  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:dds_compiler:4.0
+#
+##############################################################
+#
+# BEGIN Project Options
+SET addpads = false
+SET asysymbol = true
+SET busformat = BusFormatAngleBracketNotRipped
+SET createndf = false
+SET designentry = VHDL
+SET device = xc6slx9
+SET devicefamily = spartan6
+SET flowvendor = Other
+SET formalverification = false
+SET foundationsym = false
+SET implementationfiletype = Ngc
+SET package = tqg144
+SET removerpms = false
+SET simulationfiles = Behavioral
+SET speedgrade = -2
+SET verilogsim = false
+SET vhdlsim = true
+# END Project Options
+# BEGIN Select
+SELECT DDS_Compiler xilinx.com:ip:dds_compiler:4.0
+# END Select
+# BEGIN Parameters
+CSET amplitude_mode=Full_Range
+CSET channel_pin=false
+CSET channels=1
+CSET clock_enable=false
+CSET component_name=SinCos
+CSET dds_clock_rate=100
+CSET dsp48_use=Minimal
+CSET explicit_period=false
+CSET frequency_resolution=0.4
+CSET gui_behaviour=Coregen
+CSET has_phase_out=false
+CSET latency=6
+CSET latency_configuration=Auto
+CSET memory_type=Auto
+CSET negative_cosine=false
+CSET negative_sine=false
+CSET noise_shaping=None
+CSET optimization_goal=Auto
+CSET output_frequency1=0
+CSET output_frequency10=0
+CSET output_frequency11=0
+CSET output_frequency12=0
+CSET output_frequency13=0
+CSET output_frequency14=0
+CSET output_frequency15=0
+CSET output_frequency16=0
+CSET output_frequency2=0
+CSET output_frequency3=0
+CSET output_frequency4=0
+CSET output_frequency5=0
+CSET output_frequency6=0
+CSET output_frequency7=0
+CSET output_frequency8=0
+CSET output_frequency9=0
+CSET output_selection=Sine_and_Cosine
+CSET output_width=16
+CSET parameter_entry=Hardware_Parameters
+CSET partspresent=SIN_COS_LUT_only
+CSET period=1
+CSET phase_increment=Fixed
+CSET phase_offset=None
+CSET phase_offset_angles1=0
+CSET phase_offset_angles10=0
+CSET phase_offset_angles11=0
+CSET phase_offset_angles12=0
+CSET phase_offset_angles13=0
+CSET phase_offset_angles14=0
+CSET phase_offset_angles15=0
+CSET phase_offset_angles16=0
+CSET phase_offset_angles2=0
+CSET phase_offset_angles3=0
+CSET phase_offset_angles4=0
+CSET phase_offset_angles5=0
+CSET phase_offset_angles6=0
+CSET phase_offset_angles7=0
+CSET phase_offset_angles8=0
+CSET phase_offset_angles9=0
+CSET phase_width=12
+CSET pinc1=0
+CSET pinc10=0
+CSET pinc11=0
+CSET pinc12=0
+CSET pinc13=0
+CSET pinc14=0
+CSET pinc15=0
+CSET pinc16=0
+CSET pinc2=0
+CSET pinc3=0
+CSET pinc4=0
+CSET pinc5=0
+CSET pinc6=0
+CSET pinc7=0
+CSET pinc8=0
+CSET pinc9=0
+CSET poff1=0
+CSET poff10=0
+CSET poff11=0
+CSET poff12=0
+CSET poff13=0
+CSET poff14=0
+CSET poff15=0
+CSET poff16=0
+CSET poff2=0
+CSET poff3=0
+CSET poff4=0
+CSET poff5=0
+CSET poff6=0
+CSET poff7=0
+CSET poff8=0
+CSET poff9=0
+CSET por_mode=false
+CSET rdy=false
+CSET rfd=false
+CSET sclr_pin=false
+CSET spurious_free_dynamic_range=36
+# END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-08-28T14:48:35Z
+# END Extra information
+GENERATE
+# CRC: dc69a097

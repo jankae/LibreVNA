@@ -1,0 +1,108 @@
+##############################################################
+#
+# Xilinx Core Generator version 14.6
+# Date: Mon Sep 14 08:50:12 2020
+#
+##############################################################
+#
+#  This file contains the customisation parameters for a
+#  Xilinx CORE Generator IP GUI. It is strongly recommended
+#  that you do not manually alter this file as it may cause
+#  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:blk_mem_gen:7.3
+#
+##############################################################
+#
+# BEGIN Project Options
+SET addpads = false
+SET asysymbol = true
+SET busformat = BusFormatAngleBracketNotRipped
+SET createndf = false
+SET designentry = VHDL
+SET device = xc6slx9
+SET devicefamily = spartan6
+SET flowvendor = Other
+SET formalverification = false
+SET foundationsym = false
+SET implementationfiletype = Ngc
+SET package = tqg144
+SET removerpms = false
+SET simulationfiles = Behavioral
+SET speedgrade = -2
+SET verilogsim = false
+SET vhdlsim = true
+# END Project Options
+# BEGIN Select
+SELECT Block_Memory_Generator xilinx.com:ip:blk_mem_gen:7.3
+# END Select
+# BEGIN Parameters
+CSET additional_inputs_for_power_estimation=false
+CSET algorithm=Minimum_Area
+CSET assume_synchronous_clk=false
+CSET axi_id_width=4
+CSET axi_slave_type=Memory_Slave
+CSET axi_type=AXI4_Full
+CSET byte_size=9
+CSET coe_file=no_coe_file_loaded
+CSET collision_warnings=ALL
+CSET component_name=SweepConfigMem
+CSET disable_collision_warnings=false
+CSET disable_out_of_range_warnings=false
+CSET ecc=false
+CSET ecctype=No_ECC
+CSET enable_32bit_address=false
+CSET enable_a=Use_ENA_Pin
+CSET enable_b=Always_Enabled
+CSET error_injection_type=Single_Bit_Error_Injection
+CSET fill_remaining_memory_locations=false
+CSET interface_type=Native
+CSET load_init_file=false
+CSET mem_file=no_Mem_file_loaded
+CSET memory_type=Simple_Dual_Port_RAM
+CSET operating_mode_a=WRITE_FIRST
+CSET operating_mode_b=WRITE_FIRST
+CSET output_reset_value_a=0
+CSET output_reset_value_b=0
+CSET pipeline_stages=0
+CSET port_a_clock=100
+CSET port_a_enable_rate=100
+CSET port_a_write_rate=50
+CSET port_b_clock=100
+CSET port_b_enable_rate=100
+CSET port_b_write_rate=0
+CSET primitive=8kx2
+CSET read_width_a=96
+CSET read_width_b=96
+CSET register_porta_input_of_softecc=false
+CSET register_porta_output_of_memory_core=false
+CSET register_porta_output_of_memory_primitives=false
+CSET register_portb_output_of_memory_core=false
+CSET register_portb_output_of_memory_primitives=false
+CSET register_portb_output_of_softecc=false
+CSET remaining_memory_locations=0
+CSET reset_memory_latch_a=false
+CSET reset_memory_latch_b=false
+CSET reset_priority_a=CE
+CSET reset_priority_b=CE
+CSET reset_type=SYNC
+CSET softecc=false
+CSET use_axi_id=false
+CSET use_bram_block=Stand_Alone
+CSET use_byte_write_enable=false
+CSET use_error_injection_pins=false
+CSET use_regcea_pin=false
+CSET use_regceb_pin=false
+CSET use_rsta_pin=false
+CSET use_rstb_pin=false
+CSET write_depth_a=4501
+CSET write_width_a=96
+CSET write_width_b=96
+# END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-11-19T16:22:25Z
+# END Extra information
+GENERATE
+# CRC: e7b4a756
