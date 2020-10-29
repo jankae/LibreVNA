@@ -7,15 +7,18 @@ Averaging::Averaging()
     averages = 1;
 }
 
-void Averaging::reset()
+void Averaging::reset(unsigned int points)
 {
     avg.clear();
+    for(unsigned int i = 0;i<points;i++) {
+        avg.push_back(deque<array<complex<double>, 4>>());
+    }
 }
 
 void Averaging::setAverages(unsigned int a)
 {
     averages = a;
-    reset();
+    reset(avg.size());
 }
 
 Protocol::Datapoint Averaging::process(Protocol::Datapoint d)
@@ -106,6 +109,15 @@ unsigned int Averaging::getLevel()
 {
     if(avg.size() > 0) {
         return avg.back().size();
+    } else {
+        return 0;
+    }
+}
+
+unsigned int Averaging::currentSweep()
+{
+    if(avg.size() > 0) {
+        return avg.front().size();
     } else {
         return 0;
     }

@@ -139,6 +139,7 @@ AppWindow::AppWindow(QWidget *parent)
 
 void AppWindow::closeEvent(QCloseEvent *event)
 {
+    delete device;
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
     // deactivate currently used mode (stores mode state in settings)

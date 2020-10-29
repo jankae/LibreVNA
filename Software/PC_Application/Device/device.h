@@ -52,14 +52,16 @@ public:
         Timeout,
         InternalError,
     };
+    Q_ENUM(TransmissionResult)
 
     // connect to a VNA device. If serial is specified only connecting to this device, otherwise to the first one found
     Device(QString serial = QString());
     ~Device();
-    bool SendPacket(Protocol::PacketInfo packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 10);
-    bool Configure(Protocol::SweepSettings settings);
+    bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 200);
+    bool Configure(Protocol::SweepSettings settings, std::function<void(TransmissionResult)> cb = nullptr);
     bool Configure(Protocol::SpectrumAnalyzerSettings settings);
     bool SetManual(Protocol::ManualControl manual);
+    bool SetIdle();
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
     bool SendCommandWithoutPayload(Protocol::PacketType type);
     QString serial() const;
@@ -84,6 +86,9 @@ private slots:
     void transmissionTimeout() {
         transmissionFinished(TransmissionResult::Timeout);
     }
+    void transmissionFinished(TransmissionResult result);
+signals:
+    void receivedAnswer(TransmissionResult result);
 
 private:
     static constexpr int EP_Data_Out_Addr = 0x01;
@@ -107,8 +112,7 @@ private:
     };
 
     QQueue<Transmission> transmissionQueue;
-    void startNextTransmission();
-    void transmissionFinished(TransmissionResult result);
+    bool startNextTransmission();
     QTimer transmissionTimer;
     bool transmissionActive;
 

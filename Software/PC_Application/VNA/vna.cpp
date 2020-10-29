@@ -95,11 +95,7 @@ VNA::VNA(AppWindow *window)
     calMenu->addSeparator();
     auto calData = calMenu->addAction("Calibration Data");
     connect(calData, &QAction::triggered, [=](){
-       auto dialog = new CalibrationTraceDialog(&cal);
-       connect(dialog, &CalibrationTraceDialog::triggerMeasurement, this, &VNA::StartCalibrationMeasurement);
-       connect(dialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
-       connect(this, &VNA::CalibrationMeasurementComplete, dialog, &CalibrationTraceDialog::measurementComplete);
-       dialog->show();
+       StartCalibrationDialog();
     });
 
     auto calImport = calMenu->addAction("Import error terms as traces");
@@ -402,21 +398,26 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
+    d = average.process(d);
     if(calMeasuring) {
-        if(!calWaitFirst || d.pointNum == 0) {
-            calWaitFirst = false;
-            cal.addMeasurement(calMeasurement, d);
-            if(d.pointNum == settings.points - 1) {
-                calMeasuring = false;
-                emit CalibrationMeasurementComplete(calMeasurement);
+
+        if(average.currentSweep() == averages) {
+            // this is the last averaging sweep, use values for calibration
+            if(!calWaitFirst || d.pointNum == 0) {
+                calWaitFirst = false;
+                cal.addMeasurement(calMeasurement, d);
+                if(d.pointNum == settings.points - 1) {
+                    calMeasuring = false;
+                    emit CalibrationMeasurementComplete(calMeasurement);
+                }
             }
-            calDialog.setValue(d.pointNum + 1);
         }
+        int percentage = (((average.currentSweep() - 1) * 100) + (d.pointNum + 1) * 100 / settings.points) / averages;
+        calDialog.setValue(percentage);
     }
     if(calValid) {
         cal.correctMeasurement(d);
     }
-    d = average.process(d);
     traceModel.addVNAData(d);
     emit dataChanged();
     if(d.pointNum == settings.points - 1) {
@@ -430,13 +431,13 @@ void VNA::UpdateAverageCount()
     lAverages->setText(QString::number(average.getLevel()) + "/");
 }
 
-void VNA::SettingsChanged()
+void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
 {
     settings.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
     if(window->getDevice()) {
-        window->getDevice()->Configure(settings);
+        window->getDevice()->Configure(settings, cb);
     }
-    average.reset();
+    average.reset(settings.points);
     traceModel.clearVNAData();
     UpdateAverageCount();
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
@@ -586,7 +587,7 @@ void VNA::DisableCalibration(bool force)
     if(calValid || force) {
         calValid = false;
         emit CalibrationDisabled();
-        average.reset();
+        average.reset(settings.points);
     }
 }
 
@@ -596,7 +597,7 @@ void VNA::ApplyCalibration(Calibration::Type type)
         try {
             if(cal.constructErrorTerms(type)) {
                 calValid = true;
-                average.reset();
+                average.reset(settings.points);
                 emit CalibrationApplied(type);
             }
         } catch (runtime_error e) {
@@ -608,27 +609,25 @@ void VNA::ApplyCalibration(Calibration::Type type)
         // TODO start tracedata dialog with required traces
         QMessageBox::information(this, "Missing calibration traces", "Not all calibration traces for this type of calibration have been measured. The calibration can be enabled after the missing traces have been acquired.");
         DisableCalibration(true);
-        auto traceDialog = new CalibrationTraceDialog(&cal, type);
-        connect(traceDialog, &CalibrationTraceDialog::triggerMeasurement, this, &VNA::StartCalibrationMeasurement);
-        connect(traceDialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
-        connect(this, &VNA::CalibrationMeasurementComplete, traceDialog, &CalibrationTraceDialog::measurementComplete);
-        traceDialog->show();
+        StartCalibrationDialog(type);
     }
 }
 
 void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
 {
-    // Trigger sweep to start from beginning
-    SettingsChanged();
-    calMeasurement = m;
+    auto device = window->getDevice();
+    if(!device) {
+        return;
+    }
+    // Stop sweep
+    StopSweep();
+     calMeasurement = m;
     // Delete any already captured data of this measurement
     cal.clearMeasurement(m);
     calWaitFirst = true;
-    calMeasuring = true;
     QString text = "Measuring \"";
     text.append(Calibration::MeasurementToString(m));
     text.append("\" parameters.");
-    calDialog.setRange(0, settings.points);
     calDialog.setLabelText(text);
     calDialog.setCancelButtonText("Abort");
     calDialog.setWindowTitle("Taking calibration measurement...");
@@ -640,6 +639,11 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
         // the user aborted the calibration measurement
         calMeasuring = false;
         cal.clearMeasurement(calMeasurement);
+    });
+    // Trigger sweep to start from beginning
+    SettingsChanged([=](Device::TransmissionResult){
+        // enable calibration measurement only in transmission callback (prevents accidental sampling of data which was still being processed)
+        calMeasuring = true;
     });
 }
 
@@ -683,4 +687,20 @@ void VNA::StoreSweepSettings()
     s.setValue("SweepPoints", settings.points);
     s.setValue("SweepAveraging", averages);
     s.setValue("SweepLevel", (double) settings.cdbm_excitation / 100.0);
+}
+
+void VNA::StopSweep()
+{
+    if(window->getDevice()) {
+        window->getDevice()->SetIdle();
+    }
+}
+
+void VNA::StartCalibrationDialog(Calibration::Type type)
+{
+    auto traceDialog = new CalibrationTraceDialog(&cal, type);
+    connect(traceDialog, &CalibrationTraceDialog::triggerMeasurement, this, &VNA::StartCalibrationMeasurement);
+    connect(traceDialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
+    connect(this, &VNA::CalibrationMeasurementComplete, traceDialog, &CalibrationTraceDialog::measurementComplete);
+    traceDialog->show();
 }

@@ -6,6 +6,8 @@
 #include "appwindow.h"
 #include "mode.h"
 #include "CustomWidgets/tilewidget.h"
+#include "Device/device.h"
+#include <functional>
 
 class VNA : public Mode
 {
@@ -43,10 +45,12 @@ signals:
 
 private:
     void UpdateAverageCount();
-    void SettingsChanged();
+    void SettingsChanged(std::function<void (Device::TransmissionResult)> cb = nullptr);
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();
+    void StopSweep();
+    void StartCalibrationDialog(Calibration::Type type = Calibration::Type::None);
 
     Protocol::SweepSettings settings;
     unsigned int averages;

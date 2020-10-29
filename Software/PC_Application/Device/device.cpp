@@ -35,7 +35,10 @@ USBInBuffer::~USBInBuffer()
         // wait for cancellation to complete
         mutex mtx;
         unique_lock<mutex> lck(mtx);
-        cv.wait(lck);
+        using namespace std::chrono_literals;
+        if(cv.wait_for(lck, 100ms) == cv_status::timeout) {
+            qWarning() << "Timed out waiting for mutex acquisition during disconnect";
+        }
     }
     delete buffer;
 }
@@ -69,10 +72,13 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
         inCallback = false;
         break;
     case LIBUSB_TRANSFER_ERROR:
-    case LIBUSB_TRANSFER_NO_DEVICE:
-    case LIBUSB_TRANSFER_OVERFLOW:
-    case LIBUSB_TRANSFER_STALL:
         qCritical() << "LIBUSB_TRANSFER_ERROR";
+    case LIBUSB_TRANSFER_NO_DEVICE:
+        qCritical() << "LIBUSB_TRANSFER_NO_DEVICE";
+    case LIBUSB_TRANSFER_OVERFLOW:
+        qCritical() << "LIBUSB_TRANSFER_OVERFLOW";
+    case LIBUSB_TRANSFER_STALL:
+        qCritical() << "LIBUSB_TRANSFER_STALL";
         libusb_free_transfer(transfer);
         this->transfer = nullptr;
         emit TransferError();
@@ -167,12 +173,13 @@ Device::Device(QString serial)
     qInfo() << "USB connection established" << flush;
     m_connected = true;
     m_receiveThread = new std::thread(&Device::USBHandleThread, this);
-    dataBuffer = new USBInBuffer(m_handle, EP_Data_In_Addr, 2048);
-    logBuffer = new USBInBuffer(m_handle, EP_Log_In_Addr, 2048);
+    dataBuffer = new USBInBuffer(m_handle, EP_Data_In_Addr, 65536);
+    logBuffer = new USBInBuffer(m_handle, EP_Log_In_Addr, 65536);
     connect(dataBuffer, &USBInBuffer::DataReceived, this, &Device::ReceivedData, Qt::DirectConnection);
     connect(dataBuffer, &USBInBuffer::TransferError, this, &Device::ConnectionLost);
     connect(logBuffer, &USBInBuffer::DataReceived, this, &Device::ReceivedLog, Qt::DirectConnection);
     connect(&transmissionTimer, &QTimer::timeout, this, &Device::transmissionTimeout);
+    connect(this, &Device::receivedAnswer, this, &Device::transmissionFinished, Qt::QueuedConnection);
     transmissionTimer.setSingleShot(true);
     transmissionActive = false;
     // got a new connection, request limits
@@ -182,6 +189,7 @@ Device::Device(QString serial)
 Device::~Device()
 {
     if(m_connected) {
+        SetIdle();
         delete dataBuffer;
         delete logBuffer;
         m_connected = false;
@@ -197,25 +205,26 @@ Device::~Device()
     }
 }
 
-bool Device::SendPacket(Protocol::PacketInfo packet, std::function<void(TransmissionResult)> cb, unsigned int timeout)
+bool Device::SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb, unsigned int timeout)
 {
     Transmission t;
     t.packet = packet;
     t.timeout = timeout;
     t.callback = cb;
     transmissionQueue.enqueue(t);
+//    qDebug() << "Enqueued packet, queue at " << transmissionQueue.size();
     if(!transmissionActive) {
         startNextTransmission();
     }
     return true;
 }
 
-bool Device::Configure(Protocol::SweepSettings settings)
+bool Device::Configure(Protocol::SweepSettings settings, std::function<void(TransmissionResult)> cb)
 {
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::SweepSettings;
     p.settings = settings;
-    return SendPacket(p);
+    return SendPacket(p, cb);
 }
 
 bool Device::Configure(Protocol::SpectrumAnalyzerSettings settings)
@@ -232,6 +241,14 @@ bool Device::SetManual(Protocol::ManualControl manual)
     p.type = Protocol::PacketType::ManualControl;
     p.manual = manual;
     return SendPacket(p);
+}
+
+bool Device::SetIdle()
+{
+    Protocol::SweepSettings s;
+    s.excitePort1 = 0;
+    s.excitePort2 = 0;
+    return Configure(s);
 }
 
 bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)
@@ -402,11 +419,11 @@ void Device::ReceivedData()
             break;
         case Protocol::PacketType::Ack:
             emit AckReceived();
-//            transmissionFinished(TransmissionResult::Ack);
+            emit receivedAnswer(TransmissionResult::Ack);
             break;
         case Protocol::PacketType::Nack:
             emit NackReceived();
-//            transmissionFinished(TransmissionResult::Nack);
+            emit receivedAnswer(TransmissionResult::Nack);
             break;
         case Protocol::PacketType::DeviceLimits:
             limits = packet.limits;
@@ -437,12 +454,12 @@ QString Device::serial() const
     return m_serial;
 }
 
-void Device::startNextTransmission()
+bool Device::startNextTransmission()
 {
     if(transmissionQueue.isEmpty() || !m_connected) {
         // nothing more to transmit
         transmissionActive = false;
-        return;
+        return false;
     }
     transmissionActive = true;
     auto t = transmissionQueue.head();
@@ -450,29 +467,45 @@ void Device::startNextTransmission()
     unsigned int length = Protocol::EncodePacket(t.packet, buffer, sizeof(buffer));
     if(!length) {
         qCritical() << "Failed to encode packet";
-        transmissionFinished(TransmissionResult::InternalError);
+        return false;
     }
     int actual_length;
     auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
     if(ret < 0) {
         qCritical() << "Error sending data: "
                                 << libusb_strerror((libusb_error) ret);
-        transmissionFinished(TransmissionResult::InternalError);
+        return false;
     }
     transmissionTimer.start(t.timeout);
+//    qDebug() << "Transmission started, queue at " << transmissionQueue.size();
+    return true;
 }
 
 void Device::transmissionFinished(TransmissionResult result)
 {
-    transmissionTimer.stop();
     // remove transmitted packet
-    if(!transmissionQueue.isEmpty()) {
-        auto t = transmissionQueue.dequeue();
-        if(t.callback) {
-            t.callback(result);
+//    qDebug() << "Transmission finsished (" << result << "), queue at " << transmissionQueue.size();
+    if(transmissionQueue.empty()) {
+        qWarning() << "transmissionFinished with empty transmission queue, stray Ack?";
+        return;
+    }
+    auto t = transmissionQueue.dequeue();
+    if(t.callback) {
+        t.callback(result);
+    }
+    transmissionTimer.stop();
+    bool success = false;
+    while(!transmissionQueue.isEmpty() && !success) {
+        success = startNextTransmission();
+        if(!success) {
+            // failed to send this packet
+            auto t = transmissionQueue.dequeue();
+            if(t.callback) {
+                t.callback(TransmissionResult::InternalError);
+            }
         }
-        startNextTransmission();
-    } else {
+    }
+    if(transmissionQueue.isEmpty()) {
         transmissionActive = false;
     }
 }

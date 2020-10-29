@@ -254,7 +254,7 @@ void SpectrumAnalyzer::SettingsChanged()
     if(window->getDevice()) {
         window->getDevice()->Configure(settings);
     }
-    average.reset();
+    average.reset(settings.pointNum);
     UpdateAverageCount();
     traceModel.clearVNAData();
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
