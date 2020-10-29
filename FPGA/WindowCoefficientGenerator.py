@@ -73,3 +73,4 @@ for i in range(NUMBER_OF_COEFFICIENTS):
 
 for w in WindowList:
     print(w.CorrectionFactor())
+    w.file.close();

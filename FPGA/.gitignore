@@ -8,3 +8,5 @@
 !*.xise
 !*.py
 !*.bin
+!VNA/*.dat
+
