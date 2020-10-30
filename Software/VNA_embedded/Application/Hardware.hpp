@@ -33,8 +33,13 @@ static constexpr uint32_t MinSamples = 16;
 static constexpr uint32_t PLLRef = 100000000;
 static constexpr uint16_t MaxPoints = 4501;
 
+static constexpr uint8_t ADCprescaler = 102400000UL / ADCSamplerate;
+static_assert(ADCprescaler * ADCSamplerate == 102400000UL, "ADCSamplerate can not be reached exactly");
+static constexpr uint16_t DFTphaseInc = 4096 * IF2 / ADCSamplerate;
+static_assert(DFTphaseInc * ADCSamplerate == 4096 * IF2, "DFT can not be computed for 2.IF");
+
 static constexpr Protocol::DeviceLimits Limits = {
-		.minFreq = 1000000,
+		.minFreq = 0,
 		.maxFreq = 6000000000,
 		.minIFBW = ADCSamplerate / MaxSamples,
 		.maxIFBW = ADCSamplerate / MinSamples,

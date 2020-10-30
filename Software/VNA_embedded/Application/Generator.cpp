@@ -70,7 +70,7 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 	} else {
 		// use lower source power (approx -10dbm with no attenuation)
 		m.SourceHighPower = (int) MAX2871::Power::n4dbm;
-		m.SourceLowPower = (int) Si5351C::DriveStrength::mA2;
+		m.SourceLowPower = (int) Si5351C::DriveStrength::mA4;
 		g.cdbm_level += 1000;
 	}
 	// calculate required attenuation

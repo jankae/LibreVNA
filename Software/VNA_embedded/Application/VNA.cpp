@@ -23,6 +23,8 @@ static bool excitingPort1;
 static Protocol::Datapoint data;
 static bool active = false;
 static bool sourceHighPower;
+static bool adcShifted;
+static uint32_t actualBandwidth;
 
 using IFTableEntry = struct {
 	uint16_t pointCnt;
@@ -34,6 +36,11 @@ static IFTableEntry IFTable[IFTableNumEntries];
 static uint16_t IFTableIndexCnt = 0;
 
 static constexpr uint32_t BandSwitchFrequency = 25000000;
+static constexpr float alternativeSamplerate = 914285.7143f;
+static constexpr uint8_t alternativePrescaler = 102400000UL / alternativeSamplerate;
+static_assert(alternativePrescaler * alternativeSamplerate == 102400000UL, "alternative ADCSamplerate can not be reached exactly");
+static constexpr uint16_t alternativePhaseInc = 4096 * HW::IF2 / alternativeSamplerate;
+static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::IF2, "DFT can not be computed for 2.IF when using alternative samplerate");
 
 using namespace HWHAL;
 
@@ -59,7 +66,7 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	if(samplesPerPoint%16) {
 		samplesPerPoint += 16 - samplesPerPoint%16;
 	}
-	uint32_t actualBandwidth = HW::ADCSamplerate / samplesPerPoint;
+	actualBandwidth = HW::ADCSamplerate / samplesPerPoint;
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
@@ -178,6 +185,7 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	// starting port depends on whether port 1 is active in sweep
 	excitingPort1 = s.excitePort1;
 	IFTableIndexCnt = 0;
+	adcShifted = false;
 	active = true;
 	// Start the sweep
 	FPGA::StartSweep();
@@ -273,20 +281,48 @@ void VNA::SweepHalted() {
 	uint64_t frequency = settings.f_start
 			+ (settings.f_stop - settings.f_start) * pointCnt
 					/ (settings.points - 1);
+	bool adcShiftRequired = false;
 	if (frequency < BandSwitchFrequency) {
 		// need the Si5351 as Source
 		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B,
-				sourceHighPower ? Si5351C::DriveStrength::mA8 : Si5351C::DriveStrength::mA2);
+				sourceHighPower ? Si5351C::DriveStrength::mA8 : Si5351C::DriveStrength::mA4);
 		if (pointCnt == 0) {
 			// First point in sweep, enable CLK
 			Si5351.Enable(SiChannel::LowbandSource);
 			FPGA::Disable(FPGA::Periphery::SourceRF);
 			Delay::us(1300);
 		}
+
+		// At low frequencies the 1.LO feedtrough mixes with the 2.LO in the second mixer.
+		// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
+		// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
+		uint32_t LO_mixing = (HW::IF1 + frequency) - (HW::IF1 - HW::IF2);
+		// move frequency into ADC range
+		LO_mixing %= HW::ADCSamplerate;
+		// fold at half the samplerate
+		if(LO_mixing >= HW::ADCSamplerate / 2) {
+			LO_mixing = HW::ADCSamplerate - LO_mixing;
+		}
+		if(abs(LO_mixing - HW::IF2) <= actualBandwidth * 2) {
+			// the image is in or near the IF bandwidth and would cause a peak
+			// Use a slightly different ADC samplerate
+			adcShiftRequired = true;
+		}
 	} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
 		// first sweep point in highband is also halted, disable lowband source
 		Si5351.Disable(SiChannel::LowbandSource);
 		FPGA::Enable(FPGA::Periphery::SourceRF);
+	}
+
+	if(adcShiftRequired) {
+		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, alternativePrescaler);
+		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, alternativePhaseInc);
+		adcShifted = true;
+	} else if(adcShifted) {
+		// reset to default value
+		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
+		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
+		adcShifted = false;
 	}
 
 	FPGA::ResumeHaltedSweep();

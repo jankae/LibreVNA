@@ -127,8 +127,9 @@ bool HW::Init() {
 	}
 
 	// Set default ADC samplerate
-	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 128);
-	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1280);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
+	// Set phase increment according to
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
 
 	// Enable new data and sweep halt interrupt
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
