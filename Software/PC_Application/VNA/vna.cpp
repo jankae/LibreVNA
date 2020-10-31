@@ -109,6 +109,7 @@ VNA::VNA(AppWindow *window)
     connect(calEditKit, &QAction::triggered, [=](){
         cal.getCalibrationKit().edit();
     });
+    portExtension.setCalkit(&cal.getCalibrationKit());
 
     // Tools menu
     auto toolsMenu = new QMenu("Tools");
@@ -310,6 +311,10 @@ VNA::VNA(AppWindow *window)
     window->addToolBar(tb_cal);
     toolbars.insert(tb_cal);
 
+    auto tb_portExtension = portExtension.createToolbar();
+    window->addToolBar(tb_portExtension);
+    toolbars.insert(tb_portExtension);
+
 
     markerModel = new TraceMarkerModel(traceModel);
 
@@ -379,6 +384,7 @@ void VNA::initializeDevice()
         if(QFile::exists(filename)) {
             cal.openFromFile(filename);
             ApplyCalibration(cal.getType());
+            portExtension.setCalkit(&cal.getCalibrationKit());
         }
         removeDefaultCal->setEnabled(true);
     } else {
@@ -418,6 +424,8 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     if(calValid) {
         cal.correctMeasurement(d);
     }
+    portExtension.applyToMeasurement(d);
+
     traceModel.addVNAData(d);
     emit dataChanged();
     if(d.pointNum == settings.points - 1) {

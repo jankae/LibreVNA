@@ -33,6 +33,7 @@ HEADERS += \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
     Traces/xyplotaxisdialog.h \
+    VNA/portextension.h \
     VNA/vna.h \
     appwindow.h \
     averaging.h \
@@ -78,6 +79,7 @@ SOURCES += \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
     Traces/xyplotaxisdialog.cpp \
+    VNA/portextension.cpp \
     VNA/vna.cpp \
     appwindow.cpp \
     averaging.cpp \
@@ -111,6 +113,7 @@ FORMS += \
     Traces/traceimportdialog.ui \
     Traces/tracewidget.ui \
     Traces/xyplotaxisdialog.ui \
+    VNA/portextensioneditdialog.ui \
     main.ui \
     preferencesdialog.ui
 

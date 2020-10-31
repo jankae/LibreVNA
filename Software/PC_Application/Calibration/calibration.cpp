@@ -44,7 +44,7 @@ bool Calibration::calculationPossible(Calibration::Type type)
 {
     return SanityCheckSamples(Measurements(type, false));
 }
-
+#include <QDebug>
 bool Calibration::constructErrorTerms(Calibration::Type type)
 {
     if(!calculationPossible(type)) {
@@ -700,7 +700,7 @@ istream& operator >>(istream &in, Calibration &c)
         }
         for(auto t : Calibration::Types()) {
             if(Calibration::TypeToString(t) == QString::fromStdString(line)) {
-                // try to apply this calibration type
+                // try to P2 this calibration type
                 if(c.calculationPossible(t)) {
                     c.constructErrorTerms(t);
                 } else {

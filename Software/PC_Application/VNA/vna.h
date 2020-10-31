@@ -8,6 +8,7 @@
 #include "CustomWidgets/tilewidget.h"
 #include "Device/device.h"
 #include <functional>
+#include "portextension.h"
 
 class VNA : public Mode
 {
@@ -68,6 +69,8 @@ private:
 
     QMenu *defaultCalMenu;
     QAction *assignDefaultCal, *removeDefaultCal;
+
+    PortExtension portExtension;
 
     // Status Labels
     QLabel *lAverages;

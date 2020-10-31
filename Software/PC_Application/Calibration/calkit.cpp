@@ -239,7 +239,7 @@ double Calkit::minFreq(bool TRL)
         return TRL_line_minfreq;
     } else {
         fillTouchstoneCache();
-        double min = std::numeric_limits<double>::min();
+        double min = 0;
         array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
         // find the highest minimum frequency in all measurement files
         for(auto ts : ts_list) {
