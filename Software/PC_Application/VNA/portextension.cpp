@@ -2,6 +2,7 @@
 #include "ui_portextensioneditdialog.h"
 #include <QCheckBox>
 #include <cmath>
+#include <QDebug>
 
 using namespace std;
 
@@ -31,11 +32,92 @@ void PortExtension::applyToMeasurement(Protocol::Datapoint &d)
         if(measurements.size() > 0) {
             if(d.pointNum == 0) {
                 // sweep complete, evaluate measurement
-                // TODO
+
+                double last_phase = 0.0;
+                double phasediff_sum = 0.0;
+                vector<double> att_x, att_y;
+                double avg_x = 0.0, avg_y = 0.0;
+                for(auto m : measurements) {
+                    // grab correct measurement
+                    complex<double> reflection;
+                    if(isPort1) {
+                        reflection = complex<double>(m.real_S11, m.imag_S11);
+                    } else {
+                        reflection = complex<double>(m.real_S22, m.imag_S22);
+                    }
+                    // remove calkit if specified
+                    if(!isIdeal) {
+                        complex<double> calStandard;
+                        auto standards = kit->toSOLT(m.frequency);
+                        if(isOpen) {
+                            calStandard = standards.Open;
+                        } else {
+                            calStandard = standards.Short;
+                        }
+                        // remove effect of calibration standard
+                        reflection /= calStandard;
+                    }
+                    // sum phase differences to previous point
+                    auto phase = arg(reflection);
+                    if(m.pointNum == 0) {
+                        last_phase = phase;
+                    } else {
+                        auto phasediff = phase - last_phase;
+                        last_phase = phase;
+                        if(phasediff > M_PI) {
+                            phasediff -= 2 * M_PI;
+                        } else if(phasediff <= -M_PI) {
+                            phasediff += 2 * M_PI;
+                        }
+                        phasediff_sum += phasediff;
+                        qDebug() << phasediff;
+                    }
+
+                    double x = sqrt(m.frequency / measurements.back().frequency);
+                    double y = 20*log10(abs(reflection));
+                    att_x.push_back(x);
+                    att_y.push_back(y);
+                    avg_x += x;
+                    avg_y += y;
+                }
+                auto phase = phasediff_sum / (measurements.size() - 1);
+                auto freq_diff = measurements[1].frequency - measurements[0].frequency;
+                auto delay = -phase / (2 * M_PI * freq_diff);
+                // measured delay is two-way but port extension expects one-way
+                delay /= 2;
+
+                // calculate linear regression with transformed square root model
+                avg_x /= measurements.size();
+                avg_y /= measurements.size();
+                double sum_top = 0.0;
+                double sum_bottom = 0.0;
+                for(unsigned int i=0;i<att_x.size();i++) {
+                    sum_top += (att_x[i] - avg_x)*(att_y[i] - avg_y);
+                    sum_bottom += (att_x[i] - avg_x)*(att_x[i] - avg_x);
+                }
+                double beta = sum_top / sum_bottom;
+                double alpha = avg_y - beta * avg_x;
+
+                double DCloss = -alpha / 2;
+                double loss = -beta / 2;
+                double freq = measurements.back().frequency;
+                if(isPort1) {
+                    ui->P1Time->setValue(delay);
+                    ui->P1DCloss->setValue(DCloss);
+                    ui->P1Loss->setValue(loss);
+                    ui->P1Frequency->setValue(freq);
+                } else {
+                    ui->P2Time->setValue(delay);
+                    ui->P2DCloss->setValue(DCloss);
+                    ui->P2Loss->setValue(loss);
+                    ui->P2Frequency->setValue(freq);
+                }
+
                 if(msgBox) {
                     msgBox->close();
                     msgBox = nullptr;
                 }
+                measurements.clear();
             } else {
                 measurements.push_back(d);
             }
@@ -94,7 +176,7 @@ void PortExtension::edit()
     constexpr double c = 299792458;
 
     auto dialog = new QDialog();
-    auto ui = new Ui::PortExtensionEditDialog();
+    ui = new Ui::PortExtensionEditDialog();
     ui->setupUi(dialog);
 
     // set initial values

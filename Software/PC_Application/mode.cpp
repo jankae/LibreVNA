@@ -9,7 +9,8 @@ QWidget* Mode::cornerWidget = nullptr;
 QButtonGroup* Mode::modeButtonGroup = nullptr;
 
 Mode::Mode(AppWindow *window, QString name)
-    : window(window),
+    : QObject(window),
+      window(window),
       name(name),
       central(nullptr)
 {

@@ -123,3 +123,5 @@ RESOURCES += \
     icons.qrc
 
 CONFIG += c++14
+REVISION = $$system(git rev-parse HEAD)
+DEFINES += GITHASH=\\"\"$$REVISION\\"\"

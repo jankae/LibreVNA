@@ -4,7 +4,7 @@
 Generator::Generator(AppWindow *window)
     : Mode(window, "Signal Generator")
 {
-    central = new SignalgeneratorWidget();
+    central = new SignalgeneratorWidget(window);
 
     auto pref = Preferences::getInstance();
 

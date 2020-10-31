@@ -9,6 +9,14 @@ TraceModel::TraceModel(QObject *parent)
     traces.clear();
 }
 
+TraceModel::~TraceModel()
+{
+    while(!traces.empty()) {
+        delete traces[0];
+        traces.erase(traces.begin());
+    }
+}
+
 void TraceModel::addTrace(Trace *t)
 {
     beginInsertRows(QModelIndex(), traces.size(), traces.size());

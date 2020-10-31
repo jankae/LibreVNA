@@ -8,12 +8,13 @@
 SIUnitEdit::SIUnitEdit(QString unit, QString prefixes, int precision, QWidget *parent)
     : QLineEdit(parent)
 {
+    _value = 0;
     this->unit = unit;
     this->prefixes = prefixes;
     this->precision = precision;
     setAlignment(Qt::AlignCenter);
     installEventFilter(this);
-    setValidator(new QDoubleValidator);
+    setValidator(new QDoubleValidator(this));
     connect(this, &QLineEdit::editingFinished, [this]() {
        parseNewValue(1.0);
     });

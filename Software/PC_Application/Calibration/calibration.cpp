@@ -676,8 +676,9 @@ istream& operator >>(istream &in, Calibration &c)
 {
     std::string line;
     while(getline(in, line)) {
+        QString qLine = QString::fromStdString(line).simplified();
         for(auto m : c.Measurements()) {
-            if(Calibration::MeasurementToString(m) == QString::fromStdString(line)) {
+            if(Calibration::MeasurementToString(m) == qLine) {
                 // this is the correct measurement
                 c.clearMeasurement(m);
                 uint timestamp;
@@ -699,8 +700,8 @@ istream& operator >>(istream &in, Calibration &c)
             }
         }
         for(auto t : Calibration::Types()) {
-            if(Calibration::TypeToString(t) == QString::fromStdString(line)) {
-                // try to P2 this calibration type
+            if(Calibration::TypeToString(t) == qLine) {
+                // try to apply this calibration type
                 if(c.calculationPossible(t)) {
                     c.constructErrorTerms(t);
                 } else {

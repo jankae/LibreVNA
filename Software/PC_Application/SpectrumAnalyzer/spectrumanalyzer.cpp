@@ -43,9 +43,10 @@
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     : Mode(window, "Spectrum Analyzer"),
-      central(new TileWidget(traceModel))
+      central(new TileWidget(traceModel, window))
 {
     averages = 1;
+    settings = {};
 
     // Create default traces
     auto tPort1 = new Trace("Port1", Qt::yellow);
@@ -120,7 +121,6 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     auto tb_acq = new QToolBar("Acquisition");
 
     auto eBandwidth = new SIUnitEdit("Hz", " k", 3);
-    eBandwidth->setValueQuiet(settings.RBW);
     eBandwidth->setFixedWidth(70);
     eBandwidth->setToolTip("RBW");
     connect(eBandwidth, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetRBW);
@@ -180,7 +180,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     markerModel = new TraceMarkerModel(traceModel);
 
     auto tracesDock = new QDockWidget("Traces");
-    tracesDock->setWidget(new TraceWidget(traceModel, this, true));
+    tracesDock->setWidget(new TraceWidget(traceModel, window, true));
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 

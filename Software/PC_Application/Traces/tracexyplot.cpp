@@ -115,6 +115,25 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     : TracePlot(parent),
       selectedMarker(nullptr)
 {
+    YAxis[0].log = false;
+    YAxis[0].Ytype = YAxisType::Disabled;
+    YAxis[0].rangeDiv = 1;
+    YAxis[0].rangeMax = 10;
+    YAxis[0].rangeMin = 0;
+    YAxis[0].autorange = false;
+    YAxis[1].log = false;
+    YAxis[1].Ytype = YAxisType::Disabled;
+    YAxis[1].rangeDiv = 1;
+    YAxis[1].rangeMax = 10;
+    YAxis[1].rangeMin = 0;
+    YAxis[1].autorange = false;
+    XAxis.Xtype = XAxisType::Frequency;
+    XAxis.log = false;
+    XAxis.rangeDiv = 1;
+    XAxis.rangeMax = 10;
+    XAxis.rangeMin = 0;
+    XAxis.autorange = true;
+
     plot = new QwtPlot(this);
 
     auto canvas = new QwtPlotCanvas(plot);
@@ -274,7 +293,7 @@ bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
 void TraceXYPlot::updateContextMenu()
 {
     contextmenu->clear();
-    auto setup = new QAction("Axis setup...");
+    auto setup = new QAction("Axis setup...", contextmenu);
     connect(setup, &QAction::triggered, [this]() {
         auto setup = new XYplotAxisDialog(this);
         setup->show();
@@ -295,7 +314,7 @@ void TraceXYPlot::updateContextMenu()
                 continue;
             }
 
-            auto action = new QAction(t.first->name());
+            auto action = new QAction(t.first->name(), contextmenu);
             action->setCheckable(true);
             if(tracesAxis[axis].find(t.first) != tracesAxis[axis].end()) {
                 action->setChecked(true);
@@ -307,7 +326,7 @@ void TraceXYPlot::updateContextMenu()
         }
     }
     contextmenu->addSeparator();
-    auto close = new QAction("Close");
+    auto close = new QAction("Close", contextmenu);
     contextmenu->addAction(close);
     connect(close, &QAction::triggered, [=]() {
         markedForDeletion = true;

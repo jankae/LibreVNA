@@ -40,7 +40,7 @@ USBInBuffer::~USBInBuffer()
             qWarning() << "Timed out waiting for mutex acquisition during disconnect";
         }
     }
-    delete buffer;
+    delete[] buffer;
 }
 
 void USBInBuffer::removeBytes(int handled_bytes)
@@ -71,16 +71,15 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
         emit DataReceived();
         inCallback = false;
         break;
-    case LIBUSB_TRANSFER_ERROR:
-        qCritical() << "LIBUSB_TRANSFER_ERROR";
     case LIBUSB_TRANSFER_NO_DEVICE:
         qCritical() << "LIBUSB_TRANSFER_NO_DEVICE";
-    case LIBUSB_TRANSFER_OVERFLOW:
-        qCritical() << "LIBUSB_TRANSFER_OVERFLOW";
-    case LIBUSB_TRANSFER_STALL:
-        qCritical() << "LIBUSB_TRANSFER_STALL";
         libusb_free_transfer(transfer);
-        this->transfer = nullptr;
+        return;
+    case LIBUSB_TRANSFER_ERROR:
+    case LIBUSB_TRANSFER_OVERFLOW:
+    case LIBUSB_TRANSFER_STALL:
+        qCritical() << "LIBUSB_ERROR" << transfer->status;
+        libusb_free_transfer(transfer);
         emit TransferError();
         return;
         break;
@@ -129,6 +128,7 @@ Device::Device(QString serial)
     qDebug() << "Starting device connection...";
 
     m_handle = nullptr;
+    lastInfoValid = false;
     libusb_init(&m_context);
 
     SearchDevices([=](libusb_device_handle *handle, QString found_serial) -> bool {
@@ -202,6 +202,7 @@ Device::~Device()
         libusb_close(m_handle);
         m_receiveThread->join();
         libusb_exit(m_context);
+        delete m_receiveThread;
     }
 }
 
@@ -245,9 +246,7 @@ bool Device::SetManual(Protocol::ManualControl manual)
 
 bool Device::SetIdle()
 {
-    Protocol::SweepSettings s;
-    s.excitePort1 = 0;
-    s.excitePort2 = 0;
+    Protocol::SweepSettings s = {};
     return Configure(s);
 }
 

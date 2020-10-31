@@ -9,10 +9,11 @@
 #include <set>
 #include "appwindow.h"
 
-class Mode : public QWidget
+class Mode : public QObject
 {
 public:
     Mode(AppWindow *window, QString name);
+
     virtual void activate();
     virtual void deactivate();
     QString getName() const;

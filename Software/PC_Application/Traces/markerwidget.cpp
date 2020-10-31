@@ -22,6 +22,9 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
 
 MarkerWidget::~MarkerWidget()
 {
+    delete ui->tableView->itemDelegateForColumn(TraceMarkerModel::ColIndexTrace);
+    delete ui->tableView->itemDelegateForColumn(TraceMarkerModel::ColIndexType);
+    delete ui->tableView->itemDelegateForColumn(TraceMarkerModel::ColIndexSettings);
     delete ui;
 }
 

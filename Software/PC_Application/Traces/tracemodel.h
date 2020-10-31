@@ -11,6 +11,7 @@ class TraceModel : public QAbstractTableModel
     Q_OBJECT
 public:
     TraceModel(QObject *parent = 0);
+    ~TraceModel();
 
     void addTrace(Trace *t);
     void removeTrace(unsigned int index);

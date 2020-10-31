@@ -7,6 +7,10 @@
 #include "Calibration/calkit.h"
 #include <QMessageBox>
 
+namespace Ui {
+class PortExtensionEditDialog;
+}
+
 class PortExtension : public QObject
 {
     Q_OBJECT
@@ -39,6 +43,7 @@ private:
     bool isIdeal;
     std::vector<Protocol::Datapoint> measurements;
     QMessageBox *msgBox;
+    Ui::PortExtensionEditDialog *ui;
 };
 
 #endif // PORTEXTENSION_H

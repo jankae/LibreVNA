@@ -86,7 +86,7 @@ VNA::VNA(AppWindow *window)
     central->Child2()->Child2()->setPlot(tracesmith2);
 
     // Create menu entries and connections
-    auto calMenu = new QMenu("Calibration");
+    auto calMenu = new QMenu("Calibration", window);
     window->menuBar()->insertMenu(window->getUi()->menuWindow->menuAction(), calMenu);
     actions.insert(calMenu->menuAction());
     auto calDisable = calMenu->addAction("Disabled");
@@ -112,13 +112,13 @@ VNA::VNA(AppWindow *window)
     portExtension.setCalkit(&cal.getCalibrationKit());
 
     // Tools menu
-    auto toolsMenu = new QMenu("Tools");
+    auto toolsMenu = new QMenu("Tools", window);
     window->menuBar()->insertMenu(window->getUi()->menuWindow->menuAction(), toolsMenu);
     actions.insert(toolsMenu->menuAction());
     auto impedanceMatching = toolsMenu->addAction("Impedance Matching");
     connect(impedanceMatching, &QAction::triggered, this, &VNA::StartImpedanceMatching);
 
-    defaultCalMenu = new QMenu("Default Calibration");
+    defaultCalMenu = new QMenu("Default Calibration", window);
     assignDefaultCal = defaultCalMenu->addAction("Assign...");
     removeDefaultCal = defaultCalMenu->addAction("Remove");
     removeDefaultCal->setEnabled(false);
@@ -201,7 +201,6 @@ VNA::VNA(AppWindow *window)
     // Acquisition toolbar
     auto tb_acq = new QToolBar("Acquisition");
     auto dbm = new QDoubleSpinBox();
-    dbm->setValue(settings.cdbm_excitation * 100);
     dbm->setFixedWidth(95);
     dbm->setRange(-100.0, 100.0);
     dbm->setSingleStep(0.25);
@@ -215,7 +214,6 @@ VNA::VNA(AppWindow *window)
     auto points = new QSpinBox();
     points->setFixedWidth(55);
     points->setRange(1, 4501);
-    points->setValue(settings.points);
     points->setSingleStep(100);
     points->setToolTip("Points/sweep");
     connect(points, qOverload<int>(&QSpinBox::valueChanged), this, &VNA::SetPoints);
@@ -224,7 +222,6 @@ VNA::VNA(AppWindow *window)
     tb_acq->addWidget(points);
 
     auto eBandwidth = new SIUnitEdit("Hz", " k", 3);
-    eBandwidth->setValueQuiet(settings.if_bandwidth);
     eBandwidth->setFixedWidth(70);
     eBandwidth->setToolTip("IF bandwidth");
     connect(eBandwidth, &SIUnitEdit::valueChanged, this, &VNA::SetIFBandwidth);
@@ -255,7 +252,7 @@ VNA::VNA(AppWindow *window)
     calMenuGroup->addAction(calDisable);
     for(auto type : Calibration::Types()) {
         cbType->addItem(Calibration::TypeToString(type), (int) type);
-        auto menuAction = new QAction(Calibration::TypeToString(type));
+        auto menuAction = new QAction(Calibration::TypeToString(type), calMenu);
         calMenuGroup->addAction(menuAction);
         connect(menuAction, &QAction::triggered, [=](){
             ApplyCalibration(type);
@@ -316,7 +313,7 @@ VNA::VNA(AppWindow *window)
     toolbars.insert(tb_portExtension);
 
 
-    markerModel = new TraceMarkerModel(traceModel);
+    markerModel = new TraceMarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
     tracesDock->setWidget(new TraceWidget(traceModel));
@@ -609,13 +606,13 @@ void VNA::ApplyCalibration(Calibration::Type type)
                 emit CalibrationApplied(type);
             }
         } catch (runtime_error e) {
-            QMessageBox::critical(this, "Calibration failure", e.what());
+            QMessageBox::critical(window, "Calibration failure", e.what());
             DisableCalibration(true);
         }
     } else {
         // Not all required traces available
         // TODO start tracedata dialog with required traces
-        QMessageBox::information(this, "Missing calibration traces", "Not all calibration traces for this type of calibration have been measured. The calibration can be enabled after the missing traces have been acquired.");
+        QMessageBox::information(window, "Missing calibration traces", "Not all calibration traces for this type of calibration have been measured. The calibration can be enabled after the missing traces have been acquired.");
         DisableCalibration(true);
         StartCalibrationDialog(type);
     }
@@ -679,11 +676,11 @@ void VNA::LoadSweepSettings()
     QSettings s;
     settings.f_start = s.value("SweepStart", pref.Startup.DefaultSweep.start).toULongLong();
     settings.f_stop = s.value("SweepStop", pref.Startup.DefaultSweep.stop).toULongLong();
-    ConstrainAndUpdateFrequencies();
-    SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
     SetPoints(s.value("SweepPoints", pref.Startup.DefaultSweep.points).toInt());
+    SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
     SetAveraging(s.value("SweepAveraging", pref.Startup.DefaultSweep.averaging).toInt());
     SetSourceLevel(s.value("SweepLevel", pref.Startup.DefaultSweep.excitation).toDouble());
+    ConstrainAndUpdateFrequencies();
 }
 
 void VNA::StoreSweepSettings()

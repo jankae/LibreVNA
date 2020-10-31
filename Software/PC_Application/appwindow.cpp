@@ -59,8 +59,6 @@ AppWindow::AppWindow(QWidget *parent)
     device = nullptr;
 
     ui->setupUi(this);
-//    ui->statusbar->insertPermanentWidget(0, &lDeviceStatus);
-//    ui->statusbar->insertPermanentWidget(1, new QPushButton("Test"));
     ui->statusbar->addWidget(&lConnectionStatus);
     auto div1 = new QFrame;
     div1->setFrameShape(QFrame::VLine);
@@ -91,8 +89,6 @@ AppWindow::AppWindow(QWidget *parent)
     auto vna = new VNA(this);
     new Generator(this);
     new SpectrumAnalyzer(this);
-//    auto signalGenWidget = new Signalgenerator;
-//    modeSGen = new GUIMode(this, "Signal Generator", signalGenWidget);
 
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
@@ -111,6 +107,11 @@ AppWindow::AppWindow(QWidget *parent)
         Preferences::getInstance().edit();
         // settings might have changed, update necessary stuff
         TraceXYPlot::updateGraphColors();
+    });
+    connect(ui->actionAbout, &QAction::triggered, [=](){
+        auto commit = QString(GITHASH);
+        commit.truncate(7);
+        QMessageBox::about(this, "About", "More information: github.com/jankae/VNA2\n\nVersion: " + commit);
     });
 
     setWindowTitle("VNA");
@@ -135,6 +136,11 @@ AppWindow::AppWindow(QWidget *parent)
         // at least one device available
         ConnectToDevice();
     }
+}
+
+AppWindow::~AppWindow()
+{
+    delete ui;
 }
 
 void AppWindow::closeEvent(QCloseEvent *event)

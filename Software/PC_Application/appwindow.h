@@ -28,7 +28,7 @@ class AppWindow : public QMainWindow
     Q_OBJECT
 public:
     AppWindow(QWidget *parent = nullptr);
-
+    ~AppWindow();
 
     Ui::MainWindow *getUi() const;
     QStackedWidget *getCentral() const;

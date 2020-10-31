@@ -75,7 +75,7 @@ void TracePlot::updateContextMenu()
     contextmenu->addSection("Traces");
     // Populate context menu
     for(auto t : traces) {
-        auto action = new QAction(t.first->name());
+        auto action = new QAction(t.first->name(), contextmenu);
         action->setCheckable(true);
         if(t.second) {
             action->setChecked(true);
@@ -86,7 +86,7 @@ void TracePlot::updateContextMenu()
         contextmenu->addAction(action);
     }
     contextmenu->addSeparator();
-    auto close = new QAction("Close");
+    auto close = new QAction("Close", contextmenu);
     contextmenu->addAction(close);
     connect(close, &QAction::triggered, [=]() {
         markedForDeletion = true;
