@@ -156,16 +156,22 @@ void Trace::updateTimeDomainData()
 //        system_clock::now().time_since_epoch()
 //    ).count();
     auto steps = size();
-    if(minFreq() * size() != maxFreq()) {
+    auto firstStep = minFreq();
+    if(firstStep == 0) {
+        // zero as first step would result in infinite number of points, skip and start with second
+        firstStep = _data[1].frequency;
+        steps--;
+    }
+    if(firstStep * steps != maxFreq()) {
         // data is not available with correct frequency spacing, calculate required steps
-        steps = maxFreq() / minFreq();
+        steps = maxFreq() / firstStep;
     }
     const double PI = 3.141592653589793238463;
     // reserve vector for negative frequenies and DC as well
     vector<complex<double>> frequencyDomain(2*steps + 1);
     // copy frequencies, use the flipped conjugate for negative part
     for(unsigned int i = 1;i<=steps;i++) {
-        auto S = getData(minFreq() * i);
+        auto S = getData(firstStep * i);
         constexpr double alpha0 = 0.54;
         auto hamming = alpha0 - (1.0 - alpha0) * -cos(PI * i / steps);
         S *= hamming;
@@ -180,13 +186,18 @@ void Trace::updateTimeDomainData()
     auto fft_bins = frequencyDomain.size();
     timeDomain.clear();
     timeDomain.resize(fft_bins);
-    const double fs = 1.0 / (minFreq() * fft_bins);
+    const double fs = 1.0 / (firstStep * fft_bins);
     double last_step = 0.0;
 
     Fft::transform(frequencyDomain, true);
+    constexpr double c = 299792458;
     for(unsigned int i = 0;i<fft_bins;i++) {
         TimedomainData t;
         t.time = fs * i;
+        t.distance = t.time * c * 0.66; // TODO user settable velocity factor
+        if(isReflection()) {
+            t.distance /= 2;
+        }
         t.impulseResponse = real(frequencyDomain[i]) / fft_bins;
         t.stepResponse = last_step;
         last_step += t.impulseResponse;

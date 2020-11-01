@@ -24,6 +24,7 @@ public:
     class TimedomainData {
     public:
         double time;
+        double distance;
         double impulseResponse;
         double stepResponse;
     };

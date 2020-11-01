@@ -59,16 +59,17 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Xmin->setEnabled(!checked);
        ui->Xmax->setEnabled(!checked);
        ui->Xdivs->setEnabled(!checked);
+       ui->Xautomode->setEnabled(checked);
     });
 
-    ui->XType->setCurrentIndex((int) plot->XAxis.Xtype);
+    ui->XType->setCurrentIndex((int) plot->XAxis.type);
     ui->Xmin->setPrefixes("pnum kMG");
     ui->Xmax->setPrefixes("pnum kMG");
     ui->Xdivs->setPrefixes("pnum kMG");
 
     // Fill initial values
     // assume same order in YAxisType enum as in ComboBox items
-    ui->Y1type->setCurrentIndex((int) plot->YAxis[0].Ytype);
+    ui->Y1type->setCurrentIndex((int) plot->YAxis[0].type);
     if(plot->YAxis[0].log) {
         ui->Y1log->setChecked(true);
     } else {
@@ -79,7 +80,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y1max->setValueQuiet(plot->YAxis[0].rangeMax);
     ui->Y1divs->setValueQuiet(plot->YAxis[0].rangeDiv);
 
-    ui->Y2type->setCurrentIndex((int) plot->YAxis[1].Ytype);
+    ui->Y2type->setCurrentIndex((int) plot->YAxis[1].type);
     if(plot->YAxis[1].log) {
         ui->Y2log->setChecked(true);
     } else {
@@ -90,7 +91,12 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y2max->setValueQuiet(plot->YAxis[1].rangeMax);
     ui->Y2divs->setValueQuiet(plot->YAxis[1].rangeDiv);
 
-    ui->Xauto->setChecked(plot->XAxis.autorange);
+    ui->Xauto->setChecked(plot->XAxis.mode != TraceXYPlot::XAxisMode::Manual);
+    if(plot->XAxis.mode == TraceXYPlot::XAxisMode::UseSpan) {
+        ui->Xautomode->setCurrentIndex(0);
+    } else {
+        ui->Xautomode->setCurrentIndex(1);
+    }
     ui->Xmin->setValueQuiet(plot->XAxis.rangeMin);
     ui->Xmax->setValueQuiet(plot->XAxis.rangeMax);
     ui->Xdivs->setValueQuiet(plot->XAxis.rangeDiv);
@@ -106,7 +112,24 @@ void XYplotAxisDialog::on_buttonBox_accepted()
     // set plot values to the ones selected in the dialog
     plot->setYAxis(0, (TraceXYPlot::YAxisType) ui->Y1type->currentIndex(), ui->Y1log->isChecked(), ui->Y1auto->isChecked(), ui->Y1min->value(), ui->Y1max->value(), ui->Y1divs->value());
     plot->setYAxis(1, (TraceXYPlot::YAxisType) ui->Y2type->currentIndex(), ui->Y2log->isChecked(), ui->Y2auto->isChecked(), ui->Y2min->value(), ui->Y2max->value(), ui->Y2divs->value());
-    plot->setXAxis((TraceXYPlot::XAxisType) ui->XType->currentIndex(), ui->Xauto->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
+    TraceXYPlot::XAxisMode mode;
+    if(ui->Xauto->isChecked()) {
+        if(ui->Xautomode->currentIndex() == 0) {
+            mode = TraceXYPlot::XAxisMode::UseSpan;
+        } else {
+            mode = TraceXYPlot::XAxisMode::FitTraces;
+        }
+    } else {
+        mode = TraceXYPlot::XAxisMode::Manual;
+    }
+    plot->setXAxis((TraceXYPlot::XAxisType) ui->XType->currentIndex(), mode, ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
+}
+
+static void enableComboBoxItem(QComboBox *cb, int itemNum, bool enable) {
+    auto *model = qobject_cast<QStandardItemModel *>(cb->model());
+    auto item = model->item(itemNum);
+    item->setFlags(enable ? item->flags() | Qt::ItemIsEnabled
+                            : item->flags() & ~Qt::ItemIsEnabled);
 }
 
 void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
@@ -116,14 +139,8 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
     for(auto t : TraceXYPlot::YAxisTypes) {
         auto enable = supported.count(t) > 0;
         auto index = (int) t;
-        auto *model = qobject_cast<QStandardItemModel *>(ui->Y1type->model());
-        auto item = model->item(index);
-        item->setFlags(enable ? item->flags() | Qt::ItemIsEnabled
-                                : item->flags() & ~Qt::ItemIsEnabled);
-        model = qobject_cast<QStandardItemModel *>(ui->Y2type->model());
-        item = model->item(index);
-        item->setFlags(enable ? item->flags() | Qt::ItemIsEnabled
-                                : item->flags() & ~Qt::ItemIsEnabled);
+        enableComboBoxItem(ui->Y1type, index, enable);
+        enableComboBoxItem(ui->Y2type, index, enable);
     }
     // Disable Yaxis if previously selected type is not supported
     if(!supported.count((TraceXYPlot::YAxisType)ui->Y1type->currentIndex())) {
@@ -131,6 +148,16 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
     }
     if(!supported.count((TraceXYPlot::YAxisType)ui->Y2type->currentIndex())) {
         ui->Y2type->setCurrentIndex(0);
+    }
+
+    if(type == TraceXYPlot::XAxisType::Frequency) {
+        enableComboBoxItem(ui->Xautomode, 0, true);
+    } else {
+        // auto mode using span not supported in time mode
+        if(ui->Xautomode->currentIndex() == 0) {
+            ui->Xautomode->setCurrentIndex(1);
+            enableComboBoxItem(ui->Xautomode, 0, false);
+        }
     }
 
     QString unit;

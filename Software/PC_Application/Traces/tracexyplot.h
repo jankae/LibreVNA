@@ -50,16 +50,23 @@ public:
         Time,
         Distance,
     };
+    enum class XAxisMode {
+        UseSpan,
+        FitTraces,
+        Manual,
+    };
 
-    virtual void setXAxis(double min, double max) override;
+    virtual void updateSpan(double min, double max) override;
     void setYAxis(int axis, YAxisType type, bool log, bool autorange, double min, double max, double div);
-    void setXAxis(XAxisType type, bool autorange, double min, double max, double div);
+    void setXAxis(XAxisType type, XAxisMode mode, double min, double max, double div);
     void enableTrace(Trace *t, bool enabled) override;
 
     // Applies potentially changed colors to all XY-plots
     static void updateGraphColors();
-
     bool isTDRtype(YAxisType type);
+
+public slots:
+    void axisSetupDialog();
 
 protected:
     virtual void updateContextMenu() override;
@@ -85,20 +92,27 @@ private:
 
     std::set<Trace*> tracesAxis[2];
 
-    class Axis {
+    class YAxis {
     public:
-        union {
-            YAxisType Ytype;
-            XAxisType Xtype;
-        };
-        bool log;
+        YAxisType type;
+        bool log; // not used yet
         bool autorange;
         double rangeMin;
         double rangeMax;
         double rangeDiv;
     };
-    Axis YAxis[2];
-    Axis XAxis;
+    class XAxis {
+    public:
+        XAxisType type;
+        XAxisMode mode;
+        bool log; // not used yet
+        double rangeMin;
+        double rangeMax;
+        double rangeDiv;
+    };
+
+    YAxis YAxis[2];
+    XAxis XAxis;
     double sweep_fmin, sweep_fmax;
 
     using CurveData = struct {

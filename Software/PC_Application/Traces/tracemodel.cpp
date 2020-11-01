@@ -20,6 +20,9 @@ TraceModel::~TraceModel()
 void TraceModel::addTrace(Trace *t)
 {
     beginInsertRows(QModelIndex(), traces.size(), traces.size());
+    connect(t, &Trace::nameChanged, [=]() {
+       emit traceNameChanged(t);
+    });
     traces.push_back(t);
     endInsertRows();
     emit traceAdded(t);

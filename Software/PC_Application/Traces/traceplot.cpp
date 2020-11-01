@@ -121,8 +121,8 @@ void TracePlot::triggerReplot()
 {
     auto now = QTime::currentTime();
     if (lastUpdate.msecsTo(now) >= MinUpdateInterval) {
-        replot();
         lastUpdate = now;
+        replot();
     }
 }
 

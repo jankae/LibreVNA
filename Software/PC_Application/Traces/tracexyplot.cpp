@@ -91,8 +91,11 @@ public:
         case TraceXYPlot::YAxisType::Impedance: {
             auto sample = t.getTDR()[i];
             QPointF p;
-            // TODO set distance
-            p.setX(sample.time);
+            if(Xtype == TraceXYPlot::XAxisType::Time) {
+                p.setX(sample.time);
+            } else {
+                p.setX(sample.distance);
+            }
             p.setY(TimeAxisTransformation(Ytype, &t, i));
             return p;
         }
@@ -116,23 +119,23 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
       selectedMarker(nullptr)
 {
     YAxis[0].log = false;
-    YAxis[0].Ytype = YAxisType::Disabled;
+    YAxis[0].type = YAxisType::Disabled;
     YAxis[0].rangeDiv = 1;
     YAxis[0].rangeMax = 10;
     YAxis[0].rangeMin = 0;
     YAxis[0].autorange = false;
     YAxis[1].log = false;
-    YAxis[1].Ytype = YAxisType::Disabled;
+    YAxis[1].type = YAxisType::Disabled;
     YAxis[1].rangeDiv = 1;
     YAxis[1].rangeMax = 10;
     YAxis[1].rangeMin = 0;
     YAxis[1].autorange = false;
-    XAxis.Xtype = XAxisType::Frequency;
+    XAxis.type = XAxisType::Frequency;
     XAxis.log = false;
     XAxis.rangeDiv = 1;
     XAxis.rangeMax = 10;
     XAxis.rangeMin = 0;
-    XAxis.autorange = true;
+    XAxis.mode = XAxisMode::UseSpan;
 
     plot = new QwtPlot(this);
 
@@ -168,10 +171,10 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     setYAxis(0, YAxisType::Magnitude, false, false, -120, 20, 10);
     setYAxis(1, YAxisType::Phase, false, false, -180, 180, 30);
     // enable autoscaling and set for full span (no information about actual span available yet)
-    setXAxis(0, 6000000000);
-    setXAxis(XAxisType::Frequency, true, 0, 6000000000, 600000000);
+    updateSpan(0, 6000000000);
+    setXAxis(XAxisType::Frequency, XAxisMode::UseSpan, 0, 6000000000, 600000000);
     // get notified when the span changes
-    connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TraceXYPlot::setXAxis));
+    connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TraceXYPlot::updateSpan));
 
     allPlots.insert(this);
 }
@@ -187,16 +190,15 @@ TraceXYPlot::~TraceXYPlot()
     allPlots.erase(this);
 }
 
-void TraceXYPlot::setXAxis(double min, double max)
+void TraceXYPlot::updateSpan(double min, double max)
 {
     sweep_fmin = min;
     sweep_fmax = max;
-    updateXAxis();
 }
 
 void TraceXYPlot::setYAxis(int axis, TraceXYPlot::YAxisType type, bool log, bool autorange, double min, double max, double div)
 {
-    if(YAxis[axis].Ytype != type) {
+    if(YAxis[axis].type != type) {
         // remove traces that are active but not supported with the new axis type
         bool erased = false;
         do {
@@ -210,12 +212,12 @@ void TraceXYPlot::setYAxis(int axis, TraceXYPlot::YAxisType type, bool log, bool
             }
         } while(erased);
 
-        if(isTDRtype(YAxis[axis].Ytype)) {
+        if(isTDRtype(YAxis[axis].type)) {
             for(auto t : tracesAxis[axis]) {
                 t->removeTDRinterest();
             }
         }
-        YAxis[axis].Ytype = type;
+        YAxis[axis].type = type;
 
         for(auto t : tracesAxis[axis]) {
             // supported but needs an adjusted QwtSeriesData
@@ -252,20 +254,19 @@ void TraceXYPlot::setYAxis(int axis, TraceXYPlot::YAxisType type, bool log, bool
     replot();
 }
 
-void TraceXYPlot::setXAxis(XAxisType type, bool autorange, double min, double max, double div)
+void TraceXYPlot::setXAxis(XAxisType type, XAxisMode mode, double min, double max, double div)
 {
-    XAxis.Xtype = type;
-    XAxis.autorange = autorange;
+    XAxis.type = type;
+    XAxis.mode = mode;
     XAxis.rangeMin = min;
     XAxis.rangeMax = max;
     XAxis.rangeDiv = div;
-    updateXAxis();
 }
 
 void TraceXYPlot::enableTrace(Trace *t, bool enabled)
 {
     for(int axis = 0;axis < 2;axis++) {
-        if(supported(t, YAxis[axis].Ytype)) {
+        if(supported(t, YAxis[axis].type)) {
             enableTraceAxis(t, axis, enabled);
         }
     }
@@ -290,17 +291,20 @@ bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
     }
 }
 
+void TraceXYPlot::axisSetupDialog()
+{
+    auto setup = new XYplotAxisDialog(this);
+    setup->show();
+}
+
 void TraceXYPlot::updateContextMenu()
 {
     contextmenu->clear();
     auto setup = new QAction("Axis setup...", contextmenu);
-    connect(setup, &QAction::triggered, [this]() {
-        auto setup = new XYplotAxisDialog(this);
-        setup->show();
-    });
+    connect(setup, &QAction::triggered, this, &TraceXYPlot::axisSetupDialog);
     contextmenu->addAction(setup);
     for(int axis = 0;axis < 2;axis++) {
-        if(YAxis[axis].Ytype == YAxisType::Disabled) {
+        if(YAxis[axis].type == YAxisType::Disabled) {
             continue;
         }
         if(axis == 0) {
@@ -310,7 +314,7 @@ void TraceXYPlot::updateContextMenu()
         }
         for(auto t : traces) {
             // Skip traces that are not applicable for the selected axis type
-            if(!supported(t.first, YAxis[axis].Ytype)) {
+            if(!supported(t.first, YAxis[axis].type)) {
                 continue;
             }
 
@@ -341,6 +345,7 @@ bool TraceXYPlot::supported(Trace *)
 
 void TraceXYPlot::replot()
 {
+    updateXAxis();
     plot->replot();
 }
 
@@ -381,12 +386,12 @@ void TraceXYPlot::enableTraceAxis(Trace *t, int axis, bool enabled)
                     markerAdded(m);
                 }
             }
-            if(isTDRtype(YAxis[axis].Ytype)) {
+            if(isTDRtype(YAxis[axis].type)) {
                 t->addTDRinterest();
             }
             traceColorChanged(t);
         } else {
-            if(isTDRtype(YAxis[axis].Ytype)) {
+            if(isTDRtype(YAxis[axis].type)) {
                 t->removeTDRinterest();
             }
             tracesAxis[axis].erase(t);
@@ -436,22 +441,78 @@ bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
 
 void TraceXYPlot::updateXAxis()
 {
-    if(XAxis.autorange && sweep_fmax-sweep_fmin > 0) {
+    if(XAxis.mode == XAxisMode::Manual) {
+        plot->setAxisScale(QwtPlot::xBottom, XAxis.rangeMin, XAxis.rangeMax, XAxis.rangeDiv);
+    } else {
+        // automatic mode, figure out limits
+        double max = std::numeric_limits<double>::lowest();
+        double min = std::numeric_limits<double>::max();
+        if(XAxis.mode == XAxisMode::UseSpan) {
+            min = sweep_fmin;
+            max = sweep_fmax;
+        } else if(XAxis.mode == XAxisMode::FitTraces) {
+            for(auto t : traces) {
+                bool enabled = (tracesAxis[0].find(t.first) != tracesAxis[0].end()
+                        || tracesAxis[1].find(t.first) != tracesAxis[1].end());
+                auto trace = t.first;
+                if(enabled && trace->isVisible()) {
+                    // this trace is currently displayed
+                    double trace_min, trace_max;
+                    switch(XAxis.type) {
+                    case XAxisType::Frequency:
+                        trace_min = trace->minFreq();
+                        trace_max = trace->maxFreq();
+                        break;
+                    case XAxisType::Time:
+                        trace_min = trace->getTDR().front().time;
+                        trace_max = trace->getTDR().back().time;
+                        break;
+                    case XAxisType::Distance:
+                        trace_min = trace->getTDR().front().distance;
+                        trace_max = trace->getTDR().back().distance;
+                        break;
+                    }
+                    if(trace_min < min) {
+                        min = trace_min;
+                    }
+                    if(trace_max > max) {
+                        max = trace_max;
+                    }
+                }
+            }
+        }
+        if(min >= max) {
+            // still at initial values, no traces are active, leave axis unchanged
+            return;
+        }
+        constexpr int minDivisions = 8;
+        double max_div_step = (max - min) / minDivisions;
+        int zeros = floor(log10(max_div_step));
+        double decimals_shift = pow(10, zeros);
+        max_div_step /= decimals_shift;
+        if(max_div_step >= 5) {
+            max_div_step = 5;
+        } else if(max_div_step >= 2) {
+            max_div_step = 2;
+        } else {
+            max_div_step = 1;
+        }
+        auto div_step = max_div_step * decimals_shift;
+        // round min up to next multiple of div_step
+        min = ceil(min / div_step) * div_step;
         QList<double> tickList;
-        for(double tick = sweep_fmin;tick <= sweep_fmax;tick+= (sweep_fmax-sweep_fmin)/10) {
+        for(double tick = min;tick <= max;tick += div_step) {
             tickList.append(tick);
         }
-        QwtScaleDiv scalediv(sweep_fmin, sweep_fmax, QList<double>(), QList<double>(), tickList);
+        QwtScaleDiv scalediv(min, max, QList<double>(), QList<double>(), tickList);
         plot->setAxisScaleDiv(QwtPlot::xBottom, scalediv);
-    } else {
-        plot->setAxisScale(QwtPlot::xBottom, XAxis.rangeMin, XAxis.rangeMax, XAxis.rangeDiv);
     }
     triggerReplot();
 }
 
 QwtSeriesData<QPointF> *TraceXYPlot::createQwtSeriesData(Trace &t, int axis)
 {
-    return new QwtTraceSeries(t, YAxis[axis].Ytype, XAxis.Xtype);
+    return new QwtTraceSeries(t, YAxis[axis].type, XAxis.type);
 }
 
 void TraceXYPlot::traceColorChanged(Trace *t)
@@ -513,7 +574,7 @@ void TraceXYPlot::markerDataChanged(TraceMarker *m)
 {
     auto qwtMarker = markers[m];
     qwtMarker->setXValue(m->getFrequency());
-    qwtMarker->setYValue(FrequencyAxisTransformation(YAxis[0].Ytype, m->getData()));
+    qwtMarker->setYValue(FrequencyAxisTransformation(YAxis[0].type, m->getData()));
     triggerReplot();
 }
 

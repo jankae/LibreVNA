@@ -18,6 +18,7 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
 
     connect(&model.getModel(), &TraceModel::traceAdded, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceRemoved, this, &MarkerWidget::updatePersistentEditors);
+    connect(&model.getModel(), &TraceModel::traceNameChanged, this, &MarkerWidget::updatePersistentEditors);
 }
 
 MarkerWidget::~MarkerWidget()

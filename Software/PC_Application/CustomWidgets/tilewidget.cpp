@@ -130,7 +130,9 @@ void TileWidget::on_bSmithchart_clicked()
 
 void TileWidget::on_bXYplot_clicked()
 {
-    setContent(new TraceXYPlot(model));
+    auto plot = new TraceXYPlot(model);
+    setContent(plot);
+    plot->axisSetupDialog();
 }
 
 void TileWidget::traceDeleted(TracePlot *)
