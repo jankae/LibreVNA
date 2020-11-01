@@ -89,6 +89,12 @@ void Calkit::toFile(std::string filename)
     file.close();
 }
 
+static QString readLine(ifstream &file) {
+    string line;
+    getline(file, line);
+    return QString::fromStdString(line).simplified();
+}
+
 Calkit Calkit::fromFile(std::string filename)
 {
     Calkit c;
@@ -97,50 +103,50 @@ Calkit Calkit::fromFile(std::string filename)
     if(!file.is_open()) {
         throw runtime_error("Unable to open file");
     }
-    file >> c.open_measurements;
-    file >> c.short_measurements;
-    file >> c.load_measurements;
-    file >> c.through_measurements;
-    file >> c.open_Z0;
-    file >> c.open_delay;
-    file >> c.open_loss;
-    file >> c.open_C0;
-    file >> c.open_C1;
-    file >> c.open_C2;
-    file >> c.open_C3;
-    file >> c.short_Z0;
-    file >> c.short_delay;
-    file >> c.short_loss;
-    file >> c.short_L0;
-    file >> c.short_L1;
-    file >> c.short_L2;
-    file >> c.short_L3;
-    file >> c.load_Z0;
-    file >> c.through_Z0;
-    file >> c.through_delay;
-    file >> c.through_loss;
+    c.open_measurements = readLine(file).toInt();
+    c.short_measurements = readLine(file).toInt();
+    c.load_measurements = readLine(file).toInt();
+    c.through_measurements = readLine(file).toInt();
+    c.open_Z0 = readLine(file).toDouble();
+    c.open_delay = readLine(file).toDouble();
+    c.open_loss = readLine(file).toDouble();
+    c.open_C0 = readLine(file).toDouble();
+    c.open_C1 = readLine(file).toDouble();
+    c.open_C2 = readLine(file).toDouble();
+    c.open_C3 = readLine(file).toDouble();
+    c.short_Z0 = readLine(file).toDouble();
+    c.short_delay = readLine(file).toDouble();
+    c.short_loss = readLine(file).toDouble();
+    c.short_L0 = readLine(file).toDouble();
+    c.short_L1 = readLine(file).toDouble();
+    c.short_L2 = readLine(file).toDouble();
+    c.short_L3 = readLine(file).toDouble();
+    c.load_Z0 = readLine(file).toDouble();
+    c.through_Z0 = readLine(file).toDouble();
+    c.through_delay = readLine(file).toDouble();
+    c.through_loss = readLine(file).toDouble();
     if(c.open_measurements) {
-        file >> c.open_file;
-        file >> c.open_Sparam;
+        c.open_file = readLine(file).toStdString();
+        c.open_Sparam = readLine(file).toInt();
     }
     if(c.short_measurements) {
-        file >> c.short_file;
-        file >> c.short_Sparam;
+        c.short_file = readLine(file).toStdString();
+        c.short_Sparam = readLine(file).toInt();
     }
     if(c.load_measurements) {
-        file >> c.load_file;
-        file >> c.load_Sparam;
+        c.load_file = readLine(file).toStdString();
+        c.load_Sparam = readLine(file).toInt();
     }
     if(c.through_measurements) {
-        file >> c.through_file;
-        file >> c.through_Sparam1;
-        file >> c.through_Sparam2;
+        c.through_file = readLine(file).toStdString();
+        c.through_Sparam1 = readLine(file).toInt();
+        c.through_Sparam2 = readLine(file).toInt();
     }
-    file >> c.TRL_through_Z0;
-    file >> c.TRL_reflection_short;
-    file >> c.TRL_line_delay;
-    file >> c.TRL_line_minfreq;
-    file >> c.TRL_line_maxfreq;
+    c.TRL_through_Z0 = readLine(file).toDouble();
+    c.TRL_reflection_short = readLine(file).toDouble();
+    c.TRL_line_delay = readLine(file).toDouble();
+    c.TRL_line_minfreq = readLine(file).toDouble();
+    c.TRL_line_maxfreq = readLine(file).toDouble();
     file.close();
     return c;
 }
