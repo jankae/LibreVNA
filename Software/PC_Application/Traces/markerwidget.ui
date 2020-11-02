@@ -15,22 +15,16 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QTableView" name="tableView">
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <attribute name="horizontalHeaderMinimumSectionSize">
-      <number>21</number>
-     </attribute>
-     <attribute name="horizontalHeaderStretchLastSection">
+    <widget class="QTreeView" name="treeView">
+     <property name="itemsExpandable">
       <bool>true</bool>
-     </attribute>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="verticalHeaderDefaultSectionSize">
-      <number>21</number>
-     </attribute>
+     </property>
+     <property name="animated">
+      <bool>true</bool>
+     </property>
+     <property name="expandsOnDoubleClick">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item>

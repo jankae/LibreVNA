@@ -580,9 +580,7 @@ void TraceXYPlot::markerDataChanged(TraceMarker *m)
 void TraceXYPlot::markerSymbolChanged(TraceMarker *m)
 {
     auto qwtMarker = markers[m];
-    auto old_sym = qwtMarker->symbol();
     qwtMarker->setSymbol(nullptr);
-    delete old_sym;
 
     QwtSymbol *sym=new QwtSymbol;
     sym->setPixmap(m->getSymbol());
@@ -597,6 +595,9 @@ void TraceXYPlot::clicked(const QPointF pos)
     unsigned int closestDistance = numeric_limits<unsigned int>::max();
     TraceMarker *closestMarker = nullptr;
     for(auto m : markers) {
+        if(!m.first->isMovable()) {
+            continue;
+        }
         auto markerPoint = drawPicker->plotToPixel(m.second->value());
         auto yDiff = abs(markerPoint.y() - clickPoint.y());
         auto xDiff = abs(markerPoint.x() - clickPoint.x());

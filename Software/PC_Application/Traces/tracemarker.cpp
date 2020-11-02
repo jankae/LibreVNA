@@ -10,7 +10,7 @@
 
 using namespace std;
 
-TraceMarker::TraceMarker(TraceMarkerModel *model, int number)
+TraceMarker::TraceMarker(TraceMarkerModel *model, int number, TraceMarker *parent, QString descr)
     : editingFrequeny(false),
       model(model),
       parentTrace(nullptr),
@@ -18,7 +18,9 @@ TraceMarker::TraceMarker(TraceMarkerModel *model, int number)
       number(number),
       data(0),
       type(Type::Manual),
+      description(descr),
       delta(nullptr),
+      parent(parent),
       cutoffAmplitude(-3.0)
 {
 
@@ -58,6 +60,7 @@ void TraceMarker::assignTrace(Trace *t)
         m->assignTrace(t);
     }
     update();
+    emit traceChanged(this);
 }
 
 Trace *TraceMarker::trace()
@@ -84,6 +87,9 @@ QString TraceMarker::readableData()
             auto phase = arg(valueDiff);
             return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
         }
+        break;
+    case Type::PeakTable:
+        return "Found " + QString::number(helperMarkers.size()) + " peaks";
     case Type::Lowpass:
     case Type::Highpass:
         if(parentTrace->isReflection()) {
@@ -123,8 +129,8 @@ QString TraceMarker::readableData()
         }
         break;
     case Type::TOI: {
-        auto avgFundamental = (toDecibel() + helperMarkers[0]->toDecibel()) / 2;
-        auto avgDistortion = (helperMarkers[1]->toDecibel() + helperMarkers[2]->toDecibel()) / 2;
+        auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
+        auto avgDistortion = (helperMarkers[2]->toDecibel() + helperMarkers[3]->toDecibel()) / 2;
         auto TOI = (3 * avgFundamental - avgDistortion) / 2;
         return "Fundamental: " + Unit::ToString(avgFundamental, "dbm", " ", 3) + ", distortion: " + Unit::ToString(avgDistortion, "dbm", " ", 3) + ", TOI: "+Unit::ToString(TOI, "dbm", " ", 3);
     }
@@ -145,11 +151,21 @@ QString TraceMarker::readableSettings()
     case Type::Lowpass:
     case Type::Highpass:
     case Type::Bandpass:
+    case Type::PeakTable:
         return Unit::ToString(cutoffAmplitude, "db", " ", 3);
     case Type::TOI:
         return "none";
     default:
         return "Unhandled case";
+    }
+}
+
+QString TraceMarker::readableType()
+{
+    if(parent) {
+        return description;
+    } else {
+        return typeToString(type);
     }
 }
 
@@ -179,19 +195,23 @@ void TraceMarker::traceDataChanged()
 
 void TraceMarker::updateSymbol()
 {
-    constexpr int width = 15, height = 15;
-    symbol = QPixmap(width, height);
-    symbol.fill(Qt::transparent);
-    QPainter p(&symbol);
-    p.setRenderHint(QPainter::Antialiasing);
-    QPointF points[] = {QPointF(0,0),QPointF(width,0),QPointF(width/2,height)};
-    auto traceColor = parentTrace->color();
-    p.setPen(traceColor);
-    p.setBrush(traceColor);
-    p.drawConvexPolygon(points, 3);
-    auto brightness = traceColor.redF() * 0.299 + traceColor.greenF() * 0.587 + traceColor.blueF() * 0.114;
-    p.setPen((brightness > 0.6) ? Qt::black : Qt::white);
-    p.drawText(QRectF(0,0,width, height*2.0/3.0), Qt::AlignCenter, QString::number(number) + suffix);
+    if(isVisible()) {
+        constexpr int width = 15, height = 15;
+        symbol = QPixmap(width, height);
+        symbol.fill(Qt::transparent);
+        QPainter p(&symbol);
+        p.setRenderHint(QPainter::Antialiasing);
+        QPointF points[] = {QPointF(0,0),QPointF(width,0),QPointF(width/2,height)};
+        auto traceColor = parentTrace->color();
+        p.setPen(traceColor);
+        p.setBrush(traceColor);
+        p.drawConvexPolygon(points, 3);
+        auto brightness = traceColor.redF() * 0.299 + traceColor.greenF() * 0.587 + traceColor.blueF() * 0.114;
+        p.setPen((brightness > 0.6) ? Qt::black : Qt::white);
+        p.drawText(QRectF(0,0,width, height*2.0/3.0), Qt::AlignCenter, QString::number(number) + suffix);
+    } else {
+        symbol = QPixmap(1,1);
+    }
     emit symbolChanged(this);
 }
 
@@ -204,6 +224,7 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
         supported.insert(Type::Maximum);
         supported.insert(Type::Minimum);
         supported.insert(Type::Delta);
+        supported.insert(Type::PeakTable);
         if(parentTrace->isLive()) {
             switch(parentTrace->liveParameter()) {
             case Trace::LiveParameter::S11:
@@ -256,10 +277,12 @@ void TraceMarker::assignDeltaMarker(TraceMarker *m)
 
 void TraceMarker::deleteHelperMarkers()
 {
+    emit beginRemoveHelperMarkers(this);
     for(auto m : helperMarkers) {
         delete m;
     }
     helperMarkers.clear();
+    emit endRemoveHelperMarkers(this);
 }
 
 void TraceMarker::setType(TraceMarker::Type t)
@@ -267,7 +290,11 @@ void TraceMarker::setType(TraceMarker::Type t)
     // remove any potential helper markers
     deleteHelperMarkers();
     type = t;
-    vector<QString> helperSuffixes;
+    using helper_descr = struct {
+        QString suffix;
+        QString description;
+    };
+    vector<helper_descr> required_helpers;
     switch(type) {
     case Type::Delta:
         if(!delta) {
@@ -293,24 +320,24 @@ void TraceMarker::setType(TraceMarker::Type t)
         break;
     case Type::Lowpass:
     case Type::Highpass:
-        helperSuffixes = {"c"};
+        required_helpers = {{"c", "cutoff"}};
         break;
     case Type::Bandpass:
-        helperSuffixes = {"l", "h" ,"c"};
+        required_helpers = {{"l", "lower cutoff"}, {"h", "higher cutoff"} ,{"c", "center"}};
         break;
     case Type::TOI:
-        helperSuffixes = {"p", "l", "r"};
+        required_helpers = {{"p", "first peak"}, {"p", "second peak"}, {"l", "left intermodulation"}, {"r", "right intermodulation"}};
     default:
         break;
     }
     // create helper markers
-    for(auto suffix : helperSuffixes) {
-        auto helper = new TraceMarker(model);
-        helper->suffix = suffix;
-        helper->number = number;
+    for(auto h : required_helpers) {
+        auto helper = new TraceMarker(model, number, this, h.description);
+        helper->suffix = h.suffix;
         helper->assignTrace(parentTrace);
         helperMarkers.push_back(helper);
     }
+    updateSymbol();
     emit typeChanged(this);
     update();
 }
@@ -320,10 +347,50 @@ double TraceMarker::toDecibel()
     return 20*log10(abs(data));
 }
 
+bool TraceMarker::isVisible()
+{
+    switch(type) {
+    case Type::Manual:
+    case Type::Delta:
+    case Type::Maximum:
+    case Type::Minimum:
+        return true;
+    default:
+        return false;
+    }
+}
+
+QString TraceMarker::getSuffix() const
+{
+    return suffix;
+}
+
+const std::vector<TraceMarker *> &TraceMarker::getHelperMarkers() const
+{
+    return helperMarkers;
+}
+
+TraceMarker *TraceMarker::helperMarker(unsigned int i)
+{
+    if(i < helperMarkers.size()) {
+        return helperMarkers[i];
+    } else {
+        return nullptr;
+    }
+}
+
+TraceMarker *TraceMarker::getParent() const
+{
+    return parent;
+}
+
 void TraceMarker::setNumber(int value)
 {
     number = value;
     updateSymbol();
+    for(auto h : helperMarkers) {
+        h->setNumber(number);
+    }
 }
 
 QWidget *TraceMarker::getTypeEditor(QAbstractItemDelegate *delegate)
@@ -398,6 +465,7 @@ void TraceMarker::updateTypeFromEditor(QWidget *w)
             }
         }
     }
+    update();
 }
 
 SIUnitEdit *TraceMarker::getSettingsEditor()
@@ -411,6 +479,7 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
         return new SIUnitEdit("Hz", " kMG");
     case Type::Lowpass:
     case Type::Highpass:
+    case Type::PeakTable:
         return new SIUnitEdit("db", " ");
     case Type::TOI:
         return nullptr;
@@ -433,8 +502,11 @@ void TraceMarker::adjustSettings(double value)
         if(value > 0.0) {
             value = -value;
         }
+        /* no break */
+    case Type::PeakTable:
         cutoffAmplitude = value;
     }
+    update();
 }
 
 void TraceMarker::update()
@@ -453,6 +525,20 @@ void TraceMarker::update()
         break;
     case Type::Minimum:
         setFrequency(parentTrace->findExtremumFreq(false));
+        break;
+    case Type::PeakTable: {
+        deleteHelperMarkers();
+        auto peaks = parentTrace->findPeakFrequencies(100, cutoffAmplitude);
+        char suffix = 'a';
+        for(auto p : peaks) {
+            auto helper = new TraceMarker(model, number, this);
+            helper->suffix = suffix;
+            helper->assignTrace(parentTrace);
+            helper->setFrequency(p);
+            suffix++;
+            helperMarkers.push_back(helper);
+        }
+    }
         break;
     case Type::Lowpass:
     case Type::Highpass:
@@ -539,11 +625,11 @@ void TraceMarker::update()
         // assign marker frequenies:
         // this marker is the left peak, first helper the right peak.
         // 2nd and 3rd helpers are left and right TOI peaks
-        setFrequency(peaks[0]);
-        helperMarkers[0]->setFrequency(peaks[1]);
+        helperMarkers[0]->setFrequency(peaks[0]);
+        helperMarkers[1]->setFrequency(peaks[1]);
         auto freqDiff = peaks[1] - peaks[0];
-        helperMarkers[1]->setFrequency(peaks[0] - freqDiff);
-        helperMarkers[2]->setFrequency(peaks[1] + freqDiff);
+        helperMarkers[2]->setFrequency(peaks[0] - freqDiff);
+        helperMarkers[3]->setFrequency(peaks[1] + freqDiff);
     }
         break;
     }
@@ -563,6 +649,21 @@ int TraceMarker::getNumber() const
 std::complex<double> TraceMarker::getData() const
 {
     return data;
+}
+
+bool TraceMarker::isMovable()
+{
+    if(parent) {
+        // helper traces are never movable by the user
+        return false;
+    }
+    switch(type) {
+    case Type::Manual:
+    case Type::Delta:
+        return true;
+    default:
+        return false;
+    }
 }
 
 QPixmap &TraceMarker::getSymbol()

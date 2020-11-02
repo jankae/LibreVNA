@@ -7,14 +7,14 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
     model(model)
 {
     ui->setupUi(this);
-    ui->tableView->setModel(&model);
-    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexTrace, new MarkerTraceDelegate);
-    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexType, new MarkerTypeDelegate);
-    ui->tableView->setItemDelegateForColumn(TraceMarkerModel::ColIndexSettings, new MarkerSettingsDelegate);
+    ui->treeView->setModel(&model);
+    ui->treeView->setItemDelegateForColumn(TraceMarkerModel::ColIndexTrace, new MarkerTraceDelegate);
+    ui->treeView->setItemDelegateForColumn(TraceMarkerModel::ColIndexType, new MarkerTypeDelegate);
+    ui->treeView->setItemDelegateForColumn(TraceMarkerModel::ColIndexSettings, new MarkerSettingsDelegate);
 
-    ui->tableView->setColumnWidth(TraceMarkerModel::ColIndexNumber, 21);
-    ui->tableView->setColumnWidth(TraceMarkerModel::ColIndexTrace, 80);
-    ui->tableView->setColumnWidth(TraceMarkerModel::ColIndexType, 150);
+    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexNumber, 80);
+    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexTrace, 80);
+    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexType, 150);
 
     connect(&model.getModel(), &TraceModel::traceAdded, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceRemoved, this, &MarkerWidget::updatePersistentEditors);
@@ -23,15 +23,22 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
 
 MarkerWidget::~MarkerWidget()
 {
-    delete ui->tableView->itemDelegateForColumn(TraceMarkerModel::ColIndexTrace);
-    delete ui->tableView->itemDelegateForColumn(TraceMarkerModel::ColIndexType);
-    delete ui->tableView->itemDelegateForColumn(TraceMarkerModel::ColIndexSettings);
+    delete ui->treeView->itemDelegateForColumn(TraceMarkerModel::ColIndexTrace);
+    delete ui->treeView->itemDelegateForColumn(TraceMarkerModel::ColIndexType);
+    delete ui->treeView->itemDelegateForColumn(TraceMarkerModel::ColIndexSettings);
     delete ui;
 }
 
 void MarkerWidget::on_bDelete_clicked()
 {
-    model.removeMarker(ui->tableView->currentIndex().row());
+    auto marker = model.markerFromIndex(ui->treeView->currentIndex());
+    if(!marker || marker->getParent()) {
+        // can't delete child markers directly
+        return;
+    }
+    model.removeMarker(marker);
+    marker->blockSignals(true);
+    delete marker;
 }
 
 void MarkerWidget::on_bAdd_clicked()
@@ -48,8 +55,8 @@ void MarkerWidget::updatePersistentEditors()
         auto columns = {TraceMarkerModel::ColIndexTrace, TraceMarkerModel::ColIndexType};
         for(auto c : columns) {
             auto index = model.index(i, c);
-            ui->tableView->closePersistentEditor(index);
-            ui->tableView->openPersistentEditor(index);
+            ui->treeView->closePersistentEditor(index);
+            ui->treeView->openPersistentEditor(index);
         }
     }
 }

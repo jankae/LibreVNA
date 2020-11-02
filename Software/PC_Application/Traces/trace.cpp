@@ -323,7 +323,7 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
         if(dbm <= min_dbm) {
             min_dbm = dbm;
         }
-        if((dbm <= max_dbm - minValley) && (max_dbm >= minLevel)) {
+        if((dbm <= max_dbm - minValley) && (max_dbm >= minLevel) && frequency) {
             // peak was high enough and dropped below minValley afterwards
             peakInfo peak;
             peak.frequency = frequency;
@@ -331,7 +331,8 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
             peaks.push_back(peak);
             // reset
             frequency = 0.0;
-            max_dbm = min_dbm = dbm;
+            max_dbm = -200.0;
+            min_dbm = dbm;
         }
     }
     if(peaks.size() > maxPeaks) {

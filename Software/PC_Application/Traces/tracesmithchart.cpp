@@ -40,6 +40,9 @@ void TraceSmithChart::mousePressEvent(QMouseEvent *event)
     for(auto t : traces) {
         auto markers = t.first->getMarkers();
         for(auto m : markers) {
+            if(!m->isMovable()) {
+                continue;
+            }
             auto S = m->getData();
             auto markerPoint = plotToPixel(S);
             auto yDiff = abs(markerPoint.y() - clickPoint.y());
