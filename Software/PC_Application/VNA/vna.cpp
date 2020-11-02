@@ -528,7 +528,6 @@ void VNA::SpanZoomOut()
 
 void VNA::SetSourceLevel(double level)
 {
-    // TODO remove hardcoded limits
     if(level > Device::Limits().cdbm_max / 100.0) {
         level = Device::Limits().cdbm_max / 100.0;
     } else if(level < Device::Limits().cdbm_min / 100.0) {
@@ -541,9 +540,8 @@ void VNA::SetSourceLevel(double level)
 
 void VNA::SetPoints(unsigned int points)
 {
-    // TODO remove hardcoded limits
-    if (points < 1) {
-        points = 1;
+    if (points < 2) {
+        points = 2;
     } else if(points > Device::Limits().maxPoints) {
         points = Device::Limits().maxPoints;
     }
@@ -611,7 +609,6 @@ void VNA::ApplyCalibration(Calibration::Type type)
         }
     } else {
         // Not all required traces available
-        // TODO start tracedata dialog with required traces
         QMessageBox::information(window, "Missing calibration traces", "Not all calibration traces for this type of calibration have been measured. The calibration can be enabled after the missing traces have been acquired.");
         DisableCalibration(true);
         StartCalibrationDialog(type);

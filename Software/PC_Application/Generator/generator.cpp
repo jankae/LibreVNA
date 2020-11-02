@@ -43,7 +43,6 @@ void Generator::updateDevice()
         // can't update if not connected
         return;
     }
-    // TODO comment in once status is filled with valid values
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::Generator;
     p.generator = central->getDeviceStatus();

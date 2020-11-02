@@ -56,10 +56,10 @@ static double TimeAxisTransformation(TraceXYPlot::YAxisType type, Trace *t, int 
 
 class QwtTraceSeries : public QwtSeriesData<QPointF> {
 public:
-    QwtTraceSeries(Trace &t, TraceXYPlot::YAxisType Ytype, TraceXYPlot::XAxisType Xtype)
+    QwtTraceSeries(Trace &t, TraceXYPlot::YAxisType Ytype, const TraceXYPlot *plot)
         : QwtSeriesData<QPointF>(),
           Ytype(Ytype),
-          Xtype(Xtype),
+          plot(plot),
           t(t){}
     size_t size() const override {
         switch(Ytype) {
@@ -91,7 +91,7 @@ public:
         case TraceXYPlot::YAxisType::Impedance: {
             auto sample = t.getTDR()[i];
             QPointF p;
-            if(Xtype == TraceXYPlot::XAxisType::Time) {
+            if(plot->XAxis.type == TraceXYPlot::XAxisType::Time) {
                 p.setX(sample.time);
             } else {
                 p.setX(sample.distance);
@@ -110,7 +110,7 @@ public:
 
 private:
     TraceXYPlot::YAxisType Ytype;
-    TraceXYPlot::XAxisType Xtype;
+    const TraceXYPlot *plot;
     Trace &t;
 };
 
@@ -499,20 +499,19 @@ void TraceXYPlot::updateXAxis()
         }
         auto div_step = max_div_step * decimals_shift;
         // round min up to next multiple of div_step
-        min = ceil(min / div_step) * div_step;
+        auto start_div = ceil(min / div_step) * div_step;
         QList<double> tickList;
-        for(double tick = min;tick <= max;tick += div_step) {
+        for(double tick = start_div;tick <= max;tick += div_step) {
             tickList.append(tick);
         }
         QwtScaleDiv scalediv(min, max, QList<double>(), QList<double>(), tickList);
         plot->setAxisScaleDiv(QwtPlot::xBottom, scalediv);
     }
-    triggerReplot();
 }
 
 QwtSeriesData<QPointF> *TraceXYPlot::createQwtSeriesData(Trace &t, int axis)
 {
-    return new QwtTraceSeries(t, YAxis[axis].type, XAxis.type);
+    return new QwtTraceSeries(t, YAxis[axis].type, this);
 }
 
 void TraceXYPlot::traceColorChanged(Trace *t)

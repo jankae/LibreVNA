@@ -27,6 +27,7 @@ public:
 class TraceXYPlot : public TracePlot
 {
     friend class XYplotAxisDialog;
+    friend class QwtTraceSeries;
     Q_OBJECT
 public:
     TraceXYPlot(TraceModel &model, QWidget *parent = nullptr);
