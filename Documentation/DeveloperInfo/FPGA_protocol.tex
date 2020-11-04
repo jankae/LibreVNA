@@ -88,7 +88,8 @@ The word received while transmitting the command word is the interrupt status re
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
-\robits{0}{11}{reserved}
+\robits{0}{10}{reserved}
+\rwbits{10}{1}{DFT}
 \rwbits{11}{1}{SH}
 \rwbits{12}{1}{OR}
 \rwbits{13}{1}{ND}
@@ -97,6 +98,7 @@ The word received while transmitting the command word is the interrupt status re
 \end{tikzpicture}
 \end{center}
 \begin{itemize}
+\item \textbf{DFT:} New DFT result available (see section~\ref{dft}).
 \item \textbf{SH:} Sweep halted due to halt bit set. Sweep will be resumed once the resume command is issued.
 \item \textbf{OR:} Data overrun occured (only cleared by resetting the FPGA)
 \item \textbf{ND:} New data available
@@ -111,8 +113,8 @@ Writing a register requires the transfer of two words: First the control word se
 \rwbits{0}{1}{1}
 \rwbits{1}{1}{0}
 \rwbits{2}{1}{0}
-\robits{3}{9}{reserved}
-\rwbits{12}{4}{Register Address}
+\robits{3}{8}{reserved}
+\rwbits{11}{5}{Register Address}
 \end{tikzpicture}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
@@ -145,7 +147,7 @@ Initiate the reading of sampling data by sending the command word:
 \robits{3}{13}{reserved}
 \end{tikzpicture}
 \end{center}
-Afterwards, read 18 words before setting NSS high. These 18 words will contain the sampling result (see section~\ref{result}), transmitted with the least significant word first.
+Afterwards, read up to 19 words before setting NSS high. These 19 words will contain the sampling result (see section~\ref{result}), transmitted with the least significant word first.
 
 \subsection{Resuming a halted sweep}
 When the halt bit is set in the SweepConfig, the FPGA will configure the Source and LO as requested but will not start the settling timer (and subsequently the sampling process) until this resume command is issued. The halted sweep is indicated by the sweep halted bit in the status register.
@@ -213,12 +215,77 @@ Issuing this command result in all minimum values set to 32767 and all maximum v
 \end{tikzpicture}
 \end{center}
 
+\subsection{Reading the DFT result}
+Initiate the reading of the DFT result (see section~\ref{dft}) by sending the command word:
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{1}{1}
+\rwbits{1}{1}{0}
+\rwbits{2}{1}{1}
+\robits{3}{13}{reserved}
+\end{tikzpicture}
+\end{center}
+Afterwards, read 12 words before setting NSS high. These 12 words will contain the first bin of the DFT, the least significant word is transmitted first:
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{192-\bit}
+\rwbits{0}{16}{Port 1 I[47:32]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{176-\bit}
+\rwbits{0}{16}{Port 1 I[31:16]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{168-\bit}
+\rwbits{0}{16}{Port 1 I[15:0]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{144-\bit}
+\rwbits{0}{16}{Port 1 Q[47:32]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{128-\bit}
+\rwbits{0}{16}{Port 1 Q[31:16]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{112-\bit}
+\rwbits{0}{16}{Port 1 Q[15:0]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{96-\bit}
+\rwbits{0}{16}{Port 2 I[47:32]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{80-\bit}
+\rwbits{0}{16}{Port 2 I[31:16]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{64-\bit}
+\rwbits{0}{16}{Port 2 I[15:0]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{48-\bit}
+\rwbits{0}{16}{Port 2 Q[47:32]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{32-\bit}
+\rwbits{0}{16}{Port 2 Q[31:16]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{16}{Port 2 Q[15:0]}
+\end{tikzpicture}
+\end{center}
+Repeating this procedure will return the next DFT bin. For each bin, the CS pin has to be toggled and the command word needs to be sent again (each DFT bin requires a new SPI transaction). The DFT interrupt is reset once all bins have been read. Alternatively, toggling the DFT off and on (by disabling and enabling its interrupt) will also reset the interrupt flag.
+
 \section{Registers}
 \subsection{Interrupt Mask Register: 0x00}
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
-\robits{0}{11}{reserved}
+\robits{0}{10}{reserved}
+\rwbits{10}{1}{DFTIE}
 \rwbits{11}{1}{SHIE}
 \rwbits{12}{1}{ORIE}
 \rwbits{13}{1}{NDIE}
@@ -227,6 +294,7 @@ Issuing this command result in all minimum values set to 32767 and all maximum v
 \end{tikzpicture}
 \end{center}
 \begin{itemize}
+\item \textbf{DFTIE:} DFT interrupt enable. This bit also enables the DFT (see section~\ref{dft}).
 \item \textbf{SHIE:} Sweep halted interrupt enable
 \item \textbf{ORIE:} Data overrun interrupt enable 
 \item \textbf{NDIE:} New data interrupt enable
@@ -244,10 +312,11 @@ Issuing this command result in all minimum values set to 32767 and all maximum v
 The register contains the number of points per sweep negative one, e.g. set to 11b if the sweep contains four points.
 
 \subsection{Samples Per Point Register: 0x02}
+\label{reg:spp}
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
-\robits{0}{6}{reserved}
+\robits{0}{3}{reserved}
 \rwbits{3}{13}{SPP[12:0]}
 \end{tikzpicture}
 \end{center}
@@ -306,6 +375,7 @@ Setting & Window type\\
 \end{itemize}
 
 \subsection{ADC Prescaler register: 0x04}
+\label{reg:ADC}
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
@@ -320,6 +390,7 @@ The minimum value for this register is 111, which results in a samplerate of rou
 \end{itemize}
 
 \subsection{Phase Increment: 0x05}
+\label{reg:phaseinc}
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
@@ -370,6 +441,60 @@ See datasheet of MAX2871 for bit descriptions. Bits for the fields N, FRAC, M, V
 \rwbits{0}{16}{MAX2871 Register 4[31:16]}
 \end{tikzpicture}
 \end{center}
+
+\subsection{DFT registers}
+\label{dft}
+In addition to the single bin DFT configured through the ADC prescaler and phase increment registers (see \ref{reg:ADC} and \ref{reg:phaseinc}), the FPGA also includes a multiple point DFT. This DFT only operates on the port 1 and port 2 receivers and is intended to speed up spectrum analyzer measurements. If enabled, the DFT runs in parallel to all other calculations.
+
+The DFT has a fixed number of bins (64), but the frequencies these bins correspond to can be changed.
+
+\subsubsection{Number of samples: 0x10}
+\label{reg:dft-nsamples}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{16}{DFT\_SAMPLES[15:0]}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{DFT\_SAMPLES[15:0]:} Amount of samples the DFT should take. This should always match the number of samples configured with the Samples Per Point register (see~\ref{reg:spp}).
+\end{itemize}
+
+\subsubsection{Window increment: 0x11}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{16}{DFT\_WINDOW\_INC[15:0]}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{DFT\_WINDOW\_INC[15:0]:} Window increment value after each sample. This should always be set in such a way, that the window is iterated over exactly once after all samples configured with DFT\_SAMPLES (see \ref{reg:dft-nsamples}) have been taken.
+$$ TODO: formula $$
+\end{itemize}
+
+\subsubsection{DFT\_FIRST\_BIN: 0x12}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{16}{DFT\_FIRST\_BIN[15:0]}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{DFT\_FIRST\_BIN[15:0]:} This value determines the frequency corresponding to the first DFT bin.
+$$ f_{firstBin} =  \frac{SR_{ADC} * DFT\_FIRST\_BIN}{2^{16}}$$
+\end{itemize}
+
+\subsubsection{DFT\_FREQ\_SPACING: 0x13}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{16}{DFT\_FREQ\_SPACING[15:0]}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{DFT\_FREQ\_SPACING[15:0]:} This value determines the frequency difference between bins.
+$$ \Delta f =  \frac{SR_{ADC} * DFT\_FREQ\_SPACING}{2^{24}}$$
+\end{itemize}
 
 \section{SweepConfig}
 \label{sweepconfig}
@@ -458,8 +583,14 @@ Setting & Selected Band\\
 
 \section{Sampling Result}
 \label{result}
-Each point in the sweep generates two sampling results. The first one contains the measurement when the source was routed to Port 1, the second sampling result was taken when the source was routed to Port 2. The sampling result does not indicate which point in the sweep it belongs to, that information is implicitly given by the order of transmitted sampling results.
+Each point in the sweep generates two sampling results. The first one contains the measurement when the source was routed to Port 1, the second sampling result was taken when the source was routed to Port 2. 
 \begin{center}
+\begin{tikzpicture}
+\bitrect{16}{304-\bit}
+\rwbits{0}{1}{SRC}
+\robits{1}{2}{reserved}
+\rwbits{3}{13}{POINT\_NUMBER[12:0]}
+\end{tikzpicture}
 \begin{tikzpicture}
 \bitrect{16}{288-\bit}
 \rwbits{0}{16}{Port 1 I[47:32]}

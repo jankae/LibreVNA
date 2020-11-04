@@ -22,8 +22,8 @@
 #define LOG_MODULE	"App"
 #include "Log.h"
 
-static Protocol::Datapoint result;
 static Protocol::SweepSettings settings;
+static uint16_t lastPoint;
 
 static Protocol::PacketInfo recv_packet, transmit_packet;
 static TaskHandle_t handle;
@@ -45,6 +45,7 @@ static void VNACallback(const Protocol::Datapoint &res) {
 	DEBUG2_HIGH();
 	transmit_packet.type = Protocol::PacketType::Datapoint;
 	transmit_packet.datapoint = res;
+	lastPoint = res.pointNum;
 	BaseType_t woken = false;
 	xTaskNotifyFromISR(handle, FLAG_DATAPOINT, eSetBits, &woken);
 	portYIELD_FROM_ISR(woken);
@@ -205,7 +206,7 @@ void App_Start() {
 		}
 
 		if(sweepActive && HAL_GetTick() - lastNewPoint > 1000) {
-			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", result.pointNum, FPGA::GetStatus());
+			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", lastPoint, FPGA::GetStatus());
 			FPGA::AbortSweep();
 			// restart the current sweep
 			HW::Init();

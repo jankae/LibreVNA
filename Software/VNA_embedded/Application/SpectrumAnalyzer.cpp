@@ -111,6 +111,9 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	s = settings;
 	HW::SetMode(HW::Mode::SA);
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::DisableInterrupt(FPGA::Interrupt::NewData);
+	FPGA::DisableInterrupt(FPGA::Interrupt::SweepHalted);
+	FPGA::EnableInterrupt(FPGA::Interrupt::DFTReady);
 	// in almost all cases a full sweep requires more points than the FPGA can handle at a time
 	// individually start each point and do the sweep in the uC
 	FPGA::SetNumberOfPoints(1);
@@ -144,6 +147,14 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::Enable(FPGA::Periphery::ExcitePort1);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
+
+	// Configure DFT
+	LOG_INFO("DFT samples: %lu", sampleNum);
+	FPGA::WriteRegister(FPGA::Reg::DFTSamples, sampleNum - 1);
+	FPGA::WriteRegister(FPGA::Reg::DFTWindowInc, 65536 / sampleNum);
+	FPGA::WriteRegister(FPGA::Reg::DFTFirstBin, 17920);
+	FPGA::WriteRegister(FPGA::Reg::DFTFreqSpacing, 1147);
+
 	lastLO2 = 0;
 	active = true;
 	StartNextSample();
@@ -154,6 +165,19 @@ bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 		return false;
 	}
 	FPGA::AbortSweep();
+
+	uint16_t i=0;
+	while(FPGA::GetStatus() & (uint16_t) FPGA::Interrupt::DFTReady) {
+		auto dft = FPGA::ReadDFTResult();
+		dft.P1 /= sampleNum;
+		dft.P2 /= sampleNum;
+		LOG_INFO("DFT %d: %lu, %lu", i, (uint32_t) dft.P1, (uint32_t) dft.P2);
+		Log_Flush();
+		i++;
+	}
+	FPGA::DisableInterrupt(FPGA::Interrupt::DFTReady);
+	FPGA::EnableInterrupt(FPGA::Interrupt::DFTReady);
+
 	float port1 = abs(std::complex<float>(result.P1I, result.P1Q))/sampleNum;
 	float port2 = abs(std::complex<float>(result.P2I, result.P2Q))/sampleNum;
 	if(port1 < port1Measurement) {

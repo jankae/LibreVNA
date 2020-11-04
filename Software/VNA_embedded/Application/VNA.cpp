@@ -202,6 +202,11 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	if(!active) {
 		return false;
 	}
+	if(result.pointNum != pointCnt || !result.activePort != excitingPort1) {
+		LOG_WARN("Indicated point does not match (%u != %u, %d != %d)", result.pointNum, pointCnt, result.activePort, !excitingPort1);
+		FPGA::AbortSweep();
+		return false;
+	}
 	// normal sweep mode
 	auto port1_raw = std::complex<float>(result.P1I, result.P1Q);
 	auto port2_raw = std::complex<float>(result.P2I, result.P2Q);

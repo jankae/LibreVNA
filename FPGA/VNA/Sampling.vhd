@@ -111,6 +111,8 @@ END COMPONENT;
 	signal multR_I : std_logic_vector(31 downto 0);
 	signal multR_Q : std_logic_vector(31 downto 0);
 	
+	signal last_sample : std_logic;
+	
 	type States is (Idle, Sampling, WaitForMult, Accumulating, Ready);
 	signal state : States;
 begin
@@ -207,8 +209,13 @@ begin
 			else
 				-- when not idle, generate pulses for ADCs
 				if state /= Idle then
-					if clk_cnt = unsigned(ADC_PRESCALER) - 1 then
+					if clk_cnt = unsigned(ADC_PRESCALER) - 1 and last_sample = '0' then
 						ADC_START <= '1';
+						if sample_cnt < samples_to_take then
+							sample_cnt <= sample_cnt + 1;
+						else
+							last_sample <= '1';
+						end if;
 						clk_cnt <= 0;
 					else
 						clk_cnt <= clk_cnt + 1;
@@ -220,6 +227,7 @@ begin
 				-- handle state transitions
 				case state is
 					when Idle =>
+						last_sample <= '0';
 						sample_cnt <= 0;
 						DONE <= '0';
 						PRE_DONE <= '0';
@@ -281,8 +289,7 @@ begin
 						DONE <= '0';
 						PRE_DONE <= '0';
 						phase <= std_logic_vector(unsigned(phase) + unsigned(PHASEINC));
-						if sample_cnt < samples_to_take then
-							sample_cnt <= sample_cnt + 1;
+						if last_sample = '0' then
 							state <= Sampling;
 						else
 							state <= Ready;

@@ -71,7 +71,8 @@ entity Sweep is
 			  EXCITE_PORT2 : in STD_LOGIC;
 			  
 			  -- Debug signals
-			  DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
+			  DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0);
+			  RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0)
 			  );
 end Sweep;
 
@@ -144,6 +145,7 @@ begin
 				START_SAMPLING <= '0';
 				RELOAD_PLL_REGS <= '0';
 				SWEEP_HALTED <= '0';
+				RESULT_INDEX <= (others => '1');
 			else
 				case state is
 					when TriggerSetup =>
@@ -184,6 +186,7 @@ begin
 						-- wait for sampling to finish
 						START_SAMPLING <= '0';
 						if SAMPLING_BUSY = '0' then
+							RESULT_INDEX <= "000" & std_logic_vector(point_cnt);
 							if EXCITE_PORT2 = '1' then
 								state <= SettlingPort2;
 							else
@@ -205,6 +208,7 @@ begin
 					when ExcitingPort2 =>
 						-- wait for sampling to finish
 						START_SAMPLING <= '0';
+						RESULT_INDEX <= "100" & std_logic_vector(point_cnt);
 						if SAMPLING_BUSY = '0' then
 							state <= NextPoint;
 						end if;

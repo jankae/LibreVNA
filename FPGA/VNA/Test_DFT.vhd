@@ -47,6 +47,7 @@ ARCHITECTURE behavior OF Test_DFT IS
          PORT1 : IN  std_logic_vector(15 downto 0);
          PORT2 : IN  std_logic_vector(15 downto 0);
          NEW_SAMPLE : IN  std_logic;
+			NSAMPLES : in STD_LOGIC_VECTOR (15 downto 0);
          BIN1_PHASEINC : IN  std_logic_vector(15 downto 0);
          DIFFBIN_PHASEINC : IN  std_logic_vector(15 downto 0);
          WINDOW_INC : IN  std_logic_vector(15 downto 0);
@@ -69,6 +70,7 @@ ARCHITECTURE behavior OF Test_DFT IS
    signal WINDOW_INC : std_logic_vector(15 downto 0) := (others => '0');
    signal WINDOW_TYPE : std_logic_vector(1 downto 0) := (others => '0');
    signal NEXT_OUTPUT : std_logic := '0';
+	signal NSAMPLES : STD_LOGIC_VECTOR (15 downto 0);
 
  	--Outputs
    signal RESULT_READY : std_logic;
@@ -81,13 +83,14 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: DFT
-	GENERIC MAP(BINS => 100)
+	GENERIC MAP(BINS => 64)
 	PORT MAP (
           CLK => CLK,
           RESET => RESET,
           PORT1 => PORT1,
           PORT2 => PORT2,
           NEW_SAMPLE => NEW_SAMPLE,
+			 NSAMPLES => NSAMPLES,
           BIN1_PHASEINC => BIN1_PHASEINC,
           DIFFBIN_PHASEINC => DIFFBIN_PHASEINC,
           WINDOW_INC => WINDOW_INC,
@@ -117,18 +120,19 @@ BEGIN
 		BIN1_PHASEINC <= "0100000000000000";
 		DIFFBIN_PHASEINC <= "0010000000000000";
 		WINDOW_INC <= "0000100000000000";
+		NSAMPLES <= "0000000000000011";
       wait for 100 ns;	
 		RESET <= '0';
       wait for CLK_period*10;
 		NEW_SAMPLE <= '1';
 		wait for CLK_period;
 		NEW_SAMPLE <= '0';
-		--wait until RESULT_READY = '1';
-		wait for CLK_period*112;
-		NEW_SAMPLE <= '1';
-		wait for CLK_period;
-		NEW_SAMPLE <= '0';
-      -- insert stimulus here 
+		while True loop
+			wait for CLK_period * 111;
+			NEW_SAMPLE <= '1';
+			wait for CLK_period;
+			NEW_SAMPLE <= '0';
+		end loop;
 
       wait;
    end process;

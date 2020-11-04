@@ -21,6 +21,7 @@ static constexpr GPIO FPGA_RESET = {.gpio = FPGA_RESET_GPIO_Port, .pin = FPGA_RE
 static constexpr GPIO AUX1 = {.gpio = FPGA_AUX1_GPIO_Port, .pin = FPGA_AUX1_Pin};
 static constexpr GPIO AUX2 = {.gpio = FPGA_AUX2_GPIO_Port, .pin = FPGA_AUX2_Pin};
 static constexpr GPIO AUX3 = {.gpio = FPGA_AUX3_GPIO_Port, .pin = FPGA_AUX3_Pin};
+static constexpr GPIO IRQ = {.gpio = FPGA_INTR_GPIO_Port, .pin = FPGA_INTR_Pin};
 
 static inline void Low(GPIO g) {
 	if(g.gpio) {

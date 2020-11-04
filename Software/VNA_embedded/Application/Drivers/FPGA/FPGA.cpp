@@ -3,6 +3,7 @@
 #include "stm.hpp"
 #include "main.h"
 #include "FPGA_HAL.hpp"
+#include <complex>
 
 #define LOG_LEVEL	LOG_LEVEL_DEBUG
 #define LOG_MODULE	"FPGA"
@@ -119,7 +120,7 @@ void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
 	nsamples /= 16;
 	// constrain to maximum value
 	if(nsamples >= 8192) {
-		nsamples = 8192;
+		nsamples = 8191;
 	}
 	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
@@ -237,7 +238,7 @@ static inline int64_t sign_extend_64(int64_t x, uint16_t bits) {
 }
 
 static FPGA::ReadCallback callback;
-static uint8_t raw[38];
+static uint8_t raw[40];
 static FPGA::SamplingResult result;
 static bool busy_reading = false;
 
@@ -247,15 +248,16 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 		return false;
 	}
 	callback = cb;
-	uint8_t cmd[38] = {0xC0, 0x00};
+	uint8_t cmd[40] = {0xC0, 0x00};
 	// Start data read
 	Low(CS);
 	busy_reading = true;
-	HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 38);
+	HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 40);
 	return true;
 }
 
 static int64_t assembleSampleResultValue(uint8_t *raw) {
+//	LOG_DEBUG("Raw: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", raw[4], raw[5], raw[2], raw[3], raw[1], raw[0]);
 	return sign_extend_64(
 			(uint16_t) raw[0] << 8 | raw[1] | (uint32_t) raw[2] << 24
 					| (uint32_t) raw[3] << 16 | (uint64_t) raw[4] << 40
@@ -272,6 +274,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	result.P2Q = assembleSampleResultValue(&raw[14]);
 	result.RefI = assembleSampleResultValue(&raw[8]);
 	result.RefQ = assembleSampleResultValue(&raw[2]);
+	result.pointNum = (uint16_t)(raw[38]&0x1F) << 8 | raw[39];
+	result.activePort = raw[38] & 0x80 ? 1 : 0;
 	High(CS);
 	busy_reading = false;
 	if ((status & 0x0004) && callback) {
@@ -367,4 +371,25 @@ void FPGA::ResumeHaltedSweep() {
 	High(CS);
 }
 
-
+FPGA::DFTResult FPGA::ReadDFTResult() {
+	uint8_t cmd[2] = {0xA0, 0x00};
+	uint8_t recv[24];
+	Low(CS);
+	HAL_SPI_Transmit(&FPGA_SPI, cmd, 2, 100);
+	HAL_SPI_Receive(&FPGA_SPI, recv, 24, 100);
+	High(CS);
+	// assemble words
+	int64_t p2imag = assembleSampleResultValue(&recv[0]);
+	int64_t p2real = assembleSampleResultValue(&recv[6]);
+	int64_t p1imag = assembleSampleResultValue(&recv[12]);
+	int64_t p1real = assembleSampleResultValue(&recv[18]);
+//	LOG_INFO("DFT raw: %ld, %ld, %ld, %ld", (int32_t) p1real, (int32_t) p1imag, (int32_t) p2real, (int32_t) p2imag);
+//	Log_Flush();
+	auto p1 = std::complex<float>(p1real, p1imag);
+	auto p2 = std::complex<float>(p2real, p2imag);
+	DFTResult res;
+//	LOG_INFO("DFT: %ld, %ld, %ld, %ld", (int32_t) p1.real(), (int32_t) p1.imag(), (int32_t) p2.real(), (int32_t) p2.imag());
+	res.P1 = std::abs(p1);
+	res.P2 = std::abs(p2);
+	return res;
+}
