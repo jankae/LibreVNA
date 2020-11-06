@@ -12,6 +12,7 @@
 static FPGA::HaltedCallback halted_cb;
 static uint16_t SysCtrlReg = 0x0000;
 static uint16_t ISRMaskReg = 0x0000;
+static uint32_t ADC_samplerate;
 
 using namespace FPGAHAL;
 
@@ -27,6 +28,9 @@ void FPGA::WriteRegister(FPGA::Reg reg, uint16_t value) {
 	Low(CS);
 	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) cmd, 4, 100);
 	High(CS);
+	if(reg == Reg::ADCPrescaler) {
+		ADC_samplerate = Clockrate / value;
+	}
 }
 
 bool FPGA::Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size) {
@@ -369,6 +373,23 @@ void FPGA::ResumeHaltedSweep() {
 	Low(CS);
 	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 2, 100);
 	High(CS);
+}
+
+void FPGA::SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing) {
+	// see FPGA protocol for formulas
+	uint16_t firstBin = f_firstBin * (1ULL << 16) / ADC_samplerate;
+	uint16_t binSpacing = f_binSpacing * (1ULL << 24) / ADC_samplerate;
+	WriteRegister(Reg::DFTFirstBin, firstBin);
+	WriteRegister(Reg::DFTFreqSpacing, binSpacing);
+}
+
+void FPGA::StopDFT() {
+	DisableInterrupt(Interrupt::DFTReady);
+}
+
+void FPGA::StartDFT() {
+	StopDFT();
+	EnableInterrupt(Interrupt::DFTReady);
 }
 
 FPGA::DFTResult FPGA::ReadDFTResult() {

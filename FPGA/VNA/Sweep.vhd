@@ -82,45 +82,41 @@ architecture Behavioral of Sweep is
 	signal state : Point_states;
 	signal settling_cnt : unsigned(15 downto 0);
 	signal settling_time : unsigned(15 downto 0);
+	signal config_reg : std_logic_vector(95 downto 0);
 begin
 	
 	CONFIG_ADDRESS <= std_logic_vector(point_cnt);
 	
 	-- assemble registers
 	-- source register 0: N divider and fractional division value
-	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "000000000" & CONFIG_DATA(6 downto 0) & CONFIG_DATA(27 downto 16) & "000";
+	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(6 downto 0) & config_reg(27 downto 16) & "000";
 	-- source register 1: Modulus value
-	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & CONFIG_DATA(39 downto 28) & "001";
+	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(39 downto 28) & "001";
 	-- source register 3: VCO selection
-	SOURCE_REG_3 <= CONFIG_DATA(12 downto 7) & MAX2871_DEF_3(25 downto 3) & "011";
+	SOURCE_REG_3 <= config_reg(12 downto 7) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- output power A passed on from default registers, output B disabled
-	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(15 downto 13) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5 downto 3) & "100";
+	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(15 downto 13) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5 downto 3) & "100";
 	
 	-- LO register 0: N divider and fractional division value
-	LO_REG_0 <= MAX2871_DEF_0(31) & "000000000" & CONFIG_DATA(54 downto 48) & CONFIG_DATA(75 downto 64) & "000";
+	LO_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(54 downto 48) & config_reg(75 downto 64) & "000";
 	-- LO register 1: Modulus value
-	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & CONFIG_DATA(87 downto 76) & "001";
+	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(87 downto 76) & "001";
 	-- LO register 3: VCO selection
-	LO_REG_3 <= CONFIG_DATA(60 downto 55) & MAX2871_DEF_3(25 downto 3) & "011";
+	LO_REG_3 <= config_reg(60 downto 55) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- both outputs enabled at +5dbm
-	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & CONFIG_DATA(63 downto 61) & MAX2871_DEF_4(19 downto 9) & "111111100";
+	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(63 downto 61) & MAX2871_DEF_4(19 downto 9) & "111111100";
 	
-	ATTENUATOR <= CONFIG_DATA(46 downto 40);
-	SOURCE_FILTER <= CONFIG_DATA(89 downto 88);
-	BAND_SELECT <= CONFIG_DATA(47);
-	
-	settling_time <= 	to_unsigned(2048, 16) when CONFIG_DATA(94 downto 93) = "00" else -- 20us
-							to_unsigned(6144, 16) when CONFIG_DATA(94 downto 93) = "01" else -- 60us
-							to_unsigned(18432, 16) when CONFIG_DATA(94 downto 93) = "10" else -- 180us
-							to_unsigned(55296, 16); -- 540us
+	ATTENUATOR <= config_reg(46 downto 40);
+	SOURCE_FILTER <= config_reg(89 downto 88);
+	BAND_SELECT <= config_reg(47);
 							
-	NSAMPLES <= USER_NSAMPLES when CONFIG_DATA(92 downto 90) = "000" else
-					std_logic_vector(to_unsigned(6, 13)) when CONFIG_DATA(92 downto 90) = "001" else
-					std_logic_vector(to_unsigned(19, 13)) when CONFIG_DATA(92 downto 90) = "010" else
-					std_logic_vector(to_unsigned(57, 13)) when CONFIG_DATA(92 downto 90) = "011" else
-					std_logic_vector(to_unsigned(190, 13)) when CONFIG_DATA(92 downto 90) = "100" else
-					std_logic_vector(to_unsigned(571, 13)) when CONFIG_DATA(92 downto 90) = "101" else
-					std_logic_vector(to_unsigned(1904, 13)) when CONFIG_DATA(92 downto 90) = "110" else
+	NSAMPLES <= USER_NSAMPLES when config_reg(92 downto 90) = "000" else
+					std_logic_vector(to_unsigned(6, 13)) when config_reg(92 downto 90) = "001" else
+					std_logic_vector(to_unsigned(19, 13)) when config_reg(92 downto 90) = "010" else
+					std_logic_vector(to_unsigned(57, 13)) when config_reg(92 downto 90) = "011" else
+					std_logic_vector(to_unsigned(190, 13)) when config_reg(92 downto 90) = "100" else
+					std_logic_vector(to_unsigned(571, 13)) when config_reg(92 downto 90) = "101" else
+					std_logic_vector(to_unsigned(1904, 13)) when config_reg(92 downto 90) = "110" else
 					std_logic_vector(to_unsigned(5712, 13));
 	
 	DEBUG_STATUS(10 downto 8) <= "000" when state = TriggerSetup else
@@ -135,7 +131,9 @@ begin
 	DEBUG_STATUS(6) <= PLL_RELOAD_DONE and PLL_LOCKED;
 	DEBUG_STATUS(5) <= SAMPLING_BUSY;
 	DEBUG_STATUS(4 downto 0) <= (others => '1');
-	
+
+	config_reg <= CONFIG_DATA;
+
 	process(CLK, RESET)
 	begin
 		if rising_edge(CLK) then
@@ -154,21 +152,25 @@ begin
 							state <= SettingUp;
 						end if;
 					when SettingUp =>
-						-- highest bit in CONFIG_DATA determines whether the sweep should be halted prior to sampling
-						SWEEP_HALTED <= CONFIG_DATA(95);
+						-- highest bit in config_reg determines whether the sweep should be halted prior to sampling
+						SWEEP_HALTED <= config_reg(95);
 						RELOAD_PLL_REGS <= '0';
+						case config_reg(94 downto 93) is 
+							when "00" => settling_time <= to_unsigned(2048, 16); -- 20us
+							when "01" => settling_time <= to_unsigned(6144, 16); -- 60us
+							when "10" => settling_time <= to_unsigned(18432, 16); -- 180us
+							when others => settling_time <= to_unsigned(55296, 16); -- 540us
+						end case;
+						settling_cnt <= settling_time;
 						if PLL_RELOAD_DONE = '1' and PLL_LOCKED = '1' then
 							-- check if halted sweep is resumed
-							if CONFIG_DATA(95) = '0' or SWEEP_RESUME = '1' then
+							if config_reg(95) = '0' or SWEEP_RESUME = '1' then
 								SWEEP_HALTED <= '0';
 								if EXCITE_PORT1 = '1' then
 									state <= SettlingPort1;
-								elsif EXCITE_PORT2 = '1' then
-									state <= SettlingPort2;
 								else
-									state <= Done;
+									state <= SettlingPort2;
 								end if;
-								settling_cnt <= settling_time;
 							end if;
 						end if;
 					when SettlingPort1 =>
@@ -192,7 +194,7 @@ begin
 							else
 								state <= NextPoint;
 							end if;
-							settling_cnt <= unsigned(SETTLING_TIME);
+							settling_cnt <= settling_time;
 						end if;
 					when SettlingPort2 =>
 						PORT_SELECT <= '0';

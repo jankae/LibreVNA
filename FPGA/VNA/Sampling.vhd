@@ -44,7 +44,6 @@ entity Sampling is
            PRE_DONE : out  STD_LOGIC;
            START : in  STD_LOGIC;
            SAMPLES : in  STD_LOGIC_VECTOR (12 downto 0);
-			  WINDOW_TYPE : in STD_LOGIC_VECTOR (1 downto 0);
            PORT1_I : out  STD_LOGIC_VECTOR (47 downto 0);
            PORT1_Q : out  STD_LOGIC_VECTOR (47 downto 0);
            PORT2_I : out  STD_LOGIC_VECTOR (47 downto 0);
@@ -94,16 +93,6 @@ END COMPONENT;
 	signal sine : std_logic_vector(15 downto 0);
 	signal cosine : std_logic_vector(15 downto 0);
 	
-	signal windowed_sine : std_logic_vector(31 downto 0);
-	signal windowed_cosine : std_logic_vector(31 downto 0);
-	
-	signal window_index : std_logic_vector(6 downto 0);
-	signal window_value : std_logic_vector(15 downto 0);
-	signal window_sample_cnt : integer range 0 to 8191;
-	signal window_index_inc : integer range 0 to 8;
-	signal window_sample_compare : integer range 0 to 8191;
-	signal window_sample_cnt_inc : integer range 0 to 8;
-	
 	signal mult1_I : std_logic_vector(31 downto 0);
 	signal mult1_Q : std_logic_vector(31 downto 0);
 	signal mult2_I : std_logic_vector(31 downto 0);
@@ -132,66 +121,45 @@ begin
 	PORT MAP (
 		clk => CLK,
 		a => PORT1,
-		b => windowed_cosine(31 downto 16),
+		b => cosine,
 		p => mult1_I
 	);
 	Port1_Q_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => PORT1,
-		b => windowed_sine(31 downto 16),
+		b => sine,
 		p => mult1_Q
 	);
 	Port2_I_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => PORT2,
-		b => windowed_cosine(31 downto 16),
+		b => cosine,
 		p => mult2_I
 	);
 	Port2_Q_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => PORT2,
-		b => windowed_sine(31 downto 16),
+		b => sine,
 		p => mult2_Q
 	);
 	Ref_I_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => REF,
-		b => windowed_cosine(31 downto 16),
+		b => cosine,
 		p => multR_I
 	);
 	Ref_Q_Mult : SinCosMult
 	PORT MAP (
 		clk => CLK,
 		a => REF,
-		b => windowed_sine(31 downto 16),
+		b => sine,
 		p => multR_Q
 	);
 	
-	Sine_Mult : SinCosMult
-	PORT MAP (
-		clk => CLK,
-		a => window_value,
-		b => sine,
-		p => windowed_sine
-	);
-	Cosine_Mult : SinCosMult
-	PORT MAP (
-		clk => CLK,
-		a => window_value,
-		b => cosine,
-		p => windowed_cosine
-	);
-	WindowROM: window PORT MAP(
-		CLK => CLK,
-		INDEX => window_index,
-		WINDOW_TYPE => WINDOW_TYPE,
-		VALUE => window_value
-	);
-		
 	process(CLK, RESET)
 	begin
 		if rising_edge(CLK) then
@@ -203,8 +171,6 @@ begin
 				ACTIVE <= '0';
 				clk_cnt <= 0;
 				sample_cnt <= 0;
-				window_sample_cnt <= 0;
-				window_index <= (others => '0');
 				phase <= (others => '0');
 			else
 				-- when not idle, generate pulses for ADCs
@@ -244,25 +210,6 @@ begin
 						if START = '1' then
 							state <= Sampling;
 							samples_to_take <= to_integer(unsigned(SAMPLES & "0000") - 1);
-							window_sample_compare <= to_integer(unsigned(SAMPLES) - 1);
-							case SAMPLES is
-								when "0000000000001" =>
-									-- 16 samples, increment on every sample by 8
-									window_sample_cnt_inc <= 1;
-									window_index_inc <= 8;
-								when "0000000000010" | "0000000000011" =>
-									-- 32-48 samples, increment by 4
-									window_sample_cnt_inc <= 2;
-									window_index_inc <= 4;
-								when "0000000000100" | "0000000000101" | "0000000000110" | "0000000000111"=>
-									-- 64-112 samples, increment by 2
-									window_sample_cnt_inc <= 4;
-									window_index_inc <= 2;									
-								when others =>
-									-- 128 or more samples, increment by 1
-									window_sample_cnt_inc <= 8;
-									window_index_inc <= 1;
-								end case;
 						end if;
 					when Sampling =>
 						DONE <= '0';
@@ -293,13 +240,6 @@ begin
 							state <= Sampling;
 						else
 							state <= Ready;
-						end if;
-						-- keep track of window index
-						if window_sample_cnt < window_sample_compare then
-							window_sample_cnt <= window_sample_cnt + window_sample_cnt_inc;
-						else
-							window_sample_cnt <= window_sample_cnt - window_sample_compare;
-							window_index <= std_logic_vector( unsigned(window_index) + window_index_inc );
 						end if;
 					when Ready =>
 						ACTIVE <= '1';

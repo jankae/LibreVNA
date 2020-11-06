@@ -73,6 +73,9 @@ void Manual::Setup(Protocol::ManualControl m) {
 	FPGA::Enable(FPGA::Periphery::ExcitePort2, m.PortSwitch == 1);
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 
+	// Enable new data and sweep halt interrupt
+	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
+
 	active = true;
 	FPGA::StartSweep();
 }

@@ -145,6 +145,24 @@ architecture Behavioral of top is
 		DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
 		);
 	END COMPONENT;
+	
+	COMPONENT Windowing
+	PORT(
+		CLK : IN std_logic;
+		RESET : IN std_logic;
+		WINDOW_TYPE : IN std_logic_vector(1 downto 0);
+		PORT1_RAW : IN std_logic_vector(15 downto 0);
+		PORT2_RAW : IN std_logic_vector(15 downto 0);
+		REF_RAW : IN std_logic_vector(15 downto 0);
+		ADC_READY : IN std_logic;
+		NSAMPLES : IN std_logic_vector(12 downto 0);          
+		PORT1_WINDOWED : OUT std_logic_vector(15 downto 0);
+		PORT2_WINDOWED : OUT std_logic_vector(15 downto 0);
+		REF_WINDOWED : OUT std_logic_vector(15 downto 0);
+		WINDOWING_DONE : OUT std_logic
+		);
+	END COMPONENT;
+	
 	COMPONENT Sampling
 	Generic(CLK_CYCLES_PRE_DONE : integer);
 	PORT(
@@ -158,7 +176,6 @@ architecture Behavioral of top is
 		NEW_SAMPLE : IN std_logic;
 		START : IN std_logic;
 		SAMPLES : IN std_logic_vector(12 downto 0);
-		WINDOW_TYPE : in STD_LOGIC_VECTOR (1 downto 0);		
 		ADC_START : OUT std_logic;
 		DONE : OUT std_logic;
 		PRE_DONE : OUT std_logic;
@@ -245,10 +262,8 @@ architecture Behavioral of top is
 		RESET_MINMAX : out STD_LOGIC;
 		SWEEP_HALTED : in STD_LOGIC;
 		SWEEP_RESUME : out STD_LOGIC;
-		DFT_NSAMPLES : out STD_LOGIC_VECTOR (15 downto 0);
 		DFT_BIN1_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
 		DFT_DIFFBIN_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
-		DFT_WINDOW_INC : out STD_LOGIC_VECTOR (15 downto 0);
 		DFT_RESULT_READY : in  STD_LOGIC;
 		DFT_OUTPUT : in  STD_LOGIC_VECTOR (191 downto 0);
 		DFT_NEXT_OUTPUT : out  STD_LOGIC;
@@ -265,11 +280,9 @@ architecture Behavioral of top is
 		PORT1 : IN std_logic_vector(15 downto 0);
 		PORT2 : IN std_logic_vector(15 downto 0);
 		NEW_SAMPLE : IN std_logic;
-		NSAMPLES : IN std_logic_vector(15 downto 0);
+		NSAMPLES : IN std_logic_vector(12 downto 0);
 		BIN1_PHASEINC : IN std_logic_vector(15 downto 0);
 		DIFFBIN_PHASEINC : IN std_logic_vector(15 downto 0);
-		WINDOW_INC : IN std_logic_vector(15 downto 0);
-		WINDOW_TYPE : IN std_logic_vector(1 downto 0);
 		NEXT_OUTPUT : IN std_logic;          
 		RESULT_READY : OUT std_logic;
 		OUTPUT : OUT std_logic_vector(191 downto 0)
@@ -328,6 +341,11 @@ architecture Behavioral of top is
 	signal adc_ref_data : std_logic_vector(15 downto 0);
 	signal adc_minmax : std_logic_vector(95 downto 0);
 	signal adc_reset_minmax : std_logic;
+	
+	signal port1_windowed : std_logic_vector(15 downto 0);
+	signal port2_windowed : std_logic_vector(15 downto 0);
+	signal ref_windowed : std_logic_vector(15 downto 0);
+	signal windowing_ready : std_logic;
 	
 	-- Sampling signals
 	signal sampling_busy : std_logic;
@@ -394,10 +412,8 @@ architecture Behavioral of top is
 	signal intr : std_logic;
 	
 	-- DFT signals
-	signal dft_nsamples : std_logic_vector (15 downto 0);
 	signal dft_bin1_phaseinc : std_logic_vector (15 downto 0);
 	signal dft_diffbin_phaseinc : std_logic_vector (15 downto 0);
-	signal dft_window_inc : std_logic_vector (15 downto 0);
 	signal dft_ready : std_logic;
 	signal dft_output : std_logic_vector (191 downto 0);
 	signal dft_next_output : std_logic;
@@ -579,6 +595,22 @@ begin
 		SCLK => REF_SCLK
 	);
 	
+	
+	Windower: Windowing PORT MAP(
+		CLK => clk160,
+		RESET => sampling_start,
+		WINDOW_TYPE => sampling_window,
+		PORT1_RAW => adc_port1_data,
+		PORT2_RAW => adc_port2_data,
+		REF_RAW => adc_ref_data,
+		ADC_READY => adc_port1_ready,
+		PORT1_WINDOWED => port1_windowed,
+		PORT2_WINDOWED => port2_windowed,
+		REF_WINDOWED => ref_windowed,
+		WINDOWING_DONE => windowing_ready,
+		NSAMPLES => sampling_samples
+	);
+	
 	Sampler: Sampling
 	GENERIC MAP(CLK_CYCLES_PRE_DONE => 0)
 	PORT MAP(
@@ -586,16 +618,15 @@ begin
 		RESET => sweep_reset,
 		ADC_PRESCALER => sampling_prescaler,
 		PHASEINC => sampling_phaseinc,
-		PORT1 => adc_port1_data,
-		PORT2 => adc_port2_data,
-		REF => adc_ref_data,
+		PORT1 => port1_windowed,
+		PORT2 => port2_windowed,
+		REF => ref_windowed,
 		ADC_START => adc_trigger_sample,
-		NEW_SAMPLE => adc_port1_ready,
+		NEW_SAMPLE => windowing_ready,
 		DONE => sampling_done,
 		PRE_DONE => open,
 		START => sampling_start,
 		SAMPLES => sampling_samples,
-		WINDOW_TYPE => sampling_window,
 		PORT1_I => sampling_result(287 downto 240),
 		PORT1_Q => sampling_result(239 downto 192),
 		PORT2_I => sampling_result(191 downto 144),
@@ -614,7 +645,7 @@ begin
 		CONFIG_ADDRESS => sweep_config_address,
 		CONFIG_DATA => sweep_config_data,
 		USER_NSAMPLES => sampling_user_samples,
-		NSAMPLES => sampling_user_samples,
+		NSAMPLES => sampling_samples,
 		SAMPLING_BUSY => sampling_busy,
 		SAMPLING_DONE => sampling_done,
 		START_SAMPLING => sampling_start,
@@ -691,7 +722,7 @@ begin
 		SWEEP_ADDRESS => sweep_config_write_address,
 		SWEEP_WRITE => sweep_config_write,
 		SWEEP_POINTS => sweep_points,
-		NSAMPLES => sampling_samples,
+		NSAMPLES => sampling_user_samples,
 		PORT1_EN => port1mix_en,
 		PORT2_EN => port2mix_en,
 		REF_EN => refmix_en,
@@ -711,10 +742,8 @@ begin
 		SWEEP_RESUME => sweep_resume,
 		EXCITE_PORT1 => sweep_excite_port1,
 		EXCITE_PORT2 => sweep_excite_port2,
-		DFT_NSAMPLES => dft_nsamples,
 		DFT_BIN1_PHASEINC => dft_bin1_phaseinc,
 		DFT_DIFFBIN_PHASEINC => dft_diffbin_phaseinc,
-		DFT_WINDOW_INC => dft_window_inc,
 		DFT_RESULT_READY => dft_ready,
 		DFT_OUTPUT => dft_output,
 		DFT_NEXT_OUTPUT => dft_next_output,
@@ -728,14 +757,12 @@ begin
 	PORT MAP(
 		CLK => clk160,
 		RESET => dft_reset,
-		PORT1 => adc_port1_data,
-		PORT2 => adc_port2_data,
-		NEW_SAMPLE => adc_port1_ready,
-		NSAMPLES => dft_nsamples,
+		PORT1 => port1_windowed,
+		PORT2 => port2_windowed,
+		NEW_SAMPLE => windowing_ready,
+		NSAMPLES => sampling_samples,
 		BIN1_PHASEINC => dft_bin1_phaseinc,
 		DIFFBIN_PHASEINC => dft_diffbin_phaseinc,
-		WINDOW_INC => dft_window_inc,
-		WINDOW_TYPE => sampling_window,
 		RESULT_READY => dft_ready,
 		OUTPUT => dft_output,
 		NEXT_OUTPUT => dft_next_output

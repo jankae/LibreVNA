@@ -131,10 +131,6 @@ bool HW::Init() {
 	// Set phase increment according to
 	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
 
-	// Enable new data and sweep halt interrupt
-	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
-	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
-
 	Exti::SetCallback(FPGA_INTR_GPIO_Port, FPGA_INTR_Pin, Exti::EdgeType::Rising, Exti::Pull::Down, FPGA_Interrupt);
 
 	// Initialize PLLs and build VCO maps

@@ -47,11 +47,9 @@ ARCHITECTURE behavior OF Test_DFT IS
          PORT1 : IN  std_logic_vector(15 downto 0);
          PORT2 : IN  std_logic_vector(15 downto 0);
          NEW_SAMPLE : IN  std_logic;
-			NSAMPLES : in STD_LOGIC_VECTOR (15 downto 0);
+			NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
          BIN1_PHASEINC : IN  std_logic_vector(15 downto 0);
          DIFFBIN_PHASEINC : IN  std_logic_vector(15 downto 0);
-         WINDOW_INC : IN  std_logic_vector(15 downto 0);
-         WINDOW_TYPE : IN  std_logic_vector(1 downto 0);
          RESULT_READY : OUT  std_logic;
          OUTPUT : out  STD_LOGIC_VECTOR (191 downto 0);
          NEXT_OUTPUT : IN  std_logic
@@ -67,10 +65,8 @@ ARCHITECTURE behavior OF Test_DFT IS
    signal NEW_SAMPLE : std_logic := '0';
    signal BIN1_PHASEINC : std_logic_vector(15 downto 0) := (others => '0');
    signal DIFFBIN_PHASEINC : std_logic_vector(15 downto 0) := (others => '0');
-   signal WINDOW_INC : std_logic_vector(15 downto 0) := (others => '0');
-   signal WINDOW_TYPE : std_logic_vector(1 downto 0) := (others => '0');
    signal NEXT_OUTPUT : std_logic := '0';
-	signal NSAMPLES : STD_LOGIC_VECTOR (15 downto 0);
+	signal NSAMPLES : STD_LOGIC_VECTOR (12 downto 0);
 
  	--Outputs
    signal RESULT_READY : std_logic;
@@ -93,8 +89,6 @@ BEGIN
 			 NSAMPLES => NSAMPLES,
           BIN1_PHASEINC => BIN1_PHASEINC,
           DIFFBIN_PHASEINC => DIFFBIN_PHASEINC,
-          WINDOW_INC => WINDOW_INC,
-          WINDOW_TYPE => WINDOW_TYPE,
           RESULT_READY => RESULT_READY,
           OUTPUT => OUTPUT,
           NEXT_OUTPUT => NEXT_OUTPUT
@@ -119,7 +113,6 @@ BEGIN
 		PORT2 <= "0100000000000000";
 		BIN1_PHASEINC <= "0100000000000000";
 		DIFFBIN_PHASEINC <= "0010000000000000";
-		WINDOW_INC <= "0000100000000000";
 		NSAMPLES <= "0000000000000011";
       wait for 100 ns;	
 		RESET <= '0';
@@ -128,7 +121,7 @@ BEGIN
 		wait for CLK_period;
 		NEW_SAMPLE <= '0';
 		while True loop
-			wait for CLK_period * 111;
+			wait for CLK_period * 79;
 			NEW_SAMPLE <= '1';
 			wait for CLK_period;
 			NEW_SAMPLE <= '0';

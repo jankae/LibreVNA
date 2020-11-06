@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "Protocol.hpp"
+#include "FPGA/FPGA.hpp"
 
 #define USE_DEBUG_PINS
 
@@ -31,10 +32,9 @@ static constexpr uint32_t LO1_minFreq = 25000000;
 static constexpr uint32_t MaxSamples = 130944;
 static constexpr uint32_t MinSamples = 16;
 static constexpr uint32_t PLLRef = 100000000;
-static constexpr uint16_t MaxPoints = 4501;
 
-static constexpr uint8_t ADCprescaler = 102400000UL / ADCSamplerate;
-static_assert(ADCprescaler * ADCSamplerate == 102400000UL, "ADCSamplerate can not be reached exactly");
+static constexpr uint8_t ADCprescaler = FPGA::Clockrate / ADCSamplerate;
+static_assert(ADCprescaler * ADCSamplerate == FPGA::Clockrate, "ADCSamplerate can not be reached exactly");
 static constexpr uint16_t DFTphaseInc = 4096 * IF2 / ADCSamplerate;
 static_assert(DFTphaseInc * ADCSamplerate == 4096 * IF2, "DFT can not be computed for 2.IF");
 
@@ -43,7 +43,7 @@ static constexpr Protocol::DeviceLimits Limits = {
 		.maxFreq = 6000000000,
 		.minIFBW = ADCSamplerate / MaxSamples,
 		.maxIFBW = ADCSamplerate / MinSamples,
-		.maxPoints = MaxPoints,
+		.maxPoints = FPGA::MaxPoints,
 		.cdbm_min = -4000,
 		.cdbm_max = 0,
 		.minRBW = (uint32_t) (ADCSamplerate * 2.23f / MaxSamples),

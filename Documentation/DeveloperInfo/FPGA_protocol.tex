@@ -448,30 +448,6 @@ In addition to the single bin DFT configured through the ADC prescaler and phase
 
 The DFT has a fixed number of bins (64), but the frequencies these bins correspond to can be changed.
 
-\subsubsection{Number of samples: 0x10}
-\label{reg:dft-nsamples}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{16}{DFT\_SAMPLES[15:0]}
-\end{tikzpicture}
-\end{center}
-\begin{itemize}
-\item \textbf{DFT\_SAMPLES[15:0]:} Amount of samples the DFT should take. This should always match the number of samples configured with the Samples Per Point register (see~\ref{reg:spp}).
-\end{itemize}
-
-\subsubsection{Window increment: 0x11}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{16}{DFT\_WINDOW\_INC[15:0]}
-\end{tikzpicture}
-\end{center}
-\begin{itemize}
-\item \textbf{DFT\_WINDOW\_INC[15:0]:} Window increment value after each sample. This should always be set in such a way, that the window is iterated over exactly once after all samples configured with DFT\_SAMPLES (see \ref{reg:dft-nsamples}) have been taken.
-$$ TODO: formula $$
-\end{itemize}
-
 \subsubsection{DFT\_FIRST\_BIN: 0x12}
 \begin{center}
 \begin{tikzpicture}

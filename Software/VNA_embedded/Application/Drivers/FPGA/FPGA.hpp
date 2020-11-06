@@ -7,6 +7,7 @@ namespace FPGA {
 
 static constexpr uint16_t MaxPoints = 4501;
 static constexpr uint16_t DFTbins = 64;
+static constexpr uint32_t Clockrate = 102400000UL;
 
 enum class Reg {
 	InterruptMask = 0x00,
@@ -23,8 +24,6 @@ enum class Reg {
 	MAX2871Def3MSB = 0x0D,
 	MAX2871Def4LSB = 0x0E,
 	MAX2871Def4MSB = 0x0F,
-	DFTSamples = 0x10,
-	DFTWindowInc = 0x11,
 	DFTFirstBin = 0x12,
 	DFTFreqSpacing = 0x13,
 };
@@ -124,6 +123,9 @@ void WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uin
 		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
 using ReadCallback = void(*)(const SamplingResult &result);
 bool InitiateSampleRead(ReadCallback cb);
+void SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing);
+void StopDFT();
+void StartDFT();
 DFTResult ReadDFTResult();
 ADCLimits GetADCLimits();
 void ResetADCLimits();

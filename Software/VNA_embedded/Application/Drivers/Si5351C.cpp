@@ -315,29 +315,31 @@ void Si5351C::FindOptimalDivider(uint32_t f_pll, uint32_t f, uint32_t &P1,
 	// see https://www.silabs.com/documents/public/application-notes/AN619.pdf (page 3/6)
 	uint32_t a = f_pll / f;
 	int32_t f_rem = f_pll - f * a;
-	uint32_t best_b, best_c;
-	uint32_t best_deviation = UINT32_MAX;
-	for (uint32_t c = (1UL << 20) - 1; c >= (1UL << 19); c--) {
-		uint32_t guess_b = (uint64_t) f_rem * c / f;
-		for (uint32_t b = guess_b; b <= guess_b + 1; b++) {
-			int32_t f_div = (uint64_t) f * b / c;
-			uint32_t deviation = abs(f_rem - f_div);
-			if (deviation < best_deviation) {
-				best_b = b;
-				best_c = c;
-				best_deviation = deviation;
-				if (deviation == 0) {
-					break;
-				}
-			}
-		}
-		if (best_deviation == 0) {
-			break;
-		}
-	}
-	LOG_DEBUG(
-			"Optimal divider for %luHz/%luHz is: a=%lu, b=%lu, c=%lu (%luHz deviation)",
-			f_pll, f, a, best_b, best_c, best_deviation);
+	// always using the highest modulus divider results in less than 1Hz deviation for all frequencies, that is good enough
+	uint32_t best_c = (1UL << 20) - 1;
+	uint32_t best_b = (uint64_t) f_rem * best_c / f;
+//	uint32_t best_deviation = UINT32_MAX;
+//	for (uint32_t c = (1UL << 20) - 1; c >= (1UL << 19); c--) {
+//		uint32_t guess_b = (uint64_t) f_rem * c / f;
+//		for (uint32_t b = guess_b; b <= guess_b + 1; b++) {
+//			int32_t f_div = (uint64_t) f * b / c;
+//			uint32_t deviation = abs(f_rem - f_div);
+//			if (deviation < best_deviation) {
+//				best_b = b;
+//				best_c = c;
+//				best_deviation = deviation;
+//				if (deviation <= 3) {
+//					break;
+//				}
+//			}
+//		}
+//		if (best_deviation <= 3) {
+//			break;
+//		}
+//	}
+//	LOG_DEBUG(
+//			"Optimal divider for %luHz/%luHz is: a=%lu, b=%lu, c=%lu (%luHz deviation)",
+//			f_pll, f, a, best_b, best_c, best_deviation);
 	// convert to Si5351C parameters
 	uint32_t floor = 128 * best_b / best_c;
 	P1 = 128 * a + floor - 512;

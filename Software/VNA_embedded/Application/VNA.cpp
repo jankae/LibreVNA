@@ -187,6 +187,9 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 	IFTableIndexCnt = 0;
 	adcShifted = false;
 	active = true;
+	// Enable new data and sweep halt interrupt
+	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
+	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
 	// Start the sweep
 	FPGA::StartSweep();
 	return true;

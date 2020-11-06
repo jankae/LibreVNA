@@ -11,6 +11,8 @@
 #define LOG_MODULE	"SA"
 #include "Log.h"
 
+using namespace HWHAL;
+
 static Protocol::SpectrumAnalyzerSettings s;
 static uint32_t pointCnt;
 static uint32_t points;
@@ -21,10 +23,11 @@ static Protocol::PacketInfo p;
 static bool active = false;
 static uint32_t lastLO2;
 static uint32_t actualRBW;
+static bool usingDFT;
+static uint16_t DFTpoints;
+static bool negativeDFT; // if true, a positive frequency shift at input results in a negative shift at the 2.IF. Handle DFT accordingly
 
-static float port1Measurement, port2Measurement;
-
-using namespace HWHAL;
+static float port1Measurement[FPGA::DFTbins], port2Measurement[FPGA::DFTbins];
 
 static void StartNextSample() {
 	uint64_t freq = s.f_start + (s.f_stop - s.f_start) * pointCnt / (points - 1);
@@ -34,16 +37,20 @@ static void StartNextSample() {
 	case 0:
 	default:
 		// reset minimum amplitudes in first signal ID step
-		port1Measurement = std::numeric_limits<float>::max();
-		port2Measurement = std::numeric_limits<float>::max();
+		for (uint16_t i = 0; i < DFTpoints; i++) {
+			port1Measurement[i] = std::numeric_limits<float>::max();
+			port2Measurement[i] = std::numeric_limits<float>::max();
+		}
 		// Use default LO frequencies
 		LO1freq = freq + HW::IF1;
 		LO2freq = HW::IF1 - HW::IF2;
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 112);
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
+		negativeDFT = true;
 		break;
 	case 1:
 		LO2freq = HW::IF1 - HW::IF2;
+		negativeDFT = false;
 		// Shift first LO to other side
 		// depending on the measurement frequency this is not possible or additive mixing has to be used
 		if(freq >= HW::IF1 + HW::LO1_minFreq) {
@@ -59,13 +66,15 @@ static void StartNextSample() {
 		signalIDstep++;
 		/* no break */
 	case 2:
-		// Shift both LOs to other side
+		// Shift second LOs to other side
 		LO1freq = freq + HW::IF1;
 		LO2freq = HW::IF1 + HW::IF2;
+		negativeDFT = false;
 		break;
 	case 3:
+		// Shift both LO to other side
 		LO2freq = HW::IF1 + HW::IF2;
-		// Shift second LO to other side
+		negativeDFT = true;
 		// depending on the measurement frequency this is not possible or additive mixing has to be used
 		if(freq >= HW::IF1 + HW::LO1_minFreq) {
 			// frequency is high enough to shift 1.LO below measurement frequency
@@ -81,6 +90,7 @@ static void StartNextSample() {
 		/* no break */
 	case 4:
 		// Use default frequencies with different ADC samplerate to remove images in final IF
+		negativeDFT = true;
 		LO1freq = freq + HW::IF1;
 		LO2freq = HW::IF1 - HW::IF2;
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 120);
@@ -96,6 +106,17 @@ static void StartNextSample() {
 		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		lastLO2 = LO2freq;
 	}
+	if (usingDFT) {
+		uint32_t spacing = (s.f_stop - s.f_start) / (points - 1);
+		uint32_t start = HW::IF2;
+		if(negativeDFT) {
+			// needs to look below the start frequency, shift start
+			start -= spacing * (DFTpoints - 1);
+		}
+		FPGA::SetupDFT(start, spacing);
+		FPGA::StartDFT();
+	}
+
 	// Configure the sampling in the FPGA
 	FPGA::WriteSweepConfig(0, 0, Source.GetRegisters(), LO1.GetRegisters(), 0,
 			0, FPGA::SettlingTime::us20, FPGA::Samples::SPPRegister, 0,
@@ -111,9 +132,6 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	s = settings;
 	HW::SetMode(HW::Mode::SA);
 	FPGA::SetMode(FPGA::Mode::FPGA);
-	FPGA::DisableInterrupt(FPGA::Interrupt::NewData);
-	FPGA::DisableInterrupt(FPGA::Interrupt::SweepHalted);
-	FPGA::EnableInterrupt(FPGA::Interrupt::DFTReady);
 	// in almost all cases a full sweep requires more points than the FPGA can handle at a time
 	// individually start each point and do the sweep in the uC
 	FPGA::SetNumberOfPoints(1);
@@ -148,12 +166,17 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 
-	// Configure DFT
-	LOG_INFO("DFT samples: %lu", sampleNum);
-	FPGA::WriteRegister(FPGA::Reg::DFTSamples, sampleNum - 1);
-	FPGA::WriteRegister(FPGA::Reg::DFTWindowInc, 65536 / sampleNum);
-	FPGA::WriteRegister(FPGA::Reg::DFTFirstBin, 17920);
-	FPGA::WriteRegister(FPGA::Reg::DFTFreqSpacing, 1147);
+	// automatically select DFT mode for lower RBWs
+	usingDFT = actualRBW <= 1000;
+
+	if (usingDFT) {
+		DFTpoints = FPGA::DFTbins; // use full DFT in FPGA
+		FPGA::DisableInterrupt(FPGA::Interrupt::NewData);
+	} else {
+		DFTpoints = 1; // can only measure one point at a time
+		FPGA::StopDFT();
+		FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
+	}
 
 	lastLO2 = 0;
 	active = true;
@@ -166,26 +189,39 @@ bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 	}
 	FPGA::AbortSweep();
 
-	uint16_t i=0;
-	while(FPGA::GetStatus() & (uint16_t) FPGA::Interrupt::DFTReady) {
-		auto dft = FPGA::ReadDFTResult();
-		dft.P1 /= sampleNum;
-		dft.P2 /= sampleNum;
-		LOG_INFO("DFT %d: %lu, %lu", i, (uint32_t) dft.P1, (uint32_t) dft.P2);
-		Log_Flush();
-		i++;
-	}
-	FPGA::DisableInterrupt(FPGA::Interrupt::DFTReady);
-	FPGA::EnableInterrupt(FPGA::Interrupt::DFTReady);
+	for(uint16_t i=0;i<DFTpoints;i++) {
+		float port1, port2;
+		if (usingDFT) {
+			// use DFT result
+			auto dft = FPGA::ReadDFTResult();
+			port1 = dft.P1;
+			port2 = dft.P2;
+		} else {
+			port1 = abs(std::complex<float>(result.P1I, result.P1Q));
+			port2 = abs(std::complex<float>(result.P2I, result.P2Q));
+		}
+		port1 /= sampleNum;
+		port2 /= sampleNum;
 
-	float port1 = abs(std::complex<float>(result.P1I, result.P1Q))/sampleNum;
-	float port2 = abs(std::complex<float>(result.P2I, result.P2Q))/sampleNum;
-	if(port1 < port1Measurement) {
-		port1Measurement = port1;
+		uint16_t index = i;
+		if (negativeDFT) {
+			// bin order is reversed
+			index = DFTpoints - i - 1;
+		}
+
+		if(port1 < port1Measurement[index]) {
+			port1Measurement[index] = port1;
+		}
+		if(port2 < port2Measurement[index]) {
+			port2Measurement[index] = port2;
+		}
 	}
-	if(port2 < port2Measurement) {
-		port2Measurement = port2;
+
+	if (usingDFT) {
+		FPGA::StopDFT();
+		// will be started again in StartNextSample
 	}
+
 	// trigger work function
 	return true;
 }
@@ -196,74 +232,76 @@ void SA::Work() {
 	}
 	if(!s.SignalID || signalIDstep >= 4) {
 		// this measurement point is done, handle result according to detector
-		uint16_t binIndex = pointCnt / binSize;
-		uint32_t pointInBin = pointCnt % binSize;
-		bool lastPointInBin = pointInBin >= binSize - 1;
-		auto det = (Detector) s.Detector;
-		if(det == Detector::Normal) {
-			det = binIndex & 0x01 ? Detector::PosPeak : Detector::NegPeak;
-		}
-		switch(det) {
-		case Detector::PosPeak:
-			if(pointInBin == 0) {
-				p.spectrumResult.port1 = std::numeric_limits<float>::min();
-				p.spectrumResult.port2 = std::numeric_limits<float>::min();
+		for(uint16_t i=0;i<DFTpoints;i++) {
+			uint16_t binIndex = (pointCnt + i) / binSize;
+			uint32_t pointInBin = (pointCnt + i) % binSize;
+			bool lastPointInBin = pointInBin >= binSize - 1;
+			auto det = (Detector) s.Detector;
+			if(det == Detector::Normal) {
+				det = binIndex & 0x01 ? Detector::PosPeak : Detector::NegPeak;
 			}
-			if(port1Measurement > p.spectrumResult.port1) {
-				p.spectrumResult.port1 = port1Measurement;
+			switch(det) {
+			case Detector::PosPeak:
+				if(pointInBin == 0) {
+					p.spectrumResult.port1 = std::numeric_limits<float>::min();
+					p.spectrumResult.port2 = std::numeric_limits<float>::min();
+				}
+				if(port1Measurement[i] > p.spectrumResult.port1) {
+					p.spectrumResult.port1 = port1Measurement[i];
+				}
+				if(port2Measurement[i] > p.spectrumResult.port2) {
+					p.spectrumResult.port2 = port2Measurement[i];
+				}
+				break;
+			case Detector::NegPeak:
+				if(pointInBin == 0) {
+					p.spectrumResult.port1 = std::numeric_limits<float>::max();
+					p.spectrumResult.port2 = std::numeric_limits<float>::max();
+				}
+				if(port1Measurement[i] < p.spectrumResult.port1) {
+					p.spectrumResult.port1 = port1Measurement[i];
+				}
+				if(port2Measurement[i] < p.spectrumResult.port2) {
+					p.spectrumResult.port2 = port2Measurement[i];
+				}
+				break;
+			case Detector::Sample:
+				if(pointInBin <= binSize / 2) {
+					// still in first half of bin, simply overwrite
+					p.spectrumResult.port1 = port1Measurement[i];
+					p.spectrumResult.port2 = port2Measurement[i];
+				}
+				break;
+			case Detector::Average:
+				if(pointInBin == 0) {
+					p.spectrumResult.port1 = 0;
+					p.spectrumResult.port2 = 0;
+				}
+				p.spectrumResult.port1 += port1Measurement[i];
+				p.spectrumResult.port2 += port2Measurement[i];
+				if(lastPointInBin) {
+					// calculate average
+					p.spectrumResult.port1 /= binSize;
+					p.spectrumResult.port2 /= binSize;
+				}
+				break;
+			case Detector::Normal:
+				// nothing to do, normal detector handled by PosPeak or NegPeak in each sample
+				break;
 			}
-			if(port2Measurement > p.spectrumResult.port2) {
-				p.spectrumResult.port2 = port2Measurement;
-			}
-			break;
-		case Detector::NegPeak:
-			if(pointInBin == 0) {
-				p.spectrumResult.port1 = std::numeric_limits<float>::max();
-				p.spectrumResult.port2 = std::numeric_limits<float>::max();
-			}
-			if(port1Measurement < p.spectrumResult.port1) {
-				p.spectrumResult.port1 = port1Measurement;
-			}
-			if(port2Measurement < p.spectrumResult.port2) {
-				p.spectrumResult.port2 = port2Measurement;
-			}
-			break;
-		case Detector::Sample:
-			if(pointInBin <= binSize / 2) {
-				// still in first half of bin, simply overwrite
-				p.spectrumResult.port1 = port1Measurement;
-				p.spectrumResult.port2 = port2Measurement;
-			}
-			break;
-		case Detector::Average:
-			if(pointInBin == 0) {
-				p.spectrumResult.port1 = 0;
-				p.spectrumResult.port2 = 0;
-			}
-			p.spectrumResult.port1 += port1Measurement;
-			p.spectrumResult.port2 += port2Measurement;
 			if(lastPointInBin) {
-				// calculate average
-				p.spectrumResult.port1 /= binSize;
-				p.spectrumResult.port2 /= binSize;
+				// Send result to application
+				p.type = Protocol::PacketType::SpectrumAnalyzerResult;
+				// measurements are already up to date, fill remaining fields
+				p.spectrumResult.pointNum = binIndex;
+				p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
+				Communication::Send(p);
 			}
-			break;
-		case Detector::Normal:
-			// nothing to do, normal detector handled by PosPeak or NegPeak in each sample
-			break;
-		}
-		if(lastPointInBin) {
-			// Send result to application
-			p.type = Protocol::PacketType::SpectrumAnalyzerResult;
-			// measurements are already up to date, fill remaining fields
-			p.spectrumResult.pointNum = binIndex;
-			p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
-			Communication::Send(p);
 		}
 		// setup for next step
 		signalIDstep = 0;
-		if(pointCnt < points - 1) {
-			pointCnt++;
+		if(pointCnt < points - DFTpoints) {
+			pointCnt += DFTpoints;
 		} else {
 			pointCnt = 0;
 		}

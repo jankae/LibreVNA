@@ -40,16 +40,17 @@ architecture Behavioral of ResetDelay is
 	signal clk_cnt : integer range 0 to CLK_DELAY-1;
 begin
 
-	OUT_RESET <= '1' when IN_RESET = '1' or clk_cnt < CLK_DELAY-1 else '0';
-
 	process(CLK, IN_RESET)
 	begin
 		if rising_edge(CLK) then
 			if IN_RESET = '1' then
 				clk_cnt <= 0;
+				OUT_RESET <= '1';
 			else
 				if clk_cnt < CLK_DELAY-1 then
 					clk_cnt <= clk_cnt + 1;
+				else
+					OUT_RESET <= '0';
 				end if;
 			end if;
 		end if;
