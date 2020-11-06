@@ -22,7 +22,7 @@ DeviceLog::DeviceLog(QWidget *parent) :
         }
     });
     connect(ui->numLines, qOverload<int>(&QSpinBox::valueChanged), [=](int lines) {
-        ui->text->setMaximumBlockCount(lines);
+        ui->text->setMaximumBlockCount(lines    );
     });
 }
 

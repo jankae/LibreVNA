@@ -108,6 +108,7 @@ FORMS += \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
     Traces/markerwidget.ui \
+    Traces/smithchartdialog.ui \
     Traces/traceeditdialog.ui \
     Traces/traceexportdialog.ui \
     Traces/traceimportdialog.ui \

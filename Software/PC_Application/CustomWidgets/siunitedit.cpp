@@ -40,6 +40,7 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         if(key == Qt::Key_Escape) {
             // abort editing process and set old value
             setValueQuiet(_value);
+            emit editingAborted();
             clearFocus();
             return true;
         }
@@ -62,6 +63,7 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
             parseNewValue(1.0);
         } else {
             setValueQuiet(_value);
+            emit editingAborted();
         }
     }
     return false;

@@ -316,6 +316,9 @@ QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptio
         e->setMaximumHeight(rowHeight);
         e->setParent(parent);
         connect(e, &SIUnitEdit::valueUpdated, this, &MarkerSettingsDelegate::commitData);
+        connect(e, &SIUnitEdit::editingAborted, [=](){
+            marker->editingFrequeny = false;
+        });
     }
     return e;
 }

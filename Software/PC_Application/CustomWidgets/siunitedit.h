@@ -20,6 +20,7 @@ public slots:
 signals:
     void valueChanged(double newvalue);
     void valueUpdated(QWidget *w);
+    void editingAborted();
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private:

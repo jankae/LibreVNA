@@ -115,7 +115,7 @@ private:
 };
 
 TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
-    : TracePlot(parent),
+    : TracePlot(model, parent),
       selectedMarker(nullptr)
 {
     YAxis[0].log = false;
@@ -164,7 +164,7 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
     plot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    initializeTraceInfo(model);
+    initializeTraceInfo();
     setAutoFillBackground(true);
 
     // Setup default axis
@@ -173,8 +173,6 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     // enable autoscaling and set for full span (no information about actual span available yet)
     updateSpan(0, 6000000000);
     setXAxis(XAxisType::Frequency, XAxisMode::UseSpan, 0, 6000000000, 600000000);
-    // get notified when the span changes
-    connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TraceXYPlot::updateSpan));
 
     allPlots.insert(this);
 }
@@ -188,12 +186,6 @@ TraceXYPlot::~TraceXYPlot()
     }
     delete drawPicker;
     allPlots.erase(this);
-}
-
-void TraceXYPlot::updateSpan(double min, double max)
-{
-    sweep_fmin = min;
-    sweep_fmax = max;
 }
 
 void TraceXYPlot::setYAxis(int axis, TraceXYPlot::YAxisType type, bool log, bool autorange, double min, double max, double div)

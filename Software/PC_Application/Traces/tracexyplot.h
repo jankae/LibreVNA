@@ -57,7 +57,6 @@ public:
         Manual,
     };
 
-    virtual void updateSpan(double min, double max) override;
     void setYAxis(int axis, YAxisType type, bool log, bool autorange, double min, double max, double div);
     void setXAxis(XAxisType type, XAxisMode mode, double min, double max, double div);
     void enableTrace(Trace *t, bool enabled) override;
@@ -114,7 +113,6 @@ private:
 
     YAxis YAxis[2];
     XAxis XAxis;
-    double sweep_fmin, sweep_fmax;
 
     using CurveData = struct {
         QwtPlotCurve *curve;

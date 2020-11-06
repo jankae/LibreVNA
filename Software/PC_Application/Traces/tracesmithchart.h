@@ -9,7 +9,8 @@ class TraceSmithChart : public TracePlot
     Q_OBJECT
 public:
     TraceSmithChart(TraceModel &model, QWidget *parent = 0);
-
+public slots:
+    void axisSetupDialog();
 protected:
     static constexpr double ReferenceImpedance = 50.0;
     static constexpr double screenUsage = 0.9;
@@ -21,7 +22,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
-
+    virtual void updateContextMenu() override;
     bool supported(Trace *t) override;
     void draw(QPainter * painter, double width_factor);
     void replot() override;
@@ -30,6 +31,7 @@ protected:
     QPen thinPen;
     QPen pointDataPen;
     QPen lineDataPen;
+    bool limitToSpan;
 
     /// Path for the thin arcs
     QPainterPath thinArcsPath;

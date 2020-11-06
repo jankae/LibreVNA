@@ -5,18 +5,37 @@
 #include "tracemarker.h"
 #include <QDebug>
 #include "preferences.h"
+#include "ui_smithchartdialog.h"
 
 using namespace std;
 
 TraceSmithChart::TraceSmithChart(TraceModel &model, QWidget *parent)
-    : TracePlot(parent)
+    : TracePlot(model, parent)
 {
     chartLinesPen = QPen(palette().windowText(), 0.75);
     thinPen = QPen(palette().windowText(), 0.25);
     textPen = QPen(palette().windowText(), 0.25);
     pointDataPen = QPen(QColor("red"), 4.0, Qt::SolidLine, Qt::RoundCap);
     lineDataPen = QPen(QColor("blue"), 1.0);
-    initializeTraceInfo(model);
+    limitToSpan = true;
+    initializeTraceInfo();
+}
+
+void TraceSmithChart::axisSetupDialog()
+{
+    auto dialog = new QDialog();
+    auto ui = new Ui::SmithChartDialog();
+    ui->setupUi(dialog);
+    if(limitToSpan) {
+        ui->displayMode->setCurrentIndex(1);
+    } else {
+        ui->displayMode->setCurrentIndex(0);
+    }
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
+       limitToSpan = ui->displayMode->currentIndex() == 1;
+       triggerReplot();
+    });
+    dialog->show();
 }
 
 QPoint TraceSmithChart::plotToPixel(std::complex<double> S)
@@ -41,6 +60,10 @@ void TraceSmithChart::mousePressEvent(QMouseEvent *event)
         auto markers = t.first->getMarkers();
         for(auto m : markers) {
             if(!m->isMovable()) {
+                continue;
+            }
+            if (limitToSpan && (m->getFrequency() < sweep_fmin || m->getFrequency() > sweep_fmax)) {
+                // marker outside of currently displayed range
                 continue;
             }
             auto S = m->getData();
@@ -74,6 +97,10 @@ void TraceSmithChart::mouseMoveEvent(QMouseEvent *event)
         unsigned int closestIndex = 0;
         for(unsigned int i=0;i<samples;i++) {
             auto data = t->sample(i);
+            if (limitToSpan && (data.frequency < sweep_fmin || data.frequency > sweep_fmax)) {
+                // destination point outside of currently displayed range
+                continue;
+            }
             auto distance = norm(data.S - mouseS);
             if(distance < closestDistance) {
                 closestDistance = distance;
@@ -136,21 +163,27 @@ void TraceSmithChart::draw(QPainter * painter, double width_factor) {
         painter->setPen(QPen(trace->color(), 1.5 * width_factor));
         int nPoints = trace->size();
         for(int i=1;i<nPoints;i++) {
-            auto last = trace->sample(i-1).S;
-            auto now = trace->sample(i).S;
-            if(isnan(now.real())) {
+            auto last = trace->sample(i-1);
+            auto now = trace->sample(i);
+            if (limitToSpan && (last.frequency < sweep_fmin || now.frequency > sweep_fmax)) {
+                continue;
+            }
+            if(isnan(now.S.real())) {
                 break;
             }
             // scale to size of smith diagram
-            last *= smithCoordMax;
-            now *= smithCoordMax;
+            last.S *= smithCoordMax;
+            now.S *= smithCoordMax;
             // draw line
-            painter->drawLine(std::real(last), -std::imag(last), std::real(now), -std::imag(now));
+            painter->drawLine(std::real(last.S), -std::imag(last.S), std::real(now.S), -std::imag(now.S));
         }
         if(trace->size() > 0) {
             // only draw markers if the trace has at least one point
             auto markers = t.first->getMarkers();
             for(auto m : markers) {
+                if (limitToSpan && (m->getFrequency() < sweep_fmin || m->getFrequency() > sweep_fmax)) {
+                    continue;
+                }
                 auto coords = m->getData();
                 coords *= smithCoordMax;
                 auto symbol = m->getSymbol();
@@ -185,6 +218,34 @@ void TraceSmithChart::paintEvent(QPaintEvent * /* the event */)
     plotToPixelYScale = -side/2;
 
     draw(&painter, 2*smithCoordMax/side);
+}
+
+void TraceSmithChart::updateContextMenu()
+{
+    contextmenu->clear();
+    contextmenu->clear();
+    auto setup = new QAction("Setup...", contextmenu);
+    connect(setup, &QAction::triggered, this, &TraceSmithChart::axisSetupDialog);
+    contextmenu->addAction(setup);
+    contextmenu->addSection("Traces");
+    // Populate context menu
+    for(auto t : traces) {
+        auto action = new QAction(t.first->name(), contextmenu);
+        action->setCheckable(true);
+        if(t.second) {
+            action->setChecked(true);
+        }
+        connect(action, &QAction::toggled, [=](bool active) {
+            enableTrace(t.first, active);
+        });
+        contextmenu->addAction(action);
+    }
+    contextmenu->addSeparator();
+    auto close = new QAction("Close", contextmenu);
+    contextmenu->addAction(close);
+    connect(close, &QAction::triggered, [=]() {
+        markedForDeletion = true;
+    });
 }
 
 bool TraceSmithChart::supported(Trace *t)

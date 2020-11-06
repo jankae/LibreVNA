@@ -1,18 +1,20 @@
 #include "traceplot.h"
-
-//const QColor TracePlot::Background = QColor(0,0,0);
-//const QColor TracePlot::Border = QColor(255,255,255);
-//const QColor TracePlot::Divisions = QColor(255,255,255);
 #include "tracemarker.h"
 
 std::set<TracePlot*> TracePlot::plots;
 
-TracePlot::TracePlot(QWidget *parent) : QWidget(parent)
+TracePlot::TracePlot(TraceModel &model, QWidget *parent)
+    : QWidget(parent),
+      model(model)
 {
     contextmenu = new QMenu();
     markedForDeletion = false;
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     lastUpdate = QTime::currentTime();
+    sweep_fmin = std::numeric_limits<double>::lowest();
+    sweep_fmax = std::numeric_limits<double>::max();
+    // get notified when the span changes
+    connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TracePlot::updateSpan));
     plots.insert(this);
 }
 
@@ -48,7 +50,14 @@ void TracePlot::mouseDoubleClickEvent(QMouseEvent *) {
     emit doubleClicked(this);
 }
 
-void TracePlot::initializeTraceInfo(TraceModel &model)
+void TracePlot::updateSpan(double min, double max)
+{
+    sweep_fmin = min;
+    sweep_fmax = max;
+    triggerReplot();
+}
+
+void TracePlot::initializeTraceInfo()
 {
     // Populate already present traces
     auto tvect = model.getTraces();
@@ -67,30 +76,6 @@ void TracePlot::contextMenuEvent(QContextMenuEvent *event)
         emit deleted(this);
         delete this;
     }
-}
-
-void TracePlot::updateContextMenu()
-{
-    contextmenu->clear();
-    contextmenu->addSection("Traces");
-    // Populate context menu
-    for(auto t : traces) {
-        auto action = new QAction(t.first->name(), contextmenu);
-        action->setCheckable(true);
-        if(t.second) {
-            action->setChecked(true);
-        }
-        connect(action, &QAction::toggled, [=](bool active) {
-            enableTrace(t.first, active);
-        });
-        contextmenu->addAction(action);
-    }
-    contextmenu->addSeparator();
-    auto close = new QAction("Close", contextmenu);
-    contextmenu->addAction(close);
-    connect(close, &QAction::triggered, [=]() {
-        markedForDeletion = true;
-    });
 }
 
 std::set<TracePlot *> TracePlot::getPlots()
