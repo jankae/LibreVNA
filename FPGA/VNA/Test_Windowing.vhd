@@ -48,9 +48,9 @@ ARCHITECTURE behavior OF Test_Windowing IS
          PORT2_RAW : IN  std_logic_vector(15 downto 0);
          REF_RAW : IN  std_logic_vector(15 downto 0);
          ADC_READY : IN  std_logic;
-         PORT1_WINDOWED : OUT  std_logic_vector(15 downto 0);
-         PORT2_WINDOWED : OUT  std_logic_vector(15 downto 0);
-         REF_WINDOWED : OUT  std_logic_vector(15 downto 0);
+         PORT1_WINDOWED : OUT  std_logic_vector(17 downto 0);
+         PORT2_WINDOWED : OUT  std_logic_vector(17 downto 0);
+         REF_WINDOWED : OUT  std_logic_vector(17 downto 0);
          WINDOWING_DONE : OUT  std_logic;
          NSAMPLES : IN  std_logic_vector(12 downto 0)
         );
@@ -68,9 +68,9 @@ ARCHITECTURE behavior OF Test_Windowing IS
    signal NSAMPLES : std_logic_vector(12 downto 0) := (others => '0');
 
  	--Outputs
-   signal PORT1_WINDOWED : std_logic_vector(15 downto 0);
-   signal PORT2_WINDOWED : std_logic_vector(15 downto 0);
-   signal REF_WINDOWED : std_logic_vector(15 downto 0);
+   signal PORT1_WINDOWED : std_logic_vector(17 downto 0);
+   signal PORT2_WINDOWED : std_logic_vector(17 downto 0);
+   signal REF_WINDOWED : std_logic_vector(17 downto 0);
    signal WINDOWING_DONE : std_logic;
 
    -- Clock period definitions

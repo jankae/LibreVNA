@@ -33,8 +33,8 @@ entity DFT is
 	Generic (BINS : integer);
     Port ( CLK : in  STD_LOGIC;
            RESET : in  STD_LOGIC;
-           PORT1 : in  STD_LOGIC_VECTOR (15 downto 0);
-           PORT2 : in  STD_LOGIC_VECTOR (15 downto 0);
+           PORT1 : in  STD_LOGIC_VECTOR (17 downto 0);
+           PORT2 : in  STD_LOGIC_VECTOR (17 downto 0);
            NEW_SAMPLE : in  STD_LOGIC;
 			  NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
            BIN1_PHASEINC : in  STD_LOGIC_VECTOR (15 downto 0);
@@ -45,25 +45,14 @@ entity DFT is
 end DFT;
 
 architecture Behavioral of DFT is
-COMPONENT dft_result
-GENERIC(depth : integer);
-PORT(
-	CLK : IN std_logic;
-	READ_ADDRESS : in integer range 0 to depth-1;
-	WRITE_ADDRESS : in integer range 0 to depth-1;
-	DATA_IN : IN std_logic_vector(191 downto 0);
-	WE : IN std_logic;          
-	DATA_OUT : OUT std_logic_vector(191 downto 0)
-	);
-END COMPONENT;
 COMPONENT result_bram
   PORT (
     clka : IN STD_LOGIC;
     wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-    addra : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
+    addra : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     dina : IN STD_LOGIC_VECTOR(191 DOWNTO 0);
     clkb : IN STD_LOGIC;
-    addrb : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
+    addrb : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     doutb : OUT STD_LOGIC_VECTOR(191 DOWNTO 0)
   );
 END COMPONENT;
@@ -73,14 +62,6 @@ COMPONENT SinCos
     phase_in : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
     cosine : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
     sine : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
-  );
-END COMPONENT;
-COMPONENT SinCosMult
-  PORT (
-    clk : IN STD_LOGIC;
-    a : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    b : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    p : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
   );
 END COMPONENT;
 COMPONENT DSP_SLICE
@@ -120,16 +101,16 @@ END COMPONENT;
 	
 	signal read_address : integer range 0 to BINS-1;
 	signal write_address : integer range 0 to BINS-1;
-	signal read_address_vector : std_logic_vector(5 downto 0);
-	signal write_address_vector : std_logic_vector(5 downto 0);
+	signal read_address_vector : std_logic_vector(7 downto 0);
+	signal write_address_vector : std_logic_vector(7 downto 0);
 	signal we : std_logic_vector(0 downto 0);
 	signal ram_in : std_logic_vector(191 downto 0);
 	signal ram_out : std_logic_vector(191 downto 0);
 	
 	type States is (WaitingForSample, WaitMult, WaitSinCos, Busy, Ready);
 	signal state : States;
-	signal port1_latch : std_logic_vector(15 downto 0);
-	signal port2_latch : std_logic_vector(15 downto 0);
+	signal port1_latch : std_logic_vector(17 downto 0);
+	signal port2_latch : std_logic_vector(17 downto 0);
 	
 	signal phase : std_logic_vector(31 downto 0);
 	signal phase_inc : std_logic_vector(31 downto 0);
@@ -219,8 +200,8 @@ begin
 		doutb => ram_out
 	);
 	
-	read_address_vector <= std_logic_vector(to_unsigned(read_address, 6));
-	write_address_vector <= std_logic_vector(to_unsigned(write_address, 6));
+	read_address_vector <= std_logic_vector(to_unsigned(read_address, 8));
+	write_address_vector <= std_logic_vector(to_unsigned(write_address, 8));
 	OUTPUT <= ram_out;
 	
 	mult1_c <= ram_out(191 downto 144);
@@ -294,13 +275,13 @@ begin
 							mult_enable <= '1';
 							read_address <= 1;
 							-- sign extended multiplication
-							mult1_a <= port1_latch(15) & port1_latch(15) & port1_latch;
+							mult1_a <= port1_latch;
 							mult1_b <= sine(15) & sine(15) & sine;
-							mult2_a <= port1_latch(15) & port1_latch(15) & port1_latch;
+							mult2_a <= port1_latch;
 							mult2_b <= cosine(15) & cosine(15) & cosine;
-							mult3_a <= port2_latch(15) & port2_latch(15) & port2_latch;
+							mult3_a <= port2_latch;
 							mult3_b <= sine(15) & sine(15) & sine;
-							mult4_a <= port2_latch(15) & port2_latch(15) & port2_latch;
+							mult4_a <= port2_latch;
 							mult4_b <= cosine(15) & cosine(15) & cosine;
 							state <= BUSY;
 							if sample_cnt = 0 then
@@ -319,13 +300,13 @@ begin
 						RESULT_READY <= '0';
 						phase <= std_logic_vector(unsigned(phase)+unsigned(phase_inc));
 						-- sign extended multiplication
-						mult1_a <= port1_latch(15) & port1_latch(15) & port1_latch;
+						mult1_a <= port1_latch;
 						mult1_b <= sine(15) & sine(15) & sine;
-						mult2_a <= port1_latch(15) & port1_latch(15) & port1_latch;
+						mult2_a <= port1_latch;
 						mult2_b <= cosine(15) & cosine(15) & cosine;
-						mult3_a <= port2_latch(15) & port2_latch(15) & port2_latch;
+						mult3_a <= port2_latch;
 						mult3_b <= sine(15) & sine(15) & sine;
-						mult4_a <= port2_latch(15) & port2_latch(15) & port2_latch;
+						mult4_a <= port2_latch;
 						mult4_b <= cosine(15) & cosine(15) & cosine;
 						if bin_cnt >= 3 then
 							-- multiplier result is available, advance write address

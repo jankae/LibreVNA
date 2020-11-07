@@ -386,7 +386,7 @@ Setting & Window type\\
 \begin{itemize}
 \item \textbf{Presc[7:0]:} Amount of FPGA clock cycles between ADC samples.
 $$ SR_{ADC} = \frac{\SI{102.4}{\mega\hertz}}{Presc} $$
-The minimum value for this register is 111, which results in a samplerate of roughly \SI{922.5}{\kilo\hertz}. If Presc is set to a lower value, the data acquisition from the ADC is not done when the next sample starts and samples will be skipped.
+The minimum value for this register is 112, which results in a samplerate of roughly \SI{914.3}{\kilo\hertz}. If Presc is set to a lower value, the data acquisition from the ADC is not done when the next sample starts and samples will be skipped.
 \end{itemize}
 
 \subsection{Phase Increment: 0x05}
@@ -446,7 +446,7 @@ See datasheet of MAX2871 for bit descriptions. Bits for the fields N, FRAC, M, V
 \label{dft}
 In addition to the single bin DFT configured through the ADC prescaler and phase increment registers (see \ref{reg:ADC} and \ref{reg:phaseinc}), the FPGA also includes a multiple point DFT. This DFT only operates on the port 1 and port 2 receivers and is intended to speed up spectrum analyzer measurements. If enabled, the DFT runs in parallel to all other calculations.
 
-The DFT has a fixed number of bins (64), but the frequencies these bins correspond to can be changed.
+The DFT has a fixed number of bins (96), but the frequencies these bins correspond to can be changed.
 
 \subsubsection{DFT\_FIRST\_BIN: 0x12}
 \begin{center}

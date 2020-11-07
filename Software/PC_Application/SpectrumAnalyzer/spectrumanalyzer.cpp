@@ -232,8 +232,8 @@ using namespace std;
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
     // TODO level adjustment in device
-    d.port1 /= pow(10.0, 7.5);
-    d.port2 /= pow(10.0, 7.5);
+    d.port1 /= 126500000.0;
+    d.port2 /= 126500000.0;
     d = average.process(d);
     traceModel.addSAData(d);
     emit dataChanged();

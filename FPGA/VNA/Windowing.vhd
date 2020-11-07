@@ -37,9 +37,9 @@ entity Windowing is
            PORT2_RAW : in  STD_LOGIC_VECTOR (15 downto 0);
            REF_RAW : in  STD_LOGIC_VECTOR (15 downto 0);
            ADC_READY : in  STD_LOGIC;
-           PORT1_WINDOWED : out  STD_LOGIC_VECTOR (15 downto 0);
-           PORT2_WINDOWED : out  STD_LOGIC_VECTOR (15 downto 0);
-           REF_WINDOWED : out  STD_LOGIC_VECTOR (15 downto 0);
+           PORT1_WINDOWED : out  STD_LOGIC_VECTOR (17 downto 0);
+           PORT2_WINDOWED : out  STD_LOGIC_VECTOR (17 downto 0);
+           REF_WINDOWED : out  STD_LOGIC_VECTOR (17 downto 0);
            WINDOWING_DONE : out  STD_LOGIC;
            NSAMPLES : in  STD_LOGIC_VECTOR (12 downto 0));
 end Windowing;
@@ -171,19 +171,19 @@ begin
 					WINDOWING_DONE <= '0';
 					mult_enable <= '1';
 					mult_b(15 downto 0) <= (others => '0');
-					PORT1_WINDOWED <= mult_p(30 downto 15); 
+					PORT1_WINDOWED <= mult_p(30 downto 13); 
 					state <= StorePort2;
 				when StorePort2 =>
 					WINDOWING_DONE <= '0';
 					mult_enable <= '1';
 					mult_b(15 downto 0) <= (others => '0');
-					PORT2_WINDOWED <= mult_p(30 downto 15);
+					PORT2_WINDOWED <= mult_p(30 downto 13);
 					state <= StoreRef;
 				when StoreRef =>
 					WINDOWING_DONE <= '1';
 					mult_enable <= '0';
 					mult_b(15 downto 0) <= (others => '0');
-					REF_WINDOWED <= mult_p(30 downto 15);
+					REF_WINDOWED <= mult_p(30 downto 13);
 					-- update window increment
 					if window_sample_cnt + window_sample_cnt_inc < window_sample_compare then
 						window_sample_cnt <= window_sample_cnt + window_sample_cnt_inc;

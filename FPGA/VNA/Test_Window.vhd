@@ -43,7 +43,7 @@ ARCHITECTURE behavior OF Test_Window IS
     PORT(
          CLK : IN  std_logic;
          INDEX : IN  std_logic_vector(6 downto 0);
-         WINDOW : IN  std_logic_vector(1 downto 0);
+         WINDOW_TYPE : IN  std_logic_vector(1 downto 0);
          VALUE : OUT  std_logic_vector(15 downto 0)
         );
     END COMPONENT;
@@ -52,7 +52,7 @@ ARCHITECTURE behavior OF Test_Window IS
    --Inputs
    signal CLK : std_logic := '0';
    signal INDEX : std_logic_vector(6 downto 0) := (others => '0');
-   signal WINDOW2 : std_logic_vector(1 downto 0) := (others => '0');
+   signal WINDOW_TYPE : std_logic_vector(1 downto 0) := (others => '0');
 
  	--Outputs
    signal VALUE : std_logic_vector(15 downto 0);
@@ -66,7 +66,7 @@ BEGIN
    uut: window PORT MAP (
           CLK => CLK,
           INDEX => INDEX,
-          WINDOW => WINDOW2,
+          WINDOW_TYPE => WINDOW_TYPE,
           VALUE => VALUE
         );
 
@@ -85,11 +85,11 @@ BEGIN
    begin		
       -- hold reset state for 100 ns.
       wait for 100 ns;	
-		WINDOW2 <= "00";
+		WINDOW_TYPE <= "00";
 		INDEX <= "0000000";
 		wait for CLK_period*10;
 
-		WINDOW2 <= "10";
+		WINDOW_TYPE <= "10";
       -- insert stimulus here 
 		wait for CLK_period*10;
 		INDEX <= "0000001";

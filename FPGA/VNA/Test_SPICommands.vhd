@@ -48,19 +48,18 @@ ARCHITECTURE behavior OF Test_SPICommands IS
          MISO : OUT  std_logic;
          NSS : IN  std_logic;
          NEW_SAMPLING_DATA : IN  std_logic;
-         SAMPLING_RESULT : IN  std_logic_vector(287 downto 0);
+         SAMPLING_RESULT : IN  std_logic_vector(303 downto 0);
          SOURCE_UNLOCKED : IN  std_logic;
          LO_UNLOCKED : IN  std_logic;
          MAX2871_DEF_4 : OUT  std_logic_vector(31 downto 0);
          MAX2871_DEF_3 : OUT  std_logic_vector(31 downto 0);
          MAX2871_DEF_1 : OUT  std_logic_vector(31 downto 0);
          MAX2871_DEF_0 : OUT  std_logic_vector(31 downto 0);
-         SWEEP_DATA : OUT  std_logic_vector(111 downto 0);
+         SWEEP_DATA : OUT  std_logic_vector(95 downto 0);
          SWEEP_ADDRESS : OUT  std_logic_vector(12 downto 0);
          SWEEP_WRITE : OUT  std_logic_vector(0 downto 0);
          SWEEP_POINTS : OUT  std_logic_vector(12 downto 0);
-         NSAMPLES : OUT  std_logic_vector(16 downto 0);
-         SETTLING_TIME : OUT  std_logic_vector(15 downto 0);
+         NSAMPLES : OUT  std_logic_vector(12 downto 0);
          PORT1_EN : OUT  std_logic;
          PORT2_EN : OUT  std_logic;
          REF_EN : OUT  std_logic;
@@ -80,7 +79,7 @@ ARCHITECTURE behavior OF Test_SPICommands IS
    signal MOSI : std_logic := '0';
    signal NSS : std_logic := '0';
    signal NEW_SAMPLING_DATA : std_logic := '0';
-   signal SAMPLING_RESULT : std_logic_vector(287 downto 0) := (others => '0');
+   signal SAMPLING_RESULT : std_logic_vector(303 downto 0) := (others => '0');
    signal SOURCE_UNLOCKED : std_logic := '1';
    signal LO_UNLOCKED : std_logic := '1';
 
@@ -90,12 +89,11 @@ ARCHITECTURE behavior OF Test_SPICommands IS
    signal MAX2871_DEF_3 : std_logic_vector(31 downto 0);
    signal MAX2871_DEF_1 : std_logic_vector(31 downto 0);
    signal MAX2871_DEF_0 : std_logic_vector(31 downto 0);
-   signal SWEEP_DATA : std_logic_vector(111 downto 0);
+   signal SWEEP_DATA : std_logic_vector(95 downto 0);
    signal SWEEP_ADDRESS : std_logic_vector(12 downto 0);
    signal SWEEP_WRITE : std_logic_vector(0 downto 0);
    signal SWEEP_POINTS : std_logic_vector(12 downto 0);
-   signal NSAMPLES : std_logic_vector(16 downto 0);
-   signal SETTLING_TIME : std_logic_vector(15 downto 0);
+   signal NSAMPLES : std_logic_vector(12 downto 0);
    signal PORT1_EN : std_logic;
    signal PORT2_EN : std_logic;
    signal REF_EN : std_logic;
@@ -133,7 +131,6 @@ BEGIN
           SWEEP_WRITE => SWEEP_WRITE,
           SWEEP_POINTS => SWEEP_POINTS,
           NSAMPLES => NSAMPLES,
-          SETTLING_TIME => SETTLING_TIME,
           PORT1_EN => PORT1_EN,
           PORT2_EN => PORT2_EN,
           REF_EN => REF_EN,

@@ -44,8 +44,8 @@ ARCHITECTURE behavior OF Test_DFT IS
     PORT(
          CLK : IN  std_logic;
          RESET : IN  std_logic;
-         PORT1 : IN  std_logic_vector(15 downto 0);
-         PORT2 : IN  std_logic_vector(15 downto 0);
+         PORT1 : IN  std_logic_vector(17 downto 0);
+         PORT2 : IN  std_logic_vector(17 downto 0);
          NEW_SAMPLE : IN  std_logic;
 			NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
          BIN1_PHASEINC : IN  std_logic_vector(15 downto 0);
@@ -60,8 +60,8 @@ ARCHITECTURE behavior OF Test_DFT IS
    --Inputs
    signal CLK : std_logic := '0';
    signal RESET : std_logic := '0';
-   signal PORT1 : std_logic_vector(15 downto 0) := (others => '0');
-   signal PORT2 : std_logic_vector(15 downto 0) := (others => '0');
+   signal PORT1 : std_logic_vector(17 downto 0) := (others => '0');
+   signal PORT2 : std_logic_vector(17 downto 0) := (others => '0');
    signal NEW_SAMPLE : std_logic := '0';
    signal BIN1_PHASEINC : std_logic_vector(15 downto 0) := (others => '0');
    signal DIFFBIN_PHASEINC : std_logic_vector(15 downto 0) := (others => '0');
@@ -109,11 +109,11 @@ BEGIN
    begin		
       -- hold reset state for 100 ns.
 		RESET <= '1';
-		PORT1 <= "1000000000000000";
-		PORT2 <= "0100000000000000";
+		PORT1 <= "100000000000000000";
+		PORT2 <= "010000000000000000";
 		BIN1_PHASEINC <= "0100000000000000";
 		DIFFBIN_PHASEINC <= "0010000000000000";
-		NSAMPLES <= "0000000000000011";
+		NSAMPLES <= "0000000000011";
       wait for 100 ns;	
 		RESET <= '0';
       wait for CLK_period*10;

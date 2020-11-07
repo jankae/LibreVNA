@@ -129,12 +129,12 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .limits_minFreq = 0,
     .limits_maxFreq = 6000000000,
     .limits_minIFBW = 10,
-    .limits_maxIFBW = 50000,
-    .limits_maxPoints = 4501,
-    .limits_cdbm_min = -4000,
-    .limits_cdbm_max = 0,
-    .limits_minRBW = 15,
-    .limits_maxRBW = 100000,
+    .limits_maxIFBW = 1000000,
+    .limits_maxPoints = 10000,
+    .limits_cdbm_min = -10000,
+    .limits_cdbm_max = 1000,
+    .limits_minRBW = 1,
+    .limits_maxRBW = 1000000,
 };
 
 Protocol::DeviceInfo Device::lastInfo = defaultInfo;

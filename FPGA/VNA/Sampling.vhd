@@ -35,9 +35,9 @@ entity Sampling is
            RESET : in  STD_LOGIC;
 			  ADC_PRESCALER : in STD_LOGIC_VECTOR(7 downto 0);
 			  PHASEINC : in STD_LOGIC_VECTOR(11 downto 0);
-           PORT1 : in  STD_LOGIC_VECTOR (15 downto 0);
-           PORT2 : in  STD_LOGIC_VECTOR (15 downto 0);
-           REF : in  STD_LOGIC_VECTOR (15 downto 0);
+           PORT1 : in  STD_LOGIC_VECTOR (17 downto 0);
+           PORT2 : in  STD_LOGIC_VECTOR (17 downto 0);
+           REF : in  STD_LOGIC_VECTOR (17 downto 0);
 			  ADC_START : out STD_LOGIC;
            NEW_SAMPLE : in  STD_LOGIC;
            DONE : out  STD_LOGIC;
@@ -62,13 +62,16 @@ COMPONENT SinCos
     sine : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
   );
 END COMPONENT;
-COMPONENT SinCosMult
-  PORT (
-    clk : IN STD_LOGIC;
-    a : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    b : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
-    p : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
-  );
+COMPONENT DSP_SLICE
+	PORT (
+		clk : IN STD_LOGIC;
+		ce : IN STD_LOGIC;
+		sel : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+		a : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
+		b : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
+		c : IN STD_LOGIC_VECTOR(47 DOWNTO 0);
+		p : OUT STD_LOGIC_VECTOR(47 DOWNTO 0)
+	);
 END COMPONENT;
 COMPONENT window
 PORT(
@@ -79,12 +82,12 @@ PORT(
 	);
 END COMPONENT;
 
-	signal p1_I : signed(47 downto 0);
-	signal p1_Q : signed(47 downto 0);
-	signal p2_I : signed(47 downto 0);
-	signal p2_Q : signed(47 downto 0);
-	signal r_I : signed(47 downto 0);
-	signal r_Q : signed(47 downto 0);
+	signal p1_I : std_logic_vector(47 downto 0);
+	signal p1_Q : std_logic_vector(47 downto 0);
+	signal p2_I : std_logic_vector(47 downto 0);
+	signal p2_Q : std_logic_vector(47 downto 0);
+	signal r_I : std_logic_vector(47 downto 0);
+	signal r_Q : std_logic_vector(47 downto 0);
 	signal clk_cnt : integer range 0 to 255;
 	signal sample_cnt : integer range 0 to 131071;
 	signal samples_to_take : integer range 0 to 131071;
@@ -93,16 +96,15 @@ END COMPONENT;
 	signal sine : std_logic_vector(15 downto 0);
 	signal cosine : std_logic_vector(15 downto 0);
 	
-	signal mult1_I : std_logic_vector(31 downto 0);
-	signal mult1_Q : std_logic_vector(31 downto 0);
-	signal mult2_I : std_logic_vector(31 downto 0);
-	signal mult2_Q : std_logic_vector(31 downto 0);
-	signal multR_I : std_logic_vector(31 downto 0);
-	signal multR_Q : std_logic_vector(31 downto 0);
+	signal mult_a : std_logic_vector(17 downto 0);
+	signal mult_b : std_logic_vector(17 downto 0);
+	signal mult_c : std_logic_vector(47 downto 0);
+	signal mult_p : std_logic_vector(47 downto 0);
 	
-	signal last_sample : std_logic;
+	signal mult_enable : std_logic;
+	signal mult_accumulate : std_logic_vector(0 downto 0);
 	
-	type States is (Idle, Sampling, WaitForMult, Accumulating, Ready);
+	type States is (Idle, Sampling, P1Q, P2I, P2Q, RI, RQ, SaveP1Q, SaveP2I, SaveP2Q, SaveRI, SaveRQ, Ready);
 	signal state : States;
 begin
 -- Always fails for simulation, comment out
@@ -117,48 +119,20 @@ begin
 		cosine => cosine,
 		sine => sine
 	);
-	Port1_I_Mult : SinCosMult
+
+	Mult : DSP_SLICE
 	PORT MAP (
 		clk => CLK,
-		a => PORT1,
-		b => cosine,
-		p => mult1_I
+		ce => mult_enable,
+		sel => mult_accumulate,
+		a => mult_a,
+		b => mult_b,
+		c => mult_c,
+		p => mult_p
 	);
-	Port1_Q_Mult : SinCosMult
-	PORT MAP (
-		clk => CLK,
-		a => PORT1,
-		b => sine,
-		p => mult1_Q
-	);
-	Port2_I_Mult : SinCosMult
-	PORT MAP (
-		clk => CLK,
-		a => PORT2,
-		b => cosine,
-		p => mult2_I
-	);
-	Port2_Q_Mult : SinCosMult
-	PORT MAP (
-		clk => CLK,
-		a => PORT2,
-		b => sine,
-		p => mult2_Q
-	);
-	Ref_I_Mult : SinCosMult
-	PORT MAP (
-		clk => CLK,
-		a => REF,
-		b => cosine,
-		p => multR_I
-	);
-	Ref_Q_Mult : SinCosMult
-	PORT MAP (
-		clk => CLK,
-		a => REF,
-		b => sine,
-		p => multR_Q
-	);
+	
+	-- sign extend b input of multiplier (sin/cos)
+	mult_b(17 downto 16) <= mult_b(15) & mult_b(15);
 	
 	process(CLK, RESET)
 	begin
@@ -172,15 +146,14 @@ begin
 				clk_cnt <= 0;
 				sample_cnt <= 0;
 				phase <= (others => '0');
+				mult_enable <= '0';
+				mult_accumulate <= "0";
 			else
 				-- when not idle, generate pulses for ADCs
 				if state /= Idle then
-					if clk_cnt = unsigned(ADC_PRESCALER) - 1 and last_sample = '0' then
-						ADC_START <= '1';
+					if clk_cnt = unsigned(ADC_PRESCALER) - 1 then
 						if sample_cnt < samples_to_take then
-							sample_cnt <= sample_cnt + 1;
-						else
-							last_sample <= '1';
+							ADC_START <= '1';
 						end if;
 						clk_cnt <= 0;
 					else
@@ -193,50 +166,116 @@ begin
 				-- handle state transitions
 				case state is
 					when Idle =>
-						last_sample <= '0';
 						sample_cnt <= 0;
 						DONE <= '0';
 						PRE_DONE <= '0';
 						ACTIVE <= '0';
 						clk_cnt <= 0;
 						phase <= (others => '0');
-						p1_I <= (others => '0');
-						p1_Q <= (others => '0');
-						p2_I <= (others => '0');
-						p2_Q <= (others => '0');
-						r_I <= (others => '0');
-						r_Q <= (others => '0');
-						phase <= (others => '0');
+						mult_enable <= '0';
+						mult_accumulate <= "0";
 						if START = '1' then
 							state <= Sampling;
-							samples_to_take <= to_integer(unsigned(SAMPLES & "0000") - 1);
+							samples_to_take <= to_integer(unsigned(SAMPLES & "0000"));
 						end if;
 					when Sampling =>
 						DONE <= '0';
 						PRE_DONE <= '0';
 						ACTIVE <= '1';
+						mult_enable <= '0';
 						if NEW_SAMPLE = '1' then
-							state <= WaitForMult;
+							sample_cnt <= sample_cnt + 1;
+							mult_enable <= '1';
+							mult_a <= PORT1;
+							mult_b(15 downto 0) <= cosine;
+							mult_c <= p1_I;
+							state <= P1Q;
 						end if;
-					when WaitForMult =>
-						DONE <= '0';
-						PRE_DONE <= '0';
-						ACTIVE <= '1';
-						state <= Accumulating;
-					when Accumulating =>
-						-- multipliers are finished with the sample
-						p1_I <= p1_I + signed(mult1_I);
-						p1_Q <= p1_Q + signed(mult1_Q);
-						p2_I <= p2_I + signed(mult2_I);
-						p2_Q <= p2_Q + signed(mult2_Q);
-						r_I <= r_I + signed(multR_I);
-						r_Q <= r_Q + signed(multR_Q);
-						-- advance phase
+					when P1Q =>
 						ACTIVE <= '1';
 						DONE <= '0';
 						PRE_DONE <= '0';
+						mult_enable <= '1';
+						mult_a <= PORT1;
+						mult_b(15 downto 0) <= sine;
+						mult_c <= p1_Q;
+						state <= P2I;
+					when P2I =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						mult_a <= PORT2;
+						mult_b(15 downto 0) <= cosine;
+						mult_c <= p2_I;
+						state <= P2Q;
+					when P2Q =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						mult_a <= PORT2;
+						mult_b(15 downto 0) <= sine;
+						mult_c <= p2_Q;
+						state <= RI;
+					when RI =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						mult_a <= REF;
+						mult_b(15 downto 0) <= cosine;
+						mult_c <= r_I;
+						state <= RQ;						
+					when RQ =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						mult_a <= REF;
+						mult_b(15 downto 0) <= sine;
+						mult_c <= r_Q;
+						-- first result is available
+						p1_I <= mult_p;
+						state <= SaveP1Q;
+					when SaveP1Q =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						p1_Q <= mult_p;
+						state <= SaveP2I;
+					when SaveP2I =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						p2_I <= mult_p;
+						state <= SaveP2Q;
+					when SaveP2Q =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						p2_Q <= mult_p;
+						state <= SaveRI;
+					when SaveRI =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '1';
+						r_I <= mult_p;
+						state <= SaveRQ;
+					when SaveRQ =>
+						ACTIVE <= '1';
+						DONE <= '0';
+						PRE_DONE <= '0';
+						mult_enable <= '0';
+						r_Q <= mult_p;
+						-- from now on accumulate results
+						mult_accumulate <= "1";
 						phase <= std_logic_vector(unsigned(phase) + unsigned(PHASEINC));
-						if last_sample = '0' then
+						if sample_cnt < samples_to_take then
 							state <= Sampling;
 						else
 							state <= Ready;
@@ -245,12 +284,13 @@ begin
 						ACTIVE <= '1';
 						DONE <= '1';
 						PRE_DONE <= '1';
-						PORT1_I <= std_logic_vector(p1_I);
-						PORT1_Q <= std_logic_vector(p1_Q);
-						PORT2_I <= std_logic_vector(p2_I);
-						PORT2_Q <= std_logic_vector(p2_Q);
-						REF_I <= std_logic_vector(r_I);
-						REF_Q <= std_logic_vector(r_Q);
+						mult_enable <= '0';
+						PORT1_I <= p1_I;
+						PORT1_Q <= p1_Q;
+						PORT2_I <= p2_I;
+						PORT2_Q <= p2_Q;
+						REF_I <= r_I;
+						REF_Q <= r_Q;
 						state <= Idle;
 				end case;
 			end if;

@@ -156,9 +156,9 @@ architecture Behavioral of top is
 		REF_RAW : IN std_logic_vector(15 downto 0);
 		ADC_READY : IN std_logic;
 		NSAMPLES : IN std_logic_vector(12 downto 0);          
-		PORT1_WINDOWED : OUT std_logic_vector(15 downto 0);
-		PORT2_WINDOWED : OUT std_logic_vector(15 downto 0);
-		REF_WINDOWED : OUT std_logic_vector(15 downto 0);
+		PORT1_WINDOWED : OUT std_logic_vector(17 downto 0);
+		PORT2_WINDOWED : OUT std_logic_vector(17 downto 0);
+		REF_WINDOWED : OUT std_logic_vector(17 downto 0);
 		WINDOWING_DONE : OUT std_logic
 		);
 	END COMPONENT;
@@ -170,9 +170,9 @@ architecture Behavioral of top is
 		RESET : IN std_logic;
 		ADC_PRESCALER : in STD_LOGIC_VECTOR(7 downto 0);
 		PHASEINC : in STD_LOGIC_VECTOR(11 downto 0);
-		PORT1 : IN std_logic_vector(15 downto 0);
-		PORT2 : IN std_logic_vector(15 downto 0);
-		REF : IN std_logic_vector(15 downto 0);
+		PORT1 : IN std_logic_vector(17 downto 0);
+		PORT2 : IN std_logic_vector(17 downto 0);
+		REF : IN std_logic_vector(17 downto 0);
 		NEW_SAMPLE : IN std_logic;
 		START : IN std_logic;
 		SAMPLES : IN std_logic_vector(12 downto 0);
@@ -277,8 +277,8 @@ architecture Behavioral of top is
 	PORT(
 		CLK : IN std_logic;
 		RESET : IN std_logic;
-		PORT1 : IN std_logic_vector(15 downto 0);
-		PORT2 : IN std_logic_vector(15 downto 0);
+		PORT1 : IN std_logic_vector(17 downto 0);
+		PORT2 : IN std_logic_vector(17 downto 0);
 		NEW_SAMPLE : IN std_logic;
 		NSAMPLES : IN std_logic_vector(12 downto 0);
 		BIN1_PHASEINC : IN std_logic_vector(15 downto 0);
@@ -342,9 +342,9 @@ architecture Behavioral of top is
 	signal adc_minmax : std_logic_vector(95 downto 0);
 	signal adc_reset_minmax : std_logic;
 	
-	signal port1_windowed : std_logic_vector(15 downto 0);
-	signal port2_windowed : std_logic_vector(15 downto 0);
-	signal ref_windowed : std_logic_vector(15 downto 0);
+	signal port1_windowed : std_logic_vector(17 downto 0);
+	signal port2_windowed : std_logic_vector(17 downto 0);
+	signal ref_windowed : std_logic_vector(17 downto 0);
 	signal windowing_ready : std_logic;
 	
 	-- Sampling signals
@@ -753,7 +753,7 @@ begin
 	
 	dft_reset <= not dft_enable;
 	
-	SA_DFT: DFT GENERIC MAP(BINS => 64)
+	SA_DFT: DFT GENERIC MAP(BINS => 96)
 	PORT MAP(
 		CLK => clk160,
 		RESET => dft_reset,

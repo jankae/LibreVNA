@@ -6,7 +6,7 @@
 namespace FPGA {
 
 static constexpr uint16_t MaxPoints = 4501;
-static constexpr uint16_t DFTbins = 64;
+static constexpr uint16_t DFTbins = 96;
 static constexpr uint32_t Clockrate = 102400000UL;
 
 enum class Reg {
