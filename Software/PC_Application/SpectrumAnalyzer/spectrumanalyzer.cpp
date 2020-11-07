@@ -251,6 +251,13 @@ void SpectrumAnalyzer::SettingsChanged()
         settings.pointNum = settings.f_stop - settings.f_start + 1;
     }
 
+    auto pref = Preferences::getInstance();
+    if(pref.Acquisition.useDFTinSAmode && settings.RBW <= pref.Acquisition.RBWLimitForDFT) {
+        settings.UseDFT = 1;
+    } else {
+        settings.UseDFT = 0;
+    }
+
     if(window->getDevice()) {
         window->getDevice()->Configure(settings);
     }
@@ -311,8 +318,8 @@ void SpectrumAnalyzer::SetSpan(double span)
 
 void SpectrumAnalyzer::SetFullSpan()
 {
-    settings.f_start = Device::Limits().minFreq;
-    settings.f_stop = Device::Limits().maxFreq;
+    settings.f_start = Device::Info().limits_minFreq;
+    settings.f_stop = Device::Info().limits_maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -340,10 +347,10 @@ void SpectrumAnalyzer::SpanZoomOut()
 
 void SpectrumAnalyzer::SetRBW(double bandwidth)
 {
-    if(bandwidth > Device::Limits().maxRBW) {
-        bandwidth = Device::Limits().maxRBW;
-    } else if(bandwidth < Device::Limits().minRBW) {
-        bandwidth = Device::Limits().minRBW;
+    if(bandwidth > Device::Info().limits_maxRBW) {
+        bandwidth = Device::Info().limits_maxRBW;
+    } else if(bandwidth < Device::Info().limits_minRBW) {
+        bandwidth = Device::Info().limits_minRBW;
     }
     settings.RBW = bandwidth;
     emit RBWChanged(settings.RBW);
@@ -365,14 +372,14 @@ void SpectrumAnalyzer::UpdateAverageCount()
 
 void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 {
-    if(settings.f_stop > Device::Limits().maxFreq) {
-        settings.f_stop = Device::Limits().maxFreq;
+    if(settings.f_stop > Device::Info().limits_maxFreq) {
+        settings.f_stop = Device::Info().limits_maxFreq;
     }
     if(settings.f_start > settings.f_stop) {
         settings.f_start = settings.f_stop;
     }
-    if(settings.f_start < Device::Limits().minFreq) {
-        settings.f_start = Device::Limits().minFreq;
+    if(settings.f_start < Device::Info().limits_minFreq) {
+        settings.f_start = Device::Info().limits_minFreq;
     }
     emit startFreqChanged(settings.f_start);
     emit stopFreqChanged(settings.f_stop);

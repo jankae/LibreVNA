@@ -264,9 +264,8 @@ void VNA::Work() {
 	packet.info.FW_major = FW_MAJOR;
 	packet.info.FW_minor = FW_MINOR;
 	packet.info.HW_Revision = HW_REVISION;
-	HW::fillDeviceInfo(&packet.info);
+	HW::fillDeviceInfo(&packet.info, true);
 	Communication::Send(packet);
-	FPGA::ResetADCLimits();
 	// Start next sweep
 	FPGA::StartSweep();
 }

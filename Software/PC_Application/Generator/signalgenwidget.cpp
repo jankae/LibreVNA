@@ -10,10 +10,10 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     ui->frequency->setPrefixes(" kMG");
 
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
-       if(newval < Device::Limits().minFreq) {
-           newval = Device::Limits().minFreq;
-       } else if (newval > Device::Limits().maxFreq) {
-           newval = Device::Limits().maxFreq;
+       if(newval < Device::Info().limits_minFreq) {
+           newval = Device::Info().limits_minFreq;
+       } else if (newval > Device::Info().limits_maxFreq) {
+           newval = Device::Info().limits_maxFreq;
        }
        ui->frequency->setValueQuiet(newval);
        emit SettingsChanged();

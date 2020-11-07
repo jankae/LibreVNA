@@ -238,35 +238,58 @@ static int16_t EncodeGeneratorSettings(Protocol::GeneratorSettings d, uint8_t *b
 static Protocol::DeviceInfo DecodeDeviceInfo(uint8_t *buf) {
     Protocol::DeviceInfo d;
     Decoder e(buf);
-    e.get<uint16_t>(d.FW_major);
-    e.get<uint16_t>(d.FW_minor);
-    e.get<char>(d.HW_Revision);
+    e.get(d.ProtocolVersion);
+    e.get(d.FW_major);
+    e.get(d.FW_minor);
+    e.get(d.FW_patch);
+    e.get(d.HW_Revision);
     d.extRefAvailable = e.getBits(1);
     d.extRefInUse = e.getBits(1);
     d.FPGA_configured = e.getBits(1);
     d.source_locked = e.getBits(1);
     d.LO1_locked = e.getBits(1);
     d.ADC_overload = e.getBits(1);
-    e.get<uint8_t>(d.temperatures.source);
-    e.get<uint8_t>(d.temperatures.LO1);
-    e.get<uint8_t>(d.temperatures.MCU);
+    e.get(d.temp_source);
+    e.get(d.temp_LO1);
+    e.get(d.temp_MCU);
+    e.get(d.limits_minFreq);
+    e.get(d.limits_maxFreq);
+    e.get(d.limits_minIFBW);
+    e.get(d.limits_maxIFBW);
+    e.get(d.limits_maxPoints);
+    e.get(d.limits_cdbm_min);
+    e.get(d.limits_cdbm_max);
+    e.get(d.limits_minRBW);
+    e.get(d.limits_maxRBW);
     return d;
 }
 static int16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
                                                    uint16_t bufSize) {
+    d.ProtocolVersion = Protocol::Version;
     Encoder e(buf, bufSize);
-    e.add<uint16_t>(d.FW_major);
-    e.add<uint16_t>(d.FW_minor);
-    e.add<char>(d.HW_Revision);
+    e.add(d.ProtocolVersion);
+    e.add(d.FW_major);
+    e.add(d.FW_minor);
+    e.add(d.FW_patch);
+    e.add(d.HW_Revision);
     e.addBits(d.extRefAvailable, 1);
     e.addBits(d.extRefInUse, 1);
     e.addBits(d.FPGA_configured, 1);
     e.addBits(d.source_locked, 1);
     e.addBits(d.LO1_locked, 1);
     e.addBits(d.ADC_overload, 1);
-    e.add<uint8_t>(d.temperatures.source);
-    e.add<uint8_t>(d.temperatures.LO1);
-    e.add<uint8_t>(d.temperatures.MCU);
+    e.add(d.temp_source);
+    e.add(d.temp_LO1);
+    e.add(d.temp_MCU);
+    e.add(d.limits_minFreq);
+    e.add(d.limits_maxFreq);
+    e.add(d.limits_minIFBW);
+    e.add(d.limits_maxIFBW);
+    e.add(d.limits_maxPoints);
+    e.add(d.limits_cdbm_min);
+    e.add(d.limits_cdbm_max);
+    e.add(d.limits_minRBW);
+    e.add(d.limits_maxRBW);
     return e.getSize();
 }
 
@@ -378,6 +401,7 @@ static Protocol::SpectrumAnalyzerSettings DecodeSpectrumAnalyzerSettings(uint8_t
     d.WindowType = e.getBits(2);
     d.SignalID = e.getBits(1);
     d.Detector = e.getBits(3);
+    d.UseDFT = e.getBits(1);
     return d;
 }
 static int16_t EncodeSpectrumAnalyzerSettings(Protocol::SpectrumAnalyzerSettings d, uint8_t *buf,
@@ -390,6 +414,7 @@ static int16_t EncodeSpectrumAnalyzerSettings(Protocol::SpectrumAnalyzerSettings
     e.addBits(d.WindowType, 2);
     e.addBits(d.SignalID, 1);
     e.addBits(d.Detector, 3);
+    e.addBits(d.UseDFT, 1);
     return e.getSize();
 }
 
@@ -409,35 +434,6 @@ static int16_t EncodeSpectrumAnalyzerResult(Protocol::SpectrumAnalyzerResult d, 
     e.add<float>(d.port2);
     e.add<uint64_t>(d.frequency);
     e.add<uint16_t>(d.pointNum);
-    return e.getSize();
-}
-
-static Protocol::DeviceLimits DecodeDeviceLimits(uint8_t *buf) {
-    Protocol::DeviceLimits d;
-    Decoder e(buf);
-    e.get(d.minFreq);
-    e.get(d.maxFreq);
-    e.get(d.minIFBW);
-    e.get(d.maxIFBW);
-    e.get(d.maxPoints);
-    e.get(d.cdbm_min);
-    e.get(d.cdbm_max);
-    e.get(d.minRBW);
-    e.get(d.maxRBW);
-    return d;
-}
-static int16_t EncodeDeviceLimits(Protocol::DeviceLimits d, uint8_t *buf,
-                                                   uint16_t bufSize) {
-    Encoder e(buf, bufSize);
-    e.add(d.minFreq);
-    e.add(d.maxFreq);
-    e.add(d.minIFBW);
-    e.add(d.maxIFBW);
-    e.add(d.maxPoints);
-    e.add(d.cdbm_min);
-    e.add(d.cdbm_max);
-    e.add(d.minRBW);
-    e.add(d.maxRBW);
     return e.getSize();
 }
 
@@ -545,14 +541,11 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::SpectrumAnalyzerResult:
     	info->spectrumResult = DecodeSpectrumAnalyzerResult(&data[4]);
     	break;
-    case PacketType::DeviceLimits:
-        info->limits = DecodeDeviceLimits(&data[4]);
-        break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
     case PacketType::Nack:
-    case PacketType::RequestDeviceLimits:
+    case PacketType::RequestDeviceInfo:
         // no payload, nothing to do
         break;
     case PacketType::None:
@@ -595,14 +588,11 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::SpectrumAnalyzerResult:
 		payload_size = EncodeSpectrumAnalyzerResult(packet.spectrumResult, &dest[4], destsize - 8);
 		break;
-    case PacketType::DeviceLimits:
-        payload_size = EncodeDeviceLimits(packet.limits, &dest[4], destsize - 8);
-        break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
     case PacketType::Nack:
-    case PacketType::RequestDeviceLimits:
+    case PacketType::RequestDeviceInfo:
         // no payload, nothing to do
         break;
     case PacketType::None:

@@ -42,7 +42,8 @@ private slots:
     int UpdateDeviceList();
     void StartManualControl();
     void UpdateReference();
-
+    void StartFirmwareUpdateDialog();
+    void DeviceNeedsUpdate(int reported, int expected);
 private:
     void DeviceConnectionLost();
     void CreateToolbars();

@@ -95,14 +95,7 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
     connect(ui->actionQuit, &QAction::triggered, this, &AppWindow::close);
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
-    connect(ui->actionFirmware_Update, &QAction::triggered, [=](){
-        if(device) {
-            auto fw_update = new FirmwareUpdateDialog(device);
-            connect(fw_update, &FirmwareUpdateDialog::DeviceRebooting, this, &AppWindow::DisconnectDevice);
-            connect(fw_update, &FirmwareUpdateDialog::DeviceRebooted, this, &AppWindow::ConnectToDevice);
-            fw_update->exec();
-        }
-    });
+    connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         Preferences::getInstance().edit();
         // settings might have changed, update necessary stuff
@@ -172,6 +165,7 @@ void AppWindow::ConnectToDevice(QString serial)
         connect(device, &Device::DeviceInfoUpdated, [this]() {
            lDeviceInfo.setText(device->getLastDeviceInfoString());
         });
+        connect(device, &Device::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
         ui->actionManual_Control->setEnabled(true);
         ui->actionFirmware_Update->setEnabled(true);
@@ -314,6 +308,28 @@ void AppWindow::UpdateReference()
     p.type = Protocol::PacketType::Reference;
     p.reference = s;
     device->SendPacket(p);
+}
+
+void AppWindow::StartFirmwareUpdateDialog()
+{
+    if(device) {
+        auto fw_update = new FirmwareUpdateDialog(device);
+        connect(fw_update, &FirmwareUpdateDialog::DeviceRebooting, this, &AppWindow::DisconnectDevice);
+        connect(fw_update, &FirmwareUpdateDialog::DeviceRebooted, this, &AppWindow::ConnectToDevice);
+        fw_update->exec();
+    }
+}
+
+void AppWindow::DeviceNeedsUpdate(int reported, int expected)
+{
+    auto ret = QMessageBox::warning(this, "Warning",
+                                "The device reports are different protocol"
+                                "version (" + QString::number(reported) + ") than expected (" + QString::number(expected) + ").\n"
+                                "A firmware update is strongly suggested. Do you want to update now?",
+                                   QMessageBox::Yes | QMessageBox::No);
+    if (ret == QMessageBox::Yes) {
+        StartFirmwareUpdateDialog();
+    }
 }
 
 Device *AppWindow::getDevice() const

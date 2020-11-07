@@ -4,6 +4,8 @@
 
 namespace Protocol {
 
+static constexpr uint16_t Version = 1;
+
 // When changing/adding/removing variables from these structs also adjust the decode/encode functions in Protocol.cpp
 
 using Datapoint = struct _datapoint {
@@ -39,8 +41,10 @@ using GeneratorSettings = struct _generatorSettings {
 };
 
 using DeviceInfo = struct _deviceInfo {
-    uint16_t FW_major;
-    uint16_t FW_minor;
+	uint16_t ProtocolVersion;
+    uint8_t FW_major;
+    uint8_t FW_minor;
+    uint8_t FW_patch;
     char HW_Revision;
     uint8_t extRefAvailable:1;
     uint8_t extRefInUse:1;
@@ -48,11 +52,18 @@ using DeviceInfo = struct _deviceInfo {
     uint8_t source_locked:1;
     uint8_t LO1_locked:1;
     uint8_t ADC_overload:1;
-    struct {
-        uint8_t source;
-        uint8_t LO1;
-        uint8_t MCU;
-    } temperatures;
+	uint8_t temp_source;
+	uint8_t temp_LO1;
+	uint8_t temp_MCU;
+	uint64_t limits_minFreq;
+	uint64_t limits_maxFreq;
+	uint32_t limits_minIFBW;
+	uint32_t limits_maxIFBW;
+	uint16_t limits_maxPoints;
+	int16_t limits_cdbm_min;
+	int16_t limits_cdbm_max;
+	uint32_t limits_minRBW;
+	uint32_t limits_maxRBW;
 };
 
 using ManualStatus = struct _manualstatus {
@@ -107,6 +118,7 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 	uint8_t WindowType :2;
 	uint8_t SignalID :1;
 	uint8_t Detector :3;
+	uint8_t UseDFT :1;
 };
 
 using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
@@ -114,18 +126,6 @@ using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
 	float port2;
 	uint64_t frequency;
 	uint16_t pointNum;
-};
-
-using DeviceLimits = struct _deviceLimits {
-    uint64_t minFreq;
-    uint64_t maxFreq;
-    uint32_t minIFBW;
-    uint32_t maxIFBW;
-    uint16_t maxPoints;
-    int16_t cdbm_min;
-    int16_t cdbm_max;
-    uint32_t minRBW;
-    uint32_t maxRBW;
 };
 
 static constexpr uint16_t FirmwareChunkSize = 256;
@@ -150,8 +150,7 @@ enum class PacketType : uint8_t {
 	Generator = 12,
 	SpectrumAnalyzerSettings = 13,
 	SpectrumAnalyzerResult =  14,
-    RequestDeviceLimits = 15,
-    DeviceLimits = 16,
+    RequestDeviceInfo = 15,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -167,7 +166,6 @@ using PacketInfo = struct _packetinfo {
         ManualStatus status;
         SpectrumAnalyzerSettings spectrumSettings;
         SpectrumAnalyzerResult spectrumResult;
-        DeviceLimits limits;
 	};
 };
 

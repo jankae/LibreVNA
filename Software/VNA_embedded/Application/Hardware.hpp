@@ -38,16 +38,30 @@ static_assert(ADCprescaler * ADCSamplerate == FPGA::Clockrate, "ADCSamplerate ca
 static constexpr uint16_t DFTphaseInc = 4096 * IF2 / ADCSamplerate;
 static_assert(DFTphaseInc * ADCSamplerate == 4096 * IF2, "DFT can not be computed for 2.IF");
 
-static constexpr Protocol::DeviceLimits Limits = {
-		.minFreq = 0,
-		.maxFreq = 6000000000,
-		.minIFBW = ADCSamplerate / MaxSamples,
-		.maxIFBW = ADCSamplerate / MinSamples,
-		.maxPoints = FPGA::MaxPoints,
-		.cdbm_min = -4000,
-		.cdbm_max = 0,
-		.minRBW = (uint32_t) (ADCSamplerate * 2.23f / MaxSamples),
-		.maxRBW = (uint32_t) (ADCSamplerate * 2.23f / MinSamples),
+static constexpr Protocol::DeviceInfo Info = {
+		.ProtocolVersion = Protocol::Version,
+		.FW_major = FW_MAJOR,
+		.FW_minor = FW_MINOR,
+		.FW_patch = FW_PATCH,
+		.HW_Revision = HW_REVISION,
+	    .extRefAvailable = 0,
+	    .extRefInUse = 0,
+	    .FPGA_configured = 0,
+	    .source_locked = 0,
+	    .LO1_locked = 0,
+	    .ADC_overload = 0,
+		.temp_source = 0,
+		.temp_LO1 = 0,
+		.temp_MCU = 0,
+		.limits_minFreq = 0,
+		.limits_maxFreq = 6000000000,
+		.limits_minIFBW = ADCSamplerate / MaxSamples,
+		.limits_maxIFBW = ADCSamplerate / MinSamples,
+		.limits_maxPoints = FPGA::MaxPoints,
+		.limits_cdbm_min = -4000,
+		.limits_cdbm_max = 0,
+		.limits_minRBW = (uint32_t) (ADCSamplerate * 2.23f / MaxSamples),
+		.limits_maxRBW = (uint32_t) (ADCSamplerate * 2.23f / MinSamples),
 };
 
 enum class Mode {
@@ -63,7 +77,7 @@ void SetIdle();
 void Work();
 
 bool GetTemps(uint8_t *source, uint8_t *lo);
-void fillDeviceInfo(Protocol::DeviceInfo *info);
+void fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy = false);
 namespace Ref {
 	bool available();
 	// reference won't change until update is called

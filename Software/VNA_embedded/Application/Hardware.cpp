@@ -7,6 +7,7 @@
 #include "VNA.hpp"
 #include "Manual.hpp"
 #include "SpectrumAnalyzer.hpp"
+#include <cstring>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"HW"
@@ -222,33 +223,39 @@ void HW::SetIdle() {
 	FPGA::Enable(FPGA::Periphery::PortSwitch, false);
 }
 
-void HW::fillDeviceInfo(Protocol::DeviceInfo *info) {
-	// read PLL temperatures
-	uint8_t tempSource, tempLO;
-	GetTemps(&tempSource, &tempLO);
-	LOG_INFO("PLL temperatures: %u/%u", tempSource, tempLO);
-	// Read ADC min/max
-	auto limits = FPGA::GetADCLimits();
-	LOG_INFO("ADC limits: P1: %d/%d P2: %d/%d R: %d/%d",
-			limits.P1min, limits.P1max, limits.P2min, limits.P2max,
-			limits.Rmin, limits.Rmax);
-#define ADC_LIMIT 		30000
-	if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
-			|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
-			|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
-		info->ADC_overload = true;
-	} else {
-		info->ADC_overload = false;
+void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
+	// copy constant default values
+	memcpy(info, &HW::Info, sizeof(HW::Info));
+	if(activeMode == Mode::Idle || updateEvenWhenBusy) {
+		// updating values from FPGA allowed
+
+		// read PLL temperatures
+		uint8_t tempSource, tempLO;
+		GetTemps(&tempSource, &tempLO);
+		LOG_INFO("PLL temperatures: %u/%u", tempSource, tempLO);
+		// Read ADC min/max
+		auto limits = FPGA::GetADCLimits();
+		LOG_INFO("ADC limits: P1: %d/%d P2: %d/%d R: %d/%d",
+				limits.P1min, limits.P1max, limits.P2min, limits.P2max,
+				limits.Rmin, limits.Rmax);
+	#define ADC_LIMIT 		30000
+		if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
+				|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
+				|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
+			info->ADC_overload = true;
+		} else {
+			info->ADC_overload = false;
+		}
+		auto status = FPGA::GetStatus();
+		info->LO1_locked = (status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
+		info->source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
+		info->extRefAvailable = Ref::available();
+		info->extRefInUse = extRefInUse;
+		info->temp_LO1 = tempLO;
+		info->temp_source = tempSource;
+		FPGA::ResetADCLimits();
 	}
-	auto status = FPGA::GetStatus();
-	info->LO1_locked = (status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
-	info->source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
-	info->extRefAvailable = Ref::available();
-	info->extRefInUse = extRefInUse;
-	info->temperatures.LO1 = tempLO;
-	info->temperatures.source = tempSource;
-	info->temperatures.MCU = STM::getTemperature();
-	FPGA::ResetADCLimits();
+	info->temp_MCU = STM::getTemperature();
 }
 
 bool HW::Ref::available() {

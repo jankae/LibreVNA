@@ -67,6 +67,13 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->StartupSARBW->setUnit("Hz");
     ui->StartupSARBW->setPrefixes(" k");
 
+    // Acquisition page
+    ui->AcquisitionDFTlimitRBW->setUnit("Hz");
+    ui->AcquisitionDFTlimitRBW->setPrefixes(" k");
+    connect(ui->AcquisitionUseDFT, &QCheckBox::toggled, [=](bool enabled) {
+       ui->AcquisitionDFTlimitRBW->setEnabled(enabled);
+    });
+
     // Page selection
     connect(ui->treeWidget, &QTreeWidget::currentItemChanged, [=](QTreeWidgetItem *current, QTreeWidgetItem *) {
         auto name = current->text(0);
@@ -107,6 +114,8 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
         p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
         p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
+        p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
+        p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
         p->General.graphColors.background = ui->GeneralGraphBackground->getColor();
         p->General.graphColors.axis = ui->GeneralGraphAxis->getColor();
         p->General.graphColors.divisions = ui->GeneralGraphDivisions->getColor();
@@ -147,6 +156,8 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteBothPorts);
     ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
+    ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
+    ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
 
     ui->GeneralGraphBackground->setColor(p->General.graphColors.background);
     ui->GeneralGraphAxis->setColor(p->General.graphColors.axis);

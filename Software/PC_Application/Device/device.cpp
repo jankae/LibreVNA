@@ -111,21 +111,39 @@ uint8_t *USBInBuffer::getBuffer() const
     return buffer;
 }
 
-static Protocol::DeviceLimits limits = {
-    .minFreq = 0,
-    .maxFreq = 6000000000,
-    .minIFBW = 10,
-    .maxIFBW = 50000,
-    .maxPoints = 4501,
-    .cdbm_min = -4000,
-    .cdbm_max = 0,
-    .minRBW = 10,
-    .maxRBW = 100000,
+static constexpr Protocol::DeviceInfo defaultInfo = {
+    .ProtocolVersion = Protocol::Version,
+    .FW_major = 0,
+    .FW_minor = 0,
+    .FW_patch = 0,
+    .HW_Revision = '0',
+    .extRefAvailable = 0,
+    .extRefInUse = 0,
+    .FPGA_configured = 0,
+    .source_locked = 0,
+    .LO1_locked = 0,
+    .ADC_overload = 0,
+    .temp_source = 0,
+    .temp_LO1 = 0,
+    .temp_MCU = 0,
+    .limits_minFreq = 0,
+    .limits_maxFreq = 6000000000,
+    .limits_minIFBW = 10,
+    .limits_maxIFBW = 50000,
+    .limits_maxPoints = 4501,
+    .limits_cdbm_min = -4000,
+    .limits_cdbm_max = 0,
+    .limits_minRBW = 15,
+    .limits_maxRBW = 100000,
 };
+
+Protocol::DeviceInfo Device::lastInfo = defaultInfo;
 
 Device::Device(QString serial)
 {
     qDebug() << "Starting device connection...";
+
+    lastInfo = defaultInfo;
 
     m_handle = nullptr;
     lastInfoValid = false;
@@ -182,8 +200,8 @@ Device::Device(QString serial)
     connect(this, &Device::receivedAnswer, this, &Device::transmissionFinished, Qt::QueuedConnection);
     transmissionTimer.setSingleShot(true);
     transmissionActive = false;
-    // got a new connection, request limits
-    SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceLimits);
+    // got a new connection, request info
+    SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
 }
 
 Device::~Device()
@@ -282,11 +300,6 @@ std::set<QString> Device::GetDevices()
     return serials;
 }
 
-Protocol::DeviceLimits Device::Limits()
-{
-    return limits;
-}
-
 void Device::USBHandleThread()
 {
     qInfo() << "Receive thread started" << flush;
@@ -366,7 +379,7 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
     libusb_free_device_list(devList, 1);
 }
 
-Protocol::DeviceInfo Device::getLastInfo() const
+const Protocol::DeviceInfo &Device::Info()
 {
     return lastInfo;
 }
@@ -379,8 +392,8 @@ QString Device::getLastDeviceInfoString()
     } else {
         ret.append("HW Rev.");
         ret.append(lastInfo.HW_Revision);
-        ret.append(" FW "+QString::number(lastInfo.FW_major)+"."+QString::number(lastInfo.FW_minor).rightJustified(2, '0'));
-        ret.append(" Temps: "+QString::number(lastInfo.temperatures.source)+"°C/"+QString::number(lastInfo.temperatures.LO1)+"°C/"+QString::number(lastInfo.temperatures.MCU)+"°C");
+        ret.append(" FW "+QString::number(lastInfo.FW_major)+"."+QString::number(lastInfo.FW_minor)+"."+QString::number(lastInfo.FW_patch));
+        ret.append(" Temps: "+QString::number(lastInfo.temp_source)+"°C/"+QString::number(lastInfo.temp_LO1)+"°C/"+QString::number(lastInfo.temp_MCU)+"°C");
         ret.append(" Reference:");
         if(lastInfo.extRefInUse) {
             ret.append("External");
@@ -412,7 +425,13 @@ void Device::ReceivedData()
             emit SpectrumResultReceived(packet.spectrumResult);
             break;
         case Protocol::PacketType::DeviceInfo:
-            lastInfo = packet.info;
+            if(packet.info.ProtocolVersion != Protocol::Version) {
+                if(!lastInfoValid) {
+                emit NeedsFirmwareUpdate(packet.info.ProtocolVersion, Protocol::Version);
+                }
+            } else {
+                lastInfo = packet.info;
+            }
             lastInfoValid = true;
             emit DeviceInfoUpdated();
             break;
@@ -424,10 +443,7 @@ void Device::ReceivedData()
             emit NackReceived();
             emit receivedAnswer(TransmissionResult::Nack);
             break;
-        case Protocol::PacketType::DeviceLimits:
-            limits = packet.limits;
-            break;
-        default:
+       default:
             break;
         }
     } while (handled_len > 0);

@@ -217,7 +217,11 @@ VNA::VNA(AppWindow *window)
     points->setSingleStep(100);
     points->setToolTip("Points/sweep");
     connect(points, qOverload<int>(&QSpinBox::valueChanged), this, &VNA::SetPoints);
-    connect(this, &VNA::pointsChanged, points, &QSpinBox::setValue);
+    connect(this, &VNA::pointsChanged, [=](int p) {
+        points->blockSignals(true);
+        points->setValue(p);
+        points->blockSignals(false);
+    });
     tb_acq->addWidget(new QLabel("Points:"));
     tb_acq->addWidget(points);
 
@@ -499,8 +503,8 @@ void VNA::SetSpan(double span)
 
 void VNA::SetFullSpan()
 {
-    settings.f_start = Device::Limits().minFreq;
-    settings.f_stop = Device::Limits().maxFreq;
+    settings.f_start = Device::Info().limits_minFreq;
+    settings.f_stop = Device::Info().limits_maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -528,10 +532,10 @@ void VNA::SpanZoomOut()
 
 void VNA::SetSourceLevel(double level)
 {
-    if(level > Device::Limits().cdbm_max / 100.0) {
-        level = Device::Limits().cdbm_max / 100.0;
-    } else if(level < Device::Limits().cdbm_min / 100.0) {
-        level = Device::Limits().cdbm_min / 100.0;
+    if(level > Device::Info().limits_cdbm_max / 100.0) {
+        level = Device::Info().limits_cdbm_max / 100.0;
+    } else if(level < Device::Info().limits_cdbm_min / 100.0) {
+        level = Device::Info().limits_cdbm_min / 100.0;
     }
     emit sourceLevelChanged(level);
     settings.cdbm_excitation = level * 100;
@@ -540,10 +544,10 @@ void VNA::SetSourceLevel(double level)
 
 void VNA::SetPoints(unsigned int points)
 {
-    if (points < 2) {
+    if(points > Device::Info().limits_maxPoints) {
+        points = Device::Info().limits_maxPoints;
+    } else if (points < 2) {
         points = 2;
-    } else if(points > Device::Limits().maxPoints) {
-        points = Device::Limits().maxPoints;
     }
     emit pointsChanged(points);
     settings.points = points;
@@ -552,10 +556,10 @@ void VNA::SetPoints(unsigned int points)
 
 void VNA::SetIFBandwidth(double bandwidth)
 {
-    if(bandwidth > Device::Limits().maxIFBW) {
-        bandwidth = Device::Limits().maxIFBW;
-    } else if(bandwidth < Device::Limits().minIFBW) {
-        bandwidth = Device::Limits().minIFBW;
+    if(bandwidth > Device::Info().limits_maxIFBW) {
+        bandwidth = Device::Info().limits_maxIFBW;
+    } else if(bandwidth < Device::Info().limits_minIFBW) {
+        bandwidth = Device::Info().limits_minIFBW;
     }
     settings.if_bandwidth = bandwidth;
     emit IFBandwidthChanged(bandwidth);
@@ -651,14 +655,14 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
 
 void VNA::ConstrainAndUpdateFrequencies()
 {
-    if(settings.f_stop > Device::Limits().maxFreq) {
-        settings.f_stop = Device::Limits().maxFreq;
+    if(settings.f_stop > Device::Info().limits_maxFreq) {
+        settings.f_stop = Device::Info().limits_maxFreq;
     }
     if(settings.f_start > settings.f_stop) {
         settings.f_start = settings.f_stop;
     }
-    if(settings.f_start < Device::Limits().minFreq) {
-        settings.f_start = Device::Limits().minFreq;
+    if(settings.f_start < Device::Info().limits_minFreq) {
+        settings.f_start = Device::Info().limits_minFreq;
     }
     emit startFreqChanged(settings.f_start);
     emit stopFreqChanged(settings.f_stop);

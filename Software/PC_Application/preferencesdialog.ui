@@ -73,7 +73,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -454,23 +454,58 @@
        <widget class="QWidget" name="Acquisition">
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
-          <widget class="QCheckBox" name="AcquisitionAlwaysExciteBoth">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If only S11/S21 or S22/S12 are enabled, faster sweeps are possible by only exciting one port. Checking this option forces the device to always excite both ports even when the measurements from one port will not be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <widget class="QGroupBox" name="groupBox_6">
+           <property name="title">
+            <string>Vector Network Analyzer</string>
            </property>
-           <property name="text">
-            <string>Always perform full 2-port measurement</string>
-           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QCheckBox" name="AcquisitionAlwaysExciteBoth">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If only S11/S21 or S22/S12 are enabled, faster sweeps are possible by only exciting one port. Checking this option forces the device to always excite both ports even when the measurements from one port will not be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Always perform full 2-port measurement</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="AcquisitionSuppressPeaks">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Due to limited fractional divider settings, the source and 1.LO PLLs are not able to reach every frequency exactly. At some specific frequencies this causes the final IF to shift. At these frequencies there will be a positive or negative peak in the trace measurement that is not actually there.&lt;br/&gt;&lt;br/&gt;Checking this option shifts the 2.LO for points where this could be an issue. This will remove the peaks but slows down the sweep slightly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Suppress invalid peaks</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="AcquisitionSuppressPeaks">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Due to limited fractional divider settings, the source and 1.LO PLLs are not able to reach every frequency exactly. At some specific frequencies this causes the final IF to shift. At these frequencies there will be a positive or negative peak in the trace measurement that is not actually there.&lt;br/&gt;&lt;br/&gt;Checking this option shifts the 2.LO for points where this could be an issue. This will remove the peaks but slows down the sweep slightly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <widget class="QGroupBox" name="groupBox_7">
+           <property name="title">
+            <string>Spectrum Analyzer</string>
            </property>
-           <property name="text">
-            <string>Suppress invalid peaks</string>
-           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <layout class="QFormLayout" name="formLayout_5">
+              <item row="0" column="0">
+               <widget class="QCheckBox" name="AcquisitionUseDFT">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Normally, the spectrum analyzer mode tunes the LO for each point and measures the final IF only at one frequency. When this option is enabled, a DFT of the final IF is calculated instead which covers multiple frequencies with one measurement.&lt;/p&gt;&lt;p&gt;This can speed up the measurement at low RBWs significantly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Use DFT when RBW is below</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="SIUnitEdit" name="AcquisitionDFTlimitRBW"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>

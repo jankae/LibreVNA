@@ -65,12 +65,11 @@ public:
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
     bool SendCommandWithoutPayload(Protocol::PacketType type);
     QString serial() const;
-    Protocol::DeviceInfo getLastInfo() const;
+    static const Protocol::DeviceInfo& Info();
     QString getLastDeviceInfoString();
 
     // Returns serial numbers of all connected devices
     static std::set<QString> GetDevices();
-    static Protocol::DeviceLimits Limits();
 signals:
     void DatapointReceived(Protocol::Datapoint);
     void ManualStatusReceived(Protocol::ManualStatus);
@@ -80,6 +79,7 @@ signals:
     void AckReceived();
     void NackReceived();
     void LogLineReceived(QString line);
+    void NeedsFirmwareUpdate(int usedProtocol, int requiredProtocol);
 private slots:
     void ReceivedData();
     void ReceivedLog();
@@ -119,7 +119,7 @@ private:
     QString m_serial;
     bool m_connected;
     std::thread *m_receiveThread;
-    Protocol::DeviceInfo lastInfo;
+    static Protocol::DeviceInfo lastInfo;
     bool lastInfoValid;
 };
 

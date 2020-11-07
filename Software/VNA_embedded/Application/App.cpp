@@ -155,10 +155,10 @@ void App_Start() {
 					SA::Setup(recv_packet.spectrumSettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-				case Protocol::PacketType::RequestDeviceLimits:
+				case Protocol::PacketType::RequestDeviceInfo:
 					Protocol::PacketInfo p;
-					p.type = Protocol::PacketType::DeviceLimits;
-					p.limits = HW::Limits;
+					p.type = Protocol::PacketType::DeviceInfo;
+					HW::fillDeviceInfo(&p.info);
 					Communication::Send(p);
 					break;
 #ifdef HAS_FLASH

@@ -23,7 +23,6 @@ static Protocol::PacketInfo p;
 static bool active = false;
 static uint32_t lastLO2;
 static uint32_t actualRBW;
-static bool usingDFT;
 static uint16_t DFTpoints;
 static bool negativeDFT; // if true, a positive frequency shift at input results in a negative shift at the 2.IF. Handle DFT accordingly
 
@@ -106,7 +105,7 @@ static void StartNextSample() {
 		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		lastLO2 = LO2freq;
 	}
-	if (usingDFT) {
+	if (s.UseDFT) {
 		uint32_t spacing = (s.f_stop - s.f_start) / (points - 1);
 		uint32_t start = HW::IF2;
 		if(negativeDFT) {
@@ -166,11 +165,16 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 
-	// automatically select DFT mode for lower RBWs
-	usingDFT = actualRBW <= 1000;
-
-	if (usingDFT) {
-		DFTpoints = FPGA::DFTbins; // use full DFT in FPGA
+	if (s.UseDFT) {
+		uint32_t spacing = (s.f_stop - s.f_start) / (points - 1);
+		// The DFT can only look at a small bandwidth otherwise the passband of the final ADC filter is visible in the data
+		// Limit to about 30kHz
+		uint32_t maxDFTpoints = 30000 / spacing;
+		// Limit to actual supported number of bins
+		if(maxDFTpoints > FPGA::DFTbins) {
+			maxDFTpoints = FPGA::DFTbins;
+		}
+		DFTpoints = maxDFTpoints;
 		FPGA::DisableInterrupt(FPGA::Interrupt::NewData);
 	} else {
 		DFTpoints = 1; // can only measure one point at a time
@@ -191,7 +195,7 @@ bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 
 	for(uint16_t i=0;i<DFTpoints;i++) {
 		float port1, port2;
-		if (usingDFT) {
+		if (s.UseDFT) {
 			// use DFT result
 			auto dft = FPGA::ReadDFTResult();
 			port1 = dft.P1;
@@ -217,7 +221,7 @@ bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 		}
 	}
 
-	if (usingDFT) {
+	if (s.UseDFT) {
 		FPGA::StopDFT();
 		// will be started again in StartNextSample
 	}
