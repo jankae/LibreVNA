@@ -70,11 +70,13 @@ private:
         Maximum,
         Minimum,
         Delta,
+        Noise,
         PeakTable,
         Lowpass,
         Highpass,
         Bandpass,
         TOI,
+        PhaseNoise,
     };
     std::set<Type> getSupportedTypes();
     static QString typeToString(Type t) {
@@ -83,11 +85,13 @@ private:
         case Type::Maximum: return "Maximum";
         case Type::Minimum: return "Minimum";
         case Type::Delta: return "Delta";
+        case Type::Noise: return "Noise";
         case Type::PeakTable: return "Peak Table";
         case Type::Lowpass: return "Lowpass";
         case Type::Highpass: return "Highpass";
         case Type::Bandpass: return "Bandpass";
         case Type::TOI: return "TOI/IP3";
+        case Type::PhaseNoise: return "Phase noise";
         default: return QString();
         }
     }
@@ -111,7 +115,11 @@ private:
     TraceMarker *delta;
     std::vector<TraceMarker*> helperMarkers;
     TraceMarker *parent;
-    double cutoffAmplitude;
+    union {
+        double cutoffAmplitude;
+        double peakThreshold;
+        double offset;
+    };
 };
 
 #endif // TRACEMARKER_H

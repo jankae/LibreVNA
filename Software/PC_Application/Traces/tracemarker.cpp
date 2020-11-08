@@ -88,6 +88,8 @@ QString TraceMarker::readableData()
             return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
         }
         break;
+    case Type::Noise:
+        return Unit::ToString(parentTrace->getNoise(frequency), "dbm/Hz", " ", 3);
     case Type::PeakTable:
         return "Found " + QString::number(helperMarkers.size()) + " peaks";
     case Type::Lowpass:
@@ -135,6 +137,11 @@ QString TraceMarker::readableData()
         return "Fundamental: " + Unit::ToString(avgFundamental, "dbm", " ", 3) + ", distortion: " + Unit::ToString(avgDistortion, "dbm", " ", 3) + ", TOI: "+Unit::ToString(TOI, "dbm", " ", 3);
     }
         break;
+    case Type::PhaseNoise: {
+        auto carrier = toDecibel();
+        auto phasenoise = parentTrace->getNoise(helperMarkers[0]->frequency) - carrier;
+        return Unit::ToString(phasenoise, "dbc/Hz", " ", 3)  +"@" + Unit::ToString(offset, "Hz", " kM", 4) + " offset (" + Unit::ToString(frequency, "Hz", " kMG", 6) + " carrier)";
+    }
     default:
         return "Unknown marker type";
     }
@@ -147,14 +154,18 @@ QString TraceMarker::readableSettings()
     case Type::Maximum:
     case Type::Minimum:
     case Type::Delta:
+    case Type::Noise:
         return Unit::ToString(frequency, "Hz", " kMG", 6);
     case Type::Lowpass:
     case Type::Highpass:
     case Type::Bandpass:
-    case Type::PeakTable:
         return Unit::ToString(cutoffAmplitude, "db", " ", 3);
+    case Type::PeakTable:
+        return Unit::ToString(peakThreshold, "db", " ", 3);
     case Type::TOI:
         return "none";
+    case Type::PhaseNoise:
+        return Unit::ToString(offset, "Hz", " kM", 4);
     default:
         return "Unhandled case";
     }
@@ -239,7 +250,9 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
             case Trace::LiveParameter::Port1:
             case Trace::LiveParameter::Port2:
                 // special SA marker types
+                supported.insert(Type::Noise);
                 supported.insert(Type::TOI);
+                supported.insert(Type::PhaseNoise);
                 break;
             }
         }
@@ -293,6 +306,7 @@ void TraceMarker::setType(TraceMarker::Type t)
     using helper_descr = struct {
         QString suffix;
         QString description;
+        Type type;
     };
     vector<helper_descr> required_helpers;
     switch(type) {
@@ -320,13 +334,17 @@ void TraceMarker::setType(TraceMarker::Type t)
         break;
     case Type::Lowpass:
     case Type::Highpass:
-        required_helpers = {{"c", "cutoff"}};
+        required_helpers = {{"c", "cutoff", Type::Manual}};
         break;
     case Type::Bandpass:
-        required_helpers = {{"l", "lower cutoff"}, {"h", "higher cutoff"} ,{"c", "center"}};
+        required_helpers = {{"l", "lower cutoff", Type::Manual}, {"h", "higher cutoff", Type::Manual} ,{"c", "center", Type::Manual}};
         break;
     case Type::TOI:
-        required_helpers = {{"p", "first peak"}, {"p", "second peak"}, {"l", "left intermodulation"}, {"r", "right intermodulation"}};
+        required_helpers = {{"p", "first peak", Type::Manual}, {"p", "second peak", Type::Manual}, {"l", "left intermodulation", Type::Manual}, {"r", "right intermodulation", Type::Manual}};
+        break;
+    case Type::PhaseNoise:
+        required_helpers = {{"o", "Offset", Type::Noise}};
+        break;
     default:
         break;
     }
@@ -335,6 +353,7 @@ void TraceMarker::setType(TraceMarker::Type t)
         auto helper = new TraceMarker(model, number, this, h.description);
         helper->suffix = h.suffix;
         helper->assignTrace(parentTrace);
+        helper->setType(h.type);
         helperMarkers.push_back(helper);
     }
     updateSymbol();
@@ -354,6 +373,8 @@ bool TraceMarker::isVisible()
     case Type::Delta:
     case Type::Maximum:
     case Type::Minimum:
+    case Type::Noise:
+    case Type::PhaseNoise:
         return true;
     default:
         return false;
@@ -475,6 +496,8 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
     case Type::Maximum:
     case Type::Minimum:
     case Type::Delta:
+    case Type::Noise:
+    case Type::PhaseNoise:
     default:
         return new SIUnitEdit("Hz", " kMG");
     case Type::Lowpass:
@@ -493,6 +516,7 @@ void TraceMarker::adjustSettings(double value)
     case Type::Maximum:
     case Type::Minimum:
     case Type::Delta:
+    case Type::Noise:
     default:
         setFrequency(value);
         /* no break */
@@ -502,9 +526,14 @@ void TraceMarker::adjustSettings(double value)
         if(value > 0.0) {
             value = -value;
         }
-        /* no break */
-    case Type::PeakTable:
         cutoffAmplitude = value;
+        break;
+    case Type::PeakTable:
+        peakThreshold = value;
+        break;
+    case Type::PhaseNoise:
+        offset = value;
+        break;
     }
     update();
 }
@@ -518,6 +547,7 @@ void TraceMarker::update()
     switch(type) {
     case Type::Manual:
     case Type::Delta:
+    case Type::Noise:
         // nothing to do
         break;
     case Type::Maximum:
@@ -528,7 +558,7 @@ void TraceMarker::update()
         break;
     case Type::PeakTable: {
         deleteHelperMarkers();
-        auto peaks = parentTrace->findPeakFrequencies(100, cutoffAmplitude);
+        auto peaks = parentTrace->findPeakFrequencies(100, peakThreshold);
         char suffix = 'a';
         for(auto p : peaks) {
             auto helper = new TraceMarker(model, number, this);
@@ -632,6 +662,10 @@ void TraceMarker::update()
         helperMarkers[3]->setFrequency(peaks[1] + freqDiff);
     }
         break;
+    case Type::PhaseNoise:
+        setFrequency(parentTrace->findExtremumFreq(true));
+        helperMarkers[0]->setFrequency(frequency + offset);
+        break;
     }
     emit dataChanged(this);
 }
@@ -660,6 +694,7 @@ bool TraceMarker::isMovable()
     switch(type) {
     case Type::Manual:
     case Type::Delta:
+    case Type::Noise:
         return true;
     default:
         return false;

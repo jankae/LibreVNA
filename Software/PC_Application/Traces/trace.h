@@ -7,6 +7,7 @@
 #include <QColor>
 #include <set>
 #include "touchstone.h"
+#include "Device/device.h"
 
 class TraceMarker;
 
@@ -49,7 +50,9 @@ public:
 
 
     void clear();
-    void addData(Data d);
+    void addData(const Data& d);
+    void addData(const Data& d, const Protocol::SweepSettings& s);
+    void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
     void setName(QString name);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter, QString filename = QString());
     void fromLivedata(LivedataType type, LiveParameter param);
@@ -79,6 +82,8 @@ public:
     QString getTouchstoneFilename() const;
     unsigned int getTouchstoneParameter() const;
     std::complex<double> getData(double frequency);
+    /* Returns the noise in dbm/Hz for spectrum analyzer measurements. May return NaN if calculation not possible */
+    double getNoise(double frequency);
     int index(double frequency);
     std::set<TraceMarker *> getMarkers() const;
     void setCalibration(bool value);
@@ -131,6 +136,13 @@ private:
     QString touchstoneFilename;
     unsigned int touchstoneParameter;
     std::set<TraceMarker*> markers;
+    struct {
+        union {
+            Protocol::SweepSettings VNA;
+            Protocol::SpectrumAnalyzerSettings SA;
+        };
+        bool valid;
+    } settings;
 };
 
 #endif // TRACE_H

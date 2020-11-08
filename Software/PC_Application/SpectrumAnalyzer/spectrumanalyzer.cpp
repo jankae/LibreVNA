@@ -235,7 +235,7 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
     d.port1 /= 126500000.0;
     d.port2 /= 126500000.0;
     d = average.process(d);
-    traceModel.addSAData(d);
+    traceModel.addSAData(d, settings);
     emit dataChanged();
     if(d.pointNum == settings.pointNum - 1) {
         UpdateAverageCount();

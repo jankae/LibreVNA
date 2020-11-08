@@ -36,8 +36,8 @@ signals:
 
 public slots:
     void clearVNAData();
-    void addVNAData(Protocol::Datapoint d);
-    void addSAData(Protocol::SpectrumAnalyzerResult d);
+    void addVNAData(const Protocol::Datapoint& d, const Protocol::SweepSettings& settings);
+    void addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings);
 
 private:
     std::vector<Trace*> traces;

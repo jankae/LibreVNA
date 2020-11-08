@@ -427,7 +427,7 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     }
     portExtension.applyToMeasurement(d);
 
-    traceModel.addVNAData(d);
+    traceModel.addVNAData(d, settings);
     emit dataChanged();
     if(d.pointNum == settings.points - 1) {
         UpdateAverageCount();

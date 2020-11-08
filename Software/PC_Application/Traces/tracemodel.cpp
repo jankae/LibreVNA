@@ -141,14 +141,14 @@ bool TraceModel::PortExcitationRequired(int port)
 void TraceModel::clearVNAData()
 {
     for(auto t : traces) {
-        if (!t->isTouchstone()) {
+        if (t->isLive()) {
             // this trace is fed from live data
             t->clear();
         }
     }
 }
 
-void TraceModel::addVNAData(Protocol::Datapoint d)
+void TraceModel::addVNAData(const Protocol::Datapoint &d, const Protocol::SweepSettings& settings)
 {
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
@@ -163,12 +163,12 @@ void TraceModel::addVNAData(Protocol::Datapoint d)
                 // not a VNA trace, skip
                 continue;
             }
-            t->addData(td);
+            t->addData(td, settings);
         }
     }
 }
 
-void TraceModel::addSAData(Protocol::SpectrumAnalyzerResult d)
+void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings)
 {
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
@@ -181,7 +181,7 @@ void TraceModel::addSAData(Protocol::SpectrumAnalyzerResult d)
                 // not a SA trace, skip
                 continue;
             }
-            t->addData(td);
+            t->addData(td, settings);
         }
     }
 }

@@ -29,11 +29,12 @@ void Trace::clear() {
         return;
     }
     _data.clear();
+    settings.valid = false;
     emit cleared(this);
     emit dataChanged();
 }
 
-void Trace::addData(Trace::Data d) {
+void Trace::addData(const Trace::Data& d) {
     // add or replace data in vector while keeping it sorted with increasing frequency
     auto lower = lower_bound(_data.begin(), _data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
         return lhs.frequency < rhs.frequency;
@@ -73,6 +74,20 @@ void Trace::addData(Trace::Data d) {
             updateTimeDomainData();
         }
     }
+}
+
+void Trace::addData(const Trace::Data &d, const Protocol::SweepSettings &s)
+{
+    settings.VNA = s;
+    settings.valid = true;
+    addData(d);
+}
+
+void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettings &s)
+{
+    settings.SA = s;
+    settings.valid = true;
+    addData(d);
 }
 
 void Trace::setName(QString name) {
@@ -386,6 +401,19 @@ std::complex<double> Trace::getData(double frequency)
         double alpha = (frequency - low.frequency) / (high.frequency - low.frequency);
         return low.S * (1 - alpha) + high.S * alpha;
     }
+}
+
+double Trace::getNoise(double frequency)
+{
+    if(!isLive() || !settings.valid || (_liveParam != LiveParameter::Port1 && _liveParam != LiveParameter::Port2)) {
+        // data not suitable for noise calculation
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    // convert to dbm
+    auto dbm = 20*log10(abs(getData(frequency)));
+    // convert to 1Hz bandwidth
+    dbm -= 10*log10(settings.SA.RBW);
+    return dbm;
 }
 
 int Trace::index(double frequency)
