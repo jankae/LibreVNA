@@ -4,6 +4,7 @@ HEADERS += \
     Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
+    Calibration/json.hpp \
     Calibration/measurementmodel.h \
     CustomWidgets/colorpickerbutton.h \
     CustomWidgets/siunitedit.h \
@@ -33,6 +34,7 @@ HEADERS += \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
     Traces/xyplotaxisdialog.h \
+    Util/qpointervariant.h \
     VNA/portextension.h \
     VNA/vna.h \
     appwindow.h \
