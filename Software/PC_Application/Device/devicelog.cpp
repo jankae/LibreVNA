@@ -21,8 +21,9 @@ DeviceLog::DeviceLog(QWidget *parent) :
             ui->numLines->setEnabled(false);
         }
     });
+    ui->text->setMaximumBlockCount(ui->numLines->value());
     connect(ui->numLines, qOverload<int>(&QSpinBox::valueChanged), [=](int lines) {
-        ui->text->setMaximumBlockCount(lines    );
+        ui->text->setMaximumBlockCount(lines);
     });
 }
 
