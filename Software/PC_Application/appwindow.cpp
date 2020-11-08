@@ -323,10 +323,10 @@ void AppWindow::StartFirmwareUpdateDialog()
 void AppWindow::DeviceNeedsUpdate(int reported, int expected)
 {
     auto ret = QMessageBox::warning(this, "Warning",
-                                "The device reports are different protocol"
+                                "The device reports a different protocol"
                                 "version (" + QString::number(reported) + ") than expected (" + QString::number(expected) + ").\n"
-                                "A firmware update is strongly suggested. Do you want to update now?",
-                                   QMessageBox::Yes | QMessageBox::No);
+                                "A firmware update is strongly recommended. Do you want to update now?",
+                                   QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     if (ret == QMessageBox::Yes) {
         StartFirmwareUpdateDialog();
     }
