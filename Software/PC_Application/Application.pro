@@ -128,3 +128,4 @@ RESOURCES += \
 CONFIG += c++14
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
+DEFINES += FW_MAJOR=0 FW_MINOR=1 FW_PATCH=0 FW_SUFFIX=\\"\"-alpha.2\\"\"

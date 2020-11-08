@@ -104,7 +104,9 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionAbout, &QAction::triggered, [=](){
         auto commit = QString(GITHASH);
         commit.truncate(7);
-        QMessageBox::about(this, "About", "More information: github.com/jankae/VNA2\n\nVersion: " + commit);
+        QMessageBox::about(this, "About", "More information: github.com/jankae/VNA2\n"
+                           "\nVersion: " + QString::number(FW_MAJOR) + "." + QString::number(FW_MINOR)
+                           + "." + QString::number(FW_PATCH) + FW_SUFFIX + " ("+ commit+")");
     });
 
     setWindowTitle("VNA");
