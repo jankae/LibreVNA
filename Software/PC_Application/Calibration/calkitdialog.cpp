@@ -38,6 +38,15 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     ui->load_touchstone->setPorts(1);
     ui->through_touchstone->setPorts(2);
 
+    ui->short_Z0->setUnit("Ω");
+    ui->open_Z0->setUnit("Ω");
+    ui->load_Z0->setUnit("Ω");
+    ui->load_parC->setUnit("F");
+    ui->load_parC->setPrefixes("fpnum ");
+    ui->load_serL->setUnit("H");
+    ui->load_serL->setPrefixes("fpnum ");
+    ui->through_Z0->setUnit("Ω");
+
     ui->TRL_line_max->setUnit("Hz");
     ui->TRL_line_max->setPrecision(4);
     ui->TRL_line_max->setPrefixes(" kMG");
@@ -143,7 +152,7 @@ void CalkitDialog::parseEntries()
     ownKit.SOLT.Through.useMeasurements = ui->through_measurement->isChecked();
 
     // coefficients
-    ownKit.SOLT.Open.Z0 = ui->open_Z0->text().toDouble();
+    ownKit.SOLT.Open.Z0 = ui->open_Z0->value();
     ownKit.SOLT.Open.delay = ui->open_delay->text().toDouble();
     ownKit.SOLT.Open.loss = ui->open_loss->text().toDouble();
     ownKit.SOLT.Open.C0 = ui->open_C0->text().toDouble();
@@ -151,7 +160,7 @@ void CalkitDialog::parseEntries()
     ownKit.SOLT.Open.C2 = ui->open_C2->text().toDouble();
     ownKit.SOLT.Open.C3 = ui->open_C3->text().toDouble();
 
-    ownKit.SOLT.Short.Z0 = ui->short_Z0->text().toDouble();
+    ownKit.SOLT.Short.Z0 = ui->short_Z0->value();
     ownKit.SOLT.Short.delay = ui->short_delay->text().toDouble();
     ownKit.SOLT.Short.loss = ui->short_loss->text().toDouble();
     ownKit.SOLT.Short.L0 = ui->short_L0->text().toDouble();
@@ -159,9 +168,12 @@ void CalkitDialog::parseEntries()
     ownKit.SOLT.Short.L2 = ui->short_L2->text().toDouble();
     ownKit.SOLT.Short.L3 = ui->short_L3->text().toDouble();
 
-    ownKit.SOLT.Load.Z0 = ui->load_Z0->text().toDouble();
+    ownKit.SOLT.Load.Z0 = ui->load_Z0->value();
+    ownKit.SOLT.Load.delay = ui->load_delay->text().toDouble();
+    ownKit.SOLT.Load.Cparallel = ui->load_parC->value();
+    ownKit.SOLT.Load.Lseries = ui->load_serL->value();
 
-    ownKit.SOLT.Through.Z0 = ui->through_Z0->text().toDouble();
+    ownKit.SOLT.Through.Z0 = ui->through_Z0->value();
     ownKit.SOLT.Through.delay = ui->through_delay->text().toDouble();
     ownKit.SOLT.Through.loss = ui->through_loss->text().toDouble();
 
@@ -190,7 +202,7 @@ void CalkitDialog::parseEntries()
 void CalkitDialog::updateEntries()
 {
     // Coefficients
-    ui->open_Z0->setText(QString::number(ownKit.SOLT.Open.Z0));
+    ui->open_Z0->setValue(ownKit.SOLT.Open.Z0);
     ui->open_delay->setText(QString::number(ownKit.SOLT.Open.delay));
     ui->open_loss->setText(QString::number(ownKit.SOLT.Open.loss));
     ui->open_C0->setText(QString::number(ownKit.SOLT.Open.C0));
@@ -198,7 +210,7 @@ void CalkitDialog::updateEntries()
     ui->open_C2->setText(QString::number(ownKit.SOLT.Open.C2));
     ui->open_C3->setText(QString::number(ownKit.SOLT.Open.C3));
 
-    ui->short_Z0->setText(QString::number(ownKit.SOLT.Short.Z0));
+    ui->short_Z0->setValue(ownKit.SOLT.Short.Z0);
     ui->short_delay->setText(QString::number(ownKit.SOLT.Short.delay));
     ui->short_loss->setText(QString::number(ownKit.SOLT.Short.loss));
     ui->short_L0->setText(QString::number(ownKit.SOLT.Short.L0));
@@ -206,7 +218,10 @@ void CalkitDialog::updateEntries()
     ui->short_L2->setText(QString::number(ownKit.SOLT.Short.L2));
     ui->short_L3->setText(QString::number(ownKit.SOLT.Short.L3));
 
-    ui->load_Z0->setText(QString::number(ownKit.SOLT.Load.Z0));
+    ui->load_Z0->setValue(ownKit.SOLT.Load.Z0);
+    ui->load_delay->setText(QString::number(ownKit.SOLT.Load.delay));
+    ui->load_parC->setValue(ownKit.SOLT.Load.Cparallel);
+    ui->load_serL->setValue(ownKit.SOLT.Load.Lseries);
 
     ui->through_Z0->setText(QString::number(ownKit.SOLT.Through.Z0));
     ui->through_delay->setText(QString::number(ownKit.SOLT.Through.delay));

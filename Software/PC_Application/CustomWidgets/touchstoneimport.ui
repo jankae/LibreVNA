@@ -279,7 +279,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lowerFreq">
+      <widget class="SIUnitEdit" name="lowerFreq">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -293,7 +293,7 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="upperFreq">
+      <widget class="SIUnitEdit" name="upperFreq">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -303,10 +303,17 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="port2Group"/>
   <buttongroup name="port1Group"/>
+  <buttongroup name="port2Group"/>
  </buttongroups>
 </ui>

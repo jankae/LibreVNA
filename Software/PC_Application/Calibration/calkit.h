@@ -12,11 +12,11 @@ class Calkit
     friend class CalkitDialog;
 public:
     Calkit();
-    Calkit(const Calkit& c);
     Calkit& operator=(const Calkit& other)
     {
         this->SOLT = other.SOLT;
         this->TRL = other.TRL;
+        this->startDialogWithSOLT = other.startDialogWithSOLT;
         return *this;
     }
 
@@ -61,7 +61,7 @@ private:
             int Sparam;
         } Short;
         struct {
-            double Z0;
+            double Z0, delay, Cparallel, Lseries;
             QString file;
             bool useMeasurements;
             int Sparam;
@@ -94,7 +94,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<JSONDescription, 37> json_descr = {{
+    const std::array<JSONDescription, 40> json_descr = {{
         {&SOLT.Open.Z0, "SOLT/Open/Param/Z0", 50.0},
         {&SOLT.Open.delay, "SOLT/Open/Param/Delay", 0.0},
         {&SOLT.Open.loss, "SOLT/Open/Param/Loss", 0.0},
@@ -118,6 +118,9 @@ private:
         {&SOLT.Short.Sparam, "SOLT/Short/Measurements/Port", 0},
 
         {&SOLT.Load.Z0, "SOLT/Load/Param/Z0", 50.0},
+        {&SOLT.Load.delay, "SOLT/Load/Param/Delay", 0.0},
+        {&SOLT.Load.Cparallel, "SOLT/Load/Param/C", 0.0},
+        {&SOLT.Load.Lseries, "SOLT/Load/Param/L", 0.0},
         {&SOLT.Load.useMeasurements, "SOLT/Load/Measurements/Use", false},
         {&SOLT.Load.file, "SOLT/Load/Measurements/File", ""},
         {&SOLT.Load.Sparam, "SOLT/Load/Measurements/Port", 0},

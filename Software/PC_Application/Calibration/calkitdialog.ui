@@ -150,7 +150,7 @@
                 <widget class="QLineEdit" name="short_L3"/>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="short_Z0">
+                <widget class="SIUnitEdit" name="short_Z0">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -296,7 +296,7 @@
                 <widget class="QLineEdit" name="open_C3"/>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="open_Z0">
+                <widget class="SIUnitEdit" name="open_Z0">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -389,11 +389,41 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="load_Z0">
+                <widget class="SIUnitEdit" name="load_Z0">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                 </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_17">
+                 <property name="text">
+                  <string>Offset delay [ps]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="load_delay"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>Parallel C:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_26">
+                 <property name="text">
+                  <string>Series L:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="SIUnitEdit" name="load_parC"/>
+               </item>
+               <item row="3" column="1">
+                <widget class="SIUnitEdit" name="load_serL"/>
                </item>
               </layout>
              </item>
@@ -475,7 +505,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="through_Z0">
+                <widget class="SIUnitEdit" name="through_Z0">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -903,10 +933,10 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="ShortType"/>
-  <buttongroup name="LoadType"/>
-  <buttongroup name="TRL_Rtype"/>
-  <buttongroup name="OpenType"/>
   <buttongroup name="ThroughType"/>
+  <buttongroup name="TRL_Rtype"/>
+  <buttongroup name="ShortType"/>
+  <buttongroup name="OpenType"/>
+  <buttongroup name="LoadType"/>
  </buttongroups>
 </ui>

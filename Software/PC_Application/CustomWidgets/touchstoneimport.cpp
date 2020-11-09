@@ -13,6 +13,10 @@ TouchstoneImport::TouchstoneImport(QWidget *parent, int ports) :
     status(false)
 {
     ui->setupUi(this);
+    ui->lowerFreq->setUnit("Hz");
+    ui->lowerFreq->setPrefixes(" kMG");
+    ui->upperFreq->setUnit("Hz");
+    ui->upperFreq->setPrefixes(" kMG");
     connect(ui->browse, &QPushButton::clicked, this, &TouchstoneImport::evaluateFile);
     ui->port1Group->setId(ui->port1_1, 0);
     ui->port1Group->setId(ui->port1_2, 1);
@@ -143,8 +147,8 @@ void TouchstoneImport::evaluateFile()
             ui->port2_4->setEnabled(touchstone.ports() >= 4);
         }
         ui->points->setText(QString::number(touchstone.points()));
-        ui->lowerFreq->setText(QString::number(touchstone.minFreq()));
-        ui->upperFreq->setText(QString::number(touchstone.maxFreq()));
+        ui->lowerFreq->setValue(touchstone.minFreq());
+        ui->upperFreq->setValue(touchstone.maxFreq());
         if(ui->port1Group->checkedId() == -1 || !ui->port1Group->checkedButton()->isEnabled()) {
             // no or invalid S parameter selected
             ui->port1_1->setChecked(true);

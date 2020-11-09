@@ -24,13 +24,7 @@ Calkit::Calkit()
     }
 }
 
-Calkit::Calkit(const Calkit &c) :
-    // only copy standard definitions, leave cache state and json_descr pointers at default values
-    SOLT(c.SOLT),
-    TRL(c.TRL)
-{
 
-}
 #include <QDebug>
 void Calkit::toFile(std::string filename)
 {
@@ -195,7 +189,18 @@ class Calkit::SOLT Calkit::toSOLT(double frequency)
         ref.Load = ts_load->interpolate(frequency).S[0];
     } else {
         auto imp_load = complex<double>(SOLT.Load.Z0, 0);
+        // Add parallel capacitor to impedance
+        if(SOLT.Load.Cparallel > 0) {
+            auto imp_C = complex<double>(0, -1.0 / (frequency * 2 * M_PI * SOLT.Load.Cparallel));
+            imp_load = (imp_load * imp_C) / (imp_load + imp_C);
+        }
+        // add series inductor to impedance
+        auto imp_L = complex<double>(0, frequency * 2 * M_PI * SOLT.Load.Lseries);
+        imp_load += imp_L;
         ref.Load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
+        // apply phaseshift due to delay
+        double load_phaseshift = -2 * M_PI * frequency * 2 * SOLT.Load.delay * 1e-12;
+        ref.Load *= polar<double>(1.0, load_phaseshift);
     }
 
     if(SOLT.Open.useMeasurements) {
