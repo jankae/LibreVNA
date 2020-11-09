@@ -172,6 +172,12 @@ Calkit Calkit::fromFile(std::string filename)
 
     c.TransformPathsToAbsolute(QString::fromStdString(filename));
 
+    // set default values for non-editable items (for now)
+    c.TRL.Through.Z0 = 50.0;
+    c.SOLT.Short.Z0 = 50.0;
+    c.SOLT.Open.Z0 = 50.0;
+    c.SOLT.Through.Z0 = 50.0;
+
     return c;
 }
 
