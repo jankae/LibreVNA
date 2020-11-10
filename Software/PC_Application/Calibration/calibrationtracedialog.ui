@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1066</width>
-    <height>396</height>
+    <width>1079</width>
+    <height>578</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Calibration Traces</string>
+   <string>Calibration Measurements</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -62,28 +62,6 @@
          <property name="icon">
           <iconset theme="edit-delete" resource="../icons.qrc">
            <normaloff>:/icons/trash.png</normaloff>:/icons/trash.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="bOpen">
-         <property name="text">
-          <string>Open</string>
-         </property>
-         <property name="icon">
-          <iconset theme="document-open" resource="../icons.qrc">
-           <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="bSave">
-         <property name="text">
-          <string>Save</string>
-         </property>
-         <property name="icon">
-          <iconset theme="document-save" resource="../icons.qrc">
-           <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
          </property>
         </widget>
        </item>

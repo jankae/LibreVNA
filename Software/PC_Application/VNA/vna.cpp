@@ -41,6 +41,8 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
+#include <QErrorMessage>
+#include "CustomWidgets/informationbox.h"
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
@@ -89,11 +91,29 @@ VNA::VNA(AppWindow *window)
     auto calMenu = new QMenu("Calibration", window);
     window->menuBar()->insertMenu(window->getUi()->menuWindow->menuAction(), calMenu);
     actions.insert(calMenu->menuAction());
+    auto calLoad = calMenu->addAction("Load");
+    saveCal = calMenu->addAction("Save");
+    calMenu->addSeparator();
+    saveCal->setEnabled(false);
+
+    connect(calLoad, &QAction::triggered, [=](){
+       cal.openFromFile();
+       if(cal.getType() == Calibration::Type::None) {
+           DisableCalibration();
+       } else {
+            ApplyCalibration(cal.getType());
+        }
+    });
+
+    connect(saveCal, &QAction::triggered, [=](){
+       cal.saveToFile();
+    });
+
     auto calDisable = calMenu->addAction("Disabled");
     calDisable->setCheckable(true);
     calDisable->setChecked(true);
     calMenu->addSeparator();
-    auto calData = calMenu->addAction("Calibration Data");
+    auto calData = calMenu->addAction("Calibration Measurements");
     connect(calData, &QAction::triggered, [=](){
        StartCalibrationDialog();
     });
@@ -290,6 +310,7 @@ VNA::VNA(AppWindow *window)
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImport->setEnabled(false);
+        saveCal->setEnabled(false);
     });
     connect(calDisable, &QAction::triggered, this, &VNA::DisableCalibration);
     connect(this, &VNA::CalibrationApplied, [=](Calibration::Type applied){
@@ -305,6 +326,7 @@ VNA::VNA(AppWindow *window)
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImport->setEnabled(true);
+        saveCal->setEnabled(true);
     });
 
     tb_cal->addWidget(cbType);
@@ -383,9 +405,10 @@ void VNA::initializeDevice()
         auto filename = s.value(key).toString();
         qDebug() << "Attempting to load default calibration file \"" << filename << "\"";
         if(QFile::exists(filename)) {
-            cal.openFromFile(filename);
-            ApplyCalibration(cal.getType());
-            portExtension.setCalkit(&cal.getCalibrationKit());
+            if(cal.openFromFile(filename)) {
+                ApplyCalibration(cal.getType());
+                portExtension.setCalkit(&cal.getCalibrationKit());
+            }
         }
         removeDefaultCal->setEnabled(true);
     } else {
@@ -594,7 +617,6 @@ void VNA::DisableCalibration(bool force)
     if(calValid || force) {
         calValid = false;
         emit CalibrationDisabled();
-        average.reset(settings.points);
     }
 }
 
@@ -604,7 +626,6 @@ void VNA::ApplyCalibration(Calibration::Type type)
         try {
             if(cal.constructErrorTerms(type)) {
                 calValid = true;
-                average.reset(settings.points);
                 emit CalibrationApplied(type);
             }
         } catch (runtime_error e) {
@@ -613,7 +634,7 @@ void VNA::ApplyCalibration(Calibration::Type type)
         }
     } else {
         // Not all required traces available
-        QMessageBox::information(window, "Missing calibration traces", "Not all calibration traces for this type of calibration have been measured. The calibration can be enabled after the missing traces have been acquired.");
+        InformationBox::ShowMessage("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. The calibration can be enabled after the missing measurements have been acquired.", window);
         DisableCalibration(true);
         StartCalibrationDialog(type);
     }
@@ -708,5 +729,9 @@ void VNA::StartCalibrationDialog(Calibration::Type type)
     connect(traceDialog, &CalibrationTraceDialog::triggerMeasurement, this, &VNA::StartCalibrationMeasurement);
     connect(traceDialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
     connect(this, &VNA::CalibrationMeasurementComplete, traceDialog, &CalibrationTraceDialog::measurementComplete);
+    connect(traceDialog, &CalibrationTraceDialog::calibrationInvalidated, [=](){
+       DisableCalibration(true);
+       InformationBox::ShowMessage("Calibration disabled", "The currently active calibration is no longer supported by the available measurements and was disabled.");
+    });
     traceDialog->show();
 }

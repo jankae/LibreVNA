@@ -119,7 +119,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
         auto filename = QFileDialog::getOpenFileName(this, "Open calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.length() > 0) {
-            ownKit = Calkit::fromFile(filename.toStdString());
+            ownKit = Calkit::fromFile(filename);
             updateEntries();
         }
     });
@@ -127,14 +127,8 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
         auto filename = QFileDialog::getSaveFileName(this, "Save calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.length() > 0) {
-            // strip any potential file name extension and set default
-            auto dotPos = filename.lastIndexOf('.');
-            if(dotPos >= 0) {
-                filename.truncate(dotPos);
-            }
-            filename.append(".calkit");
             parseEntries();
-            ownKit.toFile(filename.toStdString());
+            ownKit.toFile(filename);
         }
     });
 }

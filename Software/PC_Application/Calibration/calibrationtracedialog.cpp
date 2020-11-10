@@ -21,7 +21,7 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, Calibration::Ty
     ui->tableView->setColumnWidth(1, 350);
     ui->tableView->setColumnWidth(2, 320);
     ui->tableView->setColumnWidth(3, 160);
-    UpdateApplyButton();
+    UpdateCalibrationStatus();
 }
 
 CalibrationTraceDialog::~CalibrationTraceDialog()
@@ -32,11 +32,19 @@ CalibrationTraceDialog::~CalibrationTraceDialog()
 void CalibrationTraceDialog::measurementComplete(Calibration::Measurement m)
 {
     model->measurementUpdated(m);
-    UpdateApplyButton();
+    UpdateCalibrationStatus();
 }
 
-void CalibrationTraceDialog::UpdateApplyButton()
+void CalibrationTraceDialog::UpdateCalibrationStatus()
 {
+    if(!cal->calculationPossible(cal->getType())) {
+        // some trace for the current calibration was deleted
+        cal->resetErrorTerms();
+        emit calibrationInvalidated();
+    } else {
+        // update error terms as a measurement might have changed
+        cal->constructErrorTerms(cal->getType());
+    }
     ui->bApply->setEnabled(cal->calculationPossible(requestedType));
 }
 
@@ -45,7 +53,7 @@ void CalibrationTraceDialog::on_bDelete_clicked()
     auto measurement = measurements[ui->tableView->currentIndex().row()];
     cal->clearMeasurement(measurement);
     model->measurementUpdated(measurement);
-    UpdateApplyButton();
+    UpdateCalibrationStatus();
 }
 
 void CalibrationTraceDialog::on_bMeasure_clicked()
@@ -58,18 +66,4 @@ void CalibrationTraceDialog::on_bApply_clicked()
 {
     emit applyCalibration(requestedType);
     accept();
-}
-
-void CalibrationTraceDialog::on_bOpen_clicked()
-{
-    cal->openFromFile();
-    UpdateApplyButton();
-    if(cal->getType() != Calibration::Type::None) {
-        emit applyCalibration(cal->getType());
-    }
-}
-
-void CalibrationTraceDialog::on_bSave_clicked()
-{
-    cal->saveToFile();
 }

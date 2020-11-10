@@ -7,6 +7,7 @@ HEADERS += \
     Calibration/json.hpp \
     Calibration/measurementmodel.h \
     CustomWidgets/colorpickerbutton.h \
+    CustomWidgets/informationbox.h \
     CustomWidgets/siunitedit.h \
     CustomWidgets/tilewidget.h \
     CustomWidgets/toggleswitch.h \
@@ -53,6 +54,7 @@ SOURCES += \
     Calibration/calkitdialog.cpp \
     Calibration/measurementmodel.cpp \
     CustomWidgets/colorpickerbutton.cpp \
+    CustomWidgets/informationbox.cpp \
     CustomWidgets/qwtplotpiecewisecurve.cpp \
     CustomWidgets/siunitedit.cpp \
     CustomWidgets/tilewidget.cpp \

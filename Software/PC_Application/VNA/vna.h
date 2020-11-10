@@ -69,6 +69,7 @@ private:
 
     QMenu *defaultCalMenu;
     QAction *assignDefaultCal, *removeDefaultCal;
+    QAction *saveCal;
 
     PortExtension portExtension;
 

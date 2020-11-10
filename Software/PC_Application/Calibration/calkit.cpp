@@ -26,9 +26,12 @@ Calkit::Calkit()
 
 
 #include <QDebug>
-void Calkit::toFile(std::string filename)
-{
-    TransformPathsToRelative(QString::fromStdString(filename));
+void Calkit::toFile(QString filename)
+{    
+    if(!filename.endsWith(".calkit")) {
+        filename.append(".calkit");
+    }
+    TransformPathsToRelative(filename);
 
     json j;
     for(auto e : json_descr) {
@@ -39,7 +42,6 @@ void Calkit::toFile(std::string filename)
         }
         // json library does not now about QVariant, handle used cases
         auto val = e.var.value();
-        qDebug() << val << endl;
         switch(static_cast<QMetaType::Type>(val.type())) {
         case QMetaType::Double: *json_entry = val.toDouble(); break;
         case QMetaType::Int: *json_entry = val.toInt(); break;
@@ -50,11 +52,11 @@ void Calkit::toFile(std::string filename)
         }
     }
     ofstream file;
-    file.open(filename);
+    file.open(filename.toStdString());
     file << setw(4) << j << endl;
     file.close();
 
-    TransformPathsToAbsolute(QString::fromStdString(filename));
+    TransformPathsToAbsolute(filename);
 }
 
 static QString readLine(ifstream &file) {
@@ -63,11 +65,11 @@ static QString readLine(ifstream &file) {
     return QString::fromStdString(line).simplified();
 }
 
-Calkit Calkit::fromFile(std::string filename)
+Calkit Calkit::fromFile(QString filename)
 {
     auto c = Calkit();
     ifstream file;
-    file.open(filename);
+    file.open(filename.toStdString());
     if(!file.is_open()) {
         throw runtime_error("Unable to open file");
     }
@@ -101,9 +103,7 @@ Calkit Calkit::fromFile(std::string filename)
             case QMetaType::Bool: e.var.setValue((*json_entry).get<bool>()); break;
             case QMetaType::QString: {
                 auto s = QString::fromStdString((*json_entry).get<string>());
-                qDebug() << s;
                 e.var.setValue(s);
-                qDebug() << e.var.value();
             }
 
                 break;
@@ -162,7 +162,7 @@ Calkit Calkit::fromFile(std::string filename)
 
         auto msg = new QMessageBox();
         msg->setWindowTitle("Loading calkit file");
-        msg->setText("The file \"" + QString::fromStdString(filename) + "\" is stored in a deprecated"
+        msg->setText("The file \"" + filename + "\" is stored in a deprecated"
                      " calibration kit format. Future versions of this application might not support"
                      " it anymore. Please save the calibration kit to update to the new format");
         msg->setStandardButtons(QMessageBox::Ok);
@@ -170,7 +170,7 @@ Calkit Calkit::fromFile(std::string filename)
     }
     file.close();
 
-    c.TransformPathsToAbsolute(QString::fromStdString(filename));
+    c.TransformPathsToAbsolute(filename);
 
     // set default values for non-editable items (for now)
     c.TRL.Through.Z0 = 50.0;

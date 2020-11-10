@@ -22,18 +22,15 @@ public slots:
 signals:
     void triggerMeasurement(Calibration::Measurement m);
     void applyCalibration(Calibration::Type type);
+    void calibrationInvalidated();
 
 private slots:
     void on_bDelete_clicked();
     void on_bMeasure_clicked();
     void on_bApply_clicked();
 
-    void on_bOpen_clicked();
-
-    void on_bSave_clicked();
-
 private:
-    void UpdateApplyButton();
+    void UpdateCalibrationStatus();
     Ui::CalibrationTraceDialog *ui;
     Calibration *cal;
     Calibration::Type requestedType;

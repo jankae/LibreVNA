@@ -34,8 +34,8 @@ public:
         std::complex<double> ThroughS11, ThroughS12, ThroughS21, ThroughS22;
     };
 
-    void toFile(std::string filename);
-    static Calkit fromFile(std::string filename);
+    void toFile(QString filename);
+    static Calkit fromFile(QString filename);
     void edit();
     SOLT toSOLT(double frequency);
     TRL toTRL(double frequency);

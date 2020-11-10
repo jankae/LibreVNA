@@ -24,7 +24,7 @@ Calibration::Calibration()
 void Calibration::clearMeasurements()
 {
     for(auto m : measurements) {
-        m.second.datapoints.clear();
+        clearMeasurement(m.first);
     }
 }
 
@@ -42,11 +42,19 @@ void Calibration::addMeasurement(Calibration::Measurement type, Protocol::Datapo
 
 bool Calibration::calculationPossible(Calibration::Type type)
 {
+    if(type == Type::None) {
+        // always possible to reset to None
+        return true;
+    }
     return SanityCheckSamples(Measurements(type, false));
 }
 #include <QDebug>
 bool Calibration::constructErrorTerms(Calibration::Type type)
 {
+    if(type == Type::None) {
+        resetErrorTerms();
+        return true;
+    }
     if(!calculationPossible(type)) {
         return false;
     }
@@ -602,6 +610,10 @@ bool Calibration::openFromFile(QString filename)
         }
     }
 
+    // reset all data before loading new calibration
+    clearMeasurements();
+    resetErrorTerms();
+
     // attempt to load associated calibration kit first (needs to be available when performing calibration)
     auto calkit_file = filename;
     auto dotPos = calkit_file.lastIndexOf('.');
@@ -610,7 +622,7 @@ bool Calibration::openFromFile(QString filename)
     }
     calkit_file.append(".calkit");
     try {
-        kit = Calkit::fromFile(calkit_file.toStdString());
+        kit = Calkit::fromFile(calkit_file);
     } catch (runtime_error e) {
         QMessageBox::warning(nullptr, "Missing calibration kit", "The calibration kit file associated with the selected calibration could not be parsed. The calibration might not be accurate. (" + QString(e.what()) + ")");
     }
@@ -636,20 +648,17 @@ bool Calibration::saveToFile(QString filename)
             return false;
         }
     }
-    // strip any potential file name extension and set default
-    auto dotPos = filename.lastIndexOf('.');
-    if(dotPos >= 0) {
-        filename.truncate(dotPos);
+
+    if(filename.endsWith(".cal")) {
+        filename.chop(4);
     }
-    auto calibration_file = filename;
-    calibration_file.append(".cal");
+    auto calibration_file = filename + ".cal";
     ofstream file;
     file.open(calibration_file.toStdString());
     file << *this;
 
-    auto calkit_file = filename;
-    calkit_file.append(".calkit");
-    kit.toFile(calkit_file.toStdString());
+    auto calkit_file = filename + ".calkit";
+    kit.toFile(calkit_file);
 
     return true;
 }
