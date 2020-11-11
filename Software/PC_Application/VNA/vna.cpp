@@ -403,7 +403,7 @@ void VNA::initializeDevice()
     auto key = "DefaultCalibration"+window->getDevice()->serial();
     if (s.contains(key)) {
         auto filename = s.value(key).toString();
-        qDebug() << "Attempting to load default calibration file \"" << filename << "\"";
+        qDebug() << "Attempting to load default calibration file " << filename;
         if(QFile::exists(filename)) {
             if(cal.openFromFile(filename)) {
                 ApplyCalibration(cal.getType());
@@ -430,7 +430,6 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
 {
     d = average.process(d);
     if(calMeasuring) {
-
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for calibration
             if(!calWaitFirst || d.pointNum == 0) {
@@ -438,6 +437,7 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
                 cal.addMeasurement(calMeasurement, d);
                 if(d.pointNum == settings.points - 1) {
                     calMeasuring = false;
+                    qDebug() << "Calibration measurement" << cal.MeasurementToString(calMeasurement) << "complete";
                     emit CalibrationMeasurementComplete(calMeasurement);
                 }
             }
@@ -627,6 +627,8 @@ void VNA::ApplyCalibration(Calibration::Type type)
             if(cal.constructErrorTerms(type)) {
                 calValid = true;
                 emit CalibrationApplied(type);
+            } else {
+                DisableCalibration(true);
             }
         } catch (runtime_error e) {
             QMessageBox::critical(window, "Calibration failure", e.what());
@@ -648,7 +650,8 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
     }
     // Stop sweep
     StopSweep();
-     calMeasurement = m;
+    qDebug() << "Taking" << Calibration::MeasurementToString(m) << "measurement";
+    calMeasurement = m;
     // Delete any already captured data of this measurement
     cal.clearMeasurement(m);
     calWaitFirst = true;

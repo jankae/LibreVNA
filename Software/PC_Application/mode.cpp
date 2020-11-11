@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QSettings>
 #include "ui_main.h"
+#include <QDebug>
 
 Mode* Mode::activeMode = nullptr;
 QWidget* Mode::cornerWidget = nullptr;
@@ -47,6 +48,7 @@ void Mode::activate()
         activeMode->deactivate();
     }
 
+    qDebug() << "Activating mode" << name;
     // show all mode specific GUI elements
     for(auto t : toolbars) {
         t->show();
@@ -64,13 +66,10 @@ void Mode::activate()
     window->getCentral()->setCurrentWidget(central);
 
     // restore dock and toolbar positions
-//    window->restoreGeometry(settings.value("geometry_"+name).toByteArray());
     window->restoreState(settings.value("windowState_"+name).toByteArray());
 
     // restore visibility of toolbars and docks
-//    window->getUi()->menuDocks->clear();
     for(auto d : docks) {
-//        window->getUi()->menuDocks->addAction(d->toggleViewAction());
         bool hidden = settings.value("dock_"+name+"_"+d->windowTitle(), d->isHidden()).toBool();
         if(hidden) {
             d->hide();
@@ -78,9 +77,7 @@ void Mode::activate()
             d->show();
         }
     }
-//    window->getUi()->menuToolbars->clear();
     for(auto t : toolbars) {
-//        window->getUi()->menuToolbars->addAction(t->toggleViewAction());
         bool hidden = settings.value("toolbar_"+name+"_"+t->windowTitle(), t->isHidden()).toBool();
         if(hidden) {
             t->hide();
@@ -106,7 +103,6 @@ void Mode::deactivate()
     for(auto t : toolbars) {
         settings.setValue("toolbar_"+name+"_"+t->windowTitle(), t->isHidden());
     }
-//    settings.setValue("geometry_"+name, window->saveGeometry());
     settings.setValue("windowState_"+name, window->saveState());
 
     // hide all mode specific GUI elements
@@ -122,6 +118,7 @@ void Mode::deactivate()
         a->setVisible(false);
     }
 
+    qDebug() << "Deactivated mode" << name;
     activeMode = nullptr;
 }
 

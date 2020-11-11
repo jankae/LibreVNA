@@ -141,8 +141,6 @@ Protocol::DeviceInfo Device::lastInfo = defaultInfo;
 
 Device::Device(QString serial)
 {
-    qDebug() << "Starting device connection...";
-
     lastInfo = defaultInfo;
 
     m_handle = nullptr;
@@ -302,7 +300,7 @@ std::set<QString> Device::GetDevices()
 
 void Device::USBHandleThread()
 {
-    qInfo() << "Receive thread started" << flush;
+    qDebug() << "Receive thread started";
     while (m_connected) {
         libusb_handle_events(m_context);
     }
@@ -362,7 +360,6 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
         if (ret > 0) {
             /* managed to read the product string */
             QString product(c_product);
-            qDebug() << "Opened device: " << product;
             if (product == "VNA") {
                 // this is a match
                 if(!foundCallback(handle, QString(c_serial))) {

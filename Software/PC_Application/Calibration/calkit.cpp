@@ -6,6 +6,7 @@
 #include <math.h>
 #include "json.hpp"
 #include <QMessageBox>
+#include <QDebug>
 
 using json = nlohmann::json;
 using namespace std;
@@ -24,13 +25,10 @@ Calkit::Calkit()
     }
 }
 
-
-#include <QDebug>
 void Calkit::toFile(QString filename)
-{    
-    if(!filename.endsWith(".calkit")) {
-        filename.append(".calkit");
-    }
+{
+    qDebug() << "Saving calkit to file" << filename;
+
     TransformPathsToRelative(filename);
 
     json j;
@@ -67,6 +65,8 @@ static QString readLine(ifstream &file) {
 
 Calkit Calkit::fromFile(QString filename)
 {
+    qDebug() << "Opening calkit to file" << filename;
+
     auto c = Calkit();
     ifstream file;
     file.open(filename.toStdString());
@@ -77,6 +77,7 @@ Calkit Calkit::fromFile(QString filename)
     json j;
     file >> j;
     if(j.contains("SOLT")) {
+        qDebug() << "JSON format detected";
         // calkit file uses json format, parse
         for(auto e : c.json_descr) {
             auto list = e.name.split("/");
@@ -93,6 +94,7 @@ Calkit Calkit::fromFile(QString filename)
             }
             if(!entry_exists) {
                 // missing entry in json file, nothing to do (default values already set in constructor)
+                qWarning() << "Entry" << e.name << "not present in file, assuming default value";
                 continue;
             }
             // json library does not now about QVariant, handle used cases
@@ -112,6 +114,7 @@ Calkit Calkit::fromFile(QString filename)
             }
         }
     } else {
+        qDebug() << "Legacy format detected";
         // legacy file format, return to beginning of file
         file.clear();
         file.seekg(0);
@@ -337,7 +340,9 @@ void Calkit::TransformPathsToRelative(QFileInfo d)
             continue;
         }
         if(QFileInfo(*f).isAbsolute()) {
+            QString buf = *f;
             *f = d.dir().relativeFilePath(*f);
+            qDebug() << "Transformed" << buf << "to" << *f << "(to relative)";
         }
     }
 }
@@ -351,7 +356,9 @@ void Calkit::TransformPathsToAbsolute(QFileInfo d)
         }
         if(QFileInfo(*f).isRelative()) {
             auto absDir = QDir(d.dir().path() + "/" + *f);
+            QString buf = *f;
             *f = absDir.absolutePath();
+            qDebug() << "Transformed" << buf << "to" << *f << "(to absolute)";
         }
     }
 }

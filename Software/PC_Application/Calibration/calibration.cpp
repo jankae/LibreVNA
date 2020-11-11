@@ -3,6 +3,8 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <fstream>
+#include "unit.h"
+#include <QDebug>
 
 using namespace std;
 
@@ -17,12 +19,14 @@ Calibration::Calibration()
     measurements[Measurement::Port2Load].datapoints = vector<Protocol::Datapoint>();
     measurements[Measurement::Isolation].datapoints = vector<Protocol::Datapoint>();
     measurements[Measurement::Through].datapoints = vector<Protocol::Datapoint>();
+    measurements[Measurement::Line].datapoints = vector<Protocol::Datapoint>();
 
     type = Type::None;
 }
 
 void Calibration::clearMeasurements()
 {
+    qDebug() << "Clearing all calibration measurements...";
     for(auto m : measurements) {
         clearMeasurement(m.first);
     }
@@ -32,6 +36,7 @@ void Calibration::clearMeasurement(Calibration::Measurement type)
 {
     measurements[type].datapoints.clear();
     measurements[type].timestamp = QDateTime();
+    qDebug() << "Deleted" << MeasurementToString(type) << "measurement";
 }
 
 void Calibration::addMeasurement(Calibration::Measurement type, Protocol::Datapoint &d)
@@ -46,9 +51,16 @@ bool Calibration::calculationPossible(Calibration::Type type)
         // always possible to reset to None
         return true;
     }
+    qDebug() << "Checking if" << TypeToString(type) << "calibration is possible...";
+    auto ret = SanityCheckSamples(Measurements(type, false));
+    if(ret) {
+        qDebug() << "...calibration possible";
+    } else {
+        qDebug() << "...calibration not possible";
+    }
     return SanityCheckSamples(Measurements(type, false));
 }
-#include <QDebug>
+
 bool Calibration::constructErrorTerms(Calibration::Type type)
 {
     if(type == Type::None) {
@@ -58,10 +70,18 @@ bool Calibration::constructErrorTerms(Calibration::Type type)
     if(!calculationPossible(type)) {
         return false;
     }
+    qDebug() << "Constructing error terms for" << TypeToString(type) << "calibration";
     bool isTRL = type == Type::TRL;
-    if(minFreq < kit.minFreq(isTRL) || maxFreq > kit.maxFreq(isTRL)) {
+    double kit_minFreq = kit.minFreq(isTRL);
+    double kit_maxFreq = kit.maxFreq(isTRL);
+    if(minFreq < kit_minFreq || maxFreq > kit_maxFreq) {
         // Calkit does not support complete calibration range
-        QMessageBox::critical(nullptr, "Unable to perform calibration", "The calibration kit does not support the complete span. Please choose a different calibration kit or a narrower span.");
+        QString msg = QString("The calibration kit does not support the complete span.\n\n")
+                + "The measured calibration data covers " + Unit::ToString(minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(maxFreq, "Hz", " kMG", 4)
+                + ", however the calibration kit is only valid from " + Unit::ToString(kit_minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(kit_maxFreq, "Hz", " kMG", 4) + ".\n\n"
+                + "Please adjust the calibration kit or the span and take the calibration measurements again.";
+        QMessageBox::critical(nullptr, "Unable to perform calibration", msg);
+        qWarning() << msg;
         return false;
     }
     switch(type) {
@@ -80,6 +100,7 @@ void Calibration::resetErrorTerms()
 {
     type = Type::None;
     points.clear();
+    qDebug() << "Error terms reset";
 }
 
 void Calibration::construct12TermPoints()
@@ -609,6 +630,7 @@ bool Calibration::openFromFile(QString filename)
             return false;
         }
     }
+qDebug() << "Attempting to open calibration from file" << filename;
 
     // reset all data before loading new calibration
     clearMeasurements();
@@ -621,10 +643,12 @@ bool Calibration::openFromFile(QString filename)
         calkit_file.truncate(dotPos);
     }
     calkit_file.append(".calkit");
+    qDebug() << "Associated calibration kit expected in" << calkit_file;
     try {
         kit = Calkit::fromFile(calkit_file);
     } catch (runtime_error e) {
         QMessageBox::warning(nullptr, "Missing calibration kit", "The calibration kit file associated with the selected calibration could not be parsed. The calibration might not be accurate. (" + QString(e.what()) + ")");
+        qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
     }
 
     ifstream file;
@@ -633,6 +657,7 @@ bool Calibration::openFromFile(QString filename)
         file >> *this;
     } catch(runtime_error e) {
         QMessageBox::warning(nullptr, "File parsing error", e.what());
+        qWarning() << "Calibration file parsing failed: " << e.what();
         return false;
     }
 
@@ -658,6 +683,7 @@ bool Calibration::saveToFile(QString filename)
     file << *this;
 
     auto calkit_file = filename + ".calkit";
+    qDebug() << "Saving associated calibration kit to file" << calkit_file;
     kit.toFile(calkit_file);
 
     return true;
@@ -689,12 +715,13 @@ istream& operator >>(istream &in, Calibration &c)
         for(auto m : c.Measurements()) {
             if(Calibration::MeasurementToString(m) == qLine) {
                 // this is the correct measurement
-                c.clearMeasurement(m);
+                c.measurements[m].datapoints.clear();
                 uint timestamp;
                 in >> timestamp;
                 c.measurements[m].timestamp = QDateTime::fromSecsSinceEpoch(timestamp);
                 unsigned int points;
                 in >> points;
+                qDebug() << "Found measurement" << Calibration::MeasurementToString(m) << ", containing" << points << "points";
                 for(unsigned int i=0;i<points;i++) {
                     Protocol::Datapoint p;
                     in >> p.pointNum >> p.frequency;
@@ -711,6 +738,7 @@ istream& operator >>(istream &in, Calibration &c)
         for(auto t : Calibration::Types()) {
             if(Calibration::TypeToString(t) == qLine) {
                 // try to apply this calibration type
+                qDebug() << "Specified calibration in file is" << Calibration::TypeToString(t);
                 if(c.calculationPossible(t)) {
                     c.constructErrorTerms(t);
                 } else {
@@ -720,6 +748,7 @@ istream& operator >>(istream &in, Calibration &c)
             }
         }
     }
+    qDebug() << "Calibration file parsing complete";
     return in;
 }
 

@@ -55,6 +55,10 @@ AppWindow::AppWindow(QWidget *parent)
     QCoreApplication::setOrganizationName("VNA");
     QCoreApplication::setApplicationName("Application");
 
+    qSetMessagePattern("%{time process}: [%{type}] %{message}");
+
+    qDebug() << "Application start";
+
     Preferences::getInstance().load();
     device = nullptr;
 
@@ -153,14 +157,20 @@ void AppWindow::closeEvent(QCloseEvent *event)
 
 void AppWindow::ConnectToDevice(QString serial)
 {
+    if(serial.isEmpty()) {
+        qDebug() << "Trying to connect to any device";
+    } else {
+        qDebug() << "Trying to connect to" << serial;
+    }
     if(device) {
+        qDebug() << "Already connected to a device, disconnecting first...";
         DisconnectDevice();
     }
     try {
         qDebug() << "Attempting to connect to device...";
         device = new Device(serial);
         lConnectionStatus.setText("Connected to " + device->serial());
-        qInfo() << "Connected to " << device->serial();
+        qInfo() << "Connected to" << device->serial();
         lDeviceInfo.setText(device->getLastDeviceInfoString());
         connect(device, &Device::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &Device::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
@@ -184,6 +194,7 @@ void AppWindow::ConnectToDevice(QString serial)
             }
         }
     } catch (const runtime_error e) {
+        qWarning() << "Failed to connect:" << e.what();
         DisconnectDevice();
         UpdateDeviceList();
     }
@@ -269,6 +280,7 @@ int AppWindow::UpdateDeviceList()
         // no devices available, disable connection option
         ui->menuConnect_to->setEnabled(false);
     }
+    qDebug() << "Updated device list, found" << devices.size();
     return devices.size();
 }
 

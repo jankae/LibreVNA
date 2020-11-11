@@ -14,8 +14,8 @@ class Mode : public QObject
 public:
     Mode(AppWindow *window, QString name);
 
-    virtual void activate();
-    virtual void deactivate();
+    virtual void activate(); // derived classes must call Mode::activate before doing anything
+    virtual void deactivate(); // derived classes must call Mode::deactivate before returning
     QString getName() const;
     static Mode *getActiveMode();
 
