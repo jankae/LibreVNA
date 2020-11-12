@@ -25,6 +25,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private:
     void parseNewValue(double factor);
+    void continueEditing();
     QString unit, prefixes;
     int precision;
     double _value;

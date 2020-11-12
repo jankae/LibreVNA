@@ -4,6 +4,7 @@
 #include <unit.h>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QDebug>
 
 SIUnitEdit::SIUnitEdit(QString unit, QString prefixes, int precision, QWidget *parent)
     : QLineEdit(parent)
@@ -28,9 +29,21 @@ SIUnitEdit::SIUnitEdit(QWidget *parent)
 
 void SIUnitEdit::setValue(double value)
 {
-    setValueQuiet(value);
-    emit valueChanged(value);
-    emit valueUpdated(this);
+    if(value != _value) {
+        setValueQuiet(value);
+        emit valueChanged(value);
+        emit valueUpdated(this);
+    }
+}
+
+static char swapUpperLower(char c) {
+    if(isupper(c)) {
+        return tolower(c);
+    } else if(islower(c)) {
+        return toupper(c);
+    } else {
+        return c;
+    }
 }
 
 bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
@@ -47,16 +60,25 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         if(key == Qt::Key_Return) {
             // use new value without prefix
            parseNewValue(1.0);
+           continueEditing();
            return true;
         }
         auto mod = static_cast<QKeyEvent *>(event)->modifiers();
         if (!(mod & Qt::ShiftModifier)) {
             key = tolower(key);
         }
-        if(key <= 255 && prefixes.indexOf(key) >= 0) {
-            // a valid prefix key was pressed
-            parseNewValue(Unit::SIPrefixToFactor(key));
-            return true;
+        if(key <= 255) {
+            if (prefixes.indexOf(key) >= 0) {
+                // a valid prefix key was pressed
+                parseNewValue(Unit::SIPrefixToFactor(key));
+                continueEditing();
+                return true;
+            } else if (prefixes.indexOf(swapUpperLower(key)) >= 0) {
+                // no match on the pressed case but on the upper/lower case instead -> also accept this
+                parseNewValue(Unit::SIPrefixToFactor(swapUpperLower(key)));
+                continueEditing();
+                return true;
+            }
         }
     } else if(event->type() == QEvent::FocusOut) {
         if(!text().isEmpty()) {
@@ -78,7 +100,30 @@ void SIUnitEdit::setValueQuiet(double value)
 
 void SIUnitEdit::parseNewValue(double factor)
 {
-    double v = text().toDouble() * factor;
-    setValue(v);
-    clearFocus();
+    QString input = text();
+    // remove optional unit
+    if(input.endsWith(unit)) {
+        input.chop(unit.size());
+    }
+    auto lastChar = input.at(input.size()-1).toLatin1();
+    if(prefixes.indexOf(lastChar) >= 0) {
+        factor = Unit::SIPrefixToFactor(lastChar);
+        input.chop(1);
+    }
+    // remaining input should only contain numbers
+    bool conversion_ok;
+    auto v = input.toDouble(&conversion_ok);
+    if(conversion_ok) {
+        qDebug() << v;
+        setValue(v * factor);
+    } else {
+        qWarning() << "SIUnit conversion failure:" << input;
+    }
+    clear();
+}
+
+void SIUnitEdit::continueEditing()
+{
+    setText(placeholderText());
+    selectAll();
 }

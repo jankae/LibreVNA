@@ -226,6 +226,7 @@ VNA::VNA(AppWindow *window)
     dbm->setSingleStep(0.25);
     dbm->setSuffix("dbm");
     dbm->setToolTip("Stimulus level");
+    dbm->setKeyboardTracking(false);
     connect(dbm, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &VNA::SetSourceLevel);
     connect(this, &VNA::sourceLevelChanged, dbm, &QDoubleSpinBox::setValue);
     tb_acq->addWidget(new QLabel("Level:"));
@@ -233,9 +234,10 @@ VNA::VNA(AppWindow *window)
 
     auto points = new QSpinBox();
     points->setFixedWidth(55);
-    points->setRange(1, 4501);
+    points->setRange(1, 9999);
     points->setSingleStep(100);
     points->setToolTip("Points/sweep");
+    points->setKeyboardTracking(false);
     connect(points, qOverload<int>(&QSpinBox::valueChanged), this, &VNA::SetPoints);
     connect(this, &VNA::pointsChanged, [=](int p) {
         points->blockSignals(true);
@@ -502,12 +504,17 @@ void VNA::SetStopFreq(double freq)
 void VNA::SetCenterFreq(double freq)
 {
     auto old_span = settings.f_stop - settings.f_start;
-    if (freq > old_span / 2) {
-        settings.f_start = freq - old_span / 2;
-        settings.f_stop = freq + old_span / 2;
-    } else {
+    if (freq - old_span / 2 <= Device::Info().limits_minFreq) {
+        // would shift start frequency below minimum
         settings.f_start = 0;
         settings.f_stop = 2 * freq;
+    } else if(freq + old_span / 2 >= Device::Info().limits_maxFreq) {
+        // would shift stop frequency above maximum
+        settings.f_start = 2 * freq - Device::Info().limits_maxFreq;
+        settings.f_stop = Device::Info().limits_maxFreq;
+    } else {
+        settings.f_start = freq - old_span / 2;
+        settings.f_stop = freq + old_span / 2;
     }
     ConstrainAndUpdateFrequencies();
 }
@@ -515,12 +522,18 @@ void VNA::SetCenterFreq(double freq)
 void VNA::SetSpan(double span)
 {
     auto old_center = (settings.f_start + settings.f_stop) / 2;
-    if(old_center > span / 2) {
-        settings.f_start = old_center - span / 2;
+    if(old_center < Device::Info().limits_minFreq + span / 2) {
+        // would shift start frequency below minimum
+        settings.f_start = Device::Info().limits_minFreq;
+        settings.f_stop = Device::Info().limits_minFreq + span;
+    } else if(old_center > Device::Info().limits_maxFreq - span / 2) {
+        // would shift stop frequency above maximum
+        settings.f_start = Device::Info().limits_maxFreq - span;
+        settings.f_stop = Device::Info().limits_maxFreq;
     } else {
-        settings.f_start = 0;
+        settings.f_start = old_center - span / 2;
+         settings.f_stop = settings.f_start + span;
     }
-    settings.f_stop = old_center + span / 2;
     ConstrainAndUpdateFrequencies();
 }
 

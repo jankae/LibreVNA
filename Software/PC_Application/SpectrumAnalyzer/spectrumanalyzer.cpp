@@ -294,12 +294,17 @@ void SpectrumAnalyzer::SetStopFreq(double freq)
 void SpectrumAnalyzer::SetCenterFreq(double freq)
 {
     auto old_span = settings.f_stop - settings.f_start;
-    if (freq > old_span / 2) {
-        settings.f_start = freq - old_span / 2;
-        settings.f_stop = freq + old_span / 2;
-    } else {
+    if (freq - old_span / 2 <= Device::Info().limits_minFreq) {
+        // would shift start frequency below minimum
         settings.f_start = 0;
         settings.f_stop = 2 * freq;
+    } else if(freq + old_span / 2 >= Device::Info().limits_maxFreq) {
+        // would shift stop frequency above maximum
+        settings.f_start = 2 * freq - Device::Info().limits_maxFreq;
+        settings.f_stop = Device::Info().limits_maxFreq;
+    } else {
+        settings.f_start = freq - old_span / 2;
+        settings.f_stop = freq + old_span / 2;
     }
     ConstrainAndUpdateFrequencies();
 }
@@ -307,12 +312,18 @@ void SpectrumAnalyzer::SetCenterFreq(double freq)
 void SpectrumAnalyzer::SetSpan(double span)
 {
     auto old_center = (settings.f_start + settings.f_stop) / 2;
-    if(old_center > span / 2) {
-        settings.f_start = old_center - span / 2;
+    if(old_center < Device::Info().limits_minFreq + span / 2) {
+        // would shift start frequency below minimum
+        settings.f_start = Device::Info().limits_minFreq;
+        settings.f_stop = Device::Info().limits_minFreq + span;
+    } else if(old_center > Device::Info().limits_maxFreq - span / 2) {
+        // would shift stop frequency above maximum
+        settings.f_start = Device::Info().limits_maxFreq - span;
+        settings.f_stop = Device::Info().limits_maxFreq;
     } else {
-        settings.f_start = 0;
+        settings.f_start = old_center - span / 2;
+         settings.f_stop = settings.f_start + span;
     }
-    settings.f_stop = old_center + span / 2;
     ConstrainAndUpdateFrequencies();
 }
 
