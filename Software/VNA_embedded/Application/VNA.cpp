@@ -11,6 +11,7 @@
 #include "Communication.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "Util.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"VNA"
@@ -304,13 +305,7 @@ void VNA::SweepHalted() {
 		// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
 		// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
 		uint32_t LO_mixing = (HW::IF1 + frequency) - (HW::IF1 - HW::IF2);
-		// move frequency into ADC range
-		LO_mixing %= HW::ADCSamplerate;
-		// fold at half the samplerate
-		if(LO_mixing >= HW::ADCSamplerate / 2) {
-			LO_mixing = HW::ADCSamplerate - LO_mixing;
-		}
-		if(abs(LO_mixing - HW::IF2) <= actualBandwidth * 2) {
+		if(abs(Util::Alias(LO_mixing, HW::ADCSamplerate) - HW::IF2) <= actualBandwidth * 2) {
 			// the image is in or near the IF bandwidth and would cause a peak
 			// Use a slightly different ADC samplerate
 			adcShiftRequired = true;

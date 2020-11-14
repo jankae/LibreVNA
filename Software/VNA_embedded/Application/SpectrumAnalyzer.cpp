@@ -6,6 +6,8 @@
 #include "Communication.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "Util.hpp"
+#include <array>
 
 #define LOG_LEVEL	LOG_LEVEL_DEBUG
 #define LOG_MODULE	"SA"
@@ -28,13 +30,15 @@ static bool negativeDFT; // if true, a positive frequency shift at input results
 
 static float port1Measurement[FPGA::DFTbins], port2Measurement[FPGA::DFTbins];
 
+static uint8_t signalIDsteps;
+static std::array<uint8_t, 4> signalIDprescalers;
+
 static void StartNextSample() {
 	uint64_t freq = s.f_start + (s.f_stop - s.f_start) * pointCnt / (points - 1);
 	uint64_t LO1freq;
 	uint32_t LO2freq;
 	switch(signalIDstep) {
 	case 0:
-	default:
 		// reset minimum amplitudes in first signal ID step
 		for (uint16_t i = 0; i < DFTpoints; i++) {
 			port1Measurement[i] = std::numeric_limits<float>::max();
@@ -87,13 +91,13 @@ static void StartNextSample() {
 		// unable to reach required frequency with 1.LO, skip this signal ID step
 		signalIDstep++;
 		/* no break */
-	case 4:
+	default:
 		// Use default frequencies with different ADC samplerate to remove images in final IF
 		negativeDFT = true;
 		LO1freq = freq + HW::IF1;
 		LO2freq = HW::IF1 - HW::IF2;
-		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 120);
-		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1200);
+		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, signalIDprescalers[signalIDstep-4]);
+		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, (uint16_t) signalIDprescalers[signalIDstep-4] * 10);
 	}
 	LO1.SetFrequency(LO1freq);
 	// LO1 is not able to reach all frequencies with the required precision, adjust LO2 to account for deviation
@@ -165,6 +169,20 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 
+	if(s.SignalID) {
+		// use different ADC prescalers depending on RBW: For small RBWs, images with the shifted ADC samplerate can be closer to the IF
+		// because they get suppressed by the RBW filter. For larger RBWs multiple different ADC samplerates are required to move all
+		// aliased images far enough away from the IF. This only works up to about 40kHz RBW. Above that even with signal ID some images
+		// will be present in the processed data
+		if(actualRBW <= 10000) {
+			signalIDsteps = 6;
+			signalIDprescalers = {132, 156};
+		} else {
+			signalIDsteps = 8;
+			signalIDprescalers = {126, 130, 144, 176};
+		}
+	}
+
 	if (s.UseDFT) {
 		uint32_t spacing = (s.f_stop - s.f_start) / (points - 1);
 		// The DFT can only look at a small bandwidth otherwise the passband of the final ADC filter is visible in the data
@@ -234,7 +252,7 @@ void SA::Work() {
 	if(!active) {
 		return;
 	}
-	if(!s.SignalID || signalIDstep >= 4) {
+	if(!s.SignalID || signalIDstep >= signalIDsteps - 1) {
 		// this measurement point is done, handle result according to detector
 		for(uint16_t i=0;i<DFTpoints;i++) {
 			uint16_t binIndex = (pointCnt + i) / binSize;
