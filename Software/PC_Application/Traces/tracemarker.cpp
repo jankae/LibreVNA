@@ -499,11 +499,11 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
     case Type::Noise:
     case Type::PhaseNoise:
     default:
-        return new SIUnitEdit("Hz", " kMG");
+        return new SIUnitEdit("Hz", " kMG", 6);
     case Type::Lowpass:
     case Type::Highpass:
     case Type::PeakTable:
-        return new SIUnitEdit("db", " ");
+        return new SIUnitEdit("db", " ", 3);
     case Type::TOI:
         return nullptr;
     }

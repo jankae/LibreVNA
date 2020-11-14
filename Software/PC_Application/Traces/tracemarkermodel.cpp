@@ -316,7 +316,7 @@ QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptio
         e->setMaximumHeight(rowHeight);
         e->setParent(parent);
         connect(e, &SIUnitEdit::valueUpdated, this, &MarkerSettingsDelegate::commitData);
-        connect(e, &SIUnitEdit::editingAborted, [=](){
+        connect(e, &SIUnitEdit::focusLost, [=](){
             marker->editingFrequeny = false;
         });
     }
@@ -327,7 +327,6 @@ void MarkerSettingsDelegate::setModelData(QWidget *editor, QAbstractItemModel *m
 {
     auto markerModel = (TraceMarkerModel*) model;
     auto marker = markerModel->markerFromIndex(index);
-    marker->editingFrequeny = false;
     auto si = (SIUnitEdit*) editor;
     markerModel->setData(index, si->value());
 }

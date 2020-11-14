@@ -21,6 +21,7 @@ signals:
     void valueChanged(double newvalue);
     void valueUpdated(QWidget *w);
     void editingAborted();
+    void focusLost();
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 private:

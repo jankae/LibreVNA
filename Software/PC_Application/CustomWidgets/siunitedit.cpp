@@ -81,12 +81,8 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
             }
         }
     } else if(event->type() == QEvent::FocusOut) {
-        if(!text().isEmpty()) {
-            parseNewValue(1.0);
-        } else {
-            setValueQuiet(_value);
-            emit editingAborted();
-        }
+        parseNewValue(1.0);
+        emit focusLost();
     }
     return false;
 }
@@ -101,25 +97,29 @@ void SIUnitEdit::setValueQuiet(double value)
 void SIUnitEdit::parseNewValue(double factor)
 {
     QString input = text();
-    // remove optional unit
-    if(input.endsWith(unit)) {
-        input.chop(unit.size());
-    }
-    auto lastChar = input.at(input.size()-1).toLatin1();
-    if(prefixes.indexOf(lastChar) >= 0) {
-        factor = Unit::SIPrefixToFactor(lastChar);
-        input.chop(1);
-    }
-    // remaining input should only contain numbers
-    bool conversion_ok;
-    auto v = input.toDouble(&conversion_ok);
-    if(conversion_ok) {
-        qDebug() << v;
-        setValue(v * factor);
+    if(input.isEmpty()) {
+        setValueQuiet(_value);
+        emit editingAborted();
     } else {
-        qWarning() << "SIUnit conversion failure:" << input;
+        // remove optional unit
+        if(input.endsWith(unit)) {
+            input.chop(unit.size());
+        }
+        auto lastChar = input.at(input.size()-1).toLatin1();
+        if(prefixes.indexOf(lastChar) >= 0) {
+            factor = Unit::SIPrefixToFactor(lastChar);
+            input.chop(1);
+        }
+        // remaining input should only contain numbers
+        bool conversion_ok;
+        auto v = input.toDouble(&conversion_ok);
+        if(conversion_ok) {
+            setValue(v * factor);
+        } else {
+            qWarning() << "SIUnit conversion failure:" << input;
+        }
+        clear();
     }
-    clear();
 }
 
 void SIUnitEdit::continueEditing()
