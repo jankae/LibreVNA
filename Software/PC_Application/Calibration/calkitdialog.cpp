@@ -111,10 +111,10 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     connect(ui->buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, [this]() {
         parseEntries();
         editKit = ownKit;
-        delete this;
+        accept();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, [this]() {
-        delete this;
+        reject();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
         auto filename = QFileDialog::getOpenFileName(this, "Open calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, QFileDialog::DontUseNativeDialog);

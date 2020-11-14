@@ -36,7 +36,7 @@ public:
 
     void toFile(QString filename);
     static Calkit fromFile(QString filename);
-    void edit();
+    void edit(std::function<void(void)> done = nullptr);
     SOLT toSOLT(double frequency);
     TRL toTRL(double frequency);
     double minFreq(bool trl = false);

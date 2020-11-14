@@ -97,10 +97,10 @@ VNA::VNA(AppWindow *window)
     saveCal->setEnabled(false);
 
     connect(calLoad, &QAction::triggered, [=](){
-       cal.openFromFile();
-       if(cal.getType() == Calibration::Type::None) {
-           DisableCalibration();
-       } else {
+        cal.openFromFile();
+        if(cal.getType() == Calibration::Type::None) {
+            DisableCalibration();
+        } else {
             ApplyCalibration(cal.getType());
         }
     });
@@ -127,7 +127,11 @@ VNA::VNA(AppWindow *window)
 
     auto calEditKit = calMenu->addAction("Edit Calibration Kit");
     connect(calEditKit, &QAction::triggered, [=](){
-        cal.getCalibrationKit().edit();
+        cal.getCalibrationKit().edit([=](){
+            if(calValid) {
+                ApplyCalibration(cal.getType());
+            }
+        });
     });
     portExtension.setCalkit(&cal.getCalibrationKit());
 
