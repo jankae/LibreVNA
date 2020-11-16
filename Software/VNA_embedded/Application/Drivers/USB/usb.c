@@ -110,7 +110,7 @@ __ALIGN_BEGIN uint8_t USBD_CfgFSDesc[USB_CONFIG_DESC_SIZ] __ALIGN_END =
 
 // See https://github.com/pbatard/libwdi/wiki/WCID-Devices for descriptor data
 // This requests to load the WinUSB driver for this device
-__ALIGN_BEGIN const uint8_t USBD_MicrosoftCompatibleID[40] __ALIGN_END =
+__ALIGN_BEGIN const char USBD_MicrosoftCompatibleID[40] __ALIGN_END =
 {
 	0x28, 0x00, 0x00, 0x00,
 	0x00, 0x01,
@@ -119,7 +119,7 @@ __ALIGN_BEGIN const uint8_t USBD_MicrosoftCompatibleID[40] __ALIGN_END =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00,
 	0x01,
-	0x57, 0x49, 0x4E, 0x55, 0x53, 0x42, 0x00, 0x00,
+	'W','I','N','U','S','B','\0','\0',
 	0x00, 0x00, 0x00, 0x00,	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };

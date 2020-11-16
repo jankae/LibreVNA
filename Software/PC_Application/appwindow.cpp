@@ -263,6 +263,9 @@ int AppWindow::UpdateDeviceList()
     deviceActionGroup->setExclusive(true);
     ui->menuConnect_to->clear();
     auto devices = Device::GetDevices();
+    if(device) {
+        devices.insert(device->serial());
+    }
     if(devices.size()) {
         for(auto d : devices) {
             auto connectAction = ui->menuConnect_to->addAction(d);

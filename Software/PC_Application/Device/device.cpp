@@ -80,6 +80,7 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
     case LIBUSB_TRANSFER_STALL:
         qCritical() << "LIBUSB_ERROR" << transfer->status;
         libusb_free_transfer(transfer);
+        this->transfer = nullptr;
         emit TransferError();
         return;
         break;
@@ -146,6 +147,9 @@ Device::Device(QString serial)
     m_handle = nullptr;
     lastInfoValid = false;
     libusb_init(&m_context);
+#if LIBUSB_API_VERSION >= 0x01000106
+    libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
+#endif
 
     SearchDevices([=](libusb_device_handle *handle, QString found_serial) -> bool {
         if(serial.isEmpty() || serial == found_serial) {
@@ -158,7 +162,7 @@ Device::Device(QString serial)
             // not the requested device, continue search
             return true;
         }
-    }, m_context);
+    }, m_context, false);
 
     if(!m_handle) {
         QString message =  "No device found";
@@ -170,21 +174,19 @@ Device::Device(QString serial)
     }
 
     // Found the correct device, now connect
-    /* claim the interfaces */
-    for (int if_num = 0; if_num < 1; if_num++) {
-        int ret = libusb_claim_interface(m_handle, if_num);
-        if (ret < 0) {
-            libusb_close(m_handle);
-            /* Failed to open */
-            QString message =  "Failed to claim interface: \"";
-            message.append(libusb_strerror((libusb_error) ret));
-            message.append("\" Maybe you are already connected to this device?");
-            qWarning() << message;
-            auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-            msg->exec();
-            libusb_exit(m_context);
-            throw std::runtime_error(message.toStdString());
-        }
+    /* claim the interface */
+    int ret = libusb_claim_interface(m_handle, 0);
+    if (ret < 0) {
+        libusb_close(m_handle);
+        /* Failed to open */
+        QString message =  "Failed to claim interface: \"";
+        message.append(libusb_strerror((libusb_error) ret));
+        message.append("\" Maybe you are already connected to this device?");
+        qWarning() << message;
+        auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
+        msg->exec();
+        libusb_exit(m_context);
+        throw std::runtime_error(message.toStdString());
     }
     qInfo() << "USB connection established" << flush;
     m_connected = true;
@@ -215,6 +217,7 @@ Device::~Device()
                 qCritical() << "Error releasing interface" << libusb_error_name(ret);
             }
         }
+        libusb_release_interface(m_handle, 0);
         libusb_close(m_handle);
         m_receiveThread->join();
         libusb_exit(m_context);
@@ -287,11 +290,14 @@ std::set<QString> Device::GetDevices()
 
     libusb_context *ctx;
     libusb_init(&ctx);
+#if LIBUSB_API_VERSION >= 0x01000106
+    libusb_set_option(ctx, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
+#endif
 
     SearchDevices([&serials](libusb_device_handle *, QString serial) -> bool {
         serials.insert(serial);
         return true;
-    }, ctx);
+    }, ctx, true);
 
     libusb_exit(ctx);
 
@@ -307,7 +313,7 @@ void Device::USBHandleThread()
     qDebug() << "Disconnected, receive thread exiting";
 }
 
-void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)> foundCallback, libusb_context *context)
+void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)> foundCallback, libusb_context *context, bool ignoreOpenError)
 {
     libusb_device **devList;
     auto ndevices = libusb_get_device_list(context, &devList);
@@ -341,13 +347,19 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
         libusb_device_handle *handle = nullptr;
         ret = libusb_open(device, &handle);
         if (ret) {
+            qDebug() << libusb_strerror((enum libusb_error) ret);
             /* Failed to open */
-            QString message =  "Found potential device but failed to open usb connection: \"";
-            message.append(libusb_strerror((libusb_error) ret));
-            message.append("\" On Linux this is most likely caused by a missing udev rule. On Windows it could be a missing driver. Try installing the WinUSB driver using Zadig (https://zadig.akeo.ie/)");
-            qWarning() << message;
-            auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-            msg->exec();
+            if(!ignoreOpenError) {
+                QString message =  "Found potential device but failed to open usb connection: \"";
+                message.append(libusb_strerror((libusb_error) ret));
+                message.append("\" On Linux this is most likely caused by a missing udev rule. "
+                               "On Windows this most likely means that you are already connected to "
+                               "this device (is another instance of the application already runnning? "
+                               "If that is not the case, you can try installing the WinUSB driver using Zadig (https://zadig.akeo.ie/)");
+                qWarning() << message;
+                auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
+                msg->exec();
+            }
             continue;
         }
 
@@ -408,6 +420,7 @@ void Device::ReceivedData()
 {
     Protocol::PacketInfo packet;
     uint16_t handled_len;
+//    qDebug() << "Received data";
     do {
         handled_len = Protocol::DecodeBuffer(dataBuffer->getBuffer(), dataBuffer->getReceived(), &packet);
         dataBuffer->removeBytes(handled_len);
