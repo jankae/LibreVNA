@@ -1,11 +1,13 @@
 HEADERS += \
     ../VNA_embedded/Application/Communication/Protocol.hpp \
+    Calibration/amplitudecaldialog.h \
     Calibration/calibration.h \
     Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
     Calibration/json.hpp \
     Calibration/measurementmodel.h \
+    Calibration/sourcecaldialog.h \
     CustomWidgets/colorpickerbutton.h \
     CustomWidgets/informationbox.h \
     CustomWidgets/siunitedit.h \
@@ -48,11 +50,13 @@ HEADERS += \
 
 SOURCES += \
     ../VNA_embedded/Application/Communication/Protocol.cpp \
+    Calibration/amplitudecaldialog.cpp \
     Calibration/calibration.cpp \
     Calibration/calibrationtracedialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
     Calibration/measurementmodel.cpp \
+    Calibration/sourcecaldialog.cpp \
     CustomWidgets/colorpickerbutton.cpp \
     CustomWidgets/informationbox.cpp \
     CustomWidgets/qwtplotpiecewisecurve.cpp \
@@ -102,6 +106,7 @@ win32:LIBS += -LC:\Qwt-6.1.4\lib -lqwt
 QT += widgets
 
 FORMS += \
+    Calibration/amplitudecaldialog.ui \
     Calibration/calibrationtracedialog.ui \
     Calibration/calkitdialog.ui \
     CustomWidgets/tilewidget.ui \

@@ -457,6 +457,27 @@ static int16_t EncodeFirmwarePacket(const Protocol::FirmwarePacket &d, uint8_t *
     return 4 + Protocol::FirmwareChunkSize;
 }
 
+static int16_t EncodeAmplitudeCorrectionPoint(
+		Protocol::AmplitudeCorrectionPoint d, uint8_t *buf, uint16_t bufSize) {
+	Encoder e(buf, bufSize);
+	e.add(d.totalPoints);
+	e.add(d.pointNum);
+	e.add(d.freq);
+	e.add(d.port1);
+	e.add(d.port2);
+	return e.getSize();
+}
+static Protocol::AmplitudeCorrectionPoint DecodeAmplitudeCorrectionPoint(uint8_t *buf) {
+    Protocol::AmplitudeCorrectionPoint d;
+	Decoder e(buf);
+    e.get(d.totalPoints);
+    e.get(d.pointNum);
+    e.get(d.freq);
+    e.get(d.port1);
+    e.get(d.port2);
+    return d;
+}
+
 uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     if (!info || !len) {
         info->type = PacketType::None;
@@ -541,11 +562,17 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::SpectrumAnalyzerResult:
     	info->spectrumResult = DecodeSpectrumAnalyzerResult(&data[4]);
     	break;
+    case PacketType::SourceCalPoint:
+    case PacketType::ReceiverCalPoint:
+    	info->amplitudePoint = DecodeAmplitudeCorrectionPoint(&data[4]);
+    	break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
     case PacketType::Nack:
     case PacketType::RequestDeviceInfo:
+    case PacketType::RequestReceiverCal:
+    case PacketType::RequestSourceCal:
         // no payload, nothing to do
         break;
     case PacketType::None:
@@ -588,11 +615,17 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::SpectrumAnalyzerResult:
 		payload_size = EncodeSpectrumAnalyzerResult(packet.spectrumResult, &dest[4], destsize - 8);
 		break;
+    case PacketType::SourceCalPoint:
+    case PacketType::ReceiverCalPoint:
+		payload_size = EncodeAmplitudeCorrectionPoint(packet.amplitudePoint, &dest[4], destsize - 8);
+		break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
     case PacketType::Nack:
     case PacketType::RequestDeviceInfo:
+    case PacketType::RequestSourceCal:
+    case PacketType::RequestReceiverCal:
         // no payload, nothing to do
         break;
     case PacketType::None:

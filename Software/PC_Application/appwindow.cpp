@@ -44,6 +44,7 @@
 #include "VNA/vna.h"
 #include "Generator/generator.h"
 #include "SpectrumAnalyzer/spectrumanalyzer.h"
+#include "Calibration/sourcecaldialog.h"
 
 using namespace std;
 
@@ -100,6 +101,7 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionQuit, &QAction::triggered, this, &AppWindow::close);
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
+    connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         Preferences::getInstance().edit();
         // settings might have changed, update necessary stuff
@@ -129,6 +131,9 @@ AppWindow::AppWindow(QWidget *parent)
     vna->activate();
 
     qRegisterMetaType<Protocol::Datapoint>("Datapoint");
+    qRegisterMetaType<Protocol::ManualStatus>("Manual");
+    qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumAnalyzerResult");
+    qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
 
     // List available devices
     if(UpdateDeviceList() && Preferences::getInstance().Startup.ConnectToFirstDevice) {
@@ -181,6 +186,7 @@ void AppWindow::ConnectToDevice(QString serial)
         ui->actionDisconnect->setEnabled(true);
         ui->actionManual_Control->setEnabled(true);
         ui->actionFirmware_Update->setEnabled(true);
+        ui->actionSource_Calibration->setEnabled(true);
 
         Mode::getActiveMode()->initializeDevice();
         UpdateReference();
@@ -207,6 +213,7 @@ void AppWindow::DisconnectDevice()
     ui->actionDisconnect->setEnabled(false);
     ui->actionManual_Control->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);
+    ui->actionSource_Calibration->setEnabled(false);
     for(auto a : deviceActionGroup->actions()) {
         a->setChecked(false);
     }
@@ -347,6 +354,12 @@ void AppWindow::DeviceNeedsUpdate(int reported, int expected)
     if (ret == QMessageBox::Yes) {
         StartFirmwareUpdateDialog();
     }
+}
+
+void AppWindow::SourceCalibrationDialog()
+{
+    auto d = new SourceCalDialog(device);
+    d->exec();
 }
 
 Device *AppWindow::getDevice() const

@@ -48,6 +48,8 @@
     <addaction name="separator"/>
     <addaction name="actionManual_Control"/>
     <addaction name="actionFirmware_Update"/>
+    <addaction name="separator"/>
+    <addaction name="actionSource_Calibration"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -149,6 +151,14 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionSource_Calibration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Source Calibration</string>
    </property>
   </action>
  </widget>

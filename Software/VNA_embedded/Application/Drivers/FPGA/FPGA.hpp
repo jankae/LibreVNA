@@ -105,7 +105,7 @@ enum class Window {
 	Flattop = 0x03,
 };
 
-bool Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size);
+bool Configure(uint32_t start_address, uint32_t bitstream_size);
 
 using HaltedCallback = void(*)(void);
 bool Init(HaltedCallback cb = nullptr);

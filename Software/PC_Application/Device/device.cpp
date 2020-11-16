@@ -434,6 +434,10 @@ void Device::ReceivedData()
         case Protocol::PacketType::SpectrumAnalyzerResult:
             emit SpectrumResultReceived(packet.spectrumResult);
             break;
+        case Protocol::PacketType::SourceCalPoint:
+        case Protocol::PacketType::ReceiverCalPoint:
+            emit AmplitudeCorrectionPointReceived(packet.amplitudePoint);
+            break;
         case Protocol::PacketType::DeviceInfo:
             if(packet.info.ProtocolVersion != Protocol::Version) {
                 if(!lastInfoValid) {

@@ -134,6 +134,14 @@ using FirmwarePacket = struct _firmwarePacket {
     uint8_t data[FirmwareChunkSize];
 };
 
+using AmplitudeCorrectionPoint = struct _amplitudecorrectionpoint {
+	uint8_t totalPoints;
+	uint8_t pointNum;
+	uint32_t freq;
+	int16_t port1;
+	int16_t port2;
+};
+
 enum class PacketType : uint8_t {
 	None = 0,
 	Datapoint = 1,
@@ -151,6 +159,10 @@ enum class PacketType : uint8_t {
 	SpectrumAnalyzerSettings = 13,
 	SpectrumAnalyzerResult =  14,
     RequestDeviceInfo = 15,
+	RequestSourceCal = 16,
+	RequestReceiverCal = 17,
+	SourceCalPoint = 18,
+	ReceiverCalPoint = 19,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -166,6 +178,7 @@ using PacketInfo = struct _packetinfo {
         ManualStatus status;
         SpectrumAnalyzerSettings spectrumSettings;
         SpectrumAnalyzerResult spectrumResult;
+        AmplitudeCorrectionPoint amplitudePoint;
 	};
 };
 

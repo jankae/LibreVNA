@@ -360,8 +360,6 @@ VNA::VNA(AppWindow *window)
     window->addDockWidget(Qt::BottomDockWidgetArea, markerDock);
     docks.insert(markerDock);
 
-    qRegisterMetaType<Protocol::Datapoint>("Datapoint");
-
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
     if(pref.Acquisition.alwaysExciteBothPorts) {

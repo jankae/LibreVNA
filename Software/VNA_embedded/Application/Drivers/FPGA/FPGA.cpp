@@ -4,6 +4,7 @@
 #include "main.h"
 #include "FPGA_HAL.hpp"
 #include <complex>
+#include "HW_HAL.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_DEBUG
 #define LOG_MODULE	"FPGA"
@@ -33,7 +34,7 @@ void FPGA::WriteRegister(FPGA::Reg reg, uint16_t value) {
 	}
 }
 
-bool FPGA::Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size) {
+bool FPGA::Configure(uint32_t start_address, uint32_t bitstream_size) {
 	if(!PROGRAM_B.gpio) {
 		LOG_WARN("PROGRAM_B not defined, assuming FPGA configures itself in master configuration");
 		// wait too allow enough time for FPGA configuration
@@ -64,7 +65,7 @@ bool FPGA::Configure(Flash *f, uint32_t start_address, uint32_t bitstream_size) 
 		}
 		// TODO this part might be doable with the DMA instead of the buffer
 		// get chunk of bitstream from flash...
-		f->read(start_address, size, buf);
+		HWHAL::flash.read(start_address, size, buf);
 		// ... and pass it on to FPGA
 		HAL_SPI_Transmit(&CONFIGURATION_SPI, buf, size, 100);
 		bitstream_size -= size;

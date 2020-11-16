@@ -12,6 +12,8 @@
 
 namespace Firmware {
 
+static constexpr uint32_t maxSize = 1048576;
+
 using Info = struct info {
 	uint32_t FPGA_bitstream_address;
 	uint32_t FPGA_bitstream_size;
@@ -21,8 +23,8 @@ using Info = struct info {
 	bool CPU_need_update;
 };
 
-Info GetFlashContentInfo(Flash *f);
-void PerformUpdate(Flash *f, Info info);
+Info GetFlashContentInfo();
+void PerformUpdate(Info info);
 
 }
 

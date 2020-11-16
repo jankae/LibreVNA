@@ -2,6 +2,7 @@
 
 #include "Protocol.hpp"
 #include <cstring>
+#include "HW_HAL.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"FW"
@@ -19,11 +20,11 @@ using Header = struct {
 	uint32_t crc;
 } __attribute__((packed));
 
-Firmware::Info Firmware::GetFlashContentInfo(Flash *f) {
+Firmware::Info Firmware::GetFlashContentInfo() {
 	Info ret;
 	memset(&ret, 0, sizeof(ret));
 	Header h;
-	f->read(0, sizeof(h), &h);
+	HWHAL::flash.read(0, sizeof(h), &h);
 	// sanity check values
 	if (memcmp(&h.magic, "VNA!",
 			4) || h.FPGA_start == UINT32_MAX || h.FPGA_size > FPGA_MAXSIZE
@@ -40,7 +41,7 @@ Firmware::Info Firmware::GetFlashContentInfo(Flash *f) {
 		if (h.FPGA_size + h.CPU_size - checked_size < read_size) {
 			read_size = h.FPGA_size + h.CPU_size - checked_size;
 		}
-		f->read(h.FPGA_start + checked_size, read_size, buf);
+		HWHAL::flash.read(h.FPGA_start + checked_size, read_size, buf);
 		crc = Protocol::CRC32(crc, buf, read_size);
 		checked_size += read_size;
 	}
@@ -55,7 +56,7 @@ Firmware::Info Firmware::GetFlashContentInfo(Flash *f) {
 		if (h.CPU_size - checked_size < read_size) {
 			read_size = h.CPU_size - checked_size;
 		}
-		f->read(h.CPU_start + checked_size, read_size, buf);
+		HWHAL::flash.read(h.CPU_start + checked_size, read_size, buf);
 		if(memcmp(buf, (void*)(0x8000000+checked_size), read_size)) {
 			LOG_INFO("Difference to CPU firmware in external FLASH detected, update required");
 			ret.CPU_need_update = true;
@@ -158,7 +159,7 @@ static void copy_flash(uint32_t size, SPI_TypeDef *spi) {
 	}
 }
 
-void Firmware::PerformUpdate(Flash *f, Info info) {
+void Firmware::PerformUpdate(Info info) {
 	if(!info.valid) {
 		LOG_ERR("Invalid firmware data, not performing update");
 		return;
@@ -174,8 +175,8 @@ void Firmware::PerformUpdate(Flash *f, Info info) {
 	FLASH_WaitForLastOperation(50000);
 
 	// Initiate readback from flash at CPU firmware start address
-	f->initiateRead(info.CPU_image_address);
+	HWHAL::flash.initiateRead(info.CPU_image_address);
 
-	copy_flash(info.CPU_image_size, f->getSpi()->Instance);
+	copy_flash(info.CPU_image_size, HWHAL::flash.getSpi()->Instance);
 	__builtin_unreachable();
 }

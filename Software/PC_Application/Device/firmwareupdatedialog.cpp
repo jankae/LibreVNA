@@ -63,7 +63,7 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     addStatus("Erasing device memory...");
     dev->SendCommandWithoutPayload(Protocol::PacketType::ClearFlash);
     timer.setSingleShot(true);
-    timer.start(10000);
+    timer.start(20000);
 }
 
 void FirmwareUpdateDialog::addStatus(QString line)

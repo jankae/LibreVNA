@@ -192,8 +192,6 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     window->addDockWidget(Qt::BottomDockWidgetArea, markerDock);
     docks.insert(markerDock);
 
-    qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumResult");
-
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
     if(pref.Startup.RememberSweepSettings) {

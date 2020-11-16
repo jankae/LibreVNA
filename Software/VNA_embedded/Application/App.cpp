@@ -17,6 +17,8 @@
 #include "Manual.hpp"
 #include "Generator.hpp"
 #include "SpectrumAnalyzer.hpp"
+#include "HW_HAL.hpp"
+#include "AmplitudeCal.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -32,8 +34,6 @@ static TaskHandle_t handle;
 // has MCU controllable flash chip, firmware update supported
 #define HAS_FLASH
 #include "Firmware.hpp"
-extern SPI_HandleTypeDef hspi1;
-static Flash flash = Flash(&hspi1, FLASH_CS_GPIO_Port, FLASH_CS_Pin);
 #endif
 
 extern ADC_HandleTypeDef hadc1;
@@ -72,17 +72,17 @@ void App_Start() {
 	LOG_INFO("Start");
 	Exti::Init();
 #ifdef HAS_FLASH
-	if(!flash.isPresent()) {
+	if(!HWHAL::flash.isPresent()) {
 		LOG_CRIT("Failed to detect onboard FLASH");
 		LED::Error(1);
 	}
-	auto fw_info = Firmware::GetFlashContentInfo(&flash);
+	auto fw_info = Firmware::GetFlashContentInfo();
 	if(fw_info.valid) {
 		if(fw_info.CPU_need_update) {
 			// Function will not return, the device will reboot with the new firmware instead
 //			Firmware::PerformUpdate(&flash, fw_info);
 		}
-		if(!FPGA::Configure(&flash, fw_info.FPGA_bitstream_address, fw_info.FPGA_bitstream_size)) {
+		if(!FPGA::Configure(fw_info.FPGA_bitstream_address, fw_info.FPGA_bitstream_size)) {
 			LOG_CRIT("FPGA configuration failed");
 			LED::Error(3);
 		}
@@ -98,6 +98,8 @@ void App_Start() {
 	// Enable supply to RF circuit
 	EN_6V_GPIO_Port->BSRR = EN_6V_Pin;
 #endif
+
+	AmplitudeCal::Load();
 
 	if (!HW::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
@@ -166,7 +168,7 @@ void App_Start() {
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;
 					LOG_DEBUG("Erasing FLASH in preparation for firmware update...");
-					if(flash.eraseChip()) {
+					if(HWHAL::flash.eraseRange(0, Firmware::maxSize)) {
 						LOG_DEBUG("...FLASH erased")
 						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					} else {
@@ -176,7 +178,7 @@ void App_Start() {
 					break;
 				case Protocol::PacketType::FirmwarePacket:
 					LOG_INFO("Writing firmware packet at address %u", recv_packet.firmware.address);
-					if(flash.write(recv_packet.firmware.address, sizeof(recv_packet.firmware.data), recv_packet.firmware.data)) {
+					if(HWHAL::flash.write(recv_packet.firmware.address, sizeof(recv_packet.firmware.data), recv_packet.firmware.data)) {
 						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					} else {
 						LOG_ERR("Failed to write FLASH");
@@ -185,18 +187,30 @@ void App_Start() {
 					break;
 				case Protocol::PacketType::PerformFirmwareUpdate: {
 					LOG_INFO("Firmware update process triggered");
-					auto fw_info = Firmware::GetFlashContentInfo(&flash);
+					auto fw_info = Firmware::GetFlashContentInfo();
 					if(fw_info.valid) {
 						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 						// Some delay to allow communication to finish
 						vTaskDelay(100);
-						Firmware::PerformUpdate(&flash, fw_info);
+						Firmware::PerformUpdate(fw_info);
 						// should never get here
 						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
 					}
 				}
 					break;
 #endif
+				case Protocol::PacketType::RequestSourceCal:
+					AmplitudeCal::SendSource();
+					break;
+				case Protocol::PacketType::RequestReceiverCal:
+					AmplitudeCal::SendReceiver();
+					break;
+				case Protocol::PacketType::SourceCalPoint:
+					AmplitudeCal::AddSourcePoint(recv_packet.amplitudePoint);
+					break;
+				case Protocol::PacketType::ReceiverCalPoint:
+					AmplitudeCal::AddReceiverPoint(recv_packet.amplitudePoint);
+					break;
 				default:
 					// this packet type is not supported
 					Communication::SendWithoutPayload(Protocol::PacketType::Nack);

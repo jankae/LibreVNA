@@ -29,7 +29,7 @@ void Flash::read(uint32_t address, uint16_t length, void *dest) {
 	CS(true);
 }
 
-bool Flash::write(uint32_t address, uint16_t length, uint8_t *src) {
+bool Flash::write(uint32_t address, uint16_t length, void *src) {
 	if((address & 0xFF) != 0 || length%256 != 0) {
 		// only writes to complete pages allowed
 		LOG_ERR("Invalid write address/size: %lu/%u", address, length);
@@ -49,7 +49,7 @@ bool Flash::write(uint32_t address, uint16_t length, uint8_t *src) {
 		// issue read command
 		HAL_SPI_Transmit(spi, cmd, 4, 100);
 		// write data
-		HAL_SPI_Transmit(spi, src, 256, 1000);
+		HAL_SPI_Transmit(spi, (uint8_t*) src, 256, 1000);
 		CS(true);
 		if(!WaitBusy(20)) {
 			LOG_ERR("Write timed out");
@@ -78,12 +78,62 @@ void Flash::EnableWrite() {
 }
 
 bool Flash::eraseChip() {
-	LOG_INFO("Erasing...");
+	LOG_INFO("Erasing chip...");
 	EnableWrite();
 	CS(false);
-	// enable write latch
 	uint8_t chip_erase = 0x60;
 	HAL_SPI_Transmit(spi, &chip_erase, 1, 100);
+	CS(true);
+	return WaitBusy(25000);
+}
+
+bool Flash::eraseSector(uint32_t address) {
+	// align address with sector address
+	address -= address % SectorSize;
+	LOG_INFO("Erasing sector at %lu", address);
+	EnableWrite();
+	CS(false);
+	uint8_t cmd[4] = {
+		0x20,
+		(uint8_t) (address >> 16) & 0xFF,
+		(uint8_t) (address >> 8) & 0xFF,
+		(uint8_t) (address & 0xFF),
+	};
+	HAL_SPI_Transmit(spi, cmd, 4, 100);
+	CS(true);
+	return WaitBusy(25000);
+}
+
+bool Flash::erase32Block(uint32_t address) {
+	// align address with block address
+	address -= address % Block32Size;
+	LOG_INFO("Erasing 32kB block at %lu", address);
+	EnableWrite();
+	CS(false);
+	uint8_t cmd[4] = {
+		0x52,
+		(uint8_t) (address >> 16) & 0xFF,
+		(uint8_t) (address >> 8) & 0xFF,
+		(uint8_t) (address & 0xFF),
+	};
+	HAL_SPI_Transmit(spi, cmd, 4, 100);
+	CS(true);
+	return WaitBusy(25000);
+}
+
+bool Flash::erase64Block(uint32_t address) {
+	// align address with block address
+	address -= address % Block64Size;
+	LOG_INFO("Erasing 64kB block at %lu", address);
+	EnableWrite();
+	CS(false);
+	uint8_t cmd[4] = {
+		0xD8,
+		(uint8_t) (address >> 16) & 0xFF,
+		(uint8_t) (address >> 8) & 0xFF,
+		(uint8_t) (address & 0xFF),
+	};
+	HAL_SPI_Transmit(spi, cmd, 4, 100);
 	CS(true);
 	return WaitBusy(25000);
 }
@@ -119,4 +169,39 @@ bool Flash::WaitBusy(uint32_t timeout) {
 	CS(true);
 	LOG_ERR("Timeout occured");
 	return false;
+}
+
+bool Flash::eraseRange(uint32_t start, uint32_t len) {
+	if(start % SectorSize != 0) {
+		LOG_ERR("Start address of range has to be sector aligned (is %lu)", start);
+		return false;
+	}
+	if(len % SectorSize != 0) {
+		LOG_ERR("Length of range has to be multiple of sector size (is %lu)", len);
+		return false;
+	}
+	uint32_t erased_len = 0;
+	while(erased_len < len) {
+		uint32_t remaining = len - erased_len;
+		if(remaining >= Block64Size && start % Block64Size == 0) {
+			erase64Block(start);
+			erased_len += Block64Size;
+			start += Block64Size;
+			continue;
+		}
+		if(remaining >= Block32Size && start % Block32Size == 0) {
+			erase32Block(start);
+			erased_len += Block32Size;
+			start += Block32Size;
+			continue;
+		}
+		if(remaining >= SectorSize && start % SectorSize == 0) {
+			eraseSector(start);
+			erased_len += SectorSize;
+			start += SectorSize;
+			continue;
+		}
+		// Should never get here
+	}
+	return true;
 }

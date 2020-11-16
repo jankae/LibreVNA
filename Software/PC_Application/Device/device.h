@@ -13,8 +13,8 @@
 
 Q_DECLARE_METATYPE(Protocol::Datapoint);
 Q_DECLARE_METATYPE(Protocol::ManualStatus);
-Q_DECLARE_METATYPE(Protocol::DeviceInfo);
 Q_DECLARE_METATYPE(Protocol::SpectrumAnalyzerResult);
+Q_DECLARE_METATYPE(Protocol::AmplitudeCorrectionPoint);
 
 class USBInBuffer : public QObject {
     Q_OBJECT;
@@ -74,6 +74,7 @@ signals:
     void DatapointReceived(Protocol::Datapoint);
     void ManualStatusReceived(Protocol::ManualStatus);
     void SpectrumResultReceived(Protocol::SpectrumAnalyzerResult);
+    void AmplitudeCorrectionPointReceived(Protocol::AmplitudeCorrectionPoint);
     void DeviceInfoUpdated();
     void ConnectionLost();
     void AckReceived();

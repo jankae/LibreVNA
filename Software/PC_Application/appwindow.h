@@ -44,6 +44,7 @@ private slots:
     void UpdateReference();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
+    void SourceCalibrationDialog();
 private:
     void DeviceConnectionLost();
     void CreateToolbars();

@@ -4,6 +4,7 @@
 #include "Si5351C.hpp"
 #include "max2871.hpp"
 #include "main.h"
+#include "Flash.hpp"
 
 extern I2C_HandleTypeDef hi2c2;
 extern SPI_HandleTypeDef hspi1;
@@ -13,6 +14,7 @@ namespace HWHAL {
 extern Si5351C Si5351;
 extern MAX2871 Source;
 extern MAX2871 LO1;
+extern Flash flash;
 
 // Mapping of the Si5351 channels to PLLs/Mixers
 namespace SiChannel {
