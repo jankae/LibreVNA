@@ -7,6 +7,7 @@ HEADERS += \
     Calibration/calkitdialog.h \
     Calibration/json.hpp \
     Calibration/measurementmodel.h \
+    Calibration/receivercaldialog.h \
     Calibration/sourcecaldialog.h \
     CustomWidgets/colorpickerbutton.h \
     CustomWidgets/informationbox.h \
@@ -56,6 +57,7 @@ SOURCES += \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
     Calibration/measurementmodel.cpp \
+    Calibration/receivercaldialog.cpp \
     Calibration/sourcecaldialog.cpp \
     CustomWidgets/colorpickerbutton.cpp \
     CustomWidgets/informationbox.cpp \
@@ -106,6 +108,7 @@ win32:LIBS += -LC:\Qwt-6.1.4\lib -lqwt
 QT += widgets
 
 FORMS += \
+    Calibration/addamplitudepointsdialog.ui \
     Calibration/amplitudecaldialog.ui \
     Calibration/calibrationtracedialog.ui \
     Calibration/calkitdialog.ui \

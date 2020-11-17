@@ -223,7 +223,8 @@ static Protocol::GeneratorSettings DecodeGeneratorSettings(uint8_t *buf) {
     Decoder e(buf);
     e.get<uint64_t>(d.frequency);
     e.get<int16_t>(d.cdbm_level);
-    e.get<uint8_t>(d.activePort);
+    d.activePort = e.getBits(2);
+    d.applyAmplitudeCorrection = e.getBits(1);
     return d;
 }
 static int16_t EncodeGeneratorSettings(Protocol::GeneratorSettings d, uint8_t *buf,
@@ -231,7 +232,8 @@ static int16_t EncodeGeneratorSettings(Protocol::GeneratorSettings d, uint8_t *b
     Encoder e(buf, bufSize);
     e.add<uint64_t>(d.frequency);
     e.add<int16_t>(d.cdbm_level);
-    e.add<uint8_t>(d.activePort);
+    e.addBits(d.activePort, 2);
+    e.addBits(d.applyAmplitudeCorrection, 1);
     return e.getSize();
 }
 
@@ -261,6 +263,7 @@ static Protocol::DeviceInfo DecodeDeviceInfo(uint8_t *buf) {
     e.get(d.limits_cdbm_max);
     e.get(d.limits_minRBW);
     e.get(d.limits_maxRBW);
+    e.get(d.limits_maxAmplitudePoints);
     return d;
 }
 static int16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
@@ -290,6 +293,7 @@ static int16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
     e.add(d.limits_cdbm_max);
     e.add(d.limits_minRBW);
     e.add(d.limits_maxRBW);
+    e.add(d.limits_maxAmplitudePoints);
     return e.getSize();
 }
 
@@ -402,6 +406,7 @@ static Protocol::SpectrumAnalyzerSettings DecodeSpectrumAnalyzerSettings(uint8_t
     d.SignalID = e.getBits(1);
     d.Detector = e.getBits(3);
     d.UseDFT = e.getBits(1);
+    d.applyReceiverCorrection = e.getBits(1);
     return d;
 }
 static int16_t EncodeSpectrumAnalyzerSettings(Protocol::SpectrumAnalyzerSettings d, uint8_t *buf,
@@ -415,6 +420,7 @@ static int16_t EncodeSpectrumAnalyzerSettings(Protocol::SpectrumAnalyzerSettings
     e.addBits(d.SignalID, 1);
     e.addBits(d.Detector, 3);
     e.addBits(d.UseDFT, 1);
+    e.addBits(d.applyReceiverCorrection, 1);
     return e.getSize();
 }
 

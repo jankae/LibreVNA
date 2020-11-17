@@ -219,8 +219,8 @@ bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 			port1 = dft.P1;
 			port2 = dft.P2;
 		} else {
-			port1 = abs(std::complex<float>(result.P1I, result.P1Q));
-			port2 = abs(std::complex<float>(result.P2I, result.P2Q));
+			port1 = fabs(std::complex<float>(result.P1I, result.P1Q));
+			port2 = fabs(std::complex<float>(result.P2I, result.P2Q));
 		}
 		port1 /= sampleNum;
 		port2 /= sampleNum;
@@ -315,8 +315,16 @@ void SA::Work() {
 				// Send result to application
 				p.type = Protocol::PacketType::SpectrumAnalyzerResult;
 				// measurements are already up to date, fill remaining fields
-				p.spectrumResult.pointNum = binIndex;
 				p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
+				// scale approximately (constant determined empirically)
+				p.spectrumResult.port1 /= 253000000.0;
+				p.spectrumResult.port2 /= 253000000.0;
+				if (s.applyReceiverCorrection) {
+					auto correction = AmplitudeCal::ReceiverCorrection(p.spectrumResult.frequency);
+					p.spectrumResult.port1 *= powf(10.0f, (float) correction.port1 / 100.0f / 20.0f);
+					p.spectrumResult.port2 *= powf(10.0f, (float) correction.port2 / 100.0f / 20.0f);
+				}
+				p.spectrumResult.pointNum = binIndex;
 				Communication::Send(p);
 			}
 		}

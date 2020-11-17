@@ -53,6 +53,7 @@ Protocol::GeneratorSettings SignalgeneratorWidget::getDeviceStatus()
     } else {
         s.activePort = 0;
     }
+    s.applyAmplitudeCorrection = 1;
     return s;
 }
 

@@ -229,9 +229,6 @@ using namespace std;
 
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
-    // TODO level adjustment in device
-    d.port1 /= 126500000.0;
-    d.port2 /= 126500000.0;
     d = average.process(d);
     traceModel.addSAData(d, settings);
     emit dataChanged();
@@ -248,6 +245,7 @@ void SpectrumAnalyzer::SettingsChanged()
     } else {
         settings.pointNum = settings.f_stop - settings.f_start + 1;
     }
+    settings.applyReceiverCorrection = 1;
 
     auto pref = Preferences::getInstance();
     if(pref.Acquisition.useDFTinSAmode && settings.RBW <= pref.Acquisition.RBWLimitForDFT) {

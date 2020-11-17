@@ -45,6 +45,7 @@
 #include "Generator/generator.h"
 #include "SpectrumAnalyzer/spectrumanalyzer.h"
 #include "Calibration/sourcecaldialog.h"
+#include "Calibration/receivercaldialog.h"
 
 using namespace std;
 
@@ -102,6 +103,7 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
     connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
+    connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         Preferences::getInstance().edit();
         // settings might have changed, update necessary stuff
@@ -187,6 +189,7 @@ void AppWindow::ConnectToDevice(QString serial)
         ui->actionManual_Control->setEnabled(true);
         ui->actionFirmware_Update->setEnabled(true);
         ui->actionSource_Calibration->setEnabled(true);
+        ui->actionReceiver_Calibration->setEnabled(true);
 
         Mode::getActiveMode()->initializeDevice();
         UpdateReference();
@@ -214,6 +217,7 @@ void AppWindow::DisconnectDevice()
     ui->actionManual_Control->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);
     ui->actionSource_Calibration->setEnabled(false);
+    ui->actionReceiver_Calibration->setEnabled(false);
     for(auto a : deviceActionGroup->actions()) {
         a->setChecked(false);
     }
@@ -359,6 +363,12 @@ void AppWindow::DeviceNeedsUpdate(int reported, int expected)
 void AppWindow::SourceCalibrationDialog()
 {
     auto d = new SourceCalDialog(device);
+    d->exec();
+}
+
+void AppWindow::ReceiverCalibrationDialog()
+{
+    auto d = new ReceiverCalDialog(device);
     d->exec();
 }
 

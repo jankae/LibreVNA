@@ -1,4 +1,4 @@
-﻿#ifndef AMPLITUDECALDIALOG_H
+#ifndef AMPLITUDECALDIALOG_H
 #define AMPLITUDECALDIALOG_H
 
 #include <QDialog>
@@ -48,30 +48,53 @@ public:
     class CorrectionPoint {
     public:
         double frequency;
-        double correctionPort1;
-        double correctionPort2;
+        int16_t correctionPort1;
+        int16_t correctionPort2;
         double amplitudePort1;
         double amplitudePort2;
+        bool port1set;
+        bool port2set;
     };
     std::vector<CorrectionPoint> getPoints() const;
     void setAmplitude(double amplitude, unsigned int point, bool port2);
+
+    enum class CalibrationMode {
+        BothPorts,
+        OnlyPort1,
+        OnlyPort2,
+    };
+
+    CalibrationMode getMode() const;
 
 protected slots:
     void ReceivedPoint(Protocol::AmplitudeCorrectionPoint p);
     void LoadFromDevice();
     void SaveToDevice();
-    void RemovePoint();
-    void AddPoint();
+    void RemovePoint(unsigned int i);
+    void RemoveAllPoints();
+    void AddPoint(double frequency);
+    void AddPointDialog();
 signals:
     void pointsUpdated();
+    void newPointCreated(CorrectionPoint& p);
 protected:
+    bool ConfirmActionIfEdited();
+    void UpdateSaveButton();
     virtual Protocol::PacketType requestCommand() = 0;
     virtual Protocol::PacketType pointType() = 0;
+    // will get called whenever a new cell is selected (frequency=0 means invalid selection)
+    virtual void SelectedPoint(double frequency, bool port2) = 0;
+    // will get called whenever the amplitude is changed. Derived class is responsible for updating correction factor
+    virtual void AmplitudeChanged(CorrectionPoint& point, bool port2) = 0;
+    // called whenver the correction factor have been retrieved from the device and the amplitudes need to be updated
+    virtual void UpdateAmplitude(CorrectionPoint& point) = 0;
     std::vector<CorrectionPoint> points;
     Ui::AmplitudeCalDialog *ui;
     Device *dev;
     Mode *activeMode;
     AmplitudeModel model;
+    bool edited;
+    CalibrationMode mode;
 };
 
 #endif // SOURCECALDIALOG_H

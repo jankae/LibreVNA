@@ -28,11 +28,11 @@
     </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QPushButton" name="add">
        <property name="text">
-        <string>Add Point</string>
+        <string>Add Point(s)</string>
        </property>
        <property name="icon">
         <iconset theme="list-add" resource="../icons.qrc">
@@ -57,7 +57,8 @@
         <string>Help</string>
        </property>
        <property name="icon">
-        <iconset theme="help"/>
+        <iconset theme="help">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -74,6 +75,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="save">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Save to Device</string>
        </property>
@@ -81,6 +85,101 @@
         <iconset theme="document-save" resource="../icons.qrc">
          <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
        </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Calibration Mode</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QRadioButton" name="modeBoth">
+          <property name="text">
+           <string>Both Ports</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">groupMode</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Best accuracy</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="modePort1">
+          <property name="text">
+           <string>Only Port 1</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">groupMode</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Use same correction for port 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="modePort2">
+          <property name="text">
+           <string>Only Port 2</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">groupMode</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Use same correction for port 1</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
@@ -104,4 +203,7 @@
   <include location="../icons.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="groupMode"/>
+ </buttongroups>
 </ui>

@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 1;
+static constexpr uint16_t Version = 2;
 
 // When changing/adding/removing variables from these structs also adjust the decode/encode functions in Protocol.cpp
 
@@ -37,7 +37,8 @@ using ReferenceSettings = struct _referenceSettings {
 using GeneratorSettings = struct _generatorSettings {
 	uint64_t frequency;
 	int16_t cdbm_level;
-	uint8_t activePort;
+    uint8_t activePort :2;
+    uint8_t applyAmplitudeCorrection :1;
 };
 
 using DeviceInfo = struct _deviceInfo {
@@ -64,6 +65,7 @@ using DeviceInfo = struct _deviceInfo {
 	int16_t limits_cdbm_max;
 	uint32_t limits_minRBW;
 	uint32_t limits_maxRBW;
+    uint8_t limits_maxAmplitudePoints;
 };
 
 using ManualStatus = struct _manualstatus {
@@ -119,6 +121,7 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 	uint8_t SignalID :1;
 	uint8_t Detector :3;
 	uint8_t UseDFT :1;
+    uint8_t applyReceiverCorrection :1;
 };
 
 using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {

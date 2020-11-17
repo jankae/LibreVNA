@@ -30,7 +30,7 @@ void Flash::read(uint32_t address, uint16_t length, void *dest) {
 }
 
 bool Flash::write(uint32_t address, uint16_t length, void *src) {
-	if((address & 0xFF) != 0 || length%256 != 0) {
+	if(address % PageSize != 0 || length%PageSize != 0) {
 		// only writes to complete pages allowed
 		LOG_ERR("Invalid write address/size: %lu/%u", address, length);
 		return false;
@@ -46,7 +46,7 @@ bool Flash::write(uint32_t address, uint16_t length, void *src) {
 			(uint8_t) (address >> 8) & 0xFF,
 			(uint8_t) (address & 0xFF),
 		};
-		// issue read command
+		// issue write command
 		HAL_SPI_Transmit(spi, cmd, 4, 100);
 		// write data
 		HAL_SPI_Transmit(spi, (uint8_t*) src, 256, 1000);

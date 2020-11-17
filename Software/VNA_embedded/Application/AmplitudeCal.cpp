@@ -44,7 +44,12 @@ bool AmplitudeCal::Save() {
 	if(!HWHAL::flash.eraseRange(flash_address, flash_size)) {
 		return false;
 	}
-	return HWHAL::flash.write(flash_address, sizeof(cal), &cal);
+	uint32_t write_size = sizeof(cal);
+	if(write_size % Flash::PageSize != 0) {
+		// round up to next page
+		write_size += Flash::PageSize - write_size % Flash::PageSize;
+	}
+	return HWHAL::flash.write(flash_address, write_size, &cal);
 }
 
 void AmplitudeCal::SetDefault() {
@@ -78,9 +83,9 @@ static AmplitudeCal::Correction InterpolateCorrection(const CorrectionTable& tab
 		ret.port2 = table.port2Correction[table.usedPoints - 1];
 	} else {
 		// frequency is between i and i-1, interpolate
-		float alpha = (freq - table.freq[i - 1]) / (table.freq[i] - table.freq[i - 1]);
-		ret.port1 = table.port1Correction[i - 1] * (1 - alpha) + table.port1Correction[i] * alpha;
-		ret.port2 = table.port2Correction[i - 1] * (1 - alpha) + table.port2Correction[i] * alpha;
+		float alpha = (float) (freq - table.freq[i - 1]) / (table.freq[i] - table.freq[i - 1]);
+		ret.port1 = table.port1Correction[i - 1] * (1.0f - alpha) + table.port1Correction[i] * alpha;
+		ret.port2 = table.port2Correction[i - 1] * (1.0f - alpha) + table.port2Correction[i] * alpha;
 	}
 	return ret;
 }
@@ -116,6 +121,10 @@ void AmplitudeCal::SendReceiver() {
 }
 
 static void addPoint(CorrectionTable& table, const Protocol::AmplitudeCorrectionPoint& p) {
+	if(p.pointNum >= AmplitudeCal::maxPoints) {
+		// ignore out-of-bounds point
+		return;
+	}
 	table.freq[p.pointNum] = p.freq;
 	table.port1Correction[p.pointNum] = p.port1;
 	table.port2Correction[p.pointNum] = p.port2;

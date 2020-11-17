@@ -28,11 +28,12 @@ public:
 	const SPI_HandleTypeDef* const getSpi() const {
 		return spi;
 	}
-
-private:
+	static constexpr uint32_t PageSize = 256;
 	static constexpr uint32_t SectorSize = 4096;
 	static constexpr uint32_t Block32Size = 32768;
 	static constexpr uint32_t Block64Size = 65536;
+
+private:
 	void CS(bool high) {
 		if(high) {
 			CS_gpio->BSRR = CS_pin;

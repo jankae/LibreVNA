@@ -3,6 +3,7 @@
 #include <cstdint>
 #include "Protocol.hpp"
 #include "FPGA/FPGA.hpp"
+#include "AmplitudeCal.hpp"
 
 #define USE_DEBUG_PINS
 
@@ -38,6 +39,12 @@ static_assert(ADCprescaler * ADCSamplerate == FPGA::Clockrate, "ADCSamplerate ca
 static constexpr uint16_t DFTphaseInc = 4096 * IF2 / ADCSamplerate;
 static_assert(DFTphaseInc * ADCSamplerate == 4096 * IF2, "DFT can not be computed for 2.IF");
 
+// approximate output power at low frequencies with different source strength settings (attenuator = 0) in cdbm
+static constexpr int16_t LowBandMinPower = -1350;
+static constexpr int16_t LowBandMaxPower = -190;
+static constexpr int16_t HighBandMinPower = -1060;
+static constexpr int16_t HighBandMaxPower = -160;
+
 static constexpr Protocol::DeviceInfo Info = {
 		.ProtocolVersion = Protocol::Version,
 		.FW_major = FW_MAJOR,
@@ -62,6 +69,7 @@ static constexpr Protocol::DeviceInfo Info = {
 		.limits_cdbm_max = 0,
 		.limits_minRBW = (uint32_t) (ADCSamplerate * 2.23f / MaxSamples),
 		.limits_maxRBW = (uint32_t) (ADCSamplerate * 2.23f / MinSamples),
+		.limits_maxAmplitudePoints = AmplitudeCal::maxPoints,
 };
 
 enum class Mode {
