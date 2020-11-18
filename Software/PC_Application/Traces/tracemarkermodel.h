@@ -37,6 +37,7 @@ class TraceMarkerModel : public QAbstractItemModel
     Q_OBJECT
 public:
     TraceMarkerModel(TraceModel &model, QObject *parent = 0);
+    ~TraceMarkerModel();
 
     enum {
         ColIndexNumber = 0,

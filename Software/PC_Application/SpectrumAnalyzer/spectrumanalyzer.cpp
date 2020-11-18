@@ -221,7 +221,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     window->addToolBar(tb_trackgen);
     toolbars.insert(tb_trackgen);
 
-    markerModel = new TraceMarkerModel(traceModel);
+    markerModel = new TraceMarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
     tracesDock->setWidget(new TraceWidget(traceModel, window, true));
@@ -303,6 +303,32 @@ void SpectrumAnalyzer::SettingsChanged()
         settings.UseDFT = 1;
     } else {
         settings.UseDFT = 0;
+    }
+
+    if(settings.trackingGenerator && settings.f_stop >= 25000000) {
+        // Check point spacing.
+        // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
+        // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
+        // respect to the point number, it is ensured that every displayed point has at least one sample with
+        // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
+        // settings.
+        auto pointSpacing = (settings.f_stop - settings.f_start) / (settings.pointNum - 1);
+        // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
+        // This code assumes some knowledge of the actual hardware and probably should be moved
+        // onto the device at some point
+        double minSpacing = 25000;
+        auto stop = settings.f_stop;
+        while(stop <= 3000000000) {
+            minSpacing /= 2;
+            stop *= 2;
+        }
+        if(pointSpacing < minSpacing) {
+            auto requiredMinSpan = minSpacing * (settings.pointNum - 1);
+            auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
+                            "With your current span, this could result in the signal not being detected at some bands. A minimum"
+                            " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
+            InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
+        }
     }
 
     if(window->getDevice()) {

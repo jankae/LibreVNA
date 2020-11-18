@@ -5,13 +5,6 @@ ReceiverCalDialog::ReceiverCalDialog(Device *dev)
 {
     setWindowTitle("Receiver Calibration Dialog");
     LoadFromDevice();
-    connect(dev, &Device::SpectrumResultReceived, [=](Protocol::SpectrumAnalyzerResult res) {
-        if(res.pointNum == 1) {
-            // store result in center of sweep of 3 points
-            port1_result = 20*log10(res.port1);
-            port2_result = 20*log10(res.port2);
-        }
-    });
 }
 
 void ReceiverCalDialog::SelectedPoint(double frequency, bool)
@@ -38,11 +31,12 @@ void ReceiverCalDialog::SelectedPoint(double frequency, bool)
 
 void ReceiverCalDialog::AmplitudeChanged(AmplitudeCalDialog::CorrectionPoint &point, bool port2)
 {
+    auto m = averageMeasurement();
     auto *factor = port2 ? &point.correctionPort2 : &point.correctionPort1;
     const auto *amplitude = port2 ? &point.amplitudePort2 : &point.amplitudePort1;
-    const auto *measured = port2 ? &port2_result : &port1_result;
+    const auto *measured = port2 ? &m.port2 : &m.port1;
     // calculate correction factor by comparing expected with measured amplitude
-    *factor = (*measured - *amplitude) * 100.0;
+    *factor = (*amplitude - *measured) * 100.0;
 }
 
 void ReceiverCalDialog::UpdateAmplitude(AmplitudeCalDialog::CorrectionPoint &point)

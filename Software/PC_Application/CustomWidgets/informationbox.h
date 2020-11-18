@@ -7,7 +7,7 @@ class InformationBox : public QMessageBox
 {
     Q_OBJECT
 public:
-    static void ShowMessage(QString title, QString message, QWidget *parent = nullptr);
+    static void ShowMessage(QString title, QString message, QString messageID = QString());
 private:
     InformationBox(QString title, QString message, unsigned int hash, QWidget *parent);
     ~InformationBox();

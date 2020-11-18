@@ -3,14 +3,19 @@
 #include <QSettings>
 #include <QDebug>
 
-void InformationBox::ShowMessage(QString title, QString message, QWidget *parent)
+void InformationBox::ShowMessage(QString title, QString message, QString messageID)
 {
     // check if the user still wants to see this message
-    auto hash = qHash(message);
+    unsigned int hash;
+    if(messageID.isEmpty()) {
+        hash = qHash(message);
+    } else {
+        hash = qHash(messageID);
+    }
 
     QSettings s;
     if(!s.contains(hashToSettingsKey(hash))) {
-        auto box = new InformationBox(title, message, hash, parent);
+        auto box = new InformationBox(title, message, hash, nullptr);
         box->exec();
     }
 }

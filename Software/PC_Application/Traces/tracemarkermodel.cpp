@@ -15,6 +15,11 @@ TraceMarkerModel::TraceMarkerModel(TraceModel &model, QObject *parent)
     root = new TraceMarker(this);
 }
 
+TraceMarkerModel::~TraceMarkerModel()
+{
+    delete root;
+}
+
 QModelIndex TraceMarkerModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent)) {

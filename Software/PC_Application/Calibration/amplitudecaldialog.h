@@ -75,11 +75,14 @@ protected slots:
     void AddPoint(double frequency);
     void AddPointDialog();
     void AutomaticMeasurementDialog();
+    void ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res);
 signals:
     void pointsUpdated();
     void newPointCreated(CorrectionPoint& p);
 protected:
     static constexpr double excitationAmplitude = -20.0;
+    static constexpr int averages = 20;
+    static constexpr int automaticSettling = 10;
 
     bool ConfirmActionIfEdited();
     void UpdateSaveButton();
@@ -100,13 +103,24 @@ protected:
     CalibrationMode mode;
 
     void SetupNextAutomaticPoint(bool isSourceCal);
+    void ReceivedAutomaticMeasurementResult(Protocol::SpectrumAnalyzerResult res);
     struct {
+        QDialog *dialog;
         std::vector<CorrectionPoint> points;
         bool measuringPort2; // true if port2 is being calibrated
         unsigned int measuringCount; // number of calibration point
         unsigned int settlingCount; // number of measurements still to ignore before taking measurement
-        QMetaObject::Connection resultConnection;
+        bool isSourceCal;
+        QProgressBar *progress;
     } automatic;
+
+    // raw (uncorrected) measurements from device.
+    // Used in reveicer calibration as well as in automatic calibrations
+    struct MeasurementResult {
+        double port1, port2;
+    };
+    std::deque<MeasurementResult> measured;
+    MeasurementResult averageMeasurement();
 };
 
 #endif // SOURCECALDIALOG_H
