@@ -15,8 +15,6 @@ protected:
     void SelectedPoint(double frequency, bool port2) override;
     void AmplitudeChanged(CorrectionPoint &point, bool port2) override;
     void UpdateAmplitude(CorrectionPoint& point) override;
-private:
-    static constexpr double excitationAmplitude = -20.0;
 };
 
 #endif // SOURCECALDIALOG_H

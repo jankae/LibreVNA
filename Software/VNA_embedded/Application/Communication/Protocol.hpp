@@ -122,6 +122,11 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 	uint8_t Detector :3;
 	uint8_t UseDFT :1;
     uint8_t applyReceiverCorrection :1;
+    uint8_t trackingGenerator :1;
+    uint8_t applySourceCorrection :1;
+    uint8_t trackingGeneratorPort :1; // 0 for port1, 1 for port2
+    int64_t trackingGeneratorOffset;
+    int16_t trackingPower;
 };
 
 using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {

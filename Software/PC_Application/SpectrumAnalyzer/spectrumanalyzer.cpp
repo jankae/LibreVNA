@@ -40,6 +40,7 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
+#include "CustomWidgets/informationbox.h"
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     : Mode(window, "Spectrum Analyzer"),
@@ -176,6 +177,49 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     window->addToolBar(tb_acq);
     toolbars.insert(tb_acq);
 
+    // Tracking generator toolbar
+    auto tb_trackgen = new QToolBar("Tracking Generator");
+    auto cbTrackGenEnable = new QCheckBox("Tracking Generator");
+    connect(cbTrackGenEnable, &QCheckBox::toggled, [=](bool enabled) {
+        settings.trackingGenerator = enabled;
+        SettingsChanged();
+    });
+    tb_trackgen->addWidget(cbTrackGenEnable);
+
+    auto cbTrackGenPort = new QComboBox();
+    cbTrackGenPort->addItem("Port 1");
+    cbTrackGenPort->addItem("Port 2");
+    cbTrackGenPort->setCurrentIndex(0);
+    connect(cbTrackGenPort, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
+       settings.trackingGeneratorPort = index;
+       if(settings.trackingGenerator) {
+            SettingsChanged();
+       }
+    });
+    tb_trackgen->addWidget(cbTrackGenPort);
+
+    auto dbm = new QDoubleSpinBox();
+    dbm->setFixedWidth(95);
+    dbm->setRange(-100.0, 100.0);
+    dbm->setSingleStep(0.25);
+    dbm->setSuffix("dbm");
+    dbm->setToolTip("Level");
+    dbm->setKeyboardTracking(false);
+    connect(dbm, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &SpectrumAnalyzer::SetTGLevel);
+    connect(this, &SpectrumAnalyzer::TGLevelChanged, dbm, &QDoubleSpinBox::setValue);
+    tb_trackgen->addWidget(new QLabel("Level:"));
+    tb_trackgen->addWidget(dbm);
+
+    auto tgOffset = new SIUnitEdit("Hz", " kMG", 6);
+    tgOffset->setFixedWidth(100);
+    tgOffset->setToolTip("Tracking generator offset");
+    connect(tgOffset, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetTGOffset);
+    connect(this, &SpectrumAnalyzer::TGOffsetChanged, tgOffset, &SIUnitEdit::setValueQuiet);
+    tb_trackgen->addWidget(new QLabel("Offset:"));
+    tb_trackgen->addWidget(tgOffset);
+
+    window->addToolBar(tb_trackgen);
+    toolbars.insert(tb_trackgen);
 
     markerModel = new TraceMarkerModel(traceModel);
 
@@ -191,6 +235,11 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     markerDock->setWidget(markerWidget);
     window->addDockWidget(Qt::BottomDockWidgetArea, markerDock);
     docks.insert(markerDock);
+
+
+    // Set initial TG settings
+    SetTGLevel(-20.0);
+    SetTGOffset(0);
 
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
@@ -246,9 +295,11 @@ void SpectrumAnalyzer::SettingsChanged()
         settings.pointNum = settings.f_stop - settings.f_start + 1;
     }
     settings.applyReceiverCorrection = 1;
+    settings.applySourceCorrection = 1;
 
     auto pref = Preferences::getInstance();
-    if(pref.Acquisition.useDFTinSAmode && settings.RBW <= pref.Acquisition.RBWLimitForDFT) {
+    if(!settings.trackingGenerator && pref.Acquisition.useDFTinSAmode && settings.RBW <= pref.Acquisition.RBWLimitForDFT) {
+        // Enable DFT if below RBW threshold and TG is not enabled
         settings.UseDFT = 1;
     } else {
         settings.UseDFT = 0;
@@ -372,6 +423,30 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     SettingsChanged();
 }
 
+void SpectrumAnalyzer::SetTGLevel(double level)
+{
+    if(level > Device::Info().limits_cdbm_max / 100.0) {
+        level = Device::Info().limits_cdbm_max / 100.0;
+    } else if(level < Device::Info().limits_cdbm_min / 100.0) {
+        level = Device::Info().limits_cdbm_min / 100.0;
+    }
+    emit TGLevelChanged(level);
+    settings.trackingPower = level * 100;
+    if(settings.trackingGenerator) {
+        SettingsChanged();
+    }
+}
+
+void SpectrumAnalyzer::SetTGOffset(double offset)
+{
+    settings.trackingGeneratorOffset = offset;
+
+    ConstrainAndUpdateFrequencies();
+    if(settings.trackingGenerator) {
+        SettingsChanged();
+    }
+}
+
 void SpectrumAnalyzer::UpdateAverageCount()
 {
     lAverages->setText(QString::number(average.getLevel()) + "/");
@@ -388,10 +463,25 @@ void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
     if(settings.f_start < Device::Info().limits_minFreq) {
         settings.f_start = Device::Info().limits_minFreq;
     }
+
+    bool trackingOffset_limited = false;
+    if(settings.f_stop + settings.trackingGeneratorOffset > Device::Info().limits_maxFreq) {
+        trackingOffset_limited = true;
+        settings.trackingGeneratorOffset = Device::Info().limits_maxFreq - settings.f_stop;
+    }
+    if(settings.f_start + settings.trackingGeneratorOffset < Device::Info().limits_minFreq) {
+        trackingOffset_limited = true;
+        settings.trackingGeneratorOffset = Device::Info().limits_minFreq - settings.f_start;
+    }
+    if(trackingOffset_limited) {
+        InformationBox::ShowMessage("Warning", "The selected tracking generator offset is not reachable for all frequencies with the current span. "
+                                    "The tracking generator offset has been constrained according to the selected start and stop frequencies");
+    }
     emit startFreqChanged(settings.f_start);
     emit stopFreqChanged(settings.f_stop);
     emit spanChanged(settings.f_stop - settings.f_start);
     emit centerFreqChanged((settings.f_stop + settings.f_start)/2);
+    emit TGOffsetChanged(settings.trackingGeneratorOffset);
     SettingsChanged();
 }
 

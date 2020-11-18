@@ -36,7 +36,6 @@ static constexpr uint16_t IFTableNumEntries = 500;
 static IFTableEntry IFTable[IFTableNumEntries];
 static uint16_t IFTableIndexCnt = 0;
 
-static constexpr uint32_t BandSwitchFrequency = 25000000;
 static constexpr float alternativeSamplerate = 914285.7143f;
 static constexpr uint8_t alternativePrescaler = 102400000UL / alternativeSamplerate;
 static_assert(alternativePrescaler * alternativeSamplerate == 102400000UL, "alternative ADCSamplerate can not be reached exactly");
@@ -115,7 +114,7 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 		bool needs_halt = false;
 		uint64_t actualSourceFreq;
 		bool lowband = false;
-		if (freq < BandSwitchFrequency) {
+		if (freq < HW::BandSwitchFrequency) {
 			needs_halt = true;
 			lowband = true;
 			actualSourceFreq = freq;
@@ -290,7 +289,7 @@ void VNA::SweepHalted() {
 			+ (settings.f_stop - settings.f_start) * pointCnt
 					/ (settings.points - 1);
 	bool adcShiftRequired = false;
-	if (frequency < BandSwitchFrequency) {
+	if (frequency < HW::BandSwitchFrequency) {
 		// need the Si5351 as Source
 		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B,
 				sourceHighPower ? Si5351C::DriveStrength::mA8 : Si5351C::DriveStrength::mA4);

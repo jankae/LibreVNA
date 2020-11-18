@@ -4,6 +4,7 @@
 #include "unit.h"
 #include <QDebug>
 #include "ui_addamplitudepointsdialog.h"
+#include "ui_automaticamplitudedialog.h"
 #include <QMessageBox>
 
 using namespace std;
@@ -24,7 +25,6 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
     ui->view->setColumnWidth(AmplitudeModel::ColIndexCorrectionFactors, 150);
     ui->view->setColumnWidth(AmplitudeModel::ColIndexPort1, 150);
     ui->view->setColumnWidth(AmplitudeModel::ColIndexPort2, 150);
-    connect(dev, &Device::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint);
     connect(ui->load, &QPushButton::clicked, [=](){
         if(ConfirmActionIfEdited()) {
             LoadFromDevice();
@@ -59,6 +59,7 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
         mode = CalibrationMode::OnlyPort2;
         model.dataChanged(model.index(0, model.ColIndexPort1), model.index(points.size(), model.ColIndexPort2));
     });
+    connect(ui->automatic, &QPushButton::clicked, this, &AmplitudeCalDialog::AutomaticMeasurementDialog);
 }
 
 AmplitudeCalDialog::~AmplitudeCalDialog()
@@ -108,7 +109,6 @@ void AmplitudeCalDialog::setAmplitude(double amplitude, unsigned int point, bool
 
 void AmplitudeCalDialog::ReceivedPoint(Protocol::AmplitudeCorrectionPoint p)
 {
-    qDebug() << "Received a point";
     CorrectionPoint c;
     c.frequency = p.freq * 10.0;
     c.correctionPort1 = p.port1;
@@ -120,13 +120,20 @@ void AmplitudeCalDialog::ReceivedPoint(Protocol::AmplitudeCorrectionPoint p)
     points.push_back(c);
     model.endInsertRows();
     emit pointsUpdated();
+    if(p.pointNum == p.totalPoints - 1) {
+        // this was the last point
+        disconnect(dev, &Device::AmplitudeCorrectionPointReceived, this, nullptr);
+        ui->load->setEnabled(true);
+    }
 }
 
 void AmplitudeCalDialog::LoadFromDevice()
 {
+    ui->load->setEnabled(false);
     dev->SetIdle();
     RemoveAllPoints();
     qDebug() << "Asking for amplitude calibration";
+    connect(dev, &Device::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint);
     dev->SendCommandWithoutPayload(requestCommand());
     edited = false;
     ui->save->setEnabled(false);
@@ -239,6 +246,119 @@ void AmplitudeCalDialog::AddPointDialog()
         // aborted, nothing to do
         delete d;
     });
+
+    dev->SendCommandWithoutPayload(requestCommand());
+
+    d->show();
+}
+
+void AmplitudeCalDialog::AutomaticMeasurementDialog()
+{
+    bool isSourceCal = pointType() == Protocol::PacketType::SourceCalPoint;
+    const QString ownCal = isSourceCal ? "Source" : "Receiver";
+    const QString otherCal = isSourceCal ? "Receiver" : "Source";
+
+    // compile info text
+    QString info = "It is possible to determine the " + ownCal + " Calibration if a valid " + otherCal
+            + " Calibration is already present. To do so, connect a short cable with as little loss as possible"
+            + " between the ports. For each point in the " + otherCal + " Calibration, the device will take"
+            + " a measurement and determine the correction factors for the " + ownCal + " Calibration.";
+
+    auto d = new QDialog(this);
+    auto ui = new Ui::AutomaticAmplitudeDialog();
+    ui->setupUi(d);
+    ui->explanation->setText(info);
+    ui->status->setText("Gathering information about "+otherCal+" Calibration...");
+
+    automatic.points.clear();
+
+    connect(d, &QDialog::rejected, ui->abort, &QPushButton::click);
+    connect(ui->abort, &QPushButton::clicked, [=](){
+        // aborted, clean up
+        delete d;
+    });
+
+    dev->SetIdle();
+    auto receiveConn = connect(dev, &Device::AmplitudeCorrectionPointReceived, this, [this, ui, otherCal](Protocol::AmplitudeCorrectionPoint p) {
+        CorrectionPoint c;
+        c.frequency = p.freq * 10.0;
+        c.correctionPort1 = p.port1;
+        c.correctionPort2 = p.port2;
+        c.port1set = true;
+        c.port2set = true;
+        automatic.points.push_back(c);
+        ui->progress->setValue(100 * (p.pointNum+1) / p.totalPoints);
+        if(p.pointNum == p.totalPoints - 1) {
+            // this was the last point, indicate ready for measurement
+            ui->progress->setValue(0);
+            ui->status->setText(otherCal + " Calibration contains " +QString::number(p.totalPoints)+" points, ready to start measurement");
+            ui->start->setEnabled(true);
+            disconnect(dev, &Device::AmplitudeCorrectionPointReceived, this, nullptr);
+        }
+    });
+    // request points of otherCal
+    // switch between source/receiver calibration
+    auto request = isSourceCal ? Protocol::PacketType::RequestReceiverCal : Protocol::PacketType::RequestSourceCal;
+    dev->SendCommandWithoutPayload(request);
+
+    connect(ui->start, &QPushButton::clicked, [=](){
+        // remove any exising points in own calibration and copy points from other calibration
+        RemoveAllPoints();
+        for(auto p : automatic.points) {
+            AddPoint(p.frequency);
+        }
+        // intialize measurement state machine
+        automatic.resultConnection = connect(dev, &Device::SpectrumResultReceived, [=](Protocol::SpectrumAnalyzerResult res) {
+            if(res.pointNum != 1) {
+                // ignore first and last point, only use the middle one
+                return;
+            }
+            if(automatic.settlingCount > 0) {
+                automatic.settlingCount--;
+                return;
+            }
+            // Grab correct measurement
+            double measurement;
+            if(isSourceCal) {
+                // For a source calibration we need the measurement of the other port (measuring the ouput power of the port to calibrate)
+                measurement = automatic.measuringPort2 ? res.port1 : res.port2;
+            } else {
+                // For a receiver calibration we need the measurement of the port to calibrate
+                measurement = automatic.measuringPort2 ? res.port2 : res.port1;
+            }
+            // convert to dbm
+            double reported_dbm = 20*log10(measurement);
+            if(isSourceCal) {
+                // receiver cal already done, the measurement result is accurate and can be used to determine actual output power
+                setAmplitude(reported_dbm, automatic.measuringCount, automatic.measuringPort2);
+            } else {
+                // source cal already done, the output power is accurate while the measurement might be off
+                setAmplitude(excitationAmplitude, automatic.measuringCount, automatic.measuringPort2);
+            }
+            // advance state machine
+            // switch ports
+            automatic.measuringPort2 = !automatic.measuringPort2;
+            if(!automatic.measuringPort2) {
+                // now measuring port1, this means we have to advance to the next point
+                automatic.measuringCount++;
+                if(automatic.measuringCount >= points.size()) {
+                    // all done, disconnect this lambda and close dialog
+                    disconnect(automatic.resultConnection);
+                    delete d;
+                    dev->SetIdle();
+                } else {
+                    // update progress bar
+                    ui->progress->setValue(100 * automatic.measuringCount / points.size());
+                    // Start next measurement
+                    SetupNextAutomaticPoint(isSourceCal);
+                }
+            }
+        });
+        automatic.measuringPort2 = false;
+        automatic.measuringCount = 0;
+        SetupNextAutomaticPoint(isSourceCal);
+    });
+
     d->show();
 }
 
@@ -269,6 +389,39 @@ void AmplitudeCalDialog::UpdateSaveButton()
         }
     }
     ui->save->setEnabled(enable);
+}
+
+void AmplitudeCalDialog::SetupNextAutomaticPoint(bool isSourceCal)
+{
+    auto point = automatic.points[automatic.measuringCount];
+    Protocol::PacketInfo p = {};
+    p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
+    p.spectrumSettings.RBW = 10000;
+    p.spectrumSettings.UseDFT = 0;
+    // setup 3 points centered around the measurement frequency (zero span not supported yet)
+    p.spectrumSettings.f_stop = point.frequency + 1.0;
+    p.spectrumSettings.f_start = point.frequency - 1.0;
+    p.spectrumSettings.pointNum = 3;
+    p.spectrumSettings.Detector = 0;
+    p.spectrumSettings.SignalID = 1;
+    p.spectrumSettings.WindowType = 3;
+    p.spectrumSettings.trackingGenerator = 1;
+    p.spectrumSettings.trackingPower = excitationAmplitude * 100.0;
+    p.spectrumSettings.trackingGeneratorOffset = 0;
+    // For a source cal, the tracking generator has to be enabled at the measurement port (calibrating the output power)
+    // For a receiver cal, the tracking generator has to be enabled at the other port (calibrating received power)
+    p.spectrumSettings.trackingGeneratorPort = isSourceCal ? automatic.measuringPort2 : !automatic.measuringPort2;
+    if(isSourceCal) {
+        // Calibrating the source which means the receiver is already calibrated -> use receiver corrections but no source corrections
+        p.spectrumSettings.applyReceiverCorrection = 1;
+        p.spectrumSettings.applySourceCorrection = 0;
+    } else {
+        // the other way around
+        p.spectrumSettings.applyReceiverCorrection = 0;
+        p.spectrumSettings.applySourceCorrection = 1;
+    }
+    automatic.settlingCount = 30;
+    dev->SendPacket(p);
 }
 
 AmplitudeCalDialog::CalibrationMode AmplitudeCalDialog::getMode() const

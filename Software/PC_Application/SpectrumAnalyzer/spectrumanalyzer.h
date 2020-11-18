@@ -31,8 +31,9 @@ private slots:
     // Acquisition control
     void SetRBW(double bandwidth);
     void SetAveraging(unsigned int averages);
-
-signals:
+    // TG control
+    void SetTGLevel(double level);
+    void SetTGOffset(double offset);
 
 private:
     void UpdateAverageCount();
@@ -59,6 +60,8 @@ signals:
     void centerFreqChanged(double freq);
     void spanChanged(double span);
     void RBWChanged(double RBW);
+    void TGOffsetChanged(double offset);
+    void TGLevelChanged(double level);
 
     void averagingChanged(unsigned int averages);
 };

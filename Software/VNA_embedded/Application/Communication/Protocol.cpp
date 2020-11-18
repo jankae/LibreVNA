@@ -407,6 +407,11 @@ static Protocol::SpectrumAnalyzerSettings DecodeSpectrumAnalyzerSettings(uint8_t
     d.Detector = e.getBits(3);
     d.UseDFT = e.getBits(1);
     d.applyReceiverCorrection = e.getBits(1);
+    d.trackingGenerator = e.getBits(1);
+    d.applySourceCorrection = e.getBits(1);
+    d.trackingGeneratorPort = e.getBits(1);
+    e.get(d.trackingGeneratorOffset);
+    e.get(d.trackingPower);
     return d;
 }
 static int16_t EncodeSpectrumAnalyzerSettings(Protocol::SpectrumAnalyzerSettings d, uint8_t *buf,
@@ -421,6 +426,11 @@ static int16_t EncodeSpectrumAnalyzerSettings(Protocol::SpectrumAnalyzerSettings
     e.addBits(d.Detector, 3);
     e.addBits(d.UseDFT, 1);
     e.addBits(d.applyReceiverCorrection, 1);
+    e.addBits(d.trackingGenerator, 1);
+    e.addBits(d.applySourceCorrection, 1);
+    e.addBits(d.trackingGeneratorPort, 1);
+    e.add(d.trackingGeneratorOffset);
+    e.add(d.trackingPower);
     return e.getSize();
 }
 

@@ -4,6 +4,8 @@
 #include "Protocol.hpp"
 #include "FPGA/FPGA.hpp"
 #include "AmplitudeCal.hpp"
+#include "max2871.hpp"
+#include "Si5351C.hpp"
 
 #define USE_DEBUG_PINS
 
@@ -33,6 +35,7 @@ static constexpr uint32_t LO1_minFreq = 25000000;
 static constexpr uint32_t MaxSamples = 130944;
 static constexpr uint32_t MinSamples = 16;
 static constexpr uint32_t PLLRef = 100000000;
+static constexpr uint32_t BandSwitchFrequency = 25000000;
 
 static constexpr uint8_t ADCprescaler = FPGA::Clockrate / ADCSamplerate;
 static_assert(ADCprescaler * ADCSamplerate == FPGA::Clockrate, "ADCSamplerate can not be reached exactly");
@@ -83,6 +86,16 @@ bool Init();
 void SetMode(Mode mode);
 void SetIdle();
 void Work();
+
+using AmplitudeSettings = struct _amplitudeSettings {
+	uint8_t attenuator;
+	union {
+		MAX2871::Power highBandPower;
+		Si5351C::DriveStrength lowBandPower;
+	};
+	bool unlevel;
+};
+AmplitudeSettings GetAmplitudeSettings(int16_t cdbm, uint64_t freq = 0, bool applyCorrections = false, bool port2 = false);
 
 bool GetTemps(uint8_t *source, uint8_t *lo);
 void fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy = false);

@@ -74,10 +74,13 @@ protected slots:
     void RemoveAllPoints();
     void AddPoint(double frequency);
     void AddPointDialog();
+    void AutomaticMeasurementDialog();
 signals:
     void pointsUpdated();
     void newPointCreated(CorrectionPoint& p);
 protected:
+    static constexpr double excitationAmplitude = -20.0;
+
     bool ConfirmActionIfEdited();
     void UpdateSaveButton();
     virtual Protocol::PacketType requestCommand() = 0;
@@ -95,6 +98,15 @@ protected:
     AmplitudeModel model;
     bool edited;
     CalibrationMode mode;
+
+    void SetupNextAutomaticPoint(bool isSourceCal);
+    struct {
+        std::vector<CorrectionPoint> points;
+        bool measuringPort2; // true if port2 is being calibrated
+        unsigned int measuringCount; // number of calibration point
+        unsigned int settlingCount; // number of measurements still to ignore before taking measurement
+        QMetaObject::Connection resultConnection;
+    } automatic;
 };
 
 #endif // SOURCECALDIALOG_H

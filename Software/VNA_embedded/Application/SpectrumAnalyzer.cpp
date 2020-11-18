@@ -32,6 +32,9 @@ static float port1Measurement[FPGA::DFTbins], port2Measurement[FPGA::DFTbins];
 
 static uint8_t signalIDsteps;
 static std::array<uint8_t, 4> signalIDprescalers;
+static uint8_t attenuator;
+static int64_t trackingFreq;
+static bool trackingLowband;
 
 static void StartNextSample() {
 	uint64_t freq = s.f_start + (s.f_stop - s.f_start) * pointCnt / (points - 1);
@@ -50,6 +53,34 @@ static void StartNextSample() {
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 112);
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
 		negativeDFT = true;
+
+		// set tracking generator to default values
+		trackingFreq = 0;
+		trackingLowband = false;
+		attenuator = 0;
+		// this is the first step in each point, update tracking generator if enabled
+		if (s.trackingGenerator) {
+			trackingFreq = freq - s.trackingGeneratorOffset;
+			if(trackingFreq > 0 && trackingFreq <= (int64_t) HW::Info.limits_maxFreq) {
+				// tracking frequency is valid, calculate required settings and select band
+				auto amplitude = HW::GetAmplitudeSettings(s.trackingPower, trackingFreq, s.applySourceCorrection, s.trackingGeneratorPort);
+				attenuator = amplitude.attenuator;
+				if(trackingFreq < HW::BandSwitchFrequency) {
+					Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::B, amplitude.lowBandPower);
+					FPGA::Disable(FPGA::Periphery::SourceChip);
+					FPGA::Disable(FPGA::Periphery::SourceRF);
+					trackingLowband = true;
+				} else {
+					Source.SetFrequency(trackingFreq);
+					Source.SetPowerOutA(amplitude.highBandPower, true);
+					FPGA::Enable(FPGA::Periphery::SourceChip);
+					FPGA::Enable(FPGA::Periphery::SourceRF);
+					trackingLowband = false;
+					// selected power potentially changed, update default registers
+					FPGA::WriteMAX2871Default(Source.GetRegisters());
+				}
+			}
+		}
 		break;
 	case 1:
 		LO2freq = HW::IF1 - HW::IF2;
@@ -121,9 +152,9 @@ static void StartNextSample() {
 	}
 
 	// Configure the sampling in the FPGA
-	FPGA::WriteSweepConfig(0, 0, Source.GetRegisters(), LO1.GetRegisters(), 0,
-			0, FPGA::SettlingTime::us20, FPGA::Samples::SPPRegister, 0,
-			FPGA::LowpassFilter::M947);
+	FPGA::WriteSweepConfig(0, trackingLowband, Source.GetRegisters(), LO1.GetRegisters(), attenuator,
+			trackingFreq, FPGA::SettlingTime::us20, FPGA::Samples::SPPRegister, 0,
+			FPGA::LowpassFilter::Auto);
 
 	FPGA::StartSweep();
 }
@@ -162,10 +193,18 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	// enable the required hardware resources
 	Si5351.Enable(SiChannel::Port1LO2);
 	Si5351.Enable(SiChannel::Port2LO2);
+	if (s.trackingGenerator) {
+		Si5351.Enable(SiChannel::LowbandSource);
+	} else {
+		Si5351.Disable(SiChannel::LowbandSource);
+	}
 	FPGA::SetWindow((FPGA::Window) s.WindowType);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1);
+	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.trackingGeneratorPort == 0);
+	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.trackingGeneratorPort == 1);
+	FPGA::Enable(FPGA::Periphery::PortSwitch, s.trackingGenerator);
+	FPGA::Enable(FPGA::Periphery::Amplifier, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 

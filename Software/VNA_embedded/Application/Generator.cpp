@@ -5,8 +5,6 @@
 #include "Si5351C.hpp"
 #include "AmplitudeCal.hpp"
 
-static constexpr uint32_t BandSwitchFrequency = 25000000;
-
 void Generator::Setup(Protocol::GeneratorSettings g) {
 	if(g.activePort == 0) {
 			// both ports disabled, no need to configure PLLs
@@ -45,29 +43,22 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 			g.cdbm_level += correction.port2;
 		}
 	}
+	auto amplitude = HW::GetAmplitudeSettings(g.cdbm_level, g.frequency, g.applyAmplitudeCorrection, g.activePort == 2);
 	// Select correct source
-	if(g.frequency < BandSwitchFrequency) {
+	if(g.frequency < HW::BandSwitchFrequency) {
 		m.SourceLowEN = 1;
 		m.SourceLowFrequency = g.frequency;
 		m.SourceHighCE = 0;
 		m.SourceHighRFEN = 0;
-		m.SourceHighFrequency = BandSwitchFrequency;
+		m.SourceHighFrequency = HW::BandSwitchFrequency;
 		m.SourceHighLowpass = (int) FPGA::LowpassFilter::M947;
 		m.SourceHighPower = (int) MAX2871::Power::n4dbm;
 		m.SourceHighband = false;
-		if(g.cdbm_level <= HW::LowBandMinPower) {
-			// can use the low power setting
-			m.SourceLowPower = (int) Si5351C::DriveStrength::mA2;
-			g.cdbm_level -= HW::LowBandMinPower;
-		} else {
-			// needs the high power setting
-			m.SourceLowPower = (int) Si5351C::DriveStrength::mA8;
-			g.cdbm_level -= HW::LowBandMaxPower;
-		}
+		m.SourceLowPower = (int) amplitude.lowBandPower;
 		m.SourceHighPower = (int) MAX2871::Power::n4dbm;
 	} else {
 		m.SourceLowEN = 0;
-		m.SourceLowFrequency = BandSwitchFrequency;
+		m.SourceLowFrequency = HW::BandSwitchFrequency;
 		m.SourceHighCE = 1;
 		m.SourceHighRFEN = 1;
 		m.SourceHighFrequency = g.frequency;
@@ -81,26 +72,10 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 			m.SourceHighLowpass = (int) FPGA::LowpassFilter::None;
 		}
 		m.SourceHighband = true;
-		if(g.cdbm_level <= HW::HighBandMinPower) {
-			// can use the low power setting
-			m.SourceHighPower = (int) MAX2871::Power::n4dbm;
-			g.cdbm_level -= HW::HighBandMinPower;
-		} else {
-			// needs the high power setting
-			m.SourceHighPower = (int) MAX2871::Power::p5dbm;
-			g.cdbm_level -= HW::HighBandMaxPower;
-		}
+		m.SourceHighPower = (int) amplitude.highBandPower;
 		m.SourceLowPower = (int) MAX2871::Power::n4dbm;
 	}
 
-	// calculate required attenuation
-	int16_t attval = -g.cdbm_level / 25;
-	// TODO set some flag if attenuator limit reached?
-	if(attval > 127) {
-		attval = 127;
-	} else if(attval < 0) {
-		attval = 0;
-	}
-	m.attenuator = attval;
+	m.attenuator = amplitude.attenuator;
 	Manual::Setup(m);
 }

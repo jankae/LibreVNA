@@ -14,10 +14,10 @@ ReceiverCalDialog::ReceiverCalDialog(Device *dev)
     });
 }
 
-void ReceiverCalDialog::SelectedPoint(double frequency, bool port2)
+void ReceiverCalDialog::SelectedPoint(double frequency, bool)
 {
     if(frequency > 0) {
-        Protocol::PacketInfo p;
+        Protocol::PacketInfo p = {};
         p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
         p.spectrumSettings.RBW = 10000;
         p.spectrumSettings.UseDFT = 0;

@@ -223,6 +223,52 @@ void HW::SetIdle() {
 	FPGA::Enable(FPGA::Periphery::PortSwitch, false);
 }
 
+HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool applyCorrections, bool port2) {
+	if (applyCorrections) {
+		auto correction = AmplitudeCal::SourceCorrection(freq);
+		if (port2) {
+			cdbm += correction.port2;
+		} else {
+			cdbm += correction.port1;
+		}
+	}
+	AmplitudeSettings ret;
+	if(freq < BandSwitchFrequency) {
+		if(cdbm <= HW::LowBandMinPower) {
+			// can use the low power setting
+			ret.lowBandPower = Si5351C::DriveStrength::mA2;
+			cdbm -= HW::LowBandMinPower;
+		} else {
+			// needs the high power setting
+			ret.lowBandPower = Si5351C::DriveStrength::mA8;
+			cdbm -= HW::LowBandMaxPower;
+		}
+	} else {
+		if(cdbm <= HW::HighBandMinPower) {
+			// can use the low power setting
+			ret.highBandPower = MAX2871::Power::n4dbm;
+			cdbm -= HW::HighBandMinPower;
+		} else {
+			// needs the high power setting
+			ret.highBandPower = MAX2871::Power::p5dbm;
+			cdbm -= HW::HighBandMaxPower;
+		}
+	}
+	// calculate required attenuation
+	int16_t attval = -cdbm / 25;
+	if(attval > 127) {
+		attval = 127;
+		ret.unlevel = true;
+	} else if(attval < 0) {
+		attval = 0;
+		ret.unlevel = true;
+	} else {
+		ret.unlevel = false;
+	}
+	ret.attenuator = attval;
+	return ret;
+}
+
 void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 	// copy constant default values
 	memcpy(info, &HW::Info, sizeof(HW::Info));

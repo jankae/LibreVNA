@@ -85,7 +85,8 @@ QString TraceMarker::readableData()
             auto freqDiff = frequency - delta->frequency;
             auto valueDiff = data / delta->data;
             auto phase = arg(valueDiff);
-            return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
+            auto db = 20*log10(abs(valueDiff));
+            return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(db, 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
         }
         break;
     case Type::Noise:

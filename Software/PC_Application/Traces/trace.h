@@ -69,8 +69,8 @@ public:
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
     unsigned int size() { return _data.size(); }
-    double minFreq() { return _data.front().frequency; };
-    double maxFreq() { return _data.back().frequency; };
+    double minFreq() { return size() > 0 ? _data.front().frequency : 0.0; };
+    double maxFreq() { return size() > 0 ? _data.back().frequency : 0.0; };
     double findExtremumFreq(bool max);
     /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
      * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.

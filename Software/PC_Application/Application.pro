@@ -110,6 +110,7 @@ QT += widgets
 FORMS += \
     Calibration/addamplitudepointsdialog.ui \
     Calibration/amplitudecaldialog.ui \
+    Calibration/automaticamplitudedialog.ui \
     Calibration/calibrationtracedialog.ui \
     Calibration/calkitdialog.ui \
     CustomWidgets/tilewidget.ui \
