@@ -108,8 +108,13 @@
    }%
 }{\end{mdframed}}
 
+\usepackage{makecell}
 \usepackage{hyperref}
 \newcommand{\vna}{VNA}
+
+\newcommand{\screenshot}[2]{\begin{center}
+\includegraphics[width=#1\textwidth]{Screenshots/#2}
+\end{center}}
 
 \title{\vna{} User Manual}
 %\author{Jan Käberich (\url{j.kaeberich@gmx.de})}
@@ -120,7 +125,7 @@
 %The Testcard is a platform for the characterization of small energy sources. It is able to charge/discharge up to eight energy sources with a predefined pattern and record their voltages.
 %\end{abstract}
 
-\setcounter{tocdepth}{2}
+\setcounter{tocdepth}{3}
 \tableofcontents
 \clearpage
 
@@ -149,6 +154,7 @@
 		\node [anchor=south, align=center] (port1) at (0,1) {Port 1};
 		\node [anchor=south, align=center] (port2) at (0,0.2) {Port 2};
 		\node [anchor=west, align=center] (leds) at (1.05,0.8) {LEDs\\ \footnotesize Ready\\ \footnotesize Debug\\ \footnotesize Port1\\ \footnotesize Port2\\ \footnotesize Ext. Reference\\ \footnotesize Source unlocked\\ \footnotesize LO unlocked\\ \footnotesize FPGA unlocked\\ \footnotesize Booting\\ \footnotesize Power};
+		\node [anchor=west, align=center] (power) at (1.05,0.5) {External Power \\ \footnotesize (optional)};
 		\node [anchor=west, align=center] (usb) at (1.1,0.4) {USB};
 		\node [anchor=west, align=center] (refout) at (1.1,0.2) {Reference\\Output};
 		\node [anchor=west, align=center] (refin) at (1.1,0) {Reference \\Input};
@@ -156,6 +162,7 @@
         \draw [-*, ultra thick, gray] (port1) to[] (0.02,0.89);
         \draw [-*, ultra thick, gray] (port2) to[] (0.02,0.09);
         \draw [-*, ultra thick, gray] (leds) to[] (0.8,0.84);
+        \draw [-*, ultra thick, gray] (power) to[] (0.91,0.55);
         \draw [-*, ultra thick, gray] (usb) to[] (0.91,0.5);
         \draw [-*, ultra thick, gray] (refout) to[] (0.97,0.23);
         \draw [-*, ultra thick, gray] (refin) to[] (0.97,0.1);
@@ -166,7 +173,9 @@
 \subsection{USB}
 The \vna{} uses a USB-C connector as the power supply and for data transmission. The hardware supports the USB power delivery standard\footnote{Work in progress, the device will not negotiate USB-PD yet}, requires \SI{5}{\volt} and draws up to \SI{1.2}{\ampere} of current.
 
-The implemented USB device is limited to USB 2.0 Fullspeed and data transmission will work with any USB 2.0 or 3.0 port (no USB-C required). However, the current consumption exceeds the specifications for USB 2.0 and 3.0 ports and the \vna{} may be unable to fully boot when the USB host limits the current.
+The implemented USB device is limited to USB 2.0 Fullspeed and data transmission will work with any USB 2.0 or 3.0 port (no USB-C required). However, the current consumption exceeds the specifications for USB 2.0 and 3.0 ports and the \vna{} may be unable to fully boot when no external power is applied USB host limits the current.
+\subsection{External Power}
+Input jack for external DC power (\SI{5}{\volt}, \SI{1.5}{\ampere}, positive center pin). If a power source is connected, no current is drawn from the USB port anymore.
 \subsection{RF ports}
 RF connector to connect the DUT. Both ports are identical and the device architecture support full S-Parameter measurements (S11, S21, S12 and S22).
 \begin{important}
@@ -199,16 +208,16 @@ Due to the high impedance input, the external input may detect a valid signal wh
 \item Connect the \vna{} to a computer using the USB port. After a couple of seconds, only the "Power" and "Ready" LEDs should stay on. If the "Ready" LED does not turn on or the "Booting" LED indicates an error code, there is a problem und the device will not function properly. See section~\ref{troubleshooting} for possible solutions.
 \item Start the PC application to connect to the \vna{}. The window should look similar to this:
 \makebox[\textwidth][c]{
-\includegraphics[width=\textwidth]{ApplicationOverview.png}
+\includegraphics[width=\textwidth]{Screenshots/ApplicationOverview.png}
 }
 \end{enumerate}
-\subsection{GUI elements types}
+\subsection{GUI element types}
 The \vna{} application is made up of six areas containing different types of control:
 \begin{itemize}
 \item The \textbf{Trace Display Area} shows the measured data in various diagrams.
-\item The \textbf{Toolbars} provide access to commonly used device settings.
+\item The \textbf{Toolbars} provide access to commonly used device settings. They can be rearranged or disabled (see section~\ref{menu:window}).
 \item The \textbf{Menu} at the top left handles less common settings or more complex actions (often with additional popup windows).
-\item The \textbf{Docks} mostly provide access to display related settings such as traces and markers.
+\item The \textbf{Docks} mostly provide access to display related settings such as traces and markers. They can be rearranged or disabled (see section~\ref{menu:window}).
 \item The \textbf{Statusbar} at the bottom show some basic informations about the connected device.
 \item The \textbf{Modeswitch} at the top right allows changing the \vna{} operating mode. Although it is primarily designed as a vector network analyzer, the hardware architecture allow some other operating modes with certain limitations.
 \end{itemize}
@@ -216,20 +225,20 @@ Depending on the current operating mode, the available toolbars, docks and menu 
 
 \subsection{Common GUI elements}
 Certain control elements are always available, regardless of the selected mode. They control settings of the \vna{} that are not specific to any of the operating modes.
+
+\paragraph{Entering values}\hfill\newline
+Most entry fields support SI prefixes. To set a new value, type in the number followed by an SI prefix (e.g. to set \SI{3.2}{\giga\hertz} press \keys{3},\keys{.},\keys{2},\keys{\shift+G}). The accepted prefixes vary depending on the input (e.g. pico is a valid prefix for a capacitance while it will not be accepted for a frequency). 
+
 \subsubsection{Reference Toolbar}
 The reference toolbar controls the external reference output as well as the input.
-\begin{center}
-\includegraphics[height=0.7cm]{ToolbarReference.png}
-\end{center}
+\screenshot{0.5}{ToolbarReference.png}
 The reference can be set to "Int" (internal TCXO), "Ext" (external \SI{10}{\mega\hertz} signal) or to automatic mode. In automatic mode, the reference will switch to the external input when a signal is detected, otherwise it will use the internal TCXO.
 
 The external reference output may either be disabled or set to \SI{10}{\mega\hertz} or \SI{100}{\mega\hertz}.
 
 \subsubsection{Device Log Dock}
 This dock shows the debug output of the \vna{} (the same messages as on the internal UART port). It may help to identify problems, otherwise it is not required for operation.
-\begin{center}
-\includegraphics[width=\textwidth]{DockDeviceLog.png}
-\end{center}
+\screenshot{1.0}{DockDeviceLog.png}
 
 \subsubsection{Device Menu}
 The device menu controls the connection state, allows low level hardware access and to perform firmware updates:
@@ -238,103 +247,210 @@ The device menu controls the connection state, allows low level hardware access 
 \item \textbf{Connect to:} Select which \vna{} to connect to. Different devices are identified by their serial number.
 \item \textbf{Disconnect:} Disconnect from the \vna{}.
 \item \textbf{Manual Control:} Starts the manual control dialog in which all hardware settings are accessible (mostly used for testing purposes):
-\begin{center}
-\includegraphics[width=\textwidth]{DialogManualControl.png}
-\end{center}
+\screenshot{1.0}{DialogManualControl.png}
 \item \textbf{Firmware Update:} Load a new microcontroller firmware and FPGA configuration into the \vna{}. Do not disconnect power while updating the firmware!
-\begin{center}
-\includegraphics[width=0.6\textwidth]{DialogFirmwareUpdate.png}
-\end{center}
+\screenshot{0.6}{DialogFirmwareUpdate.png}
 \end{itemize}
 
 \subsubsection{Window Menu}
+\label{menu:window}
 The window menu allows hiding not needed toolbars and docks. It also contains some application preferences.
 
-\section{Operating Modes}
-\subsection{Vector Network Analyzer}
+\section{Vector Network Analyzer}
 In this operating mode, the \vna{} takes S-parameter measurements. A source signal is generated and alternately applied to the RF ports. The incoming signal at both RF ports is measured, resulting in the four S-parameters S11 and S21 (when the source signal is routed to port 1) as well as S12 and S22 (when it is routed to port 2).
 
-\subsubsection{Sweep Toolbar}
+\subsection{Sweep Toolbar}
 This toolbar sets the swept frequency range.
-\begin{center}
-\includegraphics[height=0.7cm]{ToolbarSweep.png}
-\end{center}
-The start/stop and center frequency as well as the span can be set directly. To set a frequency type in the number followed by an SI prefix (e.g. to set \SI{3.2}{\giga\hertz} press \keys{3},\keys{.},\keys{2},\keys{\shift+G}). This works for all number inputs throughout the application.
+\screenshot{1.0}{ToolbarSweep.png}
+The start/stop and center frequency as well as the span can be set directly.
 
 Additionally, the sweep toolbar contains buttons for zooming in/out around the center frequency and a preset to set the sweep to the full frequency range.
-\subsubsection{Acquisition Toolbar}
-\begin{center}
-\includegraphics[height=0.7cm]{ToolbarVNAAcquisition.png}
-\end{center}
+\subsection{Acquisition Toolbar}
+\screenshot{0.5}{ToolbarVNAAcquisition.png}
 \begin{itemize}
 \item \textbf{Level:} The amount of power used for stimulus generation. The dynamic range decreases when using smaller values. It is recommended to use the highest available settings when measuring passive networks. When measuring active devices (e.g. amplifiers), decrease the stimulus power in such a way that the input power into any port does not rise above \SI{-10}{\dBm} to stay within the linear range of the \vna.
 \item \textbf{Points:} Amount of measurement points in one sweep. More points provide finer frequency resolution but also increase sweep time.
 \item \textbf{IF BW:} Bandwidth of final IF measurement. Low bandwidths increase the sweep time but improve the noisefloor. At higher frequencies (roughly above \SI{3}{\giga\hertz}), the dynamic range is limited by the isolation between the ports and decreasing the IF bandwidth does not improve the noisefloor anymore.
 \end{itemize}
-\subsubsection{Calibration Toolbar/Menu}
-\begin{center}
-\includegraphics[height=0.7cm]{ToolbarCalibration.png}
-\end{center}
-To perform a calibration select the desired calibration type and enable the checkbox. If the necessary measurements have already been made, the calibration will be applied immediately, otherwise the calibration data dialog (see~\ref{caldatadialog}) will open and ask for the missing measurements. After these measurements have been taken the calibration can be applied.
+\subsection{Calibration}
+\label{vna:calibration}
+This section is about the VNA calibration which is used to remove the effect of connectors and cables (as well as imperfections from the \vna{} itself). For the amplitude calibration see section~\ref{amplitude:calibration}.
 
-\subsubsection{Calibration Data Dialog and Calibration Workflow}
-\label{caldatadialog}
-Calibration measurements are handled through the Calibration Data Dialog: (\menu[,]{Calibration,Calibration Data})
-\begin{center}
-\includegraphics[width=\textwidth]{CalibrationDataDialog.png}
-\end{center}
-To take a calibration measurement select the corresponding line in the table, setup the device ports as described under prerequisites and press \keys{Measure}. Likewise, a measurement can be removed by selecting it and pressing \keys{Delete}.
+Some general knowledge about the different calibration types is assumed, this manual only explains how to use them with the \vna{}.
+\subsubsection{Introduction}
+This section contains some implementation details of the calibration. It can be skipped but understanding them can be helpful when using the calibration.
 
-The calibration data can also be stored/loaded by using \keys{Open} and \keys{Save}. If the calibration should be automatically applied when connecting the device, save the calibration first and then select \menu[,]{Device,Default Calibration,Assign...}.
+To apply a calibration three things are required:
+\begin{enumerate}
+\item \textbf{Calibration kit:} It contains the definition of the calibration standards. When the calibration error terms are calculated, these definitions are taken into account.
+\item \textbf{Measurements:} Raw (uncorrected) measurements of the calibration standards. Depending on the type of desired calibration, different measurement are required.
+\item \textbf{Calibration type:} The calibration type determines which errors are corrected by the calibration and how the error terms are derived from the measurements.
+\end{enumerate}
+For the most accurate results, the calibration should be performed with the same settings (span, number of points, stimulus level, ...) as the intended measurement. However, it is possible to change these settings after the calibration. The calibration will be interpolated/extrapolated when a different span is used.
 
-\subsubsection{Calibration Kit Dialog}
-The calibration kit dialog allows to take imperfections of the calibration standards into account. It can be reached via \menu[,]{Calibration,Edit Calibration Kit}.
+\subsubsection{Types}
+Several different calibration types are available:
 \begin{center}
-\includegraphics[width=\textwidth]{CalibrationKitDialog.png}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{2cm}|X|L{3cm}}
+    \toprule
+    \textbf{Type} & \textbf{Applied corrections} & \makecell{\textbf{Required}\\ \textbf{measurements}}\\
+     \hline
+      Port 1   	&    Removes influences of cables and setup at port 1 only & \makecell{Port 1 open\\ Port 1 short\\ Port 1 load}\\ 
+    \hline
+      Port 2   	&    Removes influences of cables and setup at port 2 only & \makecell{Port 2 open\\ Port 2 short\\ Port 2 load}\\ 
+    \hline
+      SOLT   	&   Full two-port calibration, removes influences at both ports and also corrects transmission measurement & \makecell{Port 1 open\\ Port 1 short\\ Port 1 load\\ Port 2 open\\ Port 2 short\\ Port 2 load\\ Through\\ Isolation(optional)}\\ 
+    \hline
+      Normalize   &  Only corrects for losses and phaseshift in through measurements. While this is not as accurate as SOLT, it is useful e.g. when measuring only the frequency response of a filter because it requires far less calibration measurements.  & \makecell{Through}\\ 
+    \hline
+      TRL   	&   Full two-port calibration but with different (less accurately defined) standards than SOLT & \makecell{Port 1 open/short\\ Port 2 open/short\\Through\\ Line}\\ 
+      \bottomrule
+\end{tabularx}
+\end{threeparttable}
 \end{center}
-Each calibration standard can either be defined through its coefficients or by measured data from a Touchstone file. The calibration kit data is stored together with the calibration data when saving it in the Calibration Data Dialog.
-\subsection{Signal Generator}
+
+\subsubsection{Calibration Kit}
+The calibration kit contains the calibration standard definitions used in the calibration. It can be edited through the menu: \menu[,]{Calibration,Edit Calibration Kit}
+
+The calibration kit coefficients are split into two tabs, one for the SOLT standards and one for the TRL standards. If a calibration kit is saved, all standard definitions (SOLT and TRL) are stored, regardless of which tab is currently active. The type of calibration selects which standard definitions are used in the actual calibration.
+\screenshot{1.0}{CalKitSolt.png}
+\screenshot{1.0}{CalKitTRL.png}
+
+SOLT standards can either be specified by parameters (preferred way, valid for all frequencies) or by providing measurement data of the standard, here shown as an example with the open standard:
+\screenshot{0.3}{CalKitOpenMeasurement.png}
+A touchstone file with the measurements is required. If the file contains data from more ports than required (for open, short and load 1-port measurements are needed, for the through 2-port measurements), the correct port(s) has to be selected. If any standard is defined by a measurement, the usable frequency range of the calibration kit is limited to the smallest common range of all measurement.
+\paragraph{Example:} The open standard is defined by a measurement file containing data from \SIrange{10}{500}{\mega\hertz}. The load standard is defined by a measurement file containing data from \SIrange{50}{800}{\mega\hertz}. In this case the calibration kit can only be used in the range of \SIrange{50}{500}{\mega\hertz}.
+\begin{important}
+When saving the calibration kit, only the (relative) filenames of any used measurements are saved. For future use, the measurement files have to be kept in the same folder relative to the calibration kit file.
+\end{important}
+
+\subsubsection{Measurements}
+\label{vna:cal:meas}
+The calibration measurements can be found in \menu[,]{Calibration,Calibration Measurements}. It contains all possible measurements, regardless of the currently active calibration:
+\screenshot{1.0}{CalibrationMeasurements.png}
+To take a measurement, select the corresponding line and press \keys{Measure}.
+\begin{information}
+All measurements required by a calibration type must have the same start and stop frequencies as well as number of points. Do not change the span inbetween measurements.
+\end{information}
+
+\subsubsection{Enabling a calibration}
+Either select the desired calibration type in the calibration menu or choose it in the calibration toolbar and enable the checkbox. If all required measurements have already been taken, the calibration is activated immediately. If some measurements are missing or have been taken with different span settings, applying the calibration is not possible. In that case, the calibration measurement dialog (see section~\ref{vna:cal:meas}) opens, this time only showing the necessary measurements required for the selected calibration type.
+
+\paragraph{Example:} After starting the application, the following steps are necessary to perform a SOLT calibration.
+\begin{enumerate}
+\item Edit the calibration kit to match the standards used in the measurements or open a saved calibration kit file.
+\item Change the span and acquisition settings to match the intended measurement. At this point no calibration is active yet, the measured data (here with both port directly connected) is inaccurate:
+\screenshot{1.0}{VNAUncalibratedThrough.png}
+\item Select \menu[,]{Calibration,Calibration Measurements} and take the required measurements. In this case, the measurement "Isolation" (optional for SOLT) has not been taken, as well as the "Line" measurement (not required for SOLT)
+\screenshot{1.0}{CalibrationMeasurementsSOLT.png}
+\item Close the "Calibration Measurements" window and activate the SOLT calibration by selecting \menu[,]{Calibration,SOLT}:
+\screenshot{0.3}{MenuActivateSOLT.png}
+Alternatively, the calibration can be activated by choosing "SOLT" in the toolbar and enabling the calibration checkbox:
+\screenshot{0.3}{ToolbarActivateSOLT.png}
+\item The calibration is active and connecting both ports directly results in a corrected measurement:
+\screenshot{1.0}{VNACalibratedThrough.png}
+\end{enumerate}
+
+\subsubsection{Saving/Loading}
+Once a calibration is active, it can be saved by selecting \menu[,]{Calibration,Save}. All raw measurements are saved together with the calibration type and the calibration kit (saved in an additional file with same filename as the calibration).
+
+Similarly, a saved calibration can be opened by selecting \menu[,]{Calibration,Load}. It is applied immediately after opening.
+
+\subsubsection{Viewing error terms}
+The error terms calculated from the calibration measurements can be imported by selecting \menu[,]{Calibration,Import error terms as traces}. This feature is mostly intended to debug calibration problems and is not normally required. The nomenclature follows \href{https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf}{"Network Analyzer Error Models and Calibration Methods"} by Doug Rytting.
+
+\section{Signal Generator}
 In the signal generator mode, measurements are stopped and the \vna{} only outputs a CW signal.
-\begin{center}
-\includegraphics[width=0.8\textwidth]{Signalgenerator.png}
-\end{center}
-The hardware is not optimized for signal generation which means that the output level is not very accurate, especially at higher frequencies. Also, the signal will contain higher levels of harmonics than one would normally expect from a signal generator.
-\subsection{Spectrum Analyzer}
+\screenshot{0.8}{Signalgenerator.png}
+The hardware is not optimized for signal generation which means that the output level is not very accurate, especially at higher frequencies (also see section~\ref{amplitude:calibration}). Also, the signal will contain higher levels of harmonics than one would normally expect from a signal generator.
+\section{Spectrum Analyzer}
 Although the \vna{} hardware is not designed to be used as a spectrum analyzer, the general hardware architecture of a spectrum analyzer is similar enough to that of a VNA to implement basic two-channel spectrum measurements. This is in no way on the same performance level as a dedicated spectrum analyzer but for simple measurements it might suffice if no other equipment is available. The main differences to a real spectrum analyzer are:
 \begin{itemize}
 \item \textbf{No input attenuator or pre-amplifier:} This means that the measurement range is essentially fixed to approximately \SI{-110}{\dBm} to \SI{-10}{\dBm}.
-\item \textbf{No amplitude calibration:} The displayed signal level is not very accurate, especially at higher frequencies.
-\item \textbf{No image rejection filters:} This is probably the most severe limitation, because it means that for every real signal several other signals will show up in the spectrum that are not actually present at the input.
+\item \textbf{No amplitude calibration:} The displayed signal level is not very accurate, especially at higher frequencies (also see section~\ref{amplitude:calibration}).
+\item \textbf{No image rejection filters:} This is probably the most severe limitation, because it means that for every real signal several other signals will show up in the spectrum that are not actually present at the input. Most of the images can be filtered out by signal identification but some will remain (at lower amplitude) in the reported data.
 \item \textbf{Highest resolution bandwidth is quite low:} The sweep speed is too slow to cover the complete frequency range of \SI{1}{\mega\hertz} to \SI{6}{\giga\hertz} in an acceptable time.
 \end{itemize}
 
-The control elements are mostly identical to the vector network analyzer mode, apart from the acquisition toolbar:
-\begin{center}
-\includegraphics[height=0.7cm]{ToolbarSAAcquisition.png}
-\end{center}
+Most control elements (Frequencies, Span, Traces, Marker, ...) are indentical to the vector network analyzer mode.
+\subsection{Acquisition Toolbar}
+\screenshot{0.7}{ToolbarSAAcquisition.png}
 \begin{itemize}
 \item \textbf{RBW:} Resolution bandwidth. Lower values allow differentiating between signals at closer frequencies. Lower values also result in a reduced noisefloor but significantly increase sweep time.
-\item \textbf{Window:} Window type used in the DFT of the final IF.
-\item \textbf{Detector:} For every point displayed, several measurements are taken. The detector type determines which one of these measurement will be displayed.
+
+For low RBWs, a faster DFT acquisition method is available. Instead of tuning the LOs to look at each frequency point by itself, several points can be measured at once by performing a DFT of the final IF. Due to limitations in the hardware and the available processing power, the DFT is limited to 96 points and can only cover up to \SI{30}{\kilo\hertz} at a time. Whether the DFT is used (and at which RBWs) can be selected in \menu[,]{Window,Preferences}
+\item \textbf{Window:} Window type used in the DFT of the final IF. If in doubt, use Flat Top.
+\item \textbf{Detector:} For every displayed point, several measurements are taken. The detector type determines which one of these measurement will be displayed:
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{2cm}|X}
+    \toprule
+    \textbf{Detector} & \textbf{Displayed data}\\
+     \hline
+      +Peak  	&    Highest amplitude\\ 
+    \hline
+      -Peak  	&    Lowest amplitude\\ 
+    \hline
+      Sample  	&    Only uses the middle measurement\\ 
+    \hline
+      Normal 	&    Highest amplitude on odd points, lowest amplitude on even points\\ 
+    \hline
+      Average  	&    Average all measurements for each point\\ 
+      \bottomrule
+\end{tabularx}
+\end{threeparttable}
+\end{center}
 \item \textbf{Signal ID:} Signal identification. This can help to determine whether a displayed signal is actually present or the result from internal imaging. When enabled, the \vna{} changes the LO frequencies for every measurement point and observes how the final IF signal is affected by that. This removes almost all of the mirror images but at the cost of increased sweep time.
 
 The following example shows the effect of signal ID. For both measurements the only signal at the input was a \SI{1}{\giga\hertz} tone with a level of \SI{-10}{\dBm}. On the left, signal ID is turned off, resulting in a lot of extra tones. On the right, signal ID has removed most of these tones:
 \begin{center}
-\includegraphics[width=0.48\textwidth]{SASignalIDOff.png}
-\includegraphics[width=0.48\textwidth]{SASignalIDOn.png}
+\includegraphics[width=0.48\textwidth]{Screenshots/SASignalIDOff.png}
+\includegraphics[width=0.48\textwidth]{Screenshots/SASignalIDOn.png}
 \end{center}
 \end{itemize}
 
+\subsection{Tracking Generator Toolbar}
+\screenshot{0.8}{ToolbarTrackingGenerator.png}
+A tracking generator at either port is available in the spectum analyzer. If the tracking generator is active at a port, measurements from that port are still available but meaningless. The tracking generator also includes an optional frequency offset. To get accurate results, a Source/Receiver Calibration (section~\ref{amplitude:calibration}) should have been performed when using the tracking generator.
+
+DFT acquisition is not available when the tracking generator is active. Also, due to hardware limitations, the tracking generator is unable to reach every frequency exactly. For narrow spans this could result in "drops" in the spectrum where the signal of the tracking generator is outside of the RBW filters passband. The frequency resolution is frequency dependent. A warning message appears if this could be a problem with the selected span and stop frequency.
+
+\section{Amplitude Calibration}
+\label{amplitude:calibration}
+This section is about calibrating the source output level and spectrum analyzer level. It does not affect VNA measurements at all. For the VNA calibration, see section~\ref{vna:calibration}.
+
+Both the internal signal source and the receiver paths used in the generator or spectrum analyzer mode have no means of ensuring accurate amplitudes (as imperfections are removed by the VNA calibration, the hardware is not optimized for absolute amplitude accuracy). In order to improve the accuracy of both the generator and the spectrum analyzer (especially with enabled tracking generator), frequency dependent amplitude calibrations are available. They are permanently stored in the device and are only required to be performed once. The \textbf{Source Calibration} corrects the ouput of the (tracking) generator, while the \textbf{Receiver Calibration} corrects the measurement of the spectrum analyzer.
+
+For both calibrations, other test equipment is required, ideally covering the whole range of \SI{1}{\mega\hertz} to \SI{6}{\giga\hertz} (a calibration of only the partial frequeny range is also possible but signals/measurements outside the calibrated range will be inaccurate). The Soure Calibration requires a way to measure the output of the \vna{} (e.g. a spectrum analyzer or power meter), the Receiver Calibration requires a signal source (e.g. a signal generator). Once either calibration has been completed, the \vna{} can also infer the other one with reasonable accuracy.
+
+\subsection{Source Calibration}
+Select \menu[,]{Device,Source Calibration}. A window showing the current source calibration opens:
+\screenshot{1.0}{SourceCalibration.png}
+These are the necessary steps:
+\begin{enumerate}
+\item \textbf{Set up the calibration frequencies:} Add or remove points according to your needs. Ideally, they should be evenly spaced across the range to calibrate, maybe with a slight emphasis on higher frequencies (signal levels generally vary more at higher frequencies). Additionally, it is advisable to set one point at \SI{25}{\mega\hertz} and one just below (at \SI{25}{\mega\hertz} a band is switched, resulting in an amplitude discontinuity). Up to 64 points can be used.
+\item \textbf{Select the calibration mode:} Either calibrate both ports separately (best accuracy but more work) or assume that they are identical and use the measurement at one port for both.
+\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table. The \vna{} will generate a signal at the selected frequency and port with (what it thinks are) \SI{-20}{\dBm}. Use external equipment to determine the actual output level and enter the measured value into the selected cell.
+\item \textbf{Save the calibration:} Once all measurements have been taken, the "Save to Device" button becomes available. There is no way to save intermediate results, you have to calibrate all frequencies you have chosen in step 1.
+\end{enumerate}
+If the Receiver Calibration is already done, it is also possible to infer the Source Calibration from that. Press \keys{Automatic measurement} and connect both ports of the \vna{} directly to each other. This connection should be as ideal as possible (short, low loss cable) as every imperfection directly translates into calibration errors. During the automatic calibration, the \vna{} uses the already established frequency points from the Receiver Calibration and measures the output amplitude by itself to determine the coefficients of the Source Calibration.
+\subsection{Receiver Calibration}
+Select \menu[,]{Device,Receiver Calibration}. The Receiver Calibration works almost identically to the Source Calibration. The only difference is in step 3:
+\begin{enumerate}
+\setcounter{enumi}{2}
+\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table and apply a signal with known level at the selected frequency and port. The signal level should be in the range of \SI{-40}{\dBm} to \SI{-10}{\dBm}. Higher signal levels might already compress in the receiver while lower levels unnecessary increase calibration errors due to noise. The \vna{} tunes its receiver to the selected frequency and measures the amplitude. Apply the signal for at least \SI{2}{\second} and enter its actual amplitude into the selected cell while the signal is still active.
+\end{enumerate}
 \section{Troubleshooting}
 \label{troubleshooting}
-If the was an error in the boot process, the "Booting" LED will blink an error code repeatedly:
+If there was an error in the boot process, the "Booting" LED will blink an error code repeatedly:
 \begin{center}
 \begin{threeparttable}
 \begin{tabularx}{\textwidth}{L{1cm}|X|L{7cm}}
     \toprule
     \textbf{Error Code} & \textbf{Meaning} & \textbf{Possible solution}\\
      \hline
-      1   	&      Failed to detect FLASH memory  & \\
+      1   	&      Failed to detect FLASH memory  & Hardware failure, check soldering\\
     \hline
       2   	&      Invalid FLASH content  & Perform firmware update\\
     \hline
