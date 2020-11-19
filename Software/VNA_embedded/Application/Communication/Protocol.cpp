@@ -152,7 +152,8 @@ static Protocol::Datapoint DecodeDatapoint(uint8_t *buf) {
 }
 static int16_t EncodeDatapoint(Protocol::Datapoint d, uint8_t *buf,
 		uint16_t bufSize) {
-	// Special case, bypassing the encoder for speed optimizations.
+    (void) bufSize;
+    // Special case, bypassing the encoder for speed optimizations.
 	// The datapoint is only ever encoded on the device and the
 	// Protocol::Datapoint struct is setup without any padding between
 	// the variables. In this case it is allowed to simply copy its

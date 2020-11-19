@@ -479,19 +479,19 @@ AmplitudeModel::AmplitudeModel(AmplitudeCalDialog *c) :
 {
 }
 
-int AmplitudeModel::rowCount(const QModelIndex &parent) const
+int AmplitudeModel::rowCount(const QModelIndex &) const
 {
     return c->getPoints().size();
 }
 
-int AmplitudeModel::columnCount(const QModelIndex &parent) const
+int AmplitudeModel::columnCount(const QModelIndex &) const
 {
     return ColIndexLast;
 }
 
 QVariant AmplitudeModel::data(const QModelIndex &index, int role) const
 {
-    if(role == Qt::DisplayRole && index.row() < c->getPoints().size()) {
+    if(role == Qt::DisplayRole && static_cast<unsigned int>(index.row()) < c->getPoints().size()) {
         auto p = c->getPoints()[index.row()];
         switch(index.column()) {
         case ColIndexFreq:
@@ -519,7 +519,7 @@ QVariant AmplitudeModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-bool AmplitudeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool AmplitudeModel::setData(const QModelIndex &index, const QVariant &value, int)
 {
     if((unsigned int) index.row() >= c->getPoints().size()) {
         return false;

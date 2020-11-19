@@ -3,6 +3,7 @@
 
 #include "traceplot.h"
 #include <QPen>
+#include <QPainterPath>
 
 class TraceSmithChart : public TracePlot
 {

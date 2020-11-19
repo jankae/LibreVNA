@@ -268,7 +268,7 @@ TraceMarker *TraceMarkerModel::markerFromIndex(const QModelIndex &index) const
     }
 }
 
-QSize MarkerTraceDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize MarkerTraceDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const
 {
     return QSize(0, rowHeight);
 }
@@ -307,12 +307,12 @@ void MarkerTraceDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
     markerModel->setData(index, c->itemData(c->currentIndex()));
 }
 
-QSize MarkerSettingsDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize MarkerSettingsDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const
 {
     return QSize(0, rowHeight);
 }
 
-QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
 {
     auto marker = static_cast<const TraceMarkerModel*>(index.model())->markerFromIndex(index);
     marker->editingFrequeny = true;
@@ -331,17 +331,16 @@ QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptio
 void MarkerSettingsDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     auto markerModel = (TraceMarkerModel*) model;
-    auto marker = markerModel->markerFromIndex(index);
     auto si = (SIUnitEdit*) editor;
     markerModel->setData(index, si->value());
 }
 
-QSize MarkerTypeDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize MarkerTypeDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const
 {
     return QSize(0, rowHeight);
 }
 
-QWidget *MarkerTypeDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget *MarkerTypeDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
 {
     auto marker = static_cast<const TraceMarkerModel*>(index.model())->markerFromIndex(index);
     auto editor = marker->getTypeEditor(const_cast<MarkerTypeDelegate*>(this));
@@ -350,7 +349,7 @@ QWidget *MarkerTypeDelegate::createEditor(QWidget *parent, const QStyleOptionVie
     return editor;
 }
 
-void MarkerTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void MarkerTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *, const QModelIndex &index) const
 {
     auto marker = static_cast<const TraceMarkerModel*>(index.model())->markerFromIndex(index);
     marker->updateTypeFromEditor(editor);

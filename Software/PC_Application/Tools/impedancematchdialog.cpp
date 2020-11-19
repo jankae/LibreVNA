@@ -111,7 +111,7 @@ void ImpedanceMatchDialog::calculateMatch()
         // convert X and B to inductor and capacitor
         bool twoCs = false;
         bool twoLs = false;
-        double L, C, C2, L2;
+        double L = 0, C = 0, C2 = 0, L2 = 0;
         if(X >= 0) {
             L = X/(2*M_PI*freq);
             if(B > 0) {

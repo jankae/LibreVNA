@@ -80,14 +80,14 @@ void TraceExportDialog::on_buttonBox_accepted()
             }
             t.AddDatapoint(tData);
         }
-        Touchstone::Unit unit;
+        Touchstone::Unit unit = Touchstone::Unit::GHz;
         switch(ui->cUnit->currentIndex()) {
         case 0: unit = Touchstone::Unit::Hz; break;
         case 1: unit = Touchstone::Unit::kHz; break;
         case 2: unit = Touchstone::Unit::MHz; break;
         case 3: unit = Touchstone::Unit::GHz; break;
         }
-        Touchstone::Format format;
+        Touchstone::Format format = Touchstone::Format::RealImaginary;
         switch(ui->cFormat->currentIndex()) {
         case 0: format = Touchstone::Format::DBAngle; break;
         case 1: format = Touchstone::Format::MagnitudeAngle; break;

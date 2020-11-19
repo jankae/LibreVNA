@@ -14,4 +14,5 @@ int main(int argc, char *argv[]) {
     vna.resize(1280, 800);
     vna.show();
     a.exec();
+    return 0;
 }

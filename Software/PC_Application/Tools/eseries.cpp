@@ -20,7 +20,7 @@ static const std::vector<double> E96 = {
 
 double ESeries::ToESeries(double value, ESeries::Series s, ESeries::Type t)
 {
-    if(s == Series::Ideal) {
+    if(s == Series::Ideal || value <= 0) {
         // nothing to do
         return value;
     }
@@ -45,7 +45,7 @@ double ESeries::ToESeries(double value, ESeries::Series s, ESeries::Type t)
     if(index < series.size()) {
         higher = series[index];
     }
-    double approximation;
+    double approximation = 0;
     switch(t) {
     case Type::Lower: approximation = lower; break;
     case Type::Higher: approximation = higher; break;

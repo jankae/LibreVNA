@@ -449,7 +449,8 @@ void TraceXYPlot::updateXAxis()
                 auto trace = t.first;
                 if(enabled && trace->isVisible()) {
                     // this trace is currently displayed
-                    double trace_min, trace_max;
+                    double trace_min = std::numeric_limits<double>::max();
+                    double trace_max = std::numeric_limits<double>::lowest();
                     switch(XAxis.type) {
                     case XAxisType::Frequency:
                         trace_min = trace->minFreq();

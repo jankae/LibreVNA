@@ -110,8 +110,8 @@ void TraceEditDialog::on_buttonBox_accepted()
             auto t = ui->touchstoneImport->getTouchstone();
             trace.fillFromTouchstone(t, ui->CParameter->currentIndex(), ui->touchstoneImport->getFilename());
         } else {
-            Trace::LivedataType type;
-            Trace::LiveParameter param;
+            Trace::LivedataType type = Trace::LivedataType::Overwrite;
+            Trace::LiveParameter param = Trace::LiveParameter::S11;
             switch(ui->CLiveType->currentIndex()) {
             case 0: type = Trace::LivedataType::Overwrite; break;
             case 1: type = Trace::LivedataType::MaxHold; break;
