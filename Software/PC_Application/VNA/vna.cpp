@@ -743,7 +743,7 @@ void VNA::StopSweep()
 
 void VNA::StartCalibrationDialog(Calibration::Type type)
 {
-    auto traceDialog = new CalibrationTraceDialog(&cal, type);
+    auto traceDialog = new CalibrationTraceDialog(&cal, settings, type);
     connect(traceDialog, &CalibrationTraceDialog::triggerMeasurement, this, &VNA::StartCalibrationMeasurement);
     connect(traceDialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
     connect(this, &VNA::CalibrationMeasurementComplete, traceDialog, &CalibrationTraceDialog::measurementComplete);

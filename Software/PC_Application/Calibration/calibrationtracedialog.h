@@ -4,6 +4,7 @@
 #include <QDialog>
 #include "calibration.h"
 #include "measurementmodel.h"
+#include "Device/device.h"
 
 namespace Ui {
 class CalibrationTraceDialog;
@@ -14,7 +15,7 @@ class CalibrationTraceDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CalibrationTraceDialog(Calibration *cal, Calibration::Type type = Calibration::Type::None);
+    explicit CalibrationTraceDialog(Calibration *cal, Protocol::SweepSettings sweep, Calibration::Type type = Calibration::Type::None);
     ~CalibrationTraceDialog();
 
 public slots:

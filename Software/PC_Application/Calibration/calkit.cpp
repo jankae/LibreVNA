@@ -394,12 +394,12 @@ void Calkit::fillTouchstoneCache()
     if(SOLT.Short.useMeasurements) {
         ts_short = new Touchstone(1);
         *ts_short = Touchstone::fromFile(SOLT.Short.file.toStdString());
-        ts_open->reduceTo1Port(SOLT.Short.Sparam);
+        ts_short->reduceTo1Port(SOLT.Short.Sparam);
     }
     if(SOLT.Load.useMeasurements) {
         ts_load = new Touchstone(1);
         *ts_load = Touchstone::fromFile(SOLT.Load.file.toStdString());
-        ts_open->reduceTo1Port(SOLT.Load.Sparam);
+        ts_load->reduceTo1Port(SOLT.Load.Sparam);
     }
     if(SOLT.Through.useMeasurements) {
         ts_through = new Touchstone(2);

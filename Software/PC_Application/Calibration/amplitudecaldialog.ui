@@ -52,17 +52,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="help">
-       <property name="text">
-        <string>Help</string>
-       </property>
-       <property name="icon">
-        <iconset theme="help">
-         <normaloff>.</normaloff>.</iconset>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="load">
        <property name="text">
         <string>Load from Device</string>
