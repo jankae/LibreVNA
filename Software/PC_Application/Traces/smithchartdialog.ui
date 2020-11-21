@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>224</width>
-    <height>69</height>
+    <width>302</width>
+    <height>76</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Smithchart Setup</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

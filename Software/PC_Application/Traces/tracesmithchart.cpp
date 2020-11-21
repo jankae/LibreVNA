@@ -40,15 +40,13 @@ void TraceSmithChart::axisSetupDialog()
 
 QPoint TraceSmithChart::plotToPixel(std::complex<double> S)
 {
-    QPoint ret;
-    ret.setX(S.real() * plotToPixelXScale + plotToPixelXOffset);
-    ret.setY(S.imag() * plotToPixelYScale + plotToPixelYOffset);
-    return ret;
+    return transform.map(QPoint(S.real() * smithCoordMax, -S.imag() * smithCoordMax));
 }
 
 std::complex<double> TraceSmithChart::pixelToPlot(const QPoint &pos)
 {
-    return complex<double>((pos.x() - plotToPixelXOffset) / plotToPixelXScale, (pos.y() - plotToPixelYOffset) / plotToPixelYScale);
+    QPointF inv = transform.inverted().map(pos);
+    return complex<double>(inv.x()/smithCoordMax, -inv.y()/smithCoordMax);
 }
 
 void TraceSmithChart::mousePressEvent(QMouseEvent *event)
@@ -111,43 +109,45 @@ void TraceSmithChart::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
-void TraceSmithChart::draw(QPainter * painter, double width_factor) {
-    painter->setPen(QPen(1.0 * width_factor));
-    painter->setBrush(palette().windowText());
-    painter->setRenderHint(QPainter::Antialiasing);
-
-//    // Display parameter name
-//    QFont font = painter->font();
-//    font.setPixelSize(48);
-//    font.setBold(true);
-//    painter->setFont(font);
-//    painter->drawText(-512, -512, title);
-
+void TraceSmithChart::draw(QPainter &p) {
+    p.setBrush(palette().windowText());
     auto pref = Preferences::getInstance();
 
+    // translate coordinate system so that the smith chart sits in the origin has a size of 1
+    auto w = p.window();
+    p.translate(w.width()/2, w.height()/2);
+    auto scale = qMin(w.height(), w.width()) / (2.0 * smithCoordMax);
+    p.scale(scale, scale);
+
+    transform = p.transform();
+
     // Outer circle
-    painter->setPen(QPen(pref.General.graphColors.axis, 1.5 * width_factor));
+    auto pen = QPen(pref.General.graphColors.axis);
+    pen.setCosmetic(true);
+    p.setPen(pen);
     QRectF rectangle(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
-    painter->drawArc(rectangle, 0, 5760);
+    p.drawArc(rectangle, 0, 5760);
 
     constexpr int Circles = 6;
-    painter->setPen(QPen(pref.General.graphColors.divisions, 0.5 * width_factor, Qt::DashLine));
+    pen = QPen(pref.General.graphColors.divisions, 0.5, Qt::DashLine);
+    pen.setCosmetic(true);
+    p.setPen(pen);
     for(int i=1;i<Circles;i++) {
-        rectangle.adjust(2*smithCoordMax/Circles, smithCoordMax/Circles, 0, -smithCoordMax/Circles);
-        painter->drawArc(rectangle, 0, 5760);
+        rectangle.adjust(2.0*smithCoordMax/Circles, smithCoordMax/Circles, 0, -smithCoordMax/Circles);
+        p.drawArc(rectangle, 0, 5760);
     }
 
-    painter->drawLine(-smithCoordMax, 0, smithCoordMax, 0);
+    p.drawLine(-smithCoordMax, 0, smithCoordMax, 0);
     constexpr std::array<double, 5> impedanceLines = {10, 25, 50, 100, 250};
     for(auto z : impedanceLines) {
         z /= ReferenceImpedance;
-        auto radius = smithCoordMax * 1.0/z;
+        auto radius = smithCoordMax/z;
         double span = M_PI - 2 * atan(radius/smithCoordMax);
         span *= 5760 / (2 * M_PI);
-        QRectF rectangle(smithCoordMax - radius, -2*radius, 2 * radius, 2 * radius);
-        painter->drawArc(rectangle, 4320 - span, span);
+        QRectF rectangle(smithCoordMax - radius, -2 * radius, 2 * radius, 2 * radius);
+        p.drawArc(rectangle, 4320 - span, span);
         rectangle = QRectF(smithCoordMax - radius, 0, 2 * radius, 2 * radius);
-        painter->drawArc(rectangle, 1440, span);
+        p.drawArc(rectangle, 1440, span);
     }
 
     for(auto t : traces) {
@@ -160,7 +160,9 @@ void TraceSmithChart::draw(QPainter * painter, double width_factor) {
             // trace marked invisible
             continue;
         }
-        painter->setPen(QPen(trace->color(), 1.5 * width_factor));
+        pen = QPen(trace->color(), 1.5);
+        pen.setCosmetic(true);
+        p.setPen(pen);
         int nPoints = trace->size();
         for(int i=1;i<nPoints;i++) {
             auto last = trace->sample(i-1);
@@ -175,7 +177,7 @@ void TraceSmithChart::draw(QPainter * painter, double width_factor) {
             last.S *= smithCoordMax;
             now.S *= smithCoordMax;
             // draw line
-            painter->drawLine(std::real(last.S), -std::imag(last.S), std::real(now.S), -std::imag(now.S));
+            p.drawLine(std::real(last.S), -std::imag(last.S), std::real(now.S), -std::imag(now.S));
         }
         if(trace->size() > 0) {
             // only draw markers if the trace has at least one point
@@ -187,38 +189,33 @@ void TraceSmithChart::draw(QPainter * painter, double width_factor) {
                 auto coords = m->getData();
                 coords *= smithCoordMax;
                 auto symbol = m->getSymbol();
-                symbol = symbol.scaled(symbol.width()*width_factor, symbol.height()*width_factor);
-                painter->drawPixmap(coords.real() - symbol.width()/2, -coords.imag() - symbol.height(), symbol);
+                symbol = symbol.scaled(symbol.width()/scale, symbol.height()/scale);
+                p.drawPixmap(coords.real() - symbol.width()/2, -coords.imag() - symbol.height(), symbol);
             }
         }
     }
 }
 
-void TraceSmithChart::replot()
-{
-    update();
-}
+//void TraceSmithChart::paintEvent(QPaintEvent * /* the event */)
+//{
+//    auto pref = Preferences::getInstance();
+//    QPainter painter(this);
+//    painter.setRenderHint(QPainter::Antialiasing);
+//    painter.setBackground(QBrush(pref.General.graphColors.background));
+//    painter.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
 
-void TraceSmithChart::paintEvent(QPaintEvent * /* the event */)
-{
-    auto pref = Preferences::getInstance();
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setBackground(QBrush(pref.General.graphColors.background));
-    painter.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
+//    double side = qMin(width(), height()) * screenUsage;
 
-    double side = qMin(width(), height()) * screenUsage;
+//    //painter.setViewport((width()-side)/2, (height()-side)/2, side, side);
+//    //painter.setWindow(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
 
-    painter.setViewport((width()-side)/2, (height()-side)/2, side, side);
-    painter.setWindow(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
+//    plotToPixelXOffset = width()/2;
+//    plotToPixelYOffset = height()/2;
+//    plotToPixelXScale = side/2;
+//    plotToPixelYScale = -side/2;
 
-    plotToPixelXOffset = width()/2;
-    plotToPixelYOffset = height()/2;
-    plotToPixelXScale = side/2;
-    plotToPixelYScale = -side/2;
-
-    draw(&painter, 2*smithCoordMax/side);
-}
+//    draw(painter, 2*smithCoordMax/side);
+//}
 
 void TraceSmithChart::updateContextMenu()
 {

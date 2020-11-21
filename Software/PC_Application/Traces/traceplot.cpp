@@ -1,5 +1,9 @@
 #include "traceplot.h"
 #include "tracemarker.h"
+#include "preferences.h"
+#include <QPainter>
+#include <QMimeData>
+#include <QDebug>
 
 std::set<TracePlot*> TracePlot::plots;
 
@@ -16,6 +20,8 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
     // get notified when the span changes
     connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TracePlot::updateSpan));
     plots.insert(this);
+
+    setAcceptDrops(true);
 }
 
 TracePlot::~TracePlot()
@@ -42,7 +48,7 @@ void TracePlot::enableTrace(Trace *t, bool enabled)
             disconnect(t, &Trace::markerRemoved, this, &TracePlot::markerRemoved);
         }
         updateContextMenu();
-        triggerReplot();
+        replot();
     }
 }
 
@@ -75,6 +81,71 @@ void TracePlot::contextMenuEvent(QContextMenuEvent *event)
     if(markedForDeletion) {
         emit deleted(this);
         delete this;
+    }
+}
+
+void TracePlot::paintEvent(QPaintEvent *event)
+{
+    auto pref = Preferences::getInstance();
+    QPainter p(this);
+//    p.setRenderHint(QPainter::Antialiasing);
+    // fill background
+    p.setBackground(QBrush(pref.General.graphColors.background));
+    p.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
+
+    // show names of active traces
+    QFont font = p.font();
+    font.setPixelSize(12);
+    p.setFont(font);
+    int x = 1;
+    for(auto t : traces) {
+        if(!t.second || !t.first->isVisible()) {
+            continue;
+        }
+        auto textArea = QRect(x, 0, width() - x, marginTop);
+        QRect usedArea;
+        p.setPen(t.first->color());
+        p.drawText(textArea, 0, t.first->name() + " ", &usedArea);
+        x += usedArea.width();
+        if(x >= width()) {
+            // used up all available space
+            break;
+        }
+    }
+
+    p.setViewport(marginLeft, marginTop, width() - marginLeft - marginRight, height() - marginTop - marginBottom);
+    p.setWindow(0, 0, width() - marginLeft - marginRight, height() - marginTop - marginBottom);
+
+    draw(p);
+}
+
+void TracePlot::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasFormat("trace/pointer")) {
+        auto data = event->mimeData()->data("trace/pointer");
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        quintptr dropPtr;
+        stream >> dropPtr;
+        auto trace = (Trace*) dropPtr;
+        if(supported(trace)) {
+            event->acceptProposedAction();
+        }
+    }
+}
+
+void TracePlot::dropEvent(QDropEvent *event)
+{
+    if (event->mimeData()->hasFormat("trace/pointer")) {
+        auto data = event->mimeData()->data("trace/pointer");
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        quintptr dropPtr;
+        stream >> dropPtr;
+        auto trace = (Trace*) dropPtr;
+        qDebug() << "Dropped" << trace << ", encoded as" << stream;
+
+        if(supported(trace)) {
+            enableTrace(trace, true);
+        }
     }
 }
 

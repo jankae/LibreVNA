@@ -41,6 +41,7 @@
 #include <QApplication>
 #include <QActionGroup>
 #include "CustomWidgets/informationbox.h"
+#include <QDebug>
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     : Mode(window, "Spectrum Analyzer"),

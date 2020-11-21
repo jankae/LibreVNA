@@ -43,6 +43,7 @@
 #include <QActionGroup>
 #include <QErrorMessage>
 #include "CustomWidgets/informationbox.h"
+#include <QDebug>
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),

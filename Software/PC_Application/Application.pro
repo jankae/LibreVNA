@@ -39,6 +39,7 @@ HEADERS += \
     Traces/tracexyplot.h \
     Traces/xyplotaxisdialog.h \
     Util/qpointervariant.h \
+    Util/util.h \
     VNA/portextension.h \
     VNA/vna.h \
     appwindow.h \

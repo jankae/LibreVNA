@@ -3,31 +3,31 @@
 
 #include "traceplot.h"
 #include <set>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_series_data.h>
-#include <qwt_plot_marker.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_picker.h>
+//#include <qwt_plot.h>
+//#include <qwt_plot_curve.h>
+//#include <qwt_series_data.h>
+//#include <qwt_plot_marker.h>
+//#include <qwt_plot_grid.h>
+//#include <qwt_plot_picker.h>
 
-// Derived plotpicker, exposing transformation functions
-class XYplotPicker : public QwtPlotPicker {
-    Q_OBJECT
-public:
-    XYplotPicker(int xAxis, int yAxis, RubberBand rubberBand, DisplayMode trackerMode, QWidget *w)
-        : QwtPlotPicker(xAxis, yAxis, rubberBand, trackerMode, w) {};
-    QPoint plotToPixel(const QPointF &pos) {
-        return transform(pos);
-    }
-    QPointF pixelToPlot(const QPoint &pos) {
-        return invTransform(pos);
-    }
-};
+//// Derived plotpicker, exposing transformation functions
+//class XYplotPicker : public QwtPlotPicker {
+//    Q_OBJECT
+//public:
+//    XYplotPicker(int xAxis, int yAxis, RubberBand rubberBand, DisplayMode trackerMode, QWidget *w)
+//        : QwtPlotPicker(xAxis, yAxis, rubberBand, trackerMode, w) {};
+//    QPoint plotToPixel(const QPointF &pos) {
+//        return transform(pos);
+//    }
+//    QPointF pixelToPlot(const QPoint &pos) {
+//        return invTransform(pos);
+//    }
+//};
 
 class TraceXYPlot : public TracePlot
 {
     friend class XYplotAxisDialog;
-    friend class QwtTraceSeries;
+//    friend class QwtTraceSeries;
     Q_OBJECT
 public:
     TraceXYPlot(TraceModel &model, QWidget *parent = nullptr);
@@ -60,9 +60,10 @@ public:
     void setYAxis(int axis, YAxisType type, bool log, bool autorange, double min, double max, double div);
     void setXAxis(XAxisType type, XAxisMode mode, double min, double max, double div);
     void enableTrace(Trace *t, bool enabled) override;
+    void updateSpan(double min, double max) override;
 
     // Applies potentially changed colors to all XY-plots
-    static void updateGraphColors();
+//    static void updateGraphColors();
     bool isTDRtype(YAxisType type);
 
 public slots:
@@ -71,24 +72,27 @@ public slots:
 protected:
     virtual void updateContextMenu() override;
     virtual bool supported(Trace *t) override;
-    void replot() override;
+    virtual void draw(QPainter &p) override;
 
 private slots:
-    void traceColorChanged(Trace *t);
-    void markerAdded(TraceMarker *m) override;
-    void markerRemoved(TraceMarker *m) override;
-    void markerDataChanged(TraceMarker *m);
-    void markerSymbolChanged(TraceMarker *m);
+    void updateAxisTicks();
+//    void traceColorChanged(Trace *t);
+//    void markerAdded(TraceMarker *m) override;
+//    void markerRemoved(TraceMarker *m) override;
+//    void markerDataChanged(TraceMarker *m);
+//    void markerSymbolChanged(TraceMarker *m);
 
-    void clicked(const QPointF pos);
-    void moved(const QPointF pos);
+//    void clicked(const QPointF pos);
+//    void moved(const QPointF pos);
 private:
-    void setColorFromPreferences();
+    static constexpr int AxisLabelSize = 10;
+//    void setColorFromPreferences();
     QString AxisTypeToName(YAxisType type);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
     bool supported(Trace *t, YAxisType type);
     void updateXAxis();
-    QwtSeriesData<QPointF> *createQwtSeriesData(Trace &t, int axis);
+    double transformFrequencyY(std::complex<double> data, YAxisType type);
+//    QwtSeriesData<QPointF> *createQwtSeriesData(Trace &t, int axis);
 
     std::set<Trace*> tracesAxis[2];
 
@@ -100,6 +104,7 @@ private:
         double rangeMin;
         double rangeMax;
         double rangeDiv;
+        std::vector<double> ticks;
     };
     class XAxis {
     public:
@@ -109,27 +114,28 @@ private:
         double rangeMin;
         double rangeMax;
         double rangeDiv;
+        std::vector<double> ticks;
     };
 
     YAxis YAxis[2];
     XAxis XAxis;
 
-    using CurveData = struct {
-        QwtPlotCurve *curve;
-        QwtSeriesData<QPointF> *data;
-    };
+//    using CurveData = struct {
+//        QwtPlotCurve *curve;
+//        QwtSeriesData<QPointF> *data;
+//    };
 
-    std::map<Trace*, CurveData> curves[2];
-    std::map<TraceMarker*, QwtPlotMarker*> markers;
-    QwtPlot *plot;
-    QwtPlotGrid *grid;
+//    std::map<Trace*, CurveData> curves[2];
+//    std::map<TraceMarker*, QwtPlotMarker*> markers;
+//    QwtPlot *plot;
+//    QwtPlotGrid *grid;
     TraceMarker *selectedMarker;
-    QwtPlotCurve *selectedCurve;
+//    QwtPlotCurve *selectedCurve;
 
-    XYplotPicker *drawPicker;
+//    XYplotPicker *drawPicker;
 
     // keep track of all created plots for changing colors
-    static std::set<TraceXYPlot*> allPlots;
+//    static std::set<TraceXYPlot*> allPlots;
 };
 
 #endif // TRACEXYPLOT_H

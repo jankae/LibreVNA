@@ -6,6 +6,9 @@
 #include "traceimportdialog.h"
 #include "traceexportdialog.h"
 #include <QFileDialog>
+#include <QDrag>
+#include <QMimeData>
+#include <QDebug>
 
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent, bool SA) :
     QWidget(parent),
@@ -16,6 +19,7 @@ TraceWidget::TraceWidget(TraceModel &model, QWidget *parent, bool SA) :
     ui->setupUi(this);
     ui->view->setModel(&model);
     ui->view->setAutoScroll(false);
+    ui->view->viewport()->installEventFilter(this);
     installEventFilter(this);
     createCount = 0;
 }
@@ -54,6 +58,44 @@ bool TraceWidget::eventFilter(QObject *, QEvent *event)
             model.removeTrace(ui->view->currentIndex().row());
             return true;
         }
+    } else if(event->type() == QEvent::MouseButtonPress) {
+        auto mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::LeftButton) {
+            auto index = ui->view->indexAt(mouseEvent->pos());
+            if(index.isValid()) {
+                dragStartPosition = mouseEvent->pos();
+                dragTrace = model.trace(index.row());
+            } else {
+                dragTrace = nullptr;
+            }
+        }
+        return false;
+    } else if(event->type() == QEvent::MouseMove) {
+        auto mouseEvent = static_cast<QMouseEvent*>(event);
+        if (!(mouseEvent->buttons() & Qt::LeftButton)) {
+            return false;
+        }
+        if (!dragTrace) {
+            return false;
+        }
+        if ((mouseEvent->pos() - dragStartPosition).manhattanLength()
+             < QApplication::startDragDistance()) {
+            return false;
+        }
+
+        QDrag *drag = new QDrag(this);
+        QMimeData *mimeData = new QMimeData;
+
+        QByteArray encodedPointer;
+        QDataStream stream(&encodedPointer, QIODevice::WriteOnly);
+        stream << quintptr(dragTrace);
+        qDebug() << "Dragging" << dragTrace << ", encoded as" << stream;
+
+        mimeData->setData("trace/pointer", encodedPointer);
+        drag->setMimeData(mimeData);
+
+        drag->exec(Qt::CopyAction);
+        return true;
     }
     return false;
 }

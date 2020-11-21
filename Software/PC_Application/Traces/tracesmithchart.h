@@ -4,6 +4,7 @@
 #include "traceplot.h"
 #include <QPen>
 #include <QPainterPath>
+#include <QTransform>
 
 class TraceSmithChart : public TracePlot
 {
@@ -15,18 +16,17 @@ public slots:
 protected:
     static constexpr double ReferenceImpedance = 50.0;
     static constexpr double screenUsage = 0.9;
-    static constexpr int smithCoordMax = 4096;
+    static constexpr double smithCoordMax = 4096;
 
     QPoint plotToPixel(std::complex<double> S);
     std::complex<double> pixelToPlot(const QPoint &pos);
 
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
-    void paintEvent(QPaintEvent *event) override;
+    //void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu() override;
     bool supported(Trace *t) override;
-    void draw(QPainter * painter, double width_factor);
-    void replot() override;
+    virtual void draw(QPainter& painter) override;
     QPen textPen;
     QPen chartLinesPen;
     QPen thinPen;
@@ -39,8 +39,7 @@ protected:
     /// Path for the thick arcs
     QPainterPath thickArcsPath;
 
-    double plotToPixelXOffset, plotToPixelXScale;
-    double plotToPixelYOffset, plotToPixelYScale;
+    QTransform transform;
     TraceMarker *selectedMarker;
 };
 

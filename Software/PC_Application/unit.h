@@ -3,12 +3,11 @@
 
 #include <QString>
 
-class Unit
+namespace Unit
 {
-public:
-    static double FromString(QString string, QString unit = QString(), QString prefixes = " ");
-    static QString ToString(double value, QString unit = QString(), QString prefixes = " ", int precision = 6);
-    static double SIPrefixToFactor(char prefix);
+    double FromString(QString string, QString unit = QString(), QString prefixes = " ");
+    QString ToString(double value, QString unit = QString(), QString prefixes = " ", int precision = 6);
+    double SIPrefixToFactor(char prefix);
 };
 
 #endif // UNIT_H

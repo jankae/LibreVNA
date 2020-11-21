@@ -22,17 +22,15 @@ public slots:
 private slots:
     void on_remove_clicked();
     void on_edit_clicked();
-
     void on_view_doubleClicked(const QModelIndex &index);
-
     void on_view_clicked(const QModelIndex &index);
-
     void on_bImport_clicked();
-
     void on_bExport_clicked();
 
 private:
     bool eventFilter(QObject *obj, QEvent *event) override;
+    QPoint dragStartPosition;
+    Trace *dragTrace;
     Ui::TraceWidget *ui;
     TraceModel &model;
     int createCount;

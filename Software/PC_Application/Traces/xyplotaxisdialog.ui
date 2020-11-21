@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>XYplotAxisDialog</class>
  <widget class="QDialog" name="XYplotAxisDialog">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -547,7 +550,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="Y2group"/>
   <buttongroup name="Y1group"/>
+  <buttongroup name="Y2group"/>
  </buttongroups>
 </ui>

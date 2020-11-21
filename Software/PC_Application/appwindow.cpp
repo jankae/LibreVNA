@@ -46,6 +46,7 @@
 #include "SpectrumAnalyzer/spectrumanalyzer.h"
 #include "Calibration/sourcecaldialog.h"
 #include "Calibration/receivercaldialog.h"
+#include <QDebug>
 
 using namespace std;
 
@@ -107,7 +108,7 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         Preferences::getInstance().edit();
         // settings might have changed, update necessary stuff
-        TraceXYPlot::updateGraphColors();
+//        TraceXYPlot::updateGraphColors();
     });
     connect(ui->actionAbout, &QAction::triggered, [=](){
         auto commit = QString(GITHASH);
