@@ -60,7 +60,7 @@ static void StartNextSample() {
 		attenuator = 0;
 		// this is the first step in each point, update tracking generator if enabled
 		if (s.trackingGenerator) {
-			trackingFreq = freq - s.trackingGeneratorOffset;
+			trackingFreq = freq + s.trackingGeneratorOffset;
 			if(trackingFreq > 0 && trackingFreq <= (int64_t) HW::Info.limits_maxFreq) {
 				// tracking frequency is valid, calculate required settings and select band
 				auto amplitude = HW::GetAmplitudeSettings(s.trackingPower, trackingFreq, s.applySourceCorrection, s.trackingGeneratorPort);
