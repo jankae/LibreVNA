@@ -9,7 +9,6 @@
 SIUnitEdit::SIUnitEdit(QString unit, QString prefixes, int precision, QWidget *parent)
     : QLineEdit(parent)
 {
-    _value = 0;
     this->unit = unit;
     this->prefixes = prefixes;
     this->precision = precision;
@@ -19,6 +18,7 @@ SIUnitEdit::SIUnitEdit(QString unit, QString prefixes, int precision, QWidget *p
     connect(this, &QLineEdit::editingFinished, [this]() {
        parseNewValue(1.0);
     });
+    setValueQuiet(0);
 }
 
 SIUnitEdit::SIUnitEdit(QWidget *parent)

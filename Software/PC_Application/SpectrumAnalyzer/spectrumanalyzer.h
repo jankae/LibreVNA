@@ -32,8 +32,12 @@ private slots:
     void SetRBW(double bandwidth);
     void SetAveraging(unsigned int averages);
     // TG control
+    void SetTGEnabled(bool enabled);
     void SetTGLevel(double level);
     void SetTGOffset(double offset);
+    void MeasureNormalization();
+    void AbortNormalization();
+    void EnableNormalization(bool enabled);
 
 private:
     void UpdateAverageCount();
@@ -52,6 +56,23 @@ private:
     QCheckBox *cbSignalID;
     QComboBox *cbWindowType, *cbDetector;
     QLabel *lAverages;
+
+    struct {
+        bool active;
+        bool measuring;
+        // settings when normalize was measured
+        double f_start, f_stop, points;
+        // correction values to get the ports to 0dBm
+        std::vector<double> port1Correction;
+        std::vector<double> port2Correction;
+        // level to normalize to (additional correction factor)
+        SIUnitEdit *Level;
+
+        // GUI elements
+        QProgressDialog dialog;
+        QPushButton *measure;
+        QCheckBox *enable;
+    } normalize;
 
 signals:
     void dataChanged();

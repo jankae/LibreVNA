@@ -48,6 +48,10 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
 {
     averages = 1;
     settings = {};
+    normalize.active = false;
+    normalize.measuring = false;
+    normalize.points = 0;
+    normalize.dialog.reset();
 
     // Create default traces
     auto tPort1 = new Trace("Port1", Qt::yellow);
@@ -180,10 +184,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     // Tracking generator toolbar
     auto tb_trackgen = new QToolBar("Tracking Generator");
     auto cbTrackGenEnable = new QCheckBox("Tracking Generator");
-    connect(cbTrackGenEnable, &QCheckBox::toggled, [=](bool enabled) {
-        settings.trackingGenerator = enabled;
-        SettingsChanged();
-    });
+    connect(cbTrackGenEnable, &QCheckBox::toggled, this, &SpectrumAnalyzer::SetTGEnabled);
     tb_trackgen->addWidget(cbTrackGenEnable);
 
     auto cbTrackGenPort = new QComboBox();
@@ -218,6 +219,20 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_trackgen->addWidget(new QLabel("Offset:"));
     tb_trackgen->addWidget(tgOffset);
 
+    normalize.enable = new QCheckBox("Normalize");
+    tb_trackgen->addWidget(normalize.enable);
+    connect(normalize.enable, &QCheckBox::toggled, this, &SpectrumAnalyzer::EnableNormalization);
+    normalize.Level = new SIUnitEdit("dBm", " ", 3);
+    normalize.Level->setFixedWidth(100);
+    normalize.Level->setValue(0);
+    normalize.Level->setToolTip("Level to normalize to");
+    tb_trackgen->addWidget(new QLabel("To:"));
+    tb_trackgen->addWidget(normalize.Level);
+    normalize.measure = new QPushButton("Measure");
+    normalize.measure->setToolTip("Perform normalization measurement");
+    connect(normalize.measure, &QPushButton::clicked, this, &SpectrumAnalyzer::MeasureNormalization);
+    tb_trackgen->addWidget(normalize.measure);
+
     window->addToolBar(tb_trackgen);
     toolbars.insert(tb_trackgen);
 
@@ -240,6 +255,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     // Set initial TG settings
     SetTGLevel(-20.0);
     SetTGOffset(0);
+    SetTGEnabled(false);
 
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
@@ -279,6 +295,37 @@ using namespace std;
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
     d = average.process(d);
+
+    if(normalize.measuring) {
+        if(average.currentSweep() == averages) {
+            // this is the last averaging sweep, use values for normalization
+            if(normalize.port1Correction.size() > 0 || d.pointNum == 0) {
+                // add measurement
+                normalize.port1Correction.push_back(d.port1);
+                normalize.port2Correction.push_back(d.port2);
+                if(d.pointNum == settings.pointNum - 1) {
+                    // this was the last point
+                    normalize.measuring = false;
+                    normalize.f_start = settings.f_start;
+                    normalize.f_stop = settings.f_stop;
+                    normalize.points = settings.pointNum;
+                    EnableNormalization(true);
+                    qDebug() << "Normalization measuremen complete";
+                }
+            }
+        }
+        int percentage = (((average.currentSweep() - 1) * 100) + (d.pointNum + 1) * 100 / settings.pointNum) / averages;
+        normalize.dialog.setValue(percentage);
+    }
+
+    if(normalize.active) {
+        d.port1 /= normalize.port1Correction[d.pointNum];
+        d.port2 /= normalize.port2Correction[d.pointNum];
+        double corr = pow(10.0, normalize.Level->value() / 20.0);
+        d.port1 *= corr;
+        d.port2 *= corr;
+    }
+
     traceModel.addSAData(d, settings);
     emit dataChanged();
     if(d.pointNum == settings.pointNum - 1) {
@@ -328,6 +375,15 @@ void SpectrumAnalyzer::SettingsChanged()
                             "With your current span, this could result in the signal not being detected at some bands. A minimum"
                             " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
             InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
+        }
+    }
+
+    if(normalize.active) {
+        // check if normalization is still valid
+        if(normalize.f_start != settings.f_start || normalize.f_stop != settings.f_stop || normalize.points != settings.pointNum) {
+            // normalization was taken at different settings, disable
+            EnableNormalization(false);
+            InformationBox::ShowMessage("Information", "Normalization was disabled because the span has been changed");
         }
     }
 
@@ -449,6 +505,21 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     SettingsChanged();
 }
 
+void SpectrumAnalyzer::SetTGEnabled(bool enabled)
+{
+    if(enabled != settings.trackingGenerator) {
+        settings.trackingGenerator = enabled;
+        SettingsChanged();
+    }
+    normalize.Level->setEnabled(enabled);
+    normalize.enable->setEnabled(enabled);
+    normalize.measure->setEnabled(enabled);
+    if(!enabled && normalize.active) {
+        // disable normalization when TG is turned off
+        EnableNormalization(false);
+    }
+}
+
 void SpectrumAnalyzer::SetTGLevel(double level)
 {
     if(level > Device::Info().limits_cdbm_max / 100.0) {
@@ -471,6 +542,54 @@ void SpectrumAnalyzer::SetTGOffset(double offset)
     if(settings.trackingGenerator) {
         SettingsChanged();
     }
+}
+
+void SpectrumAnalyzer::MeasureNormalization()
+{
+    normalize.active = false;
+    normalize.port1Correction.clear();
+    normalize.port2Correction.clear();
+    normalize.measuring = true;
+    normalize.dialog.setLabelText("Taking normalization measurement...");
+    normalize.dialog.setCancelButtonText("Abort");
+    normalize.dialog.setWindowTitle("Normalization");
+    normalize.dialog.setValue(0);
+    normalize.dialog.setWindowModality(Qt::ApplicationModal);
+    // always show the dialog
+    normalize.dialog.setMinimumDuration(0);
+    connect(&normalize.dialog, &QProgressDialog::canceled, this, &SpectrumAnalyzer::AbortNormalization);
+    // trigger beginning of next sweep
+    SettingsChanged();
+}
+
+void SpectrumAnalyzer::AbortNormalization()
+{
+    EnableNormalization(false);
+    normalize.measuring = false;
+    normalize.points = 0;
+    normalize.dialog.reset();
+}
+
+void SpectrumAnalyzer::EnableNormalization(bool enabled)
+{
+    if(enabled != normalize.active) {
+        if(enabled) {
+            // check if measurements already taken
+            if(normalize.f_start == settings.f_start && normalize.f_stop == settings.f_stop && normalize.points == settings.pointNum) {
+                // same settings as with normalization measurement, can enable
+                normalize.active = true;
+            } else {
+                // needs to take measurement first
+                MeasureNormalization();
+            }
+        } else {
+            // disabled
+            normalize.active = false;
+        }
+    }
+    normalize.enable->blockSignals(true);
+    normalize.enable->setChecked(normalize.active);
+    normalize.enable->blockSignals(false);
 }
 
 void SpectrumAnalyzer::UpdateAverageCount()
