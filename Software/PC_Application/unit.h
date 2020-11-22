@@ -6,6 +6,7 @@
 namespace Unit
 {
     double FromString(QString string, QString unit = QString(), QString prefixes = " ");
+    // prefixed need to be in ascending order (e.g. "m kMG" is okay, whjle "MkG" does not work)
     QString ToString(double value, QString unit = QString(), QString prefixes = " ", int precision = 6);
     double SIPrefixToFactor(char prefix);
 };

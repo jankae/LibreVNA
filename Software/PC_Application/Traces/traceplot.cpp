@@ -7,9 +7,14 @@
 
 std::set<TracePlot*> TracePlot::plots;
 
+using namespace std;
+
 TracePlot::TracePlot(TraceModel &model, QWidget *parent)
     : QWidget(parent),
-      model(model)
+      model(model),
+      selectedMarker(nullptr),
+      dropPending(false),
+      dropTrace(nullptr)
 {
     contextmenu = new QMenu();
     markedForDeletion = false;
@@ -119,6 +124,75 @@ void TracePlot::paintEvent(QPaintEvent *event)
     draw(p);
 }
 
+
+void TracePlot::mousePressEvent(QMouseEvent *event)
+{
+    auto clickPoint = event->pos() - QPoint(marginLeft, marginTop);
+    // check if click was near a marker
+    unsigned int closestDistance = numeric_limits<unsigned int>::max();
+    TraceMarker *closestMarker = nullptr;
+    for(auto t : traces) {
+        if(!t.second) {
+            // this trace is disabled, skip
+            continue;
+        }
+        auto markers = t.first->getMarkers();
+        for(auto m : markers) {
+            if(!m->isMovable()) {
+                continue;
+            }
+            Trace::Data d;
+            d.S = m->getData();
+            d.frequency = m->getFrequency();
+            auto markerPoint = dataToPixel(d);
+            if(markerPoint.isNull()) {
+                // invalid, skip
+                continue;
+            }
+            auto diff = markerPoint - clickPoint;
+            unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
+            if(distance < closestDistance) {
+                closestDistance = distance;
+                closestMarker = m;
+            }
+        }
+    }
+    if(closestDistance <= 400) {
+        selectedMarker = closestMarker;
+    } else {
+        selectedMarker = nullptr;
+    }
+}
+
+void TracePlot::mouseMoveEvent(QMouseEvent *event)
+{
+    if(selectedMarker) {
+        auto t = selectedMarker->trace();
+        auto clickPoint = event->pos() - QPoint(marginLeft, marginTop);
+        auto samples = t->size();
+        if(!samples) {
+            return;
+        }
+        double closestDistance = numeric_limits<double>::max();
+        unsigned int closestIndex = 0;
+        for(unsigned int i=0;i<samples;i++) {
+            auto data = t->sample(i);
+            auto plotPoint = dataToPixel(data);
+            if (plotPoint.isNull()) {
+                // destination point outside of currently displayed range
+                continue;
+            }
+            auto diff = plotPoint - clickPoint;
+            unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
+            if(distance < closestDistance) {
+                closestDistance = distance;
+                closestIndex = i;
+            }
+        }
+        selectedMarker->setFrequency(t->sample(closestIndex).frequency);
+    }
+}
+
 void TracePlot::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasFormat("trace/pointer")) {
@@ -129,24 +203,28 @@ void TracePlot::dragEnterEvent(QDragEnterEvent *event)
         auto trace = (Trace*) dropPtr;
         if(supported(trace)) {
             event->acceptProposedAction();
+            dropPending = true;
+            dropTrace = trace;
         }
     }
+    triggerReplot();
 }
 
 void TracePlot::dropEvent(QDropEvent *event)
 {
-    if (event->mimeData()->hasFormat("trace/pointer")) {
-        auto data = event->mimeData()->data("trace/pointer");
-        QDataStream stream(&data, QIODevice::ReadOnly);
-        quintptr dropPtr;
-        stream >> dropPtr;
-        auto trace = (Trace*) dropPtr;
-        qDebug() << "Dropped" << trace << ", encoded as" << stream;
-
-        if(supported(trace)) {
-            enableTrace(trace, true);
-        }
+    if(dropTrace) {
+        traceDropped(dropTrace, event->pos() -  - QPoint(marginLeft, marginTop));
     }
+    dropPending = false;
+    dropTrace = nullptr;
+}
+
+void TracePlot::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    Q_UNUSED(event)
+    dropPending = false;
+    dropTrace = nullptr;
+    triggerReplot();
 }
 
 std::set<TracePlot *> TracePlot::getPlots()

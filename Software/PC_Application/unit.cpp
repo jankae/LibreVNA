@@ -37,35 +37,30 @@ QString Unit::ToString(double value, QString unit, QString prefixes, int precisi
     if(isnan(value) || isinf(value)) {
         sValue.append("NaN");
         return sValue;
-    } else if(value == 0.0) {
+    } else if(abs(value) <= numeric_limits<double>::epsilon()) {
         sValue.append("0 ");
     } else {
         if(value < 0) {
             sValue.append('-');
             value = -value;
         }
-        int preDotDigits = log10(value) + 2;
-        int prefixIndex = prefixes.indexOf(' ');
+        int prefixIndex = 0; //prefixes.indexOf(' ');
+        int preDotDigits = log10(value / SIPrefixToFactor(prefixes[prefixIndex].toLatin1())) + 1;
         while(preDotDigits > 3 && prefixIndex < prefixes.length() - 1) {
-            value /= 1000.0;
-            preDotDigits -= 3;
             prefixIndex++;
+            preDotDigits = log10(value / SIPrefixToFactor(prefixes[prefixIndex].toLatin1())) + 1;
         }
-        while(preDotDigits<=1 && prefixIndex > 0) {
-            value *= 1000.0;
-            preDotDigits += 3;
-            prefixIndex--;
-        }
+        value /= SIPrefixToFactor(prefixes[prefixIndex].toLatin1());
         stringstream ss;
         ss << std::fixed;
         if(preDotDigits >= 0) {
-            if(precision - preDotDigits + 1 < 0) {
+            if(precision - preDotDigits < 0) {
                 ss << std::setprecision(0);
             } else {
-                ss << std::setprecision(precision - preDotDigits + 1);
+                ss << std::setprecision(precision - preDotDigits);
             }
         } else {
-            ss << std::setprecision(precision - 1);
+            ss << std::setprecision(precision - 2);
         }
         ss << value;
         sValue.append(QString::fromStdString(ss.str()));
@@ -89,6 +84,6 @@ double Unit::SIPrefixToFactor(char prefix)
     case 'G': return 1e9; break;
     case 'T': return 1e12; break;
     case 'P': return 1e15; break;
-    default: return 0; break;
+    default: return 1e0; break;
     }
 }

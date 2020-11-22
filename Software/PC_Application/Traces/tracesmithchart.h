@@ -18,15 +18,13 @@ protected:
     static constexpr double screenUsage = 0.9;
     static constexpr double smithCoordMax = 4096;
 
-    QPoint plotToPixel(std::complex<double> S);
-    std::complex<double> pixelToPlot(const QPoint &pos);
+    QPoint dataToPixel(Trace::Data d) override;
 
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
     //void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu() override;
     bool supported(Trace *t) override;
     virtual void draw(QPainter& painter) override;
+    virtual void traceDropped(Trace *t, QPoint position) override;
     QPen textPen;
     QPen chartLinesPen;
     QPen thinPen;
@@ -40,7 +38,6 @@ protected:
     QPainterPath thickArcsPath;
 
     QTransform transform;
-    TraceMarker *selectedMarker;
 };
 
 #endif // TRACESMITHCHART_H

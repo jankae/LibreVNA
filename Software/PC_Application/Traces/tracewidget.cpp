@@ -89,7 +89,6 @@ bool TraceWidget::eventFilter(QObject *, QEvent *event)
         QByteArray encodedPointer;
         QDataStream stream(&encodedPointer, QIODevice::WriteOnly);
         stream << quintptr(dragTrace);
-        qDebug() << "Dragging" << dragTrace << ", encoded as" << stream;
 
         mimeData->setData("trace/pointer", encodedPointer);
         drag->setMimeData(mimeData);

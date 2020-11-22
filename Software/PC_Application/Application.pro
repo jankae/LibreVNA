@@ -46,7 +46,6 @@ HEADERS += \
     averaging.h \
     mode.h \
     preferences.h \
-    qwtplotpiecewisecurve.h \
     touchstone.h \
     unit.h
 
@@ -62,7 +61,6 @@ SOURCES += \
     Calibration/sourcecaldialog.cpp \
     CustomWidgets/colorpickerbutton.cpp \
     CustomWidgets/informationbox.cpp \
-    CustomWidgets/qwtplotpiecewisecurve.cpp \
     CustomWidgets/siunitedit.cpp \
     CustomWidgets/tilewidget.cpp \
     CustomWidgets/toggleswitch.cpp \
@@ -101,10 +99,7 @@ SOURCES += \
     unit.cpp
 
 LIBS += -lusb-1.0
-unix:INCLUDEPATH += /usr/include/qwt
-unix:LIBS += -L/usr/lib/ -lqwt-qt5
-win32:INCLUDEPATH += C:\Qwt-6.1.4\include
-win32:LIBS += -LC:\Qwt-6.1.4\lib -lqwt
+unix:LIBS += -L/usr/lib/
 
 QT += widgets
 

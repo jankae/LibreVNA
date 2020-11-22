@@ -40,9 +40,15 @@ protected:
     bool markedForDeletion;
     static std::set<TracePlot*> plots;
 
+    virtual QPoint dataToPixel(Trace::Data d) = 0;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+
     // handle trace drops
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void dragLeaveEvent(QDragLeaveEvent *event) override;
+    virtual void traceDropped(Trace *t, QPoint position){  Q_UNUSED(t) Q_UNUSED(position)};
 
 protected slots:
     void newTraceAvailable(Trace *t);
@@ -57,6 +63,11 @@ protected:
     static constexpr unsigned int marginRight = 0;
     double sweep_fmin, sweep_fmax;
     TraceModel &model;
+    TraceMarker *selectedMarker;
+
+    bool dropPending;
+    QPoint dropPosition;
+    Trace *dropTrace;
 
 };
 

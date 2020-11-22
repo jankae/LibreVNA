@@ -1,4 +1,4 @@
-#include "tracesmithchart.h"
+﻿#include "tracesmithchart.h"
 #include <QPainter>
 #include <array>
 #include <math.h>
@@ -38,83 +38,20 @@ void TraceSmithChart::axisSetupDialog()
     dialog->show();
 }
 
-QPoint TraceSmithChart::plotToPixel(std::complex<double> S)
+QPoint TraceSmithChart::dataToPixel(Trace::Data d)
 {
-    return transform.map(QPoint(S.real() * smithCoordMax, -S.imag() * smithCoordMax));
-}
-
-std::complex<double> TraceSmithChart::pixelToPlot(const QPoint &pos)
-{
-    QPointF inv = transform.inverted().map(pos);
-    return complex<double>(inv.x()/smithCoordMax, -inv.y()/smithCoordMax);
-}
-
-void TraceSmithChart::mousePressEvent(QMouseEvent *event)
-{
-    auto clickPoint = event->pos();
-    unsigned int closestDistance = numeric_limits<unsigned int>::max();
-    TraceMarker *closestMarker = nullptr;
-    for(auto t : traces) {
-        auto markers = t.first->getMarkers();
-        for(auto m : markers) {
-            if(!m->isMovable()) {
-                continue;
-            }
-            if (limitToSpan && (m->getFrequency() < sweep_fmin || m->getFrequency() > sweep_fmax)) {
-                // marker outside of currently displayed range
-                continue;
-            }
-            auto S = m->getData();
-            auto markerPoint = plotToPixel(S);
-            auto yDiff = abs(markerPoint.y() - clickPoint.y());
-            auto xDiff = abs(markerPoint.x() - clickPoint.x());
-            unsigned int distance = xDiff * xDiff + yDiff * yDiff;
-            if(distance < closestDistance) {
-                closestDistance = distance;
-                closestMarker = m;
-            }
-        }
+    if(d.frequency < sweep_fmin || d.frequency > sweep_fmax) {
+        return QPoint();
     }
-    if(closestDistance <= 400) {
-        selectedMarker = closestMarker;
-    } else {
-        selectedMarker = nullptr;
-    }
-}
-
-void TraceSmithChart::mouseMoveEvent(QMouseEvent *event)
-{
-    if(selectedMarker) {
-        auto t = selectedMarker->trace();
-        auto mouseS = pixelToPlot(event->pos());
-        auto samples = t->size();
-        if(!samples) {
-            return;
-        }
-        double closestDistance = numeric_limits<double>::max();
-        unsigned int closestIndex = 0;
-        for(unsigned int i=0;i<samples;i++) {
-            auto data = t->sample(i);
-            if (limitToSpan && (data.frequency < sweep_fmin || data.frequency > sweep_fmax)) {
-                // destination point outside of currently displayed range
-                continue;
-            }
-            auto distance = norm(data.S - mouseS);
-            if(distance < closestDistance) {
-                closestDistance = distance;
-                closestIndex = i;
-            }
-        }
-        selectedMarker->setFrequency(t->sample(closestIndex).frequency);
-    }
+    return transform.map(QPoint(d.S.real() * smithCoordMax, -d.S.imag() * smithCoordMax));
 }
 
 void TraceSmithChart::draw(QPainter &p) {
-    p.setBrush(palette().windowText());
     auto pref = Preferences::getInstance();
 
     // translate coordinate system so that the smith chart sits in the origin has a size of 1
     auto w = p.window();
+    p.save();
     p.translate(w.width()/2, w.height()/2);
     auto scale = qMin(w.height(), w.width()) / (2.0 * smithCoordMax);
     p.scale(scale, scale);
@@ -160,7 +97,7 @@ void TraceSmithChart::draw(QPainter &p) {
             // trace marked invisible
             continue;
         }
-        pen = QPen(trace->color(), 1.5);
+        pen = QPen(trace->color(), 1);
         pen.setCosmetic(true);
         p.setPen(pen);
         int nPoints = trace->size();
@@ -193,6 +130,31 @@ void TraceSmithChart::draw(QPainter &p) {
                 p.drawPixmap(coords.real() - symbol.width()/2, -coords.imag() - symbol.height(), symbol);
             }
         }
+    }
+    if(dropPending) {
+        p.setOpacity(0.5);
+        p.setBrush(Qt::white);
+        p.setPen(Qt::white);
+        p.drawEllipse(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
+        p.restore();
+        auto font = p.font();
+        font.setPixelSize(20);
+        p.setFont(font);
+        p.setOpacity(1.0);
+        p.setPen(Qt::white);
+        auto text = "Drop here to add\n" + dropTrace->name() + "\nto Smith chart";
+        p.drawText(p.window(), Qt::AlignCenter, text);
+    } else {
+        p.restore();
+    }
+}
+
+void TraceSmithChart::traceDropped(Trace *t, QPoint position)
+{
+    Q_UNUSED(t)
+    Q_UNUSED(position);
+    if(supported(t)) {
+        enableTrace(t, true);
     }
 }
 
