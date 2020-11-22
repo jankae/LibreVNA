@@ -12,9 +12,9 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
     ui->treeView->setItemDelegateForColumn(TraceMarkerModel::ColIndexType, new MarkerTypeDelegate);
     ui->treeView->setItemDelegateForColumn(TraceMarkerModel::ColIndexSettings, new MarkerSettingsDelegate);
 
-    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexNumber, 80);
-    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexTrace, 80);
-    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexType, 150);
+    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexNumber, 60); // reduced width to fit widget when App is not maximized
+    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexTrace, 60);  // reduced width to fit widget when App is not maximized
+    ui->treeView->setColumnWidth(TraceMarkerModel::ColIndexType, 120);  // reduced width to fit widget when App is not maximized
 
     connect(&model.getModel(), &TraceModel::traceAdded, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceRemoved, this, &MarkerWidget::updatePersistentEditors);
@@ -31,7 +31,17 @@ MarkerWidget::~MarkerWidget()
 
 void MarkerWidget::on_bDelete_clicked()
 {
-    auto marker = model.markerFromIndex(ui->treeView->currentIndex());
+    if (model.rowCount() <= 0) {
+        return;                 // prevent crash if bDelete clicked with no markers (empty model)
+    }
+
+    QModelIndex ind = ui->treeView->currentIndex();
+    if ( ! ind.isValid() ) {
+        return;     // add marker(s), then click bDelete without clicking on any marker (there is no index clicked in treeView)
+                    // alternative: select last marker, then proceede to delete it?
+    }
+
+    auto marker = model.markerFromIndex(ind);
     if(!marker || marker->getParent()) {
         // can't delete child markers directly
         return;
