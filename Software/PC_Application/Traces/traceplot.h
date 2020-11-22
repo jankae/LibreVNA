@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QTime>
+#include <QLabel>
 
 class TracePlot : public QWidget
 {
@@ -43,13 +44,16 @@ protected:
     virtual QPoint markerToPixel(TraceMarker *m) = 0;
     virtual double nearestTracePoint(Trace *t, QPoint pixel) = 0;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
     // handle trace drops
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     virtual void traceDropped(Trace *t, QPoint position){  Q_UNUSED(t) Q_UNUSED(position)};
+    virtual QString mouseText(QPoint pos) {Q_UNUSED(pos) return QString();};
 
 protected slots:
     void newTraceAvailable(Trace *t);
@@ -69,6 +73,8 @@ protected:
     bool dropPending;
     QPoint dropPosition;
     Trace *dropTrace;
+
+    QLabel *cursorLabel;
 
 };
 

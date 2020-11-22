@@ -19,6 +19,7 @@ protected:
     static constexpr double smithCoordMax = 4096;
 
     QPoint dataToPixel(Trace::Data d);
+    std::complex<double> pixelToData(QPoint p);
     QPoint markerToPixel(TraceMarker *m) override;
     double nearestTracePoint(Trace *t, QPoint pixel) override;
 
@@ -27,6 +28,7 @@ protected:
     bool supported(Trace *t) override;
     virtual void draw(QPainter& painter) override;
     virtual void traceDropped(Trace *t, QPoint position) override;
+    QString mouseText(QPoint pos) override;
     QPen textPen;
     QPen chartLinesPen;
     QPen thinPen;

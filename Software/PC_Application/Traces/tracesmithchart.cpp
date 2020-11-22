@@ -6,6 +6,7 @@
 #include <QDebug>
 #include "preferences.h"
 #include "ui_smithchartdialog.h"
+#include "unit.h"
 
 using namespace std;
 
@@ -44,6 +45,12 @@ QPoint TraceSmithChart::dataToPixel(Trace::Data d)
         return QPoint();
     }
     return transform.map(QPoint(d.S.real() * smithCoordMax, -d.S.imag() * smithCoordMax));
+}
+
+std::complex<double> TraceSmithChart::pixelToData(QPoint p)
+{
+    auto data = transform.inverted().map(QPointF(p));
+    return complex<double>(data.x() / smithCoordMax, -data.y() / smithCoordMax);
 }
 
 QPoint TraceSmithChart::markerToPixel(TraceMarker *m)
@@ -191,6 +198,22 @@ void TraceSmithChart::traceDropped(Trace *t, QPoint position)
     Q_UNUSED(position);
     if(supported(t)) {
         enableTrace(t, true);
+    }
+}
+
+QString TraceSmithChart::mouseText(QPoint pos)
+{
+    auto data = pixelToData(pos);
+    if(abs(data) <= 1.0) {
+        data = 50.0 * (1-.0 + data) / (1.0 - data);
+        auto ret = Unit::ToString(data.real(), "", " ", 3);
+        if(data.imag() >= 0) {
+            ret += "+";
+        }
+        ret += Unit::ToString(data.imag(), "j", " ", 3);
+        return ret;
+    } else {
+        return QString();
     }
 }
 

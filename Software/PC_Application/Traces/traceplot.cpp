@@ -26,6 +26,13 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
     connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TracePlot::updateSpan));
     plots.insert(this);
 
+    cursorLabel = new QLabel("Test", this);
+    cursorLabel->setStyleSheet("color: white;");
+    auto font = cursorLabel->font();
+    font.setPixelSize(12);
+    cursorLabel->setFont(font);
+    cursorLabel->hide();
+    setMouseTracking(true);
     setAcceptDrops(true);
 }
 
@@ -33,6 +40,7 @@ TracePlot::~TracePlot()
 {
     plots.erase(this);
     delete contextmenu;
+    delete cursorLabel;
 }
 
 void TracePlot::enableTrace(Trace *t, bool enabled)
@@ -161,13 +169,36 @@ void TracePlot::mousePressEvent(QMouseEvent *event)
     }
 }
 
+void TracePlot::mouseReleaseEvent(QMouseEvent *event)
+{
+    selectedMarker = nullptr;
+}
+
 void TracePlot::mouseMoveEvent(QMouseEvent *event)
 {
+    auto clickPoint = event->pos() - QPoint(marginLeft, marginTop);
     if(selectedMarker) {
-        auto clickPoint = event->pos() - QPoint(marginLeft, marginTop);
         auto trace = selectedMarker->getTrace();
         selectedMarker->setPosition(nearestTracePoint(trace, clickPoint));
+        cursorLabel->hide();
+    } else {
+        auto text = mouseText(clickPoint);
+        if(!text.isEmpty()) {
+            cursorLabel->setText(text);
+            cursorLabel->adjustSize();
+            cursorLabel->move(event->pos() + QPoint(15, 0));
+            cursorLabel->show();
+        } else {
+            cursorLabel->hide();
+        }
     }
+}
+
+void TracePlot::leaveEvent(QEvent *event)
+{
+    Q_UNUSED(event);
+    cursorLabel->hide();
+    selectedMarker = nullptr;
 }
 
 void TracePlot::dragEnterEvent(QDragEnterEvent *event)
