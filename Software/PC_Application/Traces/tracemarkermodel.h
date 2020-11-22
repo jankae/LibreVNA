@@ -16,6 +16,19 @@ class MarkerTraceDelegate : public QStyledItemDelegate
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 };
 
+class MarkerWidgetTraceInfo {
+public:
+    Trace *trace;
+    bool isTimeDomain;
+
+};
+
+inline bool operator==(const MarkerWidgetTraceInfo& lhs, const MarkerWidgetTraceInfo& rhs)
+{
+    return lhs.trace == rhs.trace && lhs.isTimeDomain == rhs.isTimeDomain;
+}
+Q_DECLARE_METATYPE(MarkerWidgetTraceInfo)
+
 class MarkerTypeDelegate : public QStyledItemDelegate
 {
     Q_OBJECT;

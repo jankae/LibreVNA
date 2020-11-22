@@ -15,14 +15,16 @@ class TraceMarker : public QObject
 public:
     TraceMarker(TraceMarkerModel *model, int number = 1, TraceMarker *parent = nullptr, QString descr = QString());
     ~TraceMarker();
+    void setTimeDomain(bool timeDomain);
     void assignTrace(Trace *t);
     Trace* trace();
     QString readableData();
     QString readableSettings();
     QString readableType();
 
-    double getFrequency() const;
+    double getPosition() const;
     std::complex<double> getData() const;
+    Trace::TimedomainData getTimeData() const;
     bool isMovable();
 
     QPixmap& getSymbol();
@@ -46,8 +48,10 @@ public:
     TraceMarker *helperMarker(unsigned int i);
     QString getSuffix() const;
 
+    bool isTimeDomain() const;
+
 public slots:
-    void setFrequency(double freq);
+    void setPosition(double freq);
 signals:
     void deleted(TraceMarker *m);
     void dataChanged(TraceMarker *m);
@@ -56,6 +60,7 @@ signals:
     void traceChanged(TraceMarker *m);
     void beginRemoveHelperMarkers(TraceMarker *m);
     void endRemoveHelperMarkers(TraceMarker *m);
+    void timeDomainChanged();
 
 private slots:
     void parentTraceDeleted(Trace *t);
@@ -95,7 +100,7 @@ private:
         default: return QString();
         }
     }
-    void constrainFrequency();
+    void constrainPosition();
     void assignDeltaMarker(TraceMarker *m);
     void deleteHelperMarkers();
     void setType(Type t);
@@ -104,9 +109,12 @@ private:
 
     TraceMarkerModel *model;
     Trace *parentTrace;
-    double frequency;
+    double position;
     int number;
+    // Frequency domain: S parameter
+    // Time domain: imag part is impulse response, real part is step response
     std::complex<double> data;
+    Trace::TimedomainData timeData;
     QPixmap symbol;
     Type type;
     QString suffix;
@@ -120,6 +128,8 @@ private:
         double peakThreshold;
         double offset;
     };
+
+    bool timeDomain;
 };
 
 #endif // TRACEMARKER_H

@@ -18,7 +18,9 @@ protected:
     static constexpr double screenUsage = 0.9;
     static constexpr double smithCoordMax = 4096;
 
-    QPoint dataToPixel(Trace::Data d) override;
+    QPoint dataToPixel(Trace::Data d);
+    QPoint markerToPixel(TraceMarker *m) override;
+    double nearestTracePoint(Trace *t, QPoint pixel) override;
 
     //void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu() override;

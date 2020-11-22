@@ -617,7 +617,7 @@ void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
         trackingOffset_limited = true;
         settings.trackingGeneratorOffset = Device::Info().limits_maxFreq - settings.f_stop;
     }
-    if(settings.f_start + settings.trackingGeneratorOffset < Device::Info().limits_minFreq) {
+    if((long) settings.f_start + settings.trackingGeneratorOffset < (long) Device::Info().limits_minFreq) {
         trackingOffset_limited = true;
         settings.trackingGeneratorOffset = Device::Info().limits_minFreq - settings.f_start;
     }

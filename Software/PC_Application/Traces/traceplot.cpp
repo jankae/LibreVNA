@@ -141,10 +141,7 @@ void TracePlot::mousePressEvent(QMouseEvent *event)
             if(!m->isMovable()) {
                 continue;
             }
-            Trace::Data d;
-            d.S = m->getData();
-            d.frequency = m->getFrequency();
-            auto markerPoint = dataToPixel(d);
+            auto markerPoint = markerToPixel(m);
             if(markerPoint.isNull()) {
                 // invalid, skip
                 continue;
@@ -167,29 +164,9 @@ void TracePlot::mousePressEvent(QMouseEvent *event)
 void TracePlot::mouseMoveEvent(QMouseEvent *event)
 {
     if(selectedMarker) {
-        auto t = selectedMarker->trace();
         auto clickPoint = event->pos() - QPoint(marginLeft, marginTop);
-        auto samples = t->size();
-        if(!samples) {
-            return;
-        }
-        double closestDistance = numeric_limits<double>::max();
-        unsigned int closestIndex = 0;
-        for(unsigned int i=0;i<samples;i++) {
-            auto data = t->sample(i);
-            auto plotPoint = dataToPixel(data);
-            if (plotPoint.isNull()) {
-                // destination point outside of currently displayed range
-                continue;
-            }
-            auto diff = plotPoint - clickPoint;
-            unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
-            if(distance < closestDistance) {
-                closestDistance = distance;
-                closestIndex = i;
-            }
-        }
-        selectedMarker->setFrequency(t->sample(closestIndex).frequency);
+        auto trace = selectedMarker->getTrace();
+        selectedMarker->setPosition(nearestTracePoint(trace, clickPoint));
     }
 }
 

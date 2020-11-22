@@ -70,7 +70,7 @@ void ImpedanceMatchDialog::on_cSource_currentIndexChanged(int index)
         auto reflection = Z0 * (1.0 + data) / (1.0 - data);
         ui->zReal->setValue(reflection.real());
         ui->zImag->setValue(reflection.imag());
-        ui->zFreq->setValue(m->getFrequency());
+        ui->zFreq->setValue(m->getPosition());
     }
 }
 

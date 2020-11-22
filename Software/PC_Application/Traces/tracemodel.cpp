@@ -23,6 +23,9 @@ void TraceModel::addTrace(Trace *t)
     connect(t, &Trace::nameChanged, [=]() {
        emit traceNameChanged(t);
     });
+    connect(t, &Trace::changedTDRstate, [=](bool enabled) {
+       emit traceTDRstateChanged(t, enabled);
+    });
     traces.push_back(t);
     endInsertRows();
     emit traceAdded(t);

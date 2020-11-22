@@ -40,7 +40,8 @@ protected:
     bool markedForDeletion;
     static std::set<TracePlot*> plots;
 
-    virtual QPoint dataToPixel(Trace::Data d) = 0;
+    virtual QPoint markerToPixel(TraceMarker *m) = 0;
+    virtual double nearestTracePoint(Trace *t, QPoint pixel) = 0;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
 

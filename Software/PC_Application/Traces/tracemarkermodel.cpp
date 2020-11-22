@@ -70,7 +70,7 @@ TraceMarker *TraceMarkerModel::createDefaultMarker()
         }
     } while (used);
     auto marker = new TraceMarker(this, number);
-    marker->setFrequency(2150000000);
+    marker->setPosition(2150000000);
     marker->assignTrace(model.trace(0));
     return marker;
 }
@@ -199,8 +199,11 @@ bool TraceMarkerModel::setData(const QModelIndex &index, const QVariant &value, 
     }
         break;
     case ColIndexTrace: {
-        auto trace = qvariant_cast<Trace*>(value);
-        m->assignTrace(trace);
+        auto info = qvariant_cast<MarkerWidgetTraceInfo>(value);
+        // always disable timedomain before switching trace
+        m->setTimeDomain(false);
+        m->assignTrace(info.trace);
+        m->setTimeDomain(info.isTimeDomain);
     }
         break;
     case ColIndexSettings: {
@@ -283,7 +286,14 @@ QWidget *MarkerTraceDelegate::createEditor(QWidget *parent, const QStyleOptionVi
     });
     auto traces = model->getModel().getTraces();
     for(auto t : traces) {
-        c->addItem(t->name(), QVariant::fromValue<Trace*>(t));
+        MarkerWidgetTraceInfo info;
+        info.trace = t;
+        info.isTimeDomain = false;
+        c->addItem(t->name(), QVariant::fromValue(info));
+        if(t->TDRactive()) {
+            info.isTimeDomain = true;
+            c->addItem(t->name() + " Time Domain", QVariant::fromValue(info));
+        }
     }
     return c;
 }
@@ -292,8 +302,12 @@ void MarkerTraceDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
 {
     auto marker = static_cast<const TraceMarkerModel*>(index.model())->markerFromIndex(index);
     auto c = (QComboBox*) editor;
+    MarkerWidgetTraceInfo markerInfo;
+    markerInfo.trace = marker->trace();
+    markerInfo.isTimeDomain = marker->isTimeDomain();
     for(int i=0;i<c->count();i++) {
-        if(qvariant_cast<Trace*>(c->itemData(i)) == marker->trace()) {
+        auto info = qvariant_cast<MarkerWidgetTraceInfo>(c->itemData(i));
+        if(info == markerInfo) {
             c->setCurrentIndex(i);
             return;
         }

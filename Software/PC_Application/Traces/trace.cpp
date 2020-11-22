@@ -215,6 +215,11 @@ void Trace::updateTimeDomainData()
         }
         t.impulseResponse = real(frequencyDomain[i]) / fft_bins;
         t.stepResponse = last_step;
+        if(abs(t.stepResponse) < 1.0) {
+            t.impedance = 50.0 * (1+t.stepResponse) / (1-t.stepResponse);
+        } else {
+            t.impedance = numeric_limits<double>::quiet_NaN();
+        }
         last_step += t.impulseResponse;
         timeDomain.push_back(t);
     }
@@ -236,12 +241,67 @@ void Trace::addTDRinterest()
         updateTimeDomainData();
     }
     tdr_users++;
+    if(tdr_users == 1) {
+        emit changedTDRstate(true);
+    }
 }
 
 void Trace::removeTDRinterest()
 {
     if(tdr_users > 0) {
         tdr_users--;
+        if(tdr_users == 0) {
+            emit changedTDRstate(false);
+        }
+    }
+}
+
+Trace::TimedomainData Trace::getTDR(double position)
+{
+    TimedomainData ret = {};
+    if(!TDRactive() || position < 0) {
+        return ret;
+    }
+    int index = 0;
+    bool exact = false;
+    double alpha = 0.0;
+    if(position <= timeDomain.back().time) {
+        auto lower = lower_bound(timeDomain.begin(), timeDomain.end(), position, [](const TimedomainData &lhs, const double pos) -> bool {
+            return lhs.time < pos;
+        });
+        index = lower - timeDomain.begin();
+        if(timeDomain.at(index).time == position) {
+            exact = true;
+        } else {
+            alpha = (position - timeDomain.at(index-1).time) / (timeDomain.at(index).time - timeDomain.at(index-1).time);
+        }
+    } else {
+        if(position > timeDomain.back().distance) {
+            // too high, invalid position
+            return ret;
+        }
+        auto lower = lower_bound(timeDomain.begin(), timeDomain.end(), position, [](const TimedomainData &lhs, const double pos) -> bool {
+            return lhs.distance < pos;
+        });
+        index = lower - timeDomain.begin();
+        if(timeDomain.at(index).distance == position) {
+            exact = true;
+        } else {
+            alpha = (position - timeDomain.at(index-1).distance) / (timeDomain.at(index).distance - timeDomain.at(index-1).distance);
+        }
+    }
+    if(exact) {
+        return timeDomain.at(index);
+    } else {
+        // need to interpolate
+        auto low = timeDomain.at(index-1);
+        auto high = timeDomain.at(index);
+        ret.time = low.time * (1.0 - alpha) + high.time * alpha;
+        ret.distance = low.distance * (1.0 - alpha) + high.distance * alpha;
+        ret.stepResponse = low.stepResponse * (1.0 - alpha) + high.stepResponse * alpha;
+        ret.impulseResponse = low.impulseResponse * (1.0 - alpha) + high.impulseResponse * alpha;
+        ret.impedance = low.impedance * (1.0 - alpha) + high.impedance * alpha;
+        return ret;
     }
 }
 

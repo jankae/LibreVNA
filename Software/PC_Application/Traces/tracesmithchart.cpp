@@ -46,6 +46,39 @@ QPoint TraceSmithChart::dataToPixel(Trace::Data d)
     return transform.map(QPoint(d.S.real() * smithCoordMax, -d.S.imag() * smithCoordMax));
 }
 
+QPoint TraceSmithChart::markerToPixel(TraceMarker *m)
+{
+    QPoint ret = QPoint();
+    if(!m->isTimeDomain()) {
+        if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
+            auto d = m->getData();
+            ret = transform.map(QPoint(d.real() * smithCoordMax, -d.imag() * smithCoordMax));
+        }
+    }
+    return ret;
+}
+
+double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel)
+{
+    double closestDistance = numeric_limits<double>::max();
+    unsigned int closestIndex = 0;
+    for(unsigned int i=0;i<t->size();i++) {
+        auto data = t->sample(i);
+        auto plotPoint = dataToPixel(data);
+        if (plotPoint.isNull()) {
+            // destination point outside of currently displayed range
+            continue;
+        }
+        auto diff = plotPoint - pixel;
+        unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
+        if(distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = i;
+        }
+    }
+    return t->sample(closestIndex).frequency;
+}
+
 void TraceSmithChart::draw(QPainter &p) {
     auto pref = Preferences::getInstance();
 
@@ -120,7 +153,10 @@ void TraceSmithChart::draw(QPainter &p) {
             // only draw markers if the trace has at least one point
             auto markers = t.first->getMarkers();
             for(auto m : markers) {
-                if (limitToSpan && (m->getFrequency() < sweep_fmin || m->getFrequency() > sweep_fmax)) {
+                if (m->isTimeDomain()) {
+                    continue;
+                }
+                if (limitToSpan && (m->getPosition() < sweep_fmin || m->getPosition() > sweep_fmax)) {
                     continue;
                 }
                 auto coords = m->getData();

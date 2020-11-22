@@ -33,6 +33,7 @@ signals:
     void traceRemoved(Trace *t);
     void requiredExcitation(bool excitePort1, bool excitePort2);
     void traceNameChanged(Trace *t);
+    void traceTDRstateChanged(Trace *t, bool enabled);
 
 public slots:
     void clearVNAData();

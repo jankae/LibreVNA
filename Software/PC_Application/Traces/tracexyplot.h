@@ -61,7 +61,10 @@ private:
     double transformY(std::complex<double> data, YAxisType type);
     QPointF transformY(Trace *t, unsigned int sample, YAxisType type);
     unsigned int numTraceSamples(Trace *t);
-    QPoint dataToPixel(Trace::Data d) override;
+    QPoint dataToPixel(Trace::Data d);
+    QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
+    QPoint markerToPixel(TraceMarker *m) override;
+    double nearestTracePoint(Trace *t, QPoint pixel) override;
     void traceDropped(Trace *t, QPoint position) override;
 
     std::set<Trace*> tracesAxis[2];

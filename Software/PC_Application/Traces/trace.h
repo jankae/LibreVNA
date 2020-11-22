@@ -28,6 +28,7 @@ public:
         double distance;
         double impulseResponse;
         double stepResponse;
+        double impedance;
     };
 
     enum class LiveParameter {
@@ -95,7 +96,12 @@ public:
     // The data is only updated at the end of a sweep and upon the first addTDRinterest() call.
     void addTDRinterest();
     void removeTDRinterest();
+    bool TDRactive() { return tdr_users > 0;};
     const std::vector<TimedomainData>& getTDR() { return timeDomain;}
+    // interpolates the TDR data
+    // position is assumed to be the delay if it is smaller than the maximum sampled delay, otherwise it is assumed to be the distance.
+    // Since the usual delay values are way smaller than the distance values this should work
+    TimedomainData getTDR(double position);
 
 public slots:
     void setTouchstoneParameter(int value);
@@ -117,6 +123,7 @@ signals:
     void colorChanged(Trace *t);
     void markerAdded(TraceMarker *m);
     void markerRemoved(TraceMarker *m);
+    void changedTDRstate(bool enabled);
 
 private:
     void updateTimeDomainData();
