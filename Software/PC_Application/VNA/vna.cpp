@@ -171,9 +171,10 @@ VNA::VNA(AppWindow *window)
 
 
     // Sweep toolbar
+    int wid = 80;   // propose slight reduction, to fit more widgets comfortably
     auto tb_sweep = new QToolBar("Sweep");
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
-    eStart->setFixedWidth(100);
+    eStart->setFixedWidth(wid);
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &VNA::SetStartFreq);
     connect(this, &VNA::startFreqChanged, eStart, &SIUnitEdit::setValueQuiet);
@@ -181,7 +182,7 @@ VNA::VNA(AppWindow *window)
     tb_sweep->addWidget(eStart);
 
     auto eCenter = new SIUnitEdit("Hz", " kMG", 6);
-    eCenter->setFixedWidth(100);
+    eCenter->setFixedWidth(wid);
     eCenter->setToolTip("Center frequency");
     connect(eCenter, &SIUnitEdit::valueChanged, this, &VNA::SetCenterFreq);
     connect(this, &VNA::centerFreqChanged, eCenter, &SIUnitEdit::setValueQuiet);
@@ -189,7 +190,7 @@ VNA::VNA(AppWindow *window)
     tb_sweep->addWidget(eCenter);
 
     auto eStop = new SIUnitEdit("Hz", " kMG", 6);
-    eStop->setFixedWidth(100);
+    eStop->setFixedWidth(wid);
     eStop->setToolTip("Stop frequency");
     connect(eStop, &SIUnitEdit::valueChanged, this, &VNA::SetStopFreq);
     connect(this, &VNA::stopFreqChanged, eStop, &SIUnitEdit::setValueQuiet);
@@ -197,7 +198,7 @@ VNA::VNA(AppWindow *window)
     tb_sweep->addWidget(eStop);
 
     auto eSpan = new SIUnitEdit("Hz", " kMG", 6);
-    eSpan->setFixedWidth(100);
+    eSpan->setFixedWidth(wid);
     eSpan->setToolTip("Span");
     connect(eSpan, &SIUnitEdit::valueChanged, this, &VNA::SetSpan);
     connect(this, &VNA::spanChanged, eSpan, &SIUnitEdit::setValueQuiet);
@@ -225,7 +226,7 @@ VNA::VNA(AppWindow *window)
     // Acquisition toolbar
     auto tb_acq = new QToolBar("Acquisition");
     auto dbm = new QDoubleSpinBox();
-    dbm->setFixedWidth(95);
+    dbm->setFixedWidth(80); // propose slight reduction, to fit more widgets when App not maximized
     dbm->setRange(-100.0, 100.0);
     dbm->setSingleStep(0.25);
     dbm->setSuffix("dbm");
