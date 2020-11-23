@@ -36,7 +36,11 @@ void TraceWidget::on_add_clicked()
 
 void TraceWidget::on_remove_clicked()
 {
-    model.removeTrace(ui->view->currentIndex().row());
+    QModelIndex index = ui->view->currentIndex();
+    if (index.isValid()) {      // if nothing clicked, index.row() = -1
+        model.removeTrace(index.row());
+        // otherwise, TraceModel casts index to unsigned int and compares with traces.size() which is int
+    };
 }
 
 bool TraceWidget::eventFilter(QObject *, QEvent *event)
