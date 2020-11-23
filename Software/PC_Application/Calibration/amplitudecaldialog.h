@@ -72,6 +72,7 @@ protected slots:
     void SaveToDevice();
     void RemovePoint(unsigned int i);
     void RemoveAllPoints();
+    void AddPoint(CorrectionPoint& p);
     void AddPoint(double frequency);
     void AddPointDialog();
     void AutomaticMeasurementDialog();

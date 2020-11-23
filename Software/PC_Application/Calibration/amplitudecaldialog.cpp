@@ -6,8 +6,12 @@
 #include "ui_addamplitudepointsdialog.h"
 #include "ui_automaticamplitudedialog.h"
 #include <QMessageBox>
+#include <QFileDialog>
+#include "json.hpp"
+#include <fstream>
 
 using namespace std;
+using namespace nlohmann;
 
 AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
     QDialog(parent),
@@ -31,6 +35,65 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
         }
     });
     connect(ui->save, &QPushButton::clicked, this, &AmplitudeCalDialog::SaveToDevice);
+
+    connect(ui->saveFile, &QPushButton::clicked, [=](){
+        auto fileEnding = pointType() == Protocol::PacketType::SourceCalPoint ? ".srccal" : ".recvcal";
+        auto fileFilter = QString("Amplitude calibration files (*")+fileEnding+")";
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", fileFilter, nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        if(!filename.endsWith(fileEnding)) {
+            filename.append(fileEnding);
+        }
+        json j;
+        for(auto p : points) {
+            json point;
+            point["Frequency"] = p.frequency;
+            point["Port1"] = p.correctionPort1;
+            point["Port2"] = p.correctionPort2;
+            j.push_back(point);
+        }
+        ofstream file;
+        file.open(filename.toStdString());
+        file << setw(4) << j << endl;
+        file.close();
+        edited = false;
+    });
+
+    connect(ui->loadFile, &QPushButton::clicked, [=](){
+        auto fileEnding = pointType() == Protocol::PacketType::SourceCalPoint ? ".srccal" : ".recvcal";
+        auto fileFilter = QString("Amplitude calibration files (*")+fileEnding+")";
+        auto filename = QFileDialog::getOpenFileName(nullptr, "Save calibration data", "", fileFilter, nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        ifstream file;
+        file.open(filename.toStdString());
+        if(!file.is_open()) {
+            throw runtime_error("Unable to open file");
+        }
+        RemoveAllPoints();
+        json j;
+        file >> j;
+        for(auto point : j) {
+            if(!point.contains("Frequency") || !point.contains("Port1") || !point.contains("Port2")) {
+                QMessageBox::warning(this, "Error loading file", "Failed to parse calibration point");
+                return;
+            }
+            CorrectionPoint p;
+            p.frequency = point["Frequency"];
+            p.correctionPort1 = point["Port1"];
+            p.correctionPort2 = point["Port2"];
+            p.port1set = false;
+            p.port2set = false;
+            UpdateAmplitude(p);
+            AddPoint(p);
+        }
+    });
+
     connect(ui->add, &QPushButton::clicked, this, &AmplitudeCalDialog::AddPointDialog);
     connect(ui->remove, &QPushButton::clicked, [=](){
         unsigned int row = ui->view->currentIndex().row();
@@ -140,7 +203,7 @@ void AmplitudeCalDialog::LoadFromDevice()
     connect(dev, &Device::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint);
     dev->SendCommandWithoutPayload(requestCommand());
     edited = false;
-    ui->save->setEnabled(false);
+    UpdateSaveButton();
 }
 
 void AmplitudeCalDialog::SaveToDevice()
@@ -158,7 +221,7 @@ void AmplitudeCalDialog::SaveToDevice()
         dev->SendPacket(info);
     }
     edited = false;
-    ui->save->setEnabled(false);
+    UpdateSaveButton();
 }
 
 void AmplitudeCalDialog::RemovePoint(unsigned int i)
@@ -176,32 +239,32 @@ void AmplitudeCalDialog::RemoveAllPoints()
     points.clear();
     model.endResetModel();
     edited = true;
-    ui->save->setEnabled(false);
+    UpdateSaveButton();
+}
+
+void AmplitudeCalDialog::AddPoint(AmplitudeCalDialog::CorrectionPoint &p)
+{
+    // find position at which this frequency gets inserted
+    auto index = upper_bound(points.begin(), points.end(), p.frequency, [](double value, const CorrectionPoint& p){
+        return value < p.frequency;
+    });
+    model.beginInsertRows(QModelIndex(), index - points.begin(), index - points.begin());
+    emit newPointCreated(p);
+    points.insert(index, p);
+    model.endInsertRows();
     UpdateSaveButton();
 }
 
 void AmplitudeCalDialog::AddPoint(double frequency)
 {
-    if(points.size() >= Device::Info().limits_maxAmplitudePoints) {
-        qWarning() << "Unable to add amplitude point, already maximum limit (" << Device::Info().limits_maxAmplitudePoints << ")";
-        return;
-    }
-    // find position at which this frequency gets inserted
-    auto index = upper_bound(points.begin(), points.end(), frequency, [](double value, const CorrectionPoint& p){
-        return value < p.frequency;
-    });
-    model.beginInsertRows(QModelIndex(), index - points.begin(), index - points.begin());
     CorrectionPoint newPoint;
     newPoint.frequency = frequency;
     newPoint.correctionPort1 = 0;
     newPoint.correctionPort2 = 0;
     newPoint.port1set = false;
     newPoint.port2set = false;
-    emit newPointCreated(newPoint);
-    points.insert(index, newPoint);
-    model.endInsertRows();
+    AddPoint(newPoint);
     edited = true;
-    UpdateSaveButton();
 }
 
 void AmplitudeCalDialog::AddPointDialog()
@@ -342,7 +405,7 @@ void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult re
 bool AmplitudeCalDialog::ConfirmActionIfEdited()
 {
     if(edited) {
-        auto reply = QMessageBox::question(this, "Confirm action", "Some points have been edited but not saved in the device yet. If you continue, all changes will be lost. Do you want to continue?",
+        auto reply = QMessageBox::question(this, "Confirm action", "Some points have been edited but not saved in the device yet. If you continue, all changes will be lost (unless they are already saved to a file). Do you want to continue?",
                                         QMessageBox::Yes|QMessageBox::No);
         return reply == QMessageBox::Yes;
     } else {
@@ -364,6 +427,10 @@ void AmplitudeCalDialog::UpdateSaveButton()
             enable = false;
             break;
         }
+    }
+    if(!edited) {
+        // already saved in device, disable button
+        enable = false;
     }
     ui->save->setEnabled(enable);
 }

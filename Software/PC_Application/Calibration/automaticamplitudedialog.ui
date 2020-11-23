@@ -101,7 +101,7 @@
         <string>Start Measurement</string>
        </property>
        <property name="icon">
-        <iconset resource="../icons.qrc">
+        <iconset theme="media-playback-start" resource="../icons.qrc">
          <normaloff>:/icons/play.png</normaloff>:/icons/play.png</iconset>
        </property>
       </widget>

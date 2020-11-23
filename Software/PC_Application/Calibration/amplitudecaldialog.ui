@@ -77,6 +77,31 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="loadFile">
+       <property name="text">
+        <string>Load from File</string>
+       </property>
+       <property name="icon">
+        <iconset theme="document-open" resource="../icons.qrc">
+         <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveFile">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Save to File</string>
+       </property>
+       <property name="icon">
+        <iconset theme="document-save" resource="../icons.qrc">
+         <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
         <string>Calibration Mode</string>
