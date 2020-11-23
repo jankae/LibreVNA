@@ -1,12 +1,12 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  push
+#    branches:
+#      - master
+#  pull_request:
+#    branches:
+#      - master
 
 jobs:
   PC_Application_Ubuntu:
@@ -54,19 +54,21 @@ jobs:
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
           7z x libusb.7z -r -olibusb
           Xcopy /E /I /Y libusb\include ..\Qt\5.12.9\mingw73_64\include
-          dir
-          dir ..\Qt\5.12.9
-          dir ..\Qt\5.12.9\mingw73_64
-          dir C:\Qwt-6.1.4\lib
-          dir ..\Qt\5.12.9\mingw73_64\bin
+          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application
         shell: cmd
 
       - name: Build application
         run: |
           cd Software/PC_Application
+          export LIBRARY_PATH
+          LIBRARY_PATH="../../libusb/MinGW64/static;$LIBRARY_PATH"
           qmake
           make -j9
-          cd release
+        shell: cmd
+
+      - name: Deploy application
+        run: |
+          cd Software/PC_Application/release
           del *.o *.cpp
           windeployqt.exe .
           copy ..\..\..\..\Qt\5.12.9\mingw73_64\bin\libwinpthread-1.dll .
