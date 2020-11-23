@@ -87,13 +87,7 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
     } else if(event->type() == QEvent::FocusIn) {
         // online found clumsy way to select all text when clicked!?!
         // just selectAll() alone does _not_ work!
-        QTimer::singleShot(0, this, &QLineEdit::selectAll);
-        /*
-         * However, this widget does not loose focus when clicking on a smith chart from here
-         * At the same time, clicking on x-y plot does loose focus as expected
-         * This behaviour existed before this mod, but it was not obvious due to properties of placeholdertext
-         */
-
+        QTimer::singleShot(0, this, &SIUnitEdit::continueEditing);
     }
     return false;
 }
@@ -102,8 +96,7 @@ void SIUnitEdit::setValueQuiet(double value)
 {
     _value = value;
     clear();
-    setPlaceholderText(Unit::ToString(value, unit, prefixes, precision)); // didn't remove it because maybe needed elsewhere
-    setText(Unit::ToString(value, unit, prefixes, precision));   // because selectAll() only affects setText() (placeholder text is igonred)
+    setPlaceholderText(Unit::ToString(value, unit, prefixes, precision));
 }
 
 void SIUnitEdit::parseNewValue(double factor)
@@ -130,7 +123,7 @@ void SIUnitEdit::parseNewValue(double factor)
         } else {
             qWarning() << "SIUnit conversion failure:" << input;
         }
-//        clear();  // removed due to funny behaviour when clicking repeatedly between start, center, span, stop, but without editing anything
+        clear();
     }
 }
 

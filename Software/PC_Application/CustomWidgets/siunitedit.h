@@ -24,9 +24,10 @@ signals:
     void focusLost();
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
+private slots:
+    void continueEditing();
 private:
     void parseNewValue(double factor);
-    void continueEditing();
     QString unit, prefixes;
     int precision;
     double _value;

@@ -73,7 +73,9 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     // Sweep toolbar
     auto tb_sweep = new QToolBar("Sweep");
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
-    eStart->setFixedWidth(100);
+    // calculate width required with expected string length
+    auto width = QFontMetrics(eStart->font()).width("3.00000GHz") + 15;
+    eStart->setFixedWidth(width);
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetStartFreq);
     connect(this, &SpectrumAnalyzer::startFreqChanged, eStart, &SIUnitEdit::setValueQuiet);
@@ -81,7 +83,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_sweep->addWidget(eStart);
 
     auto eCenter = new SIUnitEdit("Hz", " kMG", 6);
-    eCenter->setFixedWidth(100);
+    eCenter->setFixedWidth(width);
     eCenter->setToolTip("Center frequency");
     connect(eCenter, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetCenterFreq);
     connect(this, &SpectrumAnalyzer::centerFreqChanged, eCenter, &SIUnitEdit::setValueQuiet);
@@ -89,7 +91,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_sweep->addWidget(eCenter);
 
     auto eStop = new SIUnitEdit("Hz", " kMG", 6);
-    eStop->setFixedWidth(100);
+    eStop->setFixedWidth(width);
     eStop->setToolTip("Stop frequency");
     connect(eStop, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetStopFreq);
     connect(this, &SpectrumAnalyzer::stopFreqChanged, eStop, &SIUnitEdit::setValueQuiet);
@@ -97,7 +99,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_sweep->addWidget(eStop);
 
     auto eSpan = new SIUnitEdit("Hz", " kMG", 6);
-    eSpan->setFixedWidth(100);
+    eSpan->setFixedWidth(width);
     eSpan->setToolTip("Span");
     connect(eSpan, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetSpan);
     connect(this, &SpectrumAnalyzer::spanChanged, eSpan, &SIUnitEdit::setValueQuiet);
@@ -212,7 +214,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_trackgen->addWidget(dbm);
 
     auto tgOffset = new SIUnitEdit("Hz", " kMG", 6);
-    tgOffset->setFixedWidth(100);
+    tgOffset->setFixedWidth(width);
     tgOffset->setToolTip("Tracking generator offset");
     connect(tgOffset, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetTGOffset);
     connect(this, &SpectrumAnalyzer::TGOffsetChanged, tgOffset, &SIUnitEdit::setValueQuiet);
@@ -223,7 +225,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     tb_trackgen->addWidget(normalize.enable);
     connect(normalize.enable, &QCheckBox::toggled, this, &SpectrumAnalyzer::EnableNormalization);
     normalize.Level = new SIUnitEdit("dBm", " ", 3);
-    normalize.Level->setFixedWidth(100);
+    normalize.Level->setFixedWidth(width);
     normalize.Level->setValue(0);
     normalize.Level->setToolTip("Level to normalize to");
     tb_trackgen->addWidget(new QLabel("To:"));
