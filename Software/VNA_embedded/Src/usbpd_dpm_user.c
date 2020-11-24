@@ -394,11 +394,11 @@ USBPD_FunctionalState USBPD_DPM_IsPowerReady(uint8_t PortNum, USBPD_VSAFE_Status
   * @}
   */
 
-/** 
+/**
   * @}
   */
 
-/** 
+/**
   * @}
   */
 

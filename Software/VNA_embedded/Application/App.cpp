@@ -219,15 +219,15 @@ void App_Start() {
 			}
 		}
 
-		if(sweepActive && HAL_GetTick() - lastNewPoint > 1000) {
-			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", lastPoint, FPGA::GetStatus());
-			FPGA::AbortSweep();
-			// restart the current sweep
-			HW::Init();
-			HW::Ref::update();
-			VNA::Setup(settings, VNACallback);
-			sweepActive = true;
-			lastNewPoint = HAL_GetTick();
-		}
+//		if(sweepActive && HAL_GetTick() - lastNewPoint > 1000) {
+//			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", lastPoint, FPGA::GetStatus());
+//			FPGA::AbortSweep();
+//			// restart the current sweep
+//			HW::Init();
+//			HW::Ref::update();
+//			VNA::Setup(settings, VNACallback);
+//			sweepActive = true;
+//			lastNewPoint = HAL_GetTick();
+//		}
 	}
 }

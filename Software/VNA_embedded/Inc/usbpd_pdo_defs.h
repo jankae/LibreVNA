@@ -24,7 +24,7 @@
 
 #ifdef __cplusplus
  extern "C" {
-#endif 
+#endif
 
 /* Includes ------------------------------------------------------------------*/
 
@@ -102,7 +102,7 @@ const uint32_t PORT0_PDO_ListSRC[USBPD_MAX_NB_PDO] =
 };
 
 /* Definition of Sink PDO for Port 0 */
-const uint32_t PORT0_PDO_ListSNK[USBPD_MAX_NB_PDO] = 
+const uint32_t PORT0_PDO_ListSNK[USBPD_MAX_NB_PDO] =
 {
   /* PDO 1 */
         (0x00000000U),

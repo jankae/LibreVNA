@@ -15,11 +15,16 @@ bool Flash::isPresent() {
 	uint8_t recv[4];
 	HAL_SPI_TransmitReceive(spi, send, recv, 4, 100);
 	CS(true);
-	if(recv[1] != 0xEF) {
-		// wrong manufacturer ID, communication with flash not working
-		return false;
+	// Check against valid manufacturer IDs
+	constexpr uint8_t valid_ids[] = {0xEF, 0x68};
+	bool valid = false;
+	for (uint8_t i = 0; i < sizeof(valid_ids); i++) {
+		if (recv[1] == valid_ids[i]) {
+			valid = true;
+			break;
+		}
 	}
-	return true;
+	return valid;
 }
 
 void Flash::read(uint32_t address, uint16_t length, void *dest) {

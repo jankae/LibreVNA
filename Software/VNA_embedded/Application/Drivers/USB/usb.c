@@ -19,7 +19,7 @@ static uint8_t  *USBD_Class_GetDeviceQualifierDescriptor (uint16_t *length);
 
 static usbd_recv_callback_t cb;
 static uint8_t usb_receive_buffer[1024];
-static uint8_t usb_transmit_fifo[4092];
+static uint8_t usb_transmit_fifo[8192];
 static uint16_t usb_transmit_read_index = 0;
 static uint16_t usb_transmit_fifo_level = 0;
 static bool data_transmission_active = false;
@@ -155,8 +155,8 @@ static bool trigger_next_fifo_transmission() {
 	if(continous_length > usb_transmit_fifo_level) {
 		continous_length = usb_transmit_fifo_level;
 	}
-	if(continous_length > sizeof(usb_transmit_fifo)/ 4) {
-		continous_length = sizeof(usb_transmit_fifo) / 4;
+	if(continous_length > sizeof(usb_transmit_fifo)/ 2) {
+		continous_length = sizeof(usb_transmit_fifo) / 2;
 	}
 	hUsbDeviceFS.ep_in[EP_DATA_IN_ADDRESS & 0x7F].total_length = continous_length;
 	return USBD_LL_Transmit(&hUsbDeviceFS, EP_DATA_IN_ADDRESS, &usb_transmit_fifo[usb_transmit_read_index], continous_length) == USBD_OK;

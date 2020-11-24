@@ -196,9 +196,13 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 }
 
 static void PassOnData() {
-	if (sweepCallback) {
-		sweepCallback(data);
-	}
+	Protocol::PacketInfo info;
+	info.type = Protocol::PacketType::Datapoint;
+	info.datapoint = data;
+	Communication::Send(info);
+//	if (sweepCallback) {
+//		sweepCallback(data);
+//	}
 }
 
 bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {

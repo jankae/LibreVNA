@@ -463,6 +463,11 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
+    static unsigned int lastPoint = 0;
+    if(d.pointNum > 0 && d.pointNum != lastPoint + 1) {
+        qWarning() << "Got point" << d.pointNum << "but last received point was" << lastPoint << "("<<(d.pointNum-lastPoint-1)<<"missed points)";
+    }
+    lastPoint = d.pointNum;
 }
 
 void VNA::UpdateAverageCount()
