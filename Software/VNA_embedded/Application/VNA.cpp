@@ -17,7 +17,6 @@
 #define LOG_MODULE	"VNA"
 #include "Log.h"
 
-static VNA::SweepCallback sweepCallback;
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
 static bool excitingPort1;
@@ -44,7 +43,7 @@ static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::IF2, "DF
 
 using namespace HWHAL;
 
-bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
+bool VNA::Setup(Protocol::SweepSettings s) {
 	VNA::Stop();
 	vTaskDelay(5);
 	HW::SetMode(HW::Mode::VNA);
@@ -54,7 +53,6 @@ bool VNA::Setup(Protocol::SweepSettings s, SweepCallback cb) {
 		active = false;
 		return false;
 	}
-	sweepCallback = cb;
 	settings = s;
 	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
@@ -200,9 +198,6 @@ static void PassOnData() {
 	info.type = Protocol::PacketType::Datapoint;
 	info.datapoint = data;
 	Communication::Send(info);
-//	if (sweepCallback) {
-//		sweepCallback(data);
-//	}
 }
 
 bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {

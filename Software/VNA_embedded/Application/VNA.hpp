@@ -6,9 +6,7 @@
 
 namespace VNA {
 
-using SweepCallback = void(*)(const Protocol::Datapoint&);
-
-bool Setup(Protocol::SweepSettings s, SweepCallback cb);
+bool Setup(Protocol::SweepSettings s);
 bool MeasurementDone(const FPGA::SamplingResult &result);
 void Work();
 void SweepHalted();

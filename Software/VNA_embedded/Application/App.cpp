@@ -24,10 +24,7 @@
 #define LOG_MODULE	"App"
 #include "Log.h"
 
-static Protocol::SweepSettings settings;
-static uint16_t lastPoint;
-
-static Protocol::PacketInfo recv_packet, transmit_packet;
+static Protocol::PacketInfo recv_packet;
 static TaskHandle_t handle;
 
 #if HW_REVISION >= 'B'
@@ -39,18 +36,7 @@ static TaskHandle_t handle;
 extern ADC_HandleTypeDef hadc1;
 
 #define FLAG_USB_PACKET		0x01
-#define FLAG_DATAPOINT		0x02
 
-static void VNACallback(const Protocol::Datapoint &res) {
-	DEBUG2_HIGH();
-	transmit_packet.type = Protocol::PacketType::Datapoint;
-	transmit_packet.datapoint = res;
-	lastPoint = res.pointNum;
-	BaseType_t woken = false;
-	xTaskNotifyFromISR(handle, FLAG_DATAPOINT, eSetBits, &woken);
-	portYIELD_FROM_ISR(woken);
-	DEBUG2_LOW();
-}
 static void USBPacketReceived(const Protocol::PacketInfo &p) {
 	recv_packet = p;
 	BaseType_t woken = false;
@@ -119,16 +105,11 @@ void App_Start() {
 		uint32_t notification;
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
 			// something happened
-			if(notification & FLAG_DATAPOINT) {
-				Communication::Send(transmit_packet);
-				lastNewPoint = HAL_GetTick();
-			}
 			if(notification & FLAG_USB_PACKET) {
 				switch(recv_packet.type) {
 				case Protocol::PacketType::SweepSettings:
 					LOG_INFO("New settings received");
-					settings = recv_packet.settings;
-					sweepActive = VNA::Setup(settings, VNACallback);
+					sweepActive = VNA::Setup(recv_packet.settings);
 					lastNewPoint = HAL_GetTick();
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
@@ -218,16 +199,5 @@ void App_Start() {
 				}
 			}
 		}
-
-//		if(sweepActive && HAL_GetTick() - lastNewPoint > 1000) {
-//			LOG_WARN("Timed out waiting for point, last received point was %d (Status 0x%04x)", lastPoint, FPGA::GetStatus());
-//			FPGA::AbortSweep();
-//			// restart the current sweep
-//			HW::Init();
-//			HW::Ref::update();
-//			VNA::Setup(settings, VNACallback);
-//			sweepActive = true;
-//			lastNewPoint = HAL_GetTick();
-//		}
 	}
 }
