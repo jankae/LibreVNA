@@ -23,7 +23,7 @@
 #include "CustomWidgets/toggleswitch.h"
 #include "Device/manualcontroldialog.h"
 #include "Traces/tracemodel.h"
-#include "Traces/tracewidget.h"
+#include "tracewidgetsa.h"
 #include "Traces/tracesmithchart.h"
 #include "Traces/tracexyplot.h"
 #include "Traces/traceimportdialog.h"
@@ -242,7 +242,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     markerModel = new TraceMarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
-    tracesDock->setWidget(new TraceWidget(traceModel, window, true));
+    tracesDock->setWidget(new TraceWidgetSA(traceModel, window));
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 

@@ -22,6 +22,7 @@ HEADERS += \
     Generator/generator.h \
     Generator/signalgenwidget.h \
     SpectrumAnalyzer/spectrumanalyzer.h \
+    SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
     Traces/fftcomplex.h \
@@ -41,6 +42,7 @@ HEADERS += \
     Util/qpointervariant.h \
     Util/util.h \
     VNA/portextension.h \
+    VNA/tracewidgetvna.h \
     VNA/vna.h \
     appwindow.h \
     averaging.h \
@@ -72,6 +74,7 @@ SOURCES += \
     Generator/generator.cpp \
     Generator/signalgenwidget.cpp \
     SpectrumAnalyzer/spectrumanalyzer.cpp \
+    SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
     Traces/fftcomplex.cpp \
@@ -89,6 +92,7 @@ SOURCES += \
     Traces/tracexyplot.cpp \
     Traces/xyplotaxisdialog.cpp \
     VNA/portextension.cpp \
+    VNA/tracewidgetvna.cpp \
     VNA/vna.cpp \
     appwindow.cpp \
     averaging.cpp \

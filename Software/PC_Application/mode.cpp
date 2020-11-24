@@ -18,7 +18,7 @@ Mode::Mode(AppWindow *window, QString name)
     // Create mode switch button
     auto modeSwitch = new QPushButton(name);
     modeSwitch->setCheckable(true);
-    modeSwitch->setMaximumHeight(window->getUi()->menubar->height());
+    modeSwitch->setMaximumHeight(window->menuBar()->height());
     if(!cornerWidget) {
         // this is the first created mode, initialize corner widget and set this mode as active
         modeSwitch->setChecked(true);
@@ -29,7 +29,7 @@ Mode::Mode(AppWindow *window, QString name)
         cornerWidget->layout()->setContentsMargins(0,0,0,0);
         window->menuBar()->setCornerWidget(cornerWidget);
         modeButtonGroup = new QButtonGroup;
-        window->getUi()->menubar->setMaximumHeight(window->getUi()->menubar->height());
+//        window->menuBar()->setMaximumHeight(window->menuBar()->height());
     }
     cornerWidget->layout()->addWidget(modeSwitch);
     modeButtonGroup->addButton(modeSwitch);

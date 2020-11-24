@@ -24,7 +24,7 @@
 #include "CustomWidgets/toggleswitch.h"
 #include "Device/manualcontroldialog.h"
 #include "Traces/tracemodel.h"
-#include "Traces/tracewidget.h"
+#include "tracewidgetvna.h"
 #include "Traces/tracesmithchart.h"
 #include "Traces/tracexyplot.h"
 #include "Traces/traceimportdialog.h"
@@ -352,7 +352,7 @@ VNA::VNA(AppWindow *window)
     markerModel = new TraceMarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
-    tracesDock->setWidget(new TraceWidget(traceModel));
+    tracesDock->setWidget(new TraceWidgetVNA(traceModel));
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 

@@ -99,6 +99,7 @@ void TracePlot::contextMenuEvent(QContextMenuEvent *event)
 
 void TracePlot::paintEvent(QPaintEvent *event)
 {
+
     auto pref = Preferences::getInstance();
     QPainter p(this);
 //    p.setRenderHint(QPainter::Antialiasing);
