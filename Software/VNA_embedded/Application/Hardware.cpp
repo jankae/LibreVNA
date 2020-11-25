@@ -192,7 +192,7 @@ void HW::SetMode(Mode mode) {
 	default:
 		break;
 	}
-	if(mode != Mode::Idle && activeMode != Mode::Idle) {
+	if(mode != Mode::Idle) {
 		// do a full initialization when switching directly between modes
 		HW::Init();
 	}

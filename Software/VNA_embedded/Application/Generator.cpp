@@ -8,7 +8,7 @@
 void Generator::Setup(Protocol::GeneratorSettings g) {
 	if(g.activePort == 0) {
 			// both ports disabled, no need to configure PLLs
-			HW::SetMode(HW::Mode::Idle);
+			HW::SetIdle();
 			return;
 	}
 	Protocol::ManualControl m;

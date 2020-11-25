@@ -97,7 +97,6 @@ void App_Start() {
 	USB_EN_GPIO_Port->BSRR = USB_EN_Pin;
 #endif
 
-	uint32_t lastNewPoint = HAL_GetTick();
 	bool sweepActive = false;
 
 	LED::Off();
@@ -110,7 +109,6 @@ void App_Start() {
 				case Protocol::PacketType::SweepSettings:
 					LOG_INFO("New settings received");
 					sweepActive = VNA::Setup(recv_packet.settings);
-					lastNewPoint = HAL_GetTick();
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ManualControl:
