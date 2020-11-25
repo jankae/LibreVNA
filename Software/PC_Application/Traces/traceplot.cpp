@@ -99,7 +99,7 @@ void TracePlot::contextMenuEvent(QContextMenuEvent *event)
 
 void TracePlot::paintEvent(QPaintEvent *event)
 {
-
+    Q_UNUSED(event)
     auto pref = Preferences::getInstance();
     QPainter p(this);
 //    p.setRenderHint(QPainter::Antialiasing);
@@ -172,6 +172,7 @@ void TracePlot::mousePressEvent(QMouseEvent *event)
 
 void TracePlot::mouseReleaseEvent(QMouseEvent *event)
 {
+    Q_UNUSED(event)
     selectedMarker = nullptr;
 }
 

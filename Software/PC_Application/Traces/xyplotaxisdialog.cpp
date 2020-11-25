@@ -21,7 +21,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Y1max->setEnabled(index != 0 && !autoRange);
        ui->Y1divs->setEnabled(index != 0 && !autoRange);
        auto type = (TraceXYPlot::YAxisType) index;
-       QString unit = YAxisUnit(type);
+       QString unit = TraceXYPlot::AxisUnit(type);
        ui->Y1min->setUnit(unit);
        ui->Y1max->setUnit(unit);
        ui->Y1divs->setUnit(unit);
@@ -41,7 +41,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Y2max->setEnabled(index != 0 && !autoRange);
        ui->Y2divs->setEnabled(index != 0 && !autoRange);
        auto type = (TraceXYPlot::YAxisType) index;
-       QString unit = YAxisUnit(type);
+       QString unit = TraceXYPlot::AxisUnit(type);
        ui->Y2min->setUnit(unit);
        ui->Y2max->setUnit(unit);
        ui->Y2divs->setUnit(unit);
@@ -160,28 +160,10 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
         }
     }
 
-    QString unit;
-    switch(type) {
-    case TraceXYPlot::XAxisType::Frequency: unit = "Hz"; break;
-    case TraceXYPlot::XAxisType::Time: unit = "s"; break;
-    case TraceXYPlot::XAxisType::Distance: unit = "m"; break;
-    }
+    QString unit = TraceXYPlot::AxisUnit(type);
     ui->Xmin->setUnit(unit);
     ui->Xmax->setUnit(unit);
     ui->Xdivs->setUnit(unit);
-}
-
-QString XYplotAxisDialog::YAxisUnit(TraceXYPlot::YAxisType type)
-{
-    switch(type) {
-    case TraceXYPlot::YAxisType::Magnitude: return "db"; break;
-    case TraceXYPlot::YAxisType::Phase: return "°"; break;
-    case TraceXYPlot::YAxisType::VSWR: return ""; break;
-    case TraceXYPlot::YAxisType::Impulse: return ""; break;
-    case TraceXYPlot::YAxisType::Step: return ""; break;
-    case TraceXYPlot::YAxisType::Impedance: return "Ohm"; break;
-    default: return ""; break;
-    }
 }
 
 std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::XAxisType type)

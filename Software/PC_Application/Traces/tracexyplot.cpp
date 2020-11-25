@@ -298,6 +298,7 @@ void TraceXYPlot::draw(QPainter &p)
         case YAxisType::Impulse: labelY = "Impulse Response"; break;
         case YAxisType::Step: labelY = "Step Response"; break;
         case YAxisType::Impedance: labelY = "Impedance"; break;
+        default: break;
         }
         auto xStart = i == 0 ? 0 : w.width() - AxisLabelSize * 1.5;
         p.save();
@@ -719,6 +720,14 @@ QPoint TraceXYPlot::plotValueToPixel(QPointF plotValue, int Yaxis)
     return p;
 }
 
+QPointF TraceXYPlot::pixelToPlotValue(QPoint pixel, int Yaxis)
+{
+    QPointF p;
+    p.setX(Util::Scale<double>(pixel.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth, XAxis.rangeMin, XAxis.rangeMax));
+    p.setY(Util::Scale<double>(pixel.y(), plotAreaBottom, 0, YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax));
+    return p;
+}
+
 QPoint TraceXYPlot::markerToPixel(TraceMarker *m)
 {
     QPoint ret = QPoint();
@@ -789,5 +798,49 @@ void TraceXYPlot::traceDropped(Trace *t, QPoint position)
     }
     if(drop > 0.33) {
         enableTraceAxis(t, 1, true);
+    }
+}
+
+QString TraceXYPlot::mouseText(QPoint pos)
+{
+    QString ret;
+    if(QRect(plotAreaLeft, 0, plotAreaWidth + 1, plotAreaBottom).contains(pos)) {
+        // cursor within plot area
+        QPointF coords[2];
+        coords[0] = pixelToPlotValue(pos, 0);
+        coords[1] = pixelToPlotValue(pos, 1);
+        int significantDigits = floor(log10(XAxis.rangeMax)) - floor(log10((XAxis.rangeMax - XAxis.rangeMin) / 1000.0)) + 1;
+        ret += Unit::ToString(coords[0].x(), AxisUnit(XAxis.type), "fpnum kMG", significantDigits) + "\n";
+        for(int i=0;i<2;i++) {
+            if(YAxis[i].type != YAxisType::Disabled) {
+                auto max = qMax(abs(YAxis[i].rangeMax), abs(YAxis[i].rangeMin));
+                auto step = abs(YAxis[i].rangeMax - YAxis[i].rangeMin) / 1000.0;
+                significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
+                ret += Unit::ToString(coords[i].y(), AxisUnit(YAxis[i].type), "fpnum kMG", significantDigits) + "\n";
+            }
+        }
+    }
+    return ret;
+}
+
+QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
+{
+    switch(type) {
+    case TraceXYPlot::YAxisType::Magnitude: return "db"; break;
+    case TraceXYPlot::YAxisType::Phase: return "°"; break;
+    case TraceXYPlot::YAxisType::VSWR: return ""; break;
+    case TraceXYPlot::YAxisType::Impulse: return ""; break;
+    case TraceXYPlot::YAxisType::Step: return ""; break;
+    case TraceXYPlot::YAxisType::Impedance: return "Ohm"; break;
+    default: return ""; break;
+    }
+}
+
+QString TraceXYPlot::AxisUnit(TraceXYPlot::XAxisType type)
+{
+    switch(type) {
+    case XAxisType::Frequency: return "Hz"; break;
+    case XAxisType::Time: return "s"; break;
+    case XAxisType::Distance: return "m"; break;
     }
 }

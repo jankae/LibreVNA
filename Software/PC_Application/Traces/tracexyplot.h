@@ -63,9 +63,14 @@ private:
     unsigned int numTraceSamples(Trace *t);
     QPoint dataToPixel(Trace::Data d);
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
+    QPointF pixelToPlotValue(QPoint pixel, int YAxis);
     QPoint markerToPixel(TraceMarker *m) override;
     double nearestTracePoint(Trace *t, QPoint pixel) override;
     void traceDropped(Trace *t, QPoint position) override;
+    QString mouseText(QPoint pos) override;
+
+    static QString AxisUnit(YAxisType type);
+    static QString AxisUnit(XAxisType type);
 
     std::set<Trace*> tracesAxis[2];
 

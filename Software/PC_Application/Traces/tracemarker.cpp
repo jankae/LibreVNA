@@ -44,7 +44,7 @@ void TraceMarker::setTimeDomain(bool timeDomain)
             return;
         }
         this->timeDomain = timeDomain;
-        // TODO handle changed setting and everything
+
         if(timeDomain) {
             // need to delete this marker if the TDR data of the trace is no longer available
             connect(parentTrace, &Trace::changedTDRstate, [=](bool tdr_available){
