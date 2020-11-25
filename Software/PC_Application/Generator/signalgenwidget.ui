@@ -39,7 +39,7 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <spacer name="verticalSpacer_2">
+      <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
@@ -52,20 +52,29 @@
       </spacer>
      </item>
      <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Generator</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
-          <string>Generator</string>
+          <string>Frequency:</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Frequency:</string>
-            </property>
-           </widget>
-          </item>
           <item>
            <widget class="SIUnitEdit" name="frequency"/>
           </item>
@@ -148,7 +157,7 @@
       </layout>
      </item>
      <item>
-      <spacer name="verticalSpacer">
+      <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
