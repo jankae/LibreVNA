@@ -3,7 +3,6 @@ This project consists of two software components: the PC application (written in
 Creating all the different parts from the source code requires quite a few tools:
 * For building the PC application:
   * [Qt Creator](https://www.qt.io/offline-installers) (at least with Qt 5.9)
-  * [Qwt](https://qwt.sourceforge.io/)
   * [libusb-1.0](https://libusb.info/)
 * For building the VNA firmware:
   * [CubeMX:](https://www.st.com/en/development-tools/stm32cubemx.html) Code generator for initializing STM32 microcontrollers (only required when changing device initialization settings in CubeMX)
@@ -13,9 +12,9 @@ Creating all the different parts from the source code requires quite a few tools
   * [Xilinx ISE](https://www.xilinx.com/products/design-tools/ise-design-suite.html) with support for Spartan 6 FPGA
  
 ## Building the PC application:
-* Install the required tools (Qt, Qwt and libusb-1.0):
+* Install the required tools (Qt and libusb-1.0):
   ```
-  sudo apt-get install qt5-default qt5-qmake qtbase5-dev libqwt-qt5-dev libusb-1.0-0-dev 
+  sudo apt-get install qt5-default qt5-qmake qtbase5-dev libusb-1.0-0-dev 
   ```
 * Build the application:
   * either:
