@@ -41,10 +41,10 @@ void TraceSmithChart::axisSetupDialog()
 
 QPoint TraceSmithChart::dataToPixel(Trace::Data d)
 {
-    if(d.frequency < sweep_fmin || d.frequency > sweep_fmax) {
+    if(d.x < sweep_fmin || d.x > sweep_fmax) {
         return QPoint();
     }
-    return transform.map(QPoint(d.S.real() * smithCoordMax, -d.S.imag() * smithCoordMax));
+    return transform.map(QPoint(d.y.real() * smithCoordMax, -d.y.imag() * smithCoordMax));
 }
 
 std::complex<double> TraceSmithChart::pixelToData(QPoint p)
@@ -83,7 +83,7 @@ double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel)
             closestIndex = i;
         }
     }
-    return t->sample(closestIndex).frequency;
+    return t->sample(closestIndex).x;
 }
 
 void TraceSmithChart::draw(QPainter &p) {
@@ -144,17 +144,17 @@ void TraceSmithChart::draw(QPainter &p) {
         for(int i=1;i<nPoints;i++) {
             auto last = trace->sample(i-1);
             auto now = trace->sample(i);
-            if (limitToSpan && (last.frequency < sweep_fmin || now.frequency > sweep_fmax)) {
+            if (limitToSpan && (last.x < sweep_fmin || now.x > sweep_fmax)) {
                 continue;
             }
-            if(isnan(now.S.real())) {
+            if(isnan(now.y.real())) {
                 break;
             }
             // scale to size of smith diagram
-            last.S *= smithCoordMax;
-            now.S *= smithCoordMax;
+            last.y *= smithCoordMax;
+            now.y *= smithCoordMax;
             // draw line
-            p.drawLine(std::real(last.S), -std::imag(last.S), std::real(now.S), -std::imag(now.S));
+            p.drawLine(std::real(last.y), -std::imag(last.y), std::real(now.y), -std::imag(now.y));
         }
         if(trace->size() > 0) {
             // only draw markers if the trace has at least one point

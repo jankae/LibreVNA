@@ -33,5 +33,7 @@
         <file>icons/zoom-fit.png</file>
         <file>icons/zoom-in.png</file>
         <file>icons/zoom-out.png</file>
+        <file>icons/math_disabled.svg</file>
+        <file>icons/math_enabled.svg</file>
     </qresource>
 </RCC>

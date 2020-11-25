@@ -2,6 +2,7 @@
 #include "ui_traceeditdialog.h"
 #include <QColorDialog>
 #include <QFileDialog>
+#include "Math/tracematheditdialog.h"
 
 TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     QDialog(parent),
@@ -92,6 +93,10 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     connect(ui->GSource, qOverload<int>(&QButtonGroup::buttonClicked), updateFileStatus);
     connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, updateFileStatus);
     connect(ui->touchstoneImport, &TouchstoneImport::filenameChanged, updateFileStatus);
+    connect(ui->mathSetup, &QPushButton::clicked, [&](){
+        auto dialog = new TraceMathEditDialog(t);
+        dialog->show();
+    });
 
     updateFileStatus();
 }

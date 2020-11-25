@@ -695,11 +695,11 @@ void TraceMarker::update()
             setPosition(peakFreq);
             // find the cutoff frequency
             auto index = parentTrace->index(peakFreq);
-            auto peakAmplitude = 20*log10(abs(parentTrace->sample(index).S));
+            auto peakAmplitude = 20*log10(abs(parentTrace->sample(index).y));
             auto cutoff = peakAmplitude + cutoffAmplitude;
             int inc = type == Type::Lowpass ? 1 : -1;
             while(index >= 0 && index < (int) parentTrace->size()) {
-                auto amplitude = 20*log10(abs(parentTrace->sample(index).S));
+                auto amplitude = 20*log10(abs(parentTrace->sample(index).y));
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -711,7 +711,7 @@ void TraceMarker::update()
                 index = parentTrace->size() - 1;
             }
             // set position of cutoff marker
-            helperMarkers[0]->setPosition(parentTrace->sample(index).frequency);
+            helperMarkers[0]->setPosition(parentTrace->sample(index).x);
         }
         break;
     case Type::Bandpass:
@@ -725,12 +725,12 @@ void TraceMarker::update()
             setPosition(peakFreq);
             // find the cutoff frequencies
             auto index = parentTrace->index(peakFreq);
-            auto peakAmplitude = 20*log10(abs(parentTrace->sample(index).S));
+            auto peakAmplitude = 20*log10(abs(parentTrace->sample(index).y));
             auto cutoff = peakAmplitude + cutoffAmplitude;
 
             auto low_index = index;
             while(low_index >= 0) {
-                auto amplitude = 20*log10(abs(parentTrace->sample(low_index).S));
+                auto amplitude = 20*log10(abs(parentTrace->sample(low_index).y));
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -740,11 +740,11 @@ void TraceMarker::update()
                 low_index = 0;
             }
             // set position of cutoff marker
-            helperMarkers[0]->setPosition(parentTrace->sample(low_index).frequency);
+            helperMarkers[0]->setPosition(parentTrace->sample(low_index).x);
 
             auto high_index = index;
             while(high_index < (int) parentTrace->size()) {
-                auto amplitude = 20*log10(abs(parentTrace->sample(high_index).S));
+                auto amplitude = 20*log10(abs(parentTrace->sample(high_index).y));
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -754,7 +754,7 @@ void TraceMarker::update()
                 high_index = parentTrace->size() - 1;
             }
             // set position of cutoff marker
-            helperMarkers[1]->setPosition(parentTrace->sample(high_index).frequency);
+            helperMarkers[1]->setPosition(parentTrace->sample(high_index).x);
             // set center marker inbetween cutoff markers
             helperMarkers[2]->setPosition((helperMarkers[0]->position + helperMarkers[1]->position) / 2);
         }

@@ -599,21 +599,21 @@ std::vector<Trace *> Calibration::getErrorTermTraces()
     }
     for(auto p : points) {
         Trace::Data d;
-        d.frequency = p.frequency;
+        d.x = p.frequency;
         for(int i=0;i<12;i++) {
             switch(i) {
-            case 0: d.S = p.fe00; break;
-            case 1: d.S = p.fe11; break;
-            case 2: d.S = p.fe10e01; break;
-            case 3: d.S = p.fe10e32; break;
-            case 4: d.S = p.fe22; break;
-            case 5: d.S = p.fe30; break;
-            case 6: d.S = p.re33; break;
-            case 7: d.S = p.re11; break;
-            case 8: d.S = p.re23e32; break;
-            case 9: d.S = p.re23e01; break;
-            case 10: d.S = p.re22; break;
-            case 11: d.S = p.re03; break;
+            case 0: d.y = p.fe00; break;
+            case 1: d.y = p.fe11; break;
+            case 2: d.y = p.fe10e01; break;
+            case 3: d.y = p.fe10e32; break;
+            case 4: d.y = p.fe22; break;
+            case 5: d.y = p.fe30; break;
+            case 6: d.y = p.re33; break;
+            case 7: d.y = p.re11; break;
+            case 8: d.y = p.re23e32; break;
+            case 9: d.y = p.re23e01; break;
+            case 10: d.y = p.re22; break;
+            case 11: d.y = p.re03; break;
             }
             traces[i]->addData(d);
         }

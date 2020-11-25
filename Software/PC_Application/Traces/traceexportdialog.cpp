@@ -72,9 +72,9 @@ void TraceExportDialog::on_buttonBox_accepted()
                     } else {
                         Trace *t = qvariant_cast<Trace*>(cTraces[i][j]->itemData(cTraces[i][j]->currentIndex()));
                         // extract frequency (will overwrite for each trace but all traces have the same frequency points anyway)
-                        tData.frequency = t->sample(s).frequency;
+                        tData.frequency = t->sample(s).x;
                         // add S parameter from trace to touchstone
-                        tData.S.push_back(t->sample(s).S);
+                        tData.S.push_back(t->sample(s).y);
                     }
                 }
             }

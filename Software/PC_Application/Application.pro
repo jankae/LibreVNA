@@ -25,6 +25,8 @@ HEADERS += \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
+    Traces/Math/tracemath.h \
+    Traces/Math/tracematheditdialog.h \
     Traces/fftcomplex.h \
     Traces/markerwidget.h \
     Traces/trace.h \
@@ -77,6 +79,8 @@ SOURCES += \
     SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
+    Traces/Math/tracemath.cpp \
+    Traces/Math/tracematheditdialog.cpp \
     Traces/fftcomplex.cpp \
     Traces/markerwidget.cpp \
     Traces/trace.cpp \
@@ -121,6 +125,7 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
+    Traces/Math/tracematheditdialog.ui \
     Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \
     Traces/traceeditdialog.ui \

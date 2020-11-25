@@ -654,8 +654,8 @@ QPointF TraceXYPlot::transformY(Trace *t, unsigned int sample, TraceXYPlot::YAxi
     case YAxisType::Phase:
     case YAxisType::VSWR: {
         auto d = t->sample(sample);
-        ret.setY(transformY(d.S, type));
-        ret.setX(d.frequency);
+        ret.setY(transformY(d.y, type));
+        ret.setX(d.x);
     }
         break;
     case YAxisType::Impulse:
@@ -702,12 +702,12 @@ unsigned int TraceXYPlot::numTraceSamples(Trace *t)
 
 QPoint TraceXYPlot::dataToPixel(Trace::Data d)
 {
-    if(d.frequency < XAxis.rangeMin || d.frequency > XAxis.rangeMax) {
+    if(d.x < XAxis.rangeMin || d.x > XAxis.rangeMax) {
         return QPoint();
     }
-    auto y = transformY(d.S, YAxis[0].type);
+    auto y = transformY(d.y, YAxis[0].type);
     QPoint p;
-    p.setX(Util::Scale<double>(d.frequency, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
+    p.setX(Util::Scale<double>(d.x, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
     p.setY(Util::Scale<double>(y, YAxis[0].rangeMin, YAxis[0].rangeMax, plotAreaBottom, 0));
     return p;
 }
@@ -842,5 +842,6 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::XAxisType type)
     case XAxisType::Frequency: return "Hz"; break;
     case XAxisType::Time: return "s"; break;
     case XAxisType::Distance: return "m"; break;
+    default: return ""; break;
     }
 }

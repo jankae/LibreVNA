@@ -13,11 +13,20 @@ public:
     TraceModel(QObject *parent = 0);
     ~TraceModel();
 
+    enum {
+        ColIndexVisible = 0,
+        ColIndexPlayPause = 1,
+        ColIndexMath = 2,
+        ColIndexName = 3,
+        ColIndexLast,
+    };
+
     void addTrace(Trace *t);
     void removeTrace(unsigned int index);
     Trace *trace(unsigned int index);
     void toggleVisibility(unsigned int index);
     void togglePause(unsigned int index);
+    void toggleMath(unsigned int index);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;

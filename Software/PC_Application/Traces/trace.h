@@ -8,19 +8,16 @@
 #include <set>
 #include "touchstone.h"
 #include "Device/device.h"
+#include "Math/tracemath.h"
 
 class TraceMarker;
 
-class Trace : public QObject
+class Trace : public TraceMath
 {
     Q_OBJECT
 public:
 
-    class Data {
-    public:
-        double frequency;
-        std::complex<double> S;
-    };
+    using Data = TraceMath::Data;
 
     class TimedomainData {
     public:
@@ -67,11 +64,14 @@ public:
     bool isCalibration();
     bool isLive();
     bool isReflection();
+    bool mathEnabled(); // check if math operations are enabled
+    bool hasMathOperations(); // check if math operations are set up (not necessarily enabled)
+    void enableMath(bool enable);
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
-    unsigned int size() { return _data.size(); }
-    double minFreq() { return size() > 0 ? _data.front().frequency : 0.0; };
-    double maxFreq() { return size() > 0 ? _data.back().frequency : 0.0; };
+    unsigned int size();
+    double minFreq();
+    double maxFreq();
     double findExtremumFreq(bool max);
     /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
      * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.
@@ -79,7 +79,7 @@ public:
      * To detect the next peak, the signal first has to drop at least minValley below the peak level.
      */
     std::vector<double> findPeakFrequencies(unsigned int maxPeaks = 100, double minLevel = -100.0, double minValley = 3.0);
-    Data sample(unsigned int index) { return _data.at(index); }
+    Data sample(unsigned int index);
     QString getTouchstoneFilename() const;
     unsigned int getTouchstoneParameter() const;
     std::complex<double> getData(double frequency);
@@ -103,6 +103,16 @@ public:
     // Since the usual delay values are way smaller than the distance values this should work
     TimedomainData getTDR(double position);
 
+    DataType outputType(DataType inputType) override { Q_UNUSED(inputType) return DataType::Frequency;};
+    QString description() override;
+
+    class MathInfo {
+    public:
+        TraceMath *math;
+        bool enabled;
+    };
+    const std::vector<MathInfo>& getMath() const;
+
 public slots:
     void setTouchstoneParameter(int value);
     void setTouchstoneFilename(const QString &value);
@@ -115,7 +125,6 @@ private:
 signals:
     void cleared(Trace *t);
     void typeChanged(Trace *t);
-    void dataAdded(Trace *t, Data d);
     void deleted(Trace *t);
     void visibilityChanged(Trace *t);
     void dataChanged();
@@ -128,7 +137,7 @@ signals:
 private:
     void updateTimeDomainData();
     void printTimeDomain();
-    std::vector<Data> _data;
+//    std::vector<Data> _data;
     std::vector<TimedomainData> timeDomain;
     unsigned int tdr_users;
     QString _name;
@@ -150,6 +159,10 @@ private:
         };
         bool valid;
     } settings;
+
+    std::vector<MathInfo> math;
+    TraceMath *lastMath;
+    void updateLastMath(std::vector<MathInfo>::reverse_iterator start);
 };
 
 #endif // TRACE_H

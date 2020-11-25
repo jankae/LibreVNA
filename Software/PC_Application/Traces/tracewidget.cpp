@@ -109,7 +109,7 @@ void TraceWidget::on_edit_clicked()
 
 void TraceWidget::on_view_doubleClicked(const QModelIndex &index)
 {
-    if(index.column() == 2) {
+    if(index.column() == TraceModel::ColIndexName) {
         auto edit = new TraceEditDialog(*model.trace(index.row()));
         edit->show();
     }
@@ -117,9 +117,17 @@ void TraceWidget::on_view_doubleClicked(const QModelIndex &index)
 
 void TraceWidget::on_view_clicked(const QModelIndex &index)
 {
-    if(index.column()==0) {
+    switch(index.column()) {
+    case TraceModel::ColIndexVisible:
         model.toggleVisibility(index.row());
-    } else if(index.column()==1) {
+        break;
+    case TraceModel::ColIndexPlayPause:
         model.togglePause(index.row());
+        break;
+    case TraceModel::ColIndexMath:
+        model.toggleMath(index.row());
+        break;
+    default:
+        break;
     }
 }

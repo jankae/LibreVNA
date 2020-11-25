@@ -14,9 +14,12 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       visible(true),
       paused(false),
       touchstone(false),
-      calibration(false)
+      calibration(false),
+      lastMath(nullptr)
 {
-
+    MathInfo self = {.math = this, .enabled = true};
+    math.push_back(self);
+    updateLastMath(math.rbegin());
 }
 
 Trace::~Trace()
@@ -28,21 +31,21 @@ void Trace::clear() {
     if(paused) {
         return;
     }
-    _data.clear();
+    data.clear();
     settings.valid = false;
     emit cleared(this);
-    emit dataChanged();
+    emit outputDataChanged();
 }
 
 void Trace::addData(const Trace::Data& d) {
     // add or replace data in vector while keeping it sorted with increasing frequency
-    auto lower = lower_bound(_data.begin(), _data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
-        return lhs.frequency < rhs.frequency;
+    auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
+        return lhs.x < rhs.x;
     });
-    if(lower == _data.end()) {
+    if(lower == data.end()) {
         // highest frequency yet, add to vector
-        _data.push_back(d);
-    } else if(lower->frequency == d.frequency) {
+        data.push_back(d);
+    } else if(lower->x == d.x) {
         switch(_liveType) {
         case LivedataType::Overwrite:
             // replace this data element
@@ -50,13 +53,13 @@ void Trace::addData(const Trace::Data& d) {
             break;
         case LivedataType::MaxHold:
             // replace this data element
-            if(abs(d.S) > abs(lower->S)) {
+            if(abs(d.y) > abs(lower->y)) {
                 *lower = d;
             }
             break;
         case LivedataType::MinHold:
             // replace this data element
-            if(abs(d.S) < abs(lower->S)) {
+            if(abs(d.y) < abs(lower->y)) {
                 *lower = d;
             }
             break;
@@ -64,11 +67,10 @@ void Trace::addData(const Trace::Data& d) {
 
     } else {
         // insert at this position
-        _data.insert(lower, d);
+        data.insert(lower, d);
     }
-    emit dataAdded(this, d);
-    emit dataChanged();
-    if(lower == _data.begin()) {
+    emit outputSampleChanged(lower - data.begin());
+    if(lower == data.begin()) {
         // received the first point, which means the last sweep just finished
         if(tdr_users) {
             updateTimeDomainData();
@@ -106,8 +108,8 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter, QString fi
     for(unsigned int i=0;i<t.points();i++) {
         auto tData = t.point(i);
         Data d;
-        d.frequency = tData.frequency;
-        d.S = t.point(i).S[parameter];
+        d.x = tData.frequency;
+        d.y = t.point(i).S[parameter];
         addData(d);
     }
     // check if parameter is square (e.i. S11/S22/S33/...)
@@ -174,7 +176,7 @@ void Trace::updateTimeDomainData()
     auto firstStep = minFreq();
     if(firstStep == 0) {
         // zero as first step would result in infinite number of points, skip and start with second
-        firstStep = _data[1].frequency;
+        firstStep = lastMath->rData()[1].x;
         steps--;
     }
     if(firstStep * steps != maxFreq()) {
@@ -226,7 +228,34 @@ void Trace::updateTimeDomainData()
 //    auto duration = duration_cast< milliseconds >(
 //        system_clock::now().time_since_epoch()
 //    ).count() - starttime;
-//    cout << "TDR: " << this << " (took " << duration << "ms)" <<endl;
+    //    cout << "TDR: " << this << " (took " << duration << "ms)" <<endl;
+}
+
+const std::vector<Trace::MathInfo>& Trace::getMath() const
+{
+    return math;
+}
+
+void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
+{
+    TraceMath *newLast = nullptr;
+    for(auto it = start;it != math.rend();it++) {
+        if(it->enabled) {
+            newLast = it->math;
+            break;
+        }
+    }
+    Q_ASSERT(newLast != nullptr);
+    if(newLast != lastMath) {
+        if(lastMath != nullptr) {
+            disconnect(lastMath, &TraceMath::outputDataChanged, this, nullptr);
+            disconnect(lastMath, &TraceMath::outputSampleChanged, this, nullptr);
+        }
+        lastMath = newLast;
+        // relay signals of end of math chain
+        connect(lastMath, &TraceMath::outputDataChanged, this, &Trace::dataChanged);
+        connect(lastMath, &TraceMath::outputSampleChanged, this, &Trace::dataChanged);
+    }
 }
 
 void Trace::setReflection(bool value)
@@ -305,6 +334,11 @@ Trace::TimedomainData Trace::getTDR(double position)
     }
 }
 
+QString Trace::description()
+{
+    return name() + ": measured data";
+}
+
 void Trace::setCalibration(bool value)
 {
     calibration = value;
@@ -363,16 +397,55 @@ bool Trace::isReflection()
     return reflection;
 }
 
+bool Trace::mathEnabled()
+{
+    return lastMath != this;
+}
+
+bool Trace::hasMathOperations()
+{
+    return math.size() > 1;
+}
+
+void Trace::enableMath(bool enable)
+{
+    auto start = enable ? math.rbegin() : make_reverse_iterator(math.begin());
+    updateLastMath(start);
+}
+
+unsigned int Trace::size()
+{
+    return lastMath->numSamples();
+}
+
+double Trace::minFreq()
+{
+    if(size() > 0) {
+        return data.front().x;
+    } else {
+        return 0.0;
+    }
+}
+
+double Trace::maxFreq()
+{
+    if(size() > 0) {
+        return data.back().x;
+    } else {
+        return 0.0;
+    }
+}
+
 double Trace::findExtremumFreq(bool max)
 {
     double compare = max ? numeric_limits<double>::min() : numeric_limits<double>::max();
     double freq = 0.0;
-    for(auto d : _data) {
-        double amplitude = abs(d.S);
+    for(auto sample : lastMath->rData()) {
+        double amplitude = abs(sample.y);
         if((max && (amplitude > compare)) || (!max && (amplitude < compare))) {
             // higher/lower extremum found
             compare = amplitude;
-            freq = d.frequency;
+            freq = sample.x;
         }
     }
     return freq;
@@ -388,11 +461,11 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     double frequency = 0.0;
     double max_dbm = -200.0;
     double min_dbm = 200.0;
-    for(auto d : _data) {
-        double dbm = 20*log10(abs(d.S));
+    for(auto d : lastMath->rData()) {
+        double dbm = 20*log10(abs(d.y));
         if((dbm >= max_dbm) && (min_dbm <= dbm - minValley)) {
             // potential peak frequency
-            frequency = d.frequency;
+            frequency = d.x;
             max_dbm = dbm;
         }
         if(dbm <= min_dbm) {
@@ -430,6 +503,11 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     return frequencies;
 }
 
+Trace::Data Trace::sample(unsigned int index)
+{
+    return lastMath->getSample(index);
+}
+
 QString Trace::getTouchstoneFilename() const
 {
     return touchstoneFilename;
@@ -447,19 +525,19 @@ unsigned int Trace::getTouchstoneParameter() const
 
 std::complex<double> Trace::getData(double frequency)
 {
-    if(_data.size() == 0 || frequency < minFreq() || frequency > maxFreq()) {
+    if(lastMath->numSamples() == 0 || frequency < minFreq() || frequency > maxFreq()) {
         return std::numeric_limits<std::complex<double>>::quiet_NaN();
     }
 
     auto i = index(frequency);
-    if(_data.at(i).frequency == frequency) {
-        return _data[i].S;
+    if(lastMath->getSample(i).x == frequency) {
+        return lastMath->getSample(i).y;
     } else {
         // no exact frequency match, needs to interpolate
-        auto high = _data[i];
-        auto low = _data[i-1];
-        double alpha = (frequency - low.frequency) / (high.frequency - low.frequency);
-        return low.S * (1 - alpha) + high.S * alpha;
+        auto high = lastMath->getSample(i);
+        auto low = lastMath->getSample(i - 1);
+        double alpha = (frequency - low.x) / (high.x - low.x);
+        return low.y * (1 - alpha) + high.y * alpha;
     }
 }
 
@@ -478,10 +556,10 @@ double Trace::getNoise(double frequency)
 
 int Trace::index(double frequency)
 {
-    auto lower = lower_bound(_data.begin(), _data.end(), frequency, [](const Data &lhs, const double freq) -> bool {
-        return lhs.frequency < freq;
+    auto lower = lower_bound(lastMath->rData().begin(), lastMath->rData().end(), frequency, [](const Data &lhs, const double freq) -> bool {
+        return lhs.x < freq;
     });
-    return lower - _data.begin();
+    return lower - lastMath->rData().begin();
 }
 
 void Trace::setTouchstoneParameter(int value)
