@@ -8,6 +8,7 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     ui->setupUi(this);
     ui->frequency->setUnit("Hz");
     ui->frequency->setPrefixes(" kMG");
+    ui->frequency->setPrecision(6); // show enough digits
 
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < Device::Info().limits_minFreq) {
