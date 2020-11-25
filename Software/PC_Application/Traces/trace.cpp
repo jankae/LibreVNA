@@ -18,8 +18,13 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       lastMath(nullptr)
 {
     MathInfo self = {.math = this, .enabled = true};
-    math.push_back(self);
-    updateLastMath(math.rbegin());
+    mathOps.push_back(self);
+    updateLastMath(mathOps.rbegin());
+
+    self.enabled = false;
+    mathOps.push_back(self);
+    mathOps.push_back(self);
+    mathOps.push_back(self);
 }
 
 Trace::~Trace()
@@ -231,15 +236,15 @@ void Trace::updateTimeDomainData()
     //    cout << "TDR: " << this << " (took " << duration << "ms)" <<endl;
 }
 
-const std::vector<Trace::MathInfo>& Trace::getMath() const
+const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
 {
-    return math;
+    return mathOps;
 }
 
 void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
 {
     TraceMath *newLast = nullptr;
-    for(auto it = start;it != math.rend();it++) {
+    for(auto it = start;it != mathOps.rend();it++) {
         if(it->enabled) {
             newLast = it->math;
             break;
@@ -404,13 +409,88 @@ bool Trace::mathEnabled()
 
 bool Trace::hasMathOperations()
 {
-    return math.size() > 1;
+    return mathOps.size() > 1;
 }
 
 void Trace::enableMath(bool enable)
 {
-    auto start = enable ? math.rbegin() : make_reverse_iterator(math.begin());
+    auto start = enable ? mathOps.rbegin() : make_reverse_iterator(mathOps.begin());
     updateLastMath(start);
+}
+
+void Trace::addMathOperation(TraceMath *math)
+{
+    MathInfo info = {.math = math, .enabled = true};
+    math->assignInput(lastMath);
+    mathOps.push_back(info);
+    updateLastMath(mathOps.rbegin());
+}
+
+void Trace::removeMathOperation(unsigned int index)
+{
+    if(index < 1 || index >= mathOps.size()) {
+        return;
+    }
+    if(mathOps[index].enabled) {
+        enableMathOperation(index, false);
+    }
+    delete mathOps[index].math;
+    mathOps.erase(mathOps.begin() + index);
+}
+
+void Trace::swapMathOrder(unsigned int index)
+{
+    if(index < 1 || index + 1 >= mathOps.size()) {
+        return;
+    }
+    // store enable state and disable prior to swap (can reuse enable/disable function to handle input assignment)
+    bool index_enabled = mathOps[index].enabled;
+    bool next_enabled = mathOps[index].enabled;
+    enableMathOperation(index, false);
+    enableMathOperation(index + 1, false);
+    // actually swap the information
+    swap(mathOps[index], mathOps[index+1]);
+    // restore enable state
+    enableMathOperation(index, next_enabled);
+    enableMathOperation(index + 1, index_enabled);
+}
+
+void Trace::enableMathOperation(unsigned int index, bool enable)
+{
+    if(index < 1 || index >= mathOps.size()) {
+        return;
+    }
+    if(mathOps[index].enabled != enable) {
+        // find the next and previous operations that are enabled
+        unsigned int next_index = index + 1;
+        for(;next_index<mathOps.size();next_index++) {
+            if(mathOps[next_index].enabled) {
+                break;
+            }
+        }
+        unsigned int prev_index = index - 1;
+        for(;prev_index>0;prev_index--) {
+            if(mathOps[prev_index].enabled) {
+                break;
+            }
+        }
+        if(enable) {
+            // assign the previous enabled operation as the input for this operation
+            mathOps[index].math->assignInput(mathOps[prev_index].math);
+            // if another operation was active after index, reassign its input to index
+            if(next_index < mathOps.size()) {
+                mathOps[next_index].math->assignInput(mathOps[index].math);
+            }
+        } else {
+            // this operation gets disabled, reassign possible operation after it
+            if(next_index < mathOps.size()) {
+                mathOps[next_index].math->assignInput(mathOps[prev_index].math);
+            }
+            mathOps[index].math->removeInput();
+        }
+        mathOps[index].enabled = enable;
+        updateLastMath(mathOps.rbegin());
+    }
 }
 
 unsigned int Trace::size()

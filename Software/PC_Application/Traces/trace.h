@@ -64,9 +64,6 @@ public:
     bool isCalibration();
     bool isLive();
     bool isReflection();
-    bool mathEnabled(); // check if math operations are enabled
-    bool hasMathOperations(); // check if math operations are set up (not necessarily enabled)
-    void enableMath(bool enable);
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
     unsigned int size();
@@ -106,12 +103,22 @@ public:
     DataType outputType(DataType inputType) override { Q_UNUSED(inputType) return DataType::Frequency;};
     QString description() override;
 
+    bool mathEnabled(); // check if math operations are enabled
+    bool hasMathOperations(); // check if math operations are set up (not necessarily enabled)
+    void enableMath(bool enable);
+    // Adds a new math operation at the end of the list and enables it
+    void addMathOperation(TraceMath *mathOps);
+    // removes the math operation at the given index. Index 0 is invalid as this would be the trace itself
+    void removeMathOperation(unsigned int index);
+    // swaps the order of math operations at index and index+1. Does nothing if either index is invalid
+    void swapMathOrder(unsigned int index);
+    void enableMathOperation(unsigned int index, bool enable);
     class MathInfo {
     public:
         TraceMath *math;
         bool enabled;
     };
-    const std::vector<MathInfo>& getMath() const;
+    const std::vector<MathInfo>& getMathOperations() const;
 
 public slots:
     void setTouchstoneParameter(int value);
@@ -160,7 +167,7 @@ private:
         bool valid;
     } settings;
 
-    std::vector<MathInfo> math;
+    std::vector<MathInfo> mathOps;
     TraceMath *lastMath;
     void updateLastMath(std::vector<MathInfo>::reverse_iterator start);
 };

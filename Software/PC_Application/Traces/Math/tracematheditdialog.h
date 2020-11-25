@@ -16,8 +16,8 @@ public:
     MathModel(Trace &t, QObject *parent = 0);
 
     enum {
-        ColIndexEnabled = 0,
-        ColIndexDescription = 1,
+//        ColIndexEnabled = 0,
+        ColIndexDescription = 0,
         ColIndexLast,
     };
 
@@ -26,6 +26,9 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+    void deleteRow(unsigned int row);
+    void rowsSwapped(unsigned int top);
 
 private:
     Trace &t;
