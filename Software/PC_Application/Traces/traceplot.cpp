@@ -227,6 +227,7 @@ void TracePlot::dropEvent(QDropEvent *event)
     }
     dropPending = false;
     dropTrace = nullptr;
+    replot();
 }
 
 void TracePlot::dragLeaveEvent(QDragLeaveEvent *event)
@@ -234,7 +235,7 @@ void TracePlot::dragLeaveEvent(QDragLeaveEvent *event)
     Q_UNUSED(event)
     dropPending = false;
     dropTrace = nullptr;
-    triggerReplot();
+    replot();
 }
 
 std::set<TracePlot *> TracePlot::getPlots()

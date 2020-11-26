@@ -355,8 +355,8 @@ void TraceXYPlot::draw(QPainter &p)
             p.setPen(pen);
             auto nPoints = numTraceSamples(t);
             for(unsigned int j=1;j<nPoints;j++) {
-                auto last = transformY(t, j-1, YAxis[i].type);
-                auto now = transformY(t, j, YAxis[i].type);
+                auto last = traceToCoordinate(t, j-1, YAxis[i].type);
+                auto now = traceToCoordinate(t, j, YAxis[i].type);
 
                 if(isnan(last.y()) || isnan(now.y()) || isinf(last.y()) || isinf(now.y())) {
                     continue;
@@ -393,7 +393,7 @@ void TraceXYPlot::draw(QPainter &p)
                     if (xPosition < XAxis.rangeMin || xPosition > XAxis.rangeMax) {
                         continue;
                     }
-                    QPointF markerPoint = QPointF(xPosition, transformY(m->getData(), YAxis[i].type));
+                    QPointF markerPoint = QPointF(xPosition, traceToCoordinate(m->getData(), YAxis[i].type));
                     auto point = plotValueToPixel(markerPoint, i);
                     if(!plotRect.contains(point)) {
                         // out of screen
@@ -451,7 +451,12 @@ void TraceXYPlot::updateAxisTicks()
 {
     auto createEvenlySpacedTicks = [](vector<double>& ticks, double start, double stop, double step) {
         ticks.clear();
-        for(double tick = start; tick - stop < numeric_limits<double>::epsilon() ;tick+= step) {
+        if(start > stop) {
+            swap(start, stop);
+        }
+        step = abs(step);
+        constexpr unsigned int maxTicks = 100;
+        for(double tick = start; tick - stop < numeric_limits<double>::epsilon() && ticks.size() <= maxTicks;tick+= step) {
             ticks.push_back(tick);
         }
     };
@@ -494,6 +499,10 @@ void TraceXYPlot::updateAxisTicks()
                         || tracesAxis[1].find(t.first) != tracesAxis[1].end());
                 auto trace = t.first;
                 if(enabled && trace->isVisible()) {
+                    if(!numTraceSamples(trace)) {
+                        // empty trace, do not use for automatic axis calculation
+                        continue;
+                    }
                     // this trace is currently displayed
                     double trace_min = std::numeric_limits<double>::max();
                     double trace_max = std::numeric_limits<double>::lowest();
@@ -520,13 +529,12 @@ void TraceXYPlot::updateAxisTicks()
                 }
             }
         }
-        if(min >= max) {
-            // still at initial values, no traces are active, leave axis unchanged
-            return;
+        if(min < max) {
+            // found min/max values
+            XAxis.rangeMin = min;
+            XAxis.rangeMax = max;
+            XAxis.rangeDiv = createAutomaticTicks(XAxis.ticks, min, max, 8);
         }
-        XAxis.rangeMin = min;
-        XAxis.rangeMax = max;
-        XAxis.rangeDiv = createAutomaticTicks(XAxis.ticks, min, max, 8);
     }
 
     for(int i=0;i<2;i++) {
@@ -539,7 +547,12 @@ void TraceXYPlot::updateAxisTicks()
             for(auto t : tracesAxis[i]) {
                 unsigned int samples = numTraceSamples(t);
                 for(unsigned int j=0;j<samples;j++) {
-                    auto point = transformY(t, j, YAxis[i].type);
+                    auto point = traceToCoordinate(t, j, YAxis[i].type);
+
+                    if(point.x() < XAxis.rangeMin || point.x() > XAxis.rangeMax) {
+                        // this point is not in the displayed X range, skip for auto Y range calculation
+                        continue;
+                    }
 
                     if(point.y() > max) {
                         max = point.y();
@@ -557,7 +570,6 @@ void TraceXYPlot::updateAxisTicks()
             YAxis[i].rangeDiv = createAutomaticTicks(YAxis[i].ticks, min, max, 8);
         }
     }
-    triggerReplot();
 }
 
 QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
@@ -620,7 +632,7 @@ bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
     return true;
 }
 
-double TraceXYPlot::transformY(std::complex<double> data, TraceXYPlot::YAxisType type)
+double TraceXYPlot::traceToCoordinate(std::complex<double> data, TraceXYPlot::YAxisType type)
 {
     switch(type) {
     case YAxisType::Magnitude:
@@ -646,7 +658,7 @@ double TraceXYPlot::transformY(std::complex<double> data, TraceXYPlot::YAxisType
     return numeric_limits<double>::quiet_NaN();
 }
 
-QPointF TraceXYPlot::transformY(Trace *t, unsigned int sample, TraceXYPlot::YAxisType type)
+QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlot::YAxisType type)
 {
     QPointF ret = QPointF(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN());
     switch(type) {
@@ -654,8 +666,8 @@ QPointF TraceXYPlot::transformY(Trace *t, unsigned int sample, TraceXYPlot::YAxi
     case YAxisType::Phase:
     case YAxisType::VSWR: {
         auto d = t->sample(sample);
-        ret.setY(transformY(d.y, type));
-        ret.setX(d.x);
+        ret.setY(traceToCoordinate(d.S, type));
+        ret.setX(d.frequency);
     }
         break;
     case YAxisType::Impulse:
@@ -702,12 +714,12 @@ unsigned int TraceXYPlot::numTraceSamples(Trace *t)
 
 QPoint TraceXYPlot::dataToPixel(Trace::Data d)
 {
-    if(d.x < XAxis.rangeMin || d.x > XAxis.rangeMax) {
+    if(d.frequency < XAxis.rangeMin || d.frequency > XAxis.rangeMax) {
         return QPoint();
     }
-    auto y = transformY(d.y, YAxis[0].type);
+    auto y = traceToCoordinate(d.S, YAxis[0].type);
     QPoint p;
-    p.setX(Util::Scale<double>(d.x, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
+    p.setX(Util::Scale<double>(d.frequency, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
     p.setY(Util::Scale<double>(y, YAxis[0].rangeMin, YAxis[0].rangeMax, plotAreaBottom, 0));
     return p;
 }
@@ -736,7 +748,7 @@ QPoint TraceXYPlot::markerToPixel(TraceMarker *m)
         return ret;
     }
     QPointF plotPoint;
-    plotPoint.setY(transformY(m->getData(), YAxis[0].type));
+    plotPoint.setY(traceToCoordinate(m->getData(), YAxis[0].type));
     if(m->isTimeDomain()) {
         auto timedata = m->getTimeData();
         if(XAxis.type == XAxisType::Distance) {
@@ -760,13 +772,13 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel)
     double closestXpos = 0;
     auto samples = numTraceSamples(t);
     for(unsigned int i=0;i<samples;i++) {
-        auto point = transformY(t, i, YAxis[0].type);
+        auto point = traceToCoordinate(t, i, YAxis[0].type);
         if(isnan(point.x()) || isnan(point.y())) {
             continue;
         }
         auto plotPoint = plotValueToPixel(point, 0);
-        auto diff = plotPoint - pixel;
-        unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
+        QPointF diff = plotPoint - pixel;
+        auto distance = diff.x() * diff.x() + diff.y() * diff.y();
         if(distance < closestDistance) {
             closestDistance = distance;
             closestXpos = point.x();

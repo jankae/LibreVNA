@@ -173,6 +173,11 @@ void Trace::removeMarker(TraceMarker *m)
 
 void Trace::updateTimeDomainData()
 {
+    if(_data.size() < 2) {
+        // can't compute anything
+        timeDomain.clear();
+        return;
+    }
 //    using namespace std::chrono;
 //    auto starttime = duration_cast< milliseconds >(
 //        system_clock::now().time_since_epoch()
@@ -228,7 +233,7 @@ void Trace::updateTimeDomainData()
             t.impedance = numeric_limits<double>::quiet_NaN();
         }
         last_step += t.impulseResponse;
-        timeDomain.push_back(t);
+        timeDomain[i] = t;
     }
 //    auto duration = duration_cast< milliseconds >(
 //        system_clock::now().time_since_epoch()

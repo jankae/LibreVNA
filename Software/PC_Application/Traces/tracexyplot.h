@@ -58,8 +58,8 @@ private:
     QString AxisTypeToName(YAxisType type);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
     bool supported(Trace *t, YAxisType type);
-    double transformY(std::complex<double> data, YAxisType type);
-    QPointF transformY(Trace *t, unsigned int sample, YAxisType type);
+    double traceToCoordinate(std::complex<double> data, YAxisType type);
+    QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);
     unsigned int numTraceSamples(Trace *t);
     QPoint dataToPixel(Trace::Data d);
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);

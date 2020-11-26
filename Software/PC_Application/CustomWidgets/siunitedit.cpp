@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 #include <QTimer>
+#include <cmath>
 
 SIUnitEdit::SIUnitEdit(QString unit, QString prefixes, int precision, QWidget *parent)
     : QLineEdit(parent)
@@ -88,6 +89,30 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         // online found clumsy way to select all text when clicked!?!
         // just selectAll() alone does _not_ work!
         QTimer::singleShot(0, this, &SIUnitEdit::continueEditing);
+    } else if(event->type() == QEvent::Wheel) {
+        if(_value == 0.0) {
+            // can't figure out step size with zero value
+            return false;
+        }
+        auto wheel = static_cast<QWheelEvent*>(event);
+        // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
+        auto increment = wheel->angleDelta().y() / 120.0;
+        // round toward bigger step in case of special higher resolution mousewheel
+        unsigned int steps = abs(increment > 0 ? ceil(increment) : floor(increment));
+        int sign = increment > 0 ? 1 : -1;
+        // figure out step increment
+        auto newVal = _value;
+        while(steps > 0) {
+            // do update in multiple steps because the step size could change inbetween
+            constexpr int nthDigit = 3;
+            auto step_size = pow(10, floor(log10(abs(newVal))) - nthDigit + 1);
+            newVal += step_size * sign;
+            steps--;
+        }
+        setValue(newVal);
+        continueEditing();
+        setFocus();
+        return true;
     }
     return false;
 }
