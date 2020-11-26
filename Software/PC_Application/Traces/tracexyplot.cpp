@@ -777,8 +777,8 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel)
             continue;
         }
         auto plotPoint = plotValueToPixel(point, 0);
-        auto diff = plotPoint - pixel;
-        unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
+        QPointF diff = plotPoint - pixel;
+        auto distance = diff.x() * diff.x() + diff.y() * diff.y();
         if(distance < closestDistance) {
             closestDistance = distance;
             closestXpos = point.x();

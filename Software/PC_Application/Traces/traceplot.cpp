@@ -227,6 +227,7 @@ void TracePlot::dropEvent(QDropEvent *event)
     }
     dropPending = false;
     dropTrace = nullptr;
+    replot();
 }
 
 void TracePlot::dragLeaveEvent(QDragLeaveEvent *event)
