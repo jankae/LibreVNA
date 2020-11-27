@@ -97,7 +97,7 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
             return QVariant();
         }
     } else if (index.column() == 1) {
-        if (role == Qt::DecorationRole && !traces[index.row()]->isTouchstone()) {
+        if (role == Qt::DecorationRole && traces[index.row()]->isLive()) {
             if (traces[index.row()]->isPaused()) {
                 return QIcon(":/icons/pause.svg");
             } else {

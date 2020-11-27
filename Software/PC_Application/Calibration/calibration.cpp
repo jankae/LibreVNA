@@ -621,6 +621,55 @@ std::vector<Trace *> Calibration::getErrorTermTraces()
     return traces;
 }
 
+std::vector<Trace *> Calibration::getMeasurementTraces()
+{
+    std::vector<Trace*> traces;
+    for(auto m : measurements) {
+        auto info = getMeasurementInfo(m.first);
+        if(info.points > 0) {
+            vector<QString> usedPrefixes;
+            switch(m.first) {
+            case Measurement::Port1Load:
+            case Measurement::Port1Open:
+            case Measurement::Port1Short:
+                usedPrefixes = {"S11"};
+                break;
+            case Measurement::Port2Load:
+            case Measurement::Port2Open:
+            case Measurement::Port2Short:
+                usedPrefixes = {"S22"};
+                break;
+            case Measurement::Through:
+            case Measurement::Line:
+            case Measurement::Isolation:
+                usedPrefixes = {"S11", "S12", "S21", "S22"};
+                break;
+            }
+            for(auto prefix : usedPrefixes) {
+                auto t = new Trace(prefix + " " + info.name);
+                t->setCalibration(true);
+                t->setReflection(prefix == "S11" || prefix == "S22");
+                for(auto p : m.second.datapoints) {
+                    Trace::Data d;
+                    d.frequency = p.frequency;
+                    if(prefix == "S11") {
+                        d.S = complex<double>(p.real_S11, p.imag_S11);
+                    } else if(prefix == "S12") {
+                        d.S = complex<double>(p.real_S12, p.imag_S12);
+                    } else if(prefix == "S21") {
+                        d.S = complex<double>(p.real_S21, p.imag_S21);
+                    } else {
+                        d.S = complex<double>(p.real_S22, p.imag_S22);
+                    }
+                    t->addData(d);
+                }
+                traces.push_back(t);
+            }
+        }
+    }
+    return traces;
+}
+
 bool Calibration::openFromFile(QString filename)
 {
     if(filename.isEmpty()) {
