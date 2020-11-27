@@ -1,6 +1,8 @@
 #include "tracematheditdialog.h"
 #include "ui_tracematheditdialog.h"
 
+#include "medianfilter.h"
+
 TraceMathEditDialog::TraceMathEditDialog(Trace &t, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::TraceMathEditDialog)
@@ -21,6 +23,9 @@ TraceMathEditDialog::TraceMathEditDialog(Trace &t, QWidget *parent) :
         }
     });
 
+    connect(ui->bAdd, &QPushButton::clicked, [=](){
+        model->addOperation(new Math::MedianFilter);
+    });
     connect(ui->bDelete, &QPushButton::clicked, [=](){
         model->deleteRow(ui->view->currentIndex().row());
     });
@@ -108,6 +113,13 @@ Qt::ItemFlags MathModel::flags(const QModelIndex &index) const
         break;
     }
     return (Qt::ItemFlags) flags;
+}
+
+void MathModel::addOperation(TraceMath *math)
+{
+    beginInsertRows(QModelIndex(), t.getMathOperations().size(), t.getMathOperations().size());
+    t.addMathOperation(math);
+    endInsertRows();
 }
 
 void MathModel::deleteRow(unsigned int row)

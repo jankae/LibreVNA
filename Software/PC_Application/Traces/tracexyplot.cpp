@@ -666,8 +666,8 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
     case YAxisType::Phase:
     case YAxisType::VSWR: {
         auto d = t->sample(sample);
-        ret.setY(traceToCoordinate(d.S, type));
-        ret.setX(d.frequency);
+        ret.setY(traceToCoordinate(d.y, type));
+        ret.setX(d.x);
     }
         break;
     case YAxisType::Impulse:
@@ -714,12 +714,12 @@ unsigned int TraceXYPlot::numTraceSamples(Trace *t)
 
 QPoint TraceXYPlot::dataToPixel(Trace::Data d)
 {
-    if(d.frequency < XAxis.rangeMin || d.frequency > XAxis.rangeMax) {
+    if(d.x < XAxis.rangeMin || d.x > XAxis.rangeMax) {
         return QPoint();
     }
-    auto y = traceToCoordinate(d.S, YAxis[0].type);
+    auto y = traceToCoordinate(d.y, YAxis[0].type);
     QPoint p;
-    p.setX(Util::Scale<double>(d.frequency, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
+    p.setX(Util::Scale<double>(d.x, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
     p.setY(Util::Scale<double>(y, YAxis[0].rangeMin, YAxis[0].rangeMax, plotAreaBottom, 0));
     return p;
 }

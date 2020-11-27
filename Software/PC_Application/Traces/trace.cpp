@@ -22,9 +22,6 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
     updateLastMath(mathOps.rbegin());
 
     self.enabled = false;
-    mathOps.push_back(self);
-    mathOps.push_back(self);
-    mathOps.push_back(self);
 }
 
 Trace::~Trace()
@@ -39,7 +36,7 @@ void Trace::clear() {
     data.clear();
     settings.valid = false;
     emit cleared(this);
-    emit outputDataChanged();
+    emit outputSamplesChanged(0, 0);
 }
 
 void Trace::addData(const Trace::Data& d) {
@@ -74,7 +71,7 @@ void Trace::addData(const Trace::Data& d) {
         // insert at this position
         data.insert(lower, d);
     }
-    emit outputSampleChanged(lower - data.begin());
+    emit outputSamplesChanged(lower - data.begin(), lower - data.begin() + 1);
     if(lower == data.begin()) {
         // received the first point, which means the last sweep just finished
         if(tdr_users) {
@@ -173,7 +170,7 @@ void Trace::removeMarker(TraceMarker *m)
 
 void Trace::updateTimeDomainData()
 {
-    if(_data.size() < 2) {
+    if(data.size() < 2) {
         // can't compute anything
         timeDomain.clear();
         return;
@@ -258,13 +255,11 @@ void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
     Q_ASSERT(newLast != nullptr);
     if(newLast != lastMath) {
         if(lastMath != nullptr) {
-            disconnect(lastMath, &TraceMath::outputDataChanged, this, nullptr);
-            disconnect(lastMath, &TraceMath::outputSampleChanged, this, nullptr);
+            disconnect(lastMath, &TraceMath::outputSamplesChanged, this, nullptr);
         }
         lastMath = newLast;
         // relay signals of end of math chain
-        connect(lastMath, &TraceMath::outputDataChanged, this, &Trace::dataChanged);
-        connect(lastMath, &TraceMath::outputSampleChanged, this, &Trace::dataChanged);
+        connect(lastMath, &TraceMath::outputSamplesChanged, this, &Trace::dataChanged);
     }
 }
 
@@ -419,7 +414,7 @@ bool Trace::hasMathOperations()
 
 void Trace::enableMath(bool enable)
 {
-    auto start = enable ? mathOps.rbegin() : make_reverse_iterator(mathOps.begin());
+    auto start = enable ? mathOps.rbegin() : make_reverse_iterator(mathOps.begin() + 1);
     updateLastMath(start);
 }
 

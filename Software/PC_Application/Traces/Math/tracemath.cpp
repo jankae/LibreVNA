@@ -36,10 +36,9 @@ void TraceMath::assignInput(TraceMath *input)
         this->input = input;
         inputTypeChanged(input->dataType);
         // do initial calculation
-        inputDataChanged();
+        inputSamplesChanged(0, input->data.size());
         // connect to input
-        connect(input, &TraceMath::outputDataChanged, this, &TraceMath::inputDataChanged);
-        connect(input, &TraceMath::outputSampleChanged, this, &TraceMath::inputSampleChanged);
+        connect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged);
         connect(input, &TraceMath::outputTypeChanged, this, &TraceMath::inputTypeChanged);
     }
 }
@@ -50,7 +49,7 @@ void TraceMath::inputTypeChanged(TraceMath::DataType type)
     if(newType != dataType) {
         dataType = newType;
         data.clear();
-        inputDataChanged();
+        inputSamplesChanged(0, input->data.size());
         emit outputTypeChanged(dataType);
     }
 }

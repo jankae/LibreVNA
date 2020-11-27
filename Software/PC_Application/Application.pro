@@ -25,6 +25,7 @@ HEADERS += \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
+    Traces/Math/medianfilter.h \
     Traces/Math/tracemath.h \
     Traces/Math/tracematheditdialog.h \
     Traces/fftcomplex.h \
@@ -79,6 +80,7 @@ SOURCES += \
     SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
+    Traces/Math/medianfilter.cpp \
     Traces/Math/tracemath.cpp \
     Traces/Math/tracematheditdialog.cpp \
     Traces/fftcomplex.cpp \

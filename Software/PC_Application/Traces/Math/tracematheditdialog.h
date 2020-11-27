@@ -27,6 +27,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
+    void addOperation(TraceMath *math);
     void deleteRow(unsigned int row);
     void rowsSwapped(unsigned int top);
 
