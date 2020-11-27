@@ -462,6 +462,7 @@ void TraceXYPlot::updateAxisTicks()
     };
 
     auto createAutomaticTicks = [](vector<double>& ticks, double start, double stop, int minDivisions) -> double {
+        Q_ASSERT(stop > start);
         ticks.clear();
         double max_div_step = (stop - start) / minDivisions;
         int zeros = floor(log10(max_div_step));
@@ -561,13 +562,28 @@ void TraceXYPlot::updateAxisTicks()
                     }
                 }
             }
-            // add 5% overrange
-            auto range = max - min;
-            min -= range * 0.05;
-            max += range * 0.05;
-            YAxis[i].rangeMin = min;
-            YAxis[i].rangeMax = max;
-            YAxis[i].rangeDiv = createAutomaticTicks(YAxis[i].ticks, min, max, 8);
+            if(max >= min) {
+                auto range = max - min;
+                if(range == 0.0) {
+                    // this could happen if all values in a trace are identical (e.g. imported ideal touchstone files)
+                    if(max == 0.0) {
+                        // simply use +/-1 range
+                        max = 1.0;
+                        min = -1.0;
+                    } else {
+                        // +/-5% around value
+                        max += abs(max * 0.05);
+                        min -= abs(max * 0.05);
+                    }
+                } else {
+                    // add 5% of range at both ends
+                    min -= range * 0.05;
+                    max += range * 0.05;
+                }
+                YAxis[i].rangeMin = min;
+                YAxis[i].rangeMax = max;
+                YAxis[i].rangeDiv = createAutomaticTicks(YAxis[i].ticks, min, max, 8);
+            }
         }
     }
 }
