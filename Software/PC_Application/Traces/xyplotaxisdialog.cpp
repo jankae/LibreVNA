@@ -47,8 +47,6 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Y2divs->setUnit(unit);
     });
 
-    connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
-
     connect(ui->Y2auto, &QCheckBox::toggled, [this](bool checked) {
        ui->Y2min->setEnabled(!checked);
        ui->Y2max->setEnabled(!checked);
@@ -66,6 +64,9 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Xmin->setPrefixes("pnum kMG");
     ui->Xmax->setPrefixes("pnum kMG");
     ui->Xdivs->setPrefixes("pnum kMG");
+
+    XAxisTypeChanged((int) plot->XAxis.type);
+    connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
 
     // Fill initial values
     // assume same order in YAxisType enum as in ComboBox items
