@@ -9,13 +9,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="17.410528mm"
-   height="9.36625mm"
-   viewBox="0 0 17.410529 9.3662499"
+   width="9.5429888mm"
+   height="8.6545076mm"
+   viewBox="0 0 9.5429888 8.6545077"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="math_disabled.svg">
+   sodipodi:docname="math_disabled.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6"
-     inkscape:cx="43.034455"
-     inkscape:cy="-5.145459"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="23.599766"
+     inkscape:cy="6.7003366"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -52,33 +52,29 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-77.99312,-144.11468)">
+     transform="translate(-84.809019,-129.3552)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:125%;font-family:'Latin Modern Math';-inkscape-font-specification:'Latin Modern Math';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="74.839287"
-       y="158.66071"
+       x="85.422623"
+       y="136.7381"
        id="text817"><tspan
          sodipodi:role="line"
          id="tspan815"
-         x="74.839287"
-         y="168.51379"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Latin Modern Math';-inkscape-font-specification:'Latin Modern Math';stroke-width:0.26458332px" /></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:125%;font-family:'Latin Modern Math';-inkscape-font-specification:'Latin Modern Math';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="78.808037"
-       y="151.29018"
-       id="text825"><tspan
-         sodipodi:role="line"
-         id="tspan823"
-         x="78.808037"
-         y="151.29018"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:FreeSerif;-inkscape-font-specification:'FreeSerif Italic';fill:#969696;fill-opacity:1;stroke-width:0.26458332px">f(x)</tspan></text>
+         x="85.422623"
+         y="136.7381"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Padauk Book';-inkscape-font-specification:'Padauk Book, ';stroke-width:0.26458332px">M</tspan></text>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#969696;stroke-width:0.271;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 78.040368,148.85072 h 17.36328"
-       id="path867"
-       inkscape:connector-curvature="0" />
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#fcffff;stroke-width:1.70000005;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 85.314335,137.50494 6.93903,-6.21735 0.812743,-0.72822 0.780583,-0.6994"
+       id="path819"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="opacity:1;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       d="m 85.314335,137.50494 8.532356,-7.64497"
+       id="path819-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>

@@ -5,6 +5,42 @@
 #include <vector>
 #include <complex>
 
+/*
+ * How to implement a new type of math operation:
+ * 1. Create your new math operation class by deriving from this class. Put the new class in the namespace
+ *      "Math" to avoid name collisions.
+ * 2. Implement required virtual functions:
+ *      a. outputType(DataType inputType):
+ *          Indicates what kind of result your math operation creates, depending on the type of its input.
+ *          If the input type is not applicable for your operation (e.g. frequency domain data as input for
+ *          a (forward) DFT, you can return DataType::Invalid
+ *      b. description():
+ *          Return a short, user-readable description how the operation is set up. This will be displayed
+ *          in the math edit dialog.
+ *      c. edit():
+ *          Optional. If your operation has customizable parameters, calling this function should start a
+ *          dialog that allows the user to change these parameters.
+ *      d. inputSamplesChanged(unsigned int begin, unsigned int end)
+ *          This slot gets called whenever the input data has changed. Override it and implement your math
+ *          operation in it. Parameters begin and end indicate which input samples have changed: If, for
+ *          example, only the 2nd and third input values have changed, they are set like this: begin=1 end=3
+ *          CAUTION: the size of the input vector may have changed, check before accessing it.
+ *
+ *          Emit the signal outputSamplesChanged(unsigned int begin, unsigned int end) after your operation is
+ *          finished. Also call either success(), warning() or error() at the end of this slot, depending on
+ *          whether the operation succeeded:
+ *              success(): everything went well, output data contains valid values
+ *              warning(): something might be wrong (e.g. not enough input samples to create meaningful data, ...).
+ *                          Provide a hint by passing a short description string
+ *              error(): something went wrong (called with wrong type of data, mathematical error, ...).
+ *                          Provide a hint by passing a short description string
+ * 3. Add a new type to the Type enum for your operation
+ * 4. Extend the createMath(Type type) factory function to create an instance of your operation
+ * 5. Add a static function "createExplanationWidget" which returns a QWidget explaining what your operation does.
+ *      This will be displayed when the user chooses to add a new math operation.
+ * 6. Extend the function getInfo(Type type) to set a name and create the explanation widget for your operation
+ */
+
 class TraceMath : public QObject {
     Q_OBJECT
 public:
@@ -28,7 +64,24 @@ public:
         Error,
     };
 
+    enum class Type {
+        MedianFilter,
+        TDRlowpass,
+        TDRbandpass,
+        // Add new math operations here, do not explicitly assign values and keep the Last entry at the last position
+        Last,
+    };
+
+    static TraceMath *createMath(Type type);
+    class TypeInfo {
+    public:
+        QString name;
+        QWidget *explanationWidget;
+    };
+    static TypeInfo getInfo(Type type);
+
     Data getSample(unsigned int index);
+    Data getInterpolatedSample(double x);
     unsigned int numSamples();
 
     // indicate whether this function produces time or frequency domain data

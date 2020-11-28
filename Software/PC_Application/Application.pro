@@ -26,6 +26,8 @@ HEADERS += \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
     Traces/Math/medianfilter.h \
+    Traces/Math/tdrbandpass.h \
+    Traces/Math/tdrlowpass.h \
     Traces/Math/tracemath.h \
     Traces/Math/tracematheditdialog.h \
     Traces/fftcomplex.h \
@@ -81,6 +83,8 @@ SOURCES += \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
     Traces/Math/medianfilter.cpp \
+    Traces/Math/tdrbandpass.cpp \
+    Traces/Math/tdrlowpass.cpp \
     Traces/Math/tracemath.cpp \
     Traces/Math/tracematheditdialog.cpp \
     Traces/fftcomplex.cpp \
@@ -127,7 +131,9 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
+    Traces/Math/medianexplanationwidget.ui \
     Traces/Math/medianfilterdialog.ui \
+    Traces/Math/newtracemathdialog.ui \
     Traces/Math/tracematheditdialog.ui \
     Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \

@@ -30,7 +30,6 @@ public:
 
     void addOperation(TraceMath *math);
     void deleteRow(unsigned int row);
-    void rowsSwapped(unsigned int top);
 
 private:
     Trace &t;

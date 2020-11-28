@@ -263,6 +263,7 @@ void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
         lastMath = newLast;
         // relay signals of end of math chain
         connect(lastMath, &TraceMath::outputSamplesChanged, this, &Trace::dataChanged);
+        emit outputSamplesChanged(0, data.size());
     }
 }
 

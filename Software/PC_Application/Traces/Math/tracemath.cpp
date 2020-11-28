@@ -1,5 +1,9 @@
 #include "tracemath.h"
 
+#include "medianfilter.h"
+#include "tdrbandpass.h"
+#include "tdrlowpass.h"
+
 TraceMath::TraceMath()
 {
     input = nullptr;
@@ -7,9 +11,71 @@ TraceMath::TraceMath()
     error("Invalid input");
 }
 
+TraceMath *TraceMath::createMath(TraceMath::Type type)
+{
+    switch(type) {
+    case Type::MedianFilter:
+        return new Math::MedianFilter();
+    case Type::TDRlowpass:
+        return new Math::TDRLowpass();
+    case Type::TDRbandpass:
+        return new Math::TDRBandpass();
+    default:
+        return nullptr;
+    }
+}
+
+TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
+{
+    TypeInfo ret = {};
+    switch(type) {
+    case Type::MedianFilter:
+        ret.name = "Median filter";
+        ret.explanationWidget = Math::MedianFilter::createExplanationWidget();
+        break;
+    case Type::TDRlowpass:
+        ret.name = "TDR (lowpass)";
+        ret.explanationWidget = Math::TDRLowpass::createExplanationWidget();
+        break;
+    case Type::TDRbandpass:
+        ret.name = "TDR (bandpass)";
+        ret.explanationWidget = Math::TDRBandpass::createExplanationWidget();
+        break;
+    default:
+        break;
+    }
+    return ret;
+}
+
 TraceMath::Data TraceMath::getSample(unsigned int index)
 {
     return data.at(index);
+}
+
+TraceMath::Data TraceMath::getInterpolatedSample(double x)
+{
+    Data ret;
+
+    if(data.size() == 0 || x < data.front().x || x > data.back().x) {
+        ret.y = std::numeric_limits<std::complex<double>>::quiet_NaN();
+        ret.x = std::numeric_limits<double>::quiet_NaN();
+    } else {
+        auto it = lower_bound(data.begin(), data.end(), x, [](const Data &lhs, const double x) -> bool {
+            return lhs.x < x;
+        });
+        if(it->x == x) {
+            ret = *it;
+        } else {
+            // no exact match, needs to interpolate
+            auto high = *it;
+            it--;
+            auto low = *it;
+            double alpha = (x - low.x) / (high.x - low.x);
+            ret.y = low.y * (1 - alpha) + high.y * alpha;
+            ret.x = x;
+        }
+    }
+    return ret;
 }
 
 unsigned int TraceMath::numSamples()

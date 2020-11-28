@@ -1,14 +1,11 @@
 #include "medianfilter.h"
 #include "ui_medianfilterdialog.h"
+#include "ui_medianexplanationwidget.h"
 
 #include <QMessageBox>
 
 using namespace Math;
 using namespace std;
-
-namespace Ui {
-class MedianFilterDialog;
-}
 
 MedianFilter::MedianFilter()
 {
@@ -50,18 +47,26 @@ void MedianFilter::edit()
     d->show();
 }
 
+QWidget *MedianFilter::createExplanationWidget()
+{
+    auto w = new QWidget();
+    auto ui = new Ui::MedianFilterExplanationWidget;
+    ui->setupUi(w);
+    return w;
+}
+
 void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
     if(data.size() != input->rData().size()) {
         data.resize(input->rData().size());
     }
     if(data.size() > 0) {
         auto kernelOffset = (kernelSize-1)/2;
-        int start = (int) begin - kernelOffset;
-        unsigned int stop = (int) end + kernelOffset;
+        int start = (int) begin - (int) kernelOffset;
+        unsigned int stop = end + kernelOffset;
         if(start < 0) {
             start = 0;
         }
-        if(stop >= input->rData().size()) {
+        if(stop > input->rData().size()) {
             stop = input->rData().size();
         }
 
@@ -71,6 +76,7 @@ void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
            case Order::Phase: return arg(a) < arg(b);
            case Order::Real: return real(a) < real(b);
            case Order::Imag: return imag(a) < imag(b);
+           default: return false;
            }
         };
 
@@ -82,16 +88,13 @@ void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
                     unsigned int inputSample;
                     if(kernelOffset > in + out) {
                         inputSample = 0;
-                    } else if(in + kernelOffset + out >= input->rData().size()) {
+                    } else if(in + out >= input->rData().size() + kernelOffset) {
                         inputSample = input->rData().size() - 1;
                     } else {
                         inputSample = in + out - kernelOffset;
                     }
                     auto sample = input->rData().at(inputSample).y;
-                    if(out == (unsigned int) start) {
-                        // this is the first sample to update, fill initial kernel
-                        kernel[in] = sample;
-                    }
+                    kernel[in] = sample;
                 }
                 // sort initial kernel
                 sort(kernel.begin(), kernel.end(), comp);
@@ -131,5 +134,6 @@ QString MedianFilter::orderToString(MedianFilter::Order o)
     case Order::Phase: return "Phase";
     case Order::Real: return "Real";
     case Order::Imag: return "Imag";
+    default: return QString();
     }
 }

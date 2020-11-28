@@ -15,6 +15,8 @@ public:
 
     virtual void edit() override;
 
+    static QWidget *createExplanationWidget();
+
 public slots:
     // a single value of the input data has changed, index determines which sample has changed
     virtual void inputSamplesChanged(unsigned int begin, unsigned int end) override;

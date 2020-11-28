@@ -2,6 +2,11 @@
 #include "ui_tracematheditdialog.h"
 #include <QHeaderView>
 
+#include "ui_newtracemathdialog.h"
+namespace Ui {
+class NewTraceMathDialog;
+}
+
 #include "medianfilter.h"
 
 TraceMathEditDialog::TraceMathEditDialog(Trace &t, QWidget *parent) :
@@ -18,6 +23,7 @@ TraceMathEditDialog::TraceMathEditDialog(Trace &t, QWidget *parent) :
     headerView->setSectionResizeMode(MathModel::ColIndexDomain, QHeaderView::ResizeToContents);
 
     connect(ui->view->selectionModel(), &QItemSelectionModel::currentRowChanged, [=](const QModelIndex &current, const QModelIndex &previous){
+        Q_UNUSED(previous)
         if(!current.isValid()) {
             ui->bDelete->setEnabled(false);
             ui->bMoveUp->setEnabled(false);
@@ -37,7 +43,30 @@ TraceMathEditDialog::TraceMathEditDialog(Trace &t, QWidget *parent) :
     });
 
     connect(ui->bAdd, &QPushButton::clicked, [=](){
-        model->addOperation(new Math::MedianFilter);
+        auto d = new QDialog();
+        auto ui = new Ui::NewTraceMathDialog();
+        ui->setupUi(d);
+        for(int i = 0; i < (int) TraceMath::Type::Last;i++) {
+            auto info = TraceMath::getInfo(static_cast<TraceMath::Type>(i));
+            ui->list->addItem(info.name);
+            if(!info.explanationWidget) {
+                info.explanationWidget = new QWidget();
+            }
+            ui->stack->addWidget(info.explanationWidget);
+        }
+        // always show the widget for the selected function
+        connect(ui->list, &QListWidget::currentRowChanged, ui->stack, &QStackedWidget::setCurrentIndex);
+
+        connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
+           auto newMath = TraceMath::createMath(static_cast<TraceMath::Type>(ui->list->currentRow()));
+           if(newMath) {
+               model->addOperation(newMath);
+           }
+        });
+        ui->list->setCurrentRow(0);
+        ui->stack->setCurrentIndex(0);
+
+        d->show();
     });
     connect(ui->bDelete, &QPushButton::clicked, [=](){
         model->deleteRow(ui->view->currentIndex().row());
@@ -45,13 +74,11 @@ TraceMathEditDialog::TraceMathEditDialog(Trace &t, QWidget *parent) :
     connect(ui->bMoveUp, &QPushButton::clicked, [&](){
         auto index = ui->view->currentIndex();
         t.swapMathOrder(index.row() - 1);
-        model->rowsSwapped(index.row() - 1);
         ui->view->setCurrentIndex(index.sibling(index.row() - 1, 0));
     });
     connect(ui->bMoveDown, &QPushButton::clicked, [&](){
         auto index = ui->view->currentIndex();
         t.swapMathOrder(index.row());
-        model->rowsSwapped(index.row());
         ui->view->setCurrentIndex(index.sibling(index.row() + 1, 0));
     });
 }
@@ -70,11 +97,13 @@ MathModel::MathModel(Trace &t, QObject *parent)
 
 int MathModel::rowCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return t.getMathOperations().size();
 }
 
 int MathModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent);
     return ColIndexLast;
 }
 
@@ -168,7 +197,3 @@ void MathModel::deleteRow(unsigned int row)
     endRemoveRows();
 }
 
-void MathModel::rowsSwapped(unsigned int top)
-{
-//    emit dataChanged(createIndex(top, 0), createIndex(top+1, ColIndexLast - 1));
-}
