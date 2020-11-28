@@ -1,7 +1,14 @@
 #include "medianfilter.h"
+#include "ui_medianfilterdialog.h"
+
+#include <QMessageBox>
 
 using namespace Math;
 using namespace std;
+
+namespace Ui {
+class MedianFilterDialog;
+}
 
 MedianFilter::MedianFilter()
 {
@@ -17,49 +24,112 @@ TraceMath::DataType MedianFilter::outputType(TraceMath::DataType inputType)
 
 QString MedianFilter::description()
 {
-    return "Median filter";
+    return "Median filter, size "+QString::number(kernelSize)+", sorting: " + orderToString(order);
+}
+
+void MedianFilter::edit()
+{
+    auto d = new QDialog();
+    auto ui = new Ui::MedianFilterDialog();
+    ui->setupUi(d);
+    ui->kernelSize->setValue(kernelSize);
+    ui->sortingMethod->setCurrentIndex((int) order);
+
+    connect(ui->kernelSize, qOverload<int>(&QSpinBox::valueChanged), [=](int newval) {
+        if((newval & 0x01) == 0) {
+            QMessageBox::information(d, "Median filter", "Only odd values are allowed for the kernel size");
+            newval++;
+        }
+        ui->kernelSize->setValue(newval);
+        kernelSize = newval;
+    });
+
+    connect(ui->sortingMethod, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
+        order = (Order) index;
+    });
+    d->show();
 }
 
 void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
     if(data.size() != input->rData().size()) {
         data.resize(input->rData().size());
     }
-    int start = (int) begin - (kernelSize-1)/2;
-    unsigned int stop = (int) end + (kernelSize-1)/2;
-    if(start < 0) {
-        start = 0;
+    if(data.size() > 0) {
+        auto kernelOffset = (kernelSize-1)/2;
+        int start = (int) begin - kernelOffset;
+        unsigned int stop = (int) end + kernelOffset;
+        if(start < 0) {
+            start = 0;
+        }
+        if(stop >= input->rData().size()) {
+            stop = input->rData().size();
+        }
+
+        auto comp = [=](const complex<double>&a, const complex<double>&b){
+           switch(order) {
+           case Order::AbsoluteValue: return abs(a) < abs(b);
+           case Order::Phase: return arg(a) < arg(b);
+           case Order::Real: return real(a) < real(b);
+           case Order::Imag: return imag(a) < imag(b);
+           }
+        };
+
+        vector<complex<double>> kernel(kernelSize);
+        for(unsigned int out=start;out<stop;out++) {
+            if(out == (unsigned int) start) {
+                // this is the first sample to update, fill initial kernel
+                for(unsigned int in=0;in<kernelSize;in++) {
+                    unsigned int inputSample;
+                    if(kernelOffset > in + out) {
+                        inputSample = 0;
+                    } else if(in + kernelOffset + out >= input->rData().size()) {
+                        inputSample = input->rData().size() - 1;
+                    } else {
+                        inputSample = in + out - kernelOffset;
+                    }
+                    auto sample = input->rData().at(inputSample).y;
+                    if(out == (unsigned int) start) {
+                        // this is the first sample to update, fill initial kernel
+                        kernel[in] = sample;
+                    }
+                }
+                // sort initial kernel
+                sort(kernel.begin(), kernel.end(), comp);
+            } else {
+                // kernel already filled and sorted from last output sample. Only remove the one input sample that
+                // is no longer needed for this output and add the one additional input sample
+                int toRemove = out - kernelOffset - 1;
+                unsigned int toAdd = out + kernelOffset;
+                if(toRemove < 0) {
+                    toRemove = 0;
+                }
+                if(toAdd >= input->rData().size()) {
+                    toAdd = input->rData().size() - 1;
+                }
+                auto sampleToRemove = input->rData().at(toRemove).y;
+                auto remove_iterator = lower_bound(kernel.begin(), kernel.end(), sampleToRemove, comp);
+                kernel.erase(remove_iterator);
+
+                auto sampleToAdd = input->rData().at(toAdd).y;
+                // insert sample at correct position in vector
+                kernel.insert(upper_bound(kernel.begin(), kernel.end(), sampleToAdd, comp), sampleToAdd);
+            }
+            data.at(out).y = kernel[kernelOffset];
+            data.at(out).x = input->rData().at(out).x;
+        }
+        emit outputSamplesChanged(start, stop);
+        success();
+    } else {
+        warning("No input data");
     }
-    if(stop >= input->rData().size()) {
-        stop = input->rData().size();
-    }
-    for(unsigned int i=start;i<stop;i++) {
-        updateSample(i);
-    }
-    emit outputSamplesChanged(start, stop);
 }
 
-void MedianFilter::updateSample(int index)
+QString MedianFilter::orderToString(MedianFilter::Order o)
 {
-    vector<complex<double>> values;
-    for(int i=index - (kernelSize-1)/2;i<=index+(kernelSize-1)/2;i++) {
-        unsigned int inputSample;
-        if(i<0) {
-            inputSample = 0;
-        } else if(i>=(int) input->rData().size()) {
-            inputSample = input->rData().size() - 1;
-        } else {
-            inputSample = i;
-        }
-        values.push_back(input->rData().at(inputSample).y);
+    switch(o) {
+    case Order::AbsoluteValue: return "Absolute";
+    case Order::Phase: return "Phase";
+    case Order::Real: return "Real";
+    case Order::Imag: return "Imag";
     }
-    sort(values.begin(), values.end(), [=](const complex<double>&a, const complex<double>&b){
-       switch(order) {
-       case Order::AbsoluteValue: return abs(a) > abs(b);
-       case Order::Phase: return arg(a) > arg(b);
-       case Order::Real: return real(a) > real(b);
-       case Order::Imag: return imag(a) > imag(b);
-       }
-    });
-    data.at(index).y = values[(kernelSize-1)/2];
-    data.at(index).x = input->rData().at(index).x;
 }

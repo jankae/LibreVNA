@@ -16,8 +16,9 @@ public:
     MathModel(Trace &t, QObject *parent = 0);
 
     enum {
-//        ColIndexEnabled = 0,
-        ColIndexDescription = 0,
+        ColIndexStatus = 0,
+        ColIndexDescription = 1,
+        ColIndexDomain = 2,
         ColIndexLast,
     };
 

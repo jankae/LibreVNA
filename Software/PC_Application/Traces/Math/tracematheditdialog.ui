@@ -2,19 +2,22 @@
 <ui version="4.0">
  <class>TraceMathEditDialog</class>
  <widget class="QDialog" name="TraceMathEditDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>411</width>
-    <height>302</height>
+    <width>903</width>
+    <height>350</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Math functions</string>
   </property>
   <property name="modal">
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -46,7 +49,7 @@
         <number>70</number>
        </attribute>
        <attribute name="horizontalHeaderStretchLastSection">
-        <bool>true</bool>
+        <bool>false</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
@@ -110,7 +113,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset theme="go-up"/>
+          <iconset theme="go-up">
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
@@ -126,7 +130,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset theme="go-down"/>
+          <iconset theme="go-down">
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>

@@ -1,4 +1,4 @@
-﻿#ifndef TRACEMATH_H
+#ifndef TRACEMATH_H
 #define TRACEMATH_H
 
 #include <QObject>
@@ -22,6 +22,12 @@ public:
         Invalid,
     };
 
+    enum class Status {
+        Ok,
+        Warning,
+        Error,
+    };
+
     Data getSample(unsigned int index);
     unsigned int numSamples();
 
@@ -35,6 +41,8 @@ public:
 
     DataType getDataType() const;
     std::vector<Data>& rData() { return data;};
+    Status getStatus() const;
+    QString getStatusDescription() const;
 
 public slots:
     // some values of the input data have changed, begin/end determine which sample(s) has changed
@@ -49,9 +57,19 @@ signals:
     void outputTypeChanged(DataType type);
 
 protected:
+    // call one of these functions in the derived classes after output data has been updated
+    void warning(QString warn);
+    void error(QString err);
+    void success();
     std::vector<Data> data;
     TraceMath *input;
     DataType dataType;
+
+private:
+    Status status;
+    QString statusString;
+signals:
+    void statusChanged();
 };
 
 #endif // TRACEMATH_H

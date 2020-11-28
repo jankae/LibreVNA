@@ -22,6 +22,7 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
     updateLastMath(mathOps.rbegin());
 
     self.enabled = false;
+    dataType = DataType::Frequency;
 }
 
 Trace::~Trace()
@@ -35,6 +36,7 @@ void Trace::clear() {
     }
     data.clear();
     settings.valid = false;
+    warning("No data");
     emit cleared(this);
     emit outputSamplesChanged(0, 0);
 }
@@ -71,6 +73,7 @@ void Trace::addData(const Trace::Data& d) {
         // insert at this position
         data.insert(lower, d);
     }
+    success();
     emit outputSamplesChanged(lower - data.begin(), lower - data.begin() + 1);
     if(lower == data.begin()) {
         // received the first point, which means the last sweep just finished

@@ -13,19 +13,21 @@ public:
     virtual DataType outputType(DataType inputType) override;
     virtual QString description() override;
 
+    virtual void edit() override;
+
 public slots:
     // a single value of the input data has changed, index determines which sample has changed
     virtual void inputSamplesChanged(unsigned int begin, unsigned int end) override;
 
 private:
-    void updateSample(int index);
-    int kernelSize;
+    unsigned int kernelSize;
     enum class Order {
-        AbsoluteValue,
-        Phase,
-        Real,
-        Imag,
+        AbsoluteValue = 0,
+        Phase = 1,
+        Real = 2,
+        Imag = 3,
     } order;
+    static QString orderToString(Order o);
 };
 
 }

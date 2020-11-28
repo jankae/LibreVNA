@@ -651,15 +651,15 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
                 t->setReflection(prefix == "S11" || prefix == "S22");
                 for(auto p : m.second.datapoints) {
                     Trace::Data d;
-                    d.frequency = p.frequency;
+                    d.x = p.frequency;
                     if(prefix == "S11") {
-                        d.S = complex<double>(p.real_S11, p.imag_S11);
+                        d.y = complex<double>(p.real_S11, p.imag_S11);
                     } else if(prefix == "S12") {
-                        d.S = complex<double>(p.real_S12, p.imag_S12);
+                        d.y = complex<double>(p.real_S12, p.imag_S12);
                     } else if(prefix == "S21") {
-                        d.S = complex<double>(p.real_S21, p.imag_S21);
+                        d.y = complex<double>(p.real_S21, p.imag_S21);
                     } else {
-                        d.S = complex<double>(p.real_S22, p.imag_S22);
+                        d.y = complex<double>(p.real_S22, p.imag_S22);
                     }
                     t->addData(d);
                 }

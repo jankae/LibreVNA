@@ -4,6 +4,7 @@ TraceMath::TraceMath()
 {
     input = nullptr;
     dataType = DataType::Invalid;
+    error("Invalid input");
 }
 
 TraceMath::Data TraceMath::getSample(unsigned int index)
@@ -51,7 +52,42 @@ void TraceMath::inputTypeChanged(TraceMath::DataType type)
         data.clear();
         inputSamplesChanged(0, input->data.size());
         emit outputTypeChanged(dataType);
+        if(dataType == DataType::Invalid) {
+            error("Invalid input data");
+        }
     }
+}
+
+void TraceMath::warning(QString warn)
+{
+    statusString = warn;
+    status = Status::Warning;
+    emit statusChanged();
+}
+
+void TraceMath::error(QString err)
+{
+    statusString = err;
+    status = Status::Error;
+    emit statusChanged();
+}
+
+void TraceMath::success()
+{
+    if(status != Status::Ok) {
+        status = Status::Ok;
+        emit statusChanged();
+    }
+}
+
+QString TraceMath::getStatusDescription() const
+{
+    return statusString;
+}
+
+TraceMath::Status TraceMath::getStatus() const
+{
+    return status;
 }
 
 TraceMath::DataType TraceMath::getDataType() const

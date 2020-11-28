@@ -127,6 +127,7 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
+    Traces/Math/medianfilterdialog.ui \
     Traces/Math/tracematheditdialog.ui \
     Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \
