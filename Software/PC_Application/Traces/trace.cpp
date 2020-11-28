@@ -5,8 +5,7 @@
 using namespace std;
 
 Trace::Trace(QString name, QColor color, LiveParameter live)
-    : tdr_users(0),
-      _name(name),
+    : _name(name),
       _color(color),
       _liveType(LivedataType::Overwrite),
       _liveParam(live),
@@ -75,12 +74,6 @@ void Trace::addData(const Trace::Data& d) {
     }
     success();
     emit outputSamplesChanged(lower - data.begin(), lower - data.begin() + 1);
-    if(lower == data.begin()) {
-        // received the first point, which means the last sweep just finished
-        if(tdr_users) {
-            updateTimeDomainData();
-        }
-    }
 }
 
 void Trace::addData(const Trace::Data &d, const Protocol::SweepSettings &s)
@@ -168,78 +161,6 @@ void Trace::removeMarker(TraceMarker *m)
     markers.erase(m);
     emit markerRemoved(m);
 }
-//#include <iostream>
-//#include <chrono>
-
-void Trace::updateTimeDomainData()
-{
-    if(data.size() < 2) {
-        // can't compute anything
-        timeDomain.clear();
-        return;
-    }
-//    using namespace std::chrono;
-//    auto starttime = duration_cast< milliseconds >(
-//        system_clock::now().time_since_epoch()
-//    ).count();
-    auto steps = size();
-    auto firstStep = minFreq();
-    if(firstStep == 0) {
-        // zero as first step would result in infinite number of points, skip and start with second
-        firstStep = lastMath->rData()[1].x;
-        steps--;
-    }
-    if(firstStep * steps != maxFreq()) {
-        // data is not available with correct frequency spacing, calculate required steps
-        steps = maxFreq() / firstStep;
-    }
-    const double PI = 3.141592653589793238463;
-    // reserve vector for negative frequenies and DC as well
-    vector<complex<double>> frequencyDomain(2*steps + 1);
-    // copy frequencies, use the flipped conjugate for negative part
-    for(unsigned int i = 1;i<=steps;i++) {
-        auto S = getData(firstStep * i);
-        constexpr double alpha0 = 0.54;
-        auto hamming = alpha0 - (1.0 - alpha0) * -cos(PI * i / steps);
-        S *= hamming;
-        frequencyDomain[2 * steps - i + 1] = conj(S);
-        frequencyDomain[i] = S;
-    }
-    // use simple extrapolation from lowest two points to extract DC value
-    auto abs_DC = 2.0 * abs(frequencyDomain[1]) - abs(frequencyDomain[2]);
-    auto phase_DC = 2.0 * arg(frequencyDomain[1]) - arg(frequencyDomain[2]);
-    frequencyDomain[0] = polar(abs_DC, phase_DC);
-
-    auto fft_bins = frequencyDomain.size();
-    timeDomain.clear();
-    timeDomain.resize(fft_bins);
-    const double fs = 1.0 / (firstStep * fft_bins);
-    double last_step = 0.0;
-
-    Fft::transform(frequencyDomain, true);
-    constexpr double c = 299792458;
-    for(unsigned int i = 0;i<fft_bins;i++) {
-        TimedomainData t;
-        t.time = fs * i;
-        t.distance = t.time * c * 0.66; // TODO user settable velocity factor
-        if(isReflection()) {
-            t.distance /= 2;
-        }
-        t.impulseResponse = real(frequencyDomain[i]) / fft_bins;
-        t.stepResponse = last_step;
-        if(abs(t.stepResponse) < 1.0) {
-            t.impedance = 50.0 * (1+t.stepResponse) / (1-t.stepResponse);
-        } else {
-            t.impedance = numeric_limits<double>::quiet_NaN();
-        }
-        last_step += t.impulseResponse;
-        timeDomain[i] = t;
-    }
-//    auto duration = duration_cast< milliseconds >(
-//        system_clock::now().time_since_epoch()
-//    ).count() - starttime;
-    //    cout << "TDR: " << this << " (took " << duration << "ms)" <<endl;
-}
 
 const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
 {
@@ -263,6 +184,7 @@ void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
         lastMath = newLast;
         // relay signals of end of math chain
         connect(lastMath, &TraceMath::outputSamplesChanged, this, &Trace::dataChanged);
+        emit typeChanged(this);
         emit outputSamplesChanged(0, data.size());
     }
 }
@@ -270,77 +192,6 @@ void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
 void Trace::setReflection(bool value)
 {
     reflection = value;
-}
-
-void Trace::addTDRinterest()
-{
-    if(tdr_users == 0) {
-        // no recent time domain data available, calculate now
-        updateTimeDomainData();
-    }
-    tdr_users++;
-    if(tdr_users == 1) {
-        emit changedTDRstate(true);
-    }
-}
-
-void Trace::removeTDRinterest()
-{
-    if(tdr_users > 0) {
-        tdr_users--;
-        if(tdr_users == 0) {
-            emit changedTDRstate(false);
-        }
-    }
-}
-
-Trace::TimedomainData Trace::getTDR(double position)
-{
-    TimedomainData ret = {};
-    if(!TDRactive() || position < 0) {
-        return ret;
-    }
-    int index = 0;
-    bool exact = false;
-    double alpha = 0.0;
-    if(position <= timeDomain.back().time) {
-        auto lower = lower_bound(timeDomain.begin(), timeDomain.end(), position, [](const TimedomainData &lhs, const double pos) -> bool {
-            return lhs.time < pos;
-        });
-        index = lower - timeDomain.begin();
-        if(timeDomain.at(index).time == position) {
-            exact = true;
-        } else {
-            alpha = (position - timeDomain.at(index-1).time) / (timeDomain.at(index).time - timeDomain.at(index-1).time);
-        }
-    } else {
-        if(position > timeDomain.back().distance) {
-            // too high, invalid position
-            return ret;
-        }
-        auto lower = lower_bound(timeDomain.begin(), timeDomain.end(), position, [](const TimedomainData &lhs, const double pos) -> bool {
-            return lhs.distance < pos;
-        });
-        index = lower - timeDomain.begin();
-        if(timeDomain.at(index).distance == position) {
-            exact = true;
-        } else {
-            alpha = (position - timeDomain.at(index-1).distance) / (timeDomain.at(index).distance - timeDomain.at(index-1).distance);
-        }
-    }
-    if(exact) {
-        return timeDomain.at(index);
-    } else {
-        // need to interpolate
-        auto low = timeDomain.at(index-1);
-        auto high = timeDomain.at(index);
-        ret.time = low.time * (1.0 - alpha) + high.time * alpha;
-        ret.distance = low.distance * (1.0 - alpha) + high.distance * alpha;
-        ret.stepResponse = low.stepResponse * (1.0 - alpha) + high.stepResponse * alpha;
-        ret.impulseResponse = low.impulseResponse * (1.0 - alpha) + high.impulseResponse * alpha;
-        ret.impedance = low.impedance * (1.0 - alpha) + high.impedance * alpha;
-        return ret;
-    }
 }
 
 QString Trace::description()
@@ -502,26 +353,30 @@ unsigned int Trace::size()
     return lastMath->numSamples();
 }
 
-double Trace::minFreq()
+double Trace::minX()
 {
-    if(size() > 0) {
-        return data.front().x;
+    if(lastMath->numSamples() > 0) {
+        return lastMath->rData().front().x;
     } else {
-        return 0.0;
+        return numeric_limits<double>::quiet_NaN();
     }
 }
 
-double Trace::maxFreq()
+double Trace::maxX()
 {
-    if(size() > 0) {
-        return data.back().x;
+    if(lastMath->numSamples() > 0) {
+        return lastMath->rData().back().x;
     } else {
-        return 0.0;
+        return numeric_limits<double>::quiet_NaN();
     }
 }
 
 double Trace::findExtremumFreq(bool max)
 {
+    if(lastMath->getDataType() != DataType::Frequency) {
+        // not in frequency domain
+        return numeric_limits<double>::quiet_NaN();
+    }
     double compare = max ? numeric_limits<double>::min() : numeric_limits<double>::max();
     double freq = 0.0;
     for(auto sample : lastMath->rData()) {
@@ -537,6 +392,10 @@ double Trace::findExtremumFreq(bool max)
 
 std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double minLevel, double minValley)
 {
+    if(lastMath->getDataType() != DataType::Frequency) {
+        // not in frequency domain
+        return vector<double>();
+    }
     using peakInfo = struct peakinfo {
         double frequency;
         double level_dbm;
@@ -587,9 +446,14 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     return frequencies;
 }
 
-Trace::Data Trace::sample(unsigned int index)
+Trace::Data Trace::sample(unsigned int index, SampleType type)
 {
-    return lastMath->getSample(index);
+    auto data = lastMath->getSample(index);
+    if(type == SampleType::TimeStep) {
+        // exchange impulse data with step data
+        data.y = lastMath->getStepResponse(index);
+    }
+    return data;
 }
 
 QString Trace::getTouchstoneFilename() const
@@ -607,41 +471,23 @@ unsigned int Trace::getTouchstoneParameter() const
     return touchstoneParameter;
 }
 
-std::complex<double> Trace::getData(double frequency)
-{
-    if(lastMath->numSamples() == 0 || frequency < minFreq() || frequency > maxFreq()) {
-        return std::numeric_limits<std::complex<double>>::quiet_NaN();
-    }
-
-    auto i = index(frequency);
-    if(lastMath->getSample(i).x == frequency) {
-        return lastMath->getSample(i).y;
-    } else {
-        // no exact frequency match, needs to interpolate
-        auto high = lastMath->getSample(i);
-        auto low = lastMath->getSample(i - 1);
-        double alpha = (frequency - low.x) / (high.x - low.x);
-        return low.y * (1 - alpha) + high.y * alpha;
-    }
-}
-
 double Trace::getNoise(double frequency)
 {
-    if(!isLive() || !settings.valid || (_liveParam != LiveParameter::Port1 && _liveParam != LiveParameter::Port2)) {
+    if(!isLive() || !settings.valid || (_liveParam != LiveParameter::Port1 && _liveParam != LiveParameter::Port2) || lastMath->getDataType() != DataType::Frequency) {
         // data not suitable for noise calculation
         return std::numeric_limits<double>::quiet_NaN();
     }
     // convert to dbm
-    auto dbm = 20*log10(abs(getData(frequency)));
+    auto dbm = 20*log10(abs(lastMath->getInterpolatedSample(frequency).y));
     // convert to 1Hz bandwidth
     dbm -= 10*log10(settings.SA.RBW);
     return dbm;
 }
 
-int Trace::index(double frequency)
+int Trace::index(double x)
 {
-    auto lower = lower_bound(lastMath->rData().begin(), lastMath->rData().end(), frequency, [](const Data &lhs, const double freq) -> bool {
-        return lhs.x < freq;
+    auto lower = lower_bound(lastMath->rData().begin(), lastMath->rData().end(), x, [](const Data &lhs, const double x) -> bool {
+        return lhs.x < x;
     });
     return lower - lastMath->rData().begin();
 }

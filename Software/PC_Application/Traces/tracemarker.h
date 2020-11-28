@@ -15,7 +15,6 @@ class TraceMarker : public QObject
 public:
     TraceMarker(TraceMarkerModel *model, int number = 1, TraceMarker *parent = nullptr, QString descr = QString());
     ~TraceMarker();
-    void setTimeDomain(bool timeDomain);
     void assignTrace(Trace *t);
     Trace* trace();
     QString readableData();
@@ -24,7 +23,6 @@ public:
 
     double getPosition() const;
     std::complex<double> getData() const;
-    Trace::TimedomainData getTimeData() const;
     bool isMovable();
 
     QPixmap& getSymbol();
@@ -47,8 +45,6 @@ public:
     const std::vector<TraceMarker *>& getHelperMarkers() const;
     TraceMarker *helperMarker(unsigned int i);
     QString getSuffix() const;
-
-    bool isTimeDomain() const;
 
 public slots:
     void setPosition(double freq);
@@ -114,7 +110,6 @@ private:
     // Frequency domain: S parameter
     // Time domain: imag part is impulse response, real part is step response
     std::complex<double> data;
-    Trace::TimedomainData timeData;
     QPixmap symbol;
     Type type;
     QString suffix;
@@ -128,8 +123,6 @@ private:
         double peakThreshold;
         double offset;
     };
-
-    bool timeDomain;
 };
 
 #endif // TRACEMARKER_H

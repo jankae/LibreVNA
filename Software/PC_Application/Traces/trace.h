@@ -19,15 +19,6 @@ public:
 
     using Data = TraceMath::Data;
 
-    class TimedomainData {
-    public:
-        double time;
-        double distance;
-        double impulseResponse;
-        double stepResponse;
-        double impedance;
-    };
-
     enum class LiveParameter {
         S11,
         S12,
@@ -66,9 +57,10 @@ public:
     bool isReflection();
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
+    TraceMath::DataType outputType() { return lastMath->getDataType(); };
     unsigned int size();
-    double minFreq();
-    double maxFreq();
+    double minX();
+    double maxX();
     double findExtremumFreq(bool max);
     /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
      * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.
@@ -76,29 +68,21 @@ public:
      * To detect the next peak, the signal first has to drop at least minValley below the peak level.
      */
     std::vector<double> findPeakFrequencies(unsigned int maxPeaks = 100, double minLevel = -100.0, double minValley = 3.0);
-    Data sample(unsigned int index);
+    enum class SampleType {
+        Frequency,
+        TimeImpulse,
+        TimeStep,
+    };
+
+    Data sample(unsigned int index, SampleType type = SampleType::Frequency);
     QString getTouchstoneFilename() const;
     unsigned int getTouchstoneParameter() const;
-    std::complex<double> getData(double frequency);
     /* Returns the noise in dbm/Hz for spectrum analyzer measurements. May return NaN if calculation not possible */
     double getNoise(double frequency);
-    int index(double frequency);
+    int index(double x);
     std::set<TraceMarker *> getMarkers() const;
     void setCalibration(bool value);
     void setReflection(bool value);
-
-    // TDR calculation can be ressource intensive, only perform when some other module is interested.
-    // Each interested module should call addTDRinterest(), read the data with getTDR() and finally
-    // call removeTDRinterest() once TDR updates are no longer required.
-    // The data is only updated at the end of a sweep and upon the first addTDRinterest() call.
-    void addTDRinterest();
-    void removeTDRinterest();
-    bool TDRactive() { return tdr_users > 0;};
-    const std::vector<TimedomainData>& getTDR() { return timeDomain;}
-    // interpolates the TDR data
-    // position is assumed to be the delay if it is smaller than the maximum sampled delay, otherwise it is assumed to be the distance.
-    // Since the usual delay values are way smaller than the distance values this should work
-    TimedomainData getTDR(double position);
 
     DataType outputType(DataType inputType) override { Q_UNUSED(inputType) return DataType::Frequency;};
     QString description() override;
@@ -128,7 +112,6 @@ public slots:
     void addMarker(TraceMarker *m);
     void removeMarker(TraceMarker *m);
 
-private:
 signals:
     void cleared(Trace *t);
     void typeChanged(Trace *t);
@@ -139,14 +122,8 @@ signals:
     void colorChanged(Trace *t);
     void markerAdded(TraceMarker *m);
     void markerRemoved(TraceMarker *m);
-    void changedTDRstate(bool enabled);
 
 private:
-    void updateTimeDomainData();
-    void printTimeDomain();
-//    std::vector<Data> _data;
-    std::vector<TimedomainData> timeDomain;
-    unsigned int tdr_users;
     QString _name;
     QColor _color;
     LivedataType _liveType;

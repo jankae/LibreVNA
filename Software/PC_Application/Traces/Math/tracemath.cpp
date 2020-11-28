@@ -52,6 +52,15 @@ TraceMath::Data TraceMath::getSample(unsigned int index)
     return data.at(index);
 }
 
+double TraceMath::getStepResponse(unsigned int index)
+{
+    if(stepResponse.size() > index) {
+        return stepResponse[index];
+    } else {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+}
+
 TraceMath::Data TraceMath::getInterpolatedSample(double x)
 {
     Data ret;
@@ -120,6 +129,7 @@ void TraceMath::inputTypeChanged(TraceMath::DataType type)
         emit outputTypeChanged(dataType);
         if(dataType == DataType::Invalid) {
             error("Invalid input data");
+            updateStepResponse(false);
         }
     }
 }
@@ -143,6 +153,20 @@ void TraceMath::success()
     if(status != Status::Ok) {
         status = Status::Ok;
         emit statusChanged();
+    }
+}
+
+void TraceMath::updateStepResponse(bool valid)
+{
+    if(valid) {
+        stepResponse.resize(data.size());
+        double accumulate = 0.0;
+        for(unsigned int i=0;i<data.size();i++) {
+            accumulate += data[i].y.real();
+            stepResponse[i] = accumulate;
+        }
+    } else {
+        stepResponse.clear();
     }
 }
 

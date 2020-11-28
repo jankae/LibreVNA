@@ -35,35 +35,6 @@ TraceMarker::~TraceMarker()
     emit deleted(this);
 }
 
-void TraceMarker::setTimeDomain(bool timeDomain)
-{
-    if(timeDomain != this->timeDomain) {
-        // setting changed, check if actually available
-        if(timeDomain && !parentTrace->TDRactive()) {
-            qWarning() << "Attempted to enable TDR marker on trace without active TDR";
-            return;
-        }
-        this->timeDomain = timeDomain;
-
-        if(timeDomain) {
-            // need to delete this marker if the TDR data of the trace is no longer available
-            connect(parentTrace, &Trace::changedTDRstate, [=](bool tdr_available){
-               if(!tdr_available) {
-                   delete this;
-               }
-            });
-            // check if current type still supported
-            if(!getSupportedTypes().count(type)) {
-                // unsupported type, change to manual
-                setType(Type::Manual);
-            }
-        } else {
-            disconnect(parentTrace, &Trace::changedTDRstate, nullptr, nullptr);
-        }
-        emit timeDomainChanged();
-    }
-}
-
 void TraceMarker::assignTrace(Trace *t)
 {
     if(parentTrace) {
@@ -73,7 +44,6 @@ void TraceMarker::assignTrace(Trace *t)
         disconnect(parentTrace, &Trace::dataChanged, this, &TraceMarker::traceDataChanged);
         disconnect(parentTrace, &Trace::colorChanged, this, &TraceMarker::updateSymbol);
     }
-    setTimeDomain(false);
     parentTrace = t;
     if(!getSupportedTypes().count(type)) {
         // new trace does not support the current type
@@ -104,44 +74,45 @@ QString TraceMarker::readableData()
     case Type::Manual:
     case Type::Maximum:
     case Type::Minimum:
-        if(isTimeDomain()) {
-            QString ret;
-            ret += "Impulse:"+Unit::ToString(timeData.impulseResponse, "", "m ", 3)+" Step:"+Unit::ToString(timeData.stepResponse, "", "m ", 3)+" Impedance:";
-            if(isnan(timeData.impedance)) {
-                ret += "Invalid";
-            } else {
-                ret += Unit::ToString(timeData.impedance, "Ω", "m k", 3);
-            }
-            return ret;
-        } else {
+//        if(isTimeDomain()) {
+//            QString ret;
+//            ret += "Impulse:"+Unit::ToString(timeData.impulseResponse, "", "m ", 3)+" Step:"+Unit::ToString(timeData.stepResponse, "", "m ", 3)+" Impedance:";
+//            if(isnan(timeData.impedance)) {
+//                ret += "Invalid";
+//            } else {
+//                ret += Unit::ToString(timeData.impedance, "Ω", "m k", 3);
+//            }
+//            return ret;
+//        } else
+        {
             auto phase = arg(data);
             return QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
         }
     case Type::Delta:
-        if(!delta || delta->isTimeDomain() != isTimeDomain()) {
+        if(!delta /*|| delta->isTimeDomain() != isTimeDomain()*/) {
             return "Invalid delta marker";
         } else {
-            if(isTimeDomain()) {
-                // calculate difference between markers
-                auto impulse = timeData.impulseResponse - delta->timeData.impulseResponse;
-                auto step = timeData.stepResponse - delta->timeData.stepResponse;
-                auto impedance = timeData.impedance - delta->timeData.impedance;
-                QString ret;
-                ret += "ΔImpulse:"+Unit::ToString(impulse, "", "m ", 3)+" ΔStep:"+Unit::ToString(step, "", "m ", 3)+" ΔImpedance:";
-                if(isnan(timeData.impedance)) {
-                    ret += "Invalid";
-                } else {
-                    ret += Unit::ToString(impedance, "Ω", "m k", 3);
-                }
-                return ret;
-            } else {
+//            if(isTimeDomain()) {
+//                // calculate difference between markers
+//                auto impulse = timeData.impulseResponse - delta->timeData.impulseResponse;
+//                auto step = timeData.stepResponse - delta->timeData.stepResponse;
+//                auto impedance = timeData.impedance - delta->timeData.impedance;
+//                QString ret;
+//                ret += "ΔImpulse:"+Unit::ToString(impulse, "", "m ", 3)+" ΔStep:"+Unit::ToString(step, "", "m ", 3)+" ΔImpedance:";
+//                if(isnan(timeData.impedance)) {
+//                    ret += "Invalid";
+//                } else {
+//                    ret += Unit::ToString(impedance, "Ω", "m k", 3);
+//                }
+//                return ret;
+//            } else {
                 // calculate difference between markers
                 auto freqDiff = position - delta->position;
                 auto valueDiff = data / delta->data;
                 auto phase = arg(valueDiff);
                 auto db = 20*log10(abs(valueDiff));
                 return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(db, 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
-            }
+//            }
         }
         break;
     case Type::Noise:
@@ -205,22 +176,22 @@ QString TraceMarker::readableData()
 
 QString TraceMarker::readableSettings()
 {
-    if(timeDomain) {
-        switch(type) {
-        case Type::Manual:
-        case Type::Delta: {
-            QString unit;
-            if(position <= parentTrace->getTDR().back().time) {
-                unit = "s";
-            } else {
-                unit = "m";
-            }
-            return Unit::ToString(position, unit, "fpnum k", 4);
-        }
-        default:
-            return "Unhandled case";
-        }
-    } else {
+//    if(timeDomain) {
+//        switch(type) {
+//        case Type::Manual:
+//        case Type::Delta: {
+//            QString unit;
+//            if(position <= parentTrace->getTDR().back().time) {
+//                unit = "s";
+//            } else {
+//                unit = "m";
+//            }
+//            return Unit::ToString(position, unit, "fpnum k", 4);
+//        }
+//        default:
+//            return "Unhandled case";
+//        }
+//    } else {
         switch(type) {
         case Type::Manual:
         case Type::Maximum:
@@ -241,7 +212,7 @@ QString TraceMarker::readableSettings()
         default:
             return "Unhandled case";
         }
-    }
+//    }
 }
 
 QString TraceMarker::readableType()
@@ -270,12 +241,12 @@ void TraceMarker::traceDataChanged()
 {
     // some data of the parent trace changed, check if marker data also changed
     complex<double> newdata;
-    if (timeDomain) {
-        timeData = parentTrace->getTDR(position);
-        newdata = complex<double>(timeData.stepResponse, timeData.impulseResponse);
-    } else {
-        newdata = parentTrace->getData(position);
-    }
+//    if (timeDomain) {
+//        timeData = parentTrace->getTDR(position);
+//        newdata = complex<double>(timeData.stepResponse, timeData.impulseResponse);
+//    } else {
+        newdata = parentTrace->sample(parentTrace->index(position)).y;
+//    }
     if (newdata != data) {
         data = newdata;
         update();
@@ -309,11 +280,11 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
 {
     set<TraceMarker::Type> supported;
     if(parentTrace) {
-        if(timeDomain) {
-            // only basic markers in time domain
-            supported.insert(Type::Manual);
-            supported.insert(Type::Delta);
-        } else {
+//        if(timeDomain) {
+//            // only basic markers in time domain
+//            supported.insert(Type::Manual);
+//            supported.insert(Type::Delta);
+//        } else {
             // all traces support some basic markers
             supported.insert(Type::Manual);
             supported.insert(Type::Maximum);
@@ -340,7 +311,7 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
                     break;
                 }
             }
-        }
+//        }
     }
     return supported;
 }
@@ -348,21 +319,21 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
 void TraceMarker::constrainPosition()
 {
     if(parentTrace) {
-        if(timeDomain) {
-            if(position < 0) {
-                position = 0;
-            } else if(position > parentTrace->getTDR().back().distance) {
-                position = parentTrace->getTDR().back().distance;
-            }
-        } else {
+//        if(timeDomain) {
+//            if(position < 0) {
+//                position = 0;
+//            } else if(position > parentTrace->getTDR().back().distance) {
+//                position = parentTrace->getTDR().back().distance;
+//            }
+//        } else {
             if(parentTrace->size() > 0)  {
-                if(position > parentTrace->maxFreq()) {
-                    position = parentTrace->maxFreq();
-                } else if(position < parentTrace->minFreq()) {
-                    position = parentTrace->minFreq();
+                if(position > parentTrace->maxX()) {
+                    position = parentTrace->maxX();
+                } else if(position < parentTrace->minX()) {
+                    position = parentTrace->minX();
                 }
             }
-        }
+//        }
         traceDataChanged();
     }
 }
@@ -410,10 +381,10 @@ void TraceMarker::setType(TraceMarker::Type t)
         // invalid delta marker assigned, attempt to find a matching marker
         for(int pass = 0;pass < 3;pass++) {
             for(auto m : model->getMarkers()) {
-                if(m->isTimeDomain() != isTimeDomain()) {
-                    // markers are not on the same domain
-                    continue;
-                }
+//                if(m->isTimeDomain() != isTimeDomain()) {
+//                    // markers are not on the same domain
+//                    continue;
+//                }
                 if(pass == 0 && m->parentTrace != parentTrace) {
                     // ignore markers on different traces in first pass
                     continue;
@@ -482,11 +453,6 @@ bool TraceMarker::isVisible()
 QString TraceMarker::getSuffix() const
 {
     return suffix;
-}
-
-bool TraceMarker::isTimeDomain() const
-{
-    return timeDomain;
 }
 
 const std::vector<TraceMarker *> &TraceMarker::getHelperMarkers() const
@@ -594,15 +560,15 @@ void TraceMarker::updateTypeFromEditor(QWidget *w)
 
 SIUnitEdit *TraceMarker::getSettingsEditor()
 {
-    if(timeDomain) {
-        switch(type) {
-        case Type::Manual:
-        case Type::Delta:
-            return new SIUnitEdit("", "fpnum k", 6);
-        default:
-            return nullptr;
-        }
-    } else {
+//    if(timeDomain) {
+//        switch(type) {
+//        case Type::Manual:
+//        case Type::Delta:
+//            return new SIUnitEdit("", "fpnum k", 6);
+//        default:
+//            return nullptr;
+//        }
+//    } else {
         switch(type) {
         case Type::Manual:
         case Type::Maximum:
@@ -619,7 +585,7 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
         case Type::TOI:
             return nullptr;
         }
-    }
+//    }
 }
 
 void TraceMarker::adjustSettings(double value)
@@ -796,15 +762,6 @@ int TraceMarker::getNumber() const
 std::complex<double> TraceMarker::getData() const
 {
     return data;
-}
-
-Trace::TimedomainData TraceMarker::getTimeData() const
-{
-    Trace::TimedomainData ret = {};
-    if(timeDomain) {
-        ret = timeData;
-    }
-    return ret;
 }
 
 bool TraceMarker::isMovable()

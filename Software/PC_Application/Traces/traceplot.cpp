@@ -53,12 +53,14 @@ void TracePlot::enableTrace(Trace *t, bool enabled)
             connect(t, &Trace::visibilityChanged, this, &TracePlot::triggerReplot);
             connect(t, &Trace::markerAdded, this, &TracePlot::markerAdded);
             connect(t, &Trace::markerRemoved, this, &TracePlot::markerRemoved);
+            connect(t, &Trace::typeChanged, this, &TracePlot::checkIfStillSupported);
         } else {
             // disconnect from notifications
             disconnect(t, &Trace::dataChanged, this, &TracePlot::triggerReplot);
             disconnect(t, &Trace::visibilityChanged, this, &TracePlot::triggerReplot);
             disconnect(t, &Trace::markerAdded, this, &TracePlot::markerAdded);
             disconnect(t, &Trace::markerRemoved, this, &TracePlot::markerRemoved);
+            disconnect(t, &Trace::typeChanged, this, &TracePlot::checkIfStillSupported);
         }
         updateContextMenu();
         replot();
@@ -268,6 +270,14 @@ void TracePlot::triggerReplot()
     if (lastUpdate.msecsTo(now) >= MinUpdateInterval) {
         lastUpdate = now;
         replot();
+    }
+}
+
+void TracePlot::checkIfStillSupported(Trace *t)
+{
+    if(!supported(t)) {
+        // something with this trace changed and it can no longer be displayed on this graph
+        enableTrace(t, false);
     }
 }
 

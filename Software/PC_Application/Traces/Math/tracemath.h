@@ -81,6 +81,7 @@ public:
     static TypeInfo getInfo(Type type);
 
     Data getSample(unsigned int index);
+    double getStepResponse(unsigned int index);
     Data getInterpolatedSample(double x);
     unsigned int numSamples();
 
@@ -115,6 +116,11 @@ protected:
     void error(QString err);
     void success();
     std::vector<Data> data;
+    // buffer for time domain step response data. This makes it possible to access an arbitrary sample of the step response without having to
+    // integrate the impulse response every time. Call updateStepResponse in your derived class, if step response data is valid after updating
+    // data.
+    std::vector<double> stepResponse;
+    void updateStepResponse(bool valid);
     TraceMath *input;
     DataType dataType;
 

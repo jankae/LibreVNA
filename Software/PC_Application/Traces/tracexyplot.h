@@ -58,10 +58,9 @@ private:
     QString AxisTypeToName(YAxisType type);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
     bool supported(Trace *t, YAxisType type);
-    double traceToCoordinate(std::complex<double> data, YAxisType type);
+    void removeUnsupportedTraces();
     QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);
-    unsigned int numTraceSamples(Trace *t);
-    QPoint dataToPixel(Trace::Data d);
+//    QPoint dataToPixel(Trace::Data d);
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
     QPointF pixelToPlotValue(QPoint pixel, int YAxis);
     QPoint markerToPixel(TraceMarker *m) override;

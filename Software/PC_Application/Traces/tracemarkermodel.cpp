@@ -200,10 +200,7 @@ bool TraceMarkerModel::setData(const QModelIndex &index, const QVariant &value, 
         break;
     case ColIndexTrace: {
         auto info = qvariant_cast<MarkerWidgetTraceInfo>(value);
-        // always disable timedomain before switching trace
-        m->setTimeDomain(false);
         m->assignTrace(info.trace);
-        m->setTimeDomain(info.isTimeDomain);
     }
         break;
     case ColIndexSettings: {
@@ -288,12 +285,7 @@ QWidget *MarkerTraceDelegate::createEditor(QWidget *parent, const QStyleOptionVi
     for(auto t : traces) {
         MarkerWidgetTraceInfo info;
         info.trace = t;
-        info.isTimeDomain = false;
         c->addItem(t->name(), QVariant::fromValue(info));
-        if(t->TDRactive()) {
-            info.isTimeDomain = true;
-            c->addItem(t->name() + " Time Domain", QVariant::fromValue(info));
-        }
     }
     return c;
 }
@@ -304,7 +296,6 @@ void MarkerTraceDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
     auto c = (QComboBox*) editor;
     MarkerWidgetTraceInfo markerInfo;
     markerInfo.trace = marker->trace();
-    markerInfo.isTimeDomain = marker->isTimeDomain();
     for(int i=0;i<c->count();i++) {
         auto info = qvariant_cast<MarkerWidgetTraceInfo>(c->itemData(i));
         if(info == markerInfo) {

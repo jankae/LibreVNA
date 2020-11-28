@@ -23,7 +23,7 @@ TraceMath::DataType TDRLowpass::outputType(TraceMath::DataType inputType)
 
 QString TDRLowpass::description()
 {
-    return "TDR (bandpass mode)";
+    return "TDR (lowpass mode)";
 }
 
 void TDRLowpass::edit()
@@ -85,11 +85,13 @@ void TDRLowpass::inputSamplesChanged(unsigned int begin, unsigned int end)
             data[i].x = fs * i;
             data[i].y = frequencyDomain[i] / (double) fft_bins;
         }
+        updateStepResponse(true);
         emit outputSamplesChanged(0, data.size());
         success();
     } else {
         // not enough input data
         data.clear();
+        updateStepResponse(false);
         emit outputSamplesChanged(0, 0);
         warning("Not enough input samples");
     }

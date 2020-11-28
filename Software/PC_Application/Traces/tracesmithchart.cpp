@@ -56,12 +56,12 @@ std::complex<double> TraceSmithChart::pixelToData(QPoint p)
 QPoint TraceSmithChart::markerToPixel(TraceMarker *m)
 {
     QPoint ret = QPoint();
-    if(!m->isTimeDomain()) {
+//    if(!m->isTimeDomain()) {
         if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
             auto d = m->getData();
             ret = transform.map(QPoint(d.real() * smithCoordMax, -d.imag() * smithCoordMax));
         }
-    }
+//    }
     return ret;
 }
 
@@ -160,9 +160,9 @@ void TraceSmithChart::draw(QPainter &p) {
             // only draw markers if the trace has at least one point
             auto markers = t.first->getMarkers();
             for(auto m : markers) {
-                if (m->isTimeDomain()) {
-                    continue;
-                }
+//                if (m->isTimeDomain()) {
+//                    continue;
+//                }
                 if (limitToSpan && (m->getPosition() < sweep_fmin || m->getPosition() > sweep_fmax)) {
                     continue;
                 }
@@ -268,7 +268,7 @@ void TraceSmithChart::updateContextMenu()
 
 bool TraceSmithChart::supported(Trace *t)
 {
-    if(t->isReflection()) {
+    if(t->outputType() == Trace::DataType::Frequency && t->isReflection()) {
         return true;
     } else {
         return false;

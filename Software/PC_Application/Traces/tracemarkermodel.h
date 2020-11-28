@@ -19,13 +19,11 @@ class MarkerTraceDelegate : public QStyledItemDelegate
 class MarkerWidgetTraceInfo {
 public:
     Trace *trace;
-    bool isTimeDomain;
-
 };
 
 inline bool operator==(const MarkerWidgetTraceInfo& lhs, const MarkerWidgetTraceInfo& rhs)
 {
-    return lhs.trace == rhs.trace && lhs.isTimeDomain == rhs.isTimeDomain;
+    return lhs.trace == rhs.trace;
 }
 Q_DECLARE_METATYPE(MarkerWidgetTraceInfo)
 

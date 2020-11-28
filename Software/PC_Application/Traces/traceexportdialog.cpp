@@ -145,8 +145,8 @@ void TraceExportDialog::selectionChanged(QComboBox *w)
         points = t->size();
         ui->points->setText(QString::number(points));
         if(points > 0) {
-            lowerFreq = t->minFreq();
-            upperFreq = t->maxFreq();
+            lowerFreq = t->minX();
+            upperFreq = t->maxX();
             ui->lowerFreq->setText(QString::number(lowerFreq));
             ui->upperFreq->setText(QString::number(upperFreq));
         }
@@ -157,7 +157,7 @@ void TraceExportDialog::selectionChanged(QComboBox *w)
             for(auto c : v1) {
                 for(int i=1;i<c->count();i++) {
                     Trace *t = qvariant_cast<Trace*>(c->itemData(i));
-                    if(t->size() != points || (points > 0 && (t->minFreq() != lowerFreq || t->maxFreq() != upperFreq))) {
+                    if(t->size() != points || (points > 0 && (t->minX() != lowerFreq || t->maxX() != upperFreq))) {
                         // this trace is not available anymore
                         c->removeItem(i);
                         // decrement to check the next index in the next loop iteration
