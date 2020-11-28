@@ -108,6 +108,8 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
             } else {
                 return QIcon(":/icons/invisible.svg");
             }
+        } else {
+            return QVariant();
         }
         break;
     case ColIndexPlayPause:
@@ -117,6 +119,8 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
             } else {
                 return QIcon(":/icons/play.svg");
             }
+        } else {
+            return QVariant();
         }
         break;
     case ColIndexMath:

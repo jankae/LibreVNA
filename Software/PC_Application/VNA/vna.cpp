@@ -119,13 +119,6 @@ VNA::VNA(AppWindow *window)
        StartCalibrationDialog();
     });
 
-    auto calImport = calMenu->addAction("Import error terms as traces");
-    calImport->setEnabled(false);
-    connect(calImport, &QAction::triggered, [=](){
-        auto import = new TraceImportDialog(traceModel, cal.getErrorTermTraces());
-        import->show();
-    });
-
     auto calEditKit = calMenu->addAction("Edit Calibration Kit");
     connect(calEditKit, &QAction::triggered, [=](){
         cal.getCalibrationKit().edit([=](){
@@ -134,6 +127,22 @@ VNA::VNA(AppWindow *window)
             }
         });
     });
+
+    calMenu->addSeparator();
+
+    auto calImportTerms = calMenu->addAction("Import error terms as traces");
+    calImportTerms->setEnabled(false);
+    connect(calImportTerms, &QAction::triggered, [=](){
+        auto import = new TraceImportDialog(traceModel, cal.getErrorTermTraces());
+        import->show();
+    });
+    auto calImportMeas = calMenu->addAction("Import measurements as traces");
+    calImportMeas->setEnabled(false);
+    connect(calImportMeas, &QAction::triggered, [=](){
+        auto import = new TraceImportDialog(traceModel, cal.getMeasurementTraces());
+        import->show();
+    });
+
     portExtension.setCalkit(&cal.getCalibrationKit());
 
     // Tools menu
@@ -319,7 +328,8 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->setCheckState(Qt::CheckState::Unchecked);
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
-        calImport->setEnabled(false);
+        calImportTerms->setEnabled(false);
+        calImportMeas->setEnabled(false);
         saveCal->setEnabled(false);
     });
     connect(calDisable, &QAction::triggered, this, &VNA::DisableCalibration);
@@ -335,7 +345,8 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->setCheckState(Qt::CheckState::Checked);
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
-        calImport->setEnabled(true);
+        calImportTerms->setEnabled(true);
+        calImportMeas->setEnabled(true);
         saveCal->setEnabled(true);
     });
 

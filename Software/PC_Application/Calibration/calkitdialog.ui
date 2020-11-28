@@ -32,7 +32,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -112,7 +112,7 @@
                <item row="3" column="0">
                 <widget class="QLabel" name="label_11">
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L0 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-12&lt;/span&gt;F]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L0 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-12&lt;/span&gt;H]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -122,7 +122,7 @@
                <item row="4" column="0">
                 <widget class="QLabel" name="label_12">
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L1 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-24&lt;/span&gt;F/Hz]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L1 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-24&lt;/span&gt;H/Hz]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -132,7 +132,7 @@
                <item row="5" column="0">
                 <widget class="QLabel" name="label_13">
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L2 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-33&lt;/span&gt;F/Hz&lt;span style=&quot; vertical-align:super;&quot;&gt;2&lt;/span&gt;]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L2 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-33&lt;/span&gt;H/Hz&lt;span style=&quot; vertical-align:super;&quot;&gt;2&lt;/span&gt;]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -142,7 +142,7 @@
                <item row="6" column="0">
                 <widget class="QLabel" name="label_14">
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L3 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-42&lt;/span&gt;F/Hz&lt;span style=&quot; vertical-align:super;&quot;&gt;3&lt;/span&gt;]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L3 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-42&lt;/span&gt;H/Hz&lt;span style=&quot; vertical-align:super;&quot;&gt;3&lt;/span&gt;]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -288,7 +288,7 @@
                <item row="6" column="0">
                 <widget class="QLabel" name="label_6">
                  <property name="text">
-                  <string>C0 [10&lt;sup&gt;-45&lt;/sup&gt;F/Hz&lt;sup&gt;3&lt;/sup&gt;]:</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;C3 [10&lt;span style=&quot; vertical-align:super;&quot;&gt;-45&lt;/span&gt;F/Hz&lt;span style=&quot; vertical-align:super;&quot;&gt;3&lt;/span&gt;]:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -846,15 +846,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+  <customwidget>
    <class>TouchstoneImport</class>
    <extends>QWidget</extends>
    <header>CustomWidgets/touchstoneimport.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SIUnitEdit</class>
-   <extends>QLineEdit</extends>
-   <header>CustomWidgets/siunitedit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -933,10 +933,10 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="ThroughType"/>
   <buttongroup name="TRL_Rtype"/>
+  <buttongroup name="LoadType"/>
+  <buttongroup name="ThroughType"/>
   <buttongroup name="ShortType"/>
   <buttongroup name="OpenType"/>
-  <buttongroup name="LoadType"/>
  </buttongroups>
 </ui>

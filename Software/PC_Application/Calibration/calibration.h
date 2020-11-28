@@ -80,6 +80,7 @@ public:
     }
 
     std::vector<Trace*> getErrorTermTraces();
+    std::vector<Trace*> getMeasurementTraces();
 
     bool openFromFile(QString filename = QString());
     bool saveToFile(QString filename = QString());
