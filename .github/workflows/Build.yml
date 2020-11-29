@@ -1,12 +1,12 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  push
+#    branches:
+#      - master
+#  pull_request:
+#    branches:
+#      - master
 
 jobs:
   PC_Application_Ubuntu:
@@ -36,32 +36,23 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Cache Qt
-        id: cache-qt
-        uses: pat-s/always-upload-cache@v2.1.0
-        with:
-          path: ${{ runner.workspace }}/Qt
-          key: ${{ runner.os }}-QtCache
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
-          arch: 'win64_mingw73'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          version: '5.15.1'
+          arch: 'win64_mingw81'
       
       - name: Download libusb
         run: |
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
           7z x libusb.7z -r -olibusb
-          Xcopy /E /I /Y libusb\include ..\Qt\5.12.9\mingw73_64\include
+          Xcopy /E /I /Y libusb\include ..\Qt\5.15.1\mingw81_64\include
           Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application
         shell: cmd
 
       - name: Build application
         run: |
           cd Software/PC_Application
-          export LIBRARY_PATH
-          LIBRARY_PATH="../../libusb/MinGW64/static;$LIBRARY_PATH"
           qmake
           make -j9
         shell: cmd
@@ -71,10 +62,10 @@ jobs:
           cd Software/PC_Application/release
           del *.o *.cpp
           windeployqt.exe .
-          copy ..\..\..\..\Qt\5.12.9\mingw73_64\bin\libwinpthread-1.dll .
-          copy ..\..\..\..\Qt\5.12.9\mingw73_64\bin\libgcc_s_seh-1.dll .
-          copy "..\..\..\..\Qt\5.12.9\mingw73_64\bin\libstdc++-6.dll" .
-          copy ..\..\..\..\Qt\5.12.9\mingw73_64\bin\Qt5OpenGL.dll .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libgcc_s_seh-1.dll .
+          copy "..\..\..\..\Qt\5.15.1\mingw81_64\bin\libstdc++-6.dll" .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\Qt5OpenGL.dll .
         shell: cmd
         
       - name: Upload
