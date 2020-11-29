@@ -3,7 +3,7 @@
 
 This is the improved version of my [first attempt](https://www.github.com/jankae/VNA) at a VNA.
 
-![](Documentation/Pictures/IMG_5449.jpg)
+![](Documentation/Pictures/secondPrototypeTop.JPG)
 
 Main differences to first version:
 * Exchanged some RF chips for slightly cheaper versions with similar specifications
