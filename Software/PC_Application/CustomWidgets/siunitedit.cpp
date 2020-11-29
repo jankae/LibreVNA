@@ -16,7 +16,6 @@ SIUnitEdit::SIUnitEdit(QString unit, QString prefixes, int precision, QWidget *p
     this->precision = precision;
     setAlignment(Qt::AlignCenter);
     installEventFilter(this);
-    setValidator(new QDoubleValidator(this));
     connect(this, &QLineEdit::editingFinished, [this]() {
        parseNewValue(1.0);
     });
@@ -98,14 +97,14 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
         auto increment = wheel->angleDelta().y() / 120.0;
         // round toward bigger step in case of special higher resolution mousewheel
-        unsigned int steps = abs(increment > 0 ? ceil(increment) : floor(increment));
+        unsigned int steps = std::abs(increment > 0 ? ceil(increment) : floor(increment));
         int sign = increment > 0 ? 1 : -1;
         // figure out step increment
         auto newVal = _value;
         while(steps > 0) {
             // do update in multiple steps because the step size could change inbetween
             constexpr int nthDigit = 3;
-            auto step_size = pow(10, floor(log10(abs(newVal))) - nthDigit + 1);
+            auto step_size = pow(10, floor(log10(std::abs(newVal))) - nthDigit + 1);
             newVal += step_size * sign;
             steps--;
         }

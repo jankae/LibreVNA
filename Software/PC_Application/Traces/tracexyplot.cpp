@@ -237,7 +237,11 @@ void TraceXYPlot::draw(QPainter &p)
     // draw X ticks
     // this only works for evenly distributed ticks:
     auto max = qMax(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
+    auto minLabel = qMin(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
     auto step = abs(XAxis.ticks[0] - XAxis.ticks[1]);
+    if(minLabel > 0 && minLabel < step) {
+        step = minLabel;
+    }
     int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
     bool displayFullFreq = significantDigits <= 5;
     constexpr int displayLastDigits = 4;
