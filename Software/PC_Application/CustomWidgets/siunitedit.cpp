@@ -101,16 +101,34 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         int sign = increment > 0 ? 1 : -1;
         // figure out step increment
         auto newVal = _value;
-        while(steps > 0) {
-            // do update in multiple steps because the step size could change inbetween
+        auto cursor = cursorPosition();
+        if(cursor == 0) {
+            // no active cursor, use default digit
             constexpr int nthDigit = 3;
+            while(steps > 0) {
+                // do update in multiple steps because the step size could change inbetween
+                auto step_size = pow(10, floor(log10(std::abs(newVal))) - nthDigit + 1);
+                newVal += step_size * sign;
+                steps--;
+            }
+            setValue(newVal);
+        } else {
+            // change the digit at the current cursor
+            int nthDigit = cursor;
+            if(_value < 0) {
+                // account for sign
+                nthDigit--;
+            }
+            auto dotPos = text().indexOf('.');
+            if(dotPos >= 0 && dotPos < nthDigit) {
+                nthDigit--;
+            }
             auto step_size = pow(10, floor(log10(std::abs(newVal))) - nthDigit + 1);
-            newVal += step_size * sign;
-            steps--;
+            newVal += step_size * steps * sign;
+            setValue(newVal);
+            setText(placeholderText());
+            setCursorPosition(cursor);
         }
-        setValue(newVal);
-        continueEditing();
-        setFocus();
         return true;
     }
     return false;
