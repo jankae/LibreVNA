@@ -709,6 +709,7 @@ bool Calibration::openFromFile(QString filename)
         qWarning() << "Calibration file parsing failed: " << e.what();
         return false;
     }
+    this->currentCalFile = filename;    // if all ok, remember this and show on widget
 
     return true;
 }
@@ -741,6 +742,7 @@ bool Calibration::saveToFile(QString filename)
     auto calkit_file = filename + ".calkit";
     qDebug() << "Saving associated calibration kit to file" << calkit_file;
     kit.toFile(calkit_file);
+    this->currentCalFile = calibration_file;        // if all ok, remember this and show on widget
 
     return true;
 }
@@ -768,6 +770,10 @@ QString Calibration::hzToString(double freqHz){
         res = QString::number(freqHz / 1000000000, 'g', dgt) + "G";
     }
     return res;
+}
+
+QString Calibration::getCurrentCalibrationFile(){
+    return this->currentCalFile;
 }
 
 ostream& operator<<(ostream &os, const Calibration &c)
