@@ -709,7 +709,7 @@ bool Calibration::openFromFile(QString filename)
         qWarning() << "Calibration file parsing failed: " << e.what();
         return false;
     }
-    this->currentCalFile = filename;    // if all ok, remember this and show on widget
+    this->currentCalFile = filename;    // if all ok, remember this
 
     return true;
 }
@@ -717,7 +717,7 @@ bool Calibration::openFromFile(QString filename)
 bool Calibration::saveToFile(QString filename)
 {
     if(filename.isEmpty()) {
-        // suggest descriptive name
+        // Suggest descriptive name ie. "SOLT 40M-700M 1000pt"
         QString fn = Calibration::TypeToString(this->getType())
                 + " "
                 + hzToString(minFreq) + "-" + hzToString(maxFreq)
@@ -742,7 +742,7 @@ bool Calibration::saveToFile(QString filename)
     auto calkit_file = filename + ".calkit";
     qDebug() << "Saving associated calibration kit to file" << calkit_file;
     kit.toFile(calkit_file);
-    this->currentCalFile = calibration_file;        // if all ok, remember this and show on widget
+    this->currentCalFile = calibration_file;    // if all ok, remember this
 
     return true;
 }
@@ -750,7 +750,7 @@ bool Calibration::saveToFile(QString filename)
 /**
  * @brief Calibration::hzToString
  * @param freqHz - input frequency in Hz
- * @return frequency in human-readable form such as 145k 2M, 2.1M, 3.45G
+ * @return frequency in human-friendly form such as 145k 2M, 2.1M, 3.45G
  */
 QString Calibration::hzToString(double freqHz){
     int dgt = 3;        // how many significant digits
