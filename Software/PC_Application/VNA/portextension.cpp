@@ -216,16 +216,35 @@ void PortExtension::edit()
         ui->P2calkit->setEnabled(false);
     }
 
+    auto updateValuesFromUI = [=](){
+        port1.delay = ui->P1Time->value();
+        port1.velocityFactor = ui->P1Velocity->value();
+        port1.DCloss = ui->P1DCloss->value();
+        port1.loss = ui->P1Loss->value();
+        port1.frequency = ui->P1Frequency->value();
+        port2.delay = ui->P2Time->value();
+        port2.velocityFactor = ui->P2Velocity->value();
+        port2.DCloss = ui->P2DCloss->value();
+        port2.loss = ui->P2Loss->value();
+        port2.frequency = ui->P2Frequency->value();
+    };
+
     // connections to link delay and distance
     connect(ui->P1Time, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P1Distance->setValueQuiet(newval * ui->P1Velocity->value() * c);
+        updateValuesFromUI();
     });
     connect(ui->P1Distance, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P1Time->setValueQuiet(newval / (ui->P1Velocity->value() * c));
+        updateValuesFromUI();
     });
     connect(ui->P1Velocity, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P1Time->setValueQuiet(ui->P1Distance->value() / (newval * c));
+        updateValuesFromUI();
     });
+    connect(ui->P1DCloss, &SIUnitEdit::valueChanged, updateValuesFromUI);
+    connect(ui->P1Loss, &SIUnitEdit::valueChanged, updateValuesFromUI);
+    connect(ui->P1Frequency, &SIUnitEdit::valueChanged, updateValuesFromUI);
     connect(ui->P1short, &QPushButton::pressed, [=](){
         isOpen = false;
         isPort1 = true;
@@ -241,13 +260,19 @@ void PortExtension::edit()
 
     connect(ui->P2Time, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P2Distance->setValueQuiet(newval * ui->P2Velocity->value() * c);
+        updateValuesFromUI();
     });
     connect(ui->P2Distance, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P2Time->setValueQuiet(newval / (ui->P2Velocity->value() * c));
+        updateValuesFromUI();
     });
     connect(ui->P2Velocity, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P2Time->setValueQuiet(ui->P2Distance->value() / (newval * c));
+        updateValuesFromUI();
     });
+    connect(ui->P2DCloss, &SIUnitEdit::valueChanged, updateValuesFromUI);
+    connect(ui->P2Loss, &SIUnitEdit::valueChanged, updateValuesFromUI);
+    connect(ui->P2Frequency, &SIUnitEdit::valueChanged, updateValuesFromUI);
     connect(ui->P2short, &QPushButton::pressed, [=](){
         isOpen = false;
         isPort1 = false;
@@ -261,19 +286,7 @@ void PortExtension::edit()
         startMeasurement();
     });
 
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
-        port1.delay = ui->P1Time->value();
-        port1.velocityFactor = ui->P1Velocity->value();
-        port1.DCloss = ui->P1DCloss->value();
-        port1.loss = ui->P1Loss->value();
-        port1.frequency = ui->P1Frequency->value();
-        port2.delay = ui->P2Time->value();
-        port2.velocityFactor = ui->P2Velocity->value();
-        port2.DCloss = ui->P2DCloss->value();
-        port2.loss = ui->P2Loss->value();
-        port2.frequency = ui->P2Frequency->value();
-        dialog->accept();
-    });
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
     dialog->show();
 }

@@ -115,12 +115,15 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         } else {
             // change the digit at the current cursor
             int nthDigit = cursor;
+            // account for decimal point/leading zero/sign
             if(_value < 0) {
-                // account for sign
                 nthDigit--;
             }
             auto dotPos = text().indexOf('.');
             if(dotPos >= 0 && dotPos < nthDigit) {
+                nthDigit--;
+            }
+            if(text().startsWith("-0.") || text().startsWith("0.")) {
                 nthDigit--;
             }
             auto step_size = pow(10, floor(log10(std::abs(newVal))) - nthDigit + 1);
