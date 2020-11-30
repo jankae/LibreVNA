@@ -287,7 +287,8 @@ VNA::VNA(AppWindow *window)
 
     // Calibration toolbar (and populate calibration menu)
     auto tb_cal = new QToolBar("Calibration");
-    tb_cal->addWidget(new QLabel("Calibration:"));
+    auto cbEnableCal_label = new QLabel("Calibration:");
+    tb_cal->addWidget(cbEnableCal_label);
     auto cbEnableCal = new QCheckBox;
     tb_cal->addWidget(cbEnableCal);
     auto cbType = new QComboBox();
@@ -326,6 +327,7 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->blockSignals(true);
         calDisable->setChecked(true);
         cbEnableCal->setCheckState(Qt::CheckState::Unchecked);
+        cbEnableCal_label->setStyleSheet("background-color: yellow");
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(false);
@@ -343,6 +345,7 @@ VNA::VNA(AppWindow *window)
             }
         }
         cbEnableCal->setCheckState(Qt::CheckState::Checked);
+        cbEnableCal_label->setStyleSheet("");
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(true);
@@ -427,7 +430,12 @@ void VNA::initializeDevice()
             if(cal.openFromFile(filename)) {
                 ApplyCalibration(cal.getType());
                 portExtension.setCalkit(&cal.getCalibrationKit());
+                qDebug() << "Calibration successful from " << filename;
+            } else {
+                qDebug() << "Calibration not successfull from: " << filename;
             }
+        } else {
+            qDebug() << "Calibration file not found: " << filename;
         }
         removeDefaultCal->setEnabled(true);
     } else {
