@@ -57,6 +57,7 @@ TraceMathEditDialog::TraceMathEditDialog(Trace &t, QWidget *parent) :
         // always show the widget for the selected function
         connect(ui->list, &QListWidget::currentRowChanged, ui->stack, &QStackedWidget::setCurrentIndex);
 
+        connect(ui->list, &QListWidget::doubleClicked, ui->buttonBox, &QDialogButtonBox::accepted);
         connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
            auto newMath = TraceMath::createMath(static_cast<TraceMath::Type>(ui->list->currentRow()));
            if(newMath) {

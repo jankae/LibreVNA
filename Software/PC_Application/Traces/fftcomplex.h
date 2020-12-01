@@ -26,8 +26,10 @@
 #include <complex>
 #include <vector>
 
-
 namespace Fft {
+
+    // swap left/right halves of the vector, similar to matlabs fftshift/ifftshift
+    void shift(std::vector<std::complex<double> > &vec, bool inverse);
 
     /*
      * Computes the discrete Fourier transform (DFT) of the given complex vector, storing the result back into the vector.

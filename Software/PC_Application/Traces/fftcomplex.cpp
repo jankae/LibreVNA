@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <utility>
 #include "fftcomplex.h"
+#include <algorithm>
 
 using std::complex;
 using std::size_t;
@@ -149,4 +150,16 @@ static size_t reverseBits(size_t val, int width) {
     for (int i = 0; i < width; i++, val >>= 1)
         result = (result << 1) | (val & 1U);
     return result;
+}
+
+void Fft::shift(std::vector<std::complex<double> > &vec, bool inverse)
+{
+    int rotate_len = vec.size() / 2;
+    if(vec.size() % 0x01 != 0) {
+        // odd size, behavior depends on whether this is an inverse shift
+        if(!inverse) {
+            rotate_len++;
+        }
+    }
+    std::rotate(vec.begin(), vec.begin() + rotate_len, vec.end());
 }

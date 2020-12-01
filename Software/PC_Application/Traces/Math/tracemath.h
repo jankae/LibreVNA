@@ -66,8 +66,7 @@ public:
 
     enum class Type {
         MedianFilter,
-        TDRlowpass,
-        TDRbandpass,
+        TDR,
         // Add new math operations here, do not explicitly assign values and keep the Last entry at the last position
         Last,
     };

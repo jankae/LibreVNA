@@ -1,8 +1,7 @@
 #include "tracemath.h"
 
 #include "medianfilter.h"
-#include "tdrbandpass.h"
-#include "tdrlowpass.h"
+#include "tdr.h"
 
 TraceMath::TraceMath()
 {
@@ -16,10 +15,8 @@ TraceMath *TraceMath::createMath(TraceMath::Type type)
     switch(type) {
     case Type::MedianFilter:
         return new Math::MedianFilter();
-    case Type::TDRlowpass:
-        return new Math::TDRLowpass();
-    case Type::TDRbandpass:
-        return new Math::TDRBandpass();
+    case Type::TDR:
+        return new Math::TDR();
     default:
         return nullptr;
     }
@@ -33,13 +30,9 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
         ret.name = "Median filter";
         ret.explanationWidget = Math::MedianFilter::createExplanationWidget();
         break;
-    case Type::TDRlowpass:
-        ret.name = "TDR (lowpass)";
-        ret.explanationWidget = Math::TDRLowpass::createExplanationWidget();
-        break;
-    case Type::TDRbandpass:
-        ret.name = "TDR (bandpass)";
-        ret.explanationWidget = Math::TDRBandpass::createExplanationWidget();
+    case Type::TDR:
+        ret.name = "TDR";
+        ret.explanationWidget = Math::TDR::createExplanationWidget();
         break;
     default:
         break;
@@ -110,28 +103,25 @@ void TraceMath::assignInput(TraceMath *input)
     if(input != this->input) {
         removeInput();
         this->input = input;
-        inputTypeChanged(input->dataType);
-        // do initial calculation
-        inputSamplesChanged(0, input->data.size());
-        // connect to input
-        connect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged);
         connect(input, &TraceMath::outputTypeChanged, this, &TraceMath::inputTypeChanged);
+        inputTypeChanged(input->dataType);
     }
 }
 
 void TraceMath::inputTypeChanged(TraceMath::DataType type)
 {
     auto newType = outputType(type);
-    if(newType != dataType) {
-        dataType = newType;
-        data.clear();
+    dataType = newType;
+    data.clear();
+    if(dataType == DataType::Invalid) {
+        error("Invalid input data");
+        disconnect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged);
+        updateStepResponse(false);
+    } else {
+        connect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged);
         inputSamplesChanged(0, input->data.size());
-        emit outputTypeChanged(dataType);
-        if(dataType == DataType::Invalid) {
-            error("Invalid input data");
-            updateStepResponse(false);
-        }
     }
+    emit outputTypeChanged(dataType);
 }
 
 void TraceMath::warning(QString warn)
