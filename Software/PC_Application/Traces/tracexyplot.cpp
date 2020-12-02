@@ -513,6 +513,10 @@ void TraceXYPlot::updateAxisTicks()
                     // this trace is currently displayed
                     double trace_min = trace->minX();
                     double trace_max = trace->maxX();
+                    if(XAxis.type == XAxisType::Distance) {
+                        trace_min = trace->timeToDistance(trace_min);
+                        trace_max = trace->timeToDistance(trace_max);
+                    }
                     if(trace_min < min) {
                         min = trace_min;
                     }
@@ -666,7 +670,14 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
 {
     QPointF ret = QPointF(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN());
     auto data = t->sample(sample);
-    ret.setX(data.x);
+    switch(XAxis.type) {
+    case XAxisType::Distance:
+        ret.setX(t->timeToDistance(data.x));
+        break;
+    default:
+        ret.setX(data.x);
+        break;
+    }
     switch(type) {
     case YAxisType::Magnitude:
         ret.setY(20*log10(abs(data.y)));
@@ -761,6 +772,9 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel)
             closestDistance = distance;
             closestXpos = point.x();
         }
+    }
+    if(XAxis.type == XAxisType::Distance) {
+        closestXpos = t->distanceToTime(closestXpos);
     }
     return closestXpos;
 }

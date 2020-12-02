@@ -104,6 +104,10 @@ public:
     };
     const std::vector<MathInfo>& getMathOperations() const;
 
+    double velocityFactor();
+    double timeToDistance(double time);
+    double distanceToTime(double distance);
+
 public slots:
     void setTouchstoneParameter(int value);
     void setTouchstoneFilename(const QString &value);

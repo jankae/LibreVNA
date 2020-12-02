@@ -13,7 +13,7 @@ public:
         Rectangular,
 //        Kaiser,
         Gaussian,
-        Chebyshev,
+//        Chebyshev,
         Hann,
         Hamming,
         Blackman,

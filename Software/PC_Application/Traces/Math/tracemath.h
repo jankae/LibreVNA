@@ -41,6 +41,8 @@
  * 6. Extend the function getInfo(Type type) to set a name and create the explanation widget for your operation
  */
 
+class Trace;
+
 class TraceMath : public QObject {
     Q_OBJECT
 public:
@@ -96,6 +98,9 @@ public:
     std::vector<Data>& rData() { return data;};
     Status getStatus() const;
     QString getStatusDescription() const;
+
+    // returns the trace this math operation is attached to
+    Trace* root();
 
 public slots:
     // some values of the input data have changed, begin/end determine which sample(s) has changed

@@ -21,7 +21,9 @@ TraceMarker::TraceMarker(TraceMarkerModel *model, int number, TraceMarker *paren
       description(descr),
       delta(nullptr),
       parent(parent),
-      cutoffAmplitude(-3.0)
+      cutoffAmplitude(-3.0),
+      peakThreshold(-40.0),
+      offset(10000)
 {
 
 }
@@ -40,9 +42,7 @@ void TraceMarker::assignTrace(Trace *t)
     if(parentTrace) {
         // remove connection from previous parent trace
         parentTrace->removeMarker(this);
-        disconnect(parentTrace, &Trace::deleted, this, &TraceMarker::parentTraceDeleted);
-        disconnect(parentTrace, &Trace::dataChanged, this, &TraceMarker::traceDataChanged);
-        disconnect(parentTrace, &Trace::colorChanged, this, &TraceMarker::updateSymbol);
+        disconnect(parentTrace, &Trace::deleted, this, nullptr);
     }
     parentTrace = t;
     if(!getSupportedTypes().count(type)) {
@@ -53,6 +53,10 @@ void TraceMarker::assignTrace(Trace *t)
     connect(parentTrace, &Trace::deleted, this, &TraceMarker::parentTraceDeleted);
     connect(parentTrace, &Trace::dataChanged, this, &TraceMarker::traceDataChanged);
     connect(parentTrace, &Trace::colorChanged, this, &TraceMarker::updateSymbol);
+    connect(parentTrace, &Trace::typeChanged, [=](){
+        emit domainChanged();
+        checkDeltaMarker();
+    });
     constrainPosition();
     updateSymbol();
     parentTrace->addMarker(this);
@@ -70,128 +74,141 @@ Trace *TraceMarker::trace()
 
 QString TraceMarker::readableData()
 {
-    switch(type) {
-    case Type::Manual:
-    case Type::Maximum:
-    case Type::Minimum:
-//        if(isTimeDomain()) {
-//            QString ret;
-//            ret += "Impulse:"+Unit::ToString(timeData.impulseResponse, "", "m ", 3)+" Step:"+Unit::ToString(timeData.stepResponse, "", "m ", 3)+" Impedance:";
-//            if(isnan(timeData.impedance)) {
-//                ret += "Invalid";
-//            } else {
-//                ret += Unit::ToString(timeData.impedance, "Ω", "m k", 3);
-//            }
-//            return ret;
-//        } else
-        {
-            auto phase = arg(data);
-            return QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
+    if(isTimeDomain()) {
+        switch(type) {
+        case Type::Manual: {
+            QString ret;
+            auto impulse = data.real();
+            auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
+            ret += "Impulse:"+Unit::ToString(impulse, "", "m ", 3);
+            if(!isnan(step)) {
+                ret += " Step:"+Unit::ToString(step, "", "m ", 3);
+                if(abs(step) < 1.0) {
+                    auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
+                    ret += " Impedance:"+Unit::ToString(impedance, "Ω", "m kM", 3);
+                }
+            }
+            return ret;
         }
-    case Type::Delta:
-        if(!delta /*|| delta->isTimeDomain() != isTimeDomain()*/) {
-            return "Invalid delta marker";
-        } else {
-//            if(isTimeDomain()) {
-//                // calculate difference between markers
-//                auto impulse = timeData.impulseResponse - delta->timeData.impulseResponse;
-//                auto step = timeData.stepResponse - delta->timeData.stepResponse;
-//                auto impedance = timeData.impedance - delta->timeData.impedance;
-//                QString ret;
-//                ret += "ΔImpulse:"+Unit::ToString(impulse, "", "m ", 3)+" ΔStep:"+Unit::ToString(step, "", "m ", 3)+" ΔImpedance:";
-//                if(isnan(timeData.impedance)) {
-//                    ret += "Invalid";
-//                } else {
-//                    ret += Unit::ToString(impedance, "Ω", "m k", 3);
-//                }
-//                return ret;
-//            } else {
+        case Type::Delta: {
+            if(!delta || !delta->isTimeDomain()) {
+                return "Invalid delta marker";
+            }
+            // calculate difference between markers
+            auto impulse = data.real() - delta->data.real();
+            QString ret;
+            auto timeDiff = position - delta->position;
+            auto distanceDiff = parentTrace->timeToDistance(position) - delta->parentTrace->timeToDistance(delta->position);
+            ret += "Δ:"+Unit::ToString(timeDiff, "s", "fpnum ", 4) + "/" + Unit::ToString(distanceDiff, "m", "m k", 4);
+            ret += " ΔImpulse:"+Unit::ToString(impulse, "", "m ", 3);
+            auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
+            auto stepDelta = delta->parentTrace->sample(delta->parentTrace->index(delta->position), Trace::SampleType::TimeStep).y.real();
+            if(!isnan(step) && !isnan(stepDelta)) {
+                auto stepDiff = step - stepDelta;
+                ret += " ΔStep:"+Unit::ToString(stepDiff, "", "m ", 3);
+                if(abs(step) < 1.0 && abs(stepDelta) < 1.0) {
+                    auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
+                    auto impedanceDelta = 50.0 * (1.0 + stepDelta) / (1.0 - stepDelta);
+                    auto impedanceDiff = impedance - impedanceDelta;
+                    ret += " ΔImpedance:"+Unit::ToString(impedanceDiff, "Ω", "m kM", 3);
+                }
+            }
+            return ret;
+        }
+        default:
+            return "Invalid type";
+        }
+    } else {
+        switch(type) {
+        case Type::Manual:
+        case Type::Maximum:
+        case Type::Minimum: {
+                auto phase = arg(data);
+                return QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
+            }
+        case Type::Delta:
+            if(!delta && delta->isTimeDomain()) {
+                return "Invalid delta marker";
+            } else {
                 // calculate difference between markers
                 auto freqDiff = position - delta->position;
                 auto valueDiff = data / delta->data;
                 auto phase = arg(valueDiff);
                 auto db = 20*log10(abs(valueDiff));
                 return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(db, 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
-//            }
-        }
-        break;
-    case Type::Noise:
-        return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
-    case Type::PeakTable:
-        return "Found " + QString::number(helperMarkers.size()) + " peaks";
-    case Type::Lowpass:
-    case Type::Highpass:
-        if(parentTrace->isReflection()) {
-            return "Calculation not possible with reflection measurement";
-        } else {
-            auto insertionLoss = toDecibel();
-            auto cutoff = helperMarkers[0]->toDecibel();
-            QString ret = "fc: ";
-            if(cutoff > insertionLoss + cutoffAmplitude) {
-                // the trace never dipped below the specified cutoffAmplitude, exact cutoff frequency unknown
-                ret += type == Type::Lowpass ? ">" : "<";
             }
-            ret += Unit::ToString(helperMarkers[0]->position, "Hz", " kMG", 4);
-            ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
-            return ret;
-        }
-        break;
-    case Type::Bandpass:
-        if(parentTrace->isReflection()) {
-            return "Calculation not possible with reflection measurement";
-        } else {
-            auto insertionLoss = toDecibel();
-            auto cutoffL = helperMarkers[0]->toDecibel();
-            auto cutoffH = helperMarkers[1]->toDecibel();
-            auto bandwidth = helperMarkers[1]->position - helperMarkers[0]->position;
-            auto center = helperMarkers[2]->position;
-            QString ret = "fc: ";
-            if(cutoffL > insertionLoss + cutoffAmplitude || cutoffH > insertionLoss + cutoffAmplitude) {
-                // the trace never dipped below the specified cutoffAmplitude, center and exact bandwidth unknown
-                ret += "?, BW: >";
+            break;
+        case Type::Noise:
+            return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
+        case Type::PeakTable:
+            return "Found " + QString::number(helperMarkers.size()) + " peaks";
+        case Type::Lowpass:
+        case Type::Highpass:
+            if(parentTrace->isReflection()) {
+                return "Calculation not possible with reflection measurement";
             } else {
-                ret += Unit::ToString(center, "Hz", " kMG", 5)+ ", BW: ";
+                auto insertionLoss = toDecibel();
+                auto cutoff = helperMarkers[0]->toDecibel();
+                QString ret = "fc: ";
+                if(cutoff > insertionLoss + cutoffAmplitude) {
+                    // the trace never dipped below the specified cutoffAmplitude, exact cutoff frequency unknown
+                    ret += type == Type::Lowpass ? ">" : "<";
+                }
+                ret += Unit::ToString(helperMarkers[0]->position, "Hz", " kMG", 4);
+                ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
+                return ret;
             }
-            ret += Unit::ToString(bandwidth, "Hz", " kMG", 4);
-            ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
-            return ret;
+            break;
+        case Type::Bandpass:
+            if(parentTrace->isReflection()) {
+                return "Calculation not possible with reflection measurement";
+            } else {
+                auto insertionLoss = toDecibel();
+                auto cutoffL = helperMarkers[0]->toDecibel();
+                auto cutoffH = helperMarkers[1]->toDecibel();
+                auto bandwidth = helperMarkers[1]->position - helperMarkers[0]->position;
+                auto center = helperMarkers[2]->position;
+                QString ret = "fc: ";
+                if(cutoffL > insertionLoss + cutoffAmplitude || cutoffH > insertionLoss + cutoffAmplitude) {
+                    // the trace never dipped below the specified cutoffAmplitude, center and exact bandwidth unknown
+                    ret += "?, BW: >";
+                } else {
+                    ret += Unit::ToString(center, "Hz", " kMG", 5)+ ", BW: ";
+                }
+                ret += Unit::ToString(bandwidth, "Hz", " kMG", 4);
+                ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
+                return ret;
+            }
+            break;
+        case Type::TOI: {
+            auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
+            auto avgDistortion = (helperMarkers[2]->toDecibel() + helperMarkers[3]->toDecibel()) / 2;
+            auto TOI = (3 * avgFundamental - avgDistortion) / 2;
+            return "Fundamental: " + Unit::ToString(avgFundamental, "dbm", " ", 3) + ", distortion: " + Unit::ToString(avgDistortion, "dbm", " ", 3) + ", TOI: "+Unit::ToString(TOI, "dbm", " ", 3);
         }
-        break;
-    case Type::TOI: {
-        auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
-        auto avgDistortion = (helperMarkers[2]->toDecibel() + helperMarkers[3]->toDecibel()) / 2;
-        auto TOI = (3 * avgFundamental - avgDistortion) / 2;
-        return "Fundamental: " + Unit::ToString(avgFundamental, "dbm", " ", 3) + ", distortion: " + Unit::ToString(avgDistortion, "dbm", " ", 3) + ", TOI: "+Unit::ToString(TOI, "dbm", " ", 3);
-    }
-        break;
-    case Type::PhaseNoise: {
-        auto carrier = toDecibel();
-        auto phasenoise = parentTrace->getNoise(helperMarkers[0]->position) - carrier;
-        return Unit::ToString(phasenoise, "dbc/Hz", " ", 3)  +"@" + Unit::ToString(offset, "Hz", " kM", 4) + " offset (" + Unit::ToString(position, "Hz", " kMG", 6) + " carrier)";
-    }
-    default:
-        return "Unknown marker type";
+            break;
+        case Type::PhaseNoise: {
+            auto carrier = toDecibel();
+            auto phasenoise = parentTrace->getNoise(helperMarkers[0]->position) - carrier;
+            return Unit::ToString(phasenoise, "dbc/Hz", " ", 3)  +"@" + Unit::ToString(offset, "Hz", " kM", 4) + " offset (" + Unit::ToString(position, "Hz", " kMG", 6) + " carrier)";
+        }
+        default:
+            return "Unknown marker type";
+        }
     }
 }
 
 QString TraceMarker::readableSettings()
 {
-//    if(timeDomain) {
-//        switch(type) {
-//        case Type::Manual:
-//        case Type::Delta: {
-//            QString unit;
-//            if(position <= parentTrace->getTDR().back().time) {
-//                unit = "s";
-//            } else {
-//                unit = "m";
-//            }
-//            return Unit::ToString(position, unit, "fpnum k", 4);
-//        }
-//        default:
-//            return "Unhandled case";
-//        }
-//    } else {
+    if(isTimeDomain()) {
+        switch(type) {
+        case Type::Manual:
+        case Type::Delta:
+            return Unit::ToString(position, "s", "fpnum ", 4) + "/" + Unit::ToString(parentTrace->timeToDistance(position), "m", "um k", 4);
+        default:
+            return "Unhandled case";
+        }
+    } else {
         switch(type) {
         case Type::Manual:
         case Type::Maximum:
@@ -212,7 +229,39 @@ QString TraceMarker::readableSettings()
         default:
             return "Unhandled case";
         }
-//    }
+    }
+}
+
+QString TraceMarker::tooltipSettings()
+{
+    if(isTimeDomain()) {
+        switch(type) {
+        case Type::Manual:
+        case Type::Delta:
+            return "Time/Distance";
+        default:
+            return QString();
+        }
+    } else {
+        switch(type) {
+        case Type::Manual:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::Delta:
+        case Type::Noise:
+            return "Marker frequency";
+        case Type::Lowpass:
+        case Type::Highpass:
+        case Type::Bandpass:
+            return "Cutoff amplitude (relativ to peak)";
+        case Type::PeakTable:
+            return "Peak threshold";
+        case Type::PhaseNoise:
+            return "Frequency offset";
+        default:
+            return QString();
+        }
+    }
 }
 
 QString TraceMarker::readableType()
@@ -241,12 +290,8 @@ void TraceMarker::traceDataChanged()
 {
     // some data of the parent trace changed, check if marker data also changed
     complex<double> newdata;
-//    if (timeDomain) {
-//        timeData = parentTrace->getTDR(position);
-//        newdata = complex<double>(timeData.stepResponse, timeData.impulseResponse);
-//    } else {
-        newdata = parentTrace->sample(parentTrace->index(position)).y;
-//    }
+    auto sampleType = isTimeDomain() ? Trace::SampleType::TimeImpulse : Trace::SampleType::Frequency;
+    newdata = parentTrace->sample(parentTrace->index(position), sampleType).y;
     if (newdata != data) {
         data = newdata;
         update();
@@ -276,15 +321,28 @@ void TraceMarker::updateSymbol()
     emit symbolChanged(this);
 }
 
+void TraceMarker::checkDeltaMarker()
+{
+    if(type != Type::Delta) {
+        // not a delta marker, nothing to do
+        return;
+    }
+    // Check if type of delta marker is still okay
+    if(delta->isTimeDomain() != isTimeDomain()) {
+        // not the same domain anymore, adjust delta
+        assignDeltaMarker(bestDeltaCandidate());
+    }
+}
+
 std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
 {
     set<TraceMarker::Type> supported;
     if(parentTrace) {
-//        if(timeDomain) {
-//            // only basic markers in time domain
-//            supported.insert(Type::Manual);
-//            supported.insert(Type::Delta);
-//        } else {
+        if(isTimeDomain()) {
+            // only basic markers in time domain
+            supported.insert(Type::Manual);
+            supported.insert(Type::Delta);
+        } else {
             // all traces support some basic markers
             supported.insert(Type::Manual);
             supported.insert(Type::Maximum);
@@ -311,7 +369,7 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
                     break;
                 }
             }
-//        }
+        }
     }
     return supported;
 }
@@ -319,23 +377,43 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
 void TraceMarker::constrainPosition()
 {
     if(parentTrace) {
-//        if(timeDomain) {
-//            if(position < 0) {
-//                position = 0;
-//            } else if(position > parentTrace->getTDR().back().distance) {
-//                position = parentTrace->getTDR().back().distance;
-//            }
-//        } else {
-            if(parentTrace->size() > 0)  {
-                if(position > parentTrace->maxX()) {
-                    position = parentTrace->maxX();
-                } else if(position < parentTrace->minX()) {
-                    position = parentTrace->minX();
-                }
+        if(parentTrace->size() > 0)  {
+            if(position > parentTrace->maxX()) {
+                position = parentTrace->maxX();
+            } else if(position < parentTrace->minX()) {
+                position = parentTrace->minX();
             }
-//        }
+        }
         traceDataChanged();
     }
+}
+
+TraceMarker *TraceMarker::bestDeltaCandidate()
+{
+    TraceMarker *match = nullptr;
+    // invalid delta marker assigned, attempt to find a matching marker
+    for(int pass = 0;pass < 3;pass++) {
+        for(auto m : model->getMarkers()) {
+            if(m->isTimeDomain() != isTimeDomain()) {
+                // markers are not on the same domain
+                continue;
+            }
+            if(pass == 0 && m->parentTrace != parentTrace) {
+                // ignore markers on different traces in first pass
+                continue;
+            }
+            if(pass <= 1 && m == this) {
+                // ignore itself on second pass
+                continue;
+            }
+            match = m;
+            break;
+        }
+        if(match) {
+            break;
+        }
+    }
+    return match;
 }
 
 void TraceMarker::assignDeltaMarker(TraceMarker *m)
@@ -347,8 +425,9 @@ void TraceMarker::assignDeltaMarker(TraceMarker *m)
     if(delta && delta != this) {
         // this marker has to be updated when the delta marker changes
         connect(delta, &TraceMarker::rawDataChanged, this, &TraceMarker::update);
+        connect(delta, &TraceMarker::domainChanged, this, &TraceMarker::checkDeltaMarker);
         connect(delta, &TraceMarker::deleted, [=](){
-            delta = nullptr;
+            assignDeltaMarker(bestDeltaCandidate());
             update();
         });
     }
@@ -377,29 +456,7 @@ void TraceMarker::setType(TraceMarker::Type t)
     vector<helper_descr> required_helpers;
     switch(type) {
     case Type::Delta:
-        delta = nullptr;
-        // invalid delta marker assigned, attempt to find a matching marker
-        for(int pass = 0;pass < 3;pass++) {
-            for(auto m : model->getMarkers()) {
-//                if(m->isTimeDomain() != isTimeDomain()) {
-//                    // markers are not on the same domain
-//                    continue;
-//                }
-                if(pass == 0 && m->parentTrace != parentTrace) {
-                    // ignore markers on different traces in first pass
-                    continue;
-                }
-                if(pass <= 1 && m == this) {
-                    // ignore itself on second pass
-                    continue;
-                }
-                assignDeltaMarker(m);
-                break;
-            }
-            if(delta) {
-                break;
-            }
-        }
+        assignDeltaMarker(bestDeltaCandidate());
         break;
     case Type::Lowpass:
     case Type::Highpass:
@@ -560,15 +617,15 @@ void TraceMarker::updateTypeFromEditor(QWidget *w)
 
 SIUnitEdit *TraceMarker::getSettingsEditor()
 {
-//    if(timeDomain) {
-//        switch(type) {
-//        case Type::Manual:
-//        case Type::Delta:
-//            return new SIUnitEdit("", "fpnum k", 6);
-//        default:
-//            return nullptr;
-//        }
-//    } else {
+    if(isTimeDomain()) {
+        switch(type) {
+        case Type::Manual:
+        case Type::Delta:
+            return new SIUnitEdit("", "fpnum k", 6);
+        default:
+            return nullptr;
+        }
+    } else {
         switch(type) {
         case Type::Manual:
         case Type::Maximum:
@@ -585,34 +642,53 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
         case Type::TOI:
             return nullptr;
         }
-//    }
+    }
 }
 
 void TraceMarker::adjustSettings(double value)
 {
-    switch(type) {
-    case Type::Manual:
-    case Type::Maximum:
-    case Type::Minimum:
-    case Type::Delta:
-    case Type::Noise:
-    default:
-        setPosition(value);
-        /* no break */
-    case Type::Lowpass:
-    case Type::Highpass:
-    case Type::Bandpass:
-        if(value > 0.0) {
-            value = -value;
+    if(isTimeDomain()) {
+        switch(type) {
+        case Type::Manual:
+        case Type::Delta: {
+            // check if entered position is time or distance
+            if(value > parentTrace->sample(parentTrace->size() - 1).x) {
+                // entered a distance, convert to time
+                setPosition(parentTrace->distanceToTime(value));
+            } else {
+                // entered a time, can set directly
+                setPosition(value);
+            }
         }
-        cutoffAmplitude = value;
-        break;
-    case Type::PeakTable:
-        peakThreshold = value;
-        break;
-    case Type::PhaseNoise:
-        offset = value;
-        break;
+        default:
+            break;
+        }
+    } else {
+        switch(type) {
+        case Type::Manual:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::Delta:
+        case Type::Noise:
+            setPosition(value);
+            break;
+        case Type::Lowpass:
+        case Type::Highpass:
+        case Type::Bandpass:
+            if(value > 0.0) {
+                value = -value;
+            }
+            cutoffAmplitude = value;
+            break;
+        case Type::PeakTable:
+            peakThreshold = value;
+            break;
+        case Type::PhaseNoise:
+            offset = value;
+            break;
+        default:
+            break;
+        }
     }
     update();
 }
@@ -788,5 +864,15 @@ QPixmap &TraceMarker::getSymbol()
 double TraceMarker::getPosition() const
 {
     return position;
+}
+
+bool TraceMarker::isTimeDomain()
+{
+    if(parentTrace) {
+        if(parentTrace->outputType() == Trace::DataType::Time) {
+            return true;
+        }
+    }
+    return false;
 }
 

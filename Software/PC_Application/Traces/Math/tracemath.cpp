@@ -2,6 +2,7 @@
 
 #include "medianfilter.h"
 #include "tdr.h"
+#include "Traces/trace.h"
 
 TraceMath::TraceMath()
 {
@@ -163,6 +164,15 @@ void TraceMath::updateStepResponse(bool valid)
 QString TraceMath::getStatusDescription() const
 {
     return statusString;
+}
+
+Trace *TraceMath::root()
+{
+    auto root = this;
+    while(root->input) {
+        root = root->input;
+    }
+    return static_cast<Trace*>(root);
 }
 
 TraceMath::Status TraceMath::getStatus() const

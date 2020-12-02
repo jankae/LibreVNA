@@ -19,11 +19,13 @@ public:
     Trace* trace();
     QString readableData();
     QString readableSettings();
+    QString tooltipSettings();
     QString readableType();
 
     double getPosition() const;
     std::complex<double> getData() const;
     bool isMovable();
+    bool isTimeDomain();
 
     QPixmap& getSymbol();
 
@@ -56,14 +58,15 @@ signals:
     void traceChanged(TraceMarker *m);
     void beginRemoveHelperMarkers(TraceMarker *m);
     void endRemoveHelperMarkers(TraceMarker *m);
-    void timeDomainChanged();
 
 private slots:
     void parentTraceDeleted(Trace *t);
     void traceDataChanged();
     void updateSymbol();
+    void checkDeltaMarker();
 signals:
     void rawDataChanged();
+    void domainChanged();
 private:
 
     enum class Type {
@@ -97,6 +100,7 @@ private:
         }
     }
     void constrainPosition();
+    TraceMarker *bestDeltaCandidate();
     void assignDeltaMarker(TraceMarker *m);
     void deleteHelperMarkers();
     void setType(Type t);
@@ -108,7 +112,7 @@ private:
     double position;
     int number;
     // Frequency domain: S parameter
-    // Time domain: imag part is impulse response, real part is step response
+    // Time domain: impulse response
     std::complex<double> data;
     QPixmap symbol;
     Type type;
@@ -118,11 +122,10 @@ private:
     TraceMarker *delta;
     std::vector<TraceMarker*> helperMarkers;
     TraceMarker *parent;
-    union {
-        double cutoffAmplitude;
-        double peakThreshold;
-        double offset;
-    };
+    // settings for the different marker types
+    double cutoffAmplitude;
+    double peakThreshold;
+    double offset;
 };
 
 #endif // TRACEMARKER_H

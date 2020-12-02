@@ -15,7 +15,7 @@ QString WindowFunction::typeToName(WindowFunction::Type type)
     case Type::Hann: return "Hann"; break;
     case Type::Blackman: return "Blackman"; break;
     case Type::Gaussian: return "Gaussian"; break;
-    case Type::Chebyshev: return "Chebyshev"; break;
+//    case Type::Chebyshev: return "Chebyshev"; break;
     default: return "Invalid"; break;
     }
 }
@@ -66,14 +66,14 @@ QWidget *WindowFunction::createEditor()
                 gaussian_sigma = newval;
             });
             break;
-        case Type::Chebyshev:
-            paramLabel = new QLabel("Parameter α:");
-            paramEdit = new SIUnitEdit("", " ", 3);
-            paramEdit->setValue(chebyshev_alpha);
-            QObject::connect(paramEdit, &SIUnitEdit::valueChanged, [=](double newval) {
-                chebyshev_alpha = newval;
-            });
-            break;
+//        case Type::Chebyshev:
+//            paramLabel = new QLabel("Parameter α:");
+//            paramEdit = new SIUnitEdit("", " ", 3);
+//            paramEdit->setValue(chebyshev_alpha);
+//            QObject::connect(paramEdit, &SIUnitEdit::valueChanged, [=](double newval) {
+//                chebyshev_alpha = newval;
+//            });
+//            break;
 //        case Type::Kaiser:
 //            // TODO
 //            break;
@@ -102,8 +102,8 @@ QString WindowFunction::getDescription()
     QString ret = typeToName(type);
     if(type == Type::Gaussian) {
         ret += ", σ=" + QString::number(gaussian_sigma);
-    } else if(type == Type::Chebyshev) {
-        ret += ", α=" + QString::number(chebyshev_alpha);
+//    } else if(type == Type::Chebyshev) {
+//        ret += ", α=" + QString::number(chebyshev_alpha);
     }
     return ret;
 }
@@ -126,19 +126,19 @@ double WindowFunction::getFactor(unsigned int n, unsigned int N)
         return 0.42 - 0.5 * cos(2*M_PI*n / N) + 0.08 * cos(4*M_PI*n / N);
     case Type::Gaussian:
         return exp(-0.5 * pow((n - (double) N/2) / (gaussian_sigma * N / 2), 2));
-    case Type::Chebyshev: {
-        double beta = cosh(1.0 / N * acosh(pow(10, chebyshev_alpha)));
-        double T_N_arg = beta * cos(M_PI*n/(N+1));
-        double T_N;
-        if(T_N_arg >= 1.0) {
-            T_N = cosh(N * acosh(T_N_arg));
-        } else if(T_N_arg <= -1.0) {
-            T_N = pow(-1.0, N) * cosh(N * acosh(T_N_arg));
-        } else {
-            T_N = cos(N * acos(T_N_arg));
-        }
-        return T_N / pow(10.0, chebyshev_alpha);
-    }
+//    case Type::Chebyshev: {
+//        double beta = cosh(1.0 / N * acosh(pow(10, chebyshev_alpha)));
+//        double T_N_arg = beta * cos(M_PI*n/(N+1));
+//        double T_N;
+//        if(T_N_arg >= 1.0) {
+//            T_N = cosh(N * acosh(T_N_arg));
+//        } else if(T_N_arg <= -1.0) {
+//            T_N = pow(-1.0, N) * cosh(N * acosh(T_N_arg));
+//        } else {
+//            T_N = cos(N * acos(T_N_arg));
+//        }
+//        return T_N / pow(10.0, chebyshev_alpha);
+//    }
     default:
         return 1.0;
     }

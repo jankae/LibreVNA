@@ -19,7 +19,6 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
     connect(&model.getModel(), &TraceModel::traceAdded, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceRemoved, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceNameChanged, this, &MarkerWidget::updatePersistentEditors);
-    connect(&model.getModel(), &TraceModel::traceTDRstateChanged, this, &MarkerWidget::updatePersistentEditors);
 }
 
 MarkerWidget::~MarkerWidget()
@@ -56,7 +55,7 @@ void MarkerWidget::on_bAdd_clicked()
 {
     auto marker = model.createDefaultMarker();
     connect(marker, &TraceMarker::typeChanged, this, &MarkerWidget::updatePersistentEditors);
-    connect(marker, &TraceMarker::timeDomainChanged, this, &MarkerWidget::updatePersistentEditors);
+    connect(marker, &TraceMarker::traceChanged, this, &MarkerWidget::updatePersistentEditors);
     model.addMarker(marker);
     updatePersistentEditors();
 }

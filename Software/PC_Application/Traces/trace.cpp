@@ -167,6 +167,32 @@ const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
     return mathOps;
 }
 
+double Trace::velocityFactor()
+{
+    // TODO make changeable
+    return 0.66;
+}
+
+double Trace::timeToDistance(double time)
+{
+    double c = 299792458;
+    auto distance = time * c * velocityFactor();
+    if(isReflection()) {
+        distance /= 2.0;
+    }
+    return distance;
+}
+
+double Trace::distanceToTime(double distance)
+{
+    double c = 299792458;
+    auto time = distance / (c * velocityFactor());
+    if(isReflection()) {
+        time *= 2.0;
+    }
+    return time;
+}
+
 void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
 {
     TraceMath *newLast = nullptr;
