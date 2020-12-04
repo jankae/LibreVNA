@@ -5,7 +5,6 @@ HEADERS += \
     Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
-    Calibration/json.hpp \
     Calibration/measurementmodel.h \
     Calibration/receivercaldialog.h \
     Calibration/sourcecaldialog.h \
@@ -51,8 +50,10 @@ HEADERS += \
     VNA/vna.h \
     appwindow.h \
     averaging.h \
+    json.hpp \
     mode.h \
     preferences.h \
+    savable.h \
     touchstone.h \
     unit.h
 

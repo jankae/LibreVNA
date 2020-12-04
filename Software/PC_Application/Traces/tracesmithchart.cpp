@@ -13,13 +13,41 @@ using namespace std;
 TraceSmithChart::TraceSmithChart(TraceModel &model, QWidget *parent)
     : TracePlot(model, parent)
 {
-    chartLinesPen = QPen(palette().windowText(), 0.75);
-    thinPen = QPen(palette().windowText(), 0.25);
-    textPen = QPen(palette().windowText(), 0.25);
-    pointDataPen = QPen(QColor("red"), 4.0, Qt::SolidLine, Qt::RoundCap);
-    lineDataPen = QPen(QColor("blue"), 1.0);
     limitToSpan = true;
     initializeTraceInfo();
+}
+
+nlohmann::json TraceSmithChart::toJSON()
+{
+    nlohmann::json j;
+    j["limit_to_span"] = limitToSpan;
+    nlohmann::json jtraces;
+    for(auto t : traces) {
+        if(t.second) {
+            jtraces.push_back(t.first->toHash());
+        }
+    }
+    j["traces"] = jtraces;
+    return j;
+}
+
+void TraceSmithChart::fromJSON(nlohmann::json j)
+{
+    limitToSpan = j.value("limit_to_span", true);
+    for(unsigned int hash : j["traces"]) {
+        // attempt to find the traces with this hash
+        bool found = false;
+        for(auto t : model.getTraces()) {
+            if(t->toHash() == hash) {
+                enableTrace(t, true);
+                found = true;
+                break;
+            }
+        }
+        if(!found) {
+            qWarning() << "Unable to find trace with hash" << hash;
+        }
+    }
 }
 
 void TraceSmithChart::axisSetupDialog()

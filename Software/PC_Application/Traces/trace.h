@@ -108,6 +108,17 @@ public:
     double timeToDistance(double time);
     double distanceToTime(double distance);
 
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+
+    Type getType() override {return Type::Last;}; // can return invalid type, this will never be called
+
+    // Traces are referenced by pointers throughout this project (e.g. when added to a graph)
+    // When saving the current graph configuration, the pointer is not useful. Instead a trace
+    // hash is saved to identify the correct trace. The hash should be influenced by every setting
+    // the trace can have (and its math function). It should not depend on the acquired trace samples
+    unsigned int toHash();
+
 public slots:
     void setTouchstoneParameter(int value);
     void setTouchstoneFilename(const QString &value);

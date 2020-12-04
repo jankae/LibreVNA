@@ -1,5 +1,6 @@
 #include "tracemodel.h"
 #include <QIcon>
+#include <QDebug>
 
 using namespace std;
 
@@ -162,6 +163,32 @@ bool TraceModel::PortExcitationRequired(int port)
     }
     // checked all traces, none requires this port to be excited
     return false;
+}
+
+nlohmann::json TraceModel::toJSON()
+{
+    nlohmann::json j;
+    for(auto t : traces) {
+        j.push_back(t->toJSON());
+    }
+    return j;
+}
+
+void TraceModel::fromJSON(nlohmann::json j)
+{
+    // clear old traces
+    while(traces.size()) {
+        removeTrace(0);
+    }
+    for(auto jt : j) {
+        auto trace = new Trace();
+        try {
+            trace->fromJSON(jt);
+            addTrace(trace);
+        } catch (const exception &e) {
+            qWarning() << "Failed to create trace:" << e.what();
+        }
+    }
 }
 
 void TraceModel::clearVNAData()

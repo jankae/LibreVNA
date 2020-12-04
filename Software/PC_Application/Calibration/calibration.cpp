@@ -679,7 +679,7 @@ bool Calibration::openFromFile(QString filename)
             return false;
         }
     }
-qDebug() << "Attempting to open calibration from file" << filename;
+    qDebug() << "Attempting to open calibration from file" << filename;
 
     // reset all data before loading new calibration
     clearMeasurements();

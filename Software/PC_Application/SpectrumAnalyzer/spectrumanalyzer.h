@@ -17,6 +17,11 @@ public:
 
     void deactivate() override;
     void initializeDevice() override;
+
+    // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+
 private slots:
     void NewDatapoint(Protocol::SpectrumAnalyzerResult d);
     void StartImpedanceMatching();

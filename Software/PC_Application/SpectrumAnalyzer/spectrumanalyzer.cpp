@@ -293,6 +293,24 @@ void SpectrumAnalyzer::initializeDevice()
     window->getDevice()->Configure(settings);
 }
 
+nlohmann::json SpectrumAnalyzer::toJSON()
+{
+    nlohmann::json j;
+    j["traces"] = traceModel.toJSON();
+    j["tiles"] = central->toJSON();
+    return j;
+}
+
+void SpectrumAnalyzer::fromJSON(nlohmann::json j)
+{
+    if(j.contains("traces")) {
+        traceModel.fromJSON(j["traces"]);
+    }
+    if(j.contains("tiles")) {
+        central->fromJSON(j["tiles"]);
+    }
+}
+
 using namespace std;
 
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)

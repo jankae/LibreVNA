@@ -443,6 +443,24 @@ void VNA::deviceDisconnected()
     defaultCalMenu->setEnabled(false);
 }
 
+nlohmann::json VNA::toJSON()
+{
+    nlohmann::json j;
+    j["traces"] = traceModel.toJSON();
+    j["tiles"] = central->toJSON();
+    return j;
+}
+
+void VNA::fromJSON(nlohmann::json j)
+{
+    if(j.contains("traces")) {
+        traceModel.fromJSON(j["traces"]);
+    }
+    if(j.contains("tiles")) {
+        central->fromJSON(j["tiles"]);
+    }
+}
+
 using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)

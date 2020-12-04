@@ -23,6 +23,10 @@ namespace Ui {
 class MainWindow;
 }
 
+class VNA;
+class Generator;
+class SpectrumAnalyzer;
+
 class AppWindow : public QMainWindow
 {
     Q_OBJECT
@@ -46,6 +50,8 @@ private slots:
     void DeviceNeedsUpdate(int reported, int expected);
     void SourceCalibrationDialog();
     void ReceiverCalibrationDialog();
+    nlohmann::json SaveSetup();
+    void LoadSetup(nlohmann::json j);
 private:
     void DeviceConnectionLost();
     void CreateToolbars();
@@ -65,6 +71,11 @@ private:
     DeviceLog deviceLog;
     QString deviceSerial;
     QActionGroup *deviceActionGroup;
+
+    // Modes
+    VNA *vna;
+    Generator *generator;
+    SpectrumAnalyzer *spectrumAnalyzer;
 
     // Status bar widgets
     QLabel lConnectionStatus;

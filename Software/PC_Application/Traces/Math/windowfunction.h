@@ -4,8 +4,9 @@
 #include <QWidget>
 #include <complex>
 #include <vector>
+#include "savable.h"
 
-class WindowFunction : public QObject
+class WindowFunction : public QObject, public Savable
 {
     Q_OBJECT;
 public:   
@@ -30,6 +31,9 @@ public:
 
     Type getType() const;
     QString getDescription();
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 
 signals:
     void changed();

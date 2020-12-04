@@ -1,6 +1,8 @@
 #include "trace.h"
 #include <math.h>
 #include "fftcomplex.h"
+#include <QDebug>
+#include <functional>
 
 using namespace std;
 
@@ -191,6 +193,112 @@ double Trace::distanceToTime(double distance)
         time *= 2.0;
     }
     return time;
+}
+
+nlohmann::json Trace::toJSON()
+{
+    nlohmann::json j;
+    if(isCalibration()) {
+        // calibration traces can't be saved
+        return j;
+    }
+    j["name"] = _name.toStdString();
+    j["color"] = _color.name().toStdString();
+    j["visible"] = visible;
+    if(isLive()) {
+        j["type"] = "Live";
+        j["parameter"] = _liveParam;
+        j["livetype"] = _liveType;
+        j["paused"] = paused;
+    } else if(isTouchstone()) {
+        j["type"] = "Touchstone";
+        j["filename"] = touchstoneFilename.toStdString();
+        j["parameter"] = touchstoneParameter;
+    }
+    j["reflection"] = reflection;
+    // TODO how to save assigned markers?
+    nlohmann::json mathList;
+    for(auto m : mathOps) {
+        if(m.math->getType() == Type::Last) {
+            // this is an invalid type reserved for the trace itself, skip
+            continue;
+        }
+        nlohmann::json jm;
+        auto info = TraceMath::getInfo(m.math->getType());
+        jm["operation"] = info.name.toStdString();
+        jm["enabled"] = m.enabled;
+        jm["settings"] = m.math->toJSON();
+        mathList.push_back(jm);
+    }
+    j["math"] = mathList;
+    j["math_enabled"] = mathEnabled();
+
+    return j;
+}
+
+void Trace::fromJSON(nlohmann::json j)
+{
+    touchstone = false;
+    calibration = false;
+    _name = QString::fromStdString(j.value("name", "Missing name"));
+    _color = QColor(QString::fromStdString(j.value("color", "yellow")));
+    visible = j.value("visible", true);
+    auto type = QString::fromStdString(j.value("type", "Live"));
+    if(type == "Live") {
+        _liveParam = j.value("parameter", LiveParameter::S11);
+        _liveType = j.value("livetype", LivedataType::Overwrite);
+        paused = j.value("paused", false);
+    } else if(type == "Touchstone") {
+        std::string filename = j.value("filename", "");
+        touchstoneParameter = j.value("parameter", 0);
+        try {
+            Touchstone t = Touchstone::fromFile(filename);
+            fillFromTouchstone(t, touchstoneParameter, QString::fromStdString(filename));
+        } catch (const exception &e) {
+            std::string what = e.what();
+            throw runtime_error("Failed to create touchstone:" + what);
+        }
+    }
+    reflection = j.value("reflection", false);
+    for(auto jm : j["math"]) {
+        QString operation = QString::fromStdString(jm.value("operation", ""));
+        if(operation.isEmpty()) {
+            qWarning() << "Skipping empty math operation";
+            continue;
+        }
+        // attempt to find the type of operation
+        TraceMath::Type type = Type::Last;
+        for(unsigned int i=0;i<(int) Type::Last;i++) {
+            auto info = TraceMath::getInfo((Type) i);
+            if(info.name == operation) {
+                // found the correct operation
+                type = (Type) i;
+                break;
+            }
+        }
+        if(type == Type::Last) {
+            // unable to find this operation
+            qWarning() << "Unable to create math operation:" << operation;
+            continue;
+        }
+        qDebug() << "Creating math operation of type:" << operation;
+        auto op = TraceMath::createMath(type);
+        MathInfo info;
+        info.enabled = jm.value("enabled", true);
+        info.math = op;
+        op->assignInput(lastMath);
+        mathOps.push_back(info);
+        updateLastMath(mathOps.rbegin());
+    }
+    enableMath(j.value("math_enabled", true));
+}
+
+unsigned int Trace::toHash()
+{
+    // taking the easy way: create the json string and hash it (already contains all necessary information)
+    // This is slower than it could be, but this function is only used when loading setups, so this isn't a big problem
+    std::string json_string = toJSON().dump();
+    return hash<std::string>{}(json_string);
 }
 
 void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)

@@ -93,14 +93,46 @@ AppWindow::AppWindow(QWidget *parent)
     // Create GUI modes
     central = new QStackedWidget;
     setCentralWidget(central);
-    auto vna = new VNA(this);
-    new Generator(this);
-    new SpectrumAnalyzer(this);
+    vna = new VNA(this);
+    generator = new Generator(this);
+    spectrumAnalyzer = new SpectrumAnalyzer(this);
 
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
     connect(ui->actionQuit, &QAction::triggered, this, &AppWindow::close);
+    connect(ui->actionSave_setup, &QAction::triggered, [=](){
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save setup data", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        if(!filename.endsWith(".setup")) {
+            filename.append(".setup");
+        }
+        ofstream file;
+        file.open(filename.toStdString());
+        file << setw(4) << SaveSetup() << endl;
+        file.close();
+    });
+    connect(ui->actionLoad_setup, &QAction::triggered, [=](){
+        auto filename = QFileDialog::getOpenFileName(nullptr, "Load setup data", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        ifstream file;
+        file.open(filename.toStdString());
+        if(!file.is_open()) {
+            qWarning() << "Unable to open file:" << filename;
+            return;
+        }
+        nlohmann::json j;
+        file >> j;
+        file.close();
+        LoadSetup(j);
+    });
+
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
     connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
@@ -371,6 +403,22 @@ void AppWindow::ReceiverCalibrationDialog()
 {
     auto d = new ReceiverCalDialog(device);
     d->exec();
+}
+
+nlohmann::json AppWindow::SaveSetup()
+{
+    nlohmann::json j;
+    j["VNA"] = vna->toJSON();
+    j["Generator"] = generator->toJSON();
+    j["SpectrumAnalyzer"] = spectrumAnalyzer->toJSON();
+    return j;
+}
+
+void AppWindow::LoadSetup(nlohmann::json j)
+{
+    vna->fromJSON(j["VNA"]);
+    generator->fromJSON(j["Generator"]);
+    spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
 }
 
 Device *AppWindow::getDevice() const

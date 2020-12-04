@@ -5,12 +5,13 @@
 #include "Traces/traceplot.h"
 #include <QSplitter>
 #include "Traces/tracemodel.h"
+#include "savable.h"
 
 namespace Ui {
 class TileWidget;
 }
 
-class TileWidget : public QWidget
+class TileWidget : public QWidget, public Savable
 {
     Q_OBJECT
 
@@ -20,6 +21,12 @@ public:
 
     TileWidget *Child1() { return child1; };
     TileWidget *Child2() { return child2; };
+
+    // closes all plots/childs, leaving only the tilewidget at the top
+    void clear();
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 public slots:
     void splitVertically();
     void splitHorizontally();

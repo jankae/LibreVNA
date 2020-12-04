@@ -8,8 +8,9 @@
 #include <QDockWidget>
 #include <set>
 #include "appwindow.h"
+#include "savable.h"
 
-class Mode : public QObject
+class Mode : public QObject, public Savable
 {
 public:
     Mode(AppWindow *window, QString name);

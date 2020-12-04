@@ -126,7 +126,7 @@ Touchstone Touchstone::fromFile(string filename)
     file.open(filename);
 
     if(!file.is_open()) {
-        throw runtime_error("Unable to open file");
+        throw runtime_error("Unable to open file:" + filename);
     }
 
     // extract number of ports from filename

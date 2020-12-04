@@ -17,6 +17,10 @@ public:
 
     static QWidget *createExplanationWidget();
 
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+    Type getType() override {return Type::MedianFilter;};
+
 public slots:
     // a single value of the input data has changed, index determines which sample has changed
     virtual void inputSamplesChanged(unsigned int begin, unsigned int end) override;

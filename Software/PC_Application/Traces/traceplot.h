@@ -7,17 +7,24 @@
 #include <QContextMenuEvent>
 #include <QTime>
 #include <QLabel>
+#include "savable.h"
 
-class TracePlot : public QWidget
+class TracePlot : public QWidget, public Savable
 {
     Q_OBJECT
 public:
+    enum class Type {
+        SmithChart,
+        XYPlot,
+    };
+
     TracePlot(TraceModel &model, QWidget *parent = nullptr);
     ~TracePlot();
 
     virtual void enableTrace(Trace *t, bool enabled);
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     virtual void updateSpan(double min, double max);
+    virtual Type getType() = 0;
 
     static std::set<TracePlot *> getPlots();
 

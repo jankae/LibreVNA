@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QFormLayout>
 #include "CustomWidgets/siunitedit.h"
+#include <QDebug>
 
 QString WindowFunction::typeToName(WindowFunction::Type type)
 {
@@ -106,6 +107,45 @@ QString WindowFunction::getDescription()
 //        ret += ", α=" + QString::number(chebyshev_alpha);
     }
     return ret;
+}
+
+nlohmann::json WindowFunction::toJSON()
+{
+    nlohmann::json j;
+    j["type"] = typeToName(type).toStdString();
+    // add additional parameter if type has one
+    switch(type) {
+    case Type::Gaussian:
+        j["sigma"] = gaussian_sigma;
+        break;
+    default:
+        break;
+    }
+    return j;
+}
+
+void WindowFunction::fromJSON(nlohmann::json j)
+{
+    qDebug() << "Setting window function from json";
+    QString typeName = QString::fromStdString(j["type"]);
+    unsigned int i=0;
+    for(;i<(int) Type::Last;i++) {
+        if(typeToName((Type) i) == typeName) {
+            type = Type(i);
+            break;
+        }
+    }
+    if(i>=(int) Type::Last) {
+        qWarning() << "Invalid window type specified, defaulting to hamming";
+        type = Type::Hamming;
+    }
+    switch(type) {
+    case Type::Gaussian:
+        gaussian_sigma = j.value("sigma", 0.4);
+        break;
+    default:
+        break;
+    }
 }
 
 double WindowFunction::getFactor(unsigned int n, unsigned int N)

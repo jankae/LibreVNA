@@ -111,6 +111,44 @@ QWidget *TDR::createExplanationWidget()
     return new QLabel("Test");
 }
 
+nlohmann::json TDR::toJSON()
+{
+    nlohmann::json j;
+    j["bandpass_mode"] = mode == Mode::Bandpass;
+    j["window"] = window.toJSON();
+    if(mode == Mode::Lowpass) {
+        j["step_response"] = stepResponse;
+        if(stepResponse) {
+            j["automatic_DC"] = automaticDC;
+            if(!automaticDC) {
+                j["manual_DC_real"] = manualDC.real();
+                j["manual_DC_imag"] = manualDC.imag();
+            }
+        }
+    }
+    return j;
+}
+
+void TDR::fromJSON(nlohmann::json j)
+{
+    if(j.value("bandpass_mode", true)) {
+        mode = Mode::Bandpass;
+    } else {
+        mode = Mode::Lowpass;
+        if(j.value("step_response", true)) {
+            stepResponse = true;
+            if(j.value("automatic_DC", true)) {
+                automaticDC = true;
+            } else {
+                automaticDC = false;
+                manualDC = complex<double>(j.value("manual_DC_real", 1.0), j.value("manual_DC_imag", 0.0));
+            }
+        } else {
+            stepResponse = false;
+        }
+    }
+}
+
 void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
     Q_UNUSED(begin);

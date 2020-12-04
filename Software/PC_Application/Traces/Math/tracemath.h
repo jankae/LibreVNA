@@ -4,6 +4,7 @@
 #include <QObject>
 #include <vector>
 #include <complex>
+#include "savable.h"
 
 /*
  * How to implement a new type of math operation:
@@ -34,6 +35,8 @@
  *                          Provide a hint by passing a short description string
  *              error(): something went wrong (called with wrong type of data, mathematical error, ...).
  *                          Provide a hint by passing a short description string
+ *      e. getType(): return the type of the operation
+ *      f. toJSON() and fromJSON(). Save/load all internal parameters
  * 3. Add a new type to the Type enum for your operation
  * 4. Extend the createMath(Type type) factory function to create an instance of your operation
  * 5. Add a static function "createExplanationWidget" which returns a QWidget explaining what your operation does.
@@ -43,7 +46,7 @@
 
 class Trace;
 
-class TraceMath : public QObject {
+class TraceMath : public QObject, public Savable {
     Q_OBJECT
 public:
     TraceMath();
@@ -98,6 +101,7 @@ public:
     std::vector<Data>& rData() { return data;};
     Status getStatus() const;
     QString getStatusDescription() const;
+    virtual Type getType() = 0;
 
     // returns the trace this math operation is attached to
     Trace* root();

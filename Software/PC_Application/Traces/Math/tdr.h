@@ -17,6 +17,10 @@ public:
 
     static QWidget* createExplanationWidget();
 
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+    Type getType() override {return Type::TDR;};
+
 public slots:
     void inputSamplesChanged(unsigned int begin, unsigned int end) override;
 

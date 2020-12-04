@@ -11,6 +11,11 @@ class TraceSmithChart : public TracePlot
     Q_OBJECT
 public:
     TraceSmithChart(TraceModel &model, QWidget *parent = 0);
+
+    virtual Type getType() override { return Type::SmithChart;};
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 public slots:
     void axisSetupDialog();
 protected:
@@ -29,18 +34,7 @@ protected:
     virtual void draw(QPainter& painter) override;
     virtual void traceDropped(Trace *t, QPoint position) override;
     QString mouseText(QPoint pos) override;
-    QPen textPen;
-    QPen chartLinesPen;
-    QPen thinPen;
-    QPen pointDataPen;
-    QPen lineDataPen;
     bool limitToSpan;
-
-    /// Path for the thin arcs
-    QPainterPath thinArcsPath;
-    /// Path for the thick arcs
-    QPainterPath thickArcsPath;
-
     QTransform transform;
 };
 

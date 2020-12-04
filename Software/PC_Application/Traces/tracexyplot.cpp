@@ -112,6 +112,76 @@ void TraceXYPlot::replot()
     TracePlot::replot();
 }
 
+nlohmann::json TraceXYPlot::toJSON()
+{
+    nlohmann::json j;
+    nlohmann::json jX;
+    jX["type"] = XAxis.type;
+    jX["mode"] = XAxis.mode;
+    jX["log"] = XAxis.log;
+    jX["min"] = XAxis.rangeMin;
+    jX["max"] = XAxis.rangeMax;
+    jX["div"] = XAxis.rangeDiv;
+    j["XAxis"] = jX;
+    for(unsigned int i=0;i<2;i++) {
+        nlohmann::json jY;
+        jY["type"] = YAxis[i].type;
+        jY["log"] = YAxis[i].log;
+        jY["autorange"] = YAxis[i].autorange;
+        jY["min"] = YAxis[i].rangeMin;
+        jY["max"] = YAxis[i].rangeMax;
+        jY["div"] = YAxis[i].rangeDiv;
+        nlohmann::json jtraces;
+        for(auto t : tracesAxis[i]) {
+            jtraces.push_back(t->toHash());
+        }
+        jY["traces"] = jtraces;
+
+        if(i==0) {
+            j["YPrimary"] = jY;
+        } else {
+            j["YSecondary"] = jY;
+        }
+    }
+    return j;
+}
+
+void TraceXYPlot::fromJSON(nlohmann::json j)
+{
+    auto jX = j["XAxis"];
+    auto xtype = jX.value("type", XAxisType::Frequency);
+    auto xmode = jX.value("mode", XAxisMode::UseSpan);
+//    auto xlog = jX.value("log", false);
+    auto xmin = jX.value("min", 0);
+    auto xmax = jX.value("max", 6000000000);
+    auto xdiv = jX.value("div", 600000000);
+    setXAxis(xtype, xmode, xmin, xmax, xdiv);
+    nlohmann::json jY[2] = {j["YPrimary"], j["YSecondary"]};
+    for(unsigned int i=0;i<2;i++) {
+        auto ytype = jY[i].value("type", YAxisType::Disabled);
+        auto yauto = jY[i].value("autorange", true);
+        auto ylog = jY[i].value("log", false);
+        auto ymin = jY[i].value("min", -120);
+        auto ymax = jY[i].value("max", 20);
+        auto ydiv = jY[i].value("div", 10);
+        setYAxis(i, ytype, ylog, yauto, ymin, ymax, ydiv);
+        for(unsigned int hash : jY[i]["traces"]) {
+            // attempt to find the traces with this hash
+            bool found = false;
+            for(auto t : model.getTraces()) {
+                if(t->toHash() == hash) {
+                    enableTraceAxis(t, i, true);
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                qWarning() << "Unable to find trace with hash" << hash;
+            }
+        }
+    }
+}
+
 bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
 {
     switch(type) {

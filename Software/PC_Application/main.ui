@@ -27,6 +27,8 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionSave_setup"/>
+    <addaction name="actionLoad_setup"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuDevice">
@@ -168,6 +170,24 @@
    </property>
    <property name="text">
     <string>Receiver Calibration</string>
+   </property>
+  </action>
+  <action name="actionSave_setup">
+   <property name="icon">
+    <iconset theme="document-save" resource="icons.qrc">
+     <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save setup</string>
+   </property>
+  </action>
+  <action name="actionLoad_setup">
+   <property name="icon">
+    <iconset theme="document-open" resource="icons.qrc">
+     <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load setup</string>
    </property>
   </action>
  </widget>

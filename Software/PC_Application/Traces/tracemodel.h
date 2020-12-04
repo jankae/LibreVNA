@@ -5,8 +5,9 @@
 #include "trace.h"
 #include <vector>
 #include "Device/device.h"
+#include "savable.h"
 
-class TraceModel : public QAbstractTableModel
+class TraceModel : public QAbstractTableModel, public Savable
 {
     Q_OBJECT
 public:
@@ -35,6 +36,9 @@ public:
     std::vector<Trace*> getTraces();
 
     bool PortExcitationRequired(int port);
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 
 signals:
     void SpanChanged(double fmin, double fmax);

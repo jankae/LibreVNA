@@ -55,6 +55,20 @@ QWidget *MedianFilter::createExplanationWidget()
     return w;
 }
 
+nlohmann::json MedianFilter::toJSON()
+{
+    nlohmann::json j;
+    j["kernel"] = kernelSize;
+    j["order"] = order;
+    return j;
+}
+
+void MedianFilter::fromJSON(nlohmann::json j)
+{
+    kernelSize = j.value("kernel", 3);
+    order = j.value("order", Order::AbsoluteValue);
+}
+
 void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
     if(data.size() != input->rData().size()) {
         data.resize(input->rData().size());
