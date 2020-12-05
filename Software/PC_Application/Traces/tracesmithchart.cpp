@@ -194,6 +194,10 @@ void TraceSmithChart::draw(QPainter &p) {
                 if (limitToSpan && (m->getPosition() < sweep_fmin || m->getPosition() > sweep_fmax)) {
                     continue;
                 }
+                if(m->getPosition() < trace->minX() || m->getPosition() > trace->maxX()) {
+                    // marker not in trace range
+                    continue;
+                }
                 auto coords = m->getData();
                 coords *= smithCoordMax;
                 auto symbol = m->getSymbol();

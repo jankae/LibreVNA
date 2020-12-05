@@ -127,7 +127,7 @@ QString TraceMarker::readableData()
                 return QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
             }
         case Type::Delta:
-            if(!delta && delta->isTimeDomain()) {
+            if(!delta || delta->isTimeDomain()) {
                 return "Invalid delta marker";
             } else {
                 // calculate difference between markers
@@ -288,10 +288,21 @@ void TraceMarker::parentTraceDeleted(Trace *t)
 
 void TraceMarker::traceDataChanged()
 {
-    // some data of the parent trace changed, check if marker data also changed
     complex<double> newdata;
-    auto sampleType = isTimeDomain() ? Trace::SampleType::TimeImpulse : Trace::SampleType::Frequency;
-    newdata = parentTrace->sample(parentTrace->index(position), sampleType).y;
+    if(!parentTrace || parentTrace->numSamples() == 0) {
+        // no data, invalidate
+        newdata = numeric_limits<complex<double>>::quiet_NaN();
+    } else {
+        if(position < parentTrace->minX() || position > parentTrace->maxX()) {
+            // this normally should not happen because the position is constrained to the trace X range.
+            // However, when loading a setup, the trace might have been just created and essentially empty
+            newdata = numeric_limits<complex<double>>::quiet_NaN();
+        } else {
+            // some data of the parent trace changed, check if marker data also changed
+            auto sampleType = isTimeDomain() ? Trace::SampleType::TimeImpulse : Trace::SampleType::Frequency;
+            newdata = parentTrace->sample(parentTrace->index(position), sampleType).y;
+        }
+    }
     if (newdata != data) {
         data = newdata;
         update();
@@ -328,7 +339,7 @@ void TraceMarker::checkDeltaMarker()
         return;
     }
     // Check if type of delta marker is still okay
-    if(delta->isTimeDomain() != isTimeDomain()) {
+    if(!delta || delta->isTimeDomain() != isTimeDomain()) {
         // not the same domain anymore, adjust delta
         assignDeltaMarker(bestDeltaCandidate());
     }
@@ -418,6 +429,10 @@ TraceMarker *TraceMarker::bestDeltaCandidate()
 
 void TraceMarker::assignDeltaMarker(TraceMarker *m)
 {
+    if(type != Type::Delta) {
+        // ignore
+        return;
+    }
     if(delta) {
         disconnect(delta, &TraceMarker::dataChanged, this, &TraceMarker::update);
     }
@@ -427,10 +442,13 @@ void TraceMarker::assignDeltaMarker(TraceMarker *m)
         connect(delta, &TraceMarker::rawDataChanged, this, &TraceMarker::update);
         connect(delta, &TraceMarker::domainChanged, this, &TraceMarker::checkDeltaMarker);
         connect(delta, &TraceMarker::deleted, [=](){
+            delta = nullptr;
+            qDebug() << "assigned delta deleted";
             assignDeltaMarker(bestDeltaCandidate());
             update();
         });
     }
+    emit assignedDeltaChanged(this);
 }
 
 void TraceMarker::deleteHelperMarkers()
@@ -507,9 +525,102 @@ bool TraceMarker::isVisible()
     }
 }
 
+TraceMarker::Type TraceMarker::getType() const
+{
+    return type;
+}
+
 QString TraceMarker::getSuffix() const
 {
     return suffix;
+}
+
+nlohmann::json TraceMarker::toJSON()
+{
+    nlohmann::json j;
+    j["trace"] = parentTrace->toHash();
+    j["type"] = typeToString(type).toStdString();
+    j["number"] = number;
+    j["position"] = position;
+    switch(type) {
+    case Type::Delta:
+        j["delta_marker"] = delta->toHash();
+        break;
+    case Type::PeakTable:
+        j["peak_threshold"] = peakThreshold;
+        break;
+    case Type::Lowpass:
+    case Type::Highpass:
+    case Type::Bandpass:
+        j["cutoff"] = cutoffAmplitude;
+        break;
+    case Type::PhaseNoise:
+        j["offset"] = offset;
+        break;
+    default:
+        // other types have no settings
+        break;
+    }
+    return j;
+}
+
+void TraceMarker::fromJSON(nlohmann::json j)
+{
+    if(!j.contains("trace")) {
+        throw runtime_error("Marker has no trace assigned");
+    }
+    number = j.value("number", 1);
+    position = j.value("position", 0.0);
+
+    unsigned int hash = j["trace"];
+    // find correct trace
+    bool found = false;
+    for(auto t : model->getModel().getTraces()) {
+        if(t->toHash() == hash) {
+            found = true;
+            assignTrace(t);
+            break;
+        }
+    }
+    if(!found) {
+        throw runtime_error("Unable to find trace with hash " + to_string(hash));
+    }
+    auto typeString = QString::fromStdString(j.value("type", "Manual"));
+    for(unsigned int i=0;i<(int) Type::Last;i++) {
+        if(typeToString((Type) i) == typeString) {
+            setType((Type) i);
+            break;
+        }
+    }
+    switch(type) {
+    case Type::Delta:
+        // can't assign delta marker here, because it might not have been created (if it was below this marker in the table).
+        // Instead it will be correctly assigned in TraceMarkerModel::fromJSON()
+        break;
+    case Type::PeakTable:
+        peakThreshold = j.value("peak_threshold", -40);
+        break;
+    case Type::Lowpass:
+    case Type::Highpass:
+    case Type::Bandpass:
+        cutoffAmplitude = j.value("cutoff", -3.0);
+        break;
+    case Type::PhaseNoise:
+        j.value("offset", 10000);
+        break;
+    default:
+        // other types have no settings
+        break;
+    }
+    update();
+}
+
+unsigned int TraceMarker::toHash()
+{
+    // taking the easy way: create the json string and hash it (already contains all necessary information)
+    // This is slower than it could be, but this function is only used when loading setups, so this isn't a big problem
+    std::string json_string = toJSON().dump();
+    return hash<std::string>{}(json_string);
 }
 
 const std::vector<TraceMarker *> &TraceMarker::getHelperMarkers() const

@@ -5,6 +5,8 @@
 #include "CustomWidgets/siunitedit.h"
 #include <QDebug>
 
+using namespace std;
+
 static constexpr int rowHeight = 21;
 
 TraceMarkerModel::TraceMarkerModel(TraceModel &model, QObject *parent)
@@ -266,6 +268,57 @@ TraceMarker *TraceMarkerModel::markerFromIndex(const QModelIndex &index) const
     } else {
         return m->helperMarker(index.row());
     }
+}
+
+nlohmann::json TraceMarkerModel::toJSON()
+{
+    nlohmann::json j;
+    for(auto m : markers) {
+        j.push_back(m->toJSON());
+    }
+    return j;
+}
+
+void TraceMarkerModel::fromJSON(nlohmann::json j)
+{
+    // remove old markers
+    while(markers.size() > 0) {
+        removeMarker((unsigned int) 0);
+    }
+    for(auto jm : j) {
+        auto m = new TraceMarker(this);
+        try {
+            m->fromJSON(jm);
+            addMarker(m);
+        } catch (const exception &e) {
+            qWarning() << "Failed to creat marker from JSON:" << e.what();
+            delete m;
+        }
+    }
+    // second pass to assign delta markers
+    for(unsigned int i=0;i<markers.size();i++) {
+        if(markers[i]->getType() == TraceMarker::Type::Delta) {
+            if(!j[i].contains("delta_marker")) {
+                qWarning() << "JSON data does not contain assigned delta marker";
+                continue;
+            }
+            unsigned int hash = j[i]["delta_marker"];
+            // attempt to find correct marker
+            unsigned int m_delta = 0;
+            for(;m_delta < markers.size();m_delta++) {
+                auto m = markers[m_delta];
+                if(m->toHash() == hash) {
+                    markers[i]->assignDeltaMarker(m);
+                    break;
+                }
+            }
+            if(m_delta >= markers.size()) {
+                qWarning() << "Unable to find assigned delta marker:" << hash;
+            }
+        }
+    }
+    // All done loading the markers, trigger update of persistent editors
+    emit setupLoadComplete();
 }
 
 QSize MarkerTraceDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const

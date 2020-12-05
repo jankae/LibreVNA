@@ -6,6 +6,7 @@
 #include <vector>
 #include "tracemodel.h"
 #include <QStyledItemDelegate>
+#include "savable.h"
 
 class MarkerTraceDelegate : public QStyledItemDelegate
 {
@@ -43,7 +44,7 @@ class MarkerSettingsDelegate : public QStyledItemDelegate
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 };
 
-class TraceMarkerModel : public QAbstractItemModel
+class TraceMarkerModel : public QAbstractItemModel, public Savable
 {
     Q_OBJECT
 public:
@@ -76,6 +77,9 @@ public:
     void updateMarkers();
     TraceMarker *markerFromIndex(const QModelIndex &index) const;
 
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+
 public slots:
     void addMarker(TraceMarker *t);
     void removeMarker(unsigned int index);
@@ -84,6 +88,7 @@ public slots:
 
 signals:
     void markerAdded(TraceMarker *t);
+    void setupLoadComplete();
 
 private slots:
     void markerDataChanged(TraceMarker *m);

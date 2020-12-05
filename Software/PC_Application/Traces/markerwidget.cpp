@@ -19,6 +19,13 @@ MarkerWidget::MarkerWidget(TraceMarkerModel &model, QWidget *parent) :
     connect(&model.getModel(), &TraceModel::traceAdded, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceRemoved, this, &MarkerWidget::updatePersistentEditors);
     connect(&model.getModel(), &TraceModel::traceNameChanged, this, &MarkerWidget::updatePersistentEditors);
+    connect(&model, &TraceMarkerModel::markerAdded, [=](TraceMarker *m) {
+        connect(m, &TraceMarker::typeChanged, this, &MarkerWidget::updatePersistentEditors);
+        connect(m, &TraceMarker::traceChanged, this, &MarkerWidget::updatePersistentEditors);
+        connect(m, &TraceMarker::assignedDeltaChanged, this, &MarkerWidget::updatePersistentEditors);
+        updatePersistentEditors();
+    });
+    connect(&model, &TraceMarkerModel::setupLoadComplete, this, &MarkerWidget::updatePersistentEditors);
 }
 
 MarkerWidget::~MarkerWidget()
@@ -46,18 +53,13 @@ void MarkerWidget::on_bDelete_clicked()
         // can't delete child markers directly
         return;
     }
-    model.removeMarker(marker);
-    marker->blockSignals(true);
     delete marker;
 }
 
 void MarkerWidget::on_bAdd_clicked()
 {
     auto marker = model.createDefaultMarker();
-    connect(marker, &TraceMarker::typeChanged, this, &MarkerWidget::updatePersistentEditors);
-    connect(marker, &TraceMarker::traceChanged, this, &MarkerWidget::updatePersistentEditors);
     model.addMarker(marker);
-    updatePersistentEditors();
 }
 
 void MarkerWidget::updatePersistentEditors()

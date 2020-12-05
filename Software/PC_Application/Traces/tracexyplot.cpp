@@ -465,6 +465,11 @@ void TraceXYPlot::draw(QPainter &p)
                         xPosition = m->getPosition();
 //                    }
                     if (xPosition < XAxis.rangeMin || xPosition > XAxis.rangeMax) {
+                        // marker not in graph range
+                        continue;
+                    }
+                    if(xPosition < t->minX() || xPosition > t->maxX()) {
+                        // marker not in trace range
                         continue;
                     }
                     auto t = m->getTrace();

@@ -298,6 +298,7 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     nlohmann::json j;
     j["traces"] = traceModel.toJSON();
     j["tiles"] = central->toJSON();
+    j["markers"] = markerModel->toJSON();
     return j;
 }
 
@@ -308,6 +309,9 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
     }
     if(j.contains("tiles")) {
         central->fromJSON(j["tiles"]);
+    }
+    if(j.contains("markers")) {
+        markerModel->fromJSON(j["markers"]);
     }
 }
 

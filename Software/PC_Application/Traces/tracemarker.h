@@ -6,10 +6,11 @@
 #include "trace.h"
 #include <QComboBox>
 #include "CustomWidgets/siunitedit.h"
+#include "savable.h"
 
 class TraceMarkerModel;
 
-class TraceMarker : public QObject
+class TraceMarker : public QObject, public Savable
 {
     Q_OBJECT;
 public:
@@ -35,7 +36,22 @@ public:
     bool editingFrequeny;
     Trace *getTrace() const;
 
-
+    enum class Type {
+        Manual,
+        Maximum,
+        Minimum,
+        Delta,
+        Noise,
+        PeakTable,
+        Lowpass,
+        Highpass,
+        Bandpass,
+        TOI,
+        PhaseNoise,
+        // keep last at end
+        Last,
+    };
+    Type getType() const;
     QWidget *getTypeEditor(QAbstractItemDelegate *delegate = nullptr);
     void updateTypeFromEditor(QWidget *c);
     SIUnitEdit* getSettingsEditor();
@@ -46,7 +62,18 @@ public:
     TraceMarker *getParent() const;
     const std::vector<TraceMarker *>& getHelperMarkers() const;
     TraceMarker *helperMarker(unsigned int i);
+    void assignDeltaMarker(TraceMarker *m);
     QString getSuffix() const;
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+    // Markers are referenced by pointers throughout this project (e.g. when added to a trace)
+    // When saving the current marker configuration, the pointer is not useful (e.g. for determining
+    // the associated delta marker. Instead a marker hash is saved to identify the correct marker.
+    // The hash should be influenced by every setting the marker can have. It should not depend on
+    // the marker data.
+    unsigned int toHash();
+
 
 public slots:
     void setPosition(double freq);
@@ -55,6 +82,7 @@ signals:
     void dataChanged(TraceMarker *m);
     void symbolChanged(TraceMarker *m);
     void typeChanged(TraceMarker *m);
+    void assignedDeltaChanged(TraceMarker *m);
     void traceChanged(TraceMarker *m);
     void beginRemoveHelperMarkers(TraceMarker *m);
     void endRemoveHelperMarkers(TraceMarker *m);
@@ -68,20 +96,6 @@ signals:
     void rawDataChanged();
     void domainChanged();
 private:
-
-    enum class Type {
-        Manual,
-        Maximum,
-        Minimum,
-        Delta,
-        Noise,
-        PeakTable,
-        Lowpass,
-        Highpass,
-        Bandpass,
-        TOI,
-        PhaseNoise,
-    };
     std::set<Type> getSupportedTypes();
     static QString typeToString(Type t) {
         switch(t) {
@@ -101,7 +115,6 @@ private:
     }
     void constrainPosition();
     TraceMarker *bestDeltaCandidate();
-    void assignDeltaMarker(TraceMarker *m);
     void deleteHelperMarkers();
     void setType(Type t);
     double toDecibel();
