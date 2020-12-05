@@ -4,6 +4,7 @@
 #include "ui_tdrdialog.h"
 #include <QVBoxLayout>
 #include <QLabel>
+#include "ui_tdrexplanationwidget.h"
 using namespace Math;
 using namespace std;
 
@@ -85,6 +86,9 @@ void TDR::edit()
         ui->DCmanual->setChecked(true);
     }
     ui->computeStepResponse->setChecked(stepResponse);
+    if(mode == Mode::Bandpass) {
+        ui->mode->setCurrentIndex(1);
+    }
 
     ui->manualMag->setUnit("dBm");
     ui->manualMag->setPrecision(3);
@@ -108,7 +112,10 @@ void TDR::edit()
 
 QWidget *TDR::createExplanationWidget()
 {
-    return new QLabel("Test");
+    auto w = new QWidget();
+    auto ui = new Ui::TDRExplanationWidget;
+    ui->setupUi(w);
+    return w;
 }
 
 nlohmann::json TDR::toJSON()
@@ -151,10 +158,10 @@ void TDR::fromJSON(nlohmann::json j)
 
 void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
-    Q_UNUSED(begin);
+    Q_UNUSED(end);
     if(input->rData().size() >= 2) {
-        // TDR is computationally expensive, only update at the end of sweep
-        if(end != input->rData().size()) {
+        // TDR is computationally expensive, only update at the end of sweep -> check if this is the first changed data in the next sweep
+        if(begin != 0) {
             // not the end, do nothing
             return;
         }

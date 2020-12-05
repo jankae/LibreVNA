@@ -136,6 +136,7 @@ FORMS += \
     Traces/Math/medianfilterdialog.ui \
     Traces/Math/newtracemathdialog.ui \
     Traces/Math/tdrdialog.ui \
+    Traces/Math/tdrexplanationwidget.ui \
     Traces/Math/tracematheditdialog.ui \
     Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \

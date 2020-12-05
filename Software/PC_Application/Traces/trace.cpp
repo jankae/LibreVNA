@@ -130,6 +130,7 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter, QString fi
     }
     touchstone = true;
     emit typeChanged(this);
+    emit outputSamplesChanged(0, data.size());
 }
 
 void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
@@ -283,6 +284,9 @@ void Trace::fromJSON(nlohmann::json j)
         }
         qDebug() << "Creating math operation of type:" << operation;
         auto op = TraceMath::createMath(type);
+        if(jm.contains("settings")) {
+            op->fromJSON(jm["settings"]);
+        }
         MathInfo info;
         info.enabled = jm.value("enabled", true);
         info.math = op;
@@ -492,7 +496,7 @@ double Trace::minX()
     if(lastMath->numSamples() > 0) {
         return lastMath->rData().front().x;
     } else {
-        return numeric_limits<double>::quiet_NaN();
+        return numeric_limits<double>::max();
     }
 }
 
@@ -501,7 +505,7 @@ double Trace::maxX()
     if(lastMath->numSamples() > 0) {
         return lastMath->rData().back().x;
     } else {
-        return numeric_limits<double>::quiet_NaN();
+        return numeric_limits<double>::lowest();
     }
 }
 

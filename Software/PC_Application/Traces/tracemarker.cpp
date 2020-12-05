@@ -74,6 +74,12 @@ Trace *TraceMarker::trace()
 
 QString TraceMarker::readableData()
 {
+    if(!parentTrace) {
+        return "";
+    }
+    if(position < parentTrace->minX() || position > parentTrace->maxX()) {
+        return "";
+    }
     if(isTimeDomain()) {
         switch(type) {
         case Type::Manual: {
