@@ -178,7 +178,8 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
         break;
     case TraceXYPlot::XAxisType::Time:
     case TraceXYPlot::XAxisType::Distance:
-        ret.insert(TraceXYPlot::YAxisType::Impulse);
+        ret.insert(TraceXYPlot::YAxisType::ImpulseReal);
+        ret.insert(TraceXYPlot::YAxisType::ImpulseMag);
         ret.insert(TraceXYPlot::YAxisType::Step);
         ret.insert(TraceXYPlot::YAxisType::Impedance);
         break;

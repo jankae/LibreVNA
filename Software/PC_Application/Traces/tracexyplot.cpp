@@ -17,7 +17,8 @@ const set<TraceXYPlot::YAxisType> TraceXYPlot::YAxisTypes = {TraceXYPlot::YAxisT
                                            TraceXYPlot::YAxisType::Magnitude,
                                            TraceXYPlot::YAxisType::Phase,
                                            TraceXYPlot::YAxisType::VSWR,
-                                           TraceXYPlot::YAxisType::Impulse,
+                                           TraceXYPlot::YAxisType::ImpulseReal,
+                                           TraceXYPlot::YAxisType::ImpulseMag,
                                            TraceXYPlot::YAxisType::Step,
                                            TraceXYPlot::YAxisType::Impedance};
 
@@ -185,7 +186,8 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
 bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
 {
     switch(type) {
-    case YAxisType::Impulse:
+    case YAxisType::ImpulseReal:
+    case YAxisType::ImpulseMag:
     case YAxisType::Step:
     case YAxisType::Impedance:
         return true;
@@ -357,17 +359,8 @@ void TraceXYPlot::draw(QPainter &p)
         if(YAxis[i].type == YAxisType::Disabled) {
             continue;
         }
-        QString labelY;
+        QString labelY = AxisTypeToName(YAxis[i].type);
         p.setPen(QPen(pref.General.graphColors.axis, 1));
-        switch(YAxis[i].type) {
-        case YAxisType::Magnitude: labelY = "Magnitude"; break;
-        case YAxisType::Phase: labelY = "Phase"; break;
-        case YAxisType::VSWR: labelY = "VSWR"; break;
-        case YAxisType::Impulse: labelY = "Impulse Response"; break;
-        case YAxisType::Step: labelY = "Step Response"; break;
-        case YAxisType::Impedance: labelY = "Impedance"; break;
-        default: break;
-        }
         auto xStart = i == 0 ? 0 : w.width() - AxisLabelSize * 1.5;
         p.save();
         p.translate(xStart, w.height()-xAxisSpace);
@@ -663,11 +656,14 @@ void TraceXYPlot::updateAxisTicks()
 QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
 {
     switch(type) {
-    case YAxisType::Disabled: return "Disabled"; break;
     case YAxisType::Magnitude: return "Magnitude"; break;
     case YAxisType::Phase: return "Phase"; break;
     case YAxisType::VSWR: return "VSWR"; break;
-    default: return "Unknown"; break;
+    case YAxisType::ImpulseReal: return "Impulse Response (Real)"; break;
+    case YAxisType::ImpulseMag: return "Impulse Response (Magnitude)"; break;
+    case YAxisType::Step: return "Step Response"; break;
+    case YAxisType::Impedance: return "Impedance"; break;
+    default: return "Unknown";
     }
 }
 
@@ -765,8 +761,11 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
             ret.setY((1+abs(data.y)) / (1-abs(data.y)));
         }
         break;
-    case YAxisType::Impulse:
+    case YAxisType::ImpulseReal:
         ret.setY(real(data.y));
+        break;
+    case YAxisType::ImpulseMag:
+        ret.setY(abs(data.y));
         break;
     case YAxisType::Step:
         ret.setY(t->sample(sample, Trace::SampleType::TimeStep).y.real());
@@ -908,7 +907,8 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
     case TraceXYPlot::YAxisType::Magnitude: return "db"; break;
     case TraceXYPlot::YAxisType::Phase: return "°"; break;
     case TraceXYPlot::YAxisType::VSWR: return ""; break;
-    case TraceXYPlot::YAxisType::Impulse: return ""; break;
+    case TraceXYPlot::YAxisType::ImpulseReal: return ""; break;
+    case TraceXYPlot::YAxisType::ImpulseMag: return ""; break;
     case TraceXYPlot::YAxisType::Step: return ""; break;
     case TraceXYPlot::YAxisType::Impedance: return "Ohm"; break;
     default: return ""; break;

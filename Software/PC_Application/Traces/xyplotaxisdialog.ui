@@ -72,7 +72,12 @@
            </item>
            <item>
             <property name="text">
-             <string>Impulse Response</string>
+             <string>Impulse Response (real)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Impulse Response (mag)</string>
             </property>
            </item>
            <item>
@@ -237,7 +242,12 @@
            </item>
            <item>
             <property name="text">
-             <string>Impulse Response</string>
+             <string>Impulse Response (real)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Impulse Response (mag)</string>
             </property>
            </item>
            <item>

@@ -18,9 +18,10 @@ public:
         Phase = 2,
         VSWR = 3,
         // TDR options
-        Impulse = 4,
-        Step = 5,
-        Impedance = 6,
+        ImpulseReal = 4,
+        ImpulseMag = 5,
+        Step = 6,
+        Impedance = 7,
         Last,
     };
     static const std::set<YAxisType> YAxisTypes;
