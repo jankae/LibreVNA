@@ -709,6 +709,7 @@ bool Calibration::openFromFile(QString filename)
         qWarning() << "Calibration file parsing failed: " << e.what();
         return false;
     }
+    this->currentCalFile = filename;    // if all ok, remember this
 
     return true;
 }
@@ -716,7 +717,14 @@ bool Calibration::openFromFile(QString filename)
 bool Calibration::saveToFile(QString filename)
 {
     if(filename.isEmpty()) {
-        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
+        // Suggest descriptive name ie. "SOLT 40M-700M 1000pt"
+        QString fn = Calibration::TypeToString(this->getType())
+                + " "
+                + hzToString(minFreq) + "-" + hzToString(maxFreq)
+                + " "
+                + QString::number(points.size()) + "pt";
+        //
+        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", fn, "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.isEmpty()) {
             // aborted selection
             return false;
@@ -734,8 +742,38 @@ bool Calibration::saveToFile(QString filename)
     auto calkit_file = filename + ".calkit";
     qDebug() << "Saving associated calibration kit to file" << calkit_file;
     kit.toFile(calkit_file);
+    this->currentCalFile = calibration_file;    // if all ok, remember this
 
     return true;
+}
+
+/**
+ * @brief Calibration::hzToString
+ * @param freqHz - input frequency in Hz
+ * @return frequency in human-friendly form such as 145k 2M, 2.1M, 3.45G
+ */
+QString Calibration::hzToString(double freqHz){
+    int dgt = 3;        // how many significant digits
+    QString res = "";   // initialize
+
+    if (freqHz <= 999) {
+        // 0-999Hz
+        res = QString::number(freqHz / 1, 'g', dgt) + "Hz";    // 1.23Hz, 45Hz, 88.5Hz
+    } else if (freqHz <= 999999) {
+        // 1k-999kHz
+        res = QString::number(freqHz / 1000, 'g', dgt) + "k";
+    } else if (freqHz <= 999999999) {
+        // 1M-999M
+        res = QString::number(freqHz / 1000000, 'g', dgt) + "M";
+    } else {
+        // 1G-...
+        res = QString::number(freqHz / 1000000000, 'g', dgt) + "G";
+    }
+    return res;
+}
+
+QString Calibration::getCurrentCalibrationFile(){
+    return this->currentCalFile;
 }
 
 ostream& operator<<(ostream &os, const Calibration &c)

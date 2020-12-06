@@ -137,6 +137,12 @@ private:
     std::vector<Point> points;
 
     Calkit kit;
+    QString hzToString(double freqHz);
+
+private:
+    QString currentCalFile;
+public:
+    QString getCurrentCalibrationFile();
 };
 
 #endif // CALIBRATION_H
