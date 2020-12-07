@@ -748,7 +748,7 @@ bool Calibration::saveToFile(QString filename)
  */
 QString Calibration::descriptiveCalName(){
     int precision = 3;
-    QString lo = Unit::ToString(this->minFreq, "", " kMG", precision);  // seems to work, but what are 2nd and 3rd parameters???
+    QString lo = Unit::ToString(this->minFreq, "", " kMG", precision);
     QString hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
     // due to rounding up 123.66M and 123.99M -> we get lo="124M" and hi="124M"
     // so let's add some precision

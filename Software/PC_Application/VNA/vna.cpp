@@ -287,10 +287,9 @@ VNA::VNA(AppWindow *window)
 
     // Calibration toolbar (and populate calibration menu)
     auto tb_cal = new QToolBar("Calibration");
-    QLabel *cbEnableCal_label = new QLabel("Calibration:");
-    cbEnableCal_label->setStyleSheet(getCalStyle());                         // on app start
-    cbEnableCal_label->setToolTip(getCalToolTip());                             // no cal. file loaded
-    tb_cal->addWidget(cbEnableCal_label);
+    calLabel = new QLabel("Calibration:");
+    UpdateCalWidget();
+    tb_cal->addWidget(calLabel);
     auto cbEnableCal = new QCheckBox;
     tb_cal->addWidget(cbEnableCal);
     auto cbType = new QComboBox();
@@ -329,8 +328,9 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->blockSignals(true);
         calDisable->setChecked(true);
         cbEnableCal->setCheckState(Qt::CheckState::Unchecked);
-        cbEnableCal_label->setStyleSheet(getCalStyle());                     // visually indicate loss of calibration
-        cbEnableCal_label->setToolTip(getCalToolTip());                         // cal. file unknown at this moment
+        // visually indicate loss of calibration
+        // cal. file unknown at this moment
+        UpdateCalWidget();
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(false);
@@ -348,8 +348,9 @@ VNA::VNA(AppWindow *window)
             }
         }
         cbEnableCal->setCheckState(Qt::CheckState::Checked);
-        cbEnableCal_label->setStyleSheet(getCalStyle());                     // restore default look of widget
-        cbEnableCal_label->setToolTip(getCalToolTip());                         // on hover, show name of active cal. file
+        // restore default look of widget
+        // on hover, show name of active cal. file
+        UpdateCalWidget();
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(true);
@@ -582,6 +583,7 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
     average.reset(settings.points);
     traceModel.clearVNAData();
     UpdateAverageCount();
+    UpdateCalWidget();
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
 
@@ -858,4 +860,10 @@ void VNA::StartCalibrationDialog(Calibration::Type type)
        InformationBox::ShowMessage("Calibration disabled", "The currently active calibration is no longer supported by the available measurements and was disabled.");
     });
     traceDialog->show();
+}
+
+void VNA::UpdateCalWidget()
+{
+    calLabel->setStyleSheet(getCalStyle());
+    calLabel->setToolTip(getCalToolTip());
 }

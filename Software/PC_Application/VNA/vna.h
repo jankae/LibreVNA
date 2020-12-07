@@ -56,6 +56,7 @@ private:
     void StoreSweepSettings();
     void StopSweep();
     void StartCalibrationDialog(Calibration::Type type = Calibration::Type::None);
+    void UpdateCalWidget();
 
     Protocol::SweepSettings settings;
     unsigned int averages;
@@ -82,6 +83,7 @@ private:
 
     // Status Labels
     QLabel *lAverages;
+    QLabel *calLabel;
 
     TileWidget *central;
 
