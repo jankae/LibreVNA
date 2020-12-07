@@ -19,6 +19,7 @@ public:
     void deactivate() override;
     void initializeDevice() override;
     void deviceDisconnected() override;
+    void shutdown() override;
 
     // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
     virtual nlohmann::json toJSON() override;
@@ -67,6 +68,7 @@ private:
     // Calibration
     Calibration cal;
     bool calValid;
+    bool calEdited;
     Calibration::Measurement calMeasurement;
     bool calMeasuring;
     bool calWaitFirst;

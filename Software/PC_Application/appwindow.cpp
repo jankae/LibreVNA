@@ -184,6 +184,9 @@ AppWindow::~AppWindow()
 
 void AppWindow::closeEvent(QCloseEvent *event)
 {
+    vna->shutdown();
+    generator->shutdown();
+    spectrumAnalyzer->shutdown();
     delete device;
     QSettings settings;
     settings.setValue("geometry", saveGeometry());

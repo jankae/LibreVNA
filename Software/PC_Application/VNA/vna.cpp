@@ -53,6 +53,7 @@ VNA::VNA(AppWindow *window)
     calValid = false;
     calMeasuring = false;
     calDialog.reset();
+    calEdited = false;
 
     // Create default traces
     auto tS11 = new Trace("S11", Qt::yellow);
@@ -104,10 +105,13 @@ VNA::VNA(AppWindow *window)
         } else {
             ApplyCalibration(cal.getType());
         }
+        calEdited = false;
     });
 
     connect(saveCal, &QAction::triggered, [=](){
-       cal.saveToFile();
+        if(cal.saveToFile()) {
+            calEdited = false;
+        }
     });
 
     auto calDisable = calMenu->addAction("Disabled");
@@ -508,6 +512,16 @@ void VNA::deviceDisconnected()
     defaultCalMenu->setEnabled(false);
 }
 
+void VNA::shutdown()
+{
+    if(calEdited && calValid) {
+        auto save = InformationBox::AskQuestion("Save calibration?", "The calibration contains data that has not been saved yet. Do you want to save it before exiting?", false);
+        if(save) {
+            cal.saveToFile();
+        }
+    }
+}
+
 nlohmann::json VNA::toJSON()
 {
     nlohmann::json j;
@@ -798,6 +812,7 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
         // enable calibration measurement only in transmission callback (prevents accidental sampling of data which was still being processed)
         calMeasuring = true;
     });
+    calEdited = true;
 }
 
 void VNA::ConstrainAndUpdateFrequencies()

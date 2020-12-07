@@ -153,9 +153,9 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
     auto xtype = jX.value("type", XAxisType::Frequency);
     auto xmode = jX.value("mode", XAxisMode::UseSpan);
 //    auto xlog = jX.value("log", false);
-    auto xmin = jX.value("min", 0);
-    auto xmax = jX.value("max", 6000000000);
-    auto xdiv = jX.value("div", 600000000);
+    auto xmin = jX.value("min", 0.0);
+    auto xmax = jX.value("max", 6000000000.0);
+    auto xdiv = jX.value("div", 600000000.0);
     setXAxis(xtype, xmode, xmin, xmax, xdiv);
     nlohmann::json jY[2] = {j["YPrimary"], j["YSecondary"]};
     for(unsigned int i=0;i<2;i++) {

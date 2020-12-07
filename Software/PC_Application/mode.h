@@ -17,6 +17,7 @@ public:
 
     virtual void activate(); // derived classes must call Mode::activate before doing anything
     virtual void deactivate(); // derived classes must call Mode::deactivate before returning
+    virtual void shutdown(){}; // called when the application is about to exit
     QString getName() const;
     static Mode *getActiveMode();
 
