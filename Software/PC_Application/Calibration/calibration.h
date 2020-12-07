@@ -137,7 +137,7 @@ private:
     std::vector<Point> points;
 
     Calkit kit;
-    QString hzToString(double freqHz);
+    QString descriptiveCalName();
 
 private:
     QString currentCalFile;

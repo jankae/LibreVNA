@@ -71,6 +71,7 @@ private:
     bool calWaitFirst;
     QProgressDialog calDialog;
 
+
     QMenu *defaultCalMenu;
     QAction *assignDefaultCal, *removeDefaultCal;
     QAction *saveCal;

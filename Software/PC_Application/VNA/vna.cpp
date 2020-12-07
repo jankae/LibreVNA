@@ -287,7 +287,7 @@ VNA::VNA(AppWindow *window)
 
     // Calibration toolbar (and populate calibration menu)
     auto tb_cal = new QToolBar("Calibration");
-    QLabel *cbEnableCal_label = new QLabel("Calibration:");     // correct object type
+    QLabel *cbEnableCal_label = new QLabel("Calibration:");
     tb_cal->addWidget(cbEnableCal_label);
     auto cbEnableCal = new QCheckBox;
     tb_cal->addWidget(cbEnableCal);
@@ -411,6 +411,7 @@ VNA::VNA(AppWindow *window)
 
     finalize(central);
 }
+
 
 void VNA::deactivate()
 {

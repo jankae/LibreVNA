@@ -717,13 +717,7 @@ bool Calibration::openFromFile(QString filename)
 bool Calibration::saveToFile(QString filename)
 {
     if(filename.isEmpty()) {
-        // Suggest descriptive name ie. "SOLT 40M-700M 1000pt"
-        QString fn = Calibration::TypeToString(this->getType())
-                + " "
-                + hzToString(minFreq) + "-" + hzToString(maxFreq)
-                + " "
-                + QString::number(points.size()) + "pt";
-        //
+        QString fn = descriptiveCalName();
         filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", fn, "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.isEmpty()) {
             // aborted selection
@@ -750,26 +744,27 @@ bool Calibration::saveToFile(QString filename)
 /**
  * @brief Calibration::hzToString
  * @param freqHz - input frequency in Hz
- * @return frequency in human-friendly form such as 145k 2M, 2.1M, 3.45G
+ * @return descriptive name ie. "SOLT 40M-700M 1000pt"
  */
-QString Calibration::hzToString(double freqHz){
-    int dgt = 3;        // how many significant digits
-    QString res = "";   // initialize
-
-    if (freqHz <= 999) {
-        // 0-999Hz
-        res = QString::number(freqHz / 1, 'g', dgt) + "Hz";    // 1.23Hz, 45Hz, 88.5Hz
-    } else if (freqHz <= 999999) {
-        // 1k-999kHz
-        res = QString::number(freqHz / 1000, 'g', dgt) + "k";
-    } else if (freqHz <= 999999999) {
-        // 1M-999M
-        res = QString::number(freqHz / 1000000, 'g', dgt) + "M";
-    } else {
-        // 1G-...
-        res = QString::number(freqHz / 1000000000, 'g', dgt) + "G";
+QString Calibration::descriptiveCalName(){
+    int precision = 3;
+    QString lo = Unit::ToString(this->minFreq, "", " kMG", precision);  // seems to work, but what are 2nd and 3rd parameters???
+    QString hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
+    // due to rounding up 123.66M and 123.99M -> we get lo="124M" and hi="124M"
+    // so let's add some precision
+    if (lo == hi) {
+        // Only in case of 123.66M and 123.69M we would need 5 digits, but that kind of narrow cal. is very unlikely.
+        precision = 4;
+        lo = Unit::ToString(this->minFreq, "", " kMG", precision);
+        hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
     }
-    return res;
+
+    QString tmp = Calibration::TypeToString(this->getType())
+            + " "
+            + lo + "-" + hi
+            + " "
+            + QString::number(this->points.size()) + "pt";
+    return tmp;
 }
 
 QString Calibration::getCurrentCalibrationFile(){
