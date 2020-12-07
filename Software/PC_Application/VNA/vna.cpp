@@ -288,7 +288,7 @@ VNA::VNA(AppWindow *window)
     // Calibration toolbar (and populate calibration menu)
     auto tb_cal = new QToolBar("Calibration");
     QLabel *cbEnableCal_label = new QLabel("Calibration:");
-    cbEnableCal_label->setStyleSheet(getCalStyleStr());                         // on app start
+    cbEnableCal_label->setStyleSheet(getCalStyle());                         // on app start
     cbEnableCal_label->setToolTip(getCalToolTip());                             // no cal. file loaded
     tb_cal->addWidget(cbEnableCal_label);
     auto cbEnableCal = new QCheckBox;
@@ -329,7 +329,7 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->blockSignals(true);
         calDisable->setChecked(true);
         cbEnableCal->setCheckState(Qt::CheckState::Unchecked);
-        cbEnableCal_label->setStyleSheet(getCalStyleStr());                     // visually indicate loss of calibration
+        cbEnableCal_label->setStyleSheet(getCalStyle());                     // visually indicate loss of calibration
         cbEnableCal_label->setToolTip(getCalToolTip());                         // cal. file unknown at this moment
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
@@ -348,7 +348,7 @@ VNA::VNA(AppWindow *window)
             }
         }
         cbEnableCal->setCheckState(Qt::CheckState::Checked);
-        cbEnableCal_label->setStyleSheet(getCalStyleStr());                     // restore default look of widget
+        cbEnableCal_label->setStyleSheet(getCalStyle());                     // restore default look of widget
         cbEnableCal_label->setToolTip(getCalToolTip());                         // on hover, show name of active cal. file
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
@@ -414,7 +414,7 @@ VNA::VNA(AppWindow *window)
     finalize(central);
 }
 
-QString VNA::getCalStyleStr()
+QString VNA::getCalStyle()
 {
     Calibration::InterpolationType interpol = cal.getInterpolation(settings);
     QString style = "";
@@ -446,8 +446,19 @@ QString VNA::getCalToolTip()
     case Calibration::InterpolationType::Exact:
     case Calibration::InterpolationType::Interpolate:
     case Calibration::InterpolationType::Extrapolate:
-        txt = cal.getCurrentCalibrationFile();
+    {
+        QString lo = Unit::ToString(cal.getMinFreq(), "", " kMG", 5);
+        QString hi = Unit::ToString(cal.getMaxFreq(), "", " kMG", 5);
+        if (settings.f_start < cal.getMinFreq() ) { lo = "<font color=\"red\">" + lo + "</font>";}
+        if (settings.f_stop > cal.getMaxFreq() ) { hi = "<font color=\"red\">" + hi + "</font>";}
+        txt =
+                "limits: " + lo + " - " + hi
+                + "<br>"
+                + "points: " + QString::number(cal.getNumPoints())
+                + "<br>"
+                "file: " + cal.getCurrentCalibrationFile();
         break;
+    }
     case Calibration::InterpolationType::NoCalibration:
         txt = "none";
         break;

@@ -70,7 +70,7 @@ private:
     bool calMeasuring;
     bool calWaitFirst;
     QProgressDialog calDialog;
-    QString getCalStyleStr();
+    QString getCalStyle();
     QString getCalToolTip();
 
 

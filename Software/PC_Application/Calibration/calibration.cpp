@@ -759,7 +759,8 @@ QString Calibration::descriptiveCalName(){
         hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
     }
 
-    QString tmp = Calibration::TypeToString(this->getType())
+    QString tmp =
+            Calibration::TypeToString(this->getType())
             + " "
             + lo + "-" + hi
             + " "
@@ -767,6 +768,15 @@ QString Calibration::descriptiveCalName(){
     return tmp;
 }
 
+double Calibration::getMinFreq(){
+    return this->minFreq;
+}
+double Calibration::getMaxFreq(){
+    return this->maxFreq;
+}
+int Calibration::getNumPoints(){
+    return this->points.size();
+}
 QString Calibration::getCurrentCalibrationFile(){
     return this->currentCalFile;
 }

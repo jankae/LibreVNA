@@ -143,6 +143,9 @@ private:
     QString currentCalFile;
 public:
     QString getCurrentCalibrationFile();
+    double getMinFreq();
+    double getMaxFreq();
+    int getNumPoints();
 };
 
 #endif // CALIBRATION_H
