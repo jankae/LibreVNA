@@ -288,6 +288,8 @@ VNA::VNA(AppWindow *window)
     // Calibration toolbar (and populate calibration menu)
     auto tb_cal = new QToolBar("Calibration");
     QLabel *cbEnableCal_label = new QLabel("Calibration:");
+    cbEnableCal_label->setStyleSheet(getCalStyleStr());                         // on app start
+    cbEnableCal_label->setToolTip(getCalToolTip());                             // no cal. file loaded
     tb_cal->addWidget(cbEnableCal_label);
     auto cbEnableCal = new QCheckBox;
     tb_cal->addWidget(cbEnableCal);
@@ -327,8 +329,8 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->blockSignals(true);
         calDisable->setChecked(true);
         cbEnableCal->setCheckState(Qt::CheckState::Unchecked);
-        cbEnableCal_label->setStyleSheet("background-color: yellow");       // visually indicate loss of calibration
-        cbEnableCal_label->setToolTip("none");                              // cal. file unknown at this moment
+        cbEnableCal_label->setStyleSheet(getCalStyleStr());                     // visually indicate loss of calibration
+        cbEnableCal_label->setToolTip(getCalToolTip());                         // cal. file unknown at this moment
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(false);
@@ -346,8 +348,8 @@ VNA::VNA(AppWindow *window)
             }
         }
         cbEnableCal->setCheckState(Qt::CheckState::Checked);
-        cbEnableCal_label->setStyleSheet("");                               // restore default look of widget
-        cbEnableCal_label->setToolTip(cal.getCurrentCalibrationFile());     // on hover, show name of active cal. file
+        cbEnableCal_label->setStyleSheet(getCalStyleStr());                     // restore default look of widget
+        cbEnableCal_label->setToolTip(getCalToolTip());                         // on hover, show name of active cal. file
         cbType->blockSignals(false);
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(true);
@@ -412,6 +414,46 @@ VNA::VNA(AppWindow *window)
     finalize(central);
 }
 
+QString VNA::getCalStyleStr()
+{
+    Calibration::InterpolationType interpol = cal.getInterpolation(settings);
+    QString style = "";
+    switch (interpol)
+    {
+    case Calibration::InterpolationType::Unchanged:
+    case Calibration::InterpolationType::Exact:
+    case Calibration::InterpolationType::Interpolate:
+        style = "";
+        break;
+
+    case Calibration::InterpolationType::Extrapolate:
+        style = "background-color: yellow";
+        break;
+    case Calibration::InterpolationType::NoCalibration:
+        style = "background-color: red";
+        break;
+    }
+    return style;
+}
+
+QString VNA::getCalToolTip()
+{
+    Calibration::InterpolationType interpol = cal.getInterpolation(settings);
+    QString txt = "";
+    switch (interpol)
+    {
+    case Calibration::InterpolationType::Unchanged:
+    case Calibration::InterpolationType::Exact:
+    case Calibration::InterpolationType::Interpolate:
+    case Calibration::InterpolationType::Extrapolate:
+        txt = cal.getCurrentCalibrationFile();
+        break;
+    case Calibration::InterpolationType::NoCalibration:
+        txt = "none";
+        break;
+    }
+    return txt;
+}
 
 void VNA::deactivate()
 {
