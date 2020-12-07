@@ -709,6 +709,7 @@ bool Calibration::openFromFile(QString filename)
         qWarning() << "Calibration file parsing failed: " << e.what();
         return false;
     }
+    this->currentCalFile = filename;    // if all ok, remember this
 
     return true;
 }
@@ -716,7 +717,8 @@ bool Calibration::openFromFile(QString filename)
 bool Calibration::saveToFile(QString filename)
 {
     if(filename.isEmpty()) {
-        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
+        QString fn = descriptiveCalName();
+        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", fn, "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.isEmpty()) {
             // aborted selection
             return false;
@@ -734,8 +736,49 @@ bool Calibration::saveToFile(QString filename)
     auto calkit_file = filename + ".calkit";
     qDebug() << "Saving associated calibration kit to file" << calkit_file;
     kit.toFile(calkit_file);
+    this->currentCalFile = calibration_file;    // if all ok, remember this
 
     return true;
+}
+
+/**
+ * @brief Calibration::hzToString
+ * @param freqHz - input frequency in Hz
+ * @return descriptive name ie. "SOLT 40M-700M 1000pt"
+ */
+QString Calibration::descriptiveCalName(){
+    int precision = 3;
+    QString lo = Unit::ToString(this->minFreq, "", " kMG", precision);  // seems to work, but what are 2nd and 3rd parameters???
+    QString hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
+    // due to rounding up 123.66M and 123.99M -> we get lo="124M" and hi="124M"
+    // so let's add some precision
+    if (lo == hi) {
+        // Only in case of 123.66M and 123.69M we would need 5 digits, but that kind of narrow cal. is very unlikely.
+        precision = 4;
+        lo = Unit::ToString(this->minFreq, "", " kMG", precision);
+        hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
+    }
+
+    QString tmp =
+            Calibration::TypeToString(this->getType())
+            + " "
+            + lo + "-" + hi
+            + " "
+            + QString::number(this->points.size()) + "pt";
+    return tmp;
+}
+
+double Calibration::getMinFreq(){
+    return this->minFreq;
+}
+double Calibration::getMaxFreq(){
+    return this->maxFreq;
+}
+int Calibration::getNumPoints(){
+    return this->points.size();
+}
+QString Calibration::getCurrentCalibrationFile(){
+    return this->currentCalFile;
 }
 
 ostream& operator<<(ostream &os, const Calibration &c)

@@ -163,6 +163,11 @@ void PreferencesDialog::setInitialGUIState()
     ui->GeneralGraphBackground->setColor(p->General.graphColors.background);
     ui->GeneralGraphAxis->setColor(p->General.graphColors.axis);
     ui->GeneralGraphDivisions->setColor(p->General.graphColors.divisions);
+
+    QTreeWidgetItem *item = ui->treeWidget->topLevelItem(0);
+    if (item != nullptr) {
+        ui->treeWidget->setCurrentItem(item);     // visually select first item
+    }
 }
 
 void Preferences::load()

@@ -70,6 +70,9 @@ private:
     bool calMeasuring;
     bool calWaitFirst;
     QProgressDialog calDialog;
+    QString getCalStyle();
+    QString getCalToolTip();
+
 
     QMenu *defaultCalMenu;
     QAction *assignDefaultCal, *removeDefaultCal;
