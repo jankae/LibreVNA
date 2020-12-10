@@ -88,11 +88,15 @@ void TraceMarkerModel::addMarker(TraceMarker *t)
     connect(t, &TraceMarker::beginRemoveHelperMarkers, [=](TraceMarker *m) {
          auto row = find(markers.begin(), markers.end(), m) - markers.begin();
          auto modelIndex = createIndex(row, 0, root);
-         beginRemoveRows(modelIndex, 0, m->getHelperMarkers().size() - 1);
+         if(!m->getHelperMarkers().empty()){
+             beginRemoveRows(modelIndex, 0, m->getHelperMarkers().size() - 1);
+         }
     });
     connect(t, &TraceMarker::endRemoveHelperMarkers, [=](TraceMarker *m) {
         markerDataChanged(m);
-        endRemoveRows();
+        if(!m->getHelperMarkers().empty()){
+            endRemoveRows();
+        }
     });
     connect(t, &TraceMarker::deleted, this, qOverload<TraceMarker*>(&TraceMarkerModel::removeMarker));
     emit markerAdded(t);
@@ -118,7 +122,7 @@ void TraceMarkerModel::removeMarker(TraceMarker *m)
 void TraceMarkerModel::markerDataChanged(TraceMarker *m)
 {
     auto row = find(markers.begin(), markers.end(), m) - markers.begin();
-    if(m->editingFrequeny) {
+    if(m->editingFrequency) {
         // only update the other columns, do not override editor data
         emit dataChanged(index(row, ColIndexData), index(row, ColIndexData));
     } else {
@@ -373,14 +377,14 @@ QSize MarkerSettingsDelegate::sizeHint(const QStyleOptionViewItem &, const QMode
 QWidget *MarkerSettingsDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
 {
     auto marker = static_cast<const TraceMarkerModel*>(index.model())->markerFromIndex(index);
-    marker->editingFrequeny = true;
+    marker->editingFrequency = true;
     auto e = marker->getSettingsEditor();
     if(e) {
         e->setMaximumHeight(rowHeight);
         e->setParent(parent);
         connect(e, &SIUnitEdit::valueUpdated, this, &MarkerSettingsDelegate::commitData);
         connect(e, &SIUnitEdit::focusLost, [=](){
-            marker->editingFrequeny = false;
+            marker->editingFrequency = false;
         });
     }
     return e;

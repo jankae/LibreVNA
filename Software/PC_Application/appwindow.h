@@ -61,8 +61,6 @@ private:
     struct {
         struct {
             QComboBox *type;
-            QCheckBox *automatic;
-            QCheckBox *outputEnabled;
             QComboBox *outFreq;
         } reference;
     } toolbars;

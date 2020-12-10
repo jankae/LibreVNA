@@ -11,7 +11,7 @@
 using namespace std;
 
 TraceMarker::TraceMarker(TraceMarkerModel *model, int number, TraceMarker *parent, QString descr)
-    : editingFrequeny(false),
+    : editingFrequency(false),
       model(model),
       parentTrace(nullptr),
       position(1000000000),

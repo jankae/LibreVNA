@@ -33,7 +33,7 @@ public:
     int getNumber() const;
     void setNumber(int value);
 
-    bool editingFrequeny;
+    bool editingFrequency;
     Trace *getTrace() const;
 
     enum class Type {

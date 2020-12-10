@@ -277,30 +277,21 @@ void AppWindow::CreateToolbars()
 {
     // Reference toolbar
     auto tb_reference = new QToolBar("Reference", this);
-    tb_reference->addWidget(new QLabel("Ref:"));
+    tb_reference->addWidget(new QLabel("Ref in:"));
     toolbars.reference.type = new QComboBox();
     toolbars.reference.type->addItem("Int");
     toolbars.reference.type->addItem("Ext");
-    toolbars.reference.automatic = new QCheckBox("Auto");
-    connect(toolbars.reference.automatic, &QCheckBox::clicked, [this](bool checked) {
-        toolbars.reference.type->setEnabled(!checked);
-        UpdateReference();
-    });
-    //    toolbars.reference.automatic->setChecked(true);
+    toolbars.reference.type->addItem("Auto");
     tb_reference->addWidget(toolbars.reference.type);
-    tb_reference->addWidget(toolbars.reference.automatic);
     tb_reference->addSeparator();
     tb_reference->addWidget(new QLabel("Ref out:"));
-    toolbars.reference.outputEnabled = new QCheckBox();
     toolbars.reference.outFreq = new QComboBox();
+    toolbars.reference.outFreq->addItem("Off");
     toolbars.reference.outFreq->addItem("10 MHz");
     toolbars.reference.outFreq->addItem("100 MHz");
-    tb_reference->addWidget(toolbars.reference.outputEnabled);
     tb_reference->addWidget(toolbars.reference.outFreq);
     connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
     connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
-    connect(toolbars.reference.outputEnabled, &QCheckBox::clicked, this, &AppWindow::UpdateReference);
-
     addToolBar(tb_reference);
     tb_reference->setObjectName("Reference Toolbar");
 }
@@ -352,22 +343,23 @@ void AppWindow::UpdateReference()
         return;
     }
     Protocol::ReferenceSettings s = {};
-    if(toolbars.reference.automatic->isChecked()) {
-        s.AutomaticSwitch = 1;
-    }
-    if(toolbars.reference.type->currentText()=="Ext") {
+
+    QString txt1 = toolbars.reference.type->currentText();
+    if( (txt1=="Ext") || (txt1=="External") ) {
         s.UseExternalRef = 1;
     }
-    if(toolbars.reference.outputEnabled->isChecked()) {
-        switch(toolbars.reference.outFreq->currentIndex()) {
-        case 0:
-            s.ExtRefOuputFreq = 10000000;
-            break;
-        case 1:
-            s.ExtRefOuputFreq = 100000000;
-            break;
-        }
+    if( (txt1=="Auto") || (txt1=="Automatic") ) {
+        s.AutomaticSwitch = 1;
     }
+
+    QString txt2 = toolbars.reference.outFreq->currentText();
+    if(txt2=="10 MHz"){
+        s.ExtRefOuputFreq = 10000000;
+    }
+    if(txt2=="100 MHz"){
+        s.ExtRefOuputFreq = 100000000;
+    }
+
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::Reference;
     p.reference = s;
