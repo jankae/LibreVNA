@@ -351,6 +351,15 @@ void TraceMarker::checkDeltaMarker()
     }
 }
 
+void TraceMarker::deltaDeleted()
+{
+    // the delta marker of this marker has been deleted, find new match
+    delta = nullptr;
+    qDebug() << "assigned delta deleted";
+    assignDeltaMarker(bestDeltaCandidate());
+    update();
+}
+
 std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
 {
     set<TraceMarker::Type> supported;
@@ -447,12 +456,7 @@ void TraceMarker::assignDeltaMarker(TraceMarker *m)
         // this marker has to be updated when the delta marker changes
         connect(delta, &TraceMarker::rawDataChanged, this, &TraceMarker::update);
         connect(delta, &TraceMarker::domainChanged, this, &TraceMarker::checkDeltaMarker);
-        connect(delta, &TraceMarker::deleted, [=](){
-            delta = nullptr;
-            qDebug() << "assigned delta deleted";
-            assignDeltaMarker(bestDeltaCandidate());
-            update();
-        });
+        connect(delta, &TraceMarker::deleted, this, &TraceMarker::deltaDeleted);
     }
     emit assignedDeltaChanged(this);
 }

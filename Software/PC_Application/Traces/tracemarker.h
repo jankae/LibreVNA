@@ -92,6 +92,7 @@ private slots:
     void traceDataChanged();
     void updateSymbol();
     void checkDeltaMarker();
+    void deltaDeleted();
 signals:
     void rawDataChanged();
     void domainChanged();
