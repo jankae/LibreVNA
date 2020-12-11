@@ -2,6 +2,7 @@
 
 #include "medianfilter.h"
 #include "tdr.h"
+#include "dft.h"
 #include "Traces/trace.h"
 
 TraceMath::TraceMath()
@@ -18,6 +19,8 @@ TraceMath *TraceMath::createMath(TraceMath::Type type)
         return new Math::MedianFilter();
     case Type::TDR:
         return new Math::TDR();
+    case Type::DFT:
+        return new Math::DFT();
     default:
         return nullptr;
     }
@@ -34,6 +37,10 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
     case Type::TDR:
         ret.name = "TDR";
         ret.explanationWidget = Math::TDR::createExplanationWidget();
+        break;
+    case Type::DFT:
+        ret.name = "DFT";
+        ret.explanationWidget = Math::DFT::createExplanationWidget();
         break;
     default:
         break;
@@ -159,6 +166,11 @@ void TraceMath::updateStepResponse(bool valid)
     } else {
         stepResponse.clear();
     }
+}
+
+TraceMath *TraceMath::getInput() const
+{
+    return input;
 }
 
 QString TraceMath::getStatusDescription() const

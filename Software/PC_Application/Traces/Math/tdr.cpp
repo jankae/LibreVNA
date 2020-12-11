@@ -138,6 +138,9 @@ nlohmann::json TDR::toJSON()
 
 void TDR::fromJSON(nlohmann::json j)
 {
+    if(j.contains("window")) {
+        window.fromJSON(j["window"]);
+    }
     if(j.value("bandpass_mode", true)) {
         mode = Mode::Bandpass;
     } else {
@@ -166,7 +169,7 @@ void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
             return;
         }
         vector<complex<double>> frequencyDomain;
-        auto stepSize = input->rData()[1].x - input->rData()[0].x;
+        auto stepSize = (input->rData().back().x - input->rData().front().x) / (input->rData().size() - 1);
         if(mode == Mode::Lowpass) {
             if(stepResponse) {
                 auto steps = input->rData().size();
@@ -180,6 +183,7 @@ void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
                 if(firstStep * steps != input->rData().back().x) {
                     // data is not available with correct frequency spacing, calculate required steps
                     steps = input->rData().back().x / firstStep;
+                    stepSize = firstStep;
                 }
                 frequencyDomain.resize(2 * steps + 1);
                 // copy frequencies, use the flipped conjugate for negative part
@@ -258,4 +262,14 @@ void TDR::updateTDR()
     if(dataType != DataType::Invalid) {
         inputSamplesChanged(0, input->rData().size());
     }
+}
+
+const WindowFunction& TDR::getWindow() const
+{
+    return window;
+}
+
+TDR::Mode TDR::getMode() const
+{
+    return mode;
 }

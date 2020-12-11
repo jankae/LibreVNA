@@ -627,6 +627,10 @@ int Trace::index(double x)
     auto lower = lower_bound(lastMath->rData().begin(), lastMath->rData().end(), x, [](const Data &lhs, const double x) -> bool {
         return lhs.x < x;
     });
+    if(lower == lastMath->rData().end()) {
+        // actually beyond the last sample, return the index of the last anyway to avoid access past data
+        return lastMath->rData().size() - 1;
+    }
     return lower - lastMath->rData().begin();
 }
 

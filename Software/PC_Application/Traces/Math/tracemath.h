@@ -72,6 +72,7 @@ public:
     enum class Type {
         MedianFilter,
         TDR,
+        DFT,
         // Add new math operations here, do not explicitly assign values and keep the Last entry at the last position
         Last,
     };
@@ -105,6 +106,8 @@ public:
 
     // returns the trace this math operation is attached to
     Trace* root();
+
+    TraceMath *getInput() const;
 
 public slots:
     // some values of the input data have changed, begin/end determine which sample(s) has changed

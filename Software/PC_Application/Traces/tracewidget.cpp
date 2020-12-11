@@ -4,7 +4,7 @@
 #include <QKeyEvent>
 #include "traceeditdialog.h"
 #include "traceimportdialog.h"
-#include "traceexportdialog.h"
+#include "tracetouchstoneexport.h"
 #include <QFileDialog>
 #include <QDrag>
 #include <QMimeData>

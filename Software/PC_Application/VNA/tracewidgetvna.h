@@ -8,7 +8,7 @@ class TraceWidgetVNA : public TraceWidget
 public:
     TraceWidgetVNA(TraceModel &model, QWidget *parent = nullptr);
 protected slots:
-    virtual void exportDialog() override;
+    virtual void exportDialog() override {};
     virtual void importDialog() override;
 
 protected:

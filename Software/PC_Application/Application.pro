@@ -24,6 +24,7 @@ HEADERS += \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
+    Traces/Math/dft.h \
     Traces/Math/medianfilter.h \
     Traces/Math/tdr.h \
     Traces/Math/tracemath.h \
@@ -32,14 +33,15 @@ HEADERS += \
     Traces/fftcomplex.h \
     Traces/markerwidget.h \
     Traces/trace.h \
+    Traces/tracecsvexport.h \
     Traces/traceeditdialog.h \
-    Traces/traceexportdialog.h \
     Traces/traceimportdialog.h \
     Traces/tracemarker.h \
     Traces/tracemarkermodel.h \
     Traces/tracemodel.h \
     Traces/traceplot.h \
     Traces/tracesmithchart.h \
+    Traces/tracetouchstoneexport.h \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
     Traces/xyplotaxisdialog.h \
@@ -50,6 +52,7 @@ HEADERS += \
     VNA/vna.h \
     appwindow.h \
     averaging.h \
+    csv.h \
     json.hpp \
     mode.h \
     preferences.h \
@@ -83,6 +86,7 @@ SOURCES += \
     SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
+    Traces/Math/dft.cpp \
     Traces/Math/medianfilter.cpp \
     Traces/Math/tdr.cpp \
     Traces/Math/tracemath.cpp \
@@ -91,14 +95,15 @@ SOURCES += \
     Traces/fftcomplex.cpp \
     Traces/markerwidget.cpp \
     Traces/trace.cpp \
+    Traces/tracecsvexport.cpp \
     Traces/traceeditdialog.cpp \
-    Traces/traceexportdialog.cpp \
     Traces/traceimportdialog.cpp \
     Traces/tracemarker.cpp \
     Traces/tracemarkermodel.cpp \
     Traces/tracemodel.cpp \
     Traces/traceplot.cpp \
     Traces/tracesmithchart.cpp \
+    Traces/tracetouchstoneexport.cpp \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
     Traces/xyplotaxisdialog.cpp \
@@ -107,6 +112,7 @@ SOURCES += \
     VNA/vna.cpp \
     appwindow.cpp \
     averaging.cpp \
+    csv.cpp \
     main.cpp \
     mode.cpp \
     preferences.cpp \
@@ -132,6 +138,8 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
+    Traces/Math/dftdialog.ui \
+    Traces/Math/dftexplanationwidget.ui \
     Traces/Math/medianexplanationwidget.ui \
     Traces/Math/medianfilterdialog.ui \
     Traces/Math/newtracemathdialog.ui \
@@ -140,9 +148,10 @@ FORMS += \
     Traces/Math/tracematheditdialog.ui \
     Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \
+    Traces/tracecsvexport.ui \
     Traces/traceeditdialog.ui \
-    Traces/traceexportdialog.ui \
     Traces/traceimportdialog.ui \
+    Traces/tracetouchstoneexport.ui \
     Traces/tracewidget.ui \
     Traces/xyplotaxisdialog.ui \
     VNA/portextensioneditdialog.ui \

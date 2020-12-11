@@ -2,28 +2,42 @@
 
 #include <QFileDialog>
 #include "Traces/traceimportdialog.h"
-#include "Traces/traceexportdialog.h"
+#include "Traces/tracetouchstoneexport.h"
+#include "Traces/tracecsvexport.h"
+#include "ui_tracewidget.h"
+
+#include <QMenu>
 
 TraceWidgetVNA::TraceWidgetVNA(TraceModel &model, QWidget *parent)
     : TraceWidget(model, parent)
 {
+    auto exportMenu = new QMenu();
+    auto exportTouchstone = new QAction("Touchstone");
+    auto exportCSV = new QAction("CSV");
+    exportMenu->addAction(exportTouchstone);
+    exportMenu->addAction(exportCSV);
 
-}
+    ui->bExport->setMenu(exportMenu);
 
-void TraceWidgetVNA::exportDialog()
-{
-    auto e = new TraceExportDialog(model);
-    // Attempt to set default traces (this will result in correctly populated
-    // 2 port export if the initial 4 traces have not been modified)
-    e->setPortNum(2);
-    auto traces = model.getTraces();
-    for(unsigned int i=0;i<4;i++) {
-        if(i >= traces.size()) {
-            break;
+    connect(exportTouchstone, &QAction::triggered, [&]() {
+        auto e = new TraceTouchstoneExport(model);
+        // Attempt to set default traces (this will result in correctly populated
+        // 2 port export if the initial 4 traces have not been modified)
+        e->setPortNum(2);
+        auto traces = model.getTraces();
+        for(unsigned int i=0;i<4;i++) {
+            if(i >= traces.size()) {
+                break;
+            }
+            e->setTrace(i%2, i/2, traces[i]);
         }
-        e->setTrace(i%2, i/2, traces[i]);
-    }
-    e->show();
+        e->show();
+    });
+
+    connect(exportCSV, &QAction::triggered, [&]() {
+        auto e = new TraceCSVExport(model);
+        e->show();
+    });
 }
 
 void TraceWidgetVNA::importDialog()

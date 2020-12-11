@@ -25,7 +25,8 @@ public:
 
     WindowFunction(Type type = Type::Hamming);
 
-    void apply(std::vector<std::complex<double>>& data);
+    void apply(std::vector<std::complex<double>>& data) const;
+    void reverse(std::vector<std::complex<double>>& data) const;
 
     QWidget *createEditor();
 
@@ -39,7 +40,7 @@ signals:
     void changed();
 
 private:
-    double getFactor(unsigned int n, unsigned int N);
+    double getFactor(unsigned int n, unsigned int N) const;
     Type type;
     // parameters for the different types. Not all windows use one and most only one.
     // But keeping all parameters for all windows allows switching between window types

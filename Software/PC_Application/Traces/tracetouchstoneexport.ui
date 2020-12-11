@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TraceExportDialog</class>
- <widget class="QDialog" name="TraceExportDialog">
+ <class>TraceTouchstoneExport</class>
+ <widget class="QDialog" name="TraceTouchstoneExport">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Touchstone Export</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0,0">
    <item>
@@ -226,7 +226,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>TraceExportDialog</receiver>
+   <receiver>TraceTouchstoneExport</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

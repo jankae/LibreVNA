@@ -155,7 +155,7 @@ static size_t reverseBits(size_t val, int width) {
 void Fft::shift(std::vector<std::complex<double> > &vec, bool inverse)
 {
     int rotate_len = vec.size() / 2;
-    if(vec.size() % 0x01 != 0) {
+    if((vec.size() & 0x01) != 0) {
         // odd size, behavior depends on whether this is an inverse shift
         if(!inverse) {
             rotate_len++;

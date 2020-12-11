@@ -1,5 +1,5 @@
-#ifndef TRACEEXPORTDIALOG_H
-#define TRACEEXPORTDIALOG_H
+#ifndef TRACETOUCHSTONEEXPORT_H
+#define TRACETOUCHSTONEEXPORT_H
 
 #include <QDialog>
 #include <QComboBox>
@@ -7,16 +7,16 @@
 #include <QSignalMapper>
 
 namespace Ui {
-class TraceExportDialog;
+class TraceTouchstoneExport;
 }
 
-class TraceExportDialog : public QDialog
+class TraceTouchstoneExport : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit TraceExportDialog(TraceModel &model, QWidget *parent = nullptr);
-    ~TraceExportDialog();
+    explicit TraceTouchstoneExport(TraceModel &model, QWidget *parent = nullptr);
+    ~TraceTouchstoneExport();
     bool setTrace(int portFrom, int portTo, Trace *t);
     bool setPortNum(int ports);
 
@@ -26,7 +26,7 @@ private slots:
     void selectionChanged(QComboBox *w);
 
 private:
-    Ui::TraceExportDialog *ui;
+    Ui::TraceTouchstoneExport *ui;
     TraceModel &model;
     std::vector<std::vector<QComboBox*>> cTraces;
 

@@ -220,7 +220,7 @@ bool TraceMarkerModel::setData(const QModelIndex &index, const QVariant &value, 
 
 Qt::ItemFlags TraceMarkerModel::flags(const QModelIndex &index) const
 {
-    int flags = Qt::NoItemFlags;
+    int flags = Qt::ItemIsSelectable;
     switch(index.column()) {
     case ColIndexNumber: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexTrace: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;

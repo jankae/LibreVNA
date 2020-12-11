@@ -30,11 +30,19 @@ WindowFunction::WindowFunction(WindowFunction::Type type)
     chebyshev_alpha = 5;
 }
 
-void WindowFunction::apply(std::vector<std::complex<double> > &data)
+void WindowFunction::apply(std::vector<std::complex<double> > &data) const
 {
     unsigned int N = data.size();
     for(unsigned int n = 0;n<N;n++) {
         data[n] *= getFactor(n, N);
+    }
+}
+
+void WindowFunction::reverse(std::vector<std::complex<double> > &data) const
+{
+    unsigned int N = data.size();
+    for(unsigned int n = 0;n<N;n++) {
+        data[n] /= getFactor(n, N);
     }
 }
 
@@ -148,7 +156,7 @@ void WindowFunction::fromJSON(nlohmann::json j)
     }
 }
 
-double WindowFunction::getFactor(unsigned int n, unsigned int N)
+double WindowFunction::getFactor(unsigned int n, unsigned int N) const
 {
     // all formulas from https://en.wikipedia.org/wiki/Window_function
     switch(type) {

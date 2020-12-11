@@ -1,13 +1,13 @@
-﻿#include "traceexportdialog.h"
+﻿#include "tracetouchstoneexport.h"
 #include "ui_traceexportdialog.h"
 #include <QDebug>
 #include <QFileDialog>
 #include "touchstone.h"
 #include <QPushButton>
 
-TraceExportDialog::TraceExportDialog(TraceModel &model, QWidget *parent) :
+TraceTouchstoneExport::TraceTouchstoneExport(TraceModel &model, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::TraceExportDialog),
+    ui(new Ui::TraceTouchstoneExport),
     model(model),
     freqsSet(false)
 {
@@ -17,12 +17,12 @@ TraceExportDialog::TraceExportDialog(TraceModel &model, QWidget *parent) :
     on_sbPorts_valueChanged(ui->sbPorts->value());
 }
 
-TraceExportDialog::~TraceExportDialog()
+TraceTouchstoneExport::~TraceTouchstoneExport()
 {
     delete ui;
 }
 
-bool TraceExportDialog::setTrace(int portFrom, int portTo, Trace *t)
+bool TraceTouchstoneExport::setTrace(int portFrom, int portTo, Trace *t)
 {
     if(portFrom < 0 || portFrom >= ui->sbPorts->value() || portTo < 0 || portTo >= ui->sbPorts->value()) {
         // invalid port selection
@@ -46,7 +46,7 @@ bool TraceExportDialog::setTrace(int portFrom, int portTo, Trace *t)
     }
 }
 
-bool TraceExportDialog::setPortNum(int ports)
+bool TraceTouchstoneExport::setPortNum(int ports)
 {
     if(ports < 1 || ports > 4) {
         return false;
@@ -55,7 +55,7 @@ bool TraceExportDialog::setPortNum(int ports)
     return true;
 }
 
-void TraceExportDialog::on_buttonBox_accepted()
+void TraceTouchstoneExport::on_buttonBox_accepted()
 {
     auto filename = QFileDialog::getSaveFileName(this, "Select file for exporting traces", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, QFileDialog::DontUseNativeDialog);
     if(filename.length() > 0) {
@@ -99,7 +99,7 @@ void TraceExportDialog::on_buttonBox_accepted()
     }
 }
 
-void TraceExportDialog::on_sbPorts_valueChanged(int ports)
+void TraceTouchstoneExport::on_sbPorts_valueChanged(int ports)
 {
     // remove the previous widgets
     QGridLayout *layout = static_cast<QGridLayout*>(ui->gbTraces->layout());
@@ -118,6 +118,10 @@ void TraceExportDialog::on_sbPorts_valueChanged(int ports)
             // create possible trace selections
             c->addItem("None");
             for(auto t : availableTraces) {
+                if(t->getDataType() != Trace::DataType::Frequency) {
+                    // can only add frequency traces
+                    continue;
+                }
                 if(i == j && !t->isReflection()) {
                     // can not add through measurement at reflection port
                     continue;
@@ -137,7 +141,7 @@ void TraceExportDialog::on_sbPorts_valueChanged(int ports)
     }
 }
 
-void TraceExportDialog::selectionChanged(QComboBox *w)
+void TraceTouchstoneExport::selectionChanged(QComboBox *w)
 {
     if(w->currentIndex() != 0 && !freqsSet) {
         // the first trace has been selected, extract frequency info
