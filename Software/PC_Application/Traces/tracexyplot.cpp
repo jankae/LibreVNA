@@ -785,18 +785,6 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
     return ret;
 }
 
-//QPoint TraceXYPlot::dataToPixel(Trace::Data d)
-//{
-//    if(d.x < XAxis.rangeMin || d.x > XAxis.rangeMax) {
-//        return QPoint();
-//    }
-//    auto y = traceToCoordinate(d.y, YAxis[0].type);
-//    QPoint p;
-//    p.setX(Util::Scale<double>(d.x, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
-//    p.setY(Util::Scale<double>(y, YAxis[0].rangeMin, YAxis[0].rangeMax, plotAreaBottom, 0));
-//    return p;
-//}
-
 QPoint TraceXYPlot::plotValueToPixel(QPointF plotValue, int Yaxis)
 {
     QPoint p;
@@ -815,11 +803,6 @@ QPointF TraceXYPlot::pixelToPlotValue(QPoint pixel, int Yaxis)
 
 QPoint TraceXYPlot::markerToPixel(TraceMarker *m)
 {
-    QPoint ret = QPoint();
-//    if(m->isTimeDomain() != (XAxis.type != XAxisType::Frequency)) {
-//        // invalid domain
-//        return ret;
-//    }
     auto t = m->getTrace();
     QPointF plotPoint = traceToCoordinate(t, t->index(m->getPosition()), YAxis[0].type);
     return plotValueToPixel(plotPoint, 0);

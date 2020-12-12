@@ -65,7 +65,6 @@ private:
     bool supported(Trace *t, YAxisType type);
     void removeUnsupportedTraces();
     QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);
-//    QPoint dataToPixel(Trace::Data d);
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
     QPointF pixelToPlotValue(QPoint pixel, int YAxis);
     QPoint markerToPixel(TraceMarker *m) override;

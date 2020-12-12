@@ -1,5 +1,5 @@
 ﻿#include "tracetouchstoneexport.h"
-#include "ui_traceexportdialog.h"
+#include "ui_tracetouchstoneexport.h"
 #include <QDebug>
 #include <QFileDialog>
 #include "touchstone.h"
