@@ -19,17 +19,17 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->GSource->setId(ui->bLive, 0);
     ui->GSource->setId(ui->bFile, 1);
 
-    if(t.isCalibration()) {
-        // prevent editing imported calibration traces
+    if(t.isCalibration() || (t.isFromFile() && t.getFilename().endsWith(".csv"))) {
+        // prevent editing imported calibration traces (and csv files for now)
         ui->bLive->setEnabled(false);
         ui->bFile->setEnabled(false);
         ui->CLiveType->setEnabled(false);
         ui->CLiveParam->setEnabled(false);
     }
 
-    if(t.isTouchstone()) {
+    if(t.isFromFile() && !t.getFilename().endsWith(".csv")) {
         ui->bFile->click();
-        ui->touchstoneImport->setFile(t.getTouchstoneFilename());
+        ui->touchstoneImport->setFile(t.getFilename());
     }
 
     auto updateFileStatus = [this]() {
@@ -48,8 +48,8 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
                     ui->CParameter->addItem(name);
                 }
             }
-            if(trace.getTouchstoneParameter() < touchstone.ports()*touchstone.ports()) {
-                ui->CParameter->setCurrentIndex(trace.getTouchstoneParameter());
+            if(trace.getFileParameter() < touchstone.ports()*touchstone.ports()) {
+                ui->CParameter->setCurrentIndex(trace.getFileParameter());
             } else {
                 ui->CParameter->setCurrentIndex(0);
             }
@@ -113,7 +113,7 @@ void TraceEditDialog::on_buttonBox_accepted()
         // only apply changes if it is not a calibration trace
         if (ui->bFile->isChecked()) {
             auto t = ui->touchstoneImport->getTouchstone();
-            trace.fillFromTouchstone(t, ui->CParameter->currentIndex(), ui->touchstoneImport->getFilename());
+            trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
         } else {
             Trace::LivedataType type = Trace::LivedataType::Overwrite;
             Trace::LiveParameter param = Trace::LiveParameter::S11;

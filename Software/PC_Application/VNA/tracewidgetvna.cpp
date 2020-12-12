@@ -42,27 +42,29 @@ TraceWidgetVNA::TraceWidgetVNA(TraceModel &model, QWidget *parent)
 
 void TraceWidgetVNA::importDialog()
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, QFileDialog::DontUseNativeDialog);
-    if (filename.length() > 0) {
-        auto t = Touchstone::fromFile(filename.toStdString());
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p);;CSV files (*.csv)", nullptr, QFileDialog::DontUseNativeDialog);
+    if (!filename.isEmpty()) {
         std::vector<Trace*> traces;
-        for(unsigned int i=0;i<t.ports()*t.ports();i++) {
-            auto trace = new Trace();
-            trace->fillFromTouchstone(t, i, filename);
-            unsigned int sink = i / t.ports() + 1;
-            unsigned int source = i % t.ports() + 1;
-            trace->setName("S"+QString::number(sink)+QString::number(source));
-            traces.push_back(trace);
+        QString prefix = QString();
+        if(filename.endsWith(".csv")) {
+            auto csv = CSV::fromFile(filename);
+            traces = Trace::createFromCSV(csv);
+        } else {
+            // must be a touchstone file
+            auto t = Touchstone::fromFile(filename.toStdString());
+            traces = Trace::createFromTouchstone(t);
         }
         // contruct prefix from filename
+        prefix = filename;
         // remove any directory names (keep only the filename itself)
-        int lastSlash = qMax(filename.lastIndexOf('/'), filename.lastIndexOf('\\'));
+        int lastSlash = qMax(prefix.lastIndexOf('/'), prefix.lastIndexOf('\\'));
         if(lastSlash != -1) {
-            filename.remove(0, lastSlash + 1);
+            prefix.remove(0, lastSlash + 1);
         }
         // remove file type
-        filename.truncate(filename.indexOf('.'));
-        auto i = new TraceImportDialog(model, traces, filename+"_");
+        prefix.truncate(prefix.indexOf('.'));
+        prefix.append("_");
+        auto i = new TraceImportDialog(model, traces, prefix);
         i->show();
     }
 }

@@ -111,7 +111,7 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
         }
         break;
     case ColIndexPlayPause:
-        if (role == Qt::DecorationRole && !trace->isTouchstone()) {
+        if (role == Qt::DecorationRole && trace->isLive()) {
             if (trace->isPaused()) {
                 return QIcon(":/icons/pause.svg");
             } else {

@@ -14,8 +14,9 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       reflection(true),
       visible(true),
       paused(false),
-      touchstone(false),
+      createdFromFile(false),
       calibration(false),
+      timeDomain(false),
       lastMath(nullptr)
 {
     MathInfo self = {.math = this, .enabled = true};
@@ -24,6 +25,10 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
 
     self.enabled = false;
     dataType = DataType::Frequency;
+    connect(this, &Trace::typeChanged, [=](){
+        dataType = timeDomain ? DataType::Time : DataType::Frequency;
+        emit outputTypeChanged(dataType);
+    });
 }
 
 Trace::~Trace()
@@ -97,14 +102,15 @@ void Trace::setName(QString name) {
     emit nameChanged();
 }
 
-void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter, QString filename)
+void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
 {
     if(parameter >= t.ports()*t.ports()) {
         throw runtime_error("Parameter for touchstone out of range");
     }
     clear();
-    setTouchstoneParameter(parameter);
-    setTouchstoneFilename(filename);
+    timeDomain = false;
+    fileParemeter = parameter;
+    filename = t.getFilename();
     for(unsigned int i=0;i<t.points();i++) {
         auto tData = t.point(i);
         Data d;
@@ -128,14 +134,84 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter, QString fi
     } else {
         reflection = false;
     }
-    touchstone = true;
+    createdFromFile = true;
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
 }
 
+QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
+{
+    // find correct column
+    unsigned int traceNum = 0;
+    vector<double> real;
+    vector<double> imag;
+    unsigned int i=1;
+    QString traceName;
+    bool hasImagValues;
+    for(;i<csv.columns();i++) {
+        traceName = QString();
+        hasImagValues = false;
+        // check column names
+        if(i < csv.columns() - 1) {
+            // not the last column, check if this and next header implies real/imag values
+            auto name_real = csv.getHeader(i);
+            auto name_imag = csv.getHeader(i + 1);
+            if(name_real.endsWith("_real") && name_imag.endsWith("_imag")) {
+                // check if headers have the same beginning
+                name_real.chop(5);
+                name_imag.chop(5);
+                if(name_real == name_imag) {
+                    hasImagValues = true;
+                    traceName = name_real;
+                }
+            }
+        }
+        if(!hasImagValues) {
+            traceName = csv.getHeader(i);
+        }
+        if(traceNum == parameter) {
+            // this is the desired trace
+            break;
+        } else {
+            traceNum++;
+        }
+        if(hasImagValues) {
+            // next column already used by this trace, skip
+            i++;
+        }
+    }
+    if(i >= csv.columns()) {
+        throw runtime_error("Not enough traces in CSV file");
+    }
+    real = csv.getColumn(i);
+    if(hasImagValues) {
+        imag = csv.getColumn(i + 1);
+    } else {
+        imag.resize(real.size());
+        fill(imag.begin(), imag.end(), 0.0);
+    }
+    clear();
+    fileParemeter = parameter;
+    filename = csv.getFilename();
+    auto xColumn = csv.getColumn(0);
+    timeDomain = csv.getHeader(0).compare("time", Qt::CaseInsensitive) == 0;
+    for(unsigned int i=0;i<xColumn.size();i++) {
+        Data d;
+        d.x = xColumn[i];
+        d.y = complex<double>(real[i], imag[i]);
+        addData(d);
+    }
+    reflection = false;
+    createdFromFile = true;
+    emit typeChanged(this);
+    emit outputSamplesChanged(0, data.size());
+    return traceName;
+}
+
 void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
 {
-    touchstone = false;
+    timeDomain = false;
+    createdFromFile = false;
     _liveType = type;
     _liveParam = param;
     if(param == LiveParameter::S11 || param == LiveParameter::S22) {
@@ -211,10 +287,10 @@ nlohmann::json Trace::toJSON()
         j["parameter"] = _liveParam;
         j["livetype"] = _liveType;
         j["paused"] = paused;
-    } else if(isTouchstone()) {
-        j["type"] = "Touchstone";
-        j["filename"] = touchstoneFilename.toStdString();
-        j["parameter"] = touchstoneParameter;
+    } else if(isFromFile()) {
+        j["type"] = "File";
+        j["filename"] = filename.toStdString();
+        j["parameter"] = fileParemeter;
     }
     j["reflection"] = reflection;
     // TODO how to save assigned markers?
@@ -239,7 +315,7 @@ nlohmann::json Trace::toJSON()
 
 void Trace::fromJSON(nlohmann::json j)
 {
-    touchstone = false;
+    createdFromFile = false;
     calibration = false;
     _name = QString::fromStdString(j.value("name", "Missing name"));
     _color = QColor(QString::fromStdString(j.value("color", "yellow")));
@@ -249,15 +325,21 @@ void Trace::fromJSON(nlohmann::json j)
         _liveParam = j.value("parameter", LiveParameter::S11);
         _liveType = j.value("livetype", LivedataType::Overwrite);
         paused = j.value("paused", false);
-    } else if(type == "Touchstone") {
-        std::string filename = j.value("filename", "");
-        touchstoneParameter = j.value("parameter", 0);
+    } else if(type == "Touchstone" || type == "File") {
+        auto filename = QString::fromStdString(j.value("filename", ""));
+        fileParemeter = j.value("parameter", 0);
         try {
-            Touchstone t = Touchstone::fromFile(filename);
-            fillFromTouchstone(t, touchstoneParameter, QString::fromStdString(filename));
+            if(filename.endsWith(".csv")) {
+                auto csv = CSV::fromFile(filename);
+                fillFromCSV(csv, fileParemeter);
+            } else {
+                // has to be a touchstone file
+                Touchstone t = Touchstone::fromFile(filename.toStdString());
+                fillFromTouchstone(t, fileParemeter);
+            }
         } catch (const exception &e) {
             std::string what = e.what();
-            throw runtime_error("Failed to create touchstone:" + what);
+            throw runtime_error("Failed to create from file:" + what);
         }
     }
     reflection = j.value("reflection", false);
@@ -305,6 +387,46 @@ unsigned int Trace::toHash()
     return hash<std::string>{}(json_string);
 }
 
+std::vector<Trace *> Trace::createFromTouchstone(Touchstone &t)
+{
+    qDebug() << "Creating traces from touchstone...";
+    std::vector<Trace*> traces;
+    for(unsigned int i=0;i<t.ports()*t.ports();i++) {
+        auto trace = new Trace();
+        trace->fillFromTouchstone(t, i);
+        unsigned int sink = i / t.ports() + 1;
+        unsigned int source = i % t.ports() + 1;
+        trace->setName("S"+QString::number(sink)+QString::number(source));
+        traces.push_back(trace);
+    }
+    return traces;
+}
+
+std::vector<Trace *> Trace::createFromCSV(CSV &csv)
+{
+    qDebug() << "Creating traces from csv...";
+    std::vector<Trace*> traces;
+    auto n = csv.columns();
+    if(n >= 2) {
+        try {
+            // This will throw once no more column is available, can use infinite loop
+            unsigned int param = 0;
+            while(1) {
+                auto t = new Trace();
+                auto name = t->fillFromCSV(csv, param);
+                t->setName(name);
+                param++;
+                traces.push_back(t);
+            }
+        } catch (const exception &e) {
+            // nothing to do, this simply means we reached the end of the csv columns
+        }
+    } else {
+        qWarning() << "Unable to parse, not enough columns";
+    }
+    return traces;
+}
+
 void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
 {
     TraceMath *newLast = nullptr;
@@ -330,6 +452,16 @@ void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
 void Trace::setReflection(bool value)
 {
     reflection = value;
+}
+
+TraceMath::DataType Trace::outputType(TraceMath::DataType inputType)
+{
+    Q_UNUSED(inputType);
+    if(timeDomain) {
+        return DataType::Time;
+    } else {
+        return DataType::Frequency;
+    }
 }
 
 QString Trace::description()
@@ -375,9 +507,9 @@ bool Trace::isPaused()
     return paused;
 }
 
-bool Trace::isTouchstone()
+bool Trace::isFromFile()
 {
-    return touchstone;
+    return createdFromFile;
 }
 
 bool Trace::isCalibration()
@@ -387,7 +519,7 @@ bool Trace::isCalibration()
 
 bool Trace::isLive()
 {
-    return !isCalibration() && !isTouchstone();
+    return !isCalibration() && !isFromFile();
 }
 
 bool Trace::isReflection()
@@ -594,19 +726,14 @@ Trace::Data Trace::sample(unsigned int index, SampleType type)
     return data;
 }
 
-QString Trace::getTouchstoneFilename() const
+QString Trace::getFilename() const
 {
-    return touchstoneFilename;
+    return filename;
 }
 
-void Trace::setTouchstoneFilename(const QString &value)
+unsigned int Trace::getFileParameter() const
 {
-    touchstoneFilename = value;
-}
-
-unsigned int Trace::getTouchstoneParameter() const
-{
-    return touchstoneParameter;
+    return fileParemeter;
 }
 
 double Trace::getNoise(double frequency)
@@ -632,9 +759,4 @@ int Trace::index(double x)
         return lastMath->rData().size() - 1;
     }
     return lower - lastMath->rData().begin();
-}
-
-void Trace::setTouchstoneParameter(int value)
-{
-    touchstoneParameter = value;
 }

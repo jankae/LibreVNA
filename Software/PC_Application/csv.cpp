@@ -43,6 +43,7 @@ CSV CSV::fromFile(QString filename, char sep)
             }
         }
     }
+    csv.filename = filename;
     return csv;
 }
 
@@ -69,6 +70,7 @@ void CSV::toFile(QString filename, char sep)
         file << endl;
     }
     file.close();
+    this->filename = filename;
 }
 
 std::vector<double> CSV::getColumn(QString header)
@@ -86,10 +88,25 @@ std::vector<double> CSV::getColumn(unsigned int index)
     return _columns.at(index).data;
 }
 
+QString CSV::getHeader(unsigned int index)
+{
+    return _columns.at(index).header;
+}
+
 void CSV::addColumn(QString name, const std::vector<double> &data)
 {
     Column c;
     c.header = name;
     c.data = data;
     _columns.push_back(c);
+}
+
+QString CSV::getFilename() const
+{
+    return filename;
+}
+
+void CSV::setFilename(const QString &value)
+{
+    filename = value;
 }

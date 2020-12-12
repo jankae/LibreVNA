@@ -118,6 +118,7 @@ void Touchstone::toFile(string filename, Unit unit, Format format)
         }
     }
     file.close();
+    this->filename = QString::fromStdString(filename);
 }
 
 Touchstone Touchstone::fromFile(string filename)
@@ -274,6 +275,7 @@ Touchstone Touchstone::fromFile(string filename)
             }
         }
     }
+    ret.filename = QString::fromStdString(filename);
     return ret;
 }
 
@@ -364,4 +366,9 @@ void Touchstone::reduceTo1Port(unsigned int port)
         p.S.push_back(S11);
     }
     m_ports = 1;
+}
+
+QString Touchstone::getFilename() const
+{
+    return filename;
 }

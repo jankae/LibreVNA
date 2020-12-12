@@ -942,6 +942,8 @@ void TraceMarker::update()
         setPosition(parentTrace->findExtremumFreq(true));
         helperMarkers[0]->setPosition(position + offset);
         break;
+    case Type::Last:
+        break;
     }
     emit dataChanged(this);
 }

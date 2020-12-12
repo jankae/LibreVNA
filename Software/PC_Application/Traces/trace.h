@@ -7,6 +7,7 @@
 #include <QColor>
 #include <set>
 #include "touchstone.h"
+#include "csv.h"
 #include "Device/device.h"
 #include "Math/tracemath.h"
 
@@ -43,7 +44,8 @@ public:
     void addData(const Data& d, const Protocol::SweepSettings& s);
     void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
     void setName(QString name);
-    void fillFromTouchstone(Touchstone &t, unsigned int parameter, QString filename = QString());
+    void fillFromTouchstone(Touchstone &t, unsigned int parameter);
+    QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
     void fromLivedata(LivedataType type, LiveParameter param);
     QString name() { return _name; };
     QColor color() { return _color; };
@@ -51,7 +53,7 @@ public:
     void pause();
     void resume();
     bool isPaused();
-    bool isTouchstone();
+    bool isFromFile();
     bool isCalibration();
     bool isLive();
     bool isReflection();
@@ -75,8 +77,8 @@ public:
     };
 
     Data sample(unsigned int index, SampleType type = SampleType::Frequency);
-    QString getTouchstoneFilename() const;
-    unsigned int getTouchstoneParameter() const;
+    QString getFilename() const;
+    unsigned int getFileParameter() const;
     /* Returns the noise in dbm/Hz for spectrum analyzer measurements. May return NaN if calculation not possible */
     double getNoise(double frequency);
     int index(double x);
@@ -84,7 +86,7 @@ public:
     void setCalibration(bool value);
     void setReflection(bool value);
 
-    DataType outputType(DataType inputType) override { Q_UNUSED(inputType) return DataType::Frequency;};
+    DataType outputType(DataType inputType) override;
     QString description() override;
 
     bool mathEnabled(); // check if math operations are enabled
@@ -119,9 +121,10 @@ public:
     // the trace can have (and its math function). It should not depend on the acquired trace samples
     unsigned int toHash();
 
+    static std::vector<Trace*> createFromTouchstone(Touchstone &t);
+    static std::vector<Trace*> createFromCSV(CSV &csv);
+
 public slots:
-    void setTouchstoneParameter(int value);
-    void setTouchstoneFilename(const QString &value);
     void setVisible(bool visible);
     void setColor(QColor color);
     void addMarker(TraceMarker *m);
@@ -146,10 +149,11 @@ private:
     bool reflection;
     bool visible;
     bool paused;
-    bool touchstone;
+    bool createdFromFile;
     bool calibration;
-    QString touchstoneFilename;
-    unsigned int touchstoneParameter;
+    bool timeDomain;
+    QString filename;
+    unsigned int fileParemeter;
     std::set<TraceMarker*> markers;
     struct {
         union {

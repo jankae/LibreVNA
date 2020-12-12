@@ -4,6 +4,7 @@
 #include <complex>
 #include <vector>
 #include <string>
+#include <QString>
 
 class Touchstone
 {
@@ -41,9 +42,12 @@ public:
     // remove all paramaters except the ones from port (port cnt starts at 0)
     void reduceTo1Port(unsigned int port);
     unsigned int ports() { return m_ports; }
+    QString getFilename() const;
+
 private:
     unsigned int m_ports;
     std::vector<Datapoint> m_datapoints;
+    QString filename;
 };
 
 #endif // TOUCHSTONE_H
