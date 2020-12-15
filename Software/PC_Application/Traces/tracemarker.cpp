@@ -463,12 +463,14 @@ void TraceMarker::assignDeltaMarker(TraceMarker *m)
 
 void TraceMarker::deleteHelperMarkers()
 {
-    emit beginRemoveHelperMarkers(this);
-    for(auto m : helperMarkers) {
-        delete m;
+    if(helperMarkers.size() > 0) {
+        emit beginRemoveHelperMarkers(this);
+        for(auto m : helperMarkers) {
+            delete m;
+        }
+        helperMarkers.clear();
+        emit endRemoveHelperMarkers(this);
     }
-    helperMarkers.clear();
-    emit endRemoveHelperMarkers(this);
 }
 
 void TraceMarker::setType(TraceMarker::Type t)

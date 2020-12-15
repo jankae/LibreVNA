@@ -88,15 +88,11 @@ void TraceMarkerModel::addMarker(TraceMarker *t)
     connect(t, &TraceMarker::beginRemoveHelperMarkers, [=](TraceMarker *m) {
          auto row = find(markers.begin(), markers.end(), m) - markers.begin();
          auto modelIndex = createIndex(row, 0, root);
-         if(!m->getHelperMarkers().empty()){
-             beginRemoveRows(modelIndex, 0, m->getHelperMarkers().size() - 1);
-         }
+         beginRemoveRows(modelIndex, 0, m->getHelperMarkers().size() - 1);
     });
     connect(t, &TraceMarker::endRemoveHelperMarkers, [=](TraceMarker *m) {
+        endRemoveRows();
         markerDataChanged(m);
-        if(!m->getHelperMarkers().empty()){
-            endRemoveRows();
-        }
     });
     connect(t, &TraceMarker::deleted, this, qOverload<TraceMarker*>(&TraceMarkerModel::removeMarker));
     emit markerAdded(t);
