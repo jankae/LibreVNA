@@ -48,6 +48,9 @@ void TraceMarker::assignTrace(Trace *t)
     if(!getSupportedTypes().count(type)) {
         // new trace does not support the current type
         setType(Type::Manual);
+    } else {
+        // helper markers might change depending on the trace, update type even when type not changed
+        setType(type);
     }
 
     connect(parentTrace, &Trace::deleted, this, &TraceMarker::parentTraceDeleted);
@@ -490,10 +493,14 @@ void TraceMarker::setType(TraceMarker::Type t)
         break;
     case Type::Lowpass:
     case Type::Highpass:
-        required_helpers = {{"c", "cutoff", Type::Manual}};
+        if(!parentTrace->isReflection()) {
+            required_helpers = {{"c", "cutoff", Type::Manual}};
+        }
         break;
     case Type::Bandpass:
-        required_helpers = {{"l", "lower cutoff", Type::Manual}, {"h", "higher cutoff", Type::Manual} ,{"c", "center", Type::Manual}};
+        if(!parentTrace->isReflection()) {
+            required_helpers = {{"l", "lower cutoff", Type::Manual}, {"h", "higher cutoff", Type::Manual} ,{"c", "center", Type::Manual}};
+        }
         break;
     case Type::TOI:
         required_helpers = {{"p", "first peak", Type::Manual}, {"p", "second peak", Type::Manual}, {"l", "left intermodulation", Type::Manual}, {"r", "right intermodulation", Type::Manual}};
