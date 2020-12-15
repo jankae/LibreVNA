@@ -25,6 +25,7 @@
 #include "Log.h"
 
 static Protocol::PacketInfo recv_packet;
+static Protocol::PacketInfo last_measure_packet; // contains the command that started the last measured (replay in case of timeout)
 static TaskHandle_t handle;
 
 #if HW_REVISION >= 'B'
@@ -108,11 +109,13 @@ void App_Start() {
 				switch(recv_packet.type) {
 				case Protocol::PacketType::SweepSettings:
 					LOG_INFO("New settings received");
+					last_measure_packet = recv_packet;
 					sweepActive = VNA::Setup(recv_packet.settings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ManualControl:
 					sweepActive = false;
+					last_measure_packet = recv_packet;
 					Manual::Setup(recv_packet.manual);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
@@ -125,13 +128,15 @@ void App_Start() {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::Generator:
-					sweepActive = false;
+					sweepActive = true;
+					last_measure_packet = recv_packet;
 					LOG_INFO("Updating generator setting");
 					Generator::Setup(recv_packet.generator);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::SpectrumAnalyzerSettings:
-					sweepActive = false;
+					sweepActive = true;
+					last_measure_packet = recv_packet;
 					LOG_INFO("Updating spectrum analyzer settings");
 					SA::Setup(recv_packet.spectrumSettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
@@ -141,6 +146,11 @@ void App_Start() {
 					p.type = Protocol::PacketType::DeviceInfo;
 					HW::fillDeviceInfo(&p.info);
 					Communication::Send(p);
+					break;
+				case Protocol::PacketType::SetIdle:
+					HW::SetMode(HW::Mode::Idle);
+					sweepActive = false;
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 #ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:
@@ -196,6 +206,11 @@ void App_Start() {
 					break;
 				}
 			}
+		}
+		if(HW::TimedOut()) {
+			HW::SetMode(HW::Mode::Idle);
+			// insert the last received packet (restarts the timed out operation)
+			USBPacketReceived(last_measure_packet);
 		}
 	}
 }

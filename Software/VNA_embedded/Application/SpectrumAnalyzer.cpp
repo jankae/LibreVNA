@@ -373,11 +373,19 @@ void SA::Work() {
 			pointCnt += DFTpoints;
 		} else {
 			pointCnt = 0;
+			// sweep finished, extract device info
+			FPGA::Enable(FPGA::Periphery::SourceChip); // needs to enable the chip to get a valid temperature reading
+			Protocol::PacketInfo packet;
+			packet.type = Protocol::PacketType::DeviceInfo;
+			HW::fillDeviceInfo(&packet.info, true);
+			FPGA::Disable(FPGA::Periphery::SourceChip);
+			Communication::Send(packet);
 		}
 	} else {
 		// more measurements required for signal ID
 		signalIDstep++;
 	}
+	HW::Ref::update();
 	StartNextSample();
 }
 

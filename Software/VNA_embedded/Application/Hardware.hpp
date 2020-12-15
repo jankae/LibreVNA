@@ -86,6 +86,7 @@ bool Init();
 void SetMode(Mode mode);
 void SetIdle();
 void Work();
+bool TimedOut();
 
 using AmplitudeSettings = struct _amplitudeSettings {
 	uint8_t attenuator;

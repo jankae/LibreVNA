@@ -266,8 +266,7 @@ bool Device::SetManual(Protocol::ManualControl manual)
 
 bool Device::SetIdle()
 {
-    Protocol::SweepSettings s = {};
-    return Configure(s);
+    return SendCommandWithoutPayload(Protocol::PacketType::SetIdle);
 }
 
 bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)

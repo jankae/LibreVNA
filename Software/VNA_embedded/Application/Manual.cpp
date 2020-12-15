@@ -123,6 +123,19 @@ void Manual::Work() {
 	p.status.refmax = limits.Rmax;
 	HW::GetTemps(&p.status.temp_source, &p.status.temp_LO);
 	Communication::Send(p);
+	HW::Ref::update();
+	Protocol::PacketInfo packet;
+	packet.type = Protocol::PacketType::DeviceInfo;
+	// Enable PLL chips for temperature reading
+	bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
+	bool LOEn = FPGA::IsEnabled(FPGA::Periphery::LO1Chip);
+	FPGA::Enable(FPGA::Periphery::SourceChip);
+	FPGA::Enable(FPGA::Periphery::LO1Chip);
+	HW::fillDeviceInfo(&packet.info, true);
+	// restore PLL state
+	FPGA::Enable(FPGA::Periphery::SourceChip, srcEn);
+	FPGA::Enable(FPGA::Periphery::LO1Chip, LOEn);
+	Communication::Send(packet);
 	// Trigger next status update
 	FPGA::StartSweep();
 }

@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 2;
+static constexpr uint16_t Version = 3;
 
 // When changing/adding/removing variables from these structs also adjust the decode/encode functions in Protocol.cpp
 
@@ -171,6 +171,7 @@ enum class PacketType : uint8_t {
 	RequestReceiverCal = 17,
 	SourceCalPoint = 18,
 	ReceiverCalPoint = 19,
+	SetIdle = 20,
 };
 
 using PacketInfo = struct _packetinfo {

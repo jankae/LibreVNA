@@ -590,6 +590,7 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
     case PacketType::RequestDeviceInfo:
     case PacketType::RequestReceiverCal:
     case PacketType::RequestSourceCal:
+    case PacketType::SetIdle:
         // no payload, nothing to do
         break;
     case PacketType::None:
@@ -643,6 +644,7 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::RequestDeviceInfo:
     case PacketType::RequestSourceCal:
     case PacketType::RequestReceiverCal:
+    case PacketType::SetIdle:
         // no payload, nothing to do
         break;
     case PacketType::None:

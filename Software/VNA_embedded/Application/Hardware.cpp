@@ -18,6 +18,7 @@ static bool extRefInUse = false;
 HW::Mode activeMode;
 
 static Protocol::ReferenceSettings ref;
+static uint32_t lastISR;
 
 using namespace HWHAL;
 
@@ -53,6 +54,7 @@ static void ReadComplete(const FPGA::SamplingResult &result) {
 
 static void FPGA_Interrupt(void*) {
 	FPGA::InitiateSampleRead(ReadComplete);
+	lastISR = HAL_GetTick();
 }
 
 void HW::Work() {
@@ -174,6 +176,8 @@ bool HW::Init() {
 
 	LOG_INFO("Initialized");
 	FPGA::Enable(FPGA::Periphery::ReadyLED);
+
+	Ref::update();
 	return true;
 }
 
@@ -195,6 +199,7 @@ void HW::SetMode(Mode mode) {
 	if(mode != Mode::Idle) {
 		// do a full initialization when switching directly between modes
 		HW::Init();
+		lastISR = HAL_GetTick();
 	}
 	SetIdle();
 	activeMode = mode;
@@ -267,6 +272,15 @@ HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool
 	}
 	ret.attenuator = attval;
 	return ret;
+}
+
+bool HW::TimedOut() {
+	constexpr uint32_t timeout = 1000;
+	if(activeMode != Mode::Idle && HAL_GetTick() - lastISR > timeout) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
