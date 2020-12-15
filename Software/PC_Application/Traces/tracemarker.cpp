@@ -768,6 +768,7 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
         case Type::Lowpass:
         case Type::Highpass:
         case Type::PeakTable:
+        case Type::Bandpass:        // initialize with "dB"
             return new SIUnitEdit("db", " ", 3);
         case Type::TOI:
             return nullptr;
