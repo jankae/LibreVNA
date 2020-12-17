@@ -247,12 +247,10 @@ std::set<TracePlot *> TracePlot::getPlots()
 
 void TracePlot::newTraceAvailable(Trace *t)
 {
-    if(supported(t)) {
-        traces[t] = false;
-        connect(t, &Trace::deleted, this, &TracePlot::traceDeleted);
-        connect(t, &Trace::nameChanged, this, &TracePlot::updateContextMenu);
-        connect(t, &Trace::typeChanged, this, &TracePlot::updateContextMenu);
-    }
+    traces[t] = false;
+    connect(t, &Trace::deleted, this, &TracePlot::traceDeleted);
+    connect(t, &Trace::nameChanged, this, &TracePlot::updateContextMenu);
+    connect(t, &Trace::typeChanged, this, &TracePlot::updateContextMenu);
     updateContextMenu();
 }
 

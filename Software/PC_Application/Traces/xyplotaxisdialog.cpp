@@ -183,6 +183,8 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
         ret.insert(TraceXYPlot::YAxisType::Step);
         ret.insert(TraceXYPlot::YAxisType::Impedance);
         break;
+    default:
+        break;
     }
     return ret;
 }

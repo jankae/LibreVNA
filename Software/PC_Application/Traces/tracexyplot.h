@@ -29,11 +29,13 @@ public:
         Frequency,
         Time,
         Distance,
+        Last,
     };
     enum class XAxisMode {
         UseSpan,
         FitTraces,
         Manual,
+        Last,
     };
 
     void setYAxis(int axis, YAxisType type, bool log, bool autorange, double min, double max, double div);
@@ -61,6 +63,11 @@ private slots:
 private:
     static constexpr int AxisLabelSize = 10;
     QString AxisTypeToName(YAxisType type);
+    QString AxisTypeToName(XAxisType type);
+    QString AxisModeToName(XAxisMode mode);
+    XAxisType XAxisTypeFromName(QString name);
+    YAxisType YAxisTypeFromName(QString name);
+    XAxisMode AxisModeFromName(QString name);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
     bool supported(Trace *t, YAxisType type);
     void removeUnsupportedTraces();

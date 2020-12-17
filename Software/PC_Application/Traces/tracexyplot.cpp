@@ -90,6 +90,8 @@ void TraceXYPlot::setXAxis(XAxisType type, XAxisMode mode, double min, double ma
     XAxis.rangeDiv = div;
     removeUnsupportedTraces();
     updateAxisTicks();
+    updateContextMenu();
+    replot();
 }
 
 void TraceXYPlot::enableTrace(Trace *t, bool enabled)
@@ -117,8 +119,8 @@ nlohmann::json TraceXYPlot::toJSON()
 {
     nlohmann::json j;
     nlohmann::json jX;
-    jX["type"] = XAxis.type;
-    jX["mode"] = XAxis.mode;
+    jX["type"] = AxisTypeToName(XAxis.type).toStdString();
+    jX["mode"] = AxisModeToName(XAxis.mode).toStdString();
     jX["log"] = XAxis.log;
     jX["min"] = XAxis.rangeMin;
     jX["max"] = XAxis.rangeMax;
@@ -126,7 +128,7 @@ nlohmann::json TraceXYPlot::toJSON()
     j["XAxis"] = jX;
     for(unsigned int i=0;i<2;i++) {
         nlohmann::json jY;
-        jY["type"] = YAxis[i].type;
+        jY["type"] = AxisTypeToName(YAxis[i].type).toStdString();
         jY["log"] = YAxis[i].log;
         jY["autorange"] = YAxis[i].autorange;
         jY["min"] = YAxis[i].rangeMin;
@@ -150,8 +152,20 @@ nlohmann::json TraceXYPlot::toJSON()
 void TraceXYPlot::fromJSON(nlohmann::json j)
 {
     auto jX = j["XAxis"];
-    auto xtype = jX.value("type", XAxisType::Frequency);
-    auto xmode = jX.value("mode", XAxisMode::UseSpan);
+    // old format used enum value for type and mode, new format uses string encoding (more robust when additional enum values are added).
+    // Check which format is used and parse accordingly
+    XAxisType xtype;
+    if(jX["type"].type() == nlohmann::json::value_t::string) {
+        xtype = XAxisTypeFromName(QString::fromStdString(jX["type"]));
+    } else {
+        xtype = jX.value("type", XAxisType::Frequency);
+    }
+    XAxisMode xmode;
+    if(jX["mode"].type() == nlohmann::json::value_t::string) {
+        xmode = AxisModeFromName(QString::fromStdString(jX["mode"]));
+    } else {
+        xmode = jX.value("mode", XAxisMode::UseSpan);
+    }
 //    auto xlog = jX.value("log", false);
     auto xmin = jX.value("min", 0.0);
     auto xmax = jX.value("max", 6000000000.0);
@@ -159,7 +173,12 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
     setXAxis(xtype, xmode, xmin, xmax, xdiv);
     nlohmann::json jY[2] = {j["YPrimary"], j["YSecondary"]};
     for(unsigned int i=0;i<2;i++) {
-        auto ytype = jY[i].value("type", YAxisType::Disabled);
+        YAxisType ytype;
+        if(jY[i]["type"].type() == nlohmann::json::value_t::string) {
+            ytype = YAxisTypeFromName(QString::fromStdString(jY[i]["type"]));
+        } else {
+            ytype = jY[i].value("type", YAxisType::Disabled);
+        }
         auto yauto = jY[i].value("autorange", true);
         auto ylog = jY[i].value("log", false);
         auto ymin = jY[i].value("min", -120);
@@ -282,16 +301,10 @@ void TraceXYPlot::draw(QPainter &p)
     p.drawRect(plotRect);
 
     // draw axis types
-    QString labelX;
-    switch(XAxis.type) {
-    case XAxisType::Frequency: labelX = "Frequency"; break;
-    case XAxisType::Time: labelX = "Time"; break;
-    case XAxisType::Distance: labelX = "Distance"; break;
-    }
     auto font = p.font();
     font.setPixelSize(AxisLabelSize);
     p.setFont(font);
-    p.drawText(QRect(0, w.height()-AxisLabelSize*1.5, w.width(), AxisLabelSize*1.5), Qt::AlignHCenter, labelX);
+    p.drawText(QRect(0, w.height()-AxisLabelSize*1.5, w.width(), AxisLabelSize*1.5), Qt::AlignHCenter, AxisTypeToName(XAxis.type));
     if(XAxis.ticks.size() >= 1) {
         // draw X ticks
         // this only works for evenly distributed ticks:
@@ -651,6 +664,59 @@ void TraceXYPlot::updateAxisTicks()
             }
         }
     }
+}
+
+QString TraceXYPlot::AxisTypeToName(TraceXYPlot::XAxisType type)
+{
+    switch(type) {
+    case XAxisType::Frequency: return "Frequency"; break;
+    case XAxisType::Time: return "Time"; break;
+    case XAxisType::Distance: return "Distance"; break;
+    default: return "Unknown";
+    }
+}
+
+QString TraceXYPlot::AxisModeToName(TraceXYPlot::XAxisMode mode)
+{
+    switch(mode) {
+    case XAxisMode::Manual: return "Manual"; break;
+    case XAxisMode::FitTraces: return "Fit Traces"; break;
+    case XAxisMode::UseSpan: return "Use Span"; break;
+    default: return "Unknown";
+    }
+}
+
+TraceXYPlot::XAxisType TraceXYPlot::XAxisTypeFromName(QString name)
+{
+    for(unsigned int i=0;i<(int) XAxisType::Last;i++) {
+        if(AxisTypeToName((XAxisType) i) == name) {
+            return (XAxisType) i;
+        }
+    }
+    // not found, use default
+    return XAxisType::Frequency;
+}
+
+TraceXYPlot::YAxisType TraceXYPlot::YAxisTypeFromName(QString name)
+{
+    for(unsigned int i=0;i<(int) YAxisType::Last;i++) {
+        if(AxisTypeToName((YAxisType) i) == name) {
+            return (YAxisType) i;
+        }
+    }
+    // not found, use default
+    return YAxisType::Magnitude;
+}
+
+TraceXYPlot::XAxisMode TraceXYPlot::AxisModeFromName(QString name)
+{
+    for(unsigned int i=0;i<(int) XAxisMode::Last;i++) {
+        if(AxisModeToName((XAxisMode) i) == name) {
+            return (XAxisMode) i;
+        }
+    }
+    // not found, use default
+    return XAxisMode::UseSpan;
 }
 
 QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
