@@ -39,13 +39,12 @@ MarkerWidget::~MarkerWidget()
 void MarkerWidget::on_bDelete_clicked()
 {
     if (model.rowCount() <= 0) {
-        return;                 // prevent crash if bDelete clicked with no markers (empty model)
+        return;                 // there is nothing to delete (empty model)
     }
 
     QModelIndex ind = ui->treeView->currentIndex();
     if ( ! ind.isValid() ) {
-        return;     // add marker(s), then click bDelete without clicking on any marker (there is no index clicked in treeView)
-                    // alternative: select last marker, then proceede to delete it?
+        return;     // if no marker clicked/selected in treeView, the index is not valid
     }
 
     auto marker = model.markerFromIndex(ind);
