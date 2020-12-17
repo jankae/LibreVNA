@@ -10,7 +10,7 @@ on:
 
 jobs:
   PC_Application_Ubuntu:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
 
@@ -75,7 +75,7 @@ jobs:
           path: Software/PC_Application/release
           
   Embedded_Firmware:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
 
