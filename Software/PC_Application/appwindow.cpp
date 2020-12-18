@@ -238,7 +238,7 @@ void AppWindow::ConnectToDevice(QString serial)
                 break;
             }
         }
-    } catch (const runtime_error e) {
+    } catch (const runtime_error &e) {
         qWarning() << "Failed to connect:" << e.what();
         DisconnectDevice();
         UpdateDeviceList();
