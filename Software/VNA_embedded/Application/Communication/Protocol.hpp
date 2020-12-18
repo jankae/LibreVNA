@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 3;
+static constexpr uint16_t Version = 4;
 
 // When changing/adding/removing variables from these structs also adjust the decode/encode functions in Protocol.cpp
 
@@ -66,6 +66,7 @@ using DeviceInfo = struct _deviceInfo {
 	uint32_t limits_minRBW;
 	uint32_t limits_maxRBW;
     uint8_t limits_maxAmplitudePoints;
+    uint64_t limits_maxFreqHarmonic;
 };
 
 using ManualStatus = struct _manualstatus {

@@ -817,8 +817,15 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
 
 void VNA::ConstrainAndUpdateFrequencies()
 {
-    if(settings.f_stop > Device::Info().limits_maxFreq) {
-        settings.f_stop = Device::Info().limits_maxFreq;
+    auto pref = Preferences::getInstance();
+    double maxFreq;
+    if(pref.Acquisition.harmonicMixing) {
+        maxFreq = Device::Info().limits_maxFreqHarmonic;
+    } else {
+        maxFreq = Device::Info().limits_maxFreq;
+    }
+    if(settings.f_stop > maxFreq) {
+        settings.f_stop = maxFreq;
     }
     if(settings.f_start > settings.f_stop) {
         settings.f_start = settings.f_stop;

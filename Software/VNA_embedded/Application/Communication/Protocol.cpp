@@ -265,6 +265,7 @@ static Protocol::DeviceInfo DecodeDeviceInfo(uint8_t *buf) {
     e.get(d.limits_minRBW);
     e.get(d.limits_maxRBW);
     e.get(d.limits_maxAmplitudePoints);
+    e.get(d.limits_maxFreqHarmonic);
     return d;
 }
 static int16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
@@ -295,6 +296,7 @@ static int16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
     e.add(d.limits_minRBW);
     e.add(d.limits_maxRBW);
     e.add(d.limits_maxAmplitudePoints);
+    e.add(d.limits_maxFreqHarmonic);
     return e.getSize();
 }
 

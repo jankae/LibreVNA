@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <map>
 #include <QDebug>
+#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 
@@ -115,6 +116,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
         p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
         p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
+        p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
         p->General.graphColors.background = ui->GeneralGraphBackground->getColor();
@@ -124,6 +126,16 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     });
 
     setInitialGUIState();
+
+    connect(ui->AcquisitionUseHarmonic, &QCheckBox::toggled, [=](bool enabled) {
+       if(enabled) {
+           InformationBox::ShowMessage("Harmonic Mixing", "When harmonic mixing is enabled, the frequency range of the VNA is extended up to 18GHz "
+                                       "by using higher harmonics of the source signal as well as the 1.LO. The fundamental frequency is still present "
+                                       "in the output signal and might disturb the measurement if the DUT is not linear. Performance above 6GHz is not "
+                                       "specified and generally not very good. However, this mode might be useful, if the signal of interest is just above "
+                                       "6GHz. Performance below 6GHz is not affected by this setting");
+       }
+    });
 }
 
 PreferencesDialog::~PreferencesDialog()
@@ -157,6 +169,7 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteBothPorts);
     ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
+    ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
 

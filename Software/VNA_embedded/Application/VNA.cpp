@@ -26,6 +26,9 @@ static bool sourceHighPower;
 static bool adcShifted;
 static uint32_t actualBandwidth;
 
+static constexpr uint8_t sourceHarmonic = 5;
+static constexpr uint8_t LOHarmonic = 3;
+
 using IFTableEntry = struct {
 	uint16_t pointCnt;
 	uint8_t clkconfig[8];
@@ -105,7 +108,13 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 
 	// Transfer PLL configuration to FPGA
 	for (uint16_t i = 0; i < points; i++) {
+		bool harmonic_mixing = false;
 		uint64_t freq = s.f_start + (s.f_stop - s.f_start) * i / (points - 1);
+
+		if(freq > 6000000000ULL) {
+			harmonic_mixing = true;
+		}
+
 		// SetFrequency only manipulates the register content in RAM, no SPI communication is done.
 		// No mode-switch of FPGA necessary here.
 
@@ -117,15 +126,30 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			lowband = true;
 			actualSourceFreq = freq;
 		} else {
-			Source.SetFrequency(freq);
+			uint64_t srcFreq = freq;
+			if(harmonic_mixing) {
+				srcFreq /= sourceHarmonic;
+			}
+			Source.SetFrequency(srcFreq);
 			actualSourceFreq = Source.GetActualFrequency();
+			if(harmonic_mixing) {
+				actualSourceFreq *= sourceHarmonic;
+			}
 		}
 		if (last_lowband && !lowband) {
 			// additional halt before first highband point to enable highband source
 			needs_halt = true;
 		}
-		LO1.SetFrequency(freq + HW::IF1);
-		uint32_t actualFirstIF = LO1.GetActualFrequency() - actualSourceFreq;
+		uint64_t LOFreq = freq + HW::IF1;
+		if(harmonic_mixing) {
+			LOFreq /= LOHarmonic;
+		}
+		LO1.SetFrequency(LOFreq);
+		uint64_t actualLO1 = LO1.GetActualFrequency();
+		if(harmonic_mixing) {
+			actualLO1 *= LOHarmonic;
+		}
+		uint32_t actualFirstIF = actualLO1 - actualSourceFreq;
 		uint32_t actualFinalIF = actualFirstIF - last_LO2;
 		uint32_t IFdeviation = abs(actualFinalIF - HW::IF2);
 		bool needs_LO2_shift = false;
@@ -137,12 +161,17 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 				// still room in table
 				needs_halt = true;
 				IFTable[IFTableIndexCnt].pointCnt = i;
-				// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
-				// the correct clock settings
-				last_LO2 = actualFirstIF - HW::IF2;
-				LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency",
-						last_LO2, i, (uint32_t ) (freq / 1000000),
-						(uint32_t ) (freq % 1000000));
+				if(IFTableIndexCnt < IFTableNumEntries - 1) {
+					// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
+					// the correct clock settings
+					last_LO2 = actualFirstIF - HW::IF2;
+					LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency",
+							last_LO2, i, (uint32_t ) (freq / 1000000),
+							(uint32_t ) (freq % 1000000));
+				} else {
+					// last entry in IF table, revert LO2 to default
+					last_LO2 = HW::IF1 - HW::IF2;
+				}
 				Si5351.SetCLK(SiChannel::RefLO2, last_LO2,
 						Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 				// store calculated clock configuration for later change
@@ -271,7 +300,7 @@ void VNA::SweepHalted() {
 	}
 	LOG_DEBUG("Halted before point %d", pointCnt);
 	// Check if IF table has entry at this point
-	if (IFTable[IFTableIndexCnt].pointCnt == pointCnt) {
+	if (IFTableIndexCnt < IFTableNumEntries && IFTable[IFTableIndexCnt].pointCnt == pointCnt) {
 		Si5351.WriteRawCLKConfig(SiChannel::Port1LO2, IFTable[IFTableIndexCnt].clkconfig);
 		Si5351.WriteRawCLKConfig(SiChannel::Port2LO2, IFTable[IFTableIndexCnt].clkconfig);
 		Si5351.WriteRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);

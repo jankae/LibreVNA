@@ -479,6 +479,13 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QCheckBox" name="AcquisitionUseHarmonic">
+              <property name="text">
+               <string>Use harmonic mixing</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>

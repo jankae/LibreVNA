@@ -44,6 +44,7 @@ public:
     struct {
         bool alwaysExciteBothPorts;
         bool suppressPeaks;
+        bool harmonicMixing;
         bool useDFTinSAmode;
         double RBWLimitForDFT;
     } Acquisition;
@@ -62,7 +63,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 24> descr = {{
+    const std::array<SettingDescription, 25> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
@@ -82,6 +83,7 @@ private:
         {&Startup.SA.signalID, "Startup.SA.signalID", true},
         {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", true},
         {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
+        {&Acquisition.harmonicMixing, "Acquisition.harmonicMixing", false},
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
         {&General.graphColors.background, "General.graphColors.background", QColor(Qt::black)},
