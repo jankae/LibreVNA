@@ -16,6 +16,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y libusb-1.0-0-dev qt5-default qt5-qmake qtbase5-dev
           
       - name: Build application
