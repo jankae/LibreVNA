@@ -25,7 +25,56 @@ HEADERS += \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
     Traces/Math/dft.h \
+    Traces/Math/expression.h \
     Traces/Math/medianfilter.h \
+    Traces/Math/parser/mpCompat.h \
+    Traces/Math/parser/mpDefines.h \
+    Traces/Math/parser/mpError.h \
+    Traces/Math/parser/mpFuncCmplx.h \
+    Traces/Math/parser/mpFuncCommon.h \
+    Traces/Math/parser/mpFuncMatrix.h \
+    Traces/Math/parser/mpFuncNonCmplx.h \
+    Traces/Math/parser/mpFuncStr.h \
+    Traces/Math/parser/mpFwdDecl.h \
+    Traces/Math/parser/mpICallback.h \
+    Traces/Math/parser/mpIOprt.h \
+    Traces/Math/parser/mpIPackage.h \
+    Traces/Math/parser/mpIPrecedence.h \
+    Traces/Math/parser/mpIToken.h \
+    Traces/Math/parser/mpIValReader.h \
+    Traces/Math/parser/mpIValue.h \
+    Traces/Math/parser/mpIfThenElse.h \
+    Traces/Math/parser/mpMatrix.h \
+    Traces/Math/parser/mpMatrixError.h \
+    Traces/Math/parser/mpOprtBinAssign.h \
+    Traces/Math/parser/mpOprtBinCommon.h \
+    Traces/Math/parser/mpOprtCmplx.h \
+    Traces/Math/parser/mpOprtIndex.h \
+    Traces/Math/parser/mpOprtMatrix.h \
+    Traces/Math/parser/mpOprtNonCmplx.h \
+    Traces/Math/parser/mpOprtPostfixCommon.h \
+    Traces/Math/parser/mpPackageCmplx.h \
+    Traces/Math/parser/mpPackageCommon.h \
+    Traces/Math/parser/mpPackageMatrix.h \
+    Traces/Math/parser/mpPackageNonCmplx.h \
+    Traces/Math/parser/mpPackageStr.h \
+    Traces/Math/parser/mpPackageUnit.h \
+    Traces/Math/parser/mpParser.h \
+    Traces/Math/parser/mpParserBase.h \
+    Traces/Math/parser/mpParserMessageProvider.h \
+    Traces/Math/parser/mpRPN.h \
+    Traces/Math/parser/mpScriptTokens.h \
+    Traces/Math/parser/mpStack.h \
+    Traces/Math/parser/mpTest.h \
+    Traces/Math/parser/mpTokenReader.h \
+    Traces/Math/parser/mpTypes.h \
+    Traces/Math/parser/mpValReader.h \
+    Traces/Math/parser/mpValue.h \
+    Traces/Math/parser/mpValueCache.h \
+    Traces/Math/parser/mpVariable.h \
+    Traces/Math/parser/suSortPred.h \
+    Traces/Math/parser/suStringTokens.h \
+    Traces/Math/parser/utGeneric.h \
     Traces/Math/tdr.h \
     Traces/Math/tracemath.h \
     Traces/Math/tracematheditdialog.h \
@@ -87,7 +136,45 @@ SOURCES += \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
     Traces/Math/dft.cpp \
+    Traces/Math/expression.cpp \
     Traces/Math/medianfilter.cpp \
+    Traces/Math/parser/mpError.cpp \
+    Traces/Math/parser/mpFuncCmplx.cpp \
+    Traces/Math/parser/mpFuncCommon.cpp \
+    Traces/Math/parser/mpFuncMatrix.cpp \
+    Traces/Math/parser/mpFuncNonCmplx.cpp \
+    Traces/Math/parser/mpFuncStr.cpp \
+    Traces/Math/parser/mpICallback.cpp \
+    Traces/Math/parser/mpIOprt.cpp \
+    Traces/Math/parser/mpIPackage.cpp \
+    Traces/Math/parser/mpIToken.cpp \
+    Traces/Math/parser/mpIValReader.cpp \
+    Traces/Math/parser/mpIValue.cpp \
+    Traces/Math/parser/mpIfThenElse.cpp \
+    Traces/Math/parser/mpOprtBinAssign.cpp \
+    Traces/Math/parser/mpOprtBinCommon.cpp \
+    Traces/Math/parser/mpOprtCmplx.cpp \
+    Traces/Math/parser/mpOprtIndex.cpp \
+    Traces/Math/parser/mpOprtMatrix.cpp \
+    Traces/Math/parser/mpOprtNonCmplx.cpp \
+    Traces/Math/parser/mpOprtPostfixCommon.cpp \
+    Traces/Math/parser/mpPackageCmplx.cpp \
+    Traces/Math/parser/mpPackageCommon.cpp \
+    Traces/Math/parser/mpPackageMatrix.cpp \
+    Traces/Math/parser/mpPackageNonCmplx.cpp \
+    Traces/Math/parser/mpPackageStr.cpp \
+    Traces/Math/parser/mpPackageUnit.cpp \
+    Traces/Math/parser/mpParser.cpp \
+    Traces/Math/parser/mpParserBase.cpp \
+    Traces/Math/parser/mpParserMessageProvider.cpp \
+    Traces/Math/parser/mpRPN.cpp \
+    Traces/Math/parser/mpScriptTokens.cpp \
+    Traces/Math/parser/mpTest.cpp \
+    Traces/Math/parser/mpTokenReader.cpp \
+    Traces/Math/parser/mpValReader.cpp \
+    Traces/Math/parser/mpValue.cpp \
+    Traces/Math/parser/mpValueCache.cpp \
+    Traces/Math/parser/mpVariable.cpp \
     Traces/Math/tdr.cpp \
     Traces/Math/tracemath.cpp \
     Traces/Math/tracematheditdialog.cpp \
@@ -140,6 +227,8 @@ FORMS += \
     Tools/impedancematchdialog.ui \
     Traces/Math/dftdialog.ui \
     Traces/Math/dftexplanationwidget.ui \
+    Traces/Math/expressiondialog.ui \
+    Traces/Math/expressionexplanationwidget.ui \
     Traces/Math/medianexplanationwidget.ui \
     Traces/Math/medianfilterdialog.ui \
     Traces/Math/newtracemathdialog.ui \

@@ -137,6 +137,7 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .limits_minRBW = 1,
     .limits_maxRBW = 1000000,
     .limits_maxAmplitudePoints = 255,
+    .limits_maxFreqHarmonic = 18000000000,
 };
 
 Protocol::DeviceInfo Device::lastInfo = defaultInfo;

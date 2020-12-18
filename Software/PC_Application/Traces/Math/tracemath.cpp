@@ -3,6 +3,7 @@
 #include "medianfilter.h"
 #include "tdr.h"
 #include "dft.h"
+#include "expression.h"
 #include "Traces/trace.h"
 
 TraceMath::TraceMath()
@@ -21,6 +22,8 @@ TraceMath *TraceMath::createMath(TraceMath::Type type)
         return new Math::TDR();
     case Type::DFT:
         return new Math::DFT();
+    case Type::Expression:
+        return new Math::Expression();
     default:
         return nullptr;
     }
@@ -41,6 +44,10 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
     case Type::DFT:
         ret.name = "DFT";
         ret.explanationWidget = Math::DFT::createExplanationWidget();
+        break;
+    case Type::Expression:
+        ret.name = "Custom Expression";
+        ret.explanationWidget = Math::Expression::createExplanationWidget();
         break;
     default:
         break;
@@ -126,7 +133,7 @@ void TraceMath::inputTypeChanged(TraceMath::DataType type)
         disconnect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged);
         updateStepResponse(false);
     } else {
-        connect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged);
+        connect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged, Qt::UniqueConnection);
         inputSamplesChanged(0, input->data.size());
     }
     emit outputTypeChanged(dataType);

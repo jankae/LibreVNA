@@ -129,11 +129,11 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
 
     connect(ui->AcquisitionUseHarmonic, &QCheckBox::toggled, [=](bool enabled) {
        if(enabled) {
-           InformationBox::ShowMessage("Harmonic Mixing", "When harmonic mixing is enabled, the frequency range of the VNA is extended up to 18GHz "
+           InformationBox::ShowMessage("Harmonic Mixing", "When harmonic mixing is enabled, the frequency range of the VNA is (theoretically) extended up to 18GHz "
                                        "by using higher harmonics of the source signal as well as the 1.LO. The fundamental frequency is still present "
                                        "in the output signal and might disturb the measurement if the DUT is not linear. Performance above 6GHz is not "
-                                       "specified and generally not very good. However, this mode might be useful, if the signal of interest is just above "
-                                       "6GHz. Performance below 6GHz is not affected by this setting");
+                                       "specified and generally not very good. However, this mode might be useful if the signal of interest is just above "
+                                       "6GHz (typically useful values up to 7-8GHz). Performance below 6GHz is not affected by this setting");
        }
     });
 }

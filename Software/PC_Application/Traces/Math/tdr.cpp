@@ -4,6 +4,7 @@
 #include "ui_tdrdialog.h"
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QDebug>
 #include "ui_tdrexplanationwidget.h"
 using namespace Math;
 using namespace std;

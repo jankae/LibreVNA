@@ -52,6 +52,8 @@ void Trace::addData(const Trace::Data& d) {
     auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
         return lhs.x < rhs.x;
     });
+    // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
+    auto index = lower - data.begin();
     if(lower == data.end()) {
         // highest frequency yet, add to vector
         data.push_back(d);
@@ -74,13 +76,12 @@ void Trace::addData(const Trace::Data& d) {
             }
             break;
         }
-
     } else {
         // insert at this position
         data.insert(lower, d);
     }
     success();
-    emit outputSamplesChanged(lower - data.begin(), lower - data.begin() + 1);
+    emit outputSamplesChanged(index, index + 1);
 }
 
 void Trace::addData(const Trace::Data &d, const Protocol::SweepSettings &s)

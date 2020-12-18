@@ -592,12 +592,17 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
 {
     settings.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
     if(window->getDevice()) {
-        window->getDevice()->Configure(settings, cb);
+        window->getDevice()->Configure(settings, [=](Device::TransmissionResult res){
+            // device received command, reset traces now
+            average.reset(settings.points);
+            traceModel.clearVNAData();
+            UpdateAverageCount();
+            UpdateCalWidget();
+            if(cb) {
+                cb(res);
+            }
+        });
     }
-    average.reset(settings.points);
-    traceModel.clearVNAData();
-    UpdateAverageCount();
-    UpdateCalWidget();
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
 

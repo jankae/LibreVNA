@@ -73,6 +73,7 @@ public:
         MedianFilter,
         TDR,
         DFT,
+        Expression,
         // Add new math operations here, do not explicitly assign values and keep the Last entry at the last position
         Last,
     };
