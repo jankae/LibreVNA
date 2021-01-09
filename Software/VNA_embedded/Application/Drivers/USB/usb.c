@@ -223,7 +223,7 @@ void usb_init(usbd_recv_callback_t receive_callback) {
 }
 bool usb_transmit(const uint8_t *data, uint16_t length) {
 	// attempt to add data to fifo
-	if(usb_transmit_fifo_level + length > sizeof(usb_transmit_fifo)) {
+	if(length > usb_available_buffer()) {
 		// data won't fit, abort
 		return false;
 	}
@@ -279,4 +279,8 @@ void USB_HP_IRQHandler(void)
 void USB_LP_IRQHandler(void)
 {
   HAL_PCD_IRQHandler(&hpcd_USB_FS);
+}
+
+uint16_t usb_available_buffer() {
+	return sizeof(usb_transmit_fifo) - usb_transmit_fifo_level;
 }

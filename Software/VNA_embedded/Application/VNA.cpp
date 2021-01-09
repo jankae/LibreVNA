@@ -12,6 +12,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "Util.hpp"
+#include "usb.h"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"VNA"
@@ -43,6 +44,10 @@ static constexpr uint8_t alternativePrescaler = 102400000UL / alternativeSampler
 static_assert(alternativePrescaler * alternativeSamplerate == 102400000UL, "alternative ADCSamplerate can not be reached exactly");
 static constexpr uint16_t alternativePhaseInc = 4096 * HW::IF2 / alternativeSamplerate;
 static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::IF2, "DFT can not be computed for 2.IF when using alternative samplerate");
+
+// Constants for USB buffer overflow prevention
+static constexpr uint16_t maxPointsBetweenHalts = 40;
+static constexpr uint32_t reservedUSBbuffer = maxPointsBetweenHalts * (sizeof(Protocol::Datapoint) + 8 /*USB packet overhead*/);
 
 using namespace HWHAL;
 
@@ -105,6 +110,8 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 
 	// invalidate first entry of IFTable, preventing switing of 2.LO in halted callback
 	IFTable[0].pointCnt = 0xFFFF;
+
+	uint16_t pointsWithoutHalt = 0;
 
 	// Transfer PLL configuration to FPGA
 	for (uint16_t i = 0; i < points; i++) {
@@ -185,6 +192,17 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			LOG_WARN(
 					"PLL deviation of %luHz for measurement at %lu%06luHz, will cause a peak",
 					IFdeviation, (uint32_t ) (freq / 1000000), (uint32_t ) (freq % 1000000));
+		}
+
+		// halt on regular intervals to prevent USB buffer overflow
+		if(!needs_halt) {
+			pointsWithoutHalt++;
+			if(pointsWithoutHalt > maxPointsBetweenHalts) {
+				needs_halt = true;
+			}
+		}
+		if(needs_halt) {
+			pointsWithoutHalt = 0;
 		}
 
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
@@ -350,7 +368,18 @@ void VNA::SweepHalted() {
 		adcShifted = false;
 	}
 
-	FPGA::ResumeHaltedSweep();
+	if(usb_available_buffer() >= reservedUSBbuffer) {
+		// enough space available, can resume immediately
+		FPGA::ResumeHaltedSweep();
+	} else {
+		// USB buffer could potentially overflow before next halted point, wait until more space is available.
+		// This function is called from a low level interrupt, need to dispatch to lower priority to allow USB
+		// handling to continue
+		STM::DispatchToInterrupt([](){
+			while(usb_available_buffer() < reservedUSBbuffer);
+			FPGA::ResumeHaltedSweep();
+		});
+	}
 }
 
 void VNA::Stop() {
