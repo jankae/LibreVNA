@@ -24,6 +24,7 @@ HEADERS += \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
+    Tools/parameters.h \
     Traces/Math/dft.h \
     Traces/Math/expression.h \
     Traces/Math/medianfilter.h \
@@ -96,7 +97,12 @@ HEADERS += \
     Traces/xyplotaxisdialog.h \
     Util/qpointervariant.h \
     Util/util.h \
-    VNA/portextension.h \
+    VNA/Deembedding/deembedding.h \
+    VNA/Deembedding/deembeddingdialog.h \
+    VNA/Deembedding/deembeddingoption.h \
+    VNA/Deembedding/matchingnetwork.h \
+    VNA/Deembedding/portextension.h \
+    VNA/Deembedding/twothru.h \
     VNA/tracewidgetvna.h \
     VNA/vna.h \
     appwindow.h \
@@ -135,6 +141,7 @@ SOURCES += \
     SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
+    Tools/parameters.cpp \
     Traces/Math/dft.cpp \
     Traces/Math/expression.cpp \
     Traces/Math/medianfilter.cpp \
@@ -194,7 +201,12 @@ SOURCES += \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
     Traces/xyplotaxisdialog.cpp \
-    VNA/portextension.cpp \
+    VNA/Deembedding/deembedding.cpp \
+    VNA/Deembedding/deembeddingdialog.cpp \
+    VNA/Deembedding/deembeddingoption.cpp \
+    VNA/Deembedding/matchingnetwork.cpp \
+    VNA/Deembedding/portextension.cpp \
+    VNA/Deembedding/twothru.cpp \
     VNA/tracewidgetvna.cpp \
     VNA/vna.cpp \
     appwindow.cpp \
@@ -243,7 +255,11 @@ FORMS += \
     Traces/tracetouchstoneexport.ui \
     Traces/tracewidget.ui \
     Traces/xyplotaxisdialog.ui \
-    VNA/portextensioneditdialog.ui \
+    VNA/Deembedding/deembeddingdialog.ui \
+    VNA/Deembedding/form.ui \
+    VNA/Deembedding/matchingnetworkdialog.ui \
+    VNA/Deembedding/portextensioneditdialog.ui \
+    VNA/Deembedding/twothrudialog.ui \
     main.ui \
     preferencesdialog.ui
 

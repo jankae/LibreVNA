@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="113.386pt" height="113.386pt" viewBox="0 0 113.386 113.386" version="1.1">
+<defs>
+<clipPath id="clip1">
+  <path d="M 0 28 L 113.386719 28 L 113.386719 29 L 0 29 Z M 0 28 "/>
+</clipPath>
+</defs>
+<g id="surface1">
+<g clip-path="url(#clip1)" clip-rule="nonzero">
+<path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 0 85.04225 L 28.347656 85.04225 M 28.347656 85.04225 L 85.039062 85.04225 M 85.039062 85.04225 L 113.386719 85.04225 " transform="matrix(1,0,0,-1,0,113.386)"/>
+</g>
+<path style="fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 58.28125 85.04225 C 58.28125 85.91725 57.570312 86.628187 56.695312 86.628187 C 55.816406 86.628187 55.105469 85.91725 55.105469 85.04225 C 55.105469 84.163344 55.816406 83.452406 56.695312 83.452406 C 57.570312 83.452406 58.28125 84.163344 58.28125 85.04225 Z M 58.28125 85.04225 " transform="matrix(1,0,0,-1,0,113.386)"/>
+<path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 56.695312 85.04225 L 56.695312 60.663344 M 56.695312 52.725844 L 56.695312 28.346937 " transform="matrix(1,0,0,-1,0,113.386)"/>
+<path style="fill:none;stroke-width:0.797;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 68.597656 60.663344 L 44.789062 60.663344 M 68.597656 52.725844 L 44.789062 52.725844 " transform="matrix(1,0,0,-1,0,113.386)"/>
+<path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 56.695312 28.346937 L 56.695312 16.440687 " transform="matrix(1,0,0,-1,0,113.386)"/>
+<path style="fill:none;stroke-width:0.797;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 50.742188 16.440687 L 62.644531 16.440687 M 52.726562 14.456312 L 60.660156 14.456312 M 54.214844 12.471937 L 59.175781 12.471937 " transform="matrix(1,0,0,-1,0,113.386)"/>
+</g>
+</svg>

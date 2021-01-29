@@ -7,7 +7,7 @@
 using namespace std;
 
 PortExtension::PortExtension()
-    : QObject()
+    : DeembeddingOption()
 {
     port1.enabled = false;
     port1.frequency = 0;
@@ -26,7 +26,7 @@ PortExtension::PortExtension()
     kit = nullptr;
 }
 
-void PortExtension::applyToMeasurement(Protocol::Datapoint &d)
+void PortExtension::transformDatapoint(Protocol::Datapoint &d)
 {
     if(measuring) {
         if(measurements.size() > 0) {
@@ -180,6 +180,7 @@ void PortExtension::edit()
     ui->setupUi(dialog);
 
     // set initial values
+    ui->P1Enabled->setChecked(port1.enabled);
     ui->P1Time->setUnit("s");
     ui->P1Time->setPrefixes("pnum ");
     ui->P1Distance->setUnit("m");
@@ -198,6 +199,7 @@ void PortExtension::edit()
         ui->P1calkit->setEnabled(false);
     }
 
+    ui->P2Enabled->setChecked(port2.enabled);
     ui->P2Time->setUnit("s");
     ui->P2Time->setPrefixes("pnum ");
     ui->P2Distance->setUnit("m");
@@ -229,6 +231,9 @@ void PortExtension::edit()
         port2.frequency = ui->P2Frequency->value();
     };
 
+    connect(ui->P1Enabled, &QCheckBox::toggled, [=](bool enabled) {
+        port1.enabled = enabled;
+    });
     // connections to link delay and distance
     connect(ui->P1Time, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P1Distance->setValueQuiet(newval * ui->P1Velocity->value() * c);
@@ -258,6 +263,9 @@ void PortExtension::edit()
         startMeasurement();
     });
 
+    connect(ui->P2Enabled, &QCheckBox::toggled, [=](bool enabled) {
+        port2.enabled = enabled;
+    });
     connect(ui->P2Time, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->P2Distance->setValueQuiet(newval * ui->P2Velocity->value() * c);
         updateValuesFromUI();
@@ -303,26 +311,43 @@ void PortExtension::startMeasurement()
     measuring = true;
 }
 
-QToolBar *PortExtension::createToolbar()
-{
-    auto tb = new QToolBar("Port Extension");
-    auto editButton = new QPushButton("Port Extension");
-    auto p1enable = new QCheckBox("Port 1");
-    auto p2enable = new QCheckBox("Port 2");
-    connect(p1enable, &QCheckBox::clicked, [=]() {
-        port1.enabled = p1enable->isChecked();
-    });
-    connect(p2enable, &QCheckBox::clicked, [=]() {
-        port2.enabled = p2enable->isChecked();
-    });
-    connect(editButton, &QPushButton::pressed, this, &PortExtension::edit);
-    tb->addWidget(editButton);
-    tb->addWidget(p1enable);
-    tb->addWidget(p2enable);
-    return tb;
-}
-
 void PortExtension::setCalkit(Calkit *kit)
 {
     this->kit = kit;
+}
+
+nlohmann::json PortExtension::toJSON()
+{
+    nlohmann::json j;
+    for(int i=0;i<2;i++) {
+        auto ext = i == 0 ? port1 : port2;
+        nlohmann::json je;
+        je["enabled"] = ext.enabled;
+        je["delay"] = ext.delay;
+        je["velocityFactor"] = ext.velocityFactor;
+        je["DCloss"] = ext.DCloss;
+        je["loss"] = ext.loss;
+        je["frequency"] = ext.frequency;
+        j.push_back(je);
+    }
+    return j;
+}
+
+void PortExtension::fromJSON(nlohmann::json j)
+{
+    for(int i=0;i<2;i++) {
+        Extension ext;
+        nlohmann::json je = j[i];
+        ext.enabled = je.value("enabled", false);
+        ext.delay = je.value("delay", 0.0);
+        ext.velocityFactor = je.value("velocityFactor", 0.66);
+        ext.DCloss = je.value("DCloss", 0.0);
+        ext.loss = je.value("loss", 0.0);
+        ext.frequency = je.value("frequency", 6000000000);
+        if(i==0) {
+            port1 = ext;
+        } else {
+            port2 = ext;
+        }
+    }
 }

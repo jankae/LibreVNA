@@ -8,7 +8,7 @@
 #include "CustomWidgets/tilewidget.h"
 #include "Device/device.h"
 #include <functional>
-#include "portextension.h"
+#include "Deembedding/deembedding.h"
 
 class VNA : public Mode
 {
@@ -81,7 +81,7 @@ private:
     QAction *assignDefaultCal, *removeDefaultCal;
     QAction *saveCal;
 
-    PortExtension portExtension;
+    Deembedding deembedding;
 
     // Status Labels
     QLabel *lAverages;

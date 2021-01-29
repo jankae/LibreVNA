@@ -147,7 +147,7 @@ VNA::VNA(AppWindow *window)
         import->show();
     });
 
-    portExtension.setCalkit(&cal.getCalibrationKit());
+//    portExtension.setCalkit(&cal.getCalibrationKit());
 
     // Tools menu
     auto toolsMenu = new QMenu("Tools", window);
@@ -155,6 +155,8 @@ VNA::VNA(AppWindow *window)
     actions.insert(toolsMenu->menuAction());
     auto impedanceMatching = toolsMenu->addAction("Impedance Matching");
     connect(impedanceMatching, &QAction::triggered, this, &VNA::StartImpedanceMatching);
+    auto confDeembed = toolsMenu->addAction("De-embedding");
+    connect(confDeembed, &QAction::triggered, &deembedding, &Deembedding::configure);
 
     defaultCalMenu = new QMenu("Default Calibration", window);
     assignDefaultCal = defaultCalMenu->addAction("Assign...");
@@ -367,9 +369,9 @@ VNA::VNA(AppWindow *window)
     window->addToolBar(tb_cal);
     toolbars.insert(tb_cal);
 
-    auto tb_portExtension = portExtension.createToolbar();
-    window->addToolBar(tb_portExtension);
-    toolbars.insert(tb_portExtension);
+//    auto tb_portExtension = portExtension.createToolbar();
+//    window->addToolBar(tb_portExtension);
+//    toolbars.insert(tb_portExtension);
 
 
     markerModel = new TraceMarkerModel(traceModel, this);
@@ -490,7 +492,7 @@ void VNA::initializeDevice()
         if(QFile::exists(filename)) {
             if(cal.openFromFile(filename)) {
                 ApplyCalibration(cal.getType());
-                portExtension.setCalkit(&cal.getCalibrationKit());
+//                portExtension.setCalkit(&cal.getCalibrationKit());
                 qDebug() << "Calibration successful from " << filename;
             } else {
                 qDebug() << "Calibration not successfull from: " << filename;
@@ -528,6 +530,7 @@ nlohmann::json VNA::toJSON()
     j["traces"] = traceModel.toJSON();
     j["tiles"] = central->toJSON();
     j["markers"] = markerModel->toJSON();
+    j["de-embedding"] = deembedding.toJSON();
     return j;
 }
 
@@ -541,6 +544,9 @@ void VNA::fromJSON(nlohmann::json j)
     }
     if(j.contains("markers")) {
         markerModel->fromJSON(j["markers"]);
+    }
+    if(j.contains("de-embedding")) {
+        deembedding.fromJSON(j["de-embedding"]);
     }
 }
 
@@ -568,7 +574,8 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     if(calValid) {
         cal.correctMeasurement(d);
     }
-    portExtension.applyToMeasurement(d);
+
+    deembedding.Deembed(d);
 
     traceModel.addVNAData(d, settings);
     emit dataChanged();

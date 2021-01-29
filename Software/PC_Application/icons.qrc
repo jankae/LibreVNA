@@ -35,5 +35,17 @@
         <file>icons/zoom-out.png</file>
         <file>icons/math_disabled.svg</file>
         <file>icons/math_enabled.svg</file>
+        <file>icons/parallelC.svg</file>
+        <file>icons/parallelL.svg</file>
+        <file>icons/parallelR.svg</file>
+        <file>icons/seriesC.svg</file>
+        <file>icons/seriesL.svg</file>
+        <file>icons/seriesR.svg</file>
+        <file>icons/DUT.png</file>
+        <file>icons/port1.png</file>
+        <file>icons/port2.png</file>
+        <file>icons/DUT.svg</file>
+        <file>icons/port1.svg</file>
+        <file>icons/port2.svg</file>
     </qresource>
 </RCC>

@@ -5,6 +5,7 @@
 #include <fstream>
 #include "unit.h"
 #include <QDebug>
+#include "Tools/parameters.h"
 
 using namespace std;
 
@@ -234,52 +235,6 @@ void Calibration::constructTransmissionNormalization()
     }
 }
 
-template<typename T>
-class Tparam {
-public:
-    Tparam(){};
-    Tparam(T t11, T t12, T t21, T t22)
-        : t11(t11), t12(t12), t21(t21), t22(t22){};
-    void fromSparam(T S11, T S21, T S12, T S22) {
-        t11 = -(S11*S22 - S12*S21) / S21;
-        t12 = S11 / S21;
-        t21 = -S22 / S21;
-        t22 = 1.0 / S21;
-    }
-    void toSparam(T &S11, T &S21, T &S12, T &S22) {
-        S11 = t12 / t22;
-        S21 = T(1) / t22;
-        S12 = (t11*t22 - t12*t21) / t22;
-        S22 = -t21 / t22;
-    }
-    Tparam inverse() {
-        Tparam i;
-        T det = t11*t22 - t12*t21;
-        i.t11 = t22 / det;
-        i.t12 = -t12 / det;
-        i.t21 = -t21 / det;
-        i.t22 = t11 / det;
-        return i;
-    }
-    Tparam operator*(const Tparam &r) {
-        Tparam p;
-        p.t11 = t11*r.t11 + t12*r.t21;
-        p.t12 = t11*r.t12 + t12*r.t22;
-        p.t21 = t21*r.t11 + t22*r.t21;
-        p.t22 = t21*r.t12 + t22*r.t22;
-        return p;
-    }
-    Tparam operator*(const T &r) {
-        Tparam p;
-        p.t11 = t11 * r;
-        p.t12 = t12 * r;
-        p.t21 = t21 * r;
-        p.t22 = t22 * r;
-        return p;
-    }
-    T t11, t12, t21, t22;
-};
-
 template<typename T> void solveQuadratic(T a, T b, T c, T &result1, T &result2)
 {
     T root = sqrt(b * b - T(4) * a * c);
@@ -317,24 +272,24 @@ void Calibration::constructTRL()
         // calculate TRL calibration
         // variable names and formulas according to http://emlab.uiuc.edu/ece451/notes/new_TRL.pdf
         // page 19
-        auto R_T = Tparam<complex<double>>();
-        auto R_D = Tparam<complex<double>>();
-        R_T.fromSparam(S11_through, S21_through, S12_through, S22_through);
-        R_D.fromSparam(S11_line, S21_line, S12_line, S22_line);
+        Sparam Sthrough(S11_through, S12_through, S21_through, S22_through);
+        Sparam Sline(S11_line, S12_line, S21_line, S22_line);
+        auto R_T = Tparam(Sthrough);
+        auto R_D = Tparam(Sline);
         auto T = R_D*R_T.inverse();
         complex<double> a_over_c, b;
         // page 21-22
-        solveQuadratic(T.t21, T.t22 - T.t11, -T.t12, b, a_over_c);
+        solveQuadratic(T.m21, T.m22 - T.m11, -T.m12, b, a_over_c);
         // ensure correct root selection
         // page 23
         if(abs(b) >= abs(a_over_c)) {
             swap(b, a_over_c);
         }
         // page 24
-        auto g = R_T.t22;
-        auto d = R_T.t11 / g;
-        auto e = R_T.t12 / g;
-        auto f = R_T.t21 / g;
+        auto g = R_T.m22;
+        auto d = R_T.m11 / g;
+        auto e = R_T.m12 / g;
+        auto f = R_T.m21 / g;
 
         // page 25
         auto r22_rho22 = g * (1.0 - e / a_over_c) / (1.0 - b / a_over_c);
@@ -360,11 +315,15 @@ void Calibration::constructTRL()
         auto alpha = alpha_a / a;
         auto beta = beta_over_alpha * alpha;
         auto c = a / a_over_c;
-        auto Box_A = Tparam<complex<double>>(r22 * a, r22 * b, r22 * c, r22);
-        auto Box_B = Tparam<complex<double>>(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
-        complex<double> dummy1, dummy2;
-        Box_A.toSparam(p.fe00, dummy1, p.fe10e01, p.fe11);
-        Box_B.toSparam(p.fe22, p.fe10e32, dummy1, dummy2);
+        auto Box_A = Tparam(r22 * a, r22 * b, r22 * c, r22);
+        auto Box_B = Tparam(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
+        auto S_A = Sparam(Box_A);
+        p.fe00 = S_A.m11;
+        p.fe10e01 = S_A.m12;
+        p.fe11 = S_A.m22;
+        auto S_B = Sparam(Box_B);
+        p.fe22 = S_B.m11;
+        p.fe10e32 = S_B.m21;
         // no isolation measurement available
         p.fe30 = 0.0;
 
@@ -376,10 +335,15 @@ void Calibration::constructTRL()
         rho22 = 1.0/(alpha - beta * gamma);
         r22 = r22_rho22 / rho22;
 
-        Box_A = Tparam<complex<double>>(r22 * a, r22 * b, r22 * c, r22);
-        Box_B = Tparam<complex<double>>(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
-        Box_A.toSparam(dummy1, dummy2, p.re23e01, p.re11);
-        Box_B.toSparam(p.re22, p.re23e32, dummy1, p.re33);
+        Box_A = Tparam(r22 * a, r22 * b, r22 * c, r22);
+        Box_B = Tparam(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
+        S_A = Sparam(Box_A);
+        p.re23e01 = S_A.m12;
+        p.re11 = S_A.m22;
+        S_B = Sparam(Box_B);
+        p.re22 = S_B.m11;
+        p.re23e32 = S_B.m21;
+        p.re33 = S_B.m22;
         // no isolation measurement available
         p.re03 = 0.0;
 
