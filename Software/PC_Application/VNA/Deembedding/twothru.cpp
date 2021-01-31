@@ -80,7 +80,8 @@ void TwoThru::transformDatapoint(Protocol::Datapoint &p)
                 partial_sum(t212x.begin(), t212x.end(), t212x.begin());
 
                 // find the midpoint of the trace
-                auto mid = lower_bound(t212x.begin(), t212x.end(), 0.5, [](complex<double> p, double c) -> bool {
+                double threshold = 0.5*real(t212x.back());
+                auto mid = lower_bound(t212x.begin(), t212x.end(), threshold, [](complex<double> p, double c) -> bool {
                         return real(p) < c;
                 }) - t212x.begin();
 
@@ -135,7 +136,8 @@ void TwoThru::transformDatapoint(Protocol::Datapoint &p)
                 partial_sum(t212x.begin(), t212x.end(), t212x.begin());
 
                 // find the midpoint of the trace
-                auto mid = lower_bound(t212x.begin(), t212x.end(), 0.5, [](complex<double> p, double c) -> bool {
+                double threshold = 0.5*real(t212x.back());
+                auto mid = lower_bound(t212x.begin(), t212x.end(), threshold, [](complex<double> p, double c) -> bool {
                         return real(p) < c;
                 }) - t212x.begin();
 
@@ -167,7 +169,7 @@ void TwoThru::transformDatapoint(Protocol::Datapoint &p)
 
                 // create S parameter errorbox
                 for(unsigned int i=1;i<=n;i++) {
-                    data_side2.push_back(Sparam(p111x[i], p211x[i], p211x[i], data_side1[i-1].m22));
+                    data_side2.push_back(Sparam(data_side1[i-1].m22, p211x[i], p211x[i], p111x[i]));
                     data_side1[i-1].m22 = p221x[i];
                 }
             }
