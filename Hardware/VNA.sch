@@ -8,34 +8,34 @@
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
-<layer number="2" name="Route2" color="10" fill="1" visible="no" active="no"/>
-<layer number="3" name="Route3" color="17" fill="1" visible="no" active="no"/>
-<layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
-<layer number="5" name="Route5" color="19" fill="1" visible="no" active="no"/>
-<layer number="6" name="Route6" color="25" fill="1" visible="no" active="no"/>
-<layer number="7" name="Route7" color="26" fill="1" visible="no" active="no"/>
-<layer number="8" name="Route8" color="27" fill="1" visible="no" active="no"/>
-<layer number="9" name="Route9" color="28" fill="1" visible="no" active="no"/>
-<layer number="10" name="Route10" color="29" fill="1" visible="no" active="no"/>
-<layer number="11" name="Route11" color="30" fill="1" visible="no" active="no"/>
-<layer number="12" name="Route12" color="20" fill="1" visible="no" active="no"/>
-<layer number="13" name="Route13" color="21" fill="1" visible="no" active="no"/>
-<layer number="14" name="Route14" color="22" fill="1" visible="no" active="no"/>
-<layer number="15" name="Route15" color="14" fill="1" visible="no" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="no"/>
-<layer number="17" name="Pads" color="2" fill="1" visible="no" active="no"/>
-<layer number="18" name="Vias" color="2" fill="1" visible="no" active="no"/>
-<layer number="19" name="Unrouted" color="6" fill="1" visible="no" active="no"/>
-<layer number="20" name="Dimension" color="24" fill="1" visible="no" active="no"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="no"/>
-<layer number="22" name="bPlace" color="7" fill="1" visible="no" active="no"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="no"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="no" active="no"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="no" active="no"/>
-<layer number="28" name="bValues" color="7" fill="1" visible="no" active="no"/>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="no"/>
+<layer number="2" name="Route2" color="10" fill="1" visible="yes" active="no"/>
+<layer number="3" name="Route3" color="17" fill="1" visible="yes" active="no"/>
+<layer number="4" name="Route4" color="18" fill="1" visible="yes" active="no"/>
+<layer number="5" name="Route5" color="19" fill="1" visible="yes" active="no"/>
+<layer number="6" name="Route6" color="25" fill="1" visible="yes" active="no"/>
+<layer number="7" name="Route7" color="26" fill="1" visible="yes" active="no"/>
+<layer number="8" name="Route8" color="27" fill="1" visible="yes" active="no"/>
+<layer number="9" name="Route9" color="28" fill="1" visible="yes" active="no"/>
+<layer number="10" name="Route10" color="29" fill="1" visible="yes" active="no"/>
+<layer number="11" name="Route11" color="30" fill="1" visible="yes" active="no"/>
+<layer number="12" name="Route12" color="20" fill="1" visible="yes" active="no"/>
+<layer number="13" name="Route13" color="21" fill="1" visible="yes" active="no"/>
+<layer number="14" name="Route14" color="22" fill="1" visible="yes" active="no"/>
+<layer number="15" name="Route15" color="14" fill="1" visible="yes" active="no"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="no"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="no"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="no"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="no"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="no"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="no"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="no"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="no"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="no"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="no"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="no"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="no"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="no"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="no"/>
@@ -44,8 +44,8 @@
 <layer number="34" name="bFinish" color="6" fill="6" visible="no" active="no"/>
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="no"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="no"/>
-<layer number="37" name="tTest" color="7" fill="1" visible="no" active="no"/>
-<layer number="38" name="bTest" color="7" fill="1" visible="no" active="no"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="yes" active="no"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="yes" active="no"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="no"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="no"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="no"/>
@@ -53,17 +53,17 @@
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="no"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="no"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="no" active="no"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="no" active="no"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="no" active="no"/>
-<layer number="48" name="Document" color="7" fill="1" visible="no" active="no"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="no" active="no"/>
-<layer number="50" name="dxf" color="7" fill="1" visible="no" active="no"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="no"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="no"/>
-<layer number="53" name="tPadExt" color="7" fill="1" visible="no" active="no"/>
-<layer number="54" name="bPadExt" color="1" fill="1" visible="no" active="no"/>
-<layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
-<layer number="57" name="tCAD" color="7" fill="1" visible="no" active="no"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="no"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="no"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="no"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="no"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="yes" active="no"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="no"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="no"/>
+<layer number="53" name="tPadExt" color="7" fill="1" visible="yes" active="no"/>
+<layer number="54" name="bPadExt" color="1" fill="1" visible="yes" active="no"/>
+<layer number="56" name="wert" color="7" fill="1" visible="yes" active="no"/>
+<layer number="57" name="tCAD" color="7" fill="1" visible="yes" active="no"/>
 <layer number="88" name="SimResults" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="89" name="SimProbes" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
@@ -1532,9 +1532,9 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="0" y="2.764" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-2.324" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
-<package name="PJ-014D" urn="urn:adsk.eagle:footprint:23404881/1" library_version="2" library_locally_modified="yes">
-<pad name="3" x="0.75" y="8" drill="0.8" shape="long" rot="R90"/>
-<pad name="2" x="4.55" y="8" drill="0.8" shape="long" rot="R90"/>
+<package name="PJ-014D" urn="urn:adsk.eagle:footprint:23404881/1" locally_modified="yes" library_version="2" library_locally_modified="yes">
+<pad name="2" x="0.75" y="8" drill="0.8" shape="long" rot="R90"/>
+<pad name="3" x="4.55" y="8" drill="0.8" shape="long" rot="R90"/>
 <pad name="1" x="8.25" y="8" drill="0.8" shape="long" rot="R90"/>
 <wire x1="0.75" y1="9" x2="0.35" y2="9" width="0" layer="46"/>
 <wire x1="0.35" y1="9" x2="0.35" y2="7" width="0" layer="46"/>
@@ -1578,6 +1578,20 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <smd name="3" x="1.0704" y="0" dx="0.7884" dy="0.5415" layer="1"/>
 <text x="0" y="2.6097" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-2.185" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
+</package>
+<package name="INDC2012X100N" urn="urn:adsk.eagle:footprint:26452829/1" library_version="2" library_locally_modified="yes">
+<description>Chip, 2.00 X 1.25 X 1.00 mm body
+&lt;p&gt;Chip package with body size 2.00 X 1.25 X 1.00 mm&lt;/p&gt;</description>
+<wire x1="1.1" y1="1.0467" x2="-1.1" y2="1.0467" width="0.12" layer="21"/>
+<wire x1="1.1" y1="-1.0467" x2="-1.1" y2="-1.0467" width="0.12" layer="21"/>
+<wire x1="1.1" y1="-0.725" x2="-1.1" y2="-0.725" width="0.12" layer="51"/>
+<wire x1="-1.1" y1="-0.725" x2="-1.1" y2="0.725" width="0.12" layer="51"/>
+<wire x1="-1.1" y1="0.725" x2="1.1" y2="0.725" width="0.12" layer="51"/>
+<wire x1="1.1" y1="0.725" x2="1.1" y2="-0.725" width="0.12" layer="51"/>
+<smd name="1" x="-0.8599" y="0" dx="1.1955" dy="1.4653" layer="1"/>
+<smd name="2" x="0.8599" y="0" dx="1.1955" dy="1.4653" layer="1"/>
+<text x="0" y="1.6817" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
+<text x="0" y="-1.6817" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
 </packages>
 <packages3d>
@@ -1802,7 +1816,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <packageinstance name="SON50P300X300X90-13T170X240N"/>
 </packageinstances>
 </package3d>
-<package3d name="PJ-014D" urn="urn:adsk.eagle:package:23404883/2" type="model" library_version="2" library_locally_modified="yes">
+<package3d name="PJ-014D" urn="urn:adsk.eagle:package:23404883/2" locally_modified="yes" type="model" library_version="2" library_locally_modified="yes">
 <packageinstances>
 <packageinstance name="PJ-014D"/>
 </packageinstances>
@@ -1812,6 +1826,13 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 &lt;p&gt;3-pin SOTFL package with 0.95 mm pitch, 2.40 mm span with body size 2.90 X 1.80 X 0.80 mm&lt;/p&gt;</description>
 <packageinstances>
 <packageinstance name="SOTFL95P240X80-3N"/>
+</packageinstances>
+</package3d>
+<package3d name="INDC2012X100N" urn="urn:adsk.eagle:package:26452824/1" type="model" library_version="2" library_locally_modified="yes">
+<description>Chip, 2.00 X 1.25 X 1.00 mm body
+&lt;p&gt;Chip package with body size 2.00 X 1.25 X 1.00 mm&lt;/p&gt;</description>
+<packageinstances>
+<packageinstance name="INDC2012X100N"/>
 </packageinstances>
 </package3d>
 </packages3d>
@@ -1907,7 +1928,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="-10.16" y="-10.16" size="1.778" layer="95">&gt;Name</text>
 <text x="2.54" y="-10.16" size="1.778" layer="96">&gt;Value</text>
 </symbol>
-<symbol name="DC-JACK-SWITCH" urn="urn:adsk.eagle:symbol:22367191/1" library_version="1">
+<symbol name="DC-JACK-SWITCH" urn="urn:adsk.eagle:symbol:22367191/1" locally_modified="yes" library_version="2" library_locally_modified="yes">
 <rectangle x1="-3.302" y1="-2.54" x2="-1.778" y2="1.27" layer="94"/>
 <wire x1="5.08" y1="2.54" x2="-2.54" y2="2.54" width="0.1524" layer="94"/>
 <wire x1="-2.54" y1="2.54" x2="-2.54" y2="1.27" width="0.1524" layer="94"/>
@@ -1918,8 +1939,8 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <wire x1="0.762" y1="-2.54" x2="0" y2="-1.016" width="0.1524" layer="94"/>
 <wire x1="0" y1="-1.016" x2="-0.762" y2="-2.54" width="0.1524" layer="94"/>
 <pin name="1" x="7.62" y="2.54" visible="pad" length="short" direction="pas" rot="R180"/>
-<pin name="2" x="7.62" y="0" visible="pad" length="short" direction="pas" rot="R180"/>
-<pin name="3" x="7.62" y="-2.54" visible="pad" length="short" direction="pas" rot="R180"/>
+<pin name="3" x="7.62" y="0" visible="pad" length="short" direction="pas" rot="R180"/>
+<pin name="2" x="7.62" y="-2.54" visible="pad" length="short" direction="pas" rot="R180"/>
 <text x="-2.54" y="3.81" size="1.778" layer="95">&gt;NAME</text>
 <text x="-2.54" y="-6.35" size="1.778" layer="96">&gt;VALUE</text>
 <polygon width="0.1524" layer="94">
@@ -2701,7 +2722,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="-6.35" y="13.335" size="1.778" layer="95">&gt;NAME</text>
 <text x="-6.35" y="-17.78" size="1.778" layer="96">&gt;VALUE</text>
 </symbol>
-<symbol name="LM3370_BUCK" library_version="1" library_locally_modified="yes">
+<symbol name="LM3370_BUCK" urn="urn:adsk.eagle:symbol:23404878/1" library_version="2" library_locally_modified="yes">
 <pin name="VIN" x="-15.24" y="5.08" length="middle"/>
 <pin name="SW" x="15.24" y="5.08" length="middle" rot="R180"/>
 <pin name="PGND" x="0" y="-10.16" length="middle" rot="R90"/>
@@ -2715,7 +2736,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="-10.16" y="-7.62" size="1.778" layer="95">&gt;Name</text>
 <text x="2.54" y="-7.62" size="1.778" layer="95">&gt;Value</text>
 </symbol>
-<symbol name="LM3370_CONTROL" library_version="1" library_locally_modified="yes">
+<symbol name="LM3370_CONTROL" urn="urn:adsk.eagle:symbol:23404879/1" library_version="2" library_locally_modified="yes">
 <pin name="SDA" x="-10.16" y="2.54" length="middle"/>
 <pin name="SCL" x="-10.16" y="0" length="middle"/>
 <pin name="VDD" x="2.54" y="15.24" length="middle" rot="R270"/>
@@ -2727,7 +2748,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="-7.62" y="-10.16" size="1.778" layer="95">&gt;Name</text>
 <text x="7.62" y="-10.16" size="1.778" layer="96">&gt;Value</text>
 </symbol>
-<symbol name="MIC2253" library_version="1" library_locally_modified="yes">
+<symbol name="MIC2253" urn="urn:adsk.eagle:symbol:23404880/1" library_version="2" library_locally_modified="yes">
 <pin name="AGND" x="-5.08" y="-15.24" length="middle" rot="R90"/>
 <pin name="PGND" x="2.54" y="-15.24" length="middle" rot="R90"/>
 <pin name="COMP" x="-15.24" y="0" length="middle"/>
@@ -2796,7 +2817,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="C-EU" urn="urn:adsk.eagle:component:22367329/1" locally_modified="yes" prefix="C" uservalue="yes" library_version="1" library_locally_modified="yes">
+<deviceset name="C-EU" urn="urn:adsk.eagle:component:22367329/2" prefix="C" uservalue="yes" library_version="2" library_locally_modified="yes">
 <description>&lt;B&gt;CAPACITOR&lt;/B&gt;, European symbol</description>
 <gates>
 <gate name="G$1" symbol="C-EU" x="0" y="0"/>
@@ -2868,7 +2889,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="D-" urn="urn:adsk.eagle:component:22367341/1" locally_modified="yes" prefix="D" uservalue="yes" library_version="1" library_locally_modified="yes">
+<deviceset name="D-" urn="urn:adsk.eagle:component:22367341/2" prefix="D" uservalue="yes" library_version="2" library_locally_modified="yes">
 <description>&lt;B&gt;DIODE&lt;/B&gt;</description>
 <gates>
 <gate name="G$1" symbol="D" x="0" y="0"/>
@@ -2915,7 +2936,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="LDL212PU50R" urn="urn:adsk.eagle:component:22367324/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="LDL212PU50R" urn="urn:adsk.eagle:component:22367324/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="LDL212" x="0" y="2.54"/>
 </gates>
@@ -2956,7 +2977,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="INDUCTOR" urn="urn:adsk.eagle:component:22367349/2" prefix="L" library_version="2" library_locally_modified="yes">
+<deviceset name="INDUCTOR" urn="urn:adsk.eagle:component:22367349/2" locally_modified="yes" prefix="L" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="L-EU:1" x="0" y="0"/>
 </gates>
@@ -2973,9 +2994,21 @@ DIN A3, landscape with location and doc. field</description>
 <technology name=""/>
 </technologies>
 </device>
+<device name="" package="INDC2012X100N">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<package3dinstances>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:26452824/1"/>
+</package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
 </devices>
 </deviceset>
-<deviceset name="SRN5040" urn="urn:adsk.eagle:component:22367314/1" locally_modified="yes" prefix="L" library_version="1" library_locally_modified="yes">
+<deviceset name="SRN5040" urn="urn:adsk.eagle:component:22367314/2" prefix="L" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="L-EU" x="0" y="0"/>
 </gates>
@@ -3066,7 +3099,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="TP" urn="urn:adsk.eagle:component:22367353/1" locally_modified="yes" prefix="TP" library_version="1" library_locally_modified="yes">
+<deviceset name="TP" urn="urn:adsk.eagle:component:22367353/2" prefix="TP" library_version="2" library_locally_modified="yes">
 <description>&lt;b&gt;Test pad&lt;/b&gt;</description>
 <gates>
 <gate name="G$1" symbol="TP" x="0" y="0"/>
@@ -3100,7 +3133,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="SI5351C" urn="urn:adsk.eagle:component:22367316/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="SI5351C" urn="urn:adsk.eagle:component:22367316/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="SI5351C" x="0" y="0"/>
 </gates>
@@ -3138,7 +3171,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="SMA_CONNECTOR" urn="urn:adsk.eagle:component:22367315/1" locally_modified="yes" prefix="X" library_version="1" library_locally_modified="yes">
+<deviceset name="SMA_CONNECTOR" urn="urn:adsk.eagle:component:22367315/2" prefix="X" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="BNC-FGND" x="0" y="0"/>
 </gates>
@@ -3157,7 +3190,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="MAX2871" urn="urn:adsk.eagle:component:22367321/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="MAX2871" urn="urn:adsk.eagle:component:22367321/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="MAX2871" x="-2.54" y="-2.54"/>
 </gates>
@@ -3207,7 +3240,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="NCP702" urn="urn:adsk.eagle:component:22367318/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="NCP702" urn="urn:adsk.eagle:component:22367318/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="VREG_EN" x="0" y="0"/>
 </gates>
@@ -3228,7 +3261,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="RFSW6042" urn="urn:adsk.eagle:component:22367317/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="RFSW6042" urn="urn:adsk.eagle:component:22367317/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="RFSW6042" x="-5.08" y="0"/>
 </gates>
@@ -3254,7 +3287,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="AP2114" urn="urn:adsk.eagle:component:22367330/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="AP2114" urn="urn:adsk.eagle:component:22367330/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="VREG" x="0" y="0"/>
 </gates>
@@ -3287,7 +3320,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="LP0603A" urn="urn:adsk.eagle:component:22367323/1" locally_modified="yes" prefix="LP" library_version="1" library_locally_modified="yes">
+<deviceset name="LP0603A" urn="urn:adsk.eagle:component:22367323/2" prefix="LP" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="LOWPASS" x="0" y="0"/>
 </gates>
@@ -3307,7 +3340,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="QPC6324" urn="urn:adsk.eagle:component:22367350/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="QPC6324" urn="urn:adsk.eagle:component:22367350/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="QPC6324" x="2.54" y="2.54"/>
 </gates>
@@ -3331,7 +3364,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="RFSA3714" urn="urn:adsk.eagle:component:22367351/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="RFSA3714" urn="urn:adsk.eagle:component:22367351/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="F1958" x="-5.08" y="0"/>
 </gates>
@@ -3363,7 +3396,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="TRF37A73" urn="urn:adsk.eagle:component:22367312/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="TRF37A73" urn="urn:adsk.eagle:component:22367312/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="AMPLIFIER_PWDN" x="0" y="0"/>
 </gates>
@@ -3385,7 +3418,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="LT5560" urn="urn:adsk.eagle:component:22367322/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="LT5560" urn="urn:adsk.eagle:component:22367322/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="LT5560" x="0" y="-5.08"/>
 </gates>
@@ -3411,7 +3444,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="THS4521IDGKR" urn="urn:adsk.eagle:component:22367352/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="THS4521IDGKR" urn="urn:adsk.eagle:component:22367352/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="OPAMPDIFF_SHDN" x="5.08" y="0"/>
 </gates>
@@ -3436,7 +3469,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="MCP33131D-10-E/MS" urn="urn:adsk.eagle:component:22367320/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="MCP33131D-10-E/MS" urn="urn:adsk.eagle:component:22367320/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="MCP33131D-10-E/MS" x="0" y="0"/>
 </gates>
@@ -3463,7 +3496,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="ADL5801" urn="urn:adsk.eagle:component:22367347/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="ADL5801" urn="urn:adsk.eagle:component:22367347/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="ADL5801" x="0" y="0"/>
 </gates>
@@ -3493,7 +3526,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="AMPHENOL_132289" urn="urn:adsk.eagle:component:22367309/1" locally_modified="yes" prefix="J" library_version="1" library_locally_modified="yes">
+<deviceset name="AMPHENOL_132289" urn="urn:adsk.eagle:component:22367309/2" prefix="J" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="COAX" x="0" y="0"/>
 </gates>
@@ -3512,7 +3545,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="B012-617DB-1-63-B331" urn="urn:adsk.eagle:component:22367348/1" locally_modified="yes" prefix="T" library_version="1" library_locally_modified="yes">
+<deviceset name="B012-617DB-1-63-B331" urn="urn:adsk.eagle:component:22367348/2" prefix="T" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="BALUN_1:1" x="0" y="0"/>
 </gates>
@@ -3533,7 +3566,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="STM32G431CB" urn="urn:adsk.eagle:component:22367340/1" locally_modified="yes" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="STM32G431CB" urn="urn:adsk.eagle:component:22367340/2" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="STM32G431CB" x="0" y="0"/>
 </gates>
@@ -3597,7 +3630,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="TYPE-C16P(073)" urn="urn:adsk.eagle:component:22367339/1" locally_modified="yes" prefix="J" library_version="1" library_locally_modified="yes">
+<deviceset name="TYPE-C16P(073)" urn="urn:adsk.eagle:component:22367339/2" prefix="J" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="USB-C" x="-7.62" y="-2.54"/>
 </gates>
@@ -3625,7 +3658,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="PINHD-1X10" urn="urn:adsk.eagle:component:22367343/1" locally_modified="yes" prefix="JP" uservalue="yes" library_version="1" library_locally_modified="yes">
+<deviceset name="PINHD-1X10" urn="urn:adsk.eagle:component:22367343/2" prefix="JP" uservalue="yes" library_version="2" library_locally_modified="yes">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
 <gates>
 <gate name="A" symbol="PINHD10" x="0" y="0"/>
@@ -3653,7 +3686,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="LED" urn="urn:adsk.eagle:component:22367342/1" locally_modified="yes" prefix="LED" uservalue="yes" library_version="1" library_locally_modified="yes">
+<deviceset name="LED" urn="urn:adsk.eagle:component:22367342/2" prefix="LED" uservalue="yes" library_version="2" library_locally_modified="yes">
 <description>&lt;b&gt;LED&lt;/b&gt;&lt;p&gt;
 &lt;u&gt;OSRAM&lt;/u&gt;:&lt;br&gt;
 
@@ -3749,7 +3782,7 @@ Source: www.kingbright.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="6SLX9TQG144" urn="urn:adsk.eagle:component:22367332/1" locally_modified="yes" prefix="U" library_version="1" library_locally_modified="yes">
+<deviceset name="6SLX9TQG144" urn="urn:adsk.eagle:component:22367332/2" prefix="U" library_version="2" library_locally_modified="yes">
 <description>Xilinx FPGA: 6SLX9TQG144</description>
 <gates>
 <gate name="B0" symbol="6SLX9TQG144_0" x="0" y="0"/>
@@ -3918,7 +3951,7 @@ Source: www.kingbright.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="W25Q16BV" urn="urn:adsk.eagle:component:22367310/1" locally_modified="yes" prefix="U" library_version="1" library_locally_modified="yes">
+<deviceset name="W25Q16BV" urn="urn:adsk.eagle:component:22367310/2" prefix="U" library_version="2" library_locally_modified="yes">
 <description>&lt;b&gt;EEPROM&lt;/b&gt;&lt;p&gt;
 4 Mbit SPI Serial Flash7</description>
 <gates>
@@ -3945,7 +3978,7 @@ Source: www.kingbright.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="PINHD-2X10" urn="urn:adsk.eagle:component:22367344/1" locally_modified="yes" prefix="JP" uservalue="yes" library_version="1" library_locally_modified="yes">
+<deviceset name="PINHD-2X10" urn="urn:adsk.eagle:component:22367344/2" prefix="JP" uservalue="yes" library_version="2" library_locally_modified="yes">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
 <gates>
 <gate name="A" symbol="PINH2X10" x="0" y="0"/>
@@ -3983,7 +4016,7 @@ Source: www.kingbright.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="LM3370" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="LM3370" urn="urn:adsk.eagle:component:23404884/1" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="BUCK1" symbol="LM3370_BUCK" x="-7.62" y="20.32"/>
 <gate name="BUCK2" symbol="LM3370_BUCK" x="-7.62" y="-7.62"/>
@@ -4018,7 +4051,7 @@ Source: www.kingbright.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="MIC2253" prefix="IC" library_version="1" library_locally_modified="yes">
+<deviceset name="MIC2253" urn="urn:adsk.eagle:component:23404885/1" prefix="IC" library_version="2" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="MIC2253" x="0" y="-2.54"/>
 </gates>
@@ -4052,8 +4085,8 @@ Source: www.kingbright.com</description>
 <device name="" package="PJ-014D">
 <connects>
 <connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="3"/>
-<connect gate="G$1" pin="3" pad="2"/>
+<connect gate="G$1" pin="2" pad="2"/>
+<connect gate="G$1" pin="3" pad="3"/>
 </connects>
 <package3dinstances>
 <package3dinstance package3d_urn="urn:adsk.eagle:package:23404883/2"/>
@@ -5471,6 +5504,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="R179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
 <part name="R180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
 <part name="R181" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
+<part name="L11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="" package3d_urn="urn:adsk.eagle:package:26452824/1" value="10u"/>
 </parts>
 <sheets>
 <sheet>
@@ -6066,7 +6100,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <pinref part="GND4" gate="1" pin="GND"/>
 <wire x1="45.72" y1="210.82" x2="50.8" y2="210.82" width="0.1524" layer="91"/>
 <wire x1="50.8" y1="210.82" x2="50.8" y2="208.28" width="0.1524" layer="91"/>
-<pinref part="J1" gate="G$1" pin="3"/>
+<pinref part="J1" gate="G$1" pin="2"/>
 </segment>
 <segment>
 <pinref part="TP4" gate="G$1" pin="TP"/>
@@ -6569,9 +6603,9 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <wire x1="76.2" y1="218.44" x2="76.2" y2="223.52" width="0.1524" layer="91"/>
 <pinref part="R125" gate="G$1" pin="1"/>
 <junction x="71.12" y="218.44"/>
-<pinref part="J1" gate="G$1" pin="2"/>
-<wire x1="45.72" y1="213.36" x2="71.12" y2="213.36" width="0.1524" layer="91"/>
 <wire x1="71.12" y1="213.36" x2="71.12" y2="218.44" width="0.1524" layer="91"/>
+<pinref part="J1" gate="G$1" pin="3"/>
+<wire x1="45.72" y1="213.36" x2="71.12" y2="213.36" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="USB_POWER" class="0">
@@ -8927,6 +8961,10 @@ current consumption</text>
 <instance part="GND301" gate="1" x="157.48" y="48.26" smashed="yes">
 <attribute name="VALUE" x="154.94" y="45.72" size="1.778" layer="96"/>
 </instance>
+<instance part="L11" gate="G$1" x="203.2" y="195.58" smashed="yes">
+<attribute name="NAME" x="201.7014" y="191.77" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="206.502" y="191.77" size="1.778" layer="96" rot="R90"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -9270,8 +9308,6 @@ current consumption</text>
 <segment>
 <pinref part="IC15" gate="G$1" pin="VCC"/>
 <wire x1="180.34" y1="203.2" x2="180.34" y2="187.96" width="0.1524" layer="91"/>
-<pinref part="L24" gate="G$1" pin="1"/>
-<wire x1="203.2" y1="187.96" x2="203.2" y2="203.2" width="0.1524" layer="91"/>
 <wire x1="203.2" y1="203.2" x2="193.04" y2="203.2" width="0.1524" layer="91"/>
 <wire x1="193.04" y1="203.2" x2="185.42" y2="203.2" width="0.1524" layer="91"/>
 <pinref part="C72" gate="G$1" pin="1"/>
@@ -9284,6 +9320,8 @@ current consumption</text>
 <pinref part="L23" gate="G$1" pin="2"/>
 <wire x1="180.34" y1="203.2" x2="180.34" y2="205.74" width="0.1524" layer="91"/>
 <junction x="180.34" y="203.2"/>
+<wire x1="203.2" y1="200.66" x2="203.2" y2="203.2" width="0.1524" layer="91"/>
+<pinref part="L11" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$150" class="0">
@@ -9722,6 +9760,13 @@ current consumption</text>
 <wire x1="157.48" y1="63.5" x2="160.02" y2="63.5" width="0.1524" layer="91"/>
 <junction x="157.48" y="63.5"/>
 <label x="160.02" y="63.5" size="1.778" layer="95" xref="yes"/>
+</segment>
+</net>
+<net name="N$270" class="0">
+<segment>
+<pinref part="L24" gate="G$1" pin="1"/>
+<wire x1="203.2" y1="187.96" x2="203.2" y2="190.5" width="0.1524" layer="91"/>
+<pinref part="L11" gate="G$1" pin="2"/>
 </segment>
 </net>
 </nets>
