@@ -221,6 +221,8 @@ SOURCES += \
 LIBS += -lusb-1.0
 unix:LIBS += -L/usr/lib/
 win32:LIBS += -L"$$_PRO_FILE_PWD_" # Github actions placed libusb here
+osx:INCPATH += /usr/local/include
+osx:LIBS += $(shell pkg-config --libs libusb-1.0)
 
 QT += widgets
 
@@ -268,7 +270,7 @@ DISTFILES +=
 RESOURCES += \
     icons.qrc
 
-CONFIG += c++14
+CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
 DEFINES += FW_MAJOR=0 FW_MINOR=1 FW_PATCH=0 FW_SUFFIX=\\"\"-alpha.2\\"\"

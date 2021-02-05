@@ -3,6 +3,7 @@
 
 
 #include "Device/device.h"
+#include <array>
 #include <deque>
 #include <complex>
 
