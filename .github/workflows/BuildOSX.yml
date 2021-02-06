@@ -1,0 +1,29 @@
+name: BuildOSX
+
+on:
+  push:
+    branches:
+      - osx
+
+jobs:
+  PC_Application_OSX:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          brew install qt libusb
+          
+      - name: Build application
+        run: |
+          cd Software/PC_Application
+          qmake
+          make -j9
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Application_OSX
+          path: Software/PC_Application/VNA.app
