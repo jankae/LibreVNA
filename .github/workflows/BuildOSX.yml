@@ -24,6 +24,7 @@ jobs:
           cd Software/PC_Application
           qmake
           make -j9
+          macdeployqt VNA2.app
           zip -ry vna2-app.zip VNA2.app
         shell: bash
 
