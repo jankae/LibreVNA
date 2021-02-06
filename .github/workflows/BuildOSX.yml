@@ -7,7 +7,7 @@ on:
 
 jobs:
   PC_Application_OSX:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
       - uses: actions/checkout@v1
 
@@ -15,15 +15,20 @@ jobs:
         run: |
           brew install qt libusb
           
+      - name: Set Environment
+        run: |
+          echo "/usr/local/opt/qt/bin" >> $GITHUB_PATH
+          
       - name: Build application
         run: |
           cd Software/PC_Application
           qmake
           make -j9
+          zip -ry vna2-app.zip VNA2.app
         shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: Application_OSX
-          path: Software/PC_Application/VNA.app
+          path: Software/PC_Application/vna2-app.zip
