@@ -10,8 +10,10 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     trace(t)
 {
     ui->setupUi(this);
+    ui->vFactor->setPrecision(3);
     ui->name->setText(t.name());
     ui->color->setColor(trace.color());
+    ui->vFactor->setValue(t.velocityFactor());
     connect(ui->color, &ColorPickerButton::colorChanged, [=](const QColor& color){
        trace.setColor(color);
     });
@@ -109,6 +111,7 @@ TraceEditDialog::~TraceEditDialog()
 void TraceEditDialog::on_buttonBox_accepted()
 {
     trace.setName(ui->name->text());
+    trace.setVelocityFactor(ui->vFactor->value());
     if(!trace.isCalibration()) {
         // only apply changes if it is not a calibration trace
         if (ui->bFile->isChecked()) {

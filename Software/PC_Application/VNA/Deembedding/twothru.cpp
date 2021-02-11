@@ -75,7 +75,7 @@ void TwoThru::updateGUI()
                              +Unit::ToString(measurements2xthru.front().frequency, "Hz", " kMG", 4)+" to "
                              +Unit::ToString(measurements2xthru.back().frequency, "Hz", " kMG", 4));
     } else {
-        ui->l2xthru->setText("Not available, not de-embedding");
+        ui->l2xthru->setText("Not available");
     }
 
     if(measurementsDUT.size() > 0) {
@@ -83,7 +83,7 @@ void TwoThru::updateGUI()
                              +Unit::ToString(measurementsDUT.front().frequency, "Hz", " kMG", 4)+" to "
                              +Unit::ToString(measurementsDUT.back().frequency, "Hz", " kMG", 4));
     } else {
-        ui->lDUT->setText("Not available, not de-embedding");
+        ui->lDUT->setText("Not available");
     }
 
     if(points.size() > 0) {
@@ -91,7 +91,7 @@ void TwoThru::updateGUI()
                              +Unit::ToString(points.front().freq, "Hz", " kMG", 4)+" to "
                              +Unit::ToString(points.back().freq, "Hz", " kMG", 4));
     } else {
-        ui->lPoints->setText("Not available, not de-embedding");
+        ui->lPoints->setText("No values calculated, not de-embedding");
     }
 
     if (measurementsDUT.size() > 0 && measurements2xthru.size() > 0) {

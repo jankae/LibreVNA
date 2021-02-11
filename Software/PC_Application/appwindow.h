@@ -78,6 +78,10 @@ private:
     // Status bar widgets
     QLabel lConnectionStatus;
     QLabel lDeviceInfo;
+    // Error flag labels
+    QLabel lADCOverload;
+    QLabel lUnlevel;
+    QLabel lUnlock;
 
     Ui::MainWindow *ui;
 };

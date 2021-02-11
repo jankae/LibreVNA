@@ -60,6 +60,7 @@ static constexpr Protocol::DeviceInfo Info = {
 	    .source_locked = 0,
 	    .LO1_locked = 0,
 	    .ADC_overload = 0,
+		.unlevel = 0,
 		.temp_source = 0,
 		.temp_LO1 = 0,
 		.temp_MCU = 0,
@@ -88,6 +89,8 @@ void SetMode(Mode mode);
 void SetIdle();
 void Work();
 bool TimedOut();
+
+void SetOutputUnlevel(bool unlev);
 
 using AmplitudeSettings = struct _amplitudeSettings {
 	uint8_t attenuator;

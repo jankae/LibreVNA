@@ -124,6 +124,7 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .source_locked = 0,
     .LO1_locked = 0,
     .ADC_overload = 0,
+    .unlevel = 0,
     .temp_source = 0,
     .temp_LO1 = 0,
     .temp_MCU = 0,

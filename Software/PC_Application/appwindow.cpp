@@ -72,6 +72,21 @@ AppWindow::AppWindow(QWidget *parent)
     ui->statusbar->addWidget(div1);
     ui->statusbar->addWidget(&lDeviceInfo);
     ui->statusbar->addWidget(new QLabel, 1);
+
+    lADCOverload.setStyleSheet("color : red");
+    lADCOverload.setText("ADC overload");
+    lADCOverload.setVisible(false);
+    ui->statusbar->addWidget(&lADCOverload);
+
+    lUnlevel.setStyleSheet("color : red");
+    lUnlevel.setText("Unlevel");
+    lUnlevel.setVisible(false);
+    ui->statusbar->addWidget(&lUnlevel);
+
+    lUnlock.setStyleSheet("color : red");
+    lUnlock.setText("Unlock");
+    lUnlock.setVisible(false);
+    ui->statusbar->addWidget(&lUnlock);
     //ui->statusbar->setStyleSheet("QStatusBar::item { border: 1px solid black; };");
 
     CreateToolbars();
@@ -219,6 +234,9 @@ void AppWindow::ConnectToDevice(QString serial)
         connect(device, &Device::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
         connect(device, &Device::DeviceInfoUpdated, [this]() {
            lDeviceInfo.setText(device->getLastDeviceInfoString());
+           lADCOverload.setVisible(device->Info().ADC_overload);
+           lUnlevel.setVisible(device->Info().unlevel);
+           lUnlock.setVisible(!device->Info().LO1_locked || !device->Info().source_locked);
         });
         connect(device, &Device::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);

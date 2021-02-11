@@ -11,6 +11,7 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       _color(color),
       _liveType(LivedataType::Overwrite),
       _liveParam(live),
+      vFactor(0.66),
       reflection(true),
       visible(true),
       paused(false),
@@ -101,6 +102,11 @@ void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettin
 void Trace::setName(QString name) {
     _name = name;
     emit nameChanged();
+}
+
+void Trace::setVelocityFactor(double v)
+{
+    vFactor = v;
 }
 
 void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
@@ -249,8 +255,7 @@ const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
 
 double Trace::velocityFactor()
 {
-    // TODO make changeable
-    return 0.66;
+    return vFactor;
 }
 
 double Trace::timeToDistance(double time)
@@ -293,8 +298,9 @@ nlohmann::json Trace::toJSON()
         j["filename"] = filename.toStdString();
         j["parameter"] = fileParemeter;
     }
+    j["velocityFactor"] = vFactor;
     j["reflection"] = reflection;
-    // TODO how to save assigned markers?
+
     nlohmann::json mathList;
     for(auto m : mathOps) {
         if(m.math->getType() == Type::Last) {
@@ -343,6 +349,7 @@ void Trace::fromJSON(nlohmann::json j)
             throw runtime_error("Failed to create from file:" + what);
         }
     }
+    vFactor = j.value("velocityFactor", 0.66);
     reflection = j.value("reflection", false);
     for(auto jm : j["math"]) {
         QString operation = QString::fromStdString(jm.value("operation", ""));

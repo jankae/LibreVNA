@@ -53,6 +53,7 @@ using DeviceInfo = struct _deviceInfo {
     uint8_t source_locked:1;
     uint8_t LO1_locked:1;
     uint8_t ADC_overload:1;
+    uint8_t unlevel:1;
 	uint8_t temp_source;
 	uint8_t temp_LO1;
 	uint8_t temp_MCU;

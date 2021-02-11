@@ -64,6 +64,10 @@ static void StartNextSample() {
 			if(trackingFreq > 0 && trackingFreq <= (int64_t) HW::Info.limits_maxFreq) {
 				// tracking frequency is valid, calculate required settings and select band
 				auto amplitude = HW::GetAmplitudeSettings(s.trackingPower, trackingFreq, s.applySourceCorrection, s.trackingGeneratorPort);
+				// only set the flag here, it is reset at the beginning of each sweep (this makes sure it is set if any of the points are not reached by the TG)
+				if(amplitude.unlevel) {
+					HW::SetOutputUnlevel(true);
+				}
 				attenuator = amplitude.attenuator;
 				if(trackingFreq < HW::BandSwitchFrequency) {
 					Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::B, amplitude.lowBandPower);
@@ -161,6 +165,7 @@ static void StartNextSample() {
 
 void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	LOG_DEBUG("Setting up...");
+	HW::SetOutputUnlevel(false);
 	SA::Stop();
 	vTaskDelay(5);
 	s = settings;
@@ -369,17 +374,23 @@ void SA::Work() {
 		}
 		// setup for next step
 		signalIDstep = 0;
-		if(pointCnt < points - DFTpoints) {
-			pointCnt += DFTpoints;
-		} else {
-			pointCnt = 0;
-			// sweep finished, extract device info
+
+		if(pointCnt % 10 == 0) {
+			// send device info every nth point
 			FPGA::Enable(FPGA::Periphery::SourceChip); // needs to enable the chip to get a valid temperature reading
 			Protocol::PacketInfo packet;
 			packet.type = Protocol::PacketType::DeviceInfo;
 			HW::fillDeviceInfo(&packet.info, true);
 			FPGA::Disable(FPGA::Periphery::SourceChip);
 			Communication::Send(packet);
+		}
+
+		if(pointCnt < points - DFTpoints) {
+			pointCnt += DFTpoints;
+		} else {
+			pointCnt = 0;
+			// reset possibly active unlevel flag before next sweep
+			HW::SetOutputUnlevel(false);
 		}
 	} else {
 		// more measurements required for signal ID

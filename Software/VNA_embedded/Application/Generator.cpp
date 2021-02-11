@@ -44,6 +44,7 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 		}
 	}
 	auto amplitude = HW::GetAmplitudeSettings(g.cdbm_level, g.frequency, g.applyAmplitudeCorrection, g.activePort == 2);
+	HW::SetOutputUnlevel(amplitude.unlevel);
 	// Select correct source
 	if(g.frequency < HW::BandSwitchFrequency) {
 		m.SourceLowEN = 1;

@@ -44,6 +44,7 @@ public:
     void addData(const Data& d, const Protocol::SweepSettings& s);
     void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
     void setName(QString name);
+    void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
     void fromLivedata(LivedataType type, LiveParameter param);
@@ -146,6 +147,7 @@ private:
     QColor _color;
     LivedataType _liveType;
     LiveParameter _liveParam;
+    double vFactor;
     bool reflection;
     bool visible;
     bool paused;

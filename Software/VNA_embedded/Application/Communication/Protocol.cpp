@@ -252,6 +252,7 @@ static Protocol::DeviceInfo DecodeDeviceInfo(uint8_t *buf) {
     d.source_locked = e.getBits(1);
     d.LO1_locked = e.getBits(1);
     d.ADC_overload = e.getBits(1);
+    d.unlevel = e.getBits(1);
     e.get(d.temp_source);
     e.get(d.temp_LO1);
     e.get(d.temp_MCU);
@@ -283,6 +284,7 @@ static int16_t EncodeDeviceInfo(Protocol::DeviceInfo d, uint8_t *buf,
     e.addBits(d.source_locked, 1);
     e.addBits(d.LO1_locked, 1);
     e.addBits(d.ADC_overload, 1);
+    e.addBits(d.unlevel, 1);
     e.add(d.temp_source);
     e.add(d.temp_LO1);
     e.add(d.temp_MCU);

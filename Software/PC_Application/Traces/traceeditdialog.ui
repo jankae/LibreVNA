@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>282</width>
-    <height>355</height>
+    <height>365</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,6 +62,16 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Velocity Factor:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="SIUnitEdit" name="vFactor"/>
      </item>
     </layout>
    </item>
@@ -180,6 +190,11 @@
    <class>ColorPickerButton</class>
    <extends>QPushButton</extends>
    <header>CustomWidgets/colorpickerbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

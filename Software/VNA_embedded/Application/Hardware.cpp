@@ -16,6 +16,7 @@
 static uint32_t extOutFreq = 0;
 static bool extRefInUse = false;
 HW::Mode activeMode;
+static bool unlevel = false;
 
 static Protocol::ReferenceSettings ref;
 static uint32_t lastISR;
@@ -186,6 +187,7 @@ void HW::SetMode(Mode mode) {
 		// already the correct mode
 		return;
 	}
+	unlevel = false;
 	switch(activeMode) {
 	case Mode::Manual:
 		Manual::Stop();
@@ -215,6 +217,7 @@ bool HW::GetTemps(uint8_t *source, uint8_t *lo) {
 }
 
 void HW::SetIdle() {
+	unlevel = false;
 	FPGA::AbortSweep();
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	FPGA::Enable(FPGA::Periphery::SourceChip, false);
@@ -283,6 +286,10 @@ bool HW::TimedOut() {
 	}
 }
 
+void HW::SetOutputUnlevel(bool unlev) {
+	unlevel = unlev;
+}
+
 void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 	// copy constant default values
 	memcpy(info, &HW::Info, sizeof(HW::Info));
@@ -311,6 +318,7 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 		info->source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
 		info->extRefAvailable = Ref::available();
 		info->extRefInUse = extRefInUse;
+		info->unlevel = unlevel;
 		info->temp_LO1 = tempLO;
 		info->temp_source = tempSource;
 		FPGA::ResetADCLimits();
