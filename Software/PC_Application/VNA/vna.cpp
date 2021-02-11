@@ -47,6 +47,7 @@
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
+      deembedding(traceModel),
       central(new TileWidget(traceModel))
 {
     averages = 1;

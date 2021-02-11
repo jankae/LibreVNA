@@ -23,15 +23,24 @@ public:
 
 private slots:
     void startMeasurement();
-    void updateLabel();
+    void updateGUI();
+    void measurementCompleted(std::vector<Protocol::Datapoint> m) override;
 private:
     using Point = struct {
         double freq;
         Tparam inverseP1, inverseP2;
     };
-    std::vector<Protocol::Datapoint> measurements;
+
+    static std::vector<Protocol::Datapoint> interpolateEvenFrequencySteps(std::vector<Protocol::Datapoint> input);
+    static std::vector<Point> calculateErrorBoxes(std::vector<Protocol::Datapoint> data_2xthru);
+    static std::vector<Point> calculateErrorBoxes(std::vector<Protocol::Datapoint> data_2xthru, std::vector<Protocol::Datapoint> data_fix_dut_fix, double z0);
+
+    std::vector<Protocol::Datapoint> measurements2xthru;
+    std::vector<Protocol::Datapoint> measurementsDUT;
+    double Z0;
     std::vector<Point> points;
-    bool measuring;
+    bool measuring2xthru;
+    bool measuringDUT;
     QMessageBox *msgBox;
     Ui::TwoThruDialog *ui;
 };

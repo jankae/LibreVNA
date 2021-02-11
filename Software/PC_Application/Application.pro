@@ -258,6 +258,7 @@ FORMS += \
     VNA/Deembedding/deembeddingdialog.ui \
     VNA/Deembedding/form.ui \
     VNA/Deembedding/matchingnetworkdialog.ui \
+    VNA/Deembedding/measurementdialog.ui \
     VNA/Deembedding/portextensioneditdialog.ui \
     VNA/Deembedding/twothrudialog.ui \
     main.ui \

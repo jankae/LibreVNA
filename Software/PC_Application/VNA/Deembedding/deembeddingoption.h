@@ -23,9 +23,14 @@ public:
     virtual void transformDatapoint(Protocol::Datapoint &p) = 0;
     virtual void edit(){};
     virtual Type getType() = 0;
+
+public slots:
+    virtual void measurementCompleted(std::vector<Protocol::Datapoint> m){Q_UNUSED(m)};
 signals:
     // Deembedding option may selfdestruct if not applicable with current settings. It should emit this signal before deleting itself
     void deleted(DeembeddingOption *option);
+
+   void triggerMeasurement(bool S11 = true, bool S12 = true, bool S21 = true, bool S22 = true);
 };
 
 #endif // DEEMBEDDING_H

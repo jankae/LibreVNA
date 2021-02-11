@@ -24,6 +24,7 @@ public:
     void fromJSON(nlohmann::json j) override;
 public slots:
     void edit() override;
+    void measurementCompleted(std::vector<Protocol::Datapoint> m) override;
 
 private:
     void startMeasurement();
@@ -40,11 +41,11 @@ private:
 
     // status variables for automatic measurements
     Calkit *kit;
-    bool measuring;
+//    bool measuring;
     bool isPort1;
     bool isOpen;
     bool isIdeal;
-    std::vector<Protocol::Datapoint> measurements;
+//    std::vector<Protocol::Datapoint> measurements;
     QMessageBox *msgBox;
     Ui::PortExtensionEditDialog *ui;
 };
