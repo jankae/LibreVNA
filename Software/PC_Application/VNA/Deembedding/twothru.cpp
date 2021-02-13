@@ -568,7 +568,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
         return ret;
     };
 
-    auto makeErrorbox = [=](const vector<Sparam> &data_dut, const vector<Sparam> &data_2xthru, const vector<double> &freq_2xthru, const vector<complex<double>> &gamma, complex<double> z0) -> vector<Sparam> {
+    auto makeErrorbox = [=](vector<Sparam> data_dut, const vector<Sparam> &data_2xthru, const vector<double> &freq_2xthru, const vector<complex<double>> &gamma, complex<double> z0) -> vector<Sparam> {
         auto f = freq_2xthru;
         auto n = f.size();
 
@@ -627,6 +627,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
                 auto abcd_TL = ABCDparam(TL[i], z0);
                 auto abcd_dut = ABCDparam(data_dut[i], z0);
                 abcd_dut = abcd_TL.inverse() * abcd_dut;
+                data_dut[i] = Sparam(abcd_dut, z0);
                 // add to the errorbox
                 abcd_errorbox[i] = abcd_errorbox[i] * abcd_TL;
             }
