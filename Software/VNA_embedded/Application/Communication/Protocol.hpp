@@ -6,7 +6,7 @@ namespace Protocol {
 
 static constexpr uint16_t Version = 4;
 
-// When changing/adding/removing variables from these structs also adjust the decode/encode functions in Protocol.cpp
+#pragma pack(push, 1)
 
 using Datapoint = struct _datapoint {
 	float real_S11, imag_S11;
@@ -192,6 +192,8 @@ using PacketInfo = struct _packetinfo {
         AmplitudeCorrectionPoint amplitudePoint;
 	};
 };
+
+#pragma pack(pop)
 
 uint32_t CRC32(uint32_t crc, const void *data, uint32_t len);
 uint16_t DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info);
