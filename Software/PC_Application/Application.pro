@@ -256,7 +256,6 @@ FORMS += \
     Traces/tracewidget.ui \
     Traces/xyplotaxisdialog.ui \
     VNA/Deembedding/deembeddingdialog.ui \
-    VNA/Deembedding/form.ui \
     VNA/Deembedding/matchingnetworkdialog.ui \
     VNA/Deembedding/measurementdialog.ui \
     VNA/Deembedding/portextensioneditdialog.ui \

@@ -47,5 +47,7 @@
         <file>icons/DUT.svg</file>
         <file>icons/port1.svg</file>
         <file>icons/port2.svg</file>
+        <file>icons/down.png</file>
+        <file>icons/up.png</file>
     </qresource>
 </RCC>

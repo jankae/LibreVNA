@@ -113,8 +113,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset theme="go-up">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="go-up" resource="../../icons.qrc">
+           <normaloff>:/icons/up.png</normaloff>:/icons/up.png</iconset>
          </property>
         </widget>
        </item>
@@ -130,8 +130,8 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset theme="go-down">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="go-down" resource="../../icons.qrc">
+           <normaloff>:/icons/down.png</normaloff>:/icons/down.png</iconset>
          </property>
         </widget>
        </item>
