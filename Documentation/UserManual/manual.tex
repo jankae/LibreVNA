@@ -19,6 +19,7 @@
 \sisetup{range-phrase=--, range-units=single, binary-units = true}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usepackage{svg}
 %\usepackage{hyperref}
 \usetikzlibrary{arrows, shadows}
 \tikzset{%
@@ -44,6 +45,7 @@
     minimum height = 2cm}}
     
 \usepackage{enumitem}
+\setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
 \setlist{leftmargin=*}
 \usepackage{listings}
 \lstset{
@@ -218,7 +220,7 @@ The \vna{} application is made up of six areas containing different types of con
 \item The \textbf{Toolbars} provide access to commonly used device settings. They can be rearranged or disabled (see section~\ref{menu:window}).
 \item The \textbf{Menu} at the top left handles less common settings or more complex actions (often with additional popup windows).
 \item The \textbf{Docks} mostly provide access to display related settings such as traces and markers. They can be rearranged or disabled (see section~\ref{menu:window}).
-\item The \textbf{Statusbar} at the bottom show some basic informations about the connected device.
+\item The \textbf{Statusbar} at the bottom show some basic informations about the connected device. If error conditions (e.g. ADC overload) are present, they are indicated at the bottom right corner.
 \item The \textbf{Modeswitch} at the top right allows changing the \vna{} operating mode. Although it is primarily designed as a vector network analyzer, the hardware architecture allow some other operating modes with certain limitations.
 \end{itemize}
 Depending on the current operating mode, the available toolbars, docks and menu entries change. It is also possible to rearrange the docks and toolbars.
@@ -240,6 +242,19 @@ The external reference output may either be disabled or set to \SI{10}{\mega\her
 This dock shows the debug output of the \vna{} (the same messages as on the internal UART port). It may help to identify problems, otherwise it is not required for operation.
 \screenshot{1.0}{DockDeviceLog.png}
 
+\subsubsection{File Menu}
+Changing the default setup of the application can require a lot of configuration, especially if some of the more complicated math or de-embedding options are used. To simplify this process, setup-files can be saved and opened, which perform these steps automatically. A setup file contains all settings and configuration of these elements:
+\begin{itemize}
+\item Traces (Name, Color, Parameters, ...)
+\item Math operations applied to the traces
+\item Markers
+\item De-embedding options
+\item Graph setup and enabled traces
+\end{itemize}
+\begin{important}
+If any part of the setup references another file (e.i. a trace imported from a touchstone file), only the filename is saved. Opening a setup file after moving/deleting any of the referenced files will result in missing data. 
+\end{important}
+
 \subsubsection{Device Menu}
 The device menu controls the connection state, allows low level hardware access and to perform firmware updates:
 \begin{itemize}
@@ -259,6 +274,75 @@ The window menu allows hiding not needed toolbars and docks. It also contains so
 \section{Vector Network Analyzer}
 In this operating mode, the \vna{} takes S-parameter measurements. A source signal is generated and alternately applied to the RF ports. The incoming signal at both RF ports is measured, resulting in the four S-parameters S11 and S21 (when the source signal is routed to port 1) as well as S12 and S22 (when it is routed to port 2).
 
+\subsection{Signal processing architecture}
+\label{vna:dsp}
+This section contains some details of the signal flow inside the \vna{}-Application. Knowledge of the signal flow is not required to operate the \vna{} but may help to understand certain features and limitations.
+\tikzstyle{block} = [draw, rectangle, 
+    minimum height=3em, minimum width=6em]
+\tikzstyle{sum} = [draw, fill=blue!20, circle, node distance=1cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+\tikzset{%
+  cascaded/.style = {%
+    general shadow = {%
+      shadow scale = 1,
+      shadow xshift = -1ex,
+      shadow yshift = 1ex,
+      draw,
+      %thick,
+      fill = white,
+      },
+    general shadow = {%
+      shadow scale = 1,
+      shadow xshift = -.5ex,
+      shadow yshift = .5ex,
+      draw,
+      %thick,
+      fill = white,
+      },
+    fill = white, 
+    draw,
+    %thick,
+    %minimum width = 1.5cm,
+    %minimum height = 2.1cm
+    }}
+
+% The block diagram code is probably more verbose than necessary
+\begin{center}
+\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+    % We start by placing the blocks
+	\node [block] (VNA) {VNA Hardware};
+	\node [block, below of=VNA] (cal) {Calibration};
+	\node [block, below of=cal] (deemb)  {De-embedding};
+	\node [cascaded, block, below of=deemb, align=center, node distance=3cm, minimum height=2cm] (traces)  {Traces\\ \\ \\};
+	\node [block, dashed, minimum width=4em, minimum height=2em, below of=traces, node distance=0.2cm] (math) {Math};
+	\node [cascaded, block, node distance=3cm, below of=traces] (graphs)  {Graphs};
+
+
+	\draw [->] (VNA) -- node {uncalibrated S parameter set (S11,S12,S21,S22) over USB} (cal);
+	\draw [->] (cal) -- node {calibrated S parameter set (S11,S12,S21,S22)} (deemb);
+	\draw [->] (deemb) -- node {individual S parameters} ([yshift=1ex]traces.north);
+	\node [left of=traces, node distance=4cm](import){};
+	\draw [->] (import) -- node {imported files} ([xshift=-1ex]traces.west);
+	\node [right of=traces, node distance=6cm](export){};
+	\draw [->] (traces.east) -- node {CSV/Touchstone export} (export);
+	\draw [->] (traces) -- node {complex frequency/time domain data} ([yshift=1ex]graphs.north);
+\end{tikzpicture}
+\end{center}
+
+The central element of the signal flow is the concept of \textbf{traces}. A trace is created from a single S parameter across frequency (either measured by the \vna{} or imported from an external file). Once the data is captured in a trace, optional math operations may be applied to it (e.g. performing a TDR to transform the data into the time domain) and the result of these operations are passed on to the graphs.
+
+When capturing data from the \vna{}, additional operations take place before the data is fed to the traces. First, the \vna{} measures the four S parameters between its two ports. The raw measurements are transferred through USB. The first processing block is the calibration (see also section~\ref{vna:calibration}), followed by optional de-embedding procedures. After the de-embedding, the four S parameters are split into individual S parameters and the relevant traces are updated.
+
+This concept has several consequences when using the \vna{}, some of which are:
+\begin{itemize}
+\item You can always take calibration measurements. No matter how the de-embedding or math operations in the traces are set up, they will never influence the calibration routine
+\item A valid calibration is required before using de-embedding options (otherwise, most de-embedding options won't be able to work properly)
+\item Applying a calibration or de-embedding to traces imported from files is not possible
+\item Once the data arrives in the traces, the S parameters are no longer associated (e.g. there is no connection between S11 and S21 anymore. It is possible to "pause" the trace capturing S11 while S21 continues to get updated)
+\end{itemize}
+
 \subsection{Sweep Toolbar}
 This toolbar sets the swept frequency range.
 \screenshot{1.0}{ToolbarSweep.png}
@@ -266,12 +350,65 @@ The start/stop and center frequency as well as the span can be set directly.
 
 Additionally, the sweep toolbar contains buttons for zooming in/out around the center frequency and a preset to set the sweep to the full frequency range.
 \subsection{Acquisition Toolbar}
-\screenshot{0.5}{ToolbarVNAAcquisition.png}
+\screenshot{0.7}{ToolbarVNAAcquisition.png}
 \begin{itemize}
 \item \textbf{Level:} The amount of power used for stimulus generation. The dynamic range decreases when using smaller values. It is recommended to use the highest available settings when measuring passive networks. When measuring active devices (e.g. amplifiers), decrease the stimulus power in such a way that the input power into any port does not rise above \SI{-10}{\dBm} to stay within the linear range of the \vna.
 \item \textbf{Points:} Amount of measurement points in one sweep. More points provide finer frequency resolution but also increase sweep time.
 \item \textbf{IF BW:} Bandwidth of final IF measurement. Low bandwidths increase the sweep time but improve the noisefloor. At higher frequencies (roughly above \SI{3}{\giga\hertz}), the dynamic range is limited by the isolation between the ports and decreasing the IF bandwidth does not improve the noisefloor anymore.
+\item \textbf{Averaging:} Moving average across multiple sweeps.
 \end{itemize}
+
+\subsection{Traces}
+Adding/configuring traces is handled by the \textbf{Trace Dock} (by default on the left side): 
+\screenshot{0.3}{TraceDock.png}
+The list shows all available traces, by default the four S parameters S11, S12, S21 and S22. Different icons in front of the trace names indicate the state of the trace. Clicking on one of the icons toggles the state:
+\begin{itemize}
+\item \includesvg[height=8pt]{Screenshots/visible}/\includesvg[height=10pt]{Screenshots/invisible}: Enable/disable global visibility: Shows/hides the trace an all graphs it is enabled on.
+\item \includesvg[height=8pt]{Screenshots/play}/\includesvg[height=8pt]{Screenshots/pause}: Play/pause. Only available when the trace is fed from live VNA data, not when it was created from a touchstone file. Pausing a trace freezes the current data, new measurements from the \vna{} will not update the trace.
+\item \includesvg[height=8pt]{Screenshots/math_enabled}/\includesvg[height=10pt]{Screenshots/math_disabled}: Enable/disable math. Only available if at least one math operation is present.
+\end{itemize}
+
+Creating a new trace or double clicking on an existing trace opens the "edit trace" window:
+\screenshot{1.0}{TraceEdit.png}
+On the left side, additional trace parameters can be changed, while the right side of the window handles math operations that will be applied to the trace data. The available trace parameters are:
+\begin{itemize}
+\item \textbf{Name}
+\item \textbf{Color}
+\item \textbf{Velocity factor} (only relevant when transforming into the time domain)
+\item \textbf{Data source} (Live Capture/From File):
+\begin{itemize}
+\item \textbf{Live Capture:} The trace is updated from the data measured by the \vna{}. Additional parameters are:
+\begin{itemize}
+\item \textbf{Type:} Overwrite/Max hold/Min hold
+\item \textbf{Parameter:} The S parameter data used for this trace
+\end{itemize}
+\item \textbf{From File:} The trace data is created from a touchstone file. Additional parameters are:
+\begin{itemize}
+\item \textbf{Filename}
+\item \textbf{Parameter:} Select which S parameter the trace should use (in case of multi-port touchstone file)
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\subsubsection{Math operations}
+\label{trace:math}
+The "math operations" section on the right contains the additional calculations that are performed on the trace data before it is displayed. Initially, it contains only one line (representing the measured data). New operations can be created using the buttons on the right. Each math operation adds a new line to the list, consisting of three columns:
+\begin{itemize}
+\item \textbf{Status:} Visual indication whether the calculation succeeded. On warnings or errors, a mouse-over text gives a hint about the problem.
+\item \textbf{Description:} Short description of the configured math operation. Double clicking will open an (operation dependent) editing dialog providing more details.
+\item \textbf{Output Domain:} Domain (Time or Frequency) of the data after this math operation. Certain math operations can only be applied to time domain data, others only to frequency domain data. The output domain at the last line decides in which domain the trace is displayed on the graphs.
+\end{itemize}
+
+Populated with several math operations, the window could look like this:
+\screenshot{1.0}{TraceMath.png}
+In this example, time domain gating is performed:
+\begin{itemize}
+\item A median filter is applied to the data, smoothing the trace a little bit (not actually necessary for the time domain gating)
+\item Next, a TDR transformation creates the time domain response of the measurement
+\item The impulse response is truncated at and above \SI{1}{\meter} with a custom expression
+\item At last the time domain response is transformed back into the frequency domain with a DFT
+\end{itemize}
+
 \subsection{Calibration}
 \label{vna:calibration}
 This section is about the VNA calibration which is used to remove the effect of connectors and cables (as well as imperfections from the \vna{} itself). For the amplitude calibration see section~\ref{amplitude:calibration}.
@@ -357,8 +494,19 @@ Once a calibration is active, it can be saved by selecting \menu[,]{Calibration,
 
 Similarly, a saved calibration can be opened by selecting \menu[,]{Calibration,Load}. It is applied immediately after opening.
 
-\subsubsection{Viewing error terms}
-The error terms calculated from the calibration measurements can be imported by selecting \menu[,]{Calibration,Import error terms as traces}. This feature is mostly intended to debug calibration problems and is not normally required. The nomenclature follows \href{https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf}{"Network Analyzer Error Models and Calibration Methods"} by Doug Rytting.
+\subsubsection{Assigning a default calibration to a device}
+Once a calibration has been saved, it can be selected as the default calibration for a specific device. To do so, first connect to the device and then select \menu[,]{Device,Default Calibration,Assign...}. Once a default calibration has been assigned, it will automatically be opened and applied every time the application connects to that specific device.
+
+\subsubsection{Viewing error terms/calibration measurements}
+The error terms calculated from the calibration measurements as well as the raw measurements used to derive these error terms can be imported by selecting \menu[,]{Calibration,Import error terms as traces} or \menu[,]{Calibration,Import measurements as traces}. This feature is mostly intended to debug calibration problems and is not normally required. The nomenclature follows \href{https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf}{"Network Analyzer Error Models and Calibration Methods"} by Doug Rytting.
+
+\subsection{De-embedding}
+The de-embedding options are available under \menu[,]{Tools,De-embedding}. The GUI works similar to the math operations for traces (see section~\ref{trace:math}) but the de-embedding is performed before the data reaches the traces (compare with section~\ref{vna:dsp}).
+\screenshot{0.8}{Deembedding.png}
+
+Just like with the math operations, a list shows the de-embedding options. Once a new option is added (or is double clicked) a window opens which allows to configure the option. Depending on the de-embedding option, there might be some user adjustable parameters (e.g. the length and attenuation of a port extension) or the option needs a measurement from the \vna{} to calculate the de-embedding parameters (e.g. take a measurement to automatically measure the port extension length). If a measurement is required at any point, a new window opens with two choices to provide the measurement data:
+\screenshot{0.9}{DeembeddingMeas.png}
+The first possibility is to click the measure button (with the \vna{} connected) which starts a new measurement. The \vna{} connections must have been setup properly before (e.g. in the case of the port extension: extension cable connected and terminated either into an open or short. The exact setup depends on the de-embedding option). The other possibilty is to provide the measurement by using traces. This is useful if the same measurement has already been taken but the physical setup has changed since then. Select the correct traces for all required S parameters and click the "OK" button.
 
 \section{Signal Generator}
 In the signal generator mode, measurements are stopped and the \vna{} only outputs a CW signal.
