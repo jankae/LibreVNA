@@ -78,7 +78,6 @@ HEADERS += \
     Traces/Math/parser/utGeneric.h \
     Traces/Math/tdr.h \
     Traces/Math/tracemath.h \
-    Traces/Math/tracematheditdialog.h \
     Traces/Math/windowfunction.h \
     Traces/fftcomplex.h \
     Traces/markerwidget.h \
@@ -184,7 +183,6 @@ SOURCES += \
     Traces/Math/parser/mpVariable.cpp \
     Traces/Math/tdr.cpp \
     Traces/Math/tracemath.cpp \
-    Traces/Math/tracematheditdialog.cpp \
     Traces/Math/windowfunction.cpp \
     Traces/fftcomplex.cpp \
     Traces/markerwidget.cpp \
@@ -246,7 +244,6 @@ FORMS += \
     Traces/Math/newtracemathdialog.ui \
     Traces/Math/tdrdialog.ui \
     Traces/Math/tdrexplanationwidget.ui \
-    Traces/Math/tracematheditdialog.ui \
     Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \
     Traces/tracecsvexport.ui \

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>742</width>
-    <height>198</height>
+    <width>701</width>
+    <height>465</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,38 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0">
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>What is this?</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>&lt;ul&gt;
+&lt;li&gt;2xthru de-embedding attempts to remove the effect of the fixtures contacting the DUT.&lt;/li&gt;
+&lt;li&gt;Although not as accurate as a SOLT calibration, it can help in situations where SOLT standards are not usable with the fixtures.&lt;/li&gt;
+&lt;li&gt;To create the de-embedding parameters, a 2xThru measurement is required: Connect the fixtures of both ports directly to each other and measure their S parameters.&lt;/li&gt;
+&lt;li&gt;If other impedances than 50 Ohm are used, a Fixture-DUT-Fixture measurement is also necessary, attempting to compensate the impedance. Connect the DUT between the fixtures and measure the S parameters.&lt;/li&gt;
+&lt;li&gt;For more details of the 2xthru de-embedding see e.g. 
+&lt;a href=&quot;https://www.signalintegrityjournal.com/articles/463-test-fixture-de-embedding-101&quot;&gt;this&lt;/a&gt; article.
+&lt;/li&gt;
+&lt;li&gt;For more details and examples on how to use 2xthru de-embedding in this application, see the user manual. &lt;/li&gt;
+&lt;/ul&gt; </string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">

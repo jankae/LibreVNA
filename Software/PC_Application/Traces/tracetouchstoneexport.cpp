@@ -9,6 +9,7 @@ TraceTouchstoneExport::TraceTouchstoneExport(TraceModel &model, QWidget *parent)
     QDialog(parent),
     ui(new Ui::TraceTouchstoneExport),
     model(model),
+    ports(0),
     freqsSet(false)
 {
     ui->setupUi(this);
@@ -24,6 +25,10 @@ TraceTouchstoneExport::~TraceTouchstoneExport()
 
 bool TraceTouchstoneExport::setTrace(int portFrom, int portTo, Trace *t)
 {
+    if(t->getDataType() != Trace::DataType::Frequency) {
+        // can only add frequency traces
+        return false;
+    }
     if(portFrom < 0 || portFrom >= ui->sbPorts->value() || portTo < 0 || portTo >= ui->sbPorts->value()) {
         // invalid port selection
         return false;
@@ -101,20 +106,36 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
 
 void TraceTouchstoneExport::on_sbPorts_valueChanged(int ports)
 {
-    // remove the previous widgets
     QGridLayout *layout = static_cast<QGridLayout*>(ui->gbTraces->layout());
-    QLayoutItem *child;
-    while ((child = layout->takeAt(0)) != 0)  {
-        delete child->widget();
-        delete child;
+    if((unsigned) ports != this->ports) {
+        this->ports = ports;
+        // remove the previous widgets
+        QLayoutItem *child;
+        while ((child = layout->takeAt(0)) != 0)  {
+            delete child->widget();
+            delete child;
+        }
+        cTraces.clear();
+        for(int i=0;i<ports;i++) {
+            cTraces.push_back(std::vector<QComboBox*>());
+            for(int j=0;j<ports;j++) {
+                auto l = new QLabel("S"+QString::number(i+1)+QString::number(j+1)+":");
+                auto c = new QComboBox();
+                cTraces[i].push_back(c);
+                connect(c, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) {
+                   selectionChanged(c);
+                });
+                layout->addWidget(l, i, j*2);
+                layout->addWidget(c, i, j*2 + 1);
+            }
+        }
     }
-    cTraces.clear();
     auto availableTraces = model.getTraces();
     for(int i=0;i<ports;i++) {
-        cTraces.push_back(std::vector<QComboBox*>());
         for(int j=0;j<ports;j++) {
-            auto l = new QLabel("S"+QString::number(i+1)+QString::number(j+1)+":");
-            auto c = new QComboBox();
+            auto c = cTraces[i][j];
+            c->blockSignals(true);
+            c->clear();
             // create possible trace selections
             c->addItem("None");
             for(auto t : availableTraces) {
@@ -131,12 +152,7 @@ void TraceTouchstoneExport::on_sbPorts_valueChanged(int ports)
                 }
                 c->addItem(t->name(), QVariant::fromValue<Trace*>(t));
             }
-            connect(c, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) {
-               selectionChanged(c);
-            });
-            cTraces[i].push_back(c);
-            layout->addWidget(l, i, j*2);
-            layout->addWidget(c, i, j*2 + 1);
+            c->blockSignals(false);
         }
     }
 }
@@ -186,5 +202,6 @@ void TraceTouchstoneExport::selectionChanged(QComboBox *w)
         ui->lowerFreq->clear();
         ui->upperFreq->clear();
         ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
+        on_sbPorts_valueChanged(ui->sbPorts->value());
     }
 }

@@ -30,6 +30,7 @@ private:
     TraceModel &model;
     std::vector<std::vector<QComboBox*>> cTraces;
 
+    unsigned int ports;
     unsigned int points;
     double lowerFreq, upperFreq;
     bool freqsSet;

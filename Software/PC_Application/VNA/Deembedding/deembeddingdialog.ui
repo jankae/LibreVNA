@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>386</width>
-    <height>324</height>
+    <width>519</width>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +17,16 @@
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Add/configure de-embedding options in this list. Although not required in most scenarios, multiple options can be active at once; de-embedding will be performed top-to-bottom. Therefore, the bottommost entry is the de-embedding that is closest to the DUT, whereas the topmost option is closest to the physical VNA ports.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
