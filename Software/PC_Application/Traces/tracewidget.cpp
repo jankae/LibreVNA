@@ -36,6 +36,8 @@ void TraceWidget::on_add_clicked()
     auto t = new Trace("Trace #"+QString::number(createCount), Qt::darkYellow, defaultParameter());
     t->setColor(QColor::fromHsl((createCount * 50) % 360, 250, 128));
     model.addTrace(t);
+    ui->view->selectRow(model.getTraces().size() - 1);
+    on_edit_clicked();
 }
 
 void TraceWidget::on_remove_clicked()

@@ -55,7 +55,7 @@ public slots:
 
 protected:
     virtual void updateContextMenu() override;
-    virtual bool supported(Trace *t) override;
+    virtual bool dropSupported(Trace *t) override;
     virtual void draw(QPainter &p) override;
 
 private slots:
@@ -69,6 +69,7 @@ private:
     YAxisType YAxisTypeFromName(QString name);
     XAxisMode AxisModeFromName(QString name);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
+    bool supported(Trace *t) override;
     bool supported(Trace *t, YAxisType type);
     void removeUnsupportedTraces();
     QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);

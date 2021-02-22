@@ -10,6 +10,7 @@
 #include "Util/util.h"
 #include "unit.h"
 #include <QDebug>
+#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 
@@ -218,7 +219,7 @@ bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
 void TraceXYPlot::axisSetupDialog()
 {
     auto setup = new XYplotAxisDialog(this);
-    setup->show();
+    setup->exec();
 }
 
 void TraceXYPlot::updateContextMenu()
@@ -259,6 +260,13 @@ void TraceXYPlot::updateContextMenu()
     connect(close, &QAction::triggered, [=]() {
         markedForDeletion = true;
     });
+}
+
+bool TraceXYPlot::dropSupported(Trace *t)
+{
+    Q_UNUSED(t)
+    // all kind of traces can be dropped, the graph will be reconfigured to support the dropped trace if required
+    return true;
 }
 
 bool TraceXYPlot::supported(Trace *t)
@@ -735,6 +743,10 @@ QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
 
 void TraceXYPlot::enableTraceAxis(Trace *t, int axis, bool enabled)
 {
+    if(enabled && !supported(t, YAxis[axis].type)) {
+        // unable to add trace to the requested axis
+        return;
+    }
     if(axis == 0) {
         TracePlot::enableTrace(t, enabled);
     }
@@ -904,6 +916,23 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel)
 
 void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 {
+    if(t->outputType() == Trace::DataType::Frequency && XAxis.type != XAxisType::Frequency) {
+        // needs to switch to frequency domain graph
+        InformationBox::ShowMessage("X Axis Domain Change", "You dropped a frequency domain trace but the graph is still set up for the time domain."
+                                    " All current traces will be removed and the graph changed to frequency domain.");
+        setXAxis(XAxisType::Frequency, XAxisMode::FitTraces, 0, 1, 0.1);
+        setYAxis(0, YAxisType::Magnitude, false, true, 0, 1, 1.0);
+        setYAxis(1, YAxisType::Phase, false, true, 0, 1, 1.0);
+    }
+    if(t->outputType() != Trace::DataType::Frequency && XAxis.type == XAxisType::Frequency) {
+        // needs to switch to time domain graph
+        InformationBox::ShowMessage("X Axis Domain Change", "You dropped a time domain trace but the graph is still set up for the frequency domain."
+                                    " All current traces will be removed and the graph changed to time domain.");
+        setXAxis(XAxisType::Time, XAxisMode::FitTraces, 0, 1, 0.1);
+        setYAxis(0, YAxisType::ImpulseReal, false, true, 0, 1, 1.0);
+        setYAxis(1, YAxisType::Disabled, false, true, 0, 1, 1.0);
+    }
+
     if(YAxis[0].type == YAxisType::Disabled && YAxis[1].type == YAxisType::Disabled) {
         // no Y axis enabled, unable to drop
         return;

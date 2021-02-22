@@ -300,6 +300,11 @@ void TraceSmithChart::updateContextMenu()
 
 bool TraceSmithChart::supported(Trace *t)
 {
+    return dropSupported(t);
+}
+
+bool TraceSmithChart::dropSupported(Trace *t)
+{
     if(t->outputType() == Trace::DataType::Frequency && t->isReflection()) {
         return true;
     } else {

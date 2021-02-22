@@ -213,7 +213,7 @@ void TracePlot::dragEnterEvent(QDragEnterEvent *event)
         quintptr dropPtr;
         stream >> dropPtr;
         auto trace = (Trace*) dropPtr;
-        if(supported(trace)) {
+        if(dropSupported(trace)) {
             event->acceptProposedAction();
             dropPending = true;
             dropTrace = trace;

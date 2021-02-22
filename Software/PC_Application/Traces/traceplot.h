@@ -39,9 +39,9 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu(){};
-    virtual bool supported(Trace *t) = 0;
     virtual void replot(){update();};
     virtual void draw(QPainter& p) = 0;
+    virtual bool supported(Trace *t) = 0;
     std::map<Trace*, bool> traces;
     QMenu *contextmenu;
     QTime lastUpdate;
@@ -56,6 +56,7 @@ protected:
     void leaveEvent(QEvent *event) override;
 
     // handle trace drops
+    virtual bool dropSupported(Trace *t) = 0;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;

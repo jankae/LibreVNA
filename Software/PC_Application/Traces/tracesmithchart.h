@@ -31,6 +31,7 @@ protected:
     //void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu() override;
     bool supported(Trace *t) override;
+    bool dropSupported(Trace *t) override;
     virtual void draw(QPainter& painter) override;
     virtual void traceDropped(Trace *t, QPoint position) override;
     QString mouseText(QPoint pos) override;
