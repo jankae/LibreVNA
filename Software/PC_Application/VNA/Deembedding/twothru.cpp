@@ -306,9 +306,15 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
             p221x.push_back((p112x[i]-p111x[i])/p212x[i]);
             test = sqrt(p212x[i]*(1.0-p221x[i]*p221x[i]));
             if(i > 0) {
-                if(arg(test) - arg(last_test) > 0) {
+                // according to the octave script, the next line should be if(arg(test) - arg(last_test) > 0)
+                // but that leads to 180° degree phase shift and also doesn't make much sense:
+                // we want to figure out the correct sign for the root so that no phase jumps occur. The
+                // phase difference from one to the next point is allowed to be positive, it just should be smaller
+                // than PI/2 (otherwise we got the wrong sign for the root)
+                if(abs(arg(test) - arg(last_test)) > M_PI / 2) {
                     k = -k;
                 }
+                qDebug() << "angle at point" << i << "(" << arg(test) - arg(last_test) << ")";
             }
             last_test = test;
             p211x.push_back(k*test);
@@ -362,7 +368,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
             p221x.push_back((p112x[i]-p111x[i])/p212x[i]);
             test = sqrt(p212x[i]*(1.0-p221x[i]*p221x[i]));
             if(i > 0) {
-                if(arg(test) - arg(last_test) > 0) {
+                if(abs(arg(test) - arg(last_test)) > M_PI / 2) {
                     k = -k;
                 }
             }
@@ -555,7 +561,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
         for(unsigned int i=0;i<f.size();i++) {
             test = sqrt(s212x[i]*(1.0-s221x[i]*s221x[i]));
             if(i > 0) {
-                if(arg(test) - arg(last_test) > 0) {
+                if(abs(arg(test) - arg(last_test)) > M_PI / 2) {
                     k = -k;
                 }
             }
