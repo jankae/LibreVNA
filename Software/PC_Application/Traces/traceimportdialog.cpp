@@ -23,7 +23,8 @@ TraceImportDialog::~TraceImportDialog()
 
 void TraceImportDialog::on_buttonBox_accepted()
 {
-    tableModel->import(model);
+    auto traces = tableModel->import(model);
+    emit importFinsished(traces);
 }
 
 TraceParameterModel::TraceParameterModel(std::vector<Trace *> traces, QString prefix, QObject *parent)
@@ -153,17 +154,20 @@ Qt::ItemFlags TraceParameterModel::flags(const QModelIndex &index) const
     return (Qt::ItemFlags) flags;
 }
 
-void TraceParameterModel::import(TraceModel &model)
+std::vector<Trace *> TraceParameterModel::import(TraceModel &model)
 {
+    std::vector<Trace*> importedTraces;
     for(unsigned int i=0;i<params.size();i++) {
         if(params[i].enabled) {
             traces[i]->setColor(params[i].color);
             traces[i]->setName(params[i].name);
             model.addTrace(traces[i]);
+            importedTraces.push_back(traces[i]);
         } else {
             delete traces[i];
         }
     }
+    return importedTraces;
 }
 
 void TraceImportDialog::on_tableView_doubleClicked(const QModelIndex &index)

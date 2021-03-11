@@ -66,5 +66,13 @@ void TraceWidgetVNA::importDialog()
         prefix.append("_");
         auto i = new TraceImportDialog(model, traces, prefix);
         i->show();
+        if(filename.endsWith(".s2p")) {
+            // potential candidate to process via calibration/de-embedding
+            connect(i, &TraceImportDialog::importFinsished, [](const std::vector<Trace*> &traces) {
+                if(traces.size() == 4) {
+                    // all traces imported, can calculate calibration/de-embedding
+                }
+            });
+        }
     }
 }

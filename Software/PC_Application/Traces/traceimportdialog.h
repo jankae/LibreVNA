@@ -25,7 +25,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     // adds all enabled traces to the model, deletes other traces
-    void import(TraceModel &model);
+    std::vector<Trace *> import(TraceModel &model);
 private:
     class Parameter {
     public:
@@ -49,6 +49,9 @@ public:
 private slots:
     void on_buttonBox_accepted();
     void on_tableView_doubleClicked(const QModelIndex &index);
+
+signals:
+    void importFinsished(const std::vector<Trace*> &traces);
 
 private:
     Ui::TraceImportDialog *ui;
