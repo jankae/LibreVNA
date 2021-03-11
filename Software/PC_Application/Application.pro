@@ -5,6 +5,7 @@ HEADERS += \
     Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
+    Calibration/manualcalibrationdialog.h \
     Calibration/measurementmodel.h \
     Calibration/receivercaldialog.h \
     Calibration/sourcecaldialog.h \
@@ -81,6 +82,7 @@ HEADERS += \
     Traces/Math/windowfunction.h \
     Traces/fftcomplex.h \
     Traces/markerwidget.h \
+    Traces/sparamtraceselector.h \
     Traces/trace.h \
     Traces/tracecsvexport.h \
     Traces/traceeditdialog.h \
@@ -99,6 +101,7 @@ HEADERS += \
     VNA/Deembedding/deembedding.h \
     VNA/Deembedding/deembeddingdialog.h \
     VNA/Deembedding/deembeddingoption.h \
+    VNA/Deembedding/manualdeembeddingdialog.h \
     VNA/Deembedding/matchingnetwork.h \
     VNA/Deembedding/portextension.h \
     VNA/Deembedding/twothru.h \
@@ -121,6 +124,7 @@ SOURCES += \
     Calibration/calibrationtracedialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
+    Calibration/manualcalibrationdialog.cpp \
     Calibration/measurementmodel.cpp \
     Calibration/receivercaldialog.cpp \
     Calibration/sourcecaldialog.cpp \
@@ -186,6 +190,7 @@ SOURCES += \
     Traces/Math/windowfunction.cpp \
     Traces/fftcomplex.cpp \
     Traces/markerwidget.cpp \
+    Traces/sparamtraceselector.cpp \
     Traces/trace.cpp \
     Traces/tracecsvexport.cpp \
     Traces/traceeditdialog.cpp \
@@ -202,6 +207,7 @@ SOURCES += \
     VNA/Deembedding/deembedding.cpp \
     VNA/Deembedding/deembeddingdialog.cpp \
     VNA/Deembedding/deembeddingoption.cpp \
+    VNA/Deembedding/manualdeembeddingdialog.cpp \
     VNA/Deembedding/matchingnetwork.cpp \
     VNA/Deembedding/portextension.cpp \
     VNA/Deembedding/twothru.cpp \
@@ -228,6 +234,7 @@ FORMS += \
     Calibration/automaticamplitudedialog.ui \
     Calibration/calibrationtracedialog.ui \
     Calibration/calkitdialog.ui \
+    Calibration/manualcalibrationdialog.ui \
     CustomWidgets/tilewidget.ui \
     CustomWidgets/touchstoneimport.ui \
     Device/devicelog.ui \
@@ -253,10 +260,12 @@ FORMS += \
     Traces/tracewidget.ui \
     Traces/xyplotaxisdialog.ui \
     VNA/Deembedding/deembeddingdialog.ui \
+    VNA/Deembedding/manualdeembeddingdialog.ui \
     VNA/Deembedding/matchingnetworkdialog.ui \
     VNA/Deembedding/measurementdialog.ui \
     VNA/Deembedding/portextensioneditdialog.ui \
     VNA/Deembedding/twothrudialog.ui \
+    VNA/s2pImportOptions.ui \
     main.ui \
     preferencesdialog.ui
 

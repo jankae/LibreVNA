@@ -2,6 +2,7 @@
 #include "deembeddingdialog.h"
 #include <QDebug>
 #include "ui_measurementdialog.h"
+#include "Traces/sparamtraceselector.h"
 
 using namespace std;
 
@@ -24,170 +25,49 @@ void Deembedding::measurementCompleted()
     measurementUI = nullptr;
 }
 
-void Deembedding::setInitialTraceSelections()
-{
-    // all checkboxes initially set to none
-    measurementUI->cS11->blockSignals(true);
-    measurementUI->cS12->blockSignals(true);
-    measurementUI->cS21->blockSignals(true);
-    measurementUI->cS22->blockSignals(true);
-    measurementUI->cS11->clear();
-    measurementUI->cS12->clear();
-    measurementUI->cS21->clear();
-    measurementUI->cS22->clear();
-    measurementUI->cS11->addItem("None");
-    measurementUI->cS12->addItem("None");
-    measurementUI->cS21->addItem("None");
-    measurementUI->cS22->addItem("None");
-    // add applicable traces
-    for(auto t : tm.getTraces()) {
-        if(t->isReflection()) {
-            measurementUI->cS11->addItem(t->name(), QVariant::fromValue<Trace*>(t));
-            measurementUI->cS22->addItem(t->name(), QVariant::fromValue<Trace*>(t));
-        } else {
-            measurementUI->cS12->addItem(t->name(), QVariant::fromValue<Trace*>(t));
-            measurementUI->cS21->addItem(t->name(), QVariant::fromValue<Trace*>(t));
-        }
-    }
-    measurementUI->cS11->blockSignals(false);
-    measurementUI->cS12->blockSignals(false);
-    measurementUI->cS21->blockSignals(false);
-    measurementUI->cS22->blockSignals(false);
-}
-
-void Deembedding::traceSelectionChanged(QComboBox *w)
-{
-    vector<QComboBox*> cbs;
-    if (measurementUI->cS11->isVisible()) {
-        cbs.push_back(measurementUI->cS11);
-    }
-    if (measurementUI->cS12->isVisible()) {
-        cbs.push_back(measurementUI->cS12);
-    }
-    if (measurementUI->cS21->isVisible()) {
-        cbs.push_back(measurementUI->cS21);
-    }
-    if (measurementUI->cS22->isVisible()) {
-        cbs.push_back(measurementUI->cS22);
-    }
-
-    // update available traces in combo boxes
-    if(w->currentIndex() != 0 && points == 0) {
-        // the first trace has been selected, extract frequency info
-        Trace *t = qvariant_cast<Trace*>(w->itemData(w->currentIndex()));
-        points = t->size();
-        if(points > 0) {
-            minFreq = t->minX();
-            maxFreq = t->maxX();
-        }
-        // remove all trace options with incompatible frequencies
-        for(auto c : cbs) {
-            for(int i=1;i<c->count();i++) {
-                Trace *t = qvariant_cast<Trace*>(c->itemData(i));
-                if(t->size() != points || (points > 0 && (t->minX() != minFreq || t->maxX() != maxFreq))) {
-                    // this trace is not available anymore
-                    c->removeItem(i);
-                    // decrement to check the next index in the next loop iteration
-                    i--;
-                }
-            }
-        }
-    } else if(w->currentIndex() == 0 && points > 0) {
-        measurementUI->buttonBox->setEnabled(false);
-        // Check if all trace selections are set for none
-        for(auto c : cbs) {
-            if(c->currentIndex() != 0) {
-                // some trace is still selected, abort
-                return;
-            }
-        }
-        // all traces set for none
-        points = 0;
-        minFreq = 0;
-        maxFreq = 0;
-        setInitialTraceSelections();
-    }
-    bool allSelectionsValid = true;
-    for(auto c : cbs) {
-        if (c->currentIndex() == 0) {
-            allSelectionsValid = false;
-            break;
-        }
-    }
-    if(allSelectionsValid) {
-        measurementUI->buttonBox->setEnabled(true);
-    }
-}
-
 void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
 {
     measurements.clear();
-
-    points = 0;
-    minFreq = 0.0;
-    maxFreq = 0.0;
-
     measurementDialog = new QDialog;
     auto ui = new Ui_DeembeddingMeasurementDialog;
     measurementUI = ui;
     ui->setupUi(measurementDialog);
-    // disable not needed GUI elements
+
+    // add the trace selector
+    set<unsigned int> skip;
     if(!S11) {
-        ui->lS11->setVisible(false);
-        ui->cS11->setVisible(false);
+        skip.insert(0);
     }
     if(!S12) {
-        ui->lS12->setVisible(false);
-        ui->cS12->setVisible(false);
+        skip.insert(1);
     }
     if(!S21) {
-        ui->lS21->setVisible(false);
-        ui->cS21->setVisible(false);
+        skip.insert(2);
     }
     if(!S22) {
-        ui->lS22->setVisible(false);
-        ui->cS22->setVisible(false);
+        skip.insert(3);
     }
+    auto traceChooser = new SparamTraceSelector(tm, 2, false, skip);
+    ui->horizontalLayout_2->insertWidget(0, traceChooser, 1);
+
+    connect(traceChooser, &SparamTraceSelector::selectionValid, ui->buttonBox, &QDialogButtonBox::setEnabled);
 
     connect(ui->bMeasure, &QPushButton::clicked, [=](){
         ui->bMeasure->setEnabled(false);
-        ui->cS11->setEnabled(false);
-        ui->cS12->setEnabled(false);
-        ui->cS21->setEnabled(false);
-        ui->cS22->setEnabled(false);
+        traceChooser->setEnabled(false);
         ui->buttonBox->setEnabled(false);
         measuring = true;
     });
 
-    connect(ui->cS11, qOverload<int>(&QComboBox::currentIndexChanged), [=](int){
-        traceSelectionChanged(ui->cS11);
-    });
-    connect(ui->cS12, qOverload<int>(&QComboBox::currentIndexChanged), [=](int){
-        traceSelectionChanged(ui->cS12);
-    });
-    connect(ui->cS21, qOverload<int>(&QComboBox::currentIndexChanged), [=](int){
-        traceSelectionChanged(ui->cS21);
-    });
-    connect(ui->cS22, qOverload<int>(&QComboBox::currentIndexChanged), [=](int){
-        traceSelectionChanged(ui->cS22);
-    });
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
         // create datapoints from individual traces
         measurements.clear();
-        Trace *S11 = nullptr, *S12 = nullptr, *S21 = nullptr, *S22 = nullptr;
-        if (ui->cS11->currentIndex() != 0) {
-            S11 = qvariant_cast<Trace*>(ui->cS11->itemData(ui->cS11->currentIndex()));
-        }
-        if (ui->cS12->currentIndex() != 0) {
-            S12 = qvariant_cast<Trace*>(ui->cS12->itemData(ui->cS12->currentIndex()));
-        }
-        if (ui->cS21->currentIndex() != 0) {
-            S21 = qvariant_cast<Trace*>(ui->cS21->itemData(ui->cS21->currentIndex()));
-        }
-        if (ui->cS22->currentIndex() != 0) {
-            S22 = qvariant_cast<Trace*>(ui->cS22->itemData(ui->cS22->currentIndex()));
-        }
-        for(unsigned int i=0;i<points;i++) {
+        auto t = traceChooser->getTraces();
+        auto S11 = t[0];
+        auto S12 = t[1];
+        auto S21 = t[2];
+        auto S22 = t[3];
+        for(unsigned int i=0;i<traceChooser->getPoints();i++) {
             Protocol::Datapoint p;
             p.pointNum = i;
             if(S11) {
@@ -219,15 +99,12 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
         measurementCompleted();
     });
 
-    setInitialTraceSelections();
-
     measurementDialog->show();
 }
 
 Deembedding::Deembedding(TraceModel &tm)
     : tm(tm),
-      measuring(false),
-      points(0)
+      measuring(false)
 {
 
 }
@@ -268,11 +145,26 @@ void Deembedding::Deembed(Protocol::Datapoint &d)
     }
 }
 
+void Deembedding::Deembed(Trace &S11, Trace &S12, Trace &S21, Trace &S22)
+{
+    auto points = Trace::assembleDatapoints(S11, S12, S21, S22);
+    if(points.size()) {
+        // succeeded in assembling datapoints
+        for(auto &p : points) {
+            Deembed(p);
+        }
+        Trace::fillFromDatapoints(S11, S12, S21, S22, points);
+    }
+}
+
 void Deembedding::removeOption(unsigned int index)
 {
     if(index < options.size()) {
         delete options[index];
         options.erase(options.begin() + index);
+    }
+    if(options.size() == 0) {
+        emit allOptionsCleared();
     }
 }
 
@@ -290,6 +182,7 @@ void Deembedding::addOption(DeembeddingOption *option)
         measuringOption = option;
         startMeasurementDialog(S11, S12, S21, S22);
     });
+    emit optionAdded();
 }
 
 void Deembedding::swapOptions(unsigned int index)

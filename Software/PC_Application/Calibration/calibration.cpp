@@ -388,6 +388,18 @@ void Calibration::correctMeasurement(Protocol::Datapoint &d)
     d.imag_S22 = S22.imag();
 }
 
+void Calibration::correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22)
+{
+    auto points = Trace::assembleDatapoints(S11, S12, S21, S22);
+    if(points.size()) {
+        // succeeded in assembling datapoints
+        for(auto &p : points) {
+            correctMeasurement(p);
+        }
+        Trace::fillFromDatapoints(S11, S12, S21, S22, points);
+    }
+}
+
 Calibration::InterpolationType Calibration::getInterpolation(Protocol::SweepSettings settings)
 {
     if(!points.size()) {

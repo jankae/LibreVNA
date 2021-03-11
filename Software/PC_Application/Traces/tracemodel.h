@@ -33,7 +33,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
-    std::vector<Trace*> getTraces();
+    std::vector<Trace*> getTraces() const;
 
     bool PortExcitationRequired(int port);
 

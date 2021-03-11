@@ -2,6 +2,8 @@
 #include <math.h>
 #include "fftcomplex.h"
 #include <QDebug>
+#include <QScrollBar>
+#include <QSettings>
 #include <functional>
 
 using namespace std;
@@ -213,6 +215,26 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
     return traceName;
+}
+
+void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<Protocol::Datapoint> &data)
+{
+    S11.clear();
+    S12.clear();
+    S21.clear();
+    S22.clear();
+    for(auto d : data) {
+        Trace::Data td;
+        td.x = d.frequency;
+        td.y = complex<double>(d.real_S11, d.imag_S11);
+        S11.addData(td);
+        td.y = complex<double>(d.real_S12, d.imag_S12);
+        S12.addData(td);
+        td.y = complex<double>(d.real_S21, d.imag_S21);
+        S21.addData(td);
+        td.y = complex<double>(d.real_S22, d.imag_S22);
+        S22.addData(td);
+    }
 }
 
 void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
@@ -435,6 +457,61 @@ std::vector<Trace *> Trace::createFromCSV(CSV &csv)
     return traces;
 }
 
+std::vector<Protocol::Datapoint> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
+{
+    vector<Protocol::Datapoint> ret;
+
+    // Sanity check traces
+    unsigned int samples = S11.size();
+    vector<const Trace*> traces;
+    traces.push_back(&S11);
+    traces.push_back(&S12);
+    traces.push_back(&S21);
+    traces.push_back(&S22);
+    vector<double> freqs;
+    for(const auto t : traces) {
+        if(t->size() != samples) {
+            qWarning() << "Selected traces do not have the same size";
+            return ret;
+        }
+        if(t->outputType() != Trace::DataType::Frequency) {
+            qWarning() << "Selected trace not in frequency domain";
+            return ret;
+        }
+        if(freqs.empty()) {
+            // Create frequency vector
+            for(unsigned int i=0;i<samples;i++) {
+                freqs.push_back(t->sample(i).x);
+            }
+        } else {
+            // Compare with frequency vector
+            for(unsigned int i=0;i<samples;i++) {
+                if(t->sample(i).x != freqs[i]) {
+                    qWarning() << "Selected traces do not have identical frequency points";
+                    return ret;
+                }
+            }
+        }
+    }
+
+    // Checks passed, assemble datapoints
+    for(unsigned int i=0;i<samples;i++) {
+        Protocol::Datapoint d;
+        d.real_S11 = real(S11.sample(i).y);
+        d.imag_S11 = imag(S11.sample(i).y);
+        d.real_S12 = real(S12.sample(i).y);
+        d.imag_S12 = imag(S12.sample(i).y);
+        d.real_S21 = real(S21.sample(i).y);
+        d.imag_S21 = imag(S21.sample(i).y);
+        d.real_S22 = real(S22.sample(i).y);
+        d.imag_S22 = imag(S22.sample(i).y);
+        d.pointNum = i;
+        d.frequency = freqs[i];
+        ret.push_back(d);
+    }
+    return ret;
+}
+
 void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
 {
     TraceMath *newLast = nullptr;
@@ -626,7 +703,7 @@ void Trace::enableMathOperation(unsigned int index, bool enable)
     }
 }
 
-unsigned int Trace::size()
+unsigned int Trace::size() const
 {
     return lastMath->numSamples();
 }
@@ -724,7 +801,7 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     return frequencies;
 }
 
-Trace::Data Trace::sample(unsigned int index, SampleType type)
+Trace::Data Trace::sample(unsigned int index, SampleType type) const
 {
     auto data = lastMath->getSample(index);
     if(type == SampleType::TimeStep) {

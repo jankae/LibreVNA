@@ -47,6 +47,7 @@ public:
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
+    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<Protocol::Datapoint> &data);
     void fromLivedata(LivedataType type, LiveParameter param);
     QString name() { return _name; };
     QColor color() { return _color; };
@@ -60,8 +61,8 @@ public:
     bool isReflection();
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
-    TraceMath::DataType outputType() { return lastMath->getDataType(); };
-    unsigned int size();
+    TraceMath::DataType outputType() const { return lastMath->getDataType(); };
+    unsigned int size() const;
     double minX();
     double maxX();
     double findExtremumFreq(bool max);
@@ -77,7 +78,7 @@ public:
         TimeStep,
     };
 
-    Data sample(unsigned int index, SampleType type = SampleType::Frequency);
+    Data sample(unsigned int index, SampleType type = SampleType::Frequency) const;
     QString getFilename() const;
     unsigned int getFileParameter() const;
     /* Returns the noise in dbm/Hz for spectrum analyzer measurements. May return NaN if calculation not possible */
@@ -124,6 +125,10 @@ public:
 
     static std::vector<Trace*> createFromTouchstone(Touchstone &t);
     static std::vector<Trace*> createFromCSV(CSV &csv);
+
+    // Assembles datapoints as received from the VNA from four S parameter traces. Requires that all traces are in the frequency domain,
+    // have the same number of samples and their samples must be at the same frequencies across all traces
+    static std::vector<Protocol::Datapoint> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
 
 public slots:
     void setVisible(bool visible);

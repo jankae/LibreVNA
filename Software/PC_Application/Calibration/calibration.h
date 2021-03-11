@@ -47,6 +47,7 @@ public:
     void resetErrorTerms();
 
     void correctMeasurement(Protocol::Datapoint &d);
+    void correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
 
     enum class InterpolationType {
         Unchanged, // Nothing has changed, settings and calibration points match

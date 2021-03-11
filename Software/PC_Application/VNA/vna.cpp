@@ -44,6 +44,8 @@
 #include <QErrorMessage>
 #include "CustomWidgets/informationbox.h"
 #include <QDebug>
+#include "Deembedding/manualdeembeddingdialog.h"
+#include "Calibration/manualcalibrationdialog.h"
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
@@ -148,7 +150,44 @@ VNA::VNA(AppWindow *window)
         import->show();
     });
 
+    calMenu->addSeparator();
+    auto calApplyToTraces = calMenu->addAction("Apply to traces...");
+    calApplyToTraces->setEnabled(false);
+    connect(calApplyToTraces, &QAction::triggered, [=]() {
+        auto manualCalibration = new ManualCalibrationDialog(traceModel, &cal);
+        manualCalibration->show();
+    });
+
 //    portExtension.setCalkit(&cal.getCalibrationKit());
+
+    // De-embedding menu
+    auto menuDeembed = new QMenu("De-embedding", window);
+    window->menuBar()->insertMenu(window->getUi()->menuWindow->menuAction(), menuDeembed);
+    auto confDeembed = menuDeembed->addAction("Setup...");
+    connect(confDeembed, &QAction::triggered, &deembedding, &Deembedding::configure);
+
+    enableDeembeddingAction = menuDeembed->addAction("De-embed VNA samples");
+    enableDeembeddingAction->setCheckable(true);
+    enableDeembeddingAction->setEnabled(false);
+    connect(enableDeembeddingAction, &QAction::toggled, this, &VNA::EnableDeembedding);
+
+    auto manualDeembed = menuDeembed->addAction("De-embed traces...");
+    manualDeembed->setEnabled(false);
+    connect(manualDeembed, &QAction::triggered, [=]() {
+        auto manualDeembedding = new ManualDeembeddingDialog(traceModel, &deembedding);
+        manualDeembedding->show();
+    });
+
+    connect(&deembedding, &Deembedding::optionAdded, [=](){
+        EnableDeembedding(true);
+        enableDeembeddingAction->setEnabled(true);
+        manualDeembed->setEnabled(true);
+    });
+    connect(&deembedding, &Deembedding::allOptionsCleared, [=](){
+        EnableDeembedding(false);
+        enableDeembeddingAction->setEnabled(false);
+        manualDeembed->setEnabled(false);
+    });
 
     // Tools menu
     auto toolsMenu = new QMenu("Tools", window);
@@ -156,8 +195,6 @@ VNA::VNA(AppWindow *window)
     actions.insert(toolsMenu->menuAction());
     auto impedanceMatching = toolsMenu->addAction("Impedance Matching");
     connect(impedanceMatching, &QAction::triggered, this, &VNA::StartImpedanceMatching);
-    auto confDeembed = toolsMenu->addAction("De-embedding");
-    connect(confDeembed, &QAction::triggered, &deembedding, &Deembedding::configure);
 
     defaultCalMenu = new QMenu("Default Calibration", window);
     assignDefaultCal = defaultCalMenu->addAction("Assign...");
@@ -342,6 +379,7 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(false);
         calImportMeas->setEnabled(false);
+        calApplyToTraces->setEnabled(false);
         saveCal->setEnabled(false);
     });
     connect(calDisable, &QAction::triggered, this, &VNA::DisableCalibration);
@@ -362,6 +400,7 @@ VNA::VNA(AppWindow *window)
         cbEnableCal->blockSignals(false);
         calImportTerms->setEnabled(true);
         calImportMeas->setEnabled(true);
+        calApplyToTraces->setEnabled(true);
         saveCal->setEnabled(true);
     });
 
@@ -378,7 +417,7 @@ VNA::VNA(AppWindow *window)
     markerModel = new TraceMarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
-    tracesDock->setWidget(new TraceWidgetVNA(traceModel));
+    tracesDock->setWidget(new TraceWidgetVNA(traceModel, cal, deembedding));
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 
@@ -532,6 +571,7 @@ nlohmann::json VNA::toJSON()
     j["tiles"] = central->toJSON();
     j["markers"] = markerModel->toJSON();
     j["de-embedding"] = deembedding.toJSON();
+    j["de-embedding_enabled"] = deembedding_active;
     return j;
 }
 
@@ -548,6 +588,9 @@ void VNA::fromJSON(nlohmann::json j)
     }
     if(j.contains("de-embedding")) {
         deembedding.fromJSON(j["de-embedding"]);
+        EnableDeembedding(j.value("de-embedding_enabled", true));
+    } else {
+        EnableDeembedding(false);
     }
 }
 
@@ -576,7 +619,9 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
         cal.correctMeasurement(d);
     }
 
-    deembedding.Deembed(d);
+    if(deembedding_active) {
+        deembedding.Deembed(d);
+    }
 
     traceModel.addVNAData(d, settings);
     emit dataChanged();
@@ -766,6 +811,7 @@ void VNA::DisableCalibration(bool force)
 {
     if(calValid || force) {
         calValid = false;
+        cal.resetErrorTerms();
         emit CalibrationDisabled();
     }
 }
@@ -901,4 +947,12 @@ void VNA::UpdateCalWidget()
 {
     calLabel->setStyleSheet(getCalStyle());
     calLabel->setToolTip(getCalToolTip());
+}
+
+void VNA::EnableDeembedding(bool enable)
+{
+    deembedding_active = enable;
+    enableDeembeddingAction->blockSignals(true);
+    enableDeembeddingAction->setChecked(enable);
+    enableDeembeddingAction->blockSignals(false);
 }

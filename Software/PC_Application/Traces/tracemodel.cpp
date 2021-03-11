@@ -143,7 +143,7 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-std::vector<Trace *> TraceModel::getTraces()
+std::vector<Trace *> TraceModel::getTraces() const
 {
     return traces;
 }

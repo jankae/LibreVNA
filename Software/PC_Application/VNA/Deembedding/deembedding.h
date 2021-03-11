@@ -19,6 +19,7 @@ public:
     ~Deembedding(){};
 
     void Deembed(Protocol::Datapoint &d);
+    void Deembed(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
 
     void removeOption(unsigned int index);
     void addOption(DeembeddingOption* option);
@@ -30,10 +31,10 @@ public slots:
     void configure();
 signals:
     void triggerMeasurement(bool S11 = true, bool S12 = true, bool S21 = true, bool S22 = true);
+    void optionAdded();
+    void allOptionsCleared();
 private:
     void measurementCompleted();
-    void setInitialTraceSelections();
-    void traceSelectionChanged(QComboBox *w);
     void startMeasurementDialog(bool S11, bool S12, bool S21, bool S22);
     std::vector<DeembeddingOption*> options;
     DeembeddingOption *measuringOption;
@@ -43,9 +44,6 @@ private:
     std::vector<Protocol::Datapoint> measurements;
     QDialog *measurementDialog;
     Ui_DeembeddingMeasurementDialog *measurementUI;
-    // parameters of the selected traces for the measurement
-    double minFreq, maxFreq;
-    unsigned long points;
 
     unsigned long sweepPoints;
 

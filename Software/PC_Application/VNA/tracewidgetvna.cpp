@@ -5,11 +5,14 @@
 #include "Traces/tracetouchstoneexport.h"
 #include "Traces/tracecsvexport.h"
 #include "ui_tracewidget.h"
+#include "ui_s2pImportOptions.h"
 
 #include <QMenu>
 
-TraceWidgetVNA::TraceWidgetVNA(TraceModel &model, QWidget *parent)
-    : TraceWidget(model, parent)
+TraceWidgetVNA::TraceWidgetVNA(TraceModel &model, Calibration &cal, Deembedding &deembed, QWidget *parent)
+    : TraceWidget(model, parent),
+      cal(cal),
+      deembed(deembed)
 {
     auto exportMenu = new QMenu();
     auto exportTouchstone = new QAction("Touchstone");
@@ -68,9 +71,34 @@ void TraceWidgetVNA::importDialog()
         i->show();
         if(filename.endsWith(".s2p")) {
             // potential candidate to process via calibration/de-embedding
-            connect(i, &TraceImportDialog::importFinsished, [](const std::vector<Trace*> &traces) {
+            connect(i, &TraceImportDialog::importFinsished, [=](const std::vector<Trace*> &traces) {
                 if(traces.size() == 4) {
                     // all traces imported, can calculate calibration/de-embedding
+                    bool calAvailable = cal.nPoints() > 0;
+                    bool deembedAvailable = deembed.getOptions().size() > 0;
+                    if(calAvailable || deembedAvailable) {
+                        // check if user wants to apply either one to the imported traces
+                        auto dialog = new QDialog();
+                        auto ui = new Ui::s2pImportOptions;
+                        ui->setupUi(dialog);
+                        ui->applyCal->setEnabled(calAvailable);
+                        ui->deembed->setEnabled(deembedAvailable);
+                        bool applyCal = false;
+                        bool applyDeembed = false;
+                        connect(ui->applyCal, &QCheckBox::toggled, [&](bool checked) {
+                            applyCal = checked;
+                        });
+                        connect(ui->deembed, &QCheckBox::toggled, [&](bool checked) {
+                            applyDeembed = checked;
+                        });
+                        dialog->exec();
+                        if(applyCal) {
+                            cal.correctTraces(*traces[0], *traces[1], *traces[2], *traces[3]);
+                        }
+                        if(applyDeembed) {
+                            deembed.Deembed(*traces[0], *traces[1], *traces[2], *traces[3]);
+                        }
+                    }
                 }
             });
         }

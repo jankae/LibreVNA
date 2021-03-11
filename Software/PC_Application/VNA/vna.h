@@ -58,7 +58,9 @@ private:
     void StopSweep();
     void StartCalibrationDialog(Calibration::Type type = Calibration::Type::None);
     void UpdateCalWidget();
-
+private slots:
+    void EnableDeembedding(bool enable);
+private:
     Protocol::SweepSettings settings;
     unsigned int averages;
     TraceModel traceModel;
@@ -82,6 +84,8 @@ private:
     QAction *saveCal;
 
     Deembedding deembedding;
+    QAction *enableDeembeddingAction;
+    bool deembedding_active;
 
     // Status Labels
     QLabel *lAverages;
