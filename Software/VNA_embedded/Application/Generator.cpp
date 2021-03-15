@@ -35,14 +35,6 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 		m.PortSwitch = 1;
 		break;
 	}
-	if (g.applyAmplitudeCorrection) {
-		auto correction = AmplitudeCal::SourceCorrection(g.frequency);
-		if (g.activePort == 1) {
-			g.cdbm_level += correction.port1;
-		} else {
-			g.cdbm_level += correction.port2;
-		}
-	}
 	auto amplitude = HW::GetAmplitudeSettings(g.cdbm_level, g.frequency, g.applyAmplitudeCorrection, g.activePort == 2);
 	HW::SetOutputUnlevel(amplitude.unlevel);
 	// Select correct source
