@@ -92,10 +92,10 @@ bool HW::Init() {
 	Si5351.Init();
 
 	// Use Si5351 to generate reference frequencies for other PLLs and ADC
-	Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::XTAL);
+	Si5351.SetPLL(Si5351C::PLL::A, 832000000, Si5351C::PLLSource::XTAL);
 	while(!Si5351.Locked(Si5351C::PLL::A));
 
-	Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::XTAL);
+	Si5351.SetPLL(Si5351C::PLL::B, 832000000, Si5351C::PLLSource::XTAL);
 	while(!Si5351.Locked(Si5351C::PLL::B));
 
 	extRefInUse = 0;
@@ -103,8 +103,10 @@ bool HW::Init() {
 	Si5351.Disable(SiChannel::ReferenceOut);
 
 	// Both MAX2871 get a 100MHz reference
+//	Si5351.SetBypass(SiChannel::Source, Si5351C::PLLSource::XTAL);
 	Si5351.SetCLK(SiChannel::Source, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::Source);
+//	Si5351.SetBypass(SiChannel::LO1, Si5351C::PLLSource::XTAL);
 	Si5351.SetCLK(SiChannel::LO1, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::LO1);
 	// 16MHz FPGA clock

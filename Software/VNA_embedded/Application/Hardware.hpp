@@ -34,7 +34,7 @@ static constexpr uint32_t IF2 = 250000;
 static constexpr uint32_t LO1_minFreq = 25000000;
 static constexpr uint32_t MaxSamples = 130944;
 static constexpr uint32_t MinSamples = 16;
-static constexpr uint32_t PLLRef = 100000000;
+static constexpr uint32_t PLLRef = 104000000;
 static constexpr uint32_t BandSwitchFrequency = 25000000;
 
 static constexpr uint8_t ADCprescaler = FPGA::Clockrate / ADCSamplerate;

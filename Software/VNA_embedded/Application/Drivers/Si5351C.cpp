@@ -119,6 +119,29 @@ bool Si5351C::SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStreng
 	return WriteClkConfig(c, clknum);
 }
 
+bool Si5351C::SetBypass(uint8_t clknum, PLLSource source, DriveStrength strength) {
+	// compile CLKControl register
+	uint8_t clkcontrol = 0x00;
+	if (source == PLLSource::CLKIN) {
+		clkcontrol |= 0x04;
+	}
+	switch (strength) {
+	case DriveStrength::mA2:
+		break;
+	case DriveStrength::mA4:
+		clkcontrol |= 0x01;
+		break;
+	case DriveStrength::mA6:
+		clkcontrol |= 0x02;
+		break;
+	case DriveStrength::mA8:
+		clkcontrol |= 0x03;
+		break;
+	}
+	Reg reg = (Reg) ((int) Reg::CLK0Control + clknum);
+	return WriteRegister(reg, clkcontrol);
+}
+
 bool Si5351C::SetCLKtoXTAL(uint8_t clknum) {
 	Reg reg = (Reg) ((int) Reg::CLK0Control + clknum);
 	LOG_INFO("Connecting CLK%d to XTAL", clknum);
@@ -163,8 +186,15 @@ bool Si5351C::WritePLLConfig(PLLConfig config, PLL pll) {
 	PllData[5] = ((config.P3 >> 12) & 0xF0) | ((config.P2 >> 16) & 0x0F);
 	PllData[6] = (config.P2 >> 8) & 0xFF;
 	PllData[7] = config.P2 & 0xFF;
+	// Check if integer mode is applicable
+	Reg reg = pll == PLL::A ? Reg::CLK6Control : Reg::CLK7Control;
+	if (config.P2 == 0 && config.P1 % 128 == 0) {
+		SetBits(reg, 0x40);
+	} else {
+		ClearBits(reg, 0x40);
+	}
 	bool success = true;
-	Reg reg = pll == PLL::A ? Reg::MSNA_CONFIG : Reg::MSNB_CONFIG;
+	reg = pll == PLL::A ? Reg::MSNA_CONFIG : Reg::MSNB_CONFIG;
 	success &= WriteRegisterRange(reg, PllData, sizeof(PllData));
 	reg = pll == PLL::A ? Reg::CLK6Control : Reg::CLK7Control;
 	if (config.IntegerMode) {
@@ -229,6 +259,11 @@ bool Si5351C::WriteClkConfig(ClkConfig config, uint8_t clknum) {
 		clkcontrol |= 0x03;
 		break;
 	}
+	// Check if integer mode is applicable
+	if(config.P2 == 0 && config.P1%128 == 0) {
+		// Use integer mode
+		clkcontrol |= 0x40;
+	}
 	Reg reg = (Reg) ((int) Reg::CLK0Control + clknum);
 	success &= WriteRegister(reg, clkcontrol);
 	if (clknum <= 5) {
@@ -242,6 +277,7 @@ bool Si5351C::WriteClkConfig(ClkConfig config, uint8_t clknum) {
 		ClkData[5] = ((config.P3 >> 12) & 0xF0) | ((config.P2 >> 16) & 0x0F);
 		ClkData[6] = (config.P2 >> 8) & 0xFF;
 		ClkData[7] = config.P2 & 0xFF;
+
 		// Calculate address of register control block
 		reg = (Reg) ((int) Reg::MS0_CONFIG + 8 * clknum);
 		success &= WriteRegisterRange(reg, ClkData, sizeof(ClkData));
@@ -318,28 +354,6 @@ void Si5351C::FindOptimalDivider(uint32_t f_pll, uint32_t f, uint32_t &P1,
 	// always using the highest modulus divider results in less than 1Hz deviation for all frequencies, that is good enough
 	uint32_t best_c = (1UL << 20) - 1;
 	uint32_t best_b = (uint64_t) f_rem * best_c / f;
-//	uint32_t best_deviation = UINT32_MAX;
-//	for (uint32_t c = (1UL << 20) - 1; c >= (1UL << 19); c--) {
-//		uint32_t guess_b = (uint64_t) f_rem * c / f;
-//		for (uint32_t b = guess_b; b <= guess_b + 1; b++) {
-//			int32_t f_div = (uint64_t) f * b / c;
-//			uint32_t deviation = abs(f_rem - f_div);
-//			if (deviation < best_deviation) {
-//				best_b = b;
-//				best_c = c;
-//				best_deviation = deviation;
-//				if (deviation <= 3) {
-//					break;
-//				}
-//			}
-//		}
-//		if (best_deviation <= 3) {
-//			break;
-//		}
-//	}
-//	LOG_DEBUG(
-//			"Optimal divider for %luHz/%luHz is: a=%lu, b=%lu, c=%lu (%luHz deviation)",
-//			f_pll, f, a, best_b, best_c, best_deviation);
 	// convert to Si5351C parameters
 	uint32_t floor = 128 * best_b / best_c;
 	P1 = 128 * a + floor - 512;
@@ -359,5 +373,4 @@ bool Si5351C::ReadRawCLKConfig(uint8_t clknum, uint8_t *config) {
 	auto reg = (Reg) ((int) Reg::MS0_CONFIG + 8 * clknum);
 	return ReadRegisterRange(reg, config, 8);
 }
-
 
