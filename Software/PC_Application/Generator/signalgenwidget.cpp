@@ -10,6 +10,24 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     ui->frequency->setPrefixes(" kMG");
     ui->frequency->setPrecision(6); // show enough digits
 
+    ui->span->setUnit("Hz");
+    ui->span->setPrefixes(" kMG");
+    ui->span->setPrecision(6); // show enough digits
+
+    ui->current->setUnit("Hz");
+    ui->current->setPrefixes(" kMG");
+    ui->current->setPrecision(6); // show enough digits
+
+    ui->dwell->setUnit("s");
+    ui->dwell->setPrefixes(" m");
+    ui->dwell->setPrecision(6); // show enough digits
+    ui->dwell->setValueQuiet(1);
+    m_timerId = startTimer(1000);
+
+    ui->steps->setValueQuiet(100);
+    ui->steps->setPrefixes(" k");
+    ui->steps->setPrecision(0);
+
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < Device::Info().limits_minFreq) {
            newval = Device::Info().limits_minFreq;
@@ -19,6 +37,44 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
        ui->frequency->setValueQuiet(newval);
        emit SettingsChanged();
     });
+
+    connect(ui->span, &SIUnitEdit::valueChanged, [=](double newval) {
+       if(newval < 0 ) {
+           newval = 0;
+       } else if (newval > Device::Info().limits_maxFreq - Device::Info().limits_minFreq) {
+           newval = Device::Info().limits_maxFreq - Device::Info().limits_minFreq;
+       }
+       ui->span->setValueQuiet(newval);
+
+       double newF = ui->frequency->value() - ui->span->value()/2;
+       if (newF < 0) {
+           ui->frequency->setValueQuiet(ui->frequency->value() - newF);
+       }
+
+       emit SettingsChanged();
+    });
+
+    connect(ui->current, &SIUnitEdit::valueChanged, [=](double newval) {
+       if(newval < 0 ) {
+           newval = 0;
+       } else if (newval > Device::Info().limits_maxFreq - Device::Info().limits_minFreq) {
+           newval = Device::Info().limits_maxFreq - Device::Info().limits_minFreq;
+       }
+       ui->current->setValueQuiet(newval);
+       emit SettingsChanged();
+    });
+
+    connect(ui->dwell, &SIUnitEdit::valueChanged, [=](double newval) {
+       if(newval < 0 ) {
+           newval = 0;
+       } else if (newval > 60) {
+           newval = 60;
+       }
+       ui->dwell->setValueQuiet(newval);
+       m_timerId = startTimer(newval*1000);
+       emit SettingsChanged();
+    });
+
     connect(ui->levelSpin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &SignalgeneratorWidget::setLevel);
     connect(ui->levelSlider, &QSlider::valueChanged, [=](int value) {
         setLevel((double) value / 100.0);
@@ -35,17 +91,46 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
         }
         emit SettingsChanged();
     });
+    connect(ui->EnabledSweep, &QCheckBox::clicked, [=](){
+        if(ui->EnabledSweep->isChecked()) {
+            double newF = ui->frequency->value() - ui->span->value()/2;
+            if (newF < 0) {
+                ui->frequency->setValueQuiet(ui->frequency->value() - newF);
+                newF = 0;
+            }
+            ui->current->setValueQuiet(newF);
+        } else {
+        }
+        emit SettingsChanged();
+    });
 }
+
 
 SignalgeneratorWidget::~SignalgeneratorWidget()
 {
     delete ui;
 }
 
+void SignalgeneratorWidget::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == m_timerId) {
+        if (ui->EnabledSweep->isChecked()) {
+            double newF = ui->current->value() + ui->span->value()/ui->steps->value();
+            if (newF > ui->frequency->value() + ui->span->value()/2)
+                newF = ui->frequency->value() - ui->span->value()/2;
+            ui->current->setValueQuiet(newF);
+            SettingsChanged();
+        }
+    }
+}
+
 Protocol::GeneratorSettings SignalgeneratorWidget::getDeviceStatus()
 {
     Protocol::GeneratorSettings s = {};
-    s.frequency = ui->frequency->value();
+    if (ui->EnabledSweep->isChecked())
+        s.frequency = ui->current->value();
+    else
+        s.frequency = ui->frequency->value();
     s.cdbm_level = ui->levelSpin->value() * 100.0;
     if(ui->EnablePort1->isChecked()) {
         s.activePort = 1;
