@@ -223,6 +223,8 @@ SOURCES += \
     unit.cpp
 
 LIBS += -lusb-1.0
+unix:LIBS += -L/usr/lib/
+win32:LIBS += -L"$$_PRO_FILE_PWD_" # Github actions placed libusb here
 
 QT += widgets
 

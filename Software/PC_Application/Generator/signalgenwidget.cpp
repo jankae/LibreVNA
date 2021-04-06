@@ -13,6 +13,7 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     ui->span->setUnit("Hz");
     ui->span->setPrefixes(" kMG");
     ui->span->setPrecision(6); // show enough digits
+    ui->span->setValue(0);
 
     ui->current->setUnit("Hz");
     ui->current->setPrefixes(" kMG");
@@ -21,10 +22,10 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     ui->dwell->setUnit("s");
     ui->dwell->setPrefixes(" m");
     ui->dwell->setPrecision(6); // show enough digits
-    ui->dwell->setValueQuiet(1);
+    ui->dwell->setValue(1);
     m_timerId = startTimer(1000);
 
-    ui->steps->setValueQuiet(100);
+    ui->steps->setValue(100);
     ui->steps->setPrefixes(" k");
     ui->steps->setPrecision(0);
 
@@ -57,8 +58,9 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
            ui->frequency->setValueQuiet(ui->span->value()/2);
        }
        newF = ui->frequency->value() + ui->span->value()/2;
-       if (newF  > Device::Info().limits_maxFreq)
+       if (newF  > Device::Info().limits_maxFreq) {
            ui->frequency->setValueQuiet(Device::Info().limits_maxFreq - ui->span->value()/2);
+       }
 
        newval = ui->frequency->value() - ui->span->value()/2;
 
@@ -76,8 +78,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     });
 
     connect(ui->dwell, &SIUnitEdit::valueChanged, [=](double newval) {
-       if(newval < 0 ) {
-           newval = 0;
+       if(newval < 0.01 ) {
+           newval = 0.01;
        } else if (newval > 60) {
            newval = 60;
        }
@@ -102,8 +104,9 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
         }
         emit SettingsChanged();
     });
-    connect(ui->EnabledSweep, &QCheckBox::clicked, [=](){
-        if(ui->EnabledSweep->isChecked()) {
+    connect(ui->EnabledSweep, &QCheckBox::toggled, [=](bool enabled){
+        ui->current->setEnabled(enabled);
+        if(enabled) {
             double newF = ui->frequency->value() - ui->span->value()/2;
             if (newF < 0) {
                 ui->frequency->setValueQuiet(ui->frequency->value() - newF);
