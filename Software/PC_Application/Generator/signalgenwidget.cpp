@@ -35,6 +35,12 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
            newval = Device::Info().limits_maxFreq;
        }
        ui->frequency->setValueQuiet(newval);
+       if (newval < ui->span->value()/2)
+           ui->span->setValueQuiet(newval/2);
+       if (newval + ui->span->value()/2 > Device::Info().limits_maxFreq)
+           ui->span->setValueQuiet((Device::Info().limits_maxFreq - newval)*2);
+       newval = ui->frequency->value() - ui->span->value()/2;
+       ui->current->setValueQuiet(newval);
        emit SettingsChanged();
     });
 
@@ -48,8 +54,13 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
 
        double newF = ui->frequency->value() - ui->span->value()/2;
        if (newF < 0) {
-           ui->frequency->setValueQuiet(ui->frequency->value() - newF);
+           ui->frequency->setValueQuiet(ui->span->value()/2);
        }
+       newF = ui->frequency->value() + ui->span->value()/2;
+       if (newF  > Device::Info().limits_maxFreq)
+           ui->frequency->setValueQuiet(Device::Info().limits_maxFreq - ui->span->value()/2);
+
+       newval = ui->frequency->value() - ui->span->value()/2;
 
        emit SettingsChanged();
     });
