@@ -22,6 +22,7 @@ JSONPickerDialog::~JSONPickerDialog()
 JSONModel::JSONModel(const nlohmann::json &json, QObject *parent) :
     json(json)
 {
+    Q_UNUSED(parent)
     setupJsonInfo(json);
 }
 
@@ -97,6 +98,7 @@ int JSONModel::rowCount(const QModelIndex &parent) const
 
 int JSONModel::columnCount(const QModelIndex &parent) const
 {
+    Q_UNUSED(parent)
     return 2;
 }
 
@@ -133,11 +135,15 @@ QVariant JSONModel::data(const QModelIndex &index, int role) const
 
 QVariant JSONModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(section)
+    Q_UNUSED(orientation)
+    Q_UNUSED(role)
     return QVariant();
 }
 
 bool JSONModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
+    Q_UNUSED(value)
     nlohmann::json *item = static_cast<nlohmann::json*>(index.internalPointer());
     auto info = jsonInfo.at(item);
     if(role == Qt::CheckStateRole)

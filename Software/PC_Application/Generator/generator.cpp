@@ -3,6 +3,7 @@
 
 Generator::Generator(AppWindow *window)
     : Mode(window, "Signal Generator")
+    , SCPINode("GENerator")
 {
     central = new SignalgeneratorWidget(window);
 
@@ -17,6 +18,8 @@ Generator::Generator(AppWindow *window)
         central->setFrequency(pref.Startup.Generator.frequency);
         central->setLevel(pref.Startup.Generator.level);
     }
+
+    setupSCPI();
 
     finalize(central);
     connect(central, &SignalgeneratorWidget::SettingsChanged, this, &Generator::updateDevice);
@@ -47,4 +50,53 @@ void Generator::updateDevice()
     p.type = Protocol::PacketType::Generator;
     p.generator = central->getDeviceStatus();
     window->getDevice()->SendPacket(p);
+}
+
+void Generator::setupSCPI()
+{
+    add(new SCPICommand("FREQuency", [=](QStringList params) -> QString {
+        bool ok;
+        if(params.size() != 1) {
+            return "ERROR";
+        }
+        auto newval = params[0].toUInt(&ok);
+        if(!ok) {
+            return "ERROR";
+        } else {
+            central->setFrequency(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(central->getDeviceStatus().frequency);
+    }));
+    add(new SCPICommand("LVL", [=](QStringList params) -> QString {
+        bool ok;
+        if(params.size() != 1) {
+            return "ERROR";
+        }
+        auto newval = params[0].toDouble(&ok);
+        if(!ok) {
+            return "ERROR";
+        } else {
+            central->setLevel(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(central->getDeviceStatus().cdbm_level / 100.0);
+    }));
+    add(new SCPICommand("PORT", [=](QStringList params) -> QString {
+        bool ok;
+        if(params.size() != 1) {
+            return "ERROR";
+        }
+        auto newval = params[0].toUInt(&ok);
+        if(!ok || newval > 2) {
+            return "ERROR";
+        } else {
+            central->setPort(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(central->getDeviceStatus().activePort);
+    }));
 }

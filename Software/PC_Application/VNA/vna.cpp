@@ -49,6 +49,7 @@
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
+      SCPINode("VNA"),
       deembedding(traceModel),
       central(new TileWidget(traceModel))
 {
@@ -57,6 +58,8 @@ VNA::VNA(AppWindow *window)
     calMeasuring = false;
     calDialog.reset();
     calEdited = false;
+
+    SetupSCPI();
 
     // Create default traces
     auto tS11 = new Trace("S11", Qt::yellow);
@@ -873,6 +876,124 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
         calMeasuring = true;
     });
     calEdited = true;
+}
+
+void VNA::SetupSCPI()
+{
+    auto scpi_freq = new SCPINode("FREQuency");
+    SCPINode::add(scpi_freq);
+    auto toULong = [](QStringList params) {
+        bool ok;
+        if(params.size() != 1) {
+            return std::numeric_limits<unsigned long>::max();
+        }
+        auto newval = params[0].toULong(&ok);
+        if(!ok) {
+            return std::numeric_limits<unsigned long>::max();
+        } else {
+            return newval;
+        }
+    };
+    scpi_freq->add(new SCPICommand("SPAN", [=](QStringList params) -> QString {
+        auto newval = toULong(params);
+        if(newval == std::numeric_limits<unsigned long>::max()) {
+            return "ERROR";
+        } else {
+            SetSpan(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(settings.f_stop - settings.f_start);
+    }));
+    scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
+        auto newval = toULong(params);
+        if(newval == std::numeric_limits<unsigned long>::max()) {
+            return "ERROR";
+        } else {
+            SetStartFreq(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(settings.f_start);
+    }));
+    scpi_freq->add(new SCPICommand("CENTER", [=](QStringList params) -> QString {
+        auto newval = toULong(params);
+        if(newval == std::numeric_limits<unsigned long>::max()) {
+            return "ERROR";
+        } else {
+            SetCenterFreq(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number((settings.f_start + settings.f_stop)/2);
+    }));
+    scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
+        auto newval = toULong(params);
+        if(newval == std::numeric_limits<unsigned long>::max()) {
+            return "ERROR";
+        } else {
+            SetStopFreq(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(settings.f_stop);
+    }));
+    scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
+        SetFullSpan();
+        return "";
+    }, nullptr));
+    auto scpi_acq = new SCPINode("ACQuisition");
+    SCPINode::add(scpi_acq);
+    scpi_acq->add(new SCPICommand("IFBW", [=](QStringList params) -> QString {
+        auto newval = toULong(params);
+        if(newval == std::numeric_limits<unsigned long>::max()) {
+            return "ERROR";
+        } else {
+            SetIFBandwidth(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(settings.if_bandwidth);
+    }));
+    scpi_acq->add(new SCPICommand("POINTS", [=](QStringList params) -> QString {
+        auto newval = toULong(params);
+        if(newval == std::numeric_limits<unsigned long>::max()) {
+            return "ERROR";
+        } else {
+            SetPoints(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(settings.points);
+    }));
+    scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
+        auto newval = toULong(params);
+        if(newval == std::numeric_limits<unsigned long>::max()) {
+            return "ERROR";
+        } else {
+            SetAveraging(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(averages);
+    }));
+    auto scpi_stim = new SCPINode("STIMulus");
+    SCPINode::add(scpi_stim);
+    scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
+        bool ok;
+        if(params.size() != 1) {
+            return "ERROR";
+        }
+        auto newval = params[0].toDouble(&ok);
+        if(!ok) {
+            return "ERROR";
+        } else {
+            SetSourceLevel(newval);
+            return "";
+        }
+    }, [=]() -> QString {
+        return QString::number(settings.cdbm_excitation / 100.0);
+    }));
 }
 
 void VNA::ConstrainAndUpdateFrequencies()

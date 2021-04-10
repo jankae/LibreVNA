@@ -9,8 +9,9 @@
 #include "Device/device.h"
 #include <functional>
 #include "Deembedding/deembedding.h"
+#include "scpi.h"
 
-class VNA : public Mode
+class VNA : public Mode, public SCPINode
 {
     Q_OBJECT
 public:
@@ -50,6 +51,7 @@ signals:
     void CalibrationMeasurementComplete(Calibration::Measurement m);
 
 private:
+    void SetupSCPI();
     void UpdateAverageCount();
     void SettingsChanged(std::function<void (Device::TransmissionResult)> cb = nullptr);
     void ConstrainAndUpdateFrequencies();

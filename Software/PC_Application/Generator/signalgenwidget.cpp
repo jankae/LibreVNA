@@ -92,13 +92,13 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     connect(ui->levelSlider, &QSlider::valueChanged, [=](int value) {
         setLevel((double) value / 100.0);
     });
-    connect(ui->EnablePort1, &QCheckBox::clicked, [=](){
+    connect(ui->EnablePort1, &QCheckBox::toggled, [=](){
         if(ui->EnablePort1->isChecked() && ui->EnablePort2->isChecked()) {
            ui->EnablePort2->setCheckState(Qt::CheckState::Unchecked);
         }
         emit SettingsChanged();
     });
-    connect(ui->EnablePort2, &QCheckBox::clicked, [=](){
+    connect(ui->EnablePort2, &QCheckBox::toggled, [=](){
         if(ui->EnablePort1->isChecked() && ui->EnablePort2->isChecked()) {
            ui->EnablePort1->setCheckState(Qt::CheckState::Unchecked);
         }
@@ -172,5 +172,26 @@ void SignalgeneratorWidget::setLevel(double level)
 void SignalgeneratorWidget::setFrequency(double frequency)
 {
     ui->frequency->setValue(frequency);
+}
+
+void SignalgeneratorWidget::setPort(int port)
+{
+    if(port < 0 || port > 2) {
+        return;
+    }
+    switch(port) {
+    case 0:
+        ui->EnablePort1->setChecked(false);
+        ui->EnablePort2->setChecked(false);
+        break;
+    case 1:
+        ui->EnablePort1->setChecked(true);
+        ui->EnablePort2->setChecked(false);
+        break;
+    case 2:
+        ui->EnablePort1->setChecked(false);
+        ui->EnablePort2->setChecked(true);
+        break;
+    }
 }
 

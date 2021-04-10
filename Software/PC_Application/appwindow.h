@@ -18,6 +18,9 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QLabel>
+#include <QCommandLineParser>
+#include "scpi.h"
+#include "tcpserver.h"
 
 namespace Ui {
 class MainWindow;
@@ -41,7 +44,7 @@ public:
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
-    void ConnectToDevice(QString serial = QString());
+    bool ConnectToDevice(QString serial = QString());
     void DisconnectDevice();
     int UpdateDeviceList();
     void StartManualControl();
@@ -84,6 +87,10 @@ private:
     QLabel lUnlock;
 
     Ui::MainWindow *ui;
+    QCommandLineParser parser;
+
+    SCPI scpi;
+    TCPServer *server;
 };
 
 #endif // VNA_H

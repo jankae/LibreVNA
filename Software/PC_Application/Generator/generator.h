@@ -3,8 +3,9 @@
 
 #include "mode.h"
 #include "signalgenwidget.h"
+#include "scpi.h"
 
-class Generator : public Mode
+class Generator : public Mode, public SCPINode
 {
 public:
     Generator(AppWindow *window);
@@ -19,6 +20,7 @@ private slots:
     void updateDevice();
 
 private:
+    void setupSCPI();
     SignalgeneratorWidget *central;
 };
 

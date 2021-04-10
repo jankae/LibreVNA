@@ -7,12 +7,22 @@
 #include "Calibration/calkit.h"
 #include "touchstone.h"
 
+#include <signal.h>
+
 #include <complex>
+
+static QApplication *app;
+static AppWindow *window;
+
+void sig_handler(int s) {
+    Q_UNUSED(s)
+    window->close();
+}
+
 int main(int argc, char *argv[]) {
-    QApplication a(argc, argv);
-    AppWindow vna;
-    vna.resize(1280, 800);
-    vna.show();
-    a.exec();
+    app = new QApplication(argc, argv);
+    window = new AppWindow;
+    signal(SIGINT, sig_handler);
+    app->exec();
     return 0;
 }

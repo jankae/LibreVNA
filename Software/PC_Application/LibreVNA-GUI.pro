@@ -115,6 +115,8 @@ HEADERS += \
     mode.h \
     preferences.h \
     savable.h \
+    scpi.h \
+    tcpserver.h \
     touchstone.h \
     unit.h
 
@@ -221,6 +223,8 @@ SOURCES += \
     main.cpp \
     mode.cpp \
     preferences.cpp \
+    scpi.cpp \
+    tcpserver.cpp \
     touchstone.cpp \
     unit.cpp
 
@@ -230,7 +234,7 @@ win32:LIBS += -L"$$_PRO_FILE_PWD_" # Github actions placed libusb here
 osx:INCPATH += /usr/local/include
 osx:LIBS += $(shell pkg-config --libs libusb-1.0)
 
-QT += widgets
+QT += widgets network
 
 FORMS += \
     Calibration/addamplitudepointsdialog.ui \

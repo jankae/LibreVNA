@@ -48,22 +48,105 @@
 #include "Calibration/receivercaldialog.h"
 #include <QDebug>
 #include "CustomWidgets/jsonpickerdialog.h"
+#include <QCommandLineParser>
+
 using namespace std;
 
 AppWindow::AppWindow(QWidget *parent)
     : QMainWindow(parent)
     , deviceActionGroup(new QActionGroup(this))
     , ui(new Ui::MainWindow)
+    , server(nullptr)
 {
     QCoreApplication::setOrganizationName("LibreVNA");
     QCoreApplication::setApplicationName("LibreVNA-GUI");
+    auto commit = QString(GITHASH);
+    commit.truncate(7);
+    QCoreApplication::setApplicationVersion(QString::number(FW_MAJOR) + "." + QString::number(FW_MINOR)
+                                            + "." + QString::number(FW_PATCH) + FW_SUFFIX + " ("+ commit+")");
 
     qSetMessagePattern("%{time process}: [%{type}] %{message}");
 
+//    qDebug().setVerbosity(0);
     qDebug() << "Application start";
+
+    parser.setApplicationDescription("LibreVNA-GUI");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addOption(QCommandLineOption({"p","port"}, "Specify port to listen for SCPY commands", "port"));
+    parser.addOption(QCommandLineOption({"d","device"}, "Only allow connections to the specified device", "device"));
+    parser.addOption(QCommandLineOption("no-gui", "Disables the graphical interface"));
+
+    parser.process(QCoreApplication::arguments());
 
     Preferences::getInstance().load();
     device = nullptr;
+
+    if(parser.isSet("port")) {
+        bool OK;
+        auto port = parser.value("port").toUInt(&OK);
+        if(!OK) {
+            // set default port
+            port = 19542;
+        }
+        server = new TCPServer(port);
+        connect(server, &TCPServer::received, &scpi, &SCPI::input);
+        connect(&scpi, &SCPI::output, server, &TCPServer::send);
+    }
+
+    scpi.add(new SCPICommand("*IDN", nullptr, [=](){
+        return "LibreVNA-GUI";
+    }));
+    auto scpi_dev = new SCPINode("DEVice");
+    scpi.add(scpi_dev);
+    scpi_dev->add(new SCPICommand("DISConnect", [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        DisconnectDevice();
+        return "";
+    }, nullptr));
+    scpi_dev->add(new SCPICommand("CONNect", [=](QStringList params) -> QString {
+        QString serial;
+        if(params.size() > 0) {
+            serial = params[0];
+        }
+        if(!ConnectToDevice(serial)) {
+            return "Device not found";
+        } else {
+            return "";
+        }
+    }, [=]() -> QString {
+        if(device) {
+            return device->serial();
+        } else {
+            return "Not connected";
+        }
+    }));
+    scpi.add(new SCPICommand("MODE", [=](QStringList params) -> QString {
+        if (params.size() != 1) {
+            return "ERROR";
+        }
+        if (params[0] == "VNA") {
+            vna->activate();
+        } else if(params[0] == "GEN") {
+            generator->activate();
+        } else if(params[0] == "SA") {
+            spectrumAnalyzer->activate();
+        } else {
+            return "INVALID MDOE";
+        }
+        return "";
+    }, [=]() -> QString {
+        auto active = Mode::getActiveMode();
+        if(active == vna) {
+            return "VNA";
+        } else if(active == generator) {
+            return "GEN";
+        } else if(active == spectrumAnalyzer) {
+            return "SA";
+        } else {
+            return "ERROR";
+        }
+    }));
 
     ui->setupUi(this);
     ui->statusbar->addWidget(&lConnectionStatus);
@@ -112,6 +195,9 @@ AppWindow::AppWindow(QWidget *parent)
     generator = new Generator(this);
     spectrumAnalyzer = new SpectrumAnalyzer(this);
 
+    scpi.add(vna);
+    scpi.add(generator);
+
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
@@ -158,11 +244,8 @@ AppWindow::AppWindow(QWidget *parent)
 //        TraceXYPlot::updateGraphColors();
     });
     connect(ui->actionAbout, &QAction::triggered, [=](){
-        auto commit = QString(GITHASH);
-        commit.truncate(7);
         QMessageBox::about(this, "About", "More information: github.com/jankae/LibreVNA\n"
-                           "\nVersion: " + QString::number(FW_MAJOR) + "." + QString::number(FW_MINOR)
-                           + "." + QString::number(FW_PATCH) + FW_SUFFIX + " ("+ commit+")");
+                           "\nVersion: " + QCoreApplication::applicationVersion());
     });
 
     setWindowTitle("LibreVNA-GUI");
@@ -190,11 +273,16 @@ AppWindow::AppWindow(QWidget *parent)
         // at least one device available
         ConnectToDevice();
     }
+    if(!parser.isSet("no-gui")) {
+        resize(1280, 800);
+        show();
+    }
 }
 
 AppWindow::~AppWindow()
 {
     delete ui;
+    delete server;
 }
 
 void AppWindow::closeEvent(QCloseEvent *event)
@@ -213,7 +301,7 @@ void AppWindow::closeEvent(QCloseEvent *event)
     QMainWindow::closeEvent(event);
 }
 
-void AppWindow::ConnectToDevice(QString serial)
+bool AppWindow::ConnectToDevice(QString serial)
 {
     if(serial.isEmpty()) {
         qDebug() << "Trying to connect to any device";
@@ -256,10 +344,12 @@ void AppWindow::ConnectToDevice(QString serial)
                 break;
             }
         }
+        return true;
     } catch (const runtime_error &e) {
         qWarning() << "Failed to connect:" << e.what();
         DisconnectDevice();
         UpdateDeviceList();
+        return false;
     }
 }
 
@@ -322,8 +412,13 @@ int AppWindow::UpdateDeviceList()
     if(device) {
         devices.insert(device->serial());
     }
+    int available = 0;
     if(devices.size()) {
         for(auto d : devices) {
+            if(!parser.value("device").isEmpty() && parser.value("device") != d) {
+                // specified device does not match, ignore
+                continue;
+            }
             auto connectAction = ui->menuConnect_to->addAction(d);
             connectAction->setCheckable(true);
             connectAction->setActionGroup(deviceActionGroup);
@@ -333,14 +428,15 @@ int AppWindow::UpdateDeviceList()
             connect(connectAction, &QAction::triggered, [this, d]() {
                ConnectToDevice(d);
             });
+            ui->menuConnect_to->setEnabled(true);
+            available++;
         }
-        ui->menuConnect_to->setEnabled(true);
     } else {
         // no devices available, disable connection option
         ui->menuConnect_to->setEnabled(false);
     }
-    qDebug() << "Updated device list, found" << devices.size();
-    return devices.size();
+    qDebug() << "Updated device list, found" << available;
+    return available;
 }
 
 void AppWindow::StartManualControl()
