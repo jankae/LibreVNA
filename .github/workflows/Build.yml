@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - librevna-rename
   pull_request:
     branches:
       - master
@@ -23,7 +22,7 @@ jobs:
       - name: Build application
         run: |
           cd Software/PC_Application
-          qmake
+          qmake LibreVNA-GUI.pro
           make -j9
         shell: bash
         
@@ -55,7 +54,7 @@ jobs:
       - name: Build application
         run: |
           cd Software/PC_Application
-          qmake
+          qmake LibreVNA-GUI.pro
           make -j9
         shell: cmd
 
@@ -73,7 +72,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          name: Application_Windows
+          name: GUI_Windows
           path: Software/PC_Application/release
 
   PC_Application_OSX:
@@ -83,25 +82,25 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install qt libusb
+          brew install qt@5 libusb
           
       - name: Set Environment
         run: |
-          echo "/usr/local/opt/qt/bin" >> $GITHUB_PATH
+          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
           
       - name: Build application
         run: |
           cd Software/PC_Application
-          qmake
+          qmake LibreVNA-GUI.pro
           make -j9
           macdeployqt LibreVNA-GUI.app
-          zip -ry LibreVNA-GUI-app.zip LibreVNA-GUI.app
+          zip -ry LibreVNA-GUI.zip LibreVNA-GUI.app
         shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Application_OSX
+          name: GUI_OSX
           path: Software/PC_Application/LibreVNA-GUI.zip
           
   Embedded_Firmware:
