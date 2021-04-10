@@ -1,5 +1,5 @@
-# 1MHz - 6GHz VNA2
-**!work in progress, more information will be added in the future!**
+# LibreVNA
+**100kHz to 6MHz VNA**
 
 This is the improved version of my [first attempt](https://www.github.com/jankae/VNA) at a VNA.
 
@@ -12,7 +12,7 @@ Main differences to first version:
 * RF sections distributed differently on PCB to increase isolation between ports
 
 ### Preliminary specifications
-* Frequency range: 1MHz to 6GHz (with reduced performance also below 1MHz)
+* Frequency range: 100kHz to 6GHz (with reduced performance also up to about 8GHz)
 * Dynamic range (S12/S21):
   * below 3GHz: 80-90db
   * above 3GHz: 50-60db
