@@ -3,25 +3,26 @@
 
 This is the improved version of my [first attempt](https://www.github.com/jankae/VNA) at a VNA.
 
-![](Documentation/Pictures/secondPrototypeTop.JPG)
+![](Documentation/Pictures/RevisionBTop.JPG)
 
-Main differences to first version:
-* Exchanged some RF chips for slightly cheaper versions with similar specifications
-* Power supply scheme changed to use 5V instead of 12V, potentially allowing the device to be powered from USB
-* FPGA gets configured from the microcontroller, removing the need for a JTAG programmer. This also allows firmware updates of both the FPGA and the microcontroller through the USB port
-* RF sections distributed differently on PCB to increase isolation between ports
+## Quick Start
+* You can find released versions of the GUI application and the device firmware [here](https://github.com/jankae/LibreVNA/releases).
+* If you would like to try out the newest features, the compiled versions of each commit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete).
+* An (incomplete) [user manual](Documentation/UserManual/manual.pdf) is also available.
+
+Please also take a look at the [FAQ](Documentation/FAQ.md).
+
+If you notice bugs or have ideas for improvements, please create an issue for that.
+
+For general questions or discussions, the [LibreVNA group](https://groups.io/g/LibreVNA) is probably the best place.
 
 ### Preliminary specifications
-* Frequency range: 100kHz to 6GHz (with reduced performance also up to about 8GHz)
-* Dynamic range (S12/S21):
-  * below 3GHz: 80-90db
-  * above 3GHz: 50-60db
-* Sweep rate: up to 10k points/second (each point includes measurement of all four S-parameters)
+Some [specifications](Documentation/UserManual/specsheet.pdf) are available but this project is still under development and the specifications might change.
 
 There are also some initial [example measurements](Documentation/Measurements/Measurements.md).
 
 ## How does it work?
-The PCB is really only the RF frontend with some processing power. Everything else is handled in the PC application once the data is transferred via USB. You can try out the application without the PCB (obviously no measurements are possible, but you can import provided example measurements and get an idea about what it can and can't do). Either [build it yourself](Documentation/DeveloperInfo/BuildAndFlash.md) or use a pre-built binary (only Windows/Ubuntu at the moment). Feel free to create issues (or even better pull-requests) if you find any bugs. An (incomplete) [manual](Documentation/UserManual/manual.pdf) is available.
+The PCB is really only the RF frontend with some processing power. Everything else is handled in the PC application once the data is transferred via USB. You can try out the application without the PCB (obviously no measurements are possible, but you can import provided example measurements and get an idea about what it can and can't do).
 ### RF path:
 ![](Documentation/DeveloperInfo/RFBlockdiagram.svg)
 
@@ -47,6 +48,3 @@ The PCB is really only the RF frontend with some processing power. Everything el
 
 * Everything is powered from USB (or optionally by external 5V DC)
 * Almost every RF block has its own local regulater, preventing noise and signals coupling into the supply lines from propagating across the whole PCB
-
-## Want to know more?
-Check out the [FAQ](Documentation/FAQ.md) or write me a mail.
