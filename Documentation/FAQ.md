@@ -1,12 +1,23 @@
 # FAQ
 
+### How did this project start?
+Initially, the VNA consisted only of some breakout boards of various RF chips that I designed and used to get some experience with RF design. Once the result seemed reasonable good, I decided to built everything into one PCB and create an enclosure for it, [this device](https://github.com/jankae/VNA) was the result.
+
+I didn't plan to do anything with this beyond this initial prototype but several people got interested and, thanks to Hugen, development continued. However, this is still just a hobby project of mine. I'll keep improving it as best as I can (and find the time for it) but please do not expect professional level support.
+
+### Will it stay open source?
+Yes. No matter what happens this design and all future improvements by me will be published on my GitHub account (same as all my other projects).
+
 ### Can I buy one?
-No, not at the moment. However, thanks to Hugen, some initial engineering samples have been distributed and if testing goes well, this project might be for sale at some point.
+Yes, an initial batch is available at Aliexpress. Production and sales is handled by Hugen, I am not directly involved in the sales process.
 
 ### Can I build one?
 Absolutely. All required files are available and if you are not afraid to solder a lot of small components you can certainly build your own. The total BOM cost (without the aluminium shielding) is about 200€ when only buying parts for one PCB.
 
 There are some [basic instructions](DeveloperInfo/BuildAndFlash.md) to help get started on the software side.
+
+### I noticed X good be done easier/better
+You are probably right. Development of the VNA consists of several different parts (schematic, RF layout, embedded firmware, FPGA configuration, GUI application, digital signal processing,...) and I am certainly not an expert in all of them. Please get in touch if you have ideas for improvements (write a mail or create an issue).
 
 ### Why the dual stage conversion?
 There are some advantages to having the second stage mixers (mostly to compensate for limited fractional dividers in the MAX2871) but for most operations, a single stage conversion would probably work almost as well. However, compared to other parts the cost for the second stage conversion is not that high and without it certain functionality would not be available (e.g. spectrum analyzer mode with low RBW). There is a bit longer explanation [here](https://github.com/jankae/VNA2/issues/2#issuecomment-700218226).
