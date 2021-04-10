@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - librevna-rename
   pull_request:
     branches:
       - master
@@ -29,8 +30,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Application_Ubuntu
-          path: Software/PC_Application/Application
+          name: GUI_Ubuntu
+          path: Software/PC_Application/LibreVNA-GUI
           
   PC_Application_Windows:
     runs-on: windows-latest
@@ -74,6 +75,34 @@ jobs:
         with:
           name: Application_Windows
           path: Software/PC_Application/release
+
+  PC_Application_OSX:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          brew install qt libusb
+          
+      - name: Set Environment
+        run: |
+          echo "/usr/local/opt/qt/bin" >> $GITHUB_PATH
+          
+      - name: Build application
+        run: |
+          cd Software/PC_Application
+          qmake
+          make -j9
+          macdeployqt LibreVNA-GUI.app
+          zip -ry LibreVNA-GUI-app.zip LibreVNA-GUI.app
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Application_OSX
+          path: Software/PC_Application/LibreVNA-GUI.zip
           
   Embedded_Firmware:
     runs-on: ubuntu-18.04

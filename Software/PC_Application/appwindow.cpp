@@ -47,7 +47,7 @@
 #include "Calibration/sourcecaldialog.h"
 #include "Calibration/receivercaldialog.h"
 #include <QDebug>
-
+#include "CustomWidgets/jsonpickerdialog.h"
 using namespace std;
 
 AppWindow::AppWindow(QWidget *parent)
@@ -55,8 +55,8 @@ AppWindow::AppWindow(QWidget *parent)
     , deviceActionGroup(new QActionGroup(this))
     , ui(new Ui::MainWindow)
 {
-    QCoreApplication::setOrganizationName("VNA");
-    QCoreApplication::setApplicationName("Application");
+    QCoreApplication::setOrganizationName("LibreVNA");
+    QCoreApplication::setApplicationName("LibreVNA-GUI");
 
     qSetMessagePattern("%{time process}: [%{type}] %{message}");
 
@@ -165,7 +165,7 @@ AppWindow::AppWindow(QWidget *parent)
                            + "." + QString::number(FW_PATCH) + FW_SUFFIX + " ("+ commit+")");
     });
 
-    setWindowTitle("VNA");
+    setWindowTitle("LibreVNA-GUI");
 
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -429,6 +429,8 @@ nlohmann::json AppWindow::SaveSetup()
 
 void AppWindow::LoadSetup(nlohmann::json j)
 {
+//    auto d = new JSONPickerDialog(j);
+//    d->exec();
     vna->fromJSON(j["VNA"]);
     generator->fromJSON(j["Generator"]);
     spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
