@@ -36,7 +36,6 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 		break;
 	}
 	auto amplitude = HW::GetAmplitudeSettings(g.cdbm_level, g.frequency, g.applyAmplitudeCorrection, g.activePort == 2);
-	HW::SetOutputUnlevel(amplitude.unlevel);
 	// Select correct source
 	if(g.frequency < HW::BandSwitchFrequency) {
 		m.SourceLowEN = 1;
@@ -71,4 +70,5 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 
 	m.attenuator = amplitude.attenuator;
 	Manual::Setup(m);
+	HW::SetOutputUnlevel(amplitude.unlevel);
 }
