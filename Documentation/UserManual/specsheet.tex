@@ -1,0 +1,134 @@
+\documentclass[a4paper,11pt]{refart}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} % LY1 also works
+
+%% Font settings suggested by fbb documentation.
+\usepackage{textcomp} % to get the right copyright, etc.
+\usepackage[lining,tabular]{fbb} % so math uses tabular lining figures
+\usepackage[scaled=.95,type1]{cabin} % sans serif in style of Gill Sans
+\usepackage[varqu,varl]{zi4}% inconsolata typewriter
+\useosf % change normal text to use proportional oldstyle figures
+%\usetosf would provide tabular oldstyle figures in text
+
+\usepackage{microtype}
+\usepackage{siunitx}
+\sisetup{range-phrase=--, range-units=single, binary-units = true}
+\usepackage{graphicx}
+    
+\usepackage{enumitem}
+\setlist{leftmargin=*}
+\usepackage{listings}
+\lstset{
+	basicstyle=\ttfamily,
+	frame=single,
+	breaklines=true,
+	morecomment=[l][\color{green}]{\#},
+}
+
+\usepackage{booktabs,caption}
+\usepackage[flushleft]{threeparttable}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\usepackage{tabularx} 
+
+\usepackage{stackengine}
+\usepackage{scalerel}
+\usepackage{xcolor,mdframed}
+\DeclareSIUnit{\belmilliwatt}{Bm}
+\DeclareSIUnit{\dBm}{\deci\belmilliwatt}
+
+\newenvironment{fullimage}[1][h!]
+ {\begin{table}[#1]%
+  \hspace*{-\leftmarginwidth}%
+  \begin{minipage}{\fullwidth}}
+ {\end{minipage}\end{table}}
+
+\usepackage[hidelinks]{hyperref}
+\newcommand{\vna}{LibreVNA}
+\date{}
+\title{\vna{} Preliminary Specifications}
+\begin{document}
+\maketitle
+
+\setcounter{tocdepth}{3}
+%\tableofcontents
+%\clearpage
+
+\vspace{-2cm}
+
+%\clearpage
+%\section{Electrical Characteristics}
+\begin{fullimage}
+\small
+\textbf{VNA}\\
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{4cm}|X|C{1.2cm} C{1.2cm} C{1.2cm}|L{1.4cm}}
+    \toprule
+    \textbf{Parameter} & \textbf{Conditions} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Unit}\\
+     \hline
+      Frequency range  & native   & \SI{100}{\kilo\hertz} & & \SI{6}{\giga\hertz} &   \\
+      & with harmonic mixing up to  &  & \SI{8}{\giga\hertz} & &  \\
+      Stimulus power & & -40 & & 0\tnote{1} & \si{\dBm}\\
+      Dynamic range & stimulus \SI{0}{\dBm}, \SI{10}{\hertz} IF BW & & & &  \\
+       & \hspace*{0.5cm} <\SI{1}{\MHz} & & 60 & &  \si{\dB}\\
+       & \hspace*{0.5cm} \SIrange{1}{5}{\mega\hertz} & & 80 & &  \si{\dB}\\
+       & \hspace*{0.5cm} \SIrange{5}{2940}{\mega\hertz}, S12 & 75 & 85 & &  \si{\dB}\\
+       & \hspace*{0.5cm} \SIrange{5}{2940}{\mega\hertz}, S21 & 85 & 105 & &  \si{\dB}\\
+       & \hspace*{0.5cm} >\SI{2940}{\mega\hertz}, S12 & 40 & 55 & &  \si{\dB}\\
+       & \hspace*{0.5cm} >\SI{2940}{\mega\hertz}, S21 & 50 & 60 & &  \si{\dB}\\
+      IF Bandwidth & & 10 & & 50k & \si{\hertz}\\
+      Acquisition speed & \SI{50}{\kilo\hertz} IF BW & & 10k & & points/s\\
+      \bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item[1] Maximum power drops with increasing frequency
+\end{tablenotes}
+\end{threeparttable}
+\end{center}
+\end{fullimage}
+
+\begin{fullimage}
+\small
+\textbf{Signal Generator}\\
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{4cm}|X|C{1.2cm} C{1.2cm} C{1.2cm}|L{1.4cm}}
+    \toprule
+    \textbf{Parameter} & \textbf{Conditions} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Unit}\\
+     \hline
+      Frequency range  &  & \SI{100}{\kilo\hertz} & & \SI{6}{\giga\hertz} &   \\
+      Output power & & -40 & & 0\tnote{1} & \si{\dBm}\\
+      \bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item[1] Maximum power drops with increasing frequency
+\end{tablenotes}
+\end{threeparttable}
+\end{center}
+\end{fullimage}
+
+\begin{fullimage}
+\small
+\textbf{Spectrum Analyzer}\\
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{4cm}|X|C{1.2cm} C{1.2cm} C{1.2cm}|L{1.4cm}}
+    \toprule
+    \textbf{Parameter} & \textbf{Conditions} & \textbf{Min} & \textbf{Typ} & \textbf{Max} & \textbf{Unit}\\
+     \hline
+      Frequency range  &  & \SI{100}{\kilo\hertz} & & \SI{6}{\giga\hertz} &   \\
+      Input power & & & & -5 & \si{dBm}\\
+      Resolution bandwidth & & 13 & & 112k & \si{\hertz}\\
+      Phase noise & \SI{1}{\giga\hertz}, \SI{10}{\kilo\hertz} offset & & -103 & & dBc/Hz\\
+      \bottomrule
+\end{tabularx}
+%\begin{tablenotes}
+%\end{tablenotes}
+\end{threeparttable}
+\end{center}
+\end{fullimage}
+
+\end{document}
