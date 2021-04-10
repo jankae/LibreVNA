@@ -7,10 +7,14 @@ This is the improved version of my [first attempt](https://www.github.com/jankae
 
 ## Quick Start
 * You can find released versions of the GUI application and the device firmware [here](https://github.com/jankae/LibreVNA/releases).
-* If you would like to try out the newest features, the compiled versions of each commmit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete).
+* If you would like to try out the newest features, the compiled versions of each commit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete).
 * An (incomplete) [user manual](Documentation/UserManual/manual.pdf) is also available.
 
 Please also take a look at the [FAQ](Documentation/FAQ.md).
+
+If you notice bugs or have ideas for improvements, please create an issue for that.
+
+For general questions or discussions, the [LibreVNA group](https://groups.io/g/LibreVNA) is probably the best place.
 
 ### Preliminary specifications
 Some [specifications](Documentation/UserManual/specsheet.pdf) are available but this project is still under development and the specifications might change.
