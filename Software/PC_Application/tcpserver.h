@@ -11,6 +11,7 @@ class TCPServer : public QObject
 public:
     TCPServer(int port);
 
+
 public slots:
     bool send(QString line);
 signals:

@@ -8,8 +8,9 @@
 #include "CustomWidgets/tilewidget.h"
 #include <QComboBox>
 #include <QCheckBox>
+#include "scpi.h"
 
-class SpectrumAnalyzer : public Mode
+class SpectrumAnalyzer : public Mode, public SCPINode
 {
     Q_OBJECT
 public:
@@ -21,6 +22,21 @@ public:
     // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+private:
+    enum class Window {
+        None = 0,
+        Kaiser = 1,
+        Hann = 2,
+        FlatTop = 3
+    };
+    enum class Detector {
+        PPeak = 0,
+        NPeak = 1,
+        Sample = 2,
+        Normal = 3,
+        Average = 4,
+    };
 
 private slots:
     void NewDatapoint(Protocol::SpectrumAnalyzerResult d);
@@ -35,16 +51,22 @@ private slots:
     void SpanZoomOut();
     // Acquisition control
     void SetRBW(double bandwidth);
+    void SetWindow(Window w);
+    void SetDetector(Detector d);
     void SetAveraging(unsigned int averages);
+    void SetSignalID(bool enabled);
     // TG control
     void SetTGEnabled(bool enabled);
+    void SetTGPort(int port);
     void SetTGLevel(double level);
     void SetTGOffset(double offset);
     void MeasureNormalization();
     void AbortNormalization();
     void EnableNormalization(bool enabled);
+    void SetNormalizationLevel(double level);
 
 private:
+    void SetupSCPI();
     void UpdateAverageCount();
     void SettingsChanged();
     void ConstrainAndUpdateFrequencies();
@@ -86,8 +108,11 @@ signals:
     void centerFreqChanged(double freq);
     void spanChanged(double span);
     void RBWChanged(double RBW);
+    void TGStateChanged(bool enabled);
+    void TGPortChanged(int port);
     void TGOffsetChanged(double offset);
     void TGLevelChanged(double level);
+    void NormalizationLevelChanged(double level);
 
     void averagingChanged(unsigned int averages);
 };

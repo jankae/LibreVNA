@@ -58,6 +58,8 @@ private slots:
 private:
     void DeviceConnectionLost();
     void CreateToolbars();
+    void StartTCPServer(int port);
+    void StopTCPServer();
 
     QStackedWidget *central;
 

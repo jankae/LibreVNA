@@ -73,7 +73,7 @@ AppWindow::AppWindow(QWidget *parent)
     parser.setApplicationDescription("LibreVNA-GUI");
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addOption(QCommandLineOption({"p","port"}, "Specify port to listen for SCPY commands", "port"));
+    parser.addOption(QCommandLineOption({"p","port"}, "Specify port to listen for SCPI commands", "port"));
     parser.addOption(QCommandLineOption({"d","device"}, "Only allow connections to the specified device", "device"));
     parser.addOption(QCommandLineOption("no-gui", "Disables the graphical interface"));
 
@@ -87,11 +87,12 @@ AppWindow::AppWindow(QWidget *parent)
         auto port = parser.value("port").toUInt(&OK);
         if(!OK) {
             // set default port
-            port = 19542;
+            port = Preferences::getInstance().General.SCPI.port;
         }
-        server = new TCPServer(port);
-        connect(server, &TCPServer::received, &scpi, &SCPI::input);
-        connect(&scpi, &SCPI::output, server, &TCPServer::send);
+        StartTCPServer(port);
+        Preferences::getInstance().manualTCPport();
+    } else if(Preferences::getInstance().General.SCPI.enabled) {
+        StartTCPServer(Preferences::getInstance().General.SCPI.port);
     }
 
     scpi.add(new SCPICommand("*IDN", nullptr, [=](){
@@ -197,6 +198,7 @@ AppWindow::AppWindow(QWidget *parent)
 
     scpi.add(vna);
     scpi.add(generator);
+    scpi.add(spectrumAnalyzer);
 
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
@@ -239,7 +241,17 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
     connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
     connect(ui->actionPreferences, &QAction::triggered, [=](){
-        Preferences::getInstance().edit();
+        // save previous SCPI settings in case they change
+        auto p = Preferences::getInstance();
+        auto SCPIenabled = p.General.SCPI.enabled;
+        auto SCPIport = p.General.SCPI.port;
+        p.edit();
+        if(SCPIenabled != p.General.SCPI.enabled || SCPIport != p.General.SCPI.port) {
+            StopTCPServer();
+            if(p.General.SCPI.enabled) {
+                StartTCPServer(p.General.SCPI.port);
+            }
+        }
         // settings might have changed, update necessary stuff
 //        TraceXYPlot::updateGraphColors();
     });
@@ -281,8 +293,8 @@ AppWindow::AppWindow(QWidget *parent)
 
 AppWindow::~AppWindow()
 {
+    StopTCPServer();
     delete ui;
-    delete server;
 }
 
 void AppWindow::closeEvent(QCloseEvent *event)
@@ -402,6 +414,18 @@ void AppWindow::CreateToolbars()
     connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
     addToolBar(tb_reference);
     tb_reference->setObjectName("Reference Toolbar");
+}
+
+void AppWindow::StartTCPServer(int port)
+{
+    server = new TCPServer(port);
+    connect(server, &TCPServer::received, &scpi, &SCPI::input);
+    connect(&scpi, &SCPI::output, server, &TCPServer::send);
+}
+
+void AppWindow::StopTCPServer()
+{
+    delete server;
 }
 
 int AppWindow::UpdateDeviceList()

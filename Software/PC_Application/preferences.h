@@ -16,6 +16,8 @@ public:
     void edit();
     void setDefault();
 
+    void manualTCPport() { TCPoverride = true; }
+
     struct {
         bool ConnectToFirstDevice;
         bool RememberSweepSettings;
@@ -54,16 +56,23 @@ public:
             QColor axis;
             QColor divisions;
         } graphColors;
+        struct {
+            bool enabled;
+            int port;
+        } SCPI;
     } General;
+
+    bool TCPoverride; // in case of manual port specification via command line
 private:
-    Preferences(){};
+    Preferences() :
+     TCPoverride(false) {};
     static Preferences instance;
     using SettingDescription = struct {
         QPointerVariant var;
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 25> descr = {{
+    const std::array<SettingDescription, 27> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
@@ -89,6 +98,8 @@ private:
         {&General.graphColors.background, "General.graphColors.background", QColor(Qt::black)},
         {&General.graphColors.axis, "General.graphColors.axis", QColor(Qt::white)},
         {&General.graphColors.divisions, "General.graphColors.divisions", QColor(Qt::gray)},
+        {&General.SCPI.enabled, "General.SCPI.enabled", true},
+        {&General.SCPI.port, "General.SCPI.port", 19542},
     }};
 };
 

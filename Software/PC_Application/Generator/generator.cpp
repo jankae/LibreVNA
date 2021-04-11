@@ -42,7 +42,7 @@ void Generator::initializeDevice()
 
 void Generator::updateDevice()
 {
-    if(!window->getDevice()) {
+    if(!window->getDevice() || Mode::getActiveMode() != this) {
         // can't update if not connected
         return;
     }

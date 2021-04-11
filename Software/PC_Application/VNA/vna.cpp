@@ -648,7 +648,7 @@ void VNA::UpdateAverageCount()
 void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
 {
     settings.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
-    if(window->getDevice()) {
+    if(window->getDevice() && Mode::getActiveMode() == this) {
         window->getDevice()->Configure(settings, [=](Device::TransmissionResult res){
             // device received command, reset traces now
             average.reset(settings.points);
@@ -916,7 +916,7 @@ void VNA::SetupSCPI()
     }, [=]() -> QString {
         return QString::number(settings.f_start);
     }));
-    scpi_freq->add(new SCPICommand("CENTER", [=](QStringList params) -> QString {
+    scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
         auto newval = toULong(params);
         if(newval == std::numeric_limits<unsigned long>::max()) {
             return "ERROR";
