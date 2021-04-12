@@ -24,6 +24,8 @@ public:
     virtual void initializeDevice() = 0;
     virtual void deviceDisconnected(){};
 
+    virtual void saveSreenshot();
+
 protected:
     // call once the derived class is fully initialized
     void finalize(QWidget *centralWidget);

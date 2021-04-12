@@ -4,6 +4,7 @@
 #include <QSettings>
 #include "ui_main.h"
 #include <QDebug>
+#include <QFileDialog>
 
 Mode* Mode::activeMode = nullptr;
 QWidget* Mode::cornerWidget = nullptr;
@@ -125,6 +126,20 @@ void Mode::deactivate()
 Mode *Mode::getActiveMode()
 {
     return activeMode;
+}
+
+void Mode::saveSreenshot()
+{
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, QFileDialog::DontUseNativeDialog);
+    if(filename.isEmpty()) {
+        // aborted selection
+        return;
+    }
+    if(filename.endsWith(".png")) {
+        filename.chop(4);
+    }
+    filename += ".png";
+    central->grab().save(filename);
 }
 
 void Mode::finalize(QWidget *centralWidget)

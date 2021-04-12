@@ -7,6 +7,7 @@
 #include "preferences.h"
 #include "ui_smithchartdialog.h"
 #include "unit.h"
+#include "QFileDialog"
 
 using namespace std;
 
@@ -290,6 +291,21 @@ void TraceSmithChart::updateContextMenu()
         });
         contextmenu->addAction(action);
     }
+    contextmenu->addSeparator();
+    auto image = new QAction("Save image...", contextmenu);
+    contextmenu->addAction(image);
+    connect(image, &QAction::triggered, [=]() {
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        if(filename.endsWith(".png")) {
+            filename.chop(4);
+        }
+        filename += ".png";
+        grab().save(filename);
+    });
     contextmenu->addSeparator();
     auto close = new QAction("Close", contextmenu);
     contextmenu->addAction(close);

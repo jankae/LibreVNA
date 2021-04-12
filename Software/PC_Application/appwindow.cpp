@@ -177,6 +177,9 @@ AppWindow::AppWindow(QWidget *parent)
         file.close();
         LoadSetup(j);
     });
+    connect(ui->actionSave_image, &QAction::triggered, [=](){
+        Mode::getActiveMode()->saveSreenshot();
+    });
 
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
