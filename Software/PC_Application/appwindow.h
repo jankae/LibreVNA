@@ -58,6 +58,7 @@ private slots:
 private:
     void DeviceConnectionLost();
     void CreateToolbars();
+    void SetupSCPI();
     void StartTCPServer(int port);
     void StopTCPServer();
 

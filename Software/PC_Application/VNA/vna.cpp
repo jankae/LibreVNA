@@ -59,8 +59,6 @@ VNA::VNA(AppWindow *window)
     calDialog.reset();
     calEdited = false;
 
-    SetupSCPI();
-
     // Create default traces
     auto tS11 = new Trace("S11", Qt::yellow);
     tS11->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S11);
@@ -421,7 +419,8 @@ VNA::VNA(AppWindow *window)
     markerModel = new TraceMarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
-    tracesDock->setWidget(new TraceWidgetVNA(traceModel, cal, deembedding));
+    traceWidget = new TraceWidgetVNA(traceModel, cal, deembedding);
+    tracesDock->setWidget(traceWidget);
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 
@@ -432,6 +431,8 @@ VNA::VNA(AppWindow *window)
     markerDock->setWidget(markerWidget);
     window->addDockWidget(Qt::BottomDockWidgetArea, markerDock);
     docks.insert(markerDock);
+
+    SetupSCPI();
 
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
@@ -902,7 +903,7 @@ void VNA::SetupSCPI()
             SetSpan(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.f_stop - settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
@@ -913,7 +914,7 @@ void VNA::SetupSCPI()
             SetStartFreq(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
@@ -924,7 +925,7 @@ void VNA::SetupSCPI()
             SetCenterFreq(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number((settings.f_start + settings.f_stop)/2);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
@@ -935,10 +936,11 @@ void VNA::SetupSCPI()
             SetStopFreq(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.f_stop);
     }));
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
+        Q_UNUSED(params)
         SetFullSpan();
         return "";
     }, nullptr));
@@ -952,7 +954,7 @@ void VNA::SetupSCPI()
             SetIFBandwidth(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.if_bandwidth);
     }));
     scpi_acq->add(new SCPICommand("POINTS", [=](QStringList params) -> QString {
@@ -963,7 +965,7 @@ void VNA::SetupSCPI()
             SetPoints(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.points);
     }));
     scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
@@ -974,7 +976,7 @@ void VNA::SetupSCPI()
             SetAveraging(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(averages);
     }));
     auto scpi_stim = new SCPINode("STIMulus");
@@ -991,9 +993,10 @@ void VNA::SetupSCPI()
             SetSourceLevel(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.cdbm_excitation / 100.0);
     }));
+    SCPINode::add(traceWidget);
 }
 
 void VNA::ConstrainAndUpdateFrequencies()

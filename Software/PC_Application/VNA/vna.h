@@ -10,6 +10,7 @@
 #include <functional>
 #include "Deembedding/deembedding.h"
 #include "scpi.h"
+#include "Traces/tracewidget.h"
 
 class VNA : public Mode, public SCPINode
 {
@@ -66,6 +67,7 @@ private:
     Protocol::SweepSettings settings;
     unsigned int averages;
     TraceModel traceModel;
+    TraceWidget *traceWidget;
     TraceMarkerModel *markerModel;
     Averaging average;
 

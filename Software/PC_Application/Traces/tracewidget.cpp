@@ -12,6 +12,7 @@
 
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),
+    SCPINode("TRACe"),
     ui(new Ui::TraceWidget),
     model(model)
 {
@@ -23,6 +24,7 @@ TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     connect(ui->bExport, &QPushButton::clicked, this, &TraceWidget::exportDialog);
     installEventFilter(this);
     createCount = 0;
+    SetupSCPI();
 }
 
 TraceWidget::~TraceWidget()
@@ -132,4 +134,55 @@ void TraceWidget::on_view_clicked(const QModelIndex &index)
     default:
         break;
     }
+}
+
+void TraceWidget::SetupSCPI()
+{
+    auto findTrace = [=](QStringList params) -> Trace* {
+        if(params.size() < 1) {
+            return nullptr;
+        }
+        // check if trace is specified by number
+        bool ok;
+        auto n = params[0].toUInt(&ok);
+        if(ok) {
+            // check if enough traces exist
+            if(n < model.getTraces().size()) {
+                return model.getTraces()[n];
+            } else {
+                // invalid number
+                return nullptr;
+            }
+        } else {
+            // trace specified by name
+            for(auto t : model.getTraces()) {
+                if(t->name().compare(params[0], Qt::CaseInsensitive) == 0) {
+                    return t;
+                }
+            }
+            // not found
+            return nullptr;
+        }
+    };
+    add(new SCPICommand("LIST", nullptr, [=](QStringList){
+       QString ret;
+       for(auto t : model.getTraces()) {
+           ret += t->name() + ",";
+       }
+       ret.chop(1);
+       return  ret;
+    }));
+    add(new SCPICommand("DATA", nullptr, [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        QString ret;
+        for(unsigned int i=0;i<t->size();i++) {
+            auto d = t->sample(i);
+            ret += "["+QString::number(d.x)+","+QString::number(d.y.real())+","+QString::number(d.y.imag())+"],";
+        }
+        ret.chop(1);
+        return ret;
+    }));
 }

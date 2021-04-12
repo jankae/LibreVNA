@@ -235,7 +235,8 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     markerModel = new TraceMarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
-    tracesDock->setWidget(new TraceWidgetSA(traceModel, window));
+    traceWidget = new TraceWidgetSA(traceModel, window);
+    tracesDock->setWidget(traceWidget);
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 
@@ -677,7 +678,7 @@ void SpectrumAnalyzer::SetupSCPI()
             SetSpan(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.f_stop - settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
@@ -688,7 +689,7 @@ void SpectrumAnalyzer::SetupSCPI()
             SetStartFreq(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
@@ -699,7 +700,7 @@ void SpectrumAnalyzer::SetupSCPI()
             SetCenterFreq(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number((settings.f_start + settings.f_stop)/2);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
@@ -710,10 +711,11 @@ void SpectrumAnalyzer::SetupSCPI()
             SetStopFreq(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.f_stop);
     }));
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
+        Q_UNUSED(params)
         SetFullSpan();
         return "";
     }, nullptr));
@@ -727,7 +729,7 @@ void SpectrumAnalyzer::SetupSCPI()
             SetRBW(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.RBW);
     }));
     scpi_acq->add(new SCPICommand("WINDow", [=](QStringList params) -> QString {
@@ -746,7 +748,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "INVALID MDOE";
         }
         return "";
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         switch((Window) settings.WindowType) {
         case Window::None: return "NONE";
         case Window::Kaiser: return "KAISER";
@@ -773,7 +775,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "INVALID MDOE";
         }
         return "";
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         switch((Detector) settings.Detector) {
         case Detector::PPeak: return "+PEAK";
         case Detector::NPeak: return "-PEAK";
@@ -791,7 +793,7 @@ void SpectrumAnalyzer::SetupSCPI()
             SetAveraging(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(averages);
     }));
     scpi_acq->add(new SCPICommand("SIGid", [=](QStringList params) -> QString {
@@ -806,7 +808,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "ERROR";
         }
         return "";
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return settings.SignalID ? "1" : "0";
     }));
     auto scpi_tg = new SCPINode("TRACKing");
@@ -823,7 +825,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "ERROR";
         }
         return "";
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return settings.trackingGenerator ? "1" : "0";
     }));
     scpi_tg->add(new SCPICommand("Port", [=](QStringList params) -> QString {
@@ -838,7 +840,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "ERROR";
         }
         return "";
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return settings.trackingGeneratorPort ? "2" : "1";
     }));
     scpi_tg->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
@@ -853,7 +855,7 @@ void SpectrumAnalyzer::SetupSCPI()
             SetTGLevel(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.trackingPower / 100.0);
     }));
     scpi_tg->add(new SCPICommand("OFFset", [=](QStringList params) -> QString {
@@ -868,7 +870,7 @@ void SpectrumAnalyzer::SetupSCPI()
             SetTGOffset(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(settings.trackingGeneratorOffset);
     }));
     auto scpi_norm = new SCPINode("NORMalize");
@@ -885,7 +887,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "ERROR";
         }
         return "";
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return normalize.active ? "1" : "0";
     }));
     scpi_norm->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
@@ -905,9 +907,10 @@ void SpectrumAnalyzer::SetupSCPI()
             SetNormalizationLevel(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(normalize.Level->value());
     }));
+    SCPINode::add(traceWidget);
 }
 
 void SpectrumAnalyzer::UpdateAverageCount()

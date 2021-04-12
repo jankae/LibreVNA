@@ -95,60 +95,6 @@ AppWindow::AppWindow(QWidget *parent)
         StartTCPServer(Preferences::getInstance().General.SCPI.port);
     }
 
-    scpi.add(new SCPICommand("*IDN", nullptr, [=](){
-        return "LibreVNA-GUI";
-    }));
-    auto scpi_dev = new SCPINode("DEVice");
-    scpi.add(scpi_dev);
-    scpi_dev->add(new SCPICommand("DISConnect", [=](QStringList params) -> QString {
-        Q_UNUSED(params)
-        DisconnectDevice();
-        return "";
-    }, nullptr));
-    scpi_dev->add(new SCPICommand("CONNect", [=](QStringList params) -> QString {
-        QString serial;
-        if(params.size() > 0) {
-            serial = params[0];
-        }
-        if(!ConnectToDevice(serial)) {
-            return "Device not found";
-        } else {
-            return "";
-        }
-    }, [=]() -> QString {
-        if(device) {
-            return device->serial();
-        } else {
-            return "Not connected";
-        }
-    }));
-    scpi.add(new SCPICommand("MODE", [=](QStringList params) -> QString {
-        if (params.size() != 1) {
-            return "ERROR";
-        }
-        if (params[0] == "VNA") {
-            vna->activate();
-        } else if(params[0] == "GEN") {
-            generator->activate();
-        } else if(params[0] == "SA") {
-            spectrumAnalyzer->activate();
-        } else {
-            return "INVALID MDOE";
-        }
-        return "";
-    }, [=]() -> QString {
-        auto active = Mode::getActiveMode();
-        if(active == vna) {
-            return "VNA";
-        } else if(active == generator) {
-            return "GEN";
-        } else if(active == spectrumAnalyzer) {
-            return "SA";
-        } else {
-            return "ERROR";
-        }
-    }));
-
     ui->setupUi(this);
     ui->statusbar->addWidget(&lConnectionStatus);
     auto div1 = new QFrame;
@@ -196,10 +142,6 @@ AppWindow::AppWindow(QWidget *parent)
     generator = new Generator(this);
     spectrumAnalyzer = new SpectrumAnalyzer(this);
 
-    scpi.add(vna);
-    scpi.add(generator);
-    scpi.add(spectrumAnalyzer);
-
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
@@ -242,7 +184,7 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         // save previous SCPI settings in case they change
-        auto p = Preferences::getInstance();
+        auto &p = Preferences::getInstance();
         auto SCPIenabled = p.General.SCPI.enabled;
         auto SCPIport = p.General.SCPI.port;
         p.edit();
@@ -271,6 +213,8 @@ AppWindow::AppWindow(QWidget *parent)
         QSettings settings;
         restoreGeometry(settings.value("geometry").toByteArray());
     }
+
+    SetupSCPI();
 
     // Set default mode
     vna->activate();
@@ -416,6 +360,174 @@ void AppWindow::CreateToolbars()
     tb_reference->setObjectName("Reference Toolbar");
 }
 
+void AppWindow::SetupSCPI()
+{
+    scpi.add(new SCPICommand("*IDN", nullptr, [=](QStringList){
+        return "LibreVNA-GUI";
+    }));
+    auto scpi_dev = new SCPINode("DEVice");
+    scpi.add(scpi_dev);
+    scpi_dev->add(new SCPICommand("DISConnect", [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        DisconnectDevice();
+        return "";
+    }, nullptr));
+    scpi_dev->add(new SCPICommand("CONNect", [=](QStringList params) -> QString {
+        QString serial;
+        if(params.size() > 0) {
+            serial = params[0];
+        }
+        if(!ConnectToDevice(serial)) {
+            return "Device not found";
+        } else {
+            return "";
+        }
+    }, [=](QStringList) -> QString {
+        if(device) {
+            return device->serial();
+        } else {
+            return "Not connected";
+        }
+    }));
+    scpi_dev->add(new SCPICommand("LIST", nullptr, [=](QStringList) -> QString {
+        QString ret;
+        for(auto d : Device::GetDevices()) {
+            ret += d + ",";
+        }
+        // remove last comma
+        ret.chop(1);
+        return ret;
+    }));
+    auto scpi_ref = new SCPINode("REFerence");
+    scpi_dev->add(scpi_ref);
+    scpi_ref->add(new SCPICommand("OUT", [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            return "ERROR";
+        } else if(params[0] == "0" || params[0] == "OFF") {
+            toolbars.reference.outFreq->setCurrentIndex(0);
+        } else if(params[0] == "10") {
+            toolbars.reference.outFreq->setCurrentIndex(1);
+        } else if(params[0] == "100") {
+            toolbars.reference.outFreq->setCurrentIndex(2);
+        } else {
+            return "ERROR";
+        }
+        return "";
+    }, [=](QStringList) -> QString {
+        switch(toolbars.reference.outFreq->currentIndex()) {
+        case 0: return "OFF";
+        case 1: return "10";
+        case 2: return "100";
+        default: return "ERROR";
+        }
+    }));
+    scpi_ref->add(new SCPICommand("IN", [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            return "ERROR";
+        } else if(params[0] == "INT") {
+            toolbars.reference.type->setCurrentIndex(0);
+        } else if(params[0] == "EXT") {
+            toolbars.reference.type->setCurrentIndex(1);
+        } else if(params[0] == "AUTO") {
+            toolbars.reference.type->setCurrentIndex(2);
+        } else {
+            return "ERROR";
+        }
+        return "";
+    }, [=](QStringList) -> QString {
+        switch(Device::Info().extRefInUse) {
+        case 0: return "INT";
+        case 1: return "EXT";
+        default: return "ERROR";
+        }
+    }));
+    scpi.add(new SCPICommand("MODE", [=](QStringList params) -> QString {
+        if (params.size() != 1) {
+            return "ERROR";
+        }
+        if (params[0] == "VNA") {
+            vna->activate();
+        } else if(params[0] == "GEN") {
+            generator->activate();
+        } else if(params[0] == "SA") {
+            spectrumAnalyzer->activate();
+        } else {
+            return "INVALID MDOE";
+        }
+        return "";
+    }, [=](QStringList) -> QString {
+        auto active = Mode::getActiveMode();
+        if(active == vna) {
+            return "VNA";
+        } else if(active == generator) {
+            return "GEN";
+        } else if(active == spectrumAnalyzer) {
+            return "SA";
+        } else {
+            return "ERROR";
+        }
+    }));
+    auto scpi_status = new SCPINode("STAtus");
+    scpi_dev->add(scpi_status);
+    scpi_status->add(new SCPICommand("UNLOcked", nullptr, [=](QStringList){
+        bool locked = Device::Info().source_locked && Device::Info().LO1_locked;
+        return locked ? "0" : "1";
+    }));
+    scpi_status->add(new SCPICommand("ADCOVERload", nullptr, [=](QStringList){
+        return Device::Info().ADC_overload ? "1" : "0";
+    }));
+    scpi_status->add(new SCPICommand("UNLEVel", nullptr, [=](QStringList){
+        return Device::Info().unlevel ? "1" : "0";
+    }));
+    auto scpi_info = new SCPINode("INFo");
+    scpi_dev->add(scpi_info);
+    scpi_info->add(new SCPICommand("FWREVision", nullptr, [=](QStringList){
+        return QString::number(Device::Info().FW_major)+"."+QString::number(Device::Info().FW_minor)+"."+QString::number(Device::Info().FW_patch);
+    }));
+    scpi_info->add(new SCPICommand("HWREVision", nullptr, [=](QStringList){
+        return QString(Device::Info().HW_Revision);
+    }));
+    scpi_info->add(new SCPICommand("TEMPeratures", nullptr, [=](QStringList){
+        return QString::number(Device::Info().temp_source)+"/"+QString::number(Device::Info().temp_LO1)+"/"+QString::number(Device::Info().temp_MCU);
+    }));
+    auto scpi_limits = new SCPINode("LIMits");
+    scpi_info->add(scpi_limits);
+    scpi_limits->add(new SCPICommand("MINFrequency", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_minFreq);
+    }));
+    scpi_limits->add(new SCPICommand("MAXFrequency", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_maxFreq);
+    }));
+    scpi_limits->add(new SCPICommand("MINIFBW", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_minIFBW);
+    }));
+    scpi_limits->add(new SCPICommand("MAXIFBW", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_maxIFBW);
+    }));
+    scpi_limits->add(new SCPICommand("MAXPoints", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_maxPoints);
+    }));
+    scpi_limits->add(new SCPICommand("MINPOWer", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_cdbm_min / 100.0);
+    }));
+    scpi_limits->add(new SCPICommand("MAXPOWer", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_cdbm_max / 100.0);
+    }));
+    scpi_limits->add(new SCPICommand("MINRBW", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_minRBW);
+    }));
+    scpi_limits->add(new SCPICommand("MAXRBW", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_maxRBW);
+    }));
+    scpi_limits->add(new SCPICommand("MAXHARMonicfrequency", nullptr, [=](QStringList){
+        return QString::number(Device::Info().limits_maxFreqHarmonic);
+    }));
+
+    scpi.add(vna);
+    scpi.add(generator);
+    scpi.add(spectrumAnalyzer);
+}
+
 void AppWindow::StartTCPServer(int port)
 {
     server = new TCPServer(port);
@@ -426,6 +538,7 @@ void AppWindow::StartTCPServer(int port)
 void AppWindow::StopTCPServer()
 {
     delete server;
+    server = nullptr;
 }
 
 int AppWindow::UpdateDeviceList()

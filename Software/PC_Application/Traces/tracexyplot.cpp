@@ -219,7 +219,7 @@ bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
 void TraceXYPlot::axisSetupDialog()
 {
     auto setup = new XYplotAxisDialog(this);
-    setup->exec();
+    setup->show();
 }
 
 void TraceXYPlot::updateContextMenu()

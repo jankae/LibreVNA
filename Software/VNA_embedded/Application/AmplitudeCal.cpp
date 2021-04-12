@@ -34,6 +34,10 @@ bool AmplitudeCal::Load() {
 		LOG_WARN("Invalid version in flash, expected %u, got %u", version, cal.version);
 		SetDefault();
 		return false;
+	} else if(cal.Source.usedPoints == 0 || cal.Receiver.usedPoints == 0){
+		LOG_WARN("Empty amplitude calibration, resetting to default");
+		SetDefault();
+		return false;
 	} else {
 		LOG_INFO("Loaded from flash");
 		return true;
@@ -128,7 +132,7 @@ static void addPoint(CorrectionTable& table, const Protocol::AmplitudeCorrection
 	table.freq[p.pointNum] = p.freq;
 	table.port1Correction[p.pointNum] = p.port1;
 	table.port2Correction[p.pointNum] = p.port2;
-	if(p.pointNum == p.totalPoints - 1) {
+	if(p.pointNum == p.totalPoints - 1 || p.pointNum == AmplitudeCal::maxPoints - 1) {
 		// this was the last point, update used points and save
 		table.usedPoints = p.totalPoints;
 		LOG_INFO("Last point received, saving to flash");

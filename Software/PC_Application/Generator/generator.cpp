@@ -66,7 +66,7 @@ void Generator::setupSCPI()
             central->setFrequency(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(central->getDeviceStatus().frequency);
     }));
     add(new SCPICommand("LVL", [=](QStringList params) -> QString {
@@ -81,7 +81,7 @@ void Generator::setupSCPI()
             central->setLevel(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(central->getDeviceStatus().cdbm_level / 100.0);
     }));
     add(new SCPICommand("PORT", [=](QStringList params) -> QString {
@@ -96,7 +96,7 @@ void Generator::setupSCPI()
             central->setPort(newval);
             return "";
         }
-    }, [=]() -> QString {
+    }, [=](QStringList) -> QString {
         return QString::number(central->getDeviceStatus().activePort);
     }));
 }

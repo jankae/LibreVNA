@@ -142,6 +142,7 @@ void App_Start() {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::RequestDeviceInfo:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					Protocol::PacketInfo p;
 					p.type = Protocol::PacketType::DeviceInfo;
 					HW::fillDeviceInfo(&p.info);
@@ -189,16 +190,20 @@ void App_Start() {
 					break;
 #endif
 				case Protocol::PacketType::RequestSourceCal:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					AmplitudeCal::SendSource();
 					break;
 				case Protocol::PacketType::RequestReceiverCal:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					AmplitudeCal::SendReceiver();
 					break;
 				case Protocol::PacketType::SourceCalPoint:
 					AmplitudeCal::AddSourcePoint(recv_packet.amplitudePoint);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ReceiverCalPoint:
 					AmplitudeCal::AddReceiverPoint(recv_packet.amplitudePoint);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				default:
 					// this packet type is not supported

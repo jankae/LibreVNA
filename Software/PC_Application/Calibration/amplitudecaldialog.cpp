@@ -9,6 +9,7 @@
 #include <QFileDialog>
 #include "json.hpp"
 #include <fstream>
+#include <CustomWidgets/informationbox.h>
 
 using namespace std;
 using namespace nlohmann;
@@ -90,7 +91,10 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
             p.port1set = false;
             p.port2set = false;
             UpdateAmplitude(p);
-            AddPoint(p);
+            if(!AddPoint(p)) {
+                InformationBox::ShowMessage("Limit reached", "Unable to add all points from file, would not fit into the device");
+                break;
+            }
         }
     });
 
@@ -176,6 +180,7 @@ void AmplitudeCalDialog::setAmplitude(double amplitude, unsigned int point, bool
 
 void AmplitudeCalDialog::ReceivedPoint(Protocol::AmplitudeCorrectionPoint p)
 {
+//    qDebug() << "Received amplitude calibration point" << p.pointNum << "/" << p.totalPoints;
     CorrectionPoint c;
     c.frequency = p.freq * 10.0;
     c.correctionPort1 = p.port1;
@@ -199,7 +204,7 @@ void AmplitudeCalDialog::LoadFromDevice()
     ui->load->setEnabled(false);
     dev->SetIdle();
     RemoveAllPoints();
-    qDebug() << "Asking for amplitude calibration";
+//    qDebug() << "Asking for amplitude calibration";
     connect(dev, &Device::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint);
     dev->SendCommandWithoutPayload(requestCommand());
     edited = false;
@@ -219,6 +224,7 @@ void AmplitudeCalDialog::SaveToDevice()
         info.amplitudePoint.totalPoints = points.size();
         info.amplitudePoint.pointNum = i;
         dev->SendPacket(info);
+//        qDebug() << "Sent amplitude calibration point" << i << "/" << points.size();
     }
     edited = false;
     UpdateSaveButton();
@@ -242,8 +248,12 @@ void AmplitudeCalDialog::RemoveAllPoints()
     UpdateSaveButton();
 }
 
-void AmplitudeCalDialog::AddPoint(AmplitudeCalDialog::CorrectionPoint &p)
+bool AmplitudeCalDialog::AddPoint(AmplitudeCalDialog::CorrectionPoint &p)
 {
+    if (points.size() >= Device::Info().limits_maxAmplitudePoints) {
+        // already at limit
+        return false;
+    }
     // find position at which this frequency gets inserted
     auto index = upper_bound(points.begin(), points.end(), p.frequency, [](double value, const CorrectionPoint& p){
         return value < p.frequency;
@@ -253,9 +263,10 @@ void AmplitudeCalDialog::AddPoint(AmplitudeCalDialog::CorrectionPoint &p)
     points.insert(index, p);
     model.endInsertRows();
     UpdateSaveButton();
+    return true;
 }
 
-void AmplitudeCalDialog::AddPoint(double frequency)
+bool AmplitudeCalDialog::AddPoint(double frequency)
 {
     CorrectionPoint newPoint;
     newPoint.frequency = frequency;
@@ -263,8 +274,11 @@ void AmplitudeCalDialog::AddPoint(double frequency)
     newPoint.correctionPort2 = 0;
     newPoint.port1set = false;
     newPoint.port2set = false;
-    AddPoint(newPoint);
-    edited = true;
+    auto success = AddPoint(newPoint);
+    if (success) {
+        edited = true;
+    }
+    return success;
 }
 
 void AmplitudeCalDialog::AddPointDialog()
@@ -296,14 +310,19 @@ void AmplitudeCalDialog::AddPointDialog()
             RemoveAllPoints();
         }
         if(ui->singlePoint->isChecked()) {
-            AddPoint(ui->frequency->value());
+            if(!AddPoint(ui->frequency->value())) {
+                InformationBox::ShowMessage("Limit reached", "Can't add any more points, would not fit into the device");
+            }
         } else {
             double freq_start = ui->startFreq->value();
             double freq_stop = ui->stopFreq->value();
             unsigned int points = ui->numPoints->value();
             double freq_step = (freq_stop - freq_start) / (points - 1);
             for(unsigned int i=0;i<points;i++) {
-                AddPoint(freq_start + i * freq_step);
+                if(!AddPoint(freq_start + i * freq_step)) {
+                    InformationBox::ShowMessage("Limit reached", "Can't add any more points, would not fit into the device");
+                    break;
+                }
             }
         }
     });

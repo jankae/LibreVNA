@@ -170,7 +170,7 @@ Device::Device(QString serial)
     if(!m_handle) {
         QString message =  "No device found";
         auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-        msg->exec();
+        msg->show();
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
         return;
@@ -187,7 +187,7 @@ Device::Device(QString serial)
         message.append("\" Maybe you are already connected to this device?");
         qWarning() << message;
         auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-        msg->exec();
+        msg->show();
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
     }
@@ -360,7 +360,7 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
                                "If that is not the case, you can try installing the WinUSB driver using Zadig (https://zadig.akeo.ie/)");
                 qWarning() << message;
                 auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-                msg->exec();
+                msg->show();
             }
             continue;
         }
@@ -519,6 +519,12 @@ void Device::transmissionFinished(TransmissionResult result)
     if(transmissionQueue.empty()) {
         qWarning() << "transmissionFinished with empty transmission queue, stray Ack?";
         return;
+    }
+    if(result == TransmissionResult::Timeout) {
+        qWarning() << "transmissionFinished with timeout";
+    }
+    if(result == TransmissionResult::Nack) {
+        qWarning() << "transmissionFinished with NACK";
     }
     auto t = transmissionQueue.dequeue();
     if(t.callback) {

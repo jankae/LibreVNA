@@ -9,6 +9,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include "scpi.h"
+#include "Traces/tracewidget.h"
 
 class SpectrumAnalyzer : public Mode, public SCPINode
 {
@@ -76,6 +77,7 @@ private:
     Protocol::SpectrumAnalyzerSettings  settings;
     unsigned int averages;
     TraceModel traceModel;
+    TraceWidget *traceWidget;
     TraceMarkerModel *markerModel;
     Averaging average;
 

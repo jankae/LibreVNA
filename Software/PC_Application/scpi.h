@@ -8,20 +8,20 @@
 
 class SCPICommand {
 public:
-    SCPICommand(QString name, std::function<QString(QStringList)> cmd, std::function<QString()> query) :
+    SCPICommand(QString name, std::function<QString(QStringList)> cmd, std::function<QString(QStringList)> query) :
         _name(name),
         fn_cmd(cmd),
         fn_query(query){}
 
     QString execute(QStringList params);
-    QString query();
+    QString query(QStringList params);
     QString name() {return _name;}
     bool queryable() { return fn_query != nullptr;};
     bool executable() { return fn_cmd != nullptr;};
 private:
     const QString _name;
     std::function<QString(QStringList)> fn_cmd;
-    std::function<QString()> fn_query;
+    std::function<QString(QStringList)> fn_query;
 };
 
 class SCPINode {

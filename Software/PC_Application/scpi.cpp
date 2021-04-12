@@ -5,7 +5,7 @@ SCPI::SCPI() :
     SCPINode("")
 {
     lastNode = this;
-    add(new SCPICommand("*LST", nullptr, [=](){
+    add(new SCPICommand("*LST", nullptr, [=](QStringList){
         QString list;
         createCommandList("", list);
         return list.trimmed();
@@ -130,7 +130,7 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
                 // save current node in case of non-root for the next command
                 lastNode = this;
                 if(isQuery) {
-                    return c->query();
+                    return c->query(params);
                 } else {
                     return c->execute(params);
                 }
@@ -150,11 +150,11 @@ QString SCPICommand::execute(QStringList params)
     }
 }
 
-QString SCPICommand::query()
+QString SCPICommand::query(QStringList params)
 {
     if(fn_query == nullptr) {
         return "ERROR";
     } else {
-        return fn_query();
+        return fn_query(params);
     }
 }

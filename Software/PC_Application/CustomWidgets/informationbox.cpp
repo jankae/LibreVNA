@@ -16,7 +16,7 @@ void InformationBox::ShowMessage(QString title, QString message, QString message
     QSettings s;
     if(!s.contains(hashToSettingsKey(hash))) {
         auto box = new InformationBox(title, message, hash, nullptr);
-        box->exec();
+        box->show();
     }
 }
 

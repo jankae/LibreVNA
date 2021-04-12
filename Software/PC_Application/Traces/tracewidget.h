@@ -3,12 +3,13 @@
 
 #include <QWidget>
 #include "tracemodel.h"
+#include "scpi.h"
 
 namespace Ui {
 class TraceWidget;
 }
 
-class TraceWidget : public QWidget
+class TraceWidget : public QWidget, public SCPINode
 {
     Q_OBJECT
 
@@ -26,6 +27,7 @@ protected slots:
     virtual void importDialog() = 0;
 
 protected:
+    void SetupSCPI();
     bool eventFilter(QObject *obj, QEvent *event) override;
     virtual Trace::LiveParameter defaultParameter() = 0;
     QPoint dragStartPosition;
