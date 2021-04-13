@@ -396,6 +396,7 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
                     supported.insert(Type::TOI);
                     supported.insert(Type::PhaseNoise);
                     break;
+                default: break;
                 }
             }
         }

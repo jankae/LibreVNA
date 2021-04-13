@@ -883,21 +883,9 @@ void VNA::SetupSCPI()
 {
     auto scpi_freq = new SCPINode("FREQuency");
     SCPINode::add(scpi_freq);
-    auto toULong = [](QStringList params) {
-        bool ok;
-        if(params.size() != 1) {
-            return std::numeric_limits<unsigned long>::max();
-        }
-        auto newval = params[0].toULong(&ok);
-        if(!ok) {
-            return std::numeric_limits<unsigned long>::max();
-        } else {
-            return newval;
-        }
-    };
     scpi_freq->add(new SCPICommand("SPAN", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetSpan(newval);
@@ -907,8 +895,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.f_stop - settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetStartFreq(newval);
@@ -918,8 +906,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetCenterFreq(newval);
@@ -929,8 +917,8 @@ void VNA::SetupSCPI()
         return QString::number((settings.f_start + settings.f_stop)/2);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetStopFreq(newval);
@@ -947,8 +935,8 @@ void VNA::SetupSCPI()
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
     scpi_acq->add(new SCPICommand("IFBW", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetIFBandwidth(newval);
@@ -958,8 +946,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.if_bandwidth);
     }));
     scpi_acq->add(new SCPICommand("POINTS", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetPoints(newval);
@@ -969,8 +957,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.points);
     }));
     scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetAveraging(newval);
@@ -982,12 +970,8 @@ void VNA::SetupSCPI()
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);
     scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
-        bool ok;
-        if(params.size() != 1) {
-            return "ERROR";
-        }
-        auto newval = params[0].toDouble(&ok);
-        if(!ok) {
+        double newval;
+        if(!SCPI::paramToDouble(params, 0, newval)) {
             return "ERROR";
         } else {
             SetSourceLevel(newval);

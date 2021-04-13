@@ -78,6 +78,7 @@ void Trace::addData(const Trace::Data& d) {
                 *lower = d;
             }
             break;
+        default: break;
         }
     } else {
         // insert at this position
@@ -512,6 +513,94 @@ std::vector<Protocol::Datapoint> Trace::assembleDatapoints(const Trace &S11, con
     return ret;
 }
 
+Trace::LiveParameter Trace::ParameterFromString(QString s)
+{
+    s = s.toUpper();
+    if(s == "S11") {
+        return LiveParameter::S11;
+    } else if(s == "S12") {
+        return LiveParameter::S12;
+    } else if(s == "S21") {
+        return LiveParameter::S21;
+    } else if(s == "S22") {
+        return LiveParameter::S22;
+    } else if(s == "PORT1") {
+        return LiveParameter::Port1;
+    } else if(s == "PORT2") {
+        return LiveParameter::Port2;
+    } else {
+        return LiveParameter::Invalid;
+    }
+}
+
+QString Trace::ParameterToString(LiveParameter p)
+{
+    switch(p) {
+    case Trace::LiveParameter::S11: return "S11";
+    case Trace::LiveParameter::S12: return "S12";
+    case Trace::LiveParameter::S21: return "S21";
+    case Trace::LiveParameter::S22: return "S22";
+    case Trace::LiveParameter::Port1: return "Port1";
+    case Trace::LiveParameter::Port2: return "Port2";
+    default: return "Invalid";
+    }
+}
+
+bool Trace::isVNAParameter(Trace::LiveParameter p)
+{
+    switch(p) {
+    case Trace::LiveParameter::S11:
+    case Trace::LiveParameter::S12:
+    case Trace::LiveParameter::S21:
+    case Trace::LiveParameter::S22:
+        return true;
+    case Trace::LiveParameter::Port1:
+    case Trace::LiveParameter::Port2:
+    default:
+        return false;
+    }
+}
+
+bool Trace::isSAParamater(Trace::LiveParameter p)
+{
+    switch(p) {
+    case Trace::LiveParameter::S11:
+    case Trace::LiveParameter::S12:
+    case Trace::LiveParameter::S21:
+    case Trace::LiveParameter::S22:
+        return false;
+    case Trace::LiveParameter::Port1:
+    case Trace::LiveParameter::Port2:
+        return true;
+    default:
+        return false;
+    }
+}
+
+Trace::LivedataType Trace::TypeFromString(QString s)
+{
+    s = s.toUpper();
+    if(s == "OVERWRITE") {
+        return LivedataType::Overwrite;
+    } else if(s == "MAXHOLD") {
+        return LivedataType::MaxHold;
+    } else if(s == "MINHOLD") {
+        return LivedataType::MinHold;
+    } else {
+        return LivedataType::Invalid;
+    }
+}
+
+QString Trace::TypeToString(Trace::LivedataType t)
+{
+    switch(t) {
+    case Trace::LivedataType::Overwrite: return "Overwrite";
+    case Trace::LivedataType::MaxHold: return "MaxHold";
+    case Trace::LivedataType::MinHold: return "MinHold";
+    default: return "Invalid";
+    }
+}
+
 void Trace::updateLastMath(vector<MathInfo>::reverse_iterator start)
 {
     TraceMath *newLast = nullptr;
@@ -579,12 +668,18 @@ bool Trace::isVisible()
 
 void Trace::pause()
 {
-    paused = true;
+    if(!paused) {
+        paused = true;
+        emit pauseChanged();
+    }
 }
 
 void Trace::resume()
 {
-    paused = false;
+    if(paused) {
+        paused = false;
+        emit pauseChanged();
+    }
 }
 
 bool Trace::isPaused()
@@ -808,6 +903,12 @@ Trace::Data Trace::sample(unsigned int index, SampleType type) const
         // exchange impulse data with step data
         data.y = lastMath->getStepResponse(index);
     }
+    return data;
+}
+
+Trace::Data Trace::interpolatedSample(double x)
+{
+    auto data = lastMath->getInterpolatedSample(x);
     return data;
 }
 

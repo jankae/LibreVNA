@@ -51,6 +51,10 @@ public:
     static bool match(QString s1, QString s2);
     static QString alternateName(QString name);
 
+    static bool paramToDouble(QStringList params, int index, double &dest);
+    static bool paramToULong(QStringList params, int index, unsigned long &dest);
+    static bool paramToLong(QStringList params, int index, long &dest);
+
 public slots:
     void input(QString line);
 signals:

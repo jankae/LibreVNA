@@ -658,21 +658,9 @@ void SpectrumAnalyzer::SetupSCPI()
 {
     auto scpi_freq = new SCPINode("FREQuency");
     SCPINode::add(scpi_freq);
-    auto toULong = [](QStringList params) {
-        bool ok;
-        if(params.size() != 1) {
-            return std::numeric_limits<unsigned long>::max();
-        }
-        auto newval = params[0].toULong(&ok);
-        if(!ok) {
-            return std::numeric_limits<unsigned long>::max();
-        } else {
-            return newval;
-        }
-    };
     scpi_freq->add(new SCPICommand("SPAN", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetSpan(newval);
@@ -682,8 +670,8 @@ void SpectrumAnalyzer::SetupSCPI()
         return QString::number(settings.f_stop - settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetStartFreq(newval);
@@ -693,8 +681,8 @@ void SpectrumAnalyzer::SetupSCPI()
         return QString::number(settings.f_start);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetCenterFreq(newval);
@@ -704,8 +692,8 @@ void SpectrumAnalyzer::SetupSCPI()
         return QString::number((settings.f_start + settings.f_stop)/2);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetStopFreq(newval);
@@ -722,8 +710,8 @@ void SpectrumAnalyzer::SetupSCPI()
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
     scpi_acq->add(new SCPICommand("RBW", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetRBW(newval);
@@ -786,8 +774,8 @@ void SpectrumAnalyzer::SetupSCPI()
         }
     }));
     scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
-        auto newval = toULong(params);
-        if(newval == std::numeric_limits<unsigned long>::max()) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetAveraging(newval);
@@ -844,12 +832,9 @@ void SpectrumAnalyzer::SetupSCPI()
         return settings.trackingGeneratorPort ? "2" : "1";
     }));
     scpi_tg->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
-        bool ok;
-        if(params.size() != 1) {
-            return "ERROR";
-        }
-        auto newval = params[0].toDouble(&ok);
-        if(!ok) {
+        double newval;
+        if(!SCPI::paramToDouble(params, 0, newval)) {
+
             return "ERROR";
         } else {
             SetTGLevel(newval);
@@ -859,12 +844,8 @@ void SpectrumAnalyzer::SetupSCPI()
         return QString::number(settings.trackingPower / 100.0);
     }));
     scpi_tg->add(new SCPICommand("OFFset", [=](QStringList params) -> QString {
-        bool ok;
-        if(params.size() != 1) {
-            return "ERROR";
-        }
-        auto newval = params[0].toLong(&ok);
-        if(!ok) {
+        long newval;
+        if(!SCPI::paramToLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetTGOffset(newval);
@@ -896,12 +877,8 @@ void SpectrumAnalyzer::SetupSCPI()
         return "";
     }, nullptr));
     scpi_norm->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
-        bool ok;
-        if(params.size() != 1) {
-            return "ERROR";
-        }
-        auto newval = params[0].toDouble(&ok);
-        if(!ok) {
+        double newval;
+        if(!SCPI::paramToDouble(params, 0, newval)) {
             return "ERROR";
         } else {
             SetNormalizationLevel(newval);

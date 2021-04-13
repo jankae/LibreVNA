@@ -27,6 +27,7 @@ public:
         S22,
         Port1,
         Port2,
+        Invalid,
     };
 
     Trace(QString name = QString(), QColor color = Qt::darkYellow, LiveParameter live = LiveParameter::S11);
@@ -36,6 +37,7 @@ public:
         Overwrite,
         MaxHold,
         MinHold,
+        Invalid,
     };
 
 
@@ -79,6 +81,8 @@ public:
     };
 
     Data sample(unsigned int index, SampleType type = SampleType::Frequency) const;
+    // returns a (possibly interpolated sample) at a specified frequency/time
+    Data interpolatedSample(double x);
     QString getFilename() const;
     unsigned int getFileParameter() const;
     /* Returns the noise in dbm/Hz for spectrum analyzer measurements. May return NaN if calculation not possible */
@@ -130,6 +134,14 @@ public:
     // have the same number of samples and their samples must be at the same frequencies across all traces
     static std::vector<Protocol::Datapoint> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
 
+    static LiveParameter ParameterFromString(QString s);
+    static QString ParameterToString(LiveParameter p);
+    static bool isVNAParameter(LiveParameter p);
+    static bool isSAParamater(LiveParameter p);
+
+    static LivedataType TypeFromString(QString s);
+    static QString TypeToString(LivedataType t);
+
 public slots:
     void setVisible(bool visible);
     void setColor(QColor color);
@@ -143,6 +155,7 @@ signals:
     void visibilityChanged(Trace *t);
     void dataChanged();
     void nameChanged();
+    void pauseChanged();
     void colorChanged(Trace *t);
     void markerAdded(TraceMarker *m);
     void markerRemoved(TraceMarker *m);

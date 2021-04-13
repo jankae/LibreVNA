@@ -55,12 +55,8 @@ void Generator::updateDevice()
 void Generator::setupSCPI()
 {
     add(new SCPICommand("FREQuency", [=](QStringList params) -> QString {
-        bool ok;
-        if(params.size() != 1) {
-            return "ERROR";
-        }
-        auto newval = params[0].toUInt(&ok);
-        if(!ok) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
             return "ERROR";
         } else {
             central->setFrequency(newval);
@@ -70,12 +66,9 @@ void Generator::setupSCPI()
         return QString::number(central->getDeviceStatus().frequency);
     }));
     add(new SCPICommand("LVL", [=](QStringList params) -> QString {
-        bool ok;
-        if(params.size() != 1) {
-            return "ERROR";
-        }
-        auto newval = params[0].toDouble(&ok);
-        if(!ok) {
+        double newval;
+        if(!SCPI::paramToDouble(params, 0, newval)) {
+
             return "ERROR";
         } else {
             central->setLevel(newval);
@@ -85,12 +78,8 @@ void Generator::setupSCPI()
         return QString::number(central->getDeviceStatus().cdbm_level / 100.0);
     }));
     add(new SCPICommand("PORT", [=](QStringList params) -> QString {
-        bool ok;
-        if(params.size() != 1) {
-            return "ERROR";
-        }
-        auto newval = params[0].toUInt(&ok);
-        if(!ok || newval > 2) {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval) || newval > 2) {
             return "ERROR";
         } else {
             central->setPort(newval);

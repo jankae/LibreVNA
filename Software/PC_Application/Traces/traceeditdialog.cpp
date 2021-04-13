@@ -65,25 +65,18 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     case Trace::LivedataType::Overwrite: ui->CLiveType->setCurrentIndex(0); break;
     case Trace::LivedataType::MaxHold: ui->CLiveType->setCurrentIndex(1); break;
     case Trace::LivedataType::MinHold: ui->CLiveType->setCurrentIndex(2); break;
+    default: break;
     }
 
-    switch(t.liveParameter()) {
-    case Trace::LiveParameter::S11:
-    case Trace::LiveParameter::S12:
-    case Trace::LiveParameter::S21:
-    case Trace::LiveParameter::S22:
-        VNAtrace = true;
+    VNAtrace = Trace::isVNAParameter(t.liveParameter());
+    if(VNAtrace) {
         ui->CLiveParam->addItem("S11");
         ui->CLiveParam->addItem("S12");
         ui->CLiveParam->addItem("S21");
         ui->CLiveParam->addItem("S22");
-        break;
-    case Trace::LiveParameter::Port1:
-    case Trace::LiveParameter::Port2:
+    } else {
         ui->CLiveParam->addItem("Port 1");
         ui->CLiveParam->addItem("Port 2");
-        VNAtrace = false;
-        break;
     }
 
     switch(t.liveParameter()) {
@@ -93,6 +86,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     case Trace::LiveParameter::S22: ui->CLiveParam->setCurrentIndex(3); break;
     case Trace::LiveParameter::Port1: ui->CLiveParam->setCurrentIndex(0); break;
     case Trace::LiveParameter::Port2: ui->CLiveParam->setCurrentIndex(1); break;
+    default: break;
     }
 
     connect(ui->GSource, qOverload<int>(&QButtonGroup::buttonClicked), updateFileStatus);

@@ -32,6 +32,36 @@ QString SCPI::alternateName(QString name)
     return name;
 }
 
+bool SCPI::paramToDouble(QStringList params, int index, double &dest)
+{
+    if(index >= params.size()) {
+        return false;
+    }
+    bool okay;
+    dest = params[index].toDouble(&okay);
+    return okay;
+}
+
+bool SCPI::paramToULong(QStringList params, int index, unsigned long &dest)
+{
+    if(index >= params.size()) {
+        return false;
+    }
+    bool okay;
+    dest = params[index].toULong(&okay);
+    return okay;
+}
+
+bool SCPI::paramToLong(QStringList params, int index, long &dest)
+{
+    if(index >= params.size()) {
+        return false;
+    }
+    bool okay;
+    dest = params[index].toLong(&okay);
+    return okay;
+}
+
 void SCPI::input(QString line)
 {
     auto cmds = line.split(";");

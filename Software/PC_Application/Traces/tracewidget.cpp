@@ -185,4 +185,104 @@ void TraceWidget::SetupSCPI()
         ret.chop(1);
         return ret;
     }));
+    add(new SCPICommand("AT", nullptr, [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        double x;
+        if(!SCPI::paramToDouble(params, 1, x)) {
+            return "ERROR";
+        } else {
+            auto d = t->interpolatedSample(x);
+            if(std::isnan(d.x)) {
+                return "NaN,NaN";
+            } else {
+                return QString::number(d.y.real())+","+QString::number(d.y.imag());
+            }
+        }
+    }));
+    add(new SCPICommand("NEW", [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            return "ERROR";
+        }
+        createCount++;
+        auto t = new Trace(params[0], Qt::darkYellow, defaultParameter());
+        t->setColor(QColor::fromHsl((createCount * 50) % 360, 250, 128));
+        model.addTrace(t);
+        return "";
+    }, nullptr));
+    add(new SCPICommand("RENAME", [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        if(params.size() != 2) {
+            return "ERROR";
+        }
+        t->setName(params[1]);
+        return "";
+    }, nullptr));
+    add(new SCPICommand("PAUSE", [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        t->pause();
+        return "";
+    }, nullptr));
+    add(new SCPICommand("RESUME", [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        t->resume();
+        return "";
+    }, nullptr));
+    add(new SCPICommand("PAUSED", nullptr, [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        return t->isPaused() ? "TRUE" : "FALSE";
+    }));
+    add(new SCPICommand("PARAMeter", [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t || params.size() < 2) {
+           return "ERROR";
+        }
+        auto newparam = Trace::ParameterFromString(params[1]);
+        if((Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))
+                || (Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))) {
+            t->fromLivedata(t->liveType(), newparam);
+            return "";
+        } else {
+            return "ERROR";
+        }
+    }, [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        return Trace::ParameterToString(t->liveParameter());
+    }));
+    add(new SCPICommand("TYPE", [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t || params.size() < 2) {
+           return "ERROR";
+        }
+        auto newtype = Trace::TypeFromString(params[1]);
+        if(newtype != Trace::LivedataType::Invalid) {
+            t->fromLivedata(newtype, t->liveParameter());
+            return "";
+        } else {
+            return "ERROR";
+        }
+    }, [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return "ERROR";
+        }
+        return Trace::TypeToString(t->liveType());
+    }));
 }
