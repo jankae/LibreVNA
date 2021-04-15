@@ -745,7 +745,7 @@ void SpectrumAnalyzer::SetupSCPI()
         default: return "ERROR";
         }
     }));
-    scpi_acq->add(new SCPICommand("WINDow", [=](QStringList params) -> QString {
+    scpi_acq->add(new SCPICommand("DETector", [=](QStringList params) -> QString {
         if (params.size() != 1) {
             return "ERROR";
         }
@@ -788,16 +788,16 @@ void SpectrumAnalyzer::SetupSCPI()
         if (params.size() != 1) {
             return "ERROR";
         }
-        if(params[0] == "1" || params[0] == "ON") {
+        if(params[0] == "1" || params[0] == "TRUE") {
             SetSignalID(true);
-        } else if(params[0] == "0" || params[0] == "OFF") {
+        } else if(params[0] == "0" || params[0] == "FALSE") {
             SetSignalID(false);
         } else {
             return "ERROR";
         }
         return "";
     }, [=](QStringList) -> QString {
-        return settings.SignalID ? "1" : "0";
+        return settings.SignalID ? "TRUE" : "FALSE";
     }));
     auto scpi_tg = new SCPINode("TRACKing");
     SCPINode::add(scpi_tg);
@@ -805,16 +805,16 @@ void SpectrumAnalyzer::SetupSCPI()
         if (params.size() != 1) {
             return "ERROR";
         }
-        if(params[0] == "1" || params[0] == "ON") {
+        if(params[0] == "1" || params[0] == "TRUE") {
             SetTGEnabled(true);
-        } else if(params[0] == "0" || params[0] == "OFF") {
+        } else if(params[0] == "0" || params[0] == "FALSE") {
             SetTGEnabled(false);
         } else {
             return "ERROR";
         }
         return "";
     }, [=](QStringList) -> QString {
-        return settings.trackingGenerator ? "1" : "0";
+        return settings.trackingGenerator ? "TRUE" : "FALSE";
     }));
     scpi_tg->add(new SCPICommand("Port", [=](QStringList params) -> QString {
         if (params.size() != 1) {
@@ -860,16 +860,16 @@ void SpectrumAnalyzer::SetupSCPI()
         if (params.size() != 1) {
             return "ERROR";
         }
-        if(params[0] == "1" || params[0] == "ON") {
+        if(params[0] == "1" || params[0] == "TRUE") {
             EnableNormalization(true);
-        } else if(params[0] == "0" || params[0] == "OFF") {
+        } else if(params[0] == "0" || params[0] == "FALSE") {
             EnableNormalization(false);
         } else {
             return "ERROR";
         }
         return "";
     }, [=](QStringList) -> QString {
-        return normalize.active ? "1" : "0";
+        return normalize.active ? "TRUE" : "FALSE";
     }));
     scpi_norm->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
         Q_UNUSED(params)

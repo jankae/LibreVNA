@@ -91,7 +91,7 @@ bool Calibration::constructErrorTerms(Calibration::Type type)
     case Type::FullSOLT: construct12TermPoints(); break;
     case Type::TransmissionNormalization: constructTransmissionNormalization(); break;
     case Type::TRL: constructTRL(); break;
-    case Type::None: break;
+    default: break;
     }
     this->type = type;
     return true;
@@ -430,6 +430,17 @@ Calibration::InterpolationType Calibration::getInterpolation(Protocol::SweepSett
     }
 }
 
+Calibration::Measurement Calibration::MeasurementFromString(QString s)
+{
+    for(unsigned int i=0;i<(int)Measurement::Last;i++) {
+        auto m = (Measurement) i;
+        if(s.compare(MeasurementToString(m), Qt::CaseInsensitive)==0) {
+            return m;
+        }
+    }
+    return Measurement::Last;
+}
+
 QString Calibration::MeasurementToString(Calibration::Measurement m)
 {
     switch(m) {
@@ -454,6 +465,17 @@ QString Calibration::MeasurementToString(Calibration::Measurement m)
     default:
         return "Unknown";
     }
+}
+
+Calibration::Type Calibration::TypeFromString(QString s)
+{
+    for(unsigned int i=0;i<(int)Type::Last;i++) {
+        auto t = (Type) i;
+        if(s.compare(TypeToString(t), Qt::CaseInsensitive)==0) {
+            return t;
+        }
+    }
+    return Type::Last;
 }
 
 QString Calibration::TypeToString(Calibration::Type t)
@@ -551,6 +573,10 @@ Calibration::MeasurementInfo Calibration::getMeasurementInfo(Calibration::Measur
         info.name = "Line";
         info.prerequisites = "Port 1 connected to port 2 via line standard";
         break;
+    default:
+        info.name = "Invalid";
+        info.prerequisites = "Invalid";
+        break;
     }
     info.points = measurements[m].datapoints.size();
     if(info.points > 0) {
@@ -619,6 +645,8 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
             case Measurement::Line:
             case Measurement::Isolation:
                 usedPrefixes = {"S11", "S12", "S21", "S22"};
+                break;
+            default:
                 break;
             }
             for(auto prefix : usedPrefixes) {

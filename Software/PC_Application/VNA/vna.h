@@ -52,6 +52,7 @@ signals:
     void CalibrationMeasurementComplete(Calibration::Measurement m);
 
 private:
+    bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
     void SetupSCPI();
     void UpdateAverageCount();
     void SettingsChanged(std::function<void (Device::TransmissionResult)> cb = nullptr);

@@ -27,6 +27,7 @@ public:
         Isolation,
         Through,
         Line,
+        Last,
     };
     void clearMeasurements();
     void clearMeasurement(Measurement type);
@@ -39,6 +40,7 @@ public:
         TransmissionNormalization,
         TRL,
         None,
+        Last,
     };
 
 
@@ -59,7 +61,9 @@ public:
 
     InterpolationType getInterpolation(Protocol::SweepSettings settings);
 
+    static Measurement MeasurementFromString(QString s);
     static QString MeasurementToString(Measurement m);
+    static Type TypeFromString(QString s);
     static QString TypeToString(Type t);
 
     class MeasurementInfo {

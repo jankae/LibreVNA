@@ -444,7 +444,7 @@ void AppWindow::SetupSCPI()
         default: return "ERROR";
         }
     }));
-    scpi.add(new SCPICommand("MODE", [=](QStringList params) -> QString {
+    scpi_dev->add(new SCPICommand("MODE", [=](QStringList params) -> QString {
         if (params.size() != 1) {
             return "ERROR";
         }
@@ -474,13 +474,13 @@ void AppWindow::SetupSCPI()
     scpi_dev->add(scpi_status);
     scpi_status->add(new SCPICommand("UNLOcked", nullptr, [=](QStringList){
         bool locked = Device::Info().source_locked && Device::Info().LO1_locked;
-        return locked ? "0" : "1";
+        return locked ? "FALSE" : "TRUE";
     }));
     scpi_status->add(new SCPICommand("ADCOVERload", nullptr, [=](QStringList){
-        return Device::Info().ADC_overload ? "1" : "0";
+        return Device::Info().ADC_overload ? "TRUE" : "FALSE";
     }));
     scpi_status->add(new SCPICommand("UNLEVel", nullptr, [=](QStringList){
-        return Device::Info().unlevel ? "1" : "0";
+        return Device::Info().unlevel ? "TRUE" : "FALSE";
     }));
     auto scpi_info = new SCPINode("INFo");
     scpi_dev->add(scpi_info);

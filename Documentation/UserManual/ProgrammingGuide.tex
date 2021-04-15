@@ -1,0 +1,590 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc} % LY1 also works
+\usepackage[margin=1in]{geometry}
+
+%% Font settings suggested by fbb documentation.
+\usepackage{textcomp} % to get the right copyright, etc.
+\usepackage[lining,tabular]{fbb} % so math uses tabular lining figures
+\usepackage[scaled=.95,type1]{cabin} % sans serif in style of Gill Sans
+\usepackage[varqu,varl]{zi4}% inconsolata typewriter
+\useosf % change normal text to use proportional oldstyle figures
+%\usetosf would provide tabular oldstyle figures in text
+
+\usepackage{microtype}
+\usepackage{siunitx}
+\DeclareSIUnit{\belmilliwatt}{Bm}
+\DeclareSIUnit{\dBm}{\deci\belmilliwatt}
+\sisetup{range-phrase=--, range-units=single, binary-units = true}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{svg}
+%\usepackage{hyperref}
+\usetikzlibrary{arrows, shadows}
+\tikzset{%
+  cascaded/.style = {%
+    general shadow = {%
+      shadow scale = 1,
+      shadow xshift = -1ex,
+      shadow yshift = 1ex,
+      draw,
+      thick,
+      fill = white},
+    general shadow = {%
+      shadow scale = 1,
+      shadow xshift = -.5ex,
+      shadow yshift = .5ex,
+      draw,
+      thick,
+      fill = white},
+    fill = white, 
+    draw,
+    thick,
+    minimum width = 1.5cm,
+    minimum height = 2cm}}
+    
+\usepackage{enumitem}
+\usepackage{longtable}
+\setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+\setlist{leftmargin=*}
+\usepackage{listings}
+\definecolor{darkgreen}{RGB}{0,140,0}
+\lstset{
+	basicstyle=\ttfamily,
+	frame=single,
+	breaklines=true,
+	morecomment=[l][\color{darkgreen}]{\#},
+}
+\lstnewenvironment{example}{\lstset{
+    ,frame=single
+    ,xleftmargin=2em
+    ,xrightmargin=2em
+   % ,backgroundcolor=\color{lightgray}
+    ,title=Example
+}}{}
+\usepackage[os=win]{menukeys}
+\renewmenumacro{\keys}[+]{shadowedroundedkeys}
+
+\usepackage{booktabs,caption}
+\usepackage[flushleft]{threeparttable}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\usepackage{tabularx} 
+
+\usepackage{stackengine}
+\usepackage{scalerel}
+\usepackage{xcolor,mdframed}
+\newcommand\danger[1][5ex]{%
+  \renewcommand\stacktype{L}%
+  \scaleto{\stackon[1.3pt]{\color{red}$\triangle$}{\tiny !}}{#1}%
+}
+
+\newenvironment{important}[1][]{%
+   \begin{mdframed}[%
+      backgroundcolor={red!15}, hidealllines=true,
+      skipabove=0.7\baselineskip, skipbelow=0.7\baselineskip,
+      splitbottomskip=2pt, splittopskip=4pt, #1]%
+   \makebox[0pt]{% ignore the withd of !
+      \smash{% ignor the height of !
+         %\fontsize{32pt}{32pt}\selectfont% make the ! bigger
+         \hspace*{-45pt}% move ! to the left
+         \raisebox{-5pt}{% move ! up a little
+            {\danger}% type the bold red !
+         }%
+      }%
+   }%
+}{\end{mdframed}}
+
+\newcommand\info[1][5ex]{%
+  \renewcommand\stacktype{L}%
+  \scaleto{\stackon[1.2pt]{\color{blue}$\bigcirc$}{\raisebox{-1.5pt}{\small i}}}{#1}%
+}
+
+\newenvironment{information}[1][]{%
+   \begin{mdframed}[%
+      backgroundcolor={blue!15}, hidealllines=true,
+      skipabove=0.7\baselineskip, skipbelow=0.7\baselineskip,
+      splitbottomskip=2pt, splittopskip=4pt, #1]%
+   \makebox[0pt]{% ignore the withd of !
+      \smash{% ignor the height of !
+         %\fontsize{32pt}{32pt}\selectfont% make the ! bigger
+         \hspace*{-45pt}% move ! to the left
+         \raisebox{-5pt}{% move ! up a little
+            {\info}% type the bold red !
+         }%
+      }%
+   }%
+}{\end{mdframed}}
+
+\usepackage{makecell}
+\usepackage{hyperref}
+\usepackage{xifthen}
+\newcommand{\vna}{LibreVNA}
+\newcommand{\gui}{\vna{}-GUI}
+
+\newcommand{\screenshot}[2]{\begin{center}
+\includegraphics[width=#1\textwidth]{Screenshots/#2}
+\end{center}}
+
+
+\newcommand{\event}[3]{
+\noindent\textbf{Event:}
+\begin{longtable}{p{.15\textwidth} | p{.80\textwidth} } 
+\hline
+\textbf{Effect:} & #1 \\ \hline
+\textbf{Syntax:} & #2 \\ \hline 
+\textbf{Parameters:} & \makecell[Xl]{#3} \\ \hline
+\end{longtable}
+}
+\newcommand{\query}[4]{
+\noindent\textbf{Query:}
+\begin{longtable}{p{.15\textwidth} | p{.80\textwidth} } 
+\hline
+\textbf{Effect:} & #1 \\ \hline
+\textbf{Syntax:} & #2 \\ \hline 
+\textbf{Parameters:} & \makecell[tl]{#3} \\ \hline
+\textbf{Return value:} & \makecell[tl]{#4} \\ \hline
+\end{longtable}
+}
+
+\title{\vna{} SCPI Programming Guide}
+\begin{document}
+\maketitle
+
+\setcounter{tocdepth}{3}
+\tableofcontents
+
+\clearpage
+
+\section{Introduction}
+The \gui{} contains a TCP server that can be used to control the \vna{} with SCPI commands.
+\section{SCPI Server Configuration}
+The server is configurable in the preferences: \menu[,]{Window,Preferences,General}
+\screenshot{0.3}{serverconfig.png}
+If enabled, it will accept any TCP connection at the configured port. Once the connection is established, it can be used to send SCPI commands and receive replies. Only one connection at a time is possible, if a second connection is created, the first one will be closed by the \gui{}. Alternatively, a port can be manually configured by setting the ``port'' argument:
+\begin{lstlisting}
+./LibreVNA-GUI --port 1234
+\end{lstlisting}
+This enables the SCPI server at the specified port, regardless of what is configured in the preferences (useful for starting multiple instances at different ports at the same time). If no graphical user interface is required, the \gui{} can be hidden:
+\begin{lstlisting}
+./LibreVNA-GUI --port 1234 --no-gui
+\end{lstlisting}
+\section{General Syntax}
+The syntax follows the usual SCPI rules:
+\begin{itemize}
+\item All commands are case insensitive (implicitly converted to uppercase before evaluated)
+\item The command tree is organized in branches, separated by a colon:
+\begin{lstlisting}
+:VNA:TRACE:LIST?
+\end{lstlisting}
+\item Multiple commands can be concatenated in one line using a semicolon:
+\begin{lstlisting}
+:DEVice:CONNECT;:DEVice:INFo:FWRevision?
+\end{lstlisting}
+\item If a command starts with a colon it is evaluated from the root branch, otherwise the last used branch is assumed:
+\begin{lstlisting}
+:VNA:FREQuency:START 1000000
+STOP 2000000 #No colon, VNA:FREQuency branch was used before
+\end{lstlisting}
+\item Branches and commands can be abbreviated by using only the uppercase part of their name, the following commands are identical:
+\begin{lstlisting}
+:DEVice:INFo:LIMits:MINFrequency?
+:DEV:INF:LIM:MINF?
+\end{lstlisting}
+\item Every command generates a (possibly empty) response, terminated with a newline character.
+\item Some commands require additional arguments that have to be passed after the command (separated by spaces):
+\begin{lstlisting}
+:DEV:REF:OUT 10
+\end{lstlisting}
+\item Two types of commands are available:
+\begin{itemize}
+\item \textbf{Events} change a setting or trigger an action. They usually have an empty response (unless there was an error).
+\item \textbf{Queries} request information. They end with a question mark.
+\end{itemize}
+Some commands are both events and queries, depending on whether the question mark is present:
+\begin{lstlisting}
+:VNA:FREQ:SPAN 50000000 # Set the span
+:VNA:FREQ:SPAN? # Read the current span
+\end{lstlisting}
+\end{itemize}
+\section{Commands}
+\subsection{General Commands}
+\subsubsection{*IDN}
+\query{Returns the identifications string}{*IDN?}{None}{LibreVNA-GUI}
+\subsubsection{*LST}
+\query{Lists all available commands}{*LST?}{None}{List of commands, separated by newline}
+\subsection{Device Commands}
+This section contains general device commands, available regardless of the current mode.
+\subsubsection{DEVice:DISConnect}
+\event{Disconnects from the device}{DEVice:DISConnect}{None}
+
+\subsubsection{DEVice:CONNect}
+\event{Connects to a device. If no serialnumber is specified, the connection is made with the first device found}{DEVice:CONNect [<serialnumber>]}{<serialnumber> Serialnumber of the device that should be connected}
+\begin{example}
+:DEV:CONN 206039903350
+\end{example}
+\query{Queries the serial number of the connected device}{DEVice:CONNect?}{None}{<serialnumber> or ``Not connected''}
+\begin{example}
+:DEV:CONN?
+206039903350
+\end{example}
+
+\subsubsection{DEVice:LIST}
+\query{Lists all available devices by their serial numbers}{DEVice:LIST?}{None}{List of serialnumbers}
+\begin{example}
+:DEV:LIST?
+206039903350,208939A23350
+\end{example}
+
+\subsubsection{DEVice:MODE}
+\event{Switches the device to the specified mode}{DEVice:MODE <mode>}{<mode>:\\ \hspace{1cm} VNA: set to vector analyzer\\ \hspace{1cm} GEN: set to signal generator\\ \hspace{1cm} SA: set to spectrum analyzer}
+\begin{example}
+:MODE VNA
+\end{example}
+\query{Queries the currently active mode}{DEVice:MODE?}{None}{<mode>:\\ \hspace{1cm} VNA: set to vector analyzer\\ \hspace{1cm} GEN: set to signal generator\\ \hspace{1cm} SA: set to spectrum analyzer}
+\begin{example}
+:MODE?
+VNA
+\end{example}
+
+\subsubsection{DEVice:REFerence:OUT}
+\event{Sets the reference output frequency}{DEVice:REFerence:OUT <freq>}{<freq> in MHz, either 0 (disabled), 10 or 100}
+\query{Queries the reference output frequency}{DEVice:REFerence:OUT?}{None}{Output frequency in MHz}
+
+\subsubsection{DEVice:REFerence:IN}
+\event{Set the reference input mode}{DEVice:REFerence:IN <mode>}{<mode>:\\ \hspace{1cm} INT: use internal reference\\ \hspace{1cm} EXT: use external reference\\ \hspace{1cm} AUTO: automatic reference switching}
+\query{Queries the reference source}{DEVice:REFerence:IN?}{None}{INT or EXT}
+
+\subsubsection{DEVice:STAtus:UNLOcked}
+\query{Queries the PLL lock error flag}{DEVice:STAtus:UNLOcked?}{None}{TRUE or FALSE}
+
+\subsubsection{DEVice:STAtus:ADCOVERload}
+\query{Queries the ADC overload error flag}{DEVice:STAtus:ADCOVERload?}{None}{TRUE or FALSE}
+
+\subsubsection{DEVice:STAtus:UNLEVel}
+\query{Queries the output level error flag}{DEVice:STAtus:UNLEVel?}{None}{TRUE or FALSE}
+
+\subsubsection{DEVice:INFo:FWREVision}
+\query{Returns the firmware revision of the connected device}{DEVice:INFo:FWREVision?}{None}{<mayor>.<minor>.<patch>}
+\begin{example}
+:DEV:INF:FWREV?
+1.0.0
+\end{example}
+\subsubsection{DEVice:INFo:HWREVision}
+\query{Returns the hardware revision of the connected device}{DEVice:INFo:HWREVision?}{None}{<revision>, single char}
+\begin{example}
+:DEV:INF:HWREV?
+B
+\end{example}
+\subsubsection{DEVice:INFo:TEMPeratures}
+\query{Queries the temperatures of certain chips}{DEVice:INFo:TEMPeratures?}{None}{<source>/<1.LO>/<CPU>}
+\begin{example}
+:DEV:INF:TEMP?
+45/51/31
+\end{example}
+
+\subsubsection{DEVice:INFo:MINFrequency}
+\query{Queries the lowest frequency the device can measure}{DEVice:INFo:MINFrequency?}{None}{lowest frequency in Hz}
+
+\subsubsection{DEVice:INFo:MAXFrequency}
+\query{Queries the highest frequency the device can measure}{DEVice:INFo:MAXFrequency?}{None}{highest frequency in Hz}
+
+\subsubsection{DEVice:INFo:MINIFBW}
+\query{Queries the lowest IF bandwidth setting}{DEVice:INFo:MINIFBW?}{None}{lowest possible IF bandwidth in Hz}
+
+\subsubsection{DEVice:INFo:MAXIFBW}
+\query{Queries the highest IF bandwidth setting}{DEVice:INFo:MAXIFBW?}{None}{highest possible IF bandwidth in Hz}
+
+\subsubsection{DEVice:INFo:MAXPoints}
+\query{Queries the maximum number of points per sweep}{DEVice:INFo:MAXPoints?}{None}{maximum number of points}
+
+\subsubsection{DEVice:INFo:MINPOWer}
+\query{Queries the minimum output power}{DEVice:INFo:MINPOWer?}{None}{minimum output power in dBm}
+
+\subsubsection{DEVice:INFo:MAXPOWer}
+\query{Queries the maximum output power}{DEVice:INFo:MAXPOWer?}{None}{maximum output power in dBm}
+
+\subsubsection{DEVice:INFo:MINRBW}
+\query{Queries the lowest resolution bandwidth setting}{DEVice:INFo:MINRBW?}{None}{lowest possible resolution bandwidth in Hz}
+
+\subsubsection{DEVice:INFo:MAXRBW}
+\query{Queries the highest resolution bandwidth setting}{DEVice:INFo:MAXRBW?}{None}{highest possible resolution bandwidth in Hz}
+
+\subsubsection{DEVice:INFo:MAXHARMonicfrequency}
+\query{Queries the (theoretical) maximum frequency when using harmonic mixing in VNA mode}{DEVice:INFo:MAXHARMonicfrequency?}{None}{maximum frequency in Hz}
+
+\subsection{VNA Commands}
+These commands change or query VNA settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the VNA mode is active (e.g. it is possible to change the span while in signal generator mode but it does not effect the \vna{} until the mode is switched to VNA). Certain commands (like taking a calibration measurement) are only available in VNA mode and will return an error if another mode is active.
+
+\subsubsection{VNA:FREQuency:SPAN}
+\event{Sets the span of the sweep}{VNA:FREQuency:SPAN}{<span>, in Hz}
+\query{Queries the currently selected span}{VNA:FREQuency:SPAN?}{None}{span in Hz}
+
+\subsubsection{VNA:FREQuency:START}
+\event{Sets the start frequency of the sweep}{VNA:FREQuency:START}{<start frequency>, in Hz}
+\query{Queries the currently selected start frequency}{VNA:FREQuency:START?}{None}{start frequency in Hz}
+
+\subsubsection{VNA:FREQuency:CENTer}
+\event{Sets the center frequency of the sweep}{VNA:FREQuency:CENTer}{<center frequency>, in Hz}
+\query{Queries the currently selected center frequency}{VNA:FREQuency:CENTer?}{None}{center frequency in Hz}
+
+\subsubsection{VNA:FREQuency:STOP}
+\event{Sets the stop frequency of the sweep}{VNA:FREQuency:STOP}{<stop frequency>, in Hz}
+\query{Queries the currently selected stop frequency}{VNA:FREQuency:STOP?}{None}{stop frequency in Hz}
+
+\subsubsection{VNA:FREQuency:FULL}
+\event{Sets the device to the maximum span possible}{VNA:FREQuency:FULL}{None}
+
+\subsubsection{VNA:ACQuisition:IFBW}
+\event{Sets the IF bandwidth}{VNA:ACQuisition:IFBW}{<IF bandwidth>, in Hz}
+\query{Queries the currently selected IF bandwidth}{VNA:ACQuisition:IFBW?}{None}{IF bandwidth in Hz}
+
+\subsubsection{VNA:ACQuisition:POINTS}
+\event{Sets the number of points per sweep}{VNA:ACQuisition:POINTS}{<points>}
+\query{Queries the currently selected number of points}{VNA:ACQuisition:POINTS?}{None}{points}
+
+\subsubsection{VNA:ACQuisition:AVG}
+\event{Sets the number of sweeps over which a moving average is calculated}{VNA:ACQuisition:AVG}{<sweeps>}
+\query{Queries the currently configured number of sweeps}{VNA:ACQuisition:AVG?}{None}{sweeps}
+
+\subsubsection{VNA:STIMulus:LVL}
+\event{Sets the output power of the stimulus signal}{VNA:STIMulus:LVL}{<power>, in dBm}
+\query{Queries the currently selected output power}{VNA:STIMulus:LVL?}{None}{power in dBm}
+
+\subsubsection{VNA:TRACe:LIST}
+\query{Lists the names of all available traces}{VNA:TRACe:LIST?}{None}{comma-separated list of trace name}
+\begin{example}
+VNA:TRAC:LIST?
+S11,S12,S21,S22
+\end{example}
+
+\subsubsection{VNA:TRACe:DATA}
+\query{Returns the data of a trace}{VNA:TRACe:DATA?}{<trace>, either by name or by index}{comma-separated list of tuples [x, real(y), imag(y]}
+\begin{example}
+:VNA:TRAC:DATA? S11
+[1e+6,0.400172,0.0377869],
+[6.67556e+8,-0.0922281,-0.00990373],
+[1.33411e+9,-0.0341439,-0.0331184],
+[2.00067e+9,0.00750893,0.0490847],
+[2.66722e+9,0.0472666,-0.175552],
+[3.33378e+9,-0.106545,-0.00952825],
+[4.00033e+9,-0.102039,0.0890605],
+[4.66689e+9,0.0464292,0.118183],
+[5.33344e+9,0.13223,-0.00780554],
+[6e+9,-0.0314859,-0.246024]
+\end{example}
+\vspace{-0.6cm}
+\begin{center}
+\footnotesize{Note: actual response will not include newlines between data points, only at the end}
+\end{center}
+
+\subsubsection{VNA:TRACe:AT}
+\query{Returns the data at a specific frequency (possibly interpolated)}{VNA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{real,imag (or ``NaN,NaN'' if specified frequeny is invalid)}
+\begin{example}
+:VNA:TRAC:AT? S11 1200000000
+-0.0458452,-0.028729
+\end{example}
+
+\subsubsection{VNA:TRACe:NEW}
+\event{Creates a new trace}{VNA:TRACe:NEW}{<trace name>}
+
+\subsubsection{VNA:TRACe:RENAME}
+\event{Changes the name of a trace}{VNA:TRACe:RENAME}{<trace>, either by name or by index\\<new name>}
+
+\subsubsection{VNA:TRACe:PAUSE}
+\event{Pauses (freezes) a trace}{VNA:TRACe:PAUSE}{<trace>, either by name or by index}
+
+\subsubsection{VNA:TRACe:RESUME}
+\event{Resumes (unfreezes) a trace}{VNA:TRACe:RESUME}{<trace>, either by name or by index}
+
+\subsubsection{VNA:TRACe:PAUSED}
+\query{Queries whether a trace is paused}{VNA:TRACe:PAUSED?}{<trace>, either by name or by index}{TRUE or FALSE}
+
+\subsubsection{VNA:TRACe:PARAMeter}
+\event{Sets the measurement parameter that is stored in the trace}{VNA:TRACe:PARAMeter}{<trace>, either by name or by index\\<parameter>, options are S11, S12, S21 or S22}
+\query{Queries the measurement parameter of a trace}{VNA:TRACe:PARAMeter?}{<trace>, either by name or by index}{S11, S12, S21 or S22}
+
+\subsubsection{VNA:TRACe:TYPE}
+\event{Sets the storage type of a trace}{VNA:TRACe:TYPE}{<trace>, either by name or by index\\<type>, options are OVERWRITE, MAXHOLD or MINHOLD}
+\query{Queries the storage type of a trace}{VNA:TRACe:TYPE?}{<trace>, either by name or by index}{OVERWRITE, MAXHOLD or MINHOLD}
+
+\subsubsection{VNA:CALibration:TYPE}
+\event{Sets the calibration type. This command fails if the required measurements have not been taken yet}{VNA:CALibration:TYPE}{<type>, options are NONE, PORT\_1, PORT\_2, SOLT, NORMALIZE or TRL}
+\query{Queries the currently active calibration type}{VNA:CALibration:TYPE?}{None}{NONE, PORT\_1, PORT\_2, SOLT, NORMALIZE or TRL}
+
+\subsubsection{VNA:CALibration:MEASure}
+\event{Starts a calibration measurement. This command fails if no device is connected, the VNA mode is not active or a calibration measurement is already in progress.}{VNA:CALibration:MEASure}{<type>, options are:\\
+\hspace{1cm}PORT\_1\_OPEN\\
+\hspace{1cm}PORT\_1\_SHORT\\
+\hspace{1cm}PORT\_1\_LOAD\\
+\hspace{1cm}PORT\_2\_OPEN\\
+\hspace{1cm}PORT\_2\_SHORT\\
+\hspace{1cm}PORT\_2\_LOAD\\
+\hspace{1cm}THROUGH\\
+\hspace{1cm}ISOLATION\\
+\hspace{1cm}LINE\\
+}
+
+\subsubsection{VNA:CALibration:BUSY}
+\query{Queries whether a calibration measurement is ongoing}{VNA:CALibration:BUSY?}{None}{TRUE or FALSE}
+
+\subsection{Signal Generator Commands}
+These commands change or query signal generator settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the generator mode is active.
+
+\subsubsection{GENerator:FREQuency}
+\event{Sets the output frequeny}{GENerator:FREQuency}{<frequency>, in Hz}
+\query{Queries the selected output frequency}{GENerator:FREQuency?}{None}{frequency in Hz}
+
+\subsubsection{GENerator:LVL}
+\event{Sets the output power}{GENerator:LVL}{<output level>, in dBm}
+\query{Queries the selected output power}{GENerator:LVL?}{None}{output level in dBm}
+
+\subsubsection{GENerator:PORT}
+\event{Sets the active output port}{GENerator:PORT}{<output port>\\
+\hspace{1cm}0: output disabled\\
+\hspace{1cm}1: output signal at port 1\\
+\hspace{1cm}2: output signal at port 2\\}
+\query{Queries the selected output}{GENerator:PORT?}{None}{output port}
+
+\subsection{Spectrum Analyzer Commands}
+These commands change or query spectrum analyzer settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the spectrum analyzer mode is active.
+
+\subsubsection{SA:FREQuency:SPAN}
+\event{Sets the span of the sweep}{SA:FREQuency:SPAN}{<span>, in Hz}
+\query{Queries the currently selected span}{SA:FREQuency:SPAN?}{None}{span in Hz}
+
+\subsubsection{SA:FREQuency:START}
+\event{Sets the start frequency of the sweep}{SA:FREQuency:START}{<start frequency>, in Hz}
+\query{Queries the currently selected start frequency}{SA:FREQuency:START?}{None}{start frequency in Hz}
+
+\subsubsection{SA:FREQuency:CENTer}
+\event{Sets the center frequency of the sweep}{SA:FREQuency:CENTer}{<center frequency>, in Hz}
+\query{Queries the currently selected center frequency}{SA:FREQuency:CENTer?}{None}{center frequency in Hz}
+
+\subsubsection{SA:FREQuency:STOP}
+\event{Sets the stop frequency of the sweep}{SA:FREQuency:STOP}{<stop frequency>, in Hz}
+\query{Queries the currently selected stop frequency}{SA:FREQuency:STOP?}{None}{stop frequency in Hz}
+
+\subsubsection{SA:FREQuency:FULL}
+\event{Sets the device to the maximum span possible}{SA:FREQuency:FULL}{None}
+
+\subsubsection{SA:ACQuisition:RBW}
+\event{Sets the resolution bandwidth}{SA:ACQuisition:IFBW}{<resolution bandwidth>, in Hz}
+\query{Queries the currently selected resolution bandwidth}{SA:ACQuisition:IFBW?}{None}{resolution bandwidth in Hz}
+
+\subsubsection{SA:ACQuisition:WINDow}
+\event{Sets the type of window used in the acquisition}{SA:ACQuisition:WINDow}{<windowtype>\\
+\hspace{1cm}NONE\\
+\hspace{1cm}KAISER\\
+\hspace{1cm}HANN\\
+\hspace{1cm}FLATTOP\\
+}
+\query{Queries the currently selected type of window}{SA:ACQuisition:WINDow?}{None}{NONE, KAISER, HANN or FLATTOP}
+
+\subsubsection{SA:ACQuisition:DETector}
+\event{Sets the detector type}{SA:ACQuisition:DETector}{<detector>\\
+\hspace{1cm}+PEAK\\
+\hspace{1cm}-PEAK\\
+\hspace{1cm}NORMAL\\
+\hspace{1cm}SAMPLE\\
+\hspace{1cm}AVERAGE\\
+}
+\query{Queries the currently selected detector type}{SA:ACQuisition:DETector?}{None}{+PEAK, -PEAK, NORMAL, SAMPLE or AVERAGE}
+
+\subsubsection{SA:ACQuisition:AVG}
+\event{Sets the number of sweeps over which a moving average is calculated}{SA:ACQuisition:AVG}{<sweeps>}
+\query{Queries the currently configured number of sweeps}{SA:ACQuisition:AVG?}{None}{sweeps}
+
+\subsubsection{SA:ACQuisition:SIGid}
+\event{Enables/disables signal identification}{SA:ACQuisition:SIGid}{<enabled>, option are TRUE, FALSE, 1 or 0}
+\query{Queries whether signal identification is enabled}{SA:ACQuisition:SIGid?}{None}{TRUE or FALSE}
+
+\subsubsection{SA:TRACKing:ENable}
+\event{Enables/disables the tracking generator}{SA:TRACKing:ENable}{<enabled>, option are TRUE, FALSE, 1 or 0}
+\query{Queries whether tracking generator is enabled}{SA:TRACKing:ENable?}{None}{TRUE or FALSE}
+
+\subsubsection{SA:TRACKing:PORT}
+\event{Sets the output port of the tracking generator}{SA:TRACKing:PORT}{<port>, either 1 or 2}
+\query{Queries the output port of the tracking generator}{SA:TRACKing:PORT?}{None}{1 or 2}
+
+\subsubsection{SA:TRACKing:LVL}
+\event{Sets the output power of the tracking generator}{SA:TRACKing:LVL}{<output level>, in dBm}
+\query{Queries the selected output power of the tracking generator}{SA:TRACKing:LVL?}{None}{output level in dBm}
+
+\subsubsection{SA:TRACKing:OFFset}
+\event{Sets the offset frequency of the tracking generator}{SA:TRACKing:OFFset}{<offset>, in Hz}
+\query{Queries the selected offset frequency of the tracking generator}{SA:TRACKing:OFFset?}{None}{offset in Hz}
+
+\subsubsection{SA:TRACKing:NORMalize:ENable}
+\event{Enables/disables normalization. If the span has changed since the last active normalization, a normalization measurement is also started.}{SA:TRACKing:NORMalize:ENable}{<enabled>, option are TRUE, FALSE, 1 or 0}
+\query{Queries whether tracking generator normalization is enabled}{SA:TRACKing:NORMalize:ENable?}{None}{TRUE or FALSE}
+
+\subsubsection{SA:TRACKing:NORMalize:MEASure}
+\event{Triggers a new normalization measurement}{SA:TRACKing:NORMalize:MEASure}{None}
+
+\subsubsection{SA:TRACKing:NORMalize:LVL}
+\event{Sets the reference level for the normalization}{SA:TRACKing:NORMalize:LVL}{<normalization level>, in dBm}
+\query{Queries the selected reference level for the normalization}{SA:TRACKing:NORMalize:LVL?}{None}{normalization level in dBm}
+
+\subsubsection{SA:TRACe:LIST}
+\query{Lists the names of all available traces}{SA:TRACe:LIST?}{None}{comma-separated list of trace name}
+\begin{example}
+VNA:TRAC:LIST?
+Port1,Port2
+\end{example}
+
+\subsubsection{SA:TRACe:DATA}
+\query{Returns the data of a trace}{SA:TRACe:DATA?}{<trace>, either by name or by index}{comma-separated list of tuples [x, real(y), imag(y]}
+\begin{example}
+:SA:TRACE:DATA? PORT1
+[9.5e+8,1.56378e-5,0],
+[9.501e+8,1.66861e-5,0],
+[9.502e+8,1.89638e-5,0],
+[9.503e+8,1.87195e-5,0],
+[9.504e+8,1.47292e-5,0],
+[9.505e+8,1.40006e-5,0],
+[9.506e+8,1.65665e-5,0],
+[9.507e+8,1.48342e-5,0],
+[9.508e+8,1.83062e-5,0],
+[9.509e+8,1.66752e-5,0]
+\end{example}
+\vspace{-0.6cm}
+\begin{center}
+\footnotesize{Note 1: actual response will not include newlines between data points, only at the end}\\
+\footnotesize{Note 2: although the imaginary part is zero for all values, it is still included in the response}\\
+\end{center}
+
+\subsubsection{SA:TRACe:AT}
+\query{Returns the data at a specific frequency (possibly interpolated)}{SA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{real,imag (or ``NaN,NaN'' if specified frequeny is invalid)}
+\begin{example}
+:SA:TRAC:AT? Port1 1000000000
+-0.0458452,-0.028729
+\end{example}
+\footnotesize{Note: although the imaginary part is always zero, it is still included in the response}\\
+
+\subsubsection{SA:TRACe:NEW}
+\event{Creates a new trace}{SA:TRACe:NEW}{<trace name>}
+
+\subsubsection{SA:TRACe:RENAME}
+\event{Changes the name of a trace}{SA:TRACe:RENAME}{<trace>, either by name or by index\\<new name>}
+
+\subsubsection{SA:TRACe:PAUSE}
+\event{Pauses (freezes) a trace}{SA:TRACe:PAUSE}{<trace>, either by name or by index}
+
+\subsubsection{SA:TRACe:RESUME}
+\event{Resumes (unfreezes) a trace}{SA:TRACe:RESUME}{<trace>, either by name or by index}
+
+\subsubsection{SA:TRACe:PAUSED}
+\query{Queries whether a trace is paused}{SA:TRACe:PAUSED?}{<trace>, either by name or by index}{TRUE or FALSE}
+
+\subsubsection{SA:TRACe:PARAMeter}
+\event{Sets the measurement parameter that is stored in the trace}{SA:TRACe:PARAMeter}{<trace>, either by name or by index\\<parameter>, options are PORT1 and PORT2}
+\query{Queries the measurement parameter of a trace}{SA:TRACe:PARAMeter?}{<trace>, either by name or by index}{PORT1 or PORT2}
+
+\subsubsection{SA:TRACe:TYPE}
+\event{Sets the storage type of a trace}{SA:TRACe:TYPE}{<trace>, either by name or by index\\<type>, options are OVERWRITE, MAXHOLD or MINHOLD}
+\query{Queries the storage type of a trace}{SA:TRACe:TYPE?}{<trace>, either by name or by index}{OVERWRITE, MAXHOLD or MINHOLD}
+
+\end{document}

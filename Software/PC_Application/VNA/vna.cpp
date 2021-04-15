@@ -981,6 +981,51 @@ void VNA::SetupSCPI()
         return QString::number(settings.cdbm_excitation / 100.0);
     }));
     SCPINode::add(traceWidget);
+    auto scpi_cal = new SCPINode("CALibration");
+    SCPINode::add(scpi_cal);
+    scpi_cal->add(new SCPICommand("TYPE", [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            return "ERROR";
+        } else {
+            auto type = Calibration::TypeFromString(params[0].replace('_', ' '));
+            if(type == Calibration::Type::Last) {
+                // failed to parse string
+                return "ERROR";
+            } else if(type == Calibration::Type::None) {
+                DisableCalibration();
+            } else {
+                // check if calibration can be activated
+                if(cal.calculationPossible(type)) {
+                    ApplyCalibration(type);
+                } else {
+                    return "ERROR";
+                }
+            }
+        }
+        return "";
+    }, [=](QStringList) -> QString {
+        auto ret = Calibration::TypeToString(cal.getType());
+        ret.replace(' ', '_');
+        return ret;
+    }));
+    scpi_cal->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
+        if(params.size() != 1 || CalibrationMeasurementActive() || !window->getDevice() || Mode::getActiveMode() != this) {
+            // no measurement specified, still busy or invalid mode
+            return "ERROR";
+        } else {
+            auto meas = Calibration::MeasurementFromString(params[0].replace('_', ' '));
+            if(meas == Calibration::Measurement::Last) {
+                // failed to parse string
+                return "ERROR";
+            } else {
+                StartCalibrationMeasurement(meas);
+            }
+        }
+        return "";
+    }, nullptr));
+    scpi_cal->add(new SCPICommand("BUSy", nullptr, [=](QStringList) -> QString {
+        return CalibrationMeasurementActive() ? "TRUE" : "FALSE";
+    }));
 }
 
 void VNA::ConstrainAndUpdateFrequencies()

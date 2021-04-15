@@ -75,9 +75,7 @@ void SCPI::input(QString line)
         }
         cmd = cmd.toUpper();
         auto response = lastNode->parse(cmd, lastNode);
-        if(!response.isEmpty()) {
-            emit output(response);
-        }
+        emit output(response);
     }
 }
 
@@ -133,6 +131,9 @@ void SCPINode::createCommandList(QString prefix, QString &list)
 
 QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
 {
+    if(cmd.isEmpty()) {
+        return "";
+    }
     auto splitPos = cmd.indexOf(':');
     if(splitPos > 0) {
         // have not reached a leaf, find next subnode
