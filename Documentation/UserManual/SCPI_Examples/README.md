@@ -1,5 +1,5 @@
 # SCPI Programming Examples
-This directory contains some basic examples, demonstrating the scripting capabilities of the LibreVNA using the SCPI interface. They are only intended as a starting point, for the complete list of available commands see the [SCPI Programming Guide](ProgrammingGuide.pdf).
+This directory contains some basic examples, demonstrating the scripting capabilities of the LibreVNA using the SCPI interface. They are only intended as a starting point, for the complete list of available commands see the [SCPI Programming Guide](../ProgrammingGuide.pdf).
 
 ## How to run the examples
 1. Connect the LibreVNA to your computer
