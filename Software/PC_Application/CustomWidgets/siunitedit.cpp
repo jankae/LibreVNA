@@ -49,10 +49,14 @@ static char swapUpperLower(char c) {
 
 bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
 {
+    if(value() == 1000000) {
+        qDebug() << "Event: " << event->type();
+    }
     if (event->type() == QEvent::KeyPress) {
         int key = static_cast<QKeyEvent *>(event)->key();
         if(key == Qt::Key_Escape) {
             // abort editing process and set old value
+            clear();
             setValueQuiet(_value);
             emit editingAborted();
             clearFocus();
@@ -91,7 +95,7 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
     } else if(event->type() == QEvent::Wheel) {
         if(_value == 0.0) {
             // can't figure out step size with zero value
-            return false;
+            return true;
         }
         auto wheel = static_cast<QWheelEvent*>(event);
         // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
@@ -101,18 +105,12 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
         int sign = increment > 0 ? 1 : -1;
         // figure out step increment
         auto newVal = _value;
-        auto cursor = cursorPosition();
-        if(cursor == 0) {
-            // no active cursor, use default digit
-            constexpr int nthDigit = 3;
-            while(steps > 0) {
-                // do update in multiple steps because the step size could change inbetween
-                auto step_size = pow(10, floor(log10(std::abs(newVal))) - nthDigit + 1);
-                newVal += step_size * sign;
-                steps--;
+        if(hasFocus()) {
+            auto cursor = cursorPosition();
+            if(cursor == 0) {
+                // cursor in front of first digit, do nothing (too big of a change, probably over/underflows)
+                return true;
             }
-            setValue(newVal);
-        } else {
             // change the digit at the current cursor
             int nthDigit = cursor;
             // account for decimal point/leading zero/sign
@@ -131,6 +129,16 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
             setValue(newVal);
             setText(placeholderText());
             setCursorPosition(cursor);
+        } else {
+            // default to the third digit
+            constexpr int nthDigit = 3;
+            while(steps > 0) {
+                // do update in multiple steps because the step size could change inbetween
+                auto step_size = pow(10, floor(log10(std::abs(newVal))) - nthDigit + 1);
+                newVal += step_size * sign;
+                steps--;
+            }
+            setValue(newVal);
         }
         return true;
     }
@@ -140,7 +148,6 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
 void SIUnitEdit::setValueQuiet(double value)
 {
     _value = value;
-    clear();
     setPlaceholderText(Unit::ToString(value, unit, prefixes, precision));
 }
 
@@ -163,12 +170,12 @@ void SIUnitEdit::parseNewValue(double factor)
         // remaining input should only contain numbers
         bool conversion_ok;
         auto v = input.toDouble(&conversion_ok);
+        clear();
         if(conversion_ok) {
             setValue(v * factor);
         } else {
             qWarning() << "SIUnit conversion failure:" << input;
         }
-        clear();
     }
 }
 
