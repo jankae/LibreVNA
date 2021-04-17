@@ -708,15 +708,16 @@ void VNA::SetCenterFreq(double freq)
 
 void VNA::SetSpan(double span)
 {
+    auto maxFreq = Preferences::getInstance().Acquisition.harmonicMixing ? Device::Info().limits_maxFreqHarmonic : Device::Info().limits_maxFreq;
     auto old_center = (settings.f_start + settings.f_stop) / 2;
     if(old_center < Device::Info().limits_minFreq + span / 2) {
         // would shift start frequency below minimum
         settings.f_start = Device::Info().limits_minFreq;
         settings.f_stop = Device::Info().limits_minFreq + span;
-    } else if(old_center > Device::Info().limits_maxFreq - span / 2) {
+    } else if(old_center > maxFreq - span / 2) {
         // would shift stop frequency above maximum
-        settings.f_start = Device::Info().limits_maxFreq - span;
-        settings.f_stop = Device::Info().limits_maxFreq;
+        settings.f_start = maxFreq - span;
+        settings.f_stop = maxFreq;
     } else {
         settings.f_start = old_center - span / 2;
          settings.f_stop = settings.f_start + span;
