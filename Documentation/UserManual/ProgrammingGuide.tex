@@ -387,6 +387,22 @@ S11,S12,S21,S22
 -0.0458452,-0.028729
 \end{example}
 
+\subsubsection{VNA:TRACe:MAXFrequency}
+\query{Returns the highest frequency contained in the trace}{VNA:TRACe:MAXFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
+
+\subsubsection{VNA:TRACe:MINFrequency}
+\query{Returns the lowest frequency contained in the trace}{VNA:TRACe:MINFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
+
+\subsubsection{VNA:TRACe:MAXAmplitude}
+\query{Returns the datapoint with the highest amplitude in the trace}{VNA:TRACe:MAXAmplitude?}{<trace>, either by name or by index}{<frequency>,<real>,<imag> of the highest amplitude point}
+\begin{example}
+:VNA:TRAC:MAXA? S21
+5.66406e+9,-6.21766e-5,-0.000795846
+\end{example}
+
+\subsubsection{VNA:TRACe:MINAmplitude}
+\query{Returns the datapoint with the lowest amplitude in the trace}{VNA:TRACe:MINAmplitude?}{<trace>, either by name or by index}{<frequency>,<real>,<imag> of the lowest amplitude point}
+
 \subsubsection{VNA:TRACe:NEW}
 \event{Creates a new trace}{VNA:TRACe:NEW}{<trace name>}
 
@@ -563,6 +579,23 @@ Port1,Port2
 -0.0458452,-0.028729
 \end{example}
 \footnotesize{Note: although the imaginary part is always zero, it is still included in the response}\\
+
+\subsubsection{SA:TRACe:MAXFrequency}
+\query{Returns the highest frequency contained in the trace}{SA:TRACe:MAXFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
+
+\subsubsection{SA:TRACe:MINFrequency}
+\query{Returns the lowest frequency contained in the trace}{SA:TRACe:MINFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
+
+\subsubsection{SA:TRACe:MAXAmplitude}
+\query{Returns the datapoint with the highest amplitude in the trace}{SA:TRACe:MAXAmplitude?}{<trace>, either by name or by index}{<frequency>,<real>,<imag> of the highest amplitude point}
+\begin{example}
+:SA:TRAC:MAXA? Port1
+9.63e+8,4.05022e-5,0
+\end{example}
+\footnotesize{Note: although the imaginary part is always zero, it is still included in the response}\\
+
+\subsubsection{SA:TRACe:MINAmplitude}
+\query{Returns the datapoint with the lowest amplitude in the trace}{SA:TRACe:MINAmplitude?}{<trace>, either by name or by index}{<frequency>,<real>,<imag> of the lowest amplitude point}
 
 \subsubsection{SA:TRACe:NEW}
 \event{Creates a new trace}{SA:TRACe:NEW}{<trace name>}
