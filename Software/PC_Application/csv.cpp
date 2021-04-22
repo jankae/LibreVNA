@@ -27,6 +27,10 @@ CSV CSV::fromFile(QString filename, char sep)
         if(firstLine) {
             // create columns and set headers
             for(auto l : stringList) {
+                if(l.isEmpty()) {
+                    // header needs to be present, abort here
+                    break;
+                }
                 Column c;
                 c.header = l;
                 csv._columns.push_back(c);
