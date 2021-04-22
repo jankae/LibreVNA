@@ -164,6 +164,21 @@ void TraceWidget::SetupSCPI()
             return nullptr;
         }
     };
+
+    auto createStringFromData = [](Trace *t, const Trace::Data &d) -> QString {
+        if(Trace::isSAParamater(t->liveParameter())) {
+            if(std::isnan(d.x)) {
+                return "NaN";
+            }
+            return QString::number(20*log10(d.y.real()));
+        } else {
+            if(std::isnan(d.x)) {
+                return "NaN,NaN";
+            }
+            return QString::number(d.y.real())+","+QString::number(d.y.imag());
+        }
+    };
+
     add(new SCPICommand("LIST", nullptr, [=](QStringList){
        QString ret;
        for(auto t : model.getTraces()) {
@@ -180,7 +195,7 @@ void TraceWidget::SetupSCPI()
         QString ret;
         for(unsigned int i=0;i<t->size();i++) {
             auto d = t->sample(i);
-            ret += "["+QString::number(d.x)+","+QString::number(d.y.real())+","+QString::number(d.y.imag())+"],";
+            ret += "["+QString::number(d.x)+","+createStringFromData(t, d)+"],";
         }
         ret.chop(1);
         return ret;
@@ -198,7 +213,7 @@ void TraceWidget::SetupSCPI()
             if(std::isnan(d.x)) {
                 return "NaN,NaN";
             } else {
-                return QString::number(d.y.real())+","+QString::number(d.y.imag());
+                return createStringFromData(t, d);
             }
         }
     }));
@@ -222,7 +237,7 @@ void TraceWidget::SetupSCPI()
            return "ERROR";
         }
         auto d = t->interpolatedSample(t->findExtremumFreq(true));
-        return QString::number(d.x)+","+QString::number(d.y.real())+","+QString::number(d.y.imag());
+        return QString::number(d.x)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("MINAmplitude", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
@@ -230,7 +245,7 @@ void TraceWidget::SetupSCPI()
            return "ERROR";
         }
         auto d = t->interpolatedSample(t->findExtremumFreq(false));
-        return QString::number(d.x)+","+QString::number(d.y.real())+","+QString::number(d.y.imag());
+        return QString::number(d.x)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("NEW", [=](QStringList params) -> QString {
         if(params.size() != 1) {

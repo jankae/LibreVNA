@@ -552,33 +552,31 @@ Port1,Port2
 \end{example}
 
 \subsubsection{SA:TRACe:DATA}
-\query{Returns the data of a trace}{SA:TRACe:DATA?}{<trace>, either by name or by index}{comma-separated list of tuples [x, real(y), imag(y]}
+\query{Returns the data of a trace}{SA:TRACe:DATA?}{<trace>, either by name or by index}{comma-separated list of tuples [x, dBm]}
 \begin{example}
 :SA:TRACE:DATA? PORT1
-[9.5e+8,1.56378e-5,0],
-[9.501e+8,1.66861e-5,0],
-[9.502e+8,1.89638e-5,0],
-[9.503e+8,1.87195e-5,0],
-[9.504e+8,1.47292e-5,0],
-[9.505e+8,1.40006e-5,0],
-[9.506e+8,1.65665e-5,0],
-[9.507e+8,1.48342e-5,0],
-[9.508e+8,1.83062e-5,0],
-[9.509e+8,1.66752e-5,0]
+[9.75e+8,-100.351],
+[9.7505e+8,-95.7394],
+[9.751e+8,-97.5749],
+[9.7515e+8,-96.9667],
+[9.752e+8,-96.2391],
+[9.7525e+8,-94.8761],
+[9.753e+8,-96.0805],
+[9.7535e+8,-95.7997],
+[9.754e+8,-95.2021],
+[9.7545e+8,-96.3472]
 \end{example}
 \vspace{-0.6cm}
 \begin{center}
-\footnotesize{Note 1: actual response will not include newlines between data points, only at the end}\\
-\footnotesize{Note 2: although the imaginary part is zero for all values, it is still included in the response}\\
+\footnotesize{Note: actual response will not include newlines between data points, only at the end}\\
 \end{center}
 
 \subsubsection{SA:TRACe:AT}
-\query{Returns the data at a specific frequency (possibly interpolated)}{SA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{real,imag (or ``NaN,NaN'' if specified frequeny is invalid)}
+\query{Returns the data at a specific frequency (possibly interpolated)}{SA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{<dBm> or ``NaN'' if specified frequeny is invalid)}
 \begin{example}
 :SA:TRAC:AT? Port1 1000000000
--0.0458452,-0.028729
+-96.424
 \end{example}
-\footnotesize{Note: although the imaginary part is always zero, it is still included in the response}\\
 
 \subsubsection{SA:TRACe:MAXFrequency}
 \query{Returns the highest frequency contained in the trace}{SA:TRACe:MAXFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
@@ -587,15 +585,14 @@ Port1,Port2
 \query{Returns the lowest frequency contained in the trace}{SA:TRACe:MINFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
 
 \subsubsection{SA:TRACe:MAXAmplitude}
-\query{Returns the datapoint with the highest amplitude in the trace}{SA:TRACe:MAXAmplitude?}{<trace>, either by name or by index}{<frequency>,<real>,<imag> of the highest amplitude point}
+\query{Returns the datapoint with the highest amplitude in the trace}{SA:TRACe:MAXAmplitude?}{<trace>, either by name or by index}{<frequency>,<dBm> of the highest amplitude point}
 \begin{example}
 :SA:TRAC:MAXA? Port1
-9.63e+8,4.05022e-5,0
+9.63e+8,-12.534
 \end{example}
-\footnotesize{Note: although the imaginary part is always zero, it is still included in the response}\\
 
 \subsubsection{SA:TRACe:MINAmplitude}
-\query{Returns the datapoint with the lowest amplitude in the trace}{SA:TRACe:MINAmplitude?}{<trace>, either by name or by index}{<frequency>,<real>,<imag> of the lowest amplitude point}
+\query{Returns the datapoint with the lowest amplitude in the trace}{SA:TRACe:MINAmplitude?}{<trace>, either by name or by index}{<frequency>,<dBm> of the lowest amplitude point}
 
 \subsubsection{SA:TRACe:NEW}
 \event{Creates a new trace}{SA:TRACe:NEW}{<trace name>}
