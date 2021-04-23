@@ -49,9 +49,6 @@ static char swapUpperLower(char c) {
 
 bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
 {
-    if(value() == 1000000) {
-        qDebug() << "Event: " << event->type();
-    }
     if (event->type() == QEvent::KeyPress) {
         int key = static_cast<QKeyEvent *>(event)->key();
         if(key == Qt::Key_Escape) {

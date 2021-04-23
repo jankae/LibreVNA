@@ -9,6 +9,7 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QDebug>
+#include <QMenu>
 
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),
@@ -330,4 +331,27 @@ void TraceWidget::SetupSCPI()
         }
         return Trace::TypeToString(t->liveType());
     }));
+}
+
+void TraceWidget::contextMenuEvent(QContextMenuEvent *event)
+{
+    auto index = ui->view->indexAt(event->pos());
+    if(!index.isValid()) {
+        return;
+    }
+    auto trace = model.trace(index.row());
+    auto ctxmenu = new QMenu();
+    auto action_delete = new QAction("Delete");
+    connect(action_delete, &QAction::triggered, this, &TraceWidget::on_remove_clicked);
+    ctxmenu->addAction(action_delete);
+    auto action_duplicate = new QAction("Duplicate");
+    connect(action_duplicate, &QAction::triggered, this, [=](){
+        auto json = trace->toJSON();
+        auto duplicate = new Trace();
+        duplicate->fromJSON(json);
+        duplicate->setName(duplicate->name() + " - Duplicate");
+        model.addTrace(duplicate);
+    });
+    ctxmenu->addAction(action_duplicate);
+    ctxmenu->exec(event->globalPos());
 }
