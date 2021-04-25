@@ -81,6 +81,10 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         ui->GeneralSCPIPort->setEnabled(false);
         ui->GeneralSCPIEnabled->setEnabled(false);
     }
+    ui->GeneralTemperatureWarn_Action->addItem("Warning only");
+    ui->GeneralTemperatureWarn_Action->addItem("Warning & device disconnect");
+    ui->GeneralTemperatureWarn_Action->addItem("No action (not recommended)");
+
 
     // Page selection
     connect(ui->treeWidget, &QTreeWidget::currentItemChanged, [=](QTreeWidgetItem *current, QTreeWidgetItem *) {
@@ -130,6 +134,8 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->General.graphColors.divisions = ui->GeneralGraphDivisions->getColor();
         p->General.SCPI.enabled = ui->GeneralSCPIEnabled->isChecked();
         p->General.SCPI.port = ui->GeneralSCPIPort->value();
+        p->General.HWTemp.warnLimit = ui->GeneralTemperatureWarn_Limit->value();
+        p->General.HWTemp.warnAction = ui->GeneralTemperatureWarn_Action->currentIndex();
         accept();
     });
 
@@ -186,6 +192,8 @@ void PreferencesDialog::setInitialGUIState()
     ui->GeneralGraphDivisions->setColor(p->General.graphColors.divisions);
     ui->GeneralSCPIEnabled->setChecked(p->General.SCPI.enabled);
     ui->GeneralSCPIPort->setValue(p->General.SCPI.port);
+    ui->GeneralTemperatureWarn_Limit->setValue(p->General.HWTemp.warnLimit);
+    ui->GeneralTemperatureWarn_Action->setCurrentIndex(p->General.HWTemp.warnAction);
 
     QTreeWidgetItem *item = ui->treeWidget->topLevelItem(0);
     if (item != nullptr) {

@@ -41,6 +41,7 @@ using GeneratorSettings = struct _generatorSettings {
     uint8_t applyAmplitudeCorrection :1;
 };
 
+static constexpr int8_t TemperatureLimit_Hard = 85;	// minimum(PLL, MCU, FPGA, etc). Subtract a few for safety margin?
 using DeviceInfo = struct _deviceInfo {
 	uint16_t ProtocolVersion;
     uint8_t FW_major;
@@ -68,6 +69,7 @@ using DeviceInfo = struct _deviceInfo {
 	uint32_t limits_maxRBW;
     uint8_t limits_maxAmplitudePoints;
     uint64_t limits_maxFreqHarmonic;
+    bool temp_over_hardLimit;
 };
 
 using ManualStatus = struct _manualstatus {

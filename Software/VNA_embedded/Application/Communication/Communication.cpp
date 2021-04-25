@@ -48,7 +48,18 @@ bool Communication::Send(const Protocol::PacketInfo &packet) {
 	uint16_t len = Protocol::EncodePacket(packet, outputBuffer,
 					sizeof(outputBuffer));
 //	DEBUG1_LOW();
-	return usb_transmit(outputBuffer, len);
+
+	// return usb_transmit(outputBuffer, len);
+	bool txResult = usb_transmit(outputBuffer, len);
+	if(packet.type == Protocol::PacketType::DeviceInfo){
+		if(packet.info.temp_over_hardLimit == true){
+			HW::Init();	// Skip this? (may not complete in case of a HW problem)
+			HW::SetIdle();
+			// how to disconnect usb?
+		}
+	}
+	return txResult;
+
 //	if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
 //		uint16_t len = Protocol::EncodePacket(packet, outputBuffer,
 //				sizeof(outputBuffer));

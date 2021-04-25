@@ -307,7 +307,7 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 		LOG_INFO("ADC limits: P1: %d/%d P2: %d/%d R: %d/%d",
 				limits.P1min, limits.P1max, limits.P2min, limits.P2max,
 				limits.Rmin, limits.Rmax);
-	#define ADC_LIMIT 		30000
+		#define ADC_LIMIT 		30000
 		if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
 				|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
 				|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
@@ -324,8 +324,16 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 		info->temp_LO1 = tempLO;
 		info->temp_source = tempSource;
 		FPGA::ResetADCLimits();
+		if( (temp_LO > Protocol::TemperatureLimit_Hard) || (tempSource > Protocol::TemperatureLimit_Hard) ){
+			info->temp_over_hardLimit = true;
+		}
 	}
-	info->temp_MCU = STM::getTemperature();
+//	info->temp_MCU = STM::getTemperature();
+	auto stmTemp = STM::getTemperature();
+	info->temp_MCU = stmTemp;
+	if(stmTemp > Protocol::TemperatureLimit_Hard){
+		info->temp_over_hardLimit = true;
+	}
 }
 
 bool HW::Ref::available() {
