@@ -325,6 +325,7 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 		info->temp_source = tempSource;
 		FPGA::ResetADCLimits();
 		if( (temp_LO > Protocol::TemperatureLimit_Hard) || (tempSource > Protocol::TemperatureLimit_Hard) ){
+			// if any temperature limit crossed, set flag
 			info->temp_over_hardLimit = true;
 		}
 	}
@@ -332,6 +333,7 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 	auto stmTemp = STM::getTemperature();
 	info->temp_MCU = stmTemp;
 	if(stmTemp > Protocol::TemperatureLimit_Hard){
+		// also if mcu temperature limit crossed, set flag
 		info->temp_over_hardLimit = true;
 	}
 }
