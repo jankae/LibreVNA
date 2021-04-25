@@ -61,9 +61,13 @@ public:
             int port;
         } SCPI;
         struct {
+            // warning temperature
             int warnLimit;
             int warnAction;
-        } HWTemp;
+            // critical temperature (future improvement)
+            // int criticalLimit
+            // int criticalAction
+        } HWTemp;   // related to embedded device temperatures
     } General;
 
     bool TCPoverride; // in case of manual port specification via command line

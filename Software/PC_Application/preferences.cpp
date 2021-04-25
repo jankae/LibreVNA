@@ -81,7 +81,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         ui->GeneralSCPIPort->setEnabled(false);
         ui->GeneralSCPIEnabled->setEnabled(false);
     }
-    ui->GeneralTemperatureWarn_Action->addItem("Warning only");
+    ui->GeneralTemperatureWarn_Action->addItem("Warning only"); // available actions if warning temperature reached
     ui->GeneralTemperatureWarn_Action->addItem("Warning & device disconnect");
     ui->GeneralTemperatureWarn_Action->addItem("No action (not recommended)");
 
