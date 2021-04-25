@@ -53,8 +53,8 @@ bool Communication::Send(const Protocol::PacketInfo &packet) {
 	bool txResult = usb_transmit(outputBuffer, len);        // transmit packet normally, save result
 	if(packet.type == Protocol::PacketType::DeviceInfo){    // if DeviceInfo
 		if(packet.info.temp_over_hardLimit == true){        // and if overtemperature detected
-			HW::Init();	// Skip this? (may not complete in case of a HW problem)
-			HW::SetIdle();
+			HW::Init();	// Skip this? (It's a complicated section: is there a chance it would not complete in case of a HW problem?)
+			HW::SetIdle(); // is this alone enough?
 			// how to disconnect usb?
 			// ?
 			// if usb disconnected in previous step
