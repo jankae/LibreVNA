@@ -74,11 +74,13 @@ public:
         TDR,
         DFT,
         Expression,
+        TimeGate,
+        TimeDomainGating,
         // Add new math operations here, do not explicitly assign values and keep the Last entry at the last position
         Last,
     };
 
-    static TraceMath *createMath(Type type);
+    static std::vector<TraceMath*> createMath(Type type);
     class TypeInfo {
     public:
         QString name;

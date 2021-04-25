@@ -79,6 +79,7 @@ HEADERS += \
     Traces/Math/parser/suStringTokens.h \
     Traces/Math/parser/utGeneric.h \
     Traces/Math/tdr.h \
+    Traces/Math/timegate.h \
     Traces/Math/tracemath.h \
     Traces/Math/windowfunction.h \
     Traces/fftcomplex.h \
@@ -190,6 +191,7 @@ SOURCES += \
     Traces/Math/parser/mpValueCache.cpp \
     Traces/Math/parser/mpVariable.cpp \
     Traces/Math/tdr.cpp \
+    Traces/Math/timegate.cpp \
     Traces/Math/tracemath.cpp \
     Traces/Math/windowfunction.cpp \
     Traces/fftcomplex.cpp \
@@ -260,6 +262,9 @@ FORMS += \
     Traces/Math/newtracemathdialog.ui \
     Traces/Math/tdrdialog.ui \
     Traces/Math/tdrexplanationwidget.ui \
+    Traces/Math/timedomaingatingexplanationwidget.ui \
+    Traces/Math/timegatedialog.ui \
+    Traces/Math/timegateexplanationwidget.ui \
     Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \
     Traces/tracecsvexport.ui \

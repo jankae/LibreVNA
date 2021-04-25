@@ -859,7 +859,7 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
         ret.setY(real(data.y));
         break;
     case YAxisType::ImpulseMag:
-        ret.setY(abs(data.y));
+        ret.setY(20*log10(abs(data.y)));
         break;
     case YAxisType::Step:
         ret.setY(t->sample(sample, Trace::SampleType::TimeStep).y.real());
@@ -945,7 +945,7 @@ void TraceXYPlot::traceDropped(Trace *t, QPoint position)
         InformationBox::ShowMessage("X Axis Domain Change", "You dropped a time domain trace but the graph is still set up for the frequency domain."
                                     " All current traces will be removed and the graph changed to time domain.");
         setXAxis(XAxisType::Time, XAxisMode::FitTraces, 0, 1, 0.1);
-        setYAxis(0, YAxisType::ImpulseReal, false, true, 0, 1, 1.0);
+        setYAxis(0, YAxisType::ImpulseMag, false, true, 0, 1, 1.0);
         setYAxis(1, YAxisType::Disabled, false, true, 0, 1, 1.0);
     }
 
@@ -1002,7 +1002,7 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
     case TraceXYPlot::YAxisType::Phase: return "°"; break;
     case TraceXYPlot::YAxisType::VSWR: return ""; break;
     case TraceXYPlot::YAxisType::ImpulseReal: return ""; break;
-    case TraceXYPlot::YAxisType::ImpulseMag: return ""; break;
+    case TraceXYPlot::YAxisType::ImpulseMag: return "db"; break;
     case TraceXYPlot::YAxisType::Step: return ""; break;
     case TraceXYPlot::YAxisType::Impedance: return "Ohm"; break;
     default: return ""; break;

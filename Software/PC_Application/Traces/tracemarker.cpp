@@ -7,6 +7,8 @@
 #include <QDebug>
 #include "tracemarkermodel.h"
 #include "unit.h"
+#include <QMenu>
+#include <QActionGroup>
 
 using namespace std;
 
@@ -19,13 +21,16 @@ TraceMarker::TraceMarker(TraceMarkerModel *model, int number, TraceMarker *paren
       data(0),
       type(Type::Manual),
       description(descr),
+      contextmenu(nullptr),
       delta(nullptr),
       parent(parent),
       cutoffAmplitude(-3.0),
       peakThreshold(-40.0),
       offset(10000)
 {
-
+    connect(this, &TraceMarker::traceChanged, this, &TraceMarker::updateContextmenu);
+    connect(this, &TraceMarker::typeChanged, this, &TraceMarker::updateContextmenu);
+    updateContextmenu();
 }
 
 TraceMarker::~TraceMarker()
@@ -361,6 +366,29 @@ void TraceMarker::deltaDeleted()
     qDebug() << "assigned delta deleted";
     assignDeltaMarker(bestDeltaCandidate());
     update();
+}
+
+void TraceMarker::updateContextmenu()
+{
+    if(contextmenu) {
+        delete contextmenu;
+    }
+    contextmenu = new QMenu();
+    auto typemenu = new QMenu("Type");
+    auto typegroup = new QActionGroup(contextmenu);
+    for(auto t : getSupportedTypes()) {
+        auto setTypeAction = new QAction(typeToString(t));
+        setTypeAction->setCheckable(true);
+        if(t == type) {
+            setTypeAction->setChecked(true);
+        }
+        connect(setTypeAction, &QAction::triggered, [=](){
+            setType(t);
+        });
+        typegroup->addAction(setTypeAction);
+        typemenu->addAction(setTypeAction);
+    }
+    contextmenu->addMenu(typemenu);
 }
 
 std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()

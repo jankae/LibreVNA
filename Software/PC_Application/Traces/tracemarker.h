@@ -57,6 +57,8 @@ public:
     SIUnitEdit* getSettingsEditor();
     void adjustSettings(double value);
 
+    QMenu *getContextMenu() { return contextmenu;}
+
     // Updates marker position and data on automatic markers. Should be called whenever the tracedata is complete
     void update();
     TraceMarker *getParent() const;
@@ -93,6 +95,7 @@ private slots:
     void updateSymbol();
     void checkDeltaMarker();
     void deltaDeleted();
+    void updateContextmenu();
 signals:
     void rawDataChanged();
     void domainChanged();
@@ -132,6 +135,8 @@ private:
     Type type;
     QString suffix;
     QString description;
+
+    QMenu *contextmenu;
 
     TraceMarker *delta;
     std::vector<TraceMarker*> helperMarkers;

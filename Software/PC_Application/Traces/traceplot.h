@@ -55,6 +55,8 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void leaveEvent(QEvent *event) override;
 
+    TraceMarker *markerAtPosition(QPoint p, bool onlyMovable = false);
+
     // handle trace drops
     virtual bool dropSupported(Trace *t) = 0;
     void dragEnterEvent(QDragEnterEvent *event) override;

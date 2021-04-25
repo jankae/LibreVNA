@@ -99,7 +99,8 @@ public:
     bool hasMathOperations(); // check if math operations are set up (not necessarily enabled)
     void enableMath(bool enable);
     // Adds a new math operation at the end of the list and enables it
-    void addMathOperation(TraceMath *mathOps);
+    void addMathOperation(TraceMath *math);
+    void addMathOperations(std::vector<TraceMath*> maths);
     // removes the math operation at the given index. Index 0 is invalid as this would be the trace itself
     void removeMathOperation(unsigned int index);
     // swaps the order of math operations at index and index+1. Does nothing if either index is invalid
