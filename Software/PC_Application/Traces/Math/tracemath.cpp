@@ -4,7 +4,9 @@
 #include "tdr.h"
 #include "dft.h"
 #include "expression.h"
+#include "timegate.h"
 #include "Traces/trace.h"
+#include "ui_timedomaingatingexplanationwidget.h"
 
 TraceMath::TraceMath()
 {
@@ -13,20 +15,34 @@ TraceMath::TraceMath()
     error("Invalid input");
 }
 
-TraceMath *TraceMath::createMath(TraceMath::Type type)
+std::vector<TraceMath *> TraceMath::createMath(TraceMath::Type type)
 {
+    std::vector<TraceMath*> ret;
     switch(type) {
     case Type::MedianFilter:
-        return new Math::MedianFilter();
+        ret.push_back(new Math::MedianFilter());
+        break;
     case Type::TDR:
-        return new Math::TDR();
+        ret.push_back(new Math::TDR());
+        break;
     case Type::DFT:
-        return new Math::DFT();
+        ret.push_back(new Math::DFT());
+        break;
     case Type::Expression:
-        return new Math::Expression();
+        ret.push_back(new Math::Expression());
+        break;
+    case Type::TimeGate:
+        ret.push_back(new Math::TimeGate());
+        break;
+    case Type::TimeDomainGating:
+        ret.push_back(new Math::TDR());
+        ret.push_back(new Math::TimeGate());
+        ret.push_back(new Math::DFT());
+        break;
     default:
-        return nullptr;
+        break;
     }
+    return ret;
 }
 
 TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
@@ -48,6 +64,17 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
     case Type::Expression:
         ret.name = "Custom Expression";
         ret.explanationWidget = Math::Expression::createExplanationWidget();
+        break;
+    case Type::TimeGate:
+        ret.name = "Time Gate";
+        ret.explanationWidget = Math::TimeGate::createExplanationWidget();
+        break;
+    case Type::TimeDomainGating: {
+        ret.name = "Time Domain Gating";
+        ret.explanationWidget = new QWidget();
+        auto ui = new Ui::TimeDomainGatingExplanationWidget;
+        ui->setupUi(ret.explanationWidget);
+    }
         break;
     default:
         break;

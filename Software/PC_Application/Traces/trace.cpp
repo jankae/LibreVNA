@@ -396,7 +396,7 @@ void Trace::fromJSON(nlohmann::json j)
             continue;
         }
         qDebug() << "Creating math operation of type:" << operation;
-        auto op = TraceMath::createMath(type);
+        auto op = TraceMath::createMath(type)[0];
         if(jm.contains("settings")) {
             op->fromJSON(jm["settings"]);
         }
@@ -728,6 +728,18 @@ void Trace::addMathOperation(TraceMath *math)
     MathInfo info = {.math = math, .enabled = true};
     math->assignInput(lastMath);
     mathOps.push_back(info);
+    updateLastMath(mathOps.rbegin());
+}
+
+void Trace::addMathOperations(std::vector<TraceMath *> maths)
+{
+    TraceMath *input = lastMath;
+    for(auto m : maths) {
+        MathInfo info = {.math = m, .enabled = true};
+        m->assignInput(input);
+        input = m;
+        mathOps.push_back(info);
+    }
     updateLastMath(mathOps.rbegin());
 }
 

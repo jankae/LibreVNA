@@ -29,6 +29,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     void addOperation(TraceMath *math);
+    void addOperations(std::vector<TraceMath*> maths);
     void deleteRow(unsigned int row);
 
 private:

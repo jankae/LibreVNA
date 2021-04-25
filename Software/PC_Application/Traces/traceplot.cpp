@@ -92,7 +92,16 @@ void TracePlot::initializeTraceInfo()
 
 void TracePlot::contextMenuEvent(QContextMenuEvent *event)
 {
-    contextmenu->exec(event->globalPos());
+    auto m = markerAtPosition(event->pos());
+    QMenu *menu;
+    if(m) {
+        // right click on marker, execute its contextmenu
+        menu = m->getContextMenu();
+    } else {
+        // no marker, contextmenu of graph
+        menu = contextmenu;
+    }
+    menu->exec(event->globalPos());
     if(markedForDeletion) {
         emit deleted(this);
         delete this;
@@ -138,38 +147,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
 
 void TracePlot::mousePressEvent(QMouseEvent *event)
 {
-    auto clickPoint = event->pos() - QPoint(marginLeft, marginTop);
-    // check if click was near a marker
-    unsigned int closestDistance = numeric_limits<unsigned int>::max();
-    TraceMarker *closestMarker = nullptr;
-    for(auto t : traces) {
-        if(!t.second) {
-            // this trace is disabled, skip
-            continue;
-        }
-        auto markers = t.first->getMarkers();
-        for(auto m : markers) {
-            if(!m->isMovable()) {
-                continue;
-            }
-            auto markerPoint = markerToPixel(m);
-            if(markerPoint.isNull()) {
-                // invalid, skip
-                continue;
-            }
-            auto diff = markerPoint - clickPoint;
-            unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
-            if(distance < closestDistance) {
-                closestDistance = distance;
-                closestMarker = m;
-            }
-        }
-    }
-    if(closestDistance <= 400) {
-        selectedMarker = closestMarker;
-    } else {
-        selectedMarker = nullptr;
-    }
+    selectedMarker = markerAtPosition(event->pos(), true);
 }
 
 void TracePlot::mouseReleaseEvent(QMouseEvent *event)
@@ -203,6 +181,46 @@ void TracePlot::leaveEvent(QEvent *event)
     Q_UNUSED(event);
     cursorLabel->hide();
     selectedMarker = nullptr;
+}
+
+TraceMarker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
+{
+    auto clickPoint = p - QPoint(marginLeft, marginTop);
+    // check if click was near a marker
+    unsigned int closestDistance = numeric_limits<unsigned int>::max();
+    TraceMarker *closestMarker = nullptr;
+    for(auto t : traces) {
+        if(!t.second) {
+            // this trace is disabled, skip
+            continue;
+        }
+        auto markers = t.first->getMarkers();
+        for(auto m : markers) {
+            if(!m->isMovable() && onlyMovable) {
+                continue;
+            }
+            auto markerPoint = markerToPixel(m);
+            if(markerPoint.isNull()) {
+                // invalid, skip
+                continue;
+            }
+            auto diff = markerPoint - clickPoint;
+            unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
+            if(distance < closestDistance) {
+                closestDistance = distance;
+                if(m->getParent()) {
+                    closestMarker = m->getParent();
+                } else {
+                    closestMarker = m;
+                }
+            }
+        }
+    }
+    if(closestDistance <= 400) {
+        return closestMarker;
+    } else {
+        return nullptr;
+    }
 }
 
 void TracePlot::dragEnterEvent(QDragEnterEvent *event)

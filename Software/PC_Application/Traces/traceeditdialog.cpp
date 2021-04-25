@@ -141,10 +141,23 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 
         connect(ui->list, &QListWidget::doubleClicked, ui->buttonBox, &QDialogButtonBox::accepted);
         connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
-           auto newMath = TraceMath::createMath(static_cast<TraceMath::Type>(ui->list->currentRow()));
-           if(newMath) {
-               model->addOperation(newMath);
-           }
+            auto type = static_cast<TraceMath::Type>(ui->list->currentRow());
+            auto newMath = TraceMath::createMath(type);
+            model->addOperations(newMath);
+            if(newMath.size() == 1) {
+               // any normal math operation added, edit now
+               newMath[0]->edit();
+            } else {
+               // composite operation added, check which one and edit the correct suboperation
+               switch(type) {
+               case TraceMath::Type::TimeDomainGating:
+                   // TDR/DFT can be left at default, edit the actual gate
+                   newMath[1]->edit();
+                   break;
+               default:
+                   break;
+               }
+            }
         });
         ui->list->setCurrentRow(0);
         ui->stack->setCurrentIndex(0);
@@ -305,8 +318,13 @@ void MathModel::addOperation(TraceMath *math)
     beginInsertRows(QModelIndex(), t.getMathOperations().size(), t.getMathOperations().size());
     t.addMathOperation(math);
     endInsertRows();
-    // open the editor for the newly added operation
-    math->edit();
+}
+
+void MathModel::addOperations(std::vector<TraceMath *> maths)
+{
+    beginInsertRows(QModelIndex(), t.getMathOperations().size(), t.getMathOperations().size() + maths.size() - 1);
+    t.addMathOperations(maths);
+    endInsertRows();
 }
 
 void MathModel::deleteRow(unsigned int row)
