@@ -933,10 +933,10 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="TRL_Rtype"/>
   <buttongroup name="LoadType"/>
-  <buttongroup name="ThroughType"/>
+  <buttongroup name="TRL_Rtype"/>
   <buttongroup name="ShortType"/>
   <buttongroup name="OpenType"/>
+  <buttongroup name="ThroughType"/>
  </buttongroups>
 </ui>
