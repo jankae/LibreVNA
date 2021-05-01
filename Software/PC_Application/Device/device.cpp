@@ -459,6 +459,9 @@ void Device::ReceivedData()
             emit NackReceived();
             emit receivedAnswer(TransmissionResult::Nack);
             break;
+        case Protocol::PacketType::FrequencyCorrection:
+            emit FrequencyCorrectionReceived(packet.frequencyCorrection.ppm);
+            break;
        default:
             break;
         }

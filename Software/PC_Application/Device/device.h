@@ -75,6 +75,7 @@ signals:
     void ManualStatusReceived(Protocol::ManualStatus);
     void SpectrumResultReceived(Protocol::SpectrumAnalyzerResult);
     void AmplitudeCorrectionPointReceived(Protocol::AmplitudeCorrectionPoint);
+    void FrequencyCorrectionReceived(float ppm);
     void DeviceInfoUpdated();
     void ConnectionLost();
     void AckReceived();

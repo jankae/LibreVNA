@@ -5,6 +5,7 @@ HEADERS += \
     Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
+    Calibration/frequencycaldialog.h \
     Calibration/manualcalibrationdialog.h \
     Calibration/measurementmodel.h \
     Calibration/receivercaldialog.h \
@@ -128,6 +129,7 @@ SOURCES += \
     Calibration/calibrationtracedialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
+    Calibration/frequencycaldialog.cpp \
     Calibration/manualcalibrationdialog.cpp \
     Calibration/measurementmodel.cpp \
     Calibration/receivercaldialog.cpp \
@@ -244,6 +246,7 @@ FORMS += \
     Calibration/automaticamplitudedialog.ui \
     Calibration/calibrationtracedialog.ui \
     Calibration/calkitdialog.ui \
+    Calibration/frequencycaldialog.ui \
     Calibration/manualcalibrationdialog.ui \
     CustomWidgets/jsonpickerdialog.ui \
     CustomWidgets/tilewidget.ui \

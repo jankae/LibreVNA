@@ -1,7 +1,8 @@
-#include "AmplitudeCal.hpp"
+#include <Cal.hpp>
 #include <cstring>
 #include "Communication.h"
 #include "HW_HAL.hpp"
+#include "Hardware.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"CAL"
@@ -9,26 +10,27 @@
 
 
 // increment when Calibration struct format changed. If a wrong version is found in flash, it will revert to default values
-static constexpr uint16_t version = 0x0000;
+static constexpr uint16_t version = 0x0001;
 
 using CorrectionTable = struct {
 	uint8_t usedPoints;
-	uint32_t freq[AmplitudeCal::maxPoints]; // LSB = 10Hz
-	int16_t port1Correction[AmplitudeCal::maxPoints]; // LSB = 0.01db
-	int16_t port2Correction[AmplitudeCal::maxPoints]; // LSB = 0.01db
+	uint32_t freq[Cal::maxPoints]; // LSB = 10Hz
+	int16_t port1Correction[Cal::maxPoints]; // LSB = 0.01db
+	int16_t port2Correction[Cal::maxPoints]; // LSB = 0.01db
 };
 
 using Calibration = struct _calibration {
 	uint16_t version;
 	CorrectionTable Source;
 	CorrectionTable Receiver;
+	float TCXO_PPM_correction;
 };
 
 static Calibration cal;
 
-static_assert(sizeof(cal) <= AmplitudeCal::flash_size, "Reserved flash size is too small");
+static_assert(sizeof(cal) <= Cal::flash_size, "Reserved flash size is too small");
 
-bool AmplitudeCal::Load() {
+bool Cal::Load() {
 	HWHAL::flash.read(flash_address, sizeof(cal), &cal);
 	if(cal.version != version) {
 		LOG_WARN("Invalid version in flash, expected %u, got %u", version, cal.version);
@@ -44,7 +46,7 @@ bool AmplitudeCal::Load() {
 	}
 }
 
-bool AmplitudeCal::Save() {
+bool Cal::Save() {
 	if(!HWHAL::flash.eraseRange(flash_address, flash_size)) {
 		return false;
 	}
@@ -56,7 +58,7 @@ bool AmplitudeCal::Save() {
 	return HWHAL::flash.write(flash_address, write_size, &cal);
 }
 
-void AmplitudeCal::SetDefault() {
+void Cal::SetDefault() {
 	memset(&cal, 0, sizeof(cal));
 	cal.version = version;
 	cal.Source.usedPoints = 1;
@@ -66,10 +68,10 @@ void AmplitudeCal::SetDefault() {
 	LOG_INFO("Set to default");
 }
 
-static AmplitudeCal::Correction InterpolateCorrection(const CorrectionTable& table, uint64_t freq) {
+static Cal::Correction InterpolateCorrection(const CorrectionTable& table, uint64_t freq) {
 	// adjust LSB to match table
 	freq /= 10;
-	AmplitudeCal::Correction ret;
+	Cal::Correction ret;
 	// find first valid index that is higher than the given frequency
 	uint8_t i = 0;
 	for (; i < table.usedPoints; i++) {
@@ -94,11 +96,11 @@ static AmplitudeCal::Correction InterpolateCorrection(const CorrectionTable& tab
 	return ret;
 }
 
-AmplitudeCal::Correction AmplitudeCal::SourceCorrection(uint64_t freq) {
+Cal::Correction Cal::SourceCorrection(uint64_t freq) {
 	return InterpolateCorrection(cal.Source, freq);
 }
 
-AmplitudeCal::Correction AmplitudeCal::ReceiverCorrection(uint64_t freq) {
+Cal::Correction Cal::ReceiverCorrection(uint64_t freq) {
 	return InterpolateCorrection(cal.Receiver, freq);
 }
 
@@ -116,34 +118,64 @@ static void SendCorrectionTable(const CorrectionTable& table, Protocol::PacketTy
 	}
 }
 
-void AmplitudeCal::SendSource() {
+void Cal::SendSource() {
 	SendCorrectionTable(cal.Source, Protocol::PacketType::SourceCalPoint);
 }
 
-void AmplitudeCal::SendReceiver() {
+void Cal::SendReceiver() {
 	SendCorrectionTable(cal.Receiver, Protocol::PacketType::ReceiverCalPoint);
 }
 
 static void addPoint(CorrectionTable& table, const Protocol::AmplitudeCorrectionPoint& p) {
-	if(p.pointNum >= AmplitudeCal::maxPoints) {
+	if(p.pointNum >= Cal::maxPoints) {
 		// ignore out-of-bounds point
 		return;
 	}
 	table.freq[p.pointNum] = p.freq;
 	table.port1Correction[p.pointNum] = p.port1;
 	table.port2Correction[p.pointNum] = p.port2;
-	if(p.pointNum == p.totalPoints - 1 || p.pointNum == AmplitudeCal::maxPoints - 1) {
+	if(p.pointNum == p.totalPoints - 1 || p.pointNum == Cal::maxPoints - 1) {
 		// this was the last point, update used points and save
 		table.usedPoints = p.totalPoints;
 		LOG_INFO("Last point received, saving to flash");
-		AmplitudeCal::Save();
+		Cal::Save();
 	}
 }
 
-void AmplitudeCal::AddSourcePoint(const Protocol::AmplitudeCorrectionPoint& p) {
+void Cal::AddSourcePoint(const Protocol::AmplitudeCorrectionPoint& p) {
 	addPoint(cal.Source, p);
 }
 
-void AmplitudeCal::AddReceiverPoint(const Protocol::AmplitudeCorrectionPoint& p) {
+void Cal::AddReceiverPoint(const Protocol::AmplitudeCorrectionPoint& p) {
 	addPoint(cal.Receiver, p);
+}
+
+uint64_t Cal::FrequencyCorrectionToDevice(uint64_t freq) {
+	// The frequency calibration is only used when the internal reference is active.
+	// If an external reference is in use, it is assumed to already be at the correct frequency
+	if(!HW::Ref::usingExternal()) {
+		freq -= freq * cal.TCXO_PPM_correction * 1e-6f;
+	}
+	return freq;
+}
+
+uint64_t Cal::FrequencyCorrectionFromDevice(uint64_t freq) {
+	if(!HW::Ref::usingExternal()) {
+		// this formula is not exactly correct, it should actually be
+		// freq *= (1+PPM*10^-6). However, this can not be used directly
+		// due to floating point limitation. But the error of this approximation
+		// is so small that is doesn't make a difference (as the result only has
+		// 1Hz resolution anyway)
+		freq += freq * cal.TCXO_PPM_correction * 1e-6f;
+	}
+	return freq;
+}
+
+float Cal::getFrequencyCal() {
+	return cal.TCXO_PPM_correction;
+}
+
+bool Cal::setFrequencyCal(float ppm) {
+	cal.TCXO_PPM_correction = ppm;
+	return Save();
 }

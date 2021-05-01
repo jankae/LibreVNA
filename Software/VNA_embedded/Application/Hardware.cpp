@@ -235,7 +235,7 @@ void HW::SetIdle() {
 
 HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool applyCorrections, bool port2) {
 	if (applyCorrections) {
-		auto correction = AmplitudeCal::SourceCorrection(freq);
+		auto correction = Cal::SourceCorrection(freq);
 		if (port2) {
 			cdbm += correction.port2;
 		} else {
@@ -334,6 +334,10 @@ bool HW::Ref::available() {
 
 void HW::Ref::set(Protocol::ReferenceSettings s) {
 	ref = s;
+}
+
+bool HW::Ref::usingExternal() {
+	return extRefInUse;
 }
 
 void HW::Ref::update() {

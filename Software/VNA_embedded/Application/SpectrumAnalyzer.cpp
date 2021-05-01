@@ -38,6 +38,7 @@ static bool trackingLowband;
 
 static void StartNextSample() {
 	uint64_t freq = s.f_start + (s.f_stop - s.f_start) * pointCnt / (points - 1);
+	freq = Cal::FrequencyCorrectionToDevice(freq);
 	uint64_t LO1freq;
 	uint32_t LO2freq;
 	switch(signalIDstep) {
@@ -364,7 +365,7 @@ void SA::Work() {
 				p.spectrumResult.port1 /= 253000000.0;
 				p.spectrumResult.port2 /= 253000000.0;
 				if (s.applyReceiverCorrection) {
-					auto correction = AmplitudeCal::ReceiverCorrection(p.spectrumResult.frequency);
+					auto correction = Cal::ReceiverCorrection(p.spectrumResult.frequency);
 					p.spectrumResult.port1 *= powf(10.0f, (float) correction.port1 / 100.0f / 20.0f);
 					p.spectrumResult.port2 *= powf(10.0f, (float) correction.port2 / 100.0f / 20.0f);
 				}

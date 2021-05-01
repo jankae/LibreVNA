@@ -53,6 +53,7 @@ private slots:
     void DeviceNeedsUpdate(int reported, int expected);
     void SourceCalibrationDialog();
     void ReceiverCalibrationDialog();
+    void FrequencyCalibrationDialog();
     nlohmann::json SaveSetup();
     void LoadSetup(nlohmann::json j);
 private:

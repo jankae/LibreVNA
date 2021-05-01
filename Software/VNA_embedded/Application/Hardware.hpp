@@ -1,9 +1,9 @@
 #pragma once
 
+#include <Cal.hpp>
 #include <cstdint>
 #include "Protocol.hpp"
 #include "FPGA/FPGA.hpp"
-#include "AmplitudeCal.hpp"
 #include "max2871.hpp"
 #include "Si5351C.hpp"
 
@@ -73,7 +73,7 @@ static constexpr Protocol::DeviceInfo Info = {
 		.limits_cdbm_max = 0,
 		.limits_minRBW = (uint32_t) (ADCSamplerate * 2.23f / MaxSamples),
 		.limits_maxRBW = (uint32_t) (ADCSamplerate * 2.23f / MinSamples),
-		.limits_maxAmplitudePoints = AmplitudeCal::maxPoints,
+		.limits_maxAmplitudePoints = Cal::maxPoints,
 		.limits_maxFreqHarmonic = 18000000000,
 };
 
@@ -106,6 +106,7 @@ bool GetTemps(uint8_t *source, uint8_t *lo);
 void fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy = false);
 namespace Ref {
 	bool available();
+	bool usingExternal();
 	// reference won't change until update is called
 	void set(Protocol::ReferenceSettings s);
 	void update();

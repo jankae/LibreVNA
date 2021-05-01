@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 4;
+static constexpr uint16_t Version = 5;
 
 #pragma pack(push, 1)
 
@@ -152,6 +152,10 @@ using AmplitudeCorrectionPoint = struct _amplitudecorrectionpoint {
 	int16_t port2;
 };
 
+using FrequencyCorrection = struct _frequencycorrection {
+	float ppm;
+};
+
 enum class PacketType : uint8_t {
 	None = 0,
 	Datapoint = 1,
@@ -174,6 +178,8 @@ enum class PacketType : uint8_t {
 	SourceCalPoint = 18,
 	ReceiverCalPoint = 19,
 	SetIdle = 20,
+	RequestFrequencyCorrection = 21,
+	FrequencyCorrection = 22,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -190,6 +196,7 @@ using PacketInfo = struct _packetinfo {
         SpectrumAnalyzerSettings spectrumSettings;
         SpectrumAnalyzerResult spectrumResult;
         AmplitudeCorrectionPoint amplitudePoint;
+        FrequencyCorrection frequencyCorrection;
 	};
 };
 

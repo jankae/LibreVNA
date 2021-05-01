@@ -46,6 +46,7 @@
 #include "SpectrumAnalyzer/spectrumanalyzer.h"
 #include "Calibration/sourcecaldialog.h"
 #include "Calibration/receivercaldialog.h"
+#include "Calibration/frequencycaldialog.h"
 #include <QDebug>
 #include "CustomWidgets/jsonpickerdialog.h"
 #include <QCommandLineParser>
@@ -185,6 +186,7 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
     connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
     connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
+    connect(ui->actionFrequency_Calibration, &QAction::triggered, this, &AppWindow::FrequencyCalibrationDialog);
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         // save previous SCPI settings in case they change
         auto &p = Preferences::getInstance();
@@ -291,6 +293,7 @@ bool AppWindow::ConnectToDevice(QString serial)
         ui->actionFirmware_Update->setEnabled(true);
         ui->actionSource_Calibration->setEnabled(true);
         ui->actionReceiver_Calibration->setEnabled(true);
+        ui->actionFrequency_Calibration->setEnabled(true);
 
         Mode::getActiveMode()->initializeDevice();
         UpdateReference();
@@ -321,6 +324,7 @@ void AppWindow::DisconnectDevice()
     ui->actionFirmware_Update->setEnabled(false);
     ui->actionSource_Calibration->setEnabled(false);
     ui->actionReceiver_Calibration->setEnabled(false);
+    ui->actionFrequency_Calibration->setEnabled(false);
     for(auto a : deviceActionGroup->actions()) {
         a->setChecked(false);
     }
@@ -651,6 +655,12 @@ void AppWindow::SourceCalibrationDialog()
 void AppWindow::ReceiverCalibrationDialog()
 {
     auto d = new ReceiverCalDialog(device);
+    d->exec();
+}
+
+void AppWindow::FrequencyCalibrationDialog()
+{
+    auto d = new FrequencyCalDialog(device);
     d->exec();
 }
 

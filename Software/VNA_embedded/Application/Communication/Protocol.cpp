@@ -99,6 +99,7 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::SpectrumAnalyzerResult: payload_size = sizeof(packet.spectrumResult); break;
     case PacketType::SourceCalPoint:
     case PacketType::ReceiverCalPoint: payload_size = sizeof(packet.amplitudePoint); break;
+    case PacketType::FrequencyCorrection: payload_size = sizeof(packet.frequencyCorrection); break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
@@ -107,6 +108,7 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::RequestSourceCal:
     case PacketType::RequestReceiverCal:
     case PacketType::SetIdle:
+    case PacketType::RequestFrequencyCorrection:
         // no payload
         break;
     case PacketType::None:

@@ -1,3 +1,4 @@
+#include <Cal.hpp>
 #include <VNA.hpp>
 #include "App.h"
 
@@ -18,7 +19,6 @@
 #include "Generator.hpp"
 #include "SpectrumAnalyzer.hpp"
 #include "HW_HAL.hpp"
-#include "AmplitudeCal.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -86,7 +86,7 @@ void App_Start() {
 	EN_6V_GPIO_Port->BSRR = EN_6V_Pin;
 #endif
 
-	AmplitudeCal::Load();
+	Cal::Load();
 
 	if (!HW::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
@@ -191,18 +191,31 @@ void App_Start() {
 #endif
 				case Protocol::PacketType::RequestSourceCal:
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
-					AmplitudeCal::SendSource();
+					Cal::SendSource();
 					break;
 				case Protocol::PacketType::RequestReceiverCal:
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
-					AmplitudeCal::SendReceiver();
+					Cal::SendReceiver();
 					break;
 				case Protocol::PacketType::SourceCalPoint:
-					AmplitudeCal::AddSourcePoint(recv_packet.amplitudePoint);
+					Cal::AddSourcePoint(recv_packet.amplitudePoint);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ReceiverCalPoint:
-					AmplitudeCal::AddReceiverPoint(recv_packet.amplitudePoint);
+					Cal::AddReceiverPoint(recv_packet.amplitudePoint);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
+				case Protocol::PacketType::RequestFrequencyCorrection:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					{
+						Protocol::PacketInfo send;
+						send.type = Protocol::PacketType::FrequencyCorrection;
+						send.frequencyCorrection.ppm = Cal::getFrequencyCal();
+						Communication::Send(send);
+					}
+					break;
+				case Protocol::PacketType::FrequencyCorrection:
+					Cal::setFrequencyCal(recv_packet.frequencyCorrection.ppm);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				default:

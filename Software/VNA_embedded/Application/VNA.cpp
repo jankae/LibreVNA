@@ -117,6 +117,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	for (uint16_t i = 0; i < points; i++) {
 		bool harmonic_mixing = false;
 		uint64_t freq = s.f_start + (s.f_stop - s.f_start) * i / (points - 1);
+		freq = Cal::FrequencyCorrectionToDevice(freq);
 
 		if(freq > 6000000000ULL) {
 			harmonic_mixing = true;
