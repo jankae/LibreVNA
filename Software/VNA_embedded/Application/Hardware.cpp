@@ -364,13 +364,13 @@ void HW::Ref::update() {
 				LOG_WARN("Forced switch to external reference but no signal detected");
 			}
 			Si5351.ConfigureCLKIn(10000000);
-			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::CLKIN);
-			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::CLKIN);
+			Si5351.SetPLL(Si5351C::PLL::A, 832000000, Si5351C::PLLSource::CLKIN);
+			Si5351.SetPLL(Si5351C::PLL::B, 832000000, Si5351C::PLLSource::CLKIN);
 			LOG_INFO("Switched to external reference");
 			FPGA::Enable(FPGA::Periphery::ExtRefLED);
 		} else {
-			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::XTAL);
-			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::XTAL);
+			Si5351.SetPLL(Si5351C::PLL::A, 832000000, Si5351C::PLLSource::XTAL);
+			Si5351.SetPLL(Si5351C::PLL::B, 832000000, Si5351C::PLLSource::XTAL);
 			LOG_INFO("Switched to internal reference");
 			FPGA::Disable(FPGA::Periphery::ExtRefLED);
 		}
