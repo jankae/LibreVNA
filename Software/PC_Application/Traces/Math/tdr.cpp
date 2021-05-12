@@ -160,6 +160,18 @@ void TDR::fromJSON(nlohmann::json j)
     }
 }
 
+void TDR::setMode(Mode m)
+{
+    if(mode == m) {
+        // already set to correct mode
+        return;
+    }
+    mode = m;
+    if(input) {
+        inputSamplesChanged(0, input->rData().size());
+    }
+}
+
 void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
     Q_UNUSED(end);

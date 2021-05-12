@@ -135,6 +135,10 @@ void Math::TimeGate::fromJSON(nlohmann::json j)
 
 void Math::TimeGate::setStart(double start)
 {
+    if(input && input->rData().size() > 0 && start < input->rData().front().x) {
+        start = input->rData().back().x;
+    }
+
     double stop = center + span / 2;
     if(start < stop) {
         span = stop - start;
@@ -148,6 +152,10 @@ void Math::TimeGate::setStart(double start)
 
 void Math::TimeGate::setStop(double stop)
 {
+    if(input && input->rData().size() > 0 && stop > input->rData().back().x) {
+        stop = input->rData().back().x;
+    }
+
     double start = center - span / 2;
     if(stop > start) {
         span = stop - start;
@@ -198,7 +206,11 @@ void Math::TimeGate::inputSamplesChanged(unsigned int begin, unsigned int end)
         data[i].y *= filter[i];
     }
     emit outputSamplesChanged(begin, end);
-    success();
+    if(input->rData().size() > 0) {
+        success();
+    } else {
+        warning("No input data");
+    }
 }
 
 void Math::TimeGate::updateFilter()
@@ -214,12 +226,16 @@ void Math::TimeGate::updateFilter()
     }
     auto maxX = input->rData().back().x;
     auto minX = input->rData().front().x;
-    if(center - span / 2 < minX) {
-        span = (center - minX) * 2;
-    }
-    if(center + span / 2 > maxX) {
-        span = (maxX - center) * 2;
-    }
+
+//    auto c1 = center - span / 2;
+//    auto c2 = center + span / 2;
+
+//    if(c1 < minX) {
+//        c1 = minX;
+//    }
+//    if(c2 > maxX) {
+//        c2 = maxX;
+//    }
     auto wc1 = Util::Scale<double>(center - span / 2, minX, maxX, 0, 1);
     auto wc2 = Util::Scale<double>(center + span / 2, minX, maxX, 0, 1);
 
@@ -265,6 +281,10 @@ Math::TimeGateGraph::TimeGateGraph(QWidget *parent)
 
 QPoint Math::TimeGateGraph::plotValueToPixel(double x, double y)
 {
+    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+        return QPoint(0, 0);
+    }
+
     auto input = gate->getInput()->rData();
     auto minX = input.front().x;
     auto maxX = input.back().x;
@@ -282,6 +302,10 @@ QPoint Math::TimeGateGraph::plotValueToPixel(double x, double y)
 
 QPointF Math::TimeGateGraph::pixelToPlotValue(QPoint p)
 {
+    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+        return QPointF(0.0, 0.0);
+    }
+
     auto input = gate->getInput()->rData();
     auto minX = input.front().x;
     auto maxX = input.back().x;
@@ -367,10 +391,19 @@ void Math::TimeGateGraph::mousePressEvent(QMouseEvent *event)
     grabbedStart = false;
     auto startX = plotValueToPixel(gate->getStart(), 0).x();
     auto stopX = plotValueToPixel(gate->getStop(), 0).x();
-    if(abs(event->pos().x() - startX) < catchDistance) {
+    auto distStart = abs(event->pos().x() - startX);
+    auto distStop = abs(event->pos().x() - stopX);
+    if(distStart < distStop && distStart < catchDistance) {
         grabbedStart = true;
-    } else if(abs(event->pos().x() - stopX) < catchDistance) {
+    } else if(distStop < distStart && distStop < catchDistance) {
         grabbedStop = true;
+    } else if(distStop == distStart && distStop < catchDistance) {
+        // could happen if start/stop are close to each with respect to input range
+        if(event->pos().x() > stopX) {
+            grabbedStop = true;
+        } else {
+            grabbedStart = true;
+        }
     }
 }
 

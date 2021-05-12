@@ -3,6 +3,8 @@
 #include <QColorDialog>
 #include <QFileDialog>
 #include "ui_newtracemathdialog.h"
+#include "Math/tdr.h"
+
 namespace Ui {
 class NewTraceMathDialog;
 }
@@ -145,18 +147,33 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             auto newMath = TraceMath::createMath(type);
             model->addOperations(newMath);
             if(newMath.size() == 1) {
-               // any normal math operation added, edit now
-               newMath[0]->edit();
+                // any normal math operation added, edit now
+                newMath[0]->edit();
             } else {
-               // composite operation added, check which one and edit the correct suboperation
-               switch(type) {
-               case TraceMath::Type::TimeDomainGating:
-                   // TDR/DFT can be left at default, edit the actual gate
-                   newMath[1]->edit();
+                // composite operation added, check which one and edit the correct suboperation
+                switch(type) {
+                case TraceMath::Type::TimeDomainGating:
+                    // Automatically select bandpass/lowpass TDR, depending on selected span
+                    if(newMath[0]->getInput()->rData().size() > 0) {
+                        // Automatically select bandpass/lowpass TDR, depending on selected span
+                        auto tdr = (Math::TDR*) newMath[0];
+                        auto fstart = tdr->getInput()->rData().front().x;
+                        auto fstop = tdr->getInput()->rData().back().x;
+
+                        if(fstart < fstop / 100.0) {
+                            tdr->setMode(Math::TDR::Mode::Lowpass);
+                        } else {
+                            // lowpass mode would result in very few points in the time domain, switch to bandpass mode
+                            tdr->setMode(Math::TDR::Mode::Bandpass);
+                        }
+                    }
+
+                    // TDR/DFT can be left at default, edit the actual gate
+                    newMath[1]->edit();
                    break;
-               default:
+                default:
                    break;
-               }
+                }
             }
         });
         ui->list->setCurrentRow(0);

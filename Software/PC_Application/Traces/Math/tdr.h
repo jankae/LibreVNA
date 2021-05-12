@@ -25,6 +25,7 @@ public:
         Lowpass,
         Bandpass,
     };
+    void setMode(Mode m);
     Mode getMode() const;
     const WindowFunction& getWindow() const;
 
