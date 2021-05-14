@@ -258,13 +258,40 @@ QString TraceMarker::readableData(Format f)
         switch(type) {
         case Type::PeakTable:
             return "Found " + QString::number(helperMarkers.size()) + " peaks";
-        case Type::Delta:
-            // TODO
-            return "TODO";
+        case Type::Delta: {
+            if(!delta) {
+                return "Invalid delta marker";
+            }
+            switch(f) {
+            case Format::dB: return "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 4);
+            case Format::dBAngle: {
+                QString ret = "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 4) + "/";
+                auto phase = arg(data)*180/M_PI;
+                auto deltaphase = arg(delta->data)*180/M_PI;
+                auto phasediff = phase - deltaphase;
+                if(phasediff >= 2*M_PI) {
+                    phasediff -= 2*M_PI;
+                } else if(phasediff <= -2*M_PI) {
+                    phasediff += 2*M_PI;
+                }
+                ret += Unit::ToString(phasediff, "°", " ", 4);
+                return ret;
+            }
+            case Format::RealImag: return "Δ:"+Unit::ToString(data.real() - delta->data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag() - delta->data.imag(), "", " ", 5)+"j";
+            case Format::Impedance: {
+                auto impedance = 50.0 * (1.0 + data) / (1.0 - data);
+                auto delta_impedance = 50.0 * (1.0 + delta->data) / (1.0 - delta->data);
+                return "Δ:"+Unit::ToString(impedance.real() - delta_impedance.real(), "Ω", "m k", 5) + "+"+Unit::ToString(impedance.imag() - delta_impedance.imag(), "Ω", "m k", 5)+"j";
+            }
+            case Format::Noise: return "Δ:"+Unit::ToString(parentTrace->getNoise(position) - delta->parentTrace->getNoise(delta->position), "dbm/Hz", " ", 3);
+            default: return "Invalid";
+            }
+        }
+            break;
         default:
             switch(f) {
             case Format::dB: return Unit::ToString(Unit::dB(data), "dB", " ", 4);
-            case Format::dBAngle: return Unit::ToString(Unit::dB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 3);
+            case Format::dBAngle: return Unit::ToString(Unit::dB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 4);
             case Format::RealImag: return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
             case Format::Noise: return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
             case Format::TOI: {
@@ -333,6 +360,22 @@ QString TraceMarker::readableData(Format f)
         }
     }
     return "Invalid";
+}
+
+QString TraceMarker::readablePosition()
+{
+    auto pos = position;
+    QString ret;
+    if(type == Type::Delta && delta) {
+        pos -= delta->position;
+        ret += "Δ:";
+    }
+    if(isTimeDomain()) {
+        ret += Unit::ToString(pos, "s", "pnum ", 6);
+    } else {
+        ret += Unit::ToString(pos, "Hz", " kMG", 6);
+    }
+    return ret;
 }
 
 QString TraceMarker::readableSettings()

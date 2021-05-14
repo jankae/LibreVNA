@@ -46,6 +46,7 @@ public:
     std::vector<Format> applicableFormats();
 
     QString readableData(Format format = Format::Last);
+    QString readablePosition();
     QString readableSettings();
     QString tooltipSettings();
     QString readableType();

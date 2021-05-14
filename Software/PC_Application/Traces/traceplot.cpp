@@ -158,7 +158,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
             hasMarkerData = true;
 
             auto textArea = QRect(width() - marginRight - marginMarkerData, y, width() - marginRight, y + 100);
-            p.drawText(textArea, 0, "Marker "+QString::number(m->getNumber())+m->getSuffix()+": "+Unit::ToString(m->getPosition(), "", "pnum kMG", 6), &usedArea);
+            p.drawText(textArea, 0, "Marker "+QString::number(m->getNumber())+m->getSuffix()+": "+m->readablePosition(), &usedArea);
             y += usedArea.height();
 
             for(auto f : m->getGraphDisplayFormats()) {
