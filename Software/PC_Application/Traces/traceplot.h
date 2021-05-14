@@ -72,11 +72,15 @@ protected slots:
     void checkIfStillSupported(Trace *t);
     virtual void markerAdded(TraceMarker *m);
     virtual void markerRemoved(TraceMarker *m);
+    virtual bool xCoordinateVisible(double x) = 0;
 protected:
     static constexpr unsigned int marginTop = 20;
     static constexpr unsigned int marginBottom = 0;
     static constexpr unsigned int marginLeft = 0;
     static constexpr unsigned int marginRight = 0;
+
+    static constexpr unsigned int marginMarkerData = 150;
+
     double sweep_fmin, sweep_fmax;
     TraceModel &model;
     TraceMarker *selectedMarker;

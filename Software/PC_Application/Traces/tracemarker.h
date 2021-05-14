@@ -103,6 +103,8 @@ public:
     unsigned int toHash();
 
 
+    std::set<Format> getGraphDisplayFormats() const;
+
 public slots:
     void setPosition(double freq);
 signals:

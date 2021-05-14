@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QMimeData>
 #include <QDebug>
+#include "unit.h"
 
 std::set<TracePlot*> TracePlot::plots;
 
@@ -118,28 +119,63 @@ void TracePlot::paintEvent(QPaintEvent *event)
     p.setBackground(QBrush(pref.General.graphColors.background));
     p.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
 
-    // show names of active traces
-    QFont font = p.font();
-    font.setPixelSize(12);
-    p.setFont(font);
-    int x = 1;
+    // show names of active traces and marker data (if enabled)
+    bool hasMarkerData = false;
+    int x = 1; // xcoordinate for the next trace name
+    int y = marginTop; // ycoordinate for the next marker data
     for(auto t : traces) {
         if(!t.second || !t.first->isVisible()) {
             continue;
         }
         auto textArea = QRect(x, 0, width() - x, marginTop);
         QRect usedArea;
+        QFont font = p.font();
+        font.setPixelSize(12);
+        p.setFont(font);
         p.setPen(t.first->color());
         p.drawText(textArea, 0, t.first->name() + " ", &usedArea);
         x += usedArea.width();
-        if(x >= width()) {
-            // used up all available space
-            break;
+
+        auto tmarkers = t.first->getMarkers();
+
+        font.setPixelSize(12);
+        p.setFont(font);
+        for(auto m : tmarkers) {
+            if(!xCoordinateVisible(m->getPosition())) {
+                // marker not visible with current plot settings
+                continue;
+            }
+            if(m->getGraphDisplayFormats().size() == 0) {
+                // this marker has nothing to display
+                continue;
+            }
+            hasMarkerData = true;
+
+            auto textArea = QRect(width() - marginRight - marginMarkerData, y, width() - marginRight, y + 100);
+            p.drawText(textArea, 0, "Marker "+QString::number(m->getNumber())+m->getSuffix()+": "+Unit::ToString(m->getPosition(), "", "pnum kMG", 6), &usedArea);
+            y += usedArea.height();
+
+            for(auto f : m->getGraphDisplayFormats()) {
+                auto textArea = QRect(width() - marginRight - marginMarkerData, y, width() - marginRight, y + 100);
+                p.drawText(textArea, 0, m->readableData(f), &usedArea);
+                y += usedArea.height();
+            }
+            // leave one row empty between markers
+            y += usedArea.height();
         }
     }
 
-    p.setViewport(marginLeft, marginTop, width() - marginLeft - marginRight, height() - marginTop - marginBottom);
-    p.setWindow(0, 0, width() - marginLeft - marginRight, height() - marginTop - marginBottom);
+    unsigned int l = marginLeft;
+    unsigned int t = marginTop;
+    unsigned int w = width() - marginLeft - marginRight;
+    unsigned int h = height() - marginTop - marginBottom;
+
+    if(hasMarkerData) {
+        w -= marginMarkerData;
+    }
+
+    p.setViewport(l, t, w, h);
+    p.setWindow(0, 0, w, h);
 
     draw(p);
 }

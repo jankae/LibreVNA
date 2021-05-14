@@ -204,7 +204,7 @@ QString TraceMarker::readableData(Format f)
         if(type != Type::Delta) {
             switch(f) {
             case Format::dB:
-                return Unit::ToString(Unit::dB(data), "dB", " ", 3);
+                return Unit::ToString(Unit::dB(data), "dB", " ", 4);
             case Format::RealImag:
                 return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
             case Format::Impedance: {
@@ -222,7 +222,7 @@ QString TraceMarker::readableData(Format f)
             }
             switch(f) {
             case Format::dB:
-                return "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 3);
+                return "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 4);
             case Format::RealImag:
                 return "Δ:"+Unit::ToString(data.real() - delta->data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag() - delta->data.real(), "", " ", 5)+"j";
             case Format::Impedance: {
@@ -246,8 +246,8 @@ QString TraceMarker::readableData(Format f)
             return "TODO";
         default:
             switch(f) {
-            case Format::dB: return Unit::ToString(Unit::dB(data), "dB", " ", 3);
-            case Format::dBAngle: return Unit::ToString(Unit::dB(data), "dB", " ", 3) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 3);
+            case Format::dB: return Unit::ToString(Unit::dB(data), "dB", " ", 4);
+            case Format::dBAngle: return Unit::ToString(Unit::dB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 3);
             case Format::RealImag: return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
             case Format::Noise: return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
             case Format::TOI: {
@@ -749,6 +749,11 @@ void TraceMarker::setTableFormat(TraceMarker::Format f)
 
     formatTable = f;
     emit dataChanged(this);
+}
+
+std::set<TraceMarker::Format> TraceMarker::getGraphDisplayFormats() const
+{
+    return formatGraph;
 }
 
 TraceMarker::Type TraceMarker::getType() const

@@ -930,6 +930,15 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel)
     return closestXpos;
 }
 
+bool TraceXYPlot::xCoordinateVisible(double x)
+{
+    if(x >= min(XAxis.rangeMin, XAxis.rangeMax) && x <= max(XAxis.rangeMax, XAxis.rangeMin)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 {
     if(t->outputType() == Trace::DataType::Frequency && XAxis.type != XAxisType::Frequency) {

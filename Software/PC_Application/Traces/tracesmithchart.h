@@ -27,6 +27,7 @@ protected:
     std::complex<double> pixelToData(QPoint p);
     QPoint markerToPixel(TraceMarker *m) override;
     double nearestTracePoint(Trace *t, QPoint pixel) override;
+    virtual bool xCoordinateVisible(double x);
 
     //void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu() override;

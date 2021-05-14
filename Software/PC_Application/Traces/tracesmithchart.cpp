@@ -115,6 +115,20 @@ double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel)
     return t->sample(closestIndex).x;
 }
 
+bool TraceSmithChart::xCoordinateVisible(double x)
+{
+    if(limitToSpan) {
+        if(x >= sweep_fmin && x <= sweep_fmax) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        // complete traces visible
+        return true;
+    }
+}
+
 void TraceSmithChart::draw(QPainter &p) {
     auto pref = Preferences::getInstance();
 
