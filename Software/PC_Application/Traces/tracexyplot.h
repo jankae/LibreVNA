@@ -76,7 +76,7 @@ private:
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
     QPointF pixelToPlotValue(QPoint pixel, int YAxis);
     QPoint markerToPixel(TraceMarker *m) override;
-    double nearestTracePoint(Trace *t, QPoint pixel) override;
+    double nearestTracePoint(Trace *t, QPoint pixel, double *distance = nullptr) override;
     virtual bool xCoordinateVisible(double x);
     void traceDropped(Trace *t, QPoint position) override;
     QString mouseText(QPoint pos) override;

@@ -43,7 +43,7 @@ public:
     static QString formatToString(Format f);
     static Format formatFromString(QString s);
     static std::vector<Format> formats();
-    std::set<Format> applicableFormats();
+    std::vector<Format> applicableFormats();
 
     QString readableData(Format format = Format::Last);
     QString readableSettings();
@@ -116,6 +116,7 @@ signals:
     void traceChanged(TraceMarker *m);
     void beginRemoveHelperMarkers(TraceMarker *m);
     void endRemoveHelperMarkers(TraceMarker *m);
+    void dataFormatChanged(TraceMarker *m);
 
 private slots:
     void parentTraceDeleted(Trace *t);

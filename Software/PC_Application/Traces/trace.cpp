@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <functional>
 #include "unit.h"
+#include "tracemarker.h"
 
 using namespace std;
 
@@ -263,11 +264,13 @@ void Trace::setColor(QColor color) {
 void Trace::addMarker(TraceMarker *m)
 {
     markers.insert(m);
+    connect(m, &TraceMarker::dataFormatChanged, this, &Trace::markerFormatChanged);
     emit markerAdded(m);
 }
 
 void Trace::removeMarker(TraceMarker *m)
 {
+    disconnect(m, &TraceMarker::dataFormatChanged, this, &Trace::markerFormatChanged);
     markers.erase(m);
     emit markerRemoved(m);
 }

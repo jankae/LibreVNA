@@ -229,6 +229,38 @@ void TraceXYPlot::updateContextMenu()
     auto setup = new QAction("Axis setup...", contextmenu);
     connect(setup, &QAction::triggered, this, &TraceXYPlot::axisSetupDialog);
     contextmenu->addAction(setup);
+
+    contextmenu->addSeparator();
+    auto image = new QAction("Save image...", contextmenu);
+    contextmenu->addAction(image);
+    connect(image, &QAction::triggered, [=]() {
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        if(filename.endsWith(".png")) {
+            filename.chop(4);
+        }
+        filename += ".png";
+        grab().save(filename);
+    });
+
+    auto createMarker = contextmenu->addAction("Add marker here");
+    bool activeTraces = false;
+    for(auto t : traces) {
+        if(t.second) {
+            activeTraces = true;
+            break;
+        }
+    }
+    if(!activeTraces) {
+        createMarker->setEnabled(false);
+    }
+    connect(createMarker, &QAction::triggered, [=](){
+        createMarkerAtPosition(contextmenuClickpoint);
+    });
+
     for(int axis = 0;axis < 2;axis++) {
         if(YAxis[axis].type == YAxisType::Disabled) {
             continue;
@@ -255,21 +287,7 @@ void TraceXYPlot::updateContextMenu()
             contextmenu->addAction(action);
         }
     }
-    contextmenu->addSeparator();
-    auto image = new QAction("Save image...", contextmenu);
-    contextmenu->addAction(image);
-    connect(image, &QAction::triggered, [=]() {
-        auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, QFileDialog::DontUseNativeDialog);
-        if(filename.isEmpty()) {
-            // aborted selection
-            return;
-        }
-        if(filename.endsWith(".png")) {
-            filename.chop(4);
-        }
-        filename += ".png";
-        grab().save(filename);
-    });
+
     contextmenu->addSeparator();
     auto close = new QAction("Close", contextmenu);
     contextmenu->addAction(close);
@@ -902,7 +920,7 @@ QPoint TraceXYPlot::markerToPixel(TraceMarker *m)
     return plotValueToPixel(plotPoint, 0);
 }
 
-double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel)
+double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
 {
     if(!tracesAxis[0].count(t)) {
         // trace not enabled
@@ -926,6 +944,9 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel)
     }
     if(XAxis.type == XAxisType::Distance) {
         closestXpos = t->distanceToTime(closestXpos);
+    }
+    if(distance) {
+        *distance = closestDistance;
     }
     return closestXpos;
 }

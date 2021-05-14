@@ -57,6 +57,10 @@ public:
             QColor divisions;
         } graphColors;
         struct {
+            bool showDataOnGraphs;
+            bool showAllData;
+        } markerDefault;
+        struct {
             bool enabled;
             int port;
         } SCPI;
@@ -72,7 +76,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 27> descr = {{
+    const std::array<SettingDescription, 29> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
@@ -98,6 +102,8 @@ private:
         {&General.graphColors.background, "General.graphColors.background", QColor(Qt::black)},
         {&General.graphColors.axis, "General.graphColors.axis", QColor(Qt::white)},
         {&General.graphColors.divisions, "General.graphColors.divisions", QColor(Qt::gray)},
+        {&General.markerDefault.showDataOnGraphs, "General.MarkerDefault.ShowDataOnGraphs", true},
+        {&General.markerDefault.showAllData, "General.MarkerDefault.ShowAllData", false},
         {&General.SCPI.enabled, "General.SCPI.enabled", true},
         {&General.SCPI.port, "General.SCPI.port", 19542},
     }};

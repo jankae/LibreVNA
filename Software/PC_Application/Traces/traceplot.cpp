@@ -5,6 +5,7 @@
 #include <QMimeData>
 #include <QDebug>
 #include "unit.h"
+#include "tracemarkermodel.h"
 
 std::set<TracePlot*> TracePlot::plots;
 
@@ -21,6 +22,8 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
     markedForDeletion = false;
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     lastUpdate = QTime::currentTime();
+    replotTimer.setSingleShot(true);
+    connect(&replotTimer, &QTimer::timeout, this, qOverload<>(&TracePlot::update));
     sweep_fmin = std::numeric_limits<double>::lowest();
     sweep_fmax = std::numeric_limits<double>::max();
     // get notified when the span changes
@@ -52,6 +55,7 @@ void TracePlot::enableTrace(Trace *t, bool enabled)
             // connect signals
             connect(t, &Trace::dataChanged, this, &TracePlot::triggerReplot);
             connect(t, &Trace::visibilityChanged, this, &TracePlot::triggerReplot);
+            connect(t, &Trace::markerFormatChanged, this, &TracePlot::triggerReplot);
             connect(t, &Trace::markerAdded, this, &TracePlot::markerAdded);
             connect(t, &Trace::markerRemoved, this, &TracePlot::markerRemoved);
             connect(t, &Trace::typeChanged, this, &TracePlot::checkIfStillSupported);
@@ -59,6 +63,7 @@ void TracePlot::enableTrace(Trace *t, bool enabled)
             // disconnect from notifications
             disconnect(t, &Trace::dataChanged, this, &TracePlot::triggerReplot);
             disconnect(t, &Trace::visibilityChanged, this, &TracePlot::triggerReplot);
+            disconnect(t, &Trace::markerFormatChanged, this, &TracePlot::triggerReplot);
             disconnect(t, &Trace::markerAdded, this, &TracePlot::markerAdded);
             disconnect(t, &Trace::markerRemoved, this, &TracePlot::markerRemoved);
             disconnect(t, &Trace::typeChanged, this, &TracePlot::checkIfStillSupported);
@@ -101,6 +106,7 @@ void TracePlot::contextMenuEvent(QContextMenuEvent *event)
     } else {
         // no marker, contextmenu of graph
         menu = contextmenu;
+        contextmenuClickpoint = event->pos();
     }
     menu->exec(event->globalPos());
     if(markedForDeletion) {
@@ -183,7 +189,11 @@ void TracePlot::paintEvent(QPaintEvent *event)
 
 void TracePlot::mousePressEvent(QMouseEvent *event)
 {
-    selectedMarker = markerAtPosition(event->pos(), true);
+    if(event->buttons() == Qt::LeftButton) {
+        selectedMarker = markerAtPosition(event->pos(), true);
+    } else {
+        selectedMarker = nullptr;
+    }
 }
 
 void TracePlot::mouseReleaseEvent(QMouseEvent *event)
@@ -259,6 +269,39 @@ TraceMarker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
     }
 }
 
+void TracePlot::createMarkerAtPosition(QPoint p)
+{
+    // transate from point in absolute coordinates to this widget
+    p -= QPoint(marginLeft, marginTop);
+
+    double closestDistance = std::numeric_limits<double>::max();
+    Trace *trace = nullptr;
+    double xpos;
+    for(auto t : traces) {
+        if(!t.second) {
+            // trace not enabled, skip
+            continue;
+        }
+        double distance;
+        auto x = nearestTracePoint(t.first, p, &distance);
+        if(distance < closestDistance) {
+            trace = t.first;
+            xpos = x;
+            closestDistance = distance;
+        }
+    }
+    if(!trace) {
+        // failed to find trace (should not happen)
+        return;
+    }
+
+    auto markerModel = model.getMarkerModel();
+    auto marker = markerModel->createDefaultMarker();
+    marker->assignTrace(trace);
+    marker->setPosition(xpos);
+    markerModel->addMarker(marker);
+}
+
 void TracePlot::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasFormat("trace/pointer")) {
@@ -322,6 +365,8 @@ void TracePlot::triggerReplot()
     if (lastUpdate.msecsTo(now) >= MinUpdateInterval) {
         lastUpdate = now;
         replot();
+    } else {
+        replotTimer.start(MinUpdateInterval);
     }
 }
 

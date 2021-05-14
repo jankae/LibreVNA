@@ -13,6 +13,7 @@ TraceMarkerModel::TraceMarkerModel(TraceModel &model, QObject *parent)
     : QAbstractItemModel(parent),
       model(model)
 {
+    model.setMarkerModel(this);
     markers.clear();
     root = new TraceMarker(this);
 }

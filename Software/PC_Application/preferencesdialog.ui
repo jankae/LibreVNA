@@ -588,6 +588,29 @@
               </widget>
              </item>
              <item>
+              <widget class="QGroupBox" name="groupBox_9">
+               <property name="title">
+                <string>Marker Default Behavior</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_9">
+                <item>
+                 <widget class="QCheckBox" name="GeneralMarkerDataGraph">
+                  <property name="text">
+                   <string>Show data on graphs</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="GeneralMarkerDataGraphAll">
+                  <property name="text">
+                   <string>Show data in all available formats</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
               <widget class="QGroupBox" name="groupBox_8">
                <property name="title">
                 <string>SCPI Control</string>

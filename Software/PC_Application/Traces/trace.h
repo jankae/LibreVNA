@@ -160,6 +160,7 @@ signals:
     void colorChanged(Trace *t);
     void markerAdded(TraceMarker *m);
     void markerRemoved(TraceMarker *m);
+    void markerFormatChanged(TraceMarker *m);
 
 private:
     QString _name;

@@ -94,7 +94,7 @@ QPoint TraceSmithChart::markerToPixel(TraceMarker *m)
     return ret;
 }
 
-double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel)
+double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
 {
     double closestDistance = numeric_limits<double>::max();
     unsigned int closestIndex = 0;
@@ -111,6 +111,9 @@ double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel)
             closestDistance = distance;
             closestIndex = i;
         }
+    }
+    if(distance) {
+        *distance = closestDistance;
     }
     return t->sample(closestIndex).x;
 }
@@ -264,47 +267,13 @@ QString TraceSmithChart::mouseText(QPoint pos)
     }
 }
 
-//void TraceSmithChart::paintEvent(QPaintEvent * /* the event */)
-//{
-//    auto pref = Preferences::getInstance();
-//    QPainter painter(this);
-//    painter.setRenderHint(QPainter::Antialiasing);
-//    painter.setBackground(QBrush(pref.General.graphColors.background));
-//    painter.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
-
-//    double side = qMin(width(), height()) * screenUsage;
-
-//    //painter.setViewport((width()-side)/2, (height()-side)/2, side, side);
-//    //painter.setWindow(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
-
-//    plotToPixelXOffset = width()/2;
-//    plotToPixelYOffset = height()/2;
-//    plotToPixelXScale = side/2;
-//    plotToPixelYScale = -side/2;
-
-//    draw(painter, 2*smithCoordMax/side);
-//}
-
 void TraceSmithChart::updateContextMenu()
 {
-    contextmenu->clear();
     contextmenu->clear();
     auto setup = new QAction("Setup...", contextmenu);
     connect(setup, &QAction::triggered, this, &TraceSmithChart::axisSetupDialog);
     contextmenu->addAction(setup);
-    contextmenu->addSection("Traces");
-    // Populate context menu
-    for(auto t : traces) {
-        auto action = new QAction(t.first->name(), contextmenu);
-        action->setCheckable(true);
-        if(t.second) {
-            action->setChecked(true);
-        }
-        connect(action, &QAction::toggled, [=](bool active) {
-            enableTrace(t.first, active);
-        });
-        contextmenu->addAction(action);
-    }
+
     contextmenu->addSeparator();
     auto image = new QAction("Save image...", contextmenu);
     contextmenu->addAction(image);
@@ -320,6 +289,39 @@ void TraceSmithChart::updateContextMenu()
         filename += ".png";
         grab().save(filename);
     });
+
+    auto createMarker = contextmenu->addAction("Add marker here");
+    bool activeTraces = false;
+    for(auto t : traces) {
+        if(t.second) {
+            activeTraces = true;
+            break;
+        }
+    }
+    if(!activeTraces) {
+        createMarker->setEnabled(false);
+    }
+    connect(createMarker, &QAction::triggered, [=](){
+        createMarkerAtPosition(contextmenuClickpoint);
+    });
+
+    contextmenu->addSection("Traces");
+    // Populate context menu
+    for(auto t : traces) {
+        if(!supported(t.first)) {
+            continue;
+        }
+        auto action = new QAction(t.first->name(), contextmenu);
+        action->setCheckable(true);
+        if(t.second) {
+            action->setChecked(true);
+        }
+        connect(action, &QAction::toggled, [=](bool active) {
+            enableTrace(t.first, active);
+        });
+        contextmenu->addAction(action);
+    }
+
     contextmenu->addSeparator();
     auto close = new QAction("Close", contextmenu);
     contextmenu->addAction(close);

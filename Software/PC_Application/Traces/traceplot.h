@@ -44,18 +44,22 @@ protected:
     virtual bool supported(Trace *t) = 0;
     std::map<Trace*, bool> traces;
     QMenu *contextmenu;
+    QPoint contextmenuClickpoint; // mouse coordinates when the contextmenu was invoked
     QTime lastUpdate;
+    QTimer replotTimer;
     bool markedForDeletion;
     static std::set<TracePlot*> plots;
 
     virtual QPoint markerToPixel(TraceMarker *m) = 0;
-    virtual double nearestTracePoint(Trace *t, QPoint pixel) = 0;
+    virtual double nearestTracePoint(Trace *t, QPoint pixel, double *distance = nullptr) = 0;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void leaveEvent(QEvent *event) override;
 
     TraceMarker *markerAtPosition(QPoint p, bool onlyMovable = false);
+
+    void createMarkerAtPosition(QPoint p);
 
     // handle trace drops
     virtual bool dropSupported(Trace *t) = 0;

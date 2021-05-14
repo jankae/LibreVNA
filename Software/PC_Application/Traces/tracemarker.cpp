@@ -10,6 +10,7 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <QApplication>
+#include "preferences.h"
 
 using namespace std;
 
@@ -46,10 +47,13 @@ TraceMarker::~TraceMarker()
 
 void TraceMarker::assignTrace(Trace *t)
 {
+    bool firstAssignment = false;
     if(parentTrace) {
         // remove connection from previous parent trace
         parentTrace->removeMarker(this);
         disconnect(parentTrace, &Trace::deleted, this, nullptr);
+    } else {
+        firstAssignment = true;
     }
     parentTrace = t;
     if(!getSupportedTypes().count(type)) {
@@ -63,15 +67,28 @@ void TraceMarker::assignTrace(Trace *t)
     connect(parentTrace, &Trace::deleted, this, &TraceMarker::parentTraceDeleted);
     connect(parentTrace, &Trace::dataChanged, this, &TraceMarker::traceDataChanged);
     connect(parentTrace, &Trace::colorChanged, this, &TraceMarker::updateSymbol);
-    connect(parentTrace, &Trace::typeChanged, [=](){
-        emit domainChanged();
-        checkDeltaMarker();
-    });
+    connect(parentTrace, &Trace::typeChanged, this, &TraceMarker::domainChanged);
+    connect(parentTrace, &Trace::typeChanged, this, &TraceMarker::checkDeltaMarker);
     constrainPosition();
     updateSymbol();
     parentTrace->addMarker(this);
     for(auto m : helperMarkers) {
         m->assignTrace(t);
+    }
+
+    if(firstAssignment) {
+        // Marker was just created and this is the first assignment to a trace.
+        // Use display format on graph from preferences
+        auto p = Preferences::getInstance();
+        if(p.General.markerDefault.showDataOnGraphs) {
+            if(p.General.markerDefault.showAllData) {
+                for(auto f : applicableFormats()) {
+                    formatGraph.insert(f);
+                }
+            } else {
+                formatGraph.insert(applicableFormats().front());
+            }
+        }
     }
     constrainFormat();
     update();
@@ -122,19 +139,19 @@ std::vector<TraceMarker::Format> TraceMarker::formats()
     return ret;
 }
 
-std::set<TraceMarker::Format> TraceMarker::applicableFormats()
+std::vector<TraceMarker::Format> TraceMarker::applicableFormats()
 {
-    std::set<Format> ret;
+    std::vector<Format> ret;
     if(isTimeDomain()) {
         switch(type) {
         case Type::Manual:
         case Type::Delta:
-            ret.insert(Format::dB);
-            ret.insert(Format::RealImag);
+            ret.push_back(Format::dB);
+            ret.push_back(Format::RealImag);
             if(parentTrace) {
                 auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
                 if(!isnan(step)) {
-                    ret.insert(Format::Impedance);
+                    ret.push_back(Format::Impedance);
                 }
             }
             break;
@@ -148,36 +165,36 @@ std::set<TraceMarker::Format> TraceMarker::applicableFormats()
         case Type::Maximum:
         case Type::Minimum:
         case Type::PeakTable:
-            ret.insert(Format::dB);
-            ret.insert(Format::dBAngle);
-            ret.insert(Format::RealImag);
+            ret.push_back(Format::dB);
+            ret.push_back(Format::dBAngle);
+            ret.push_back(Format::RealImag);
             if(parentTrace) {
                 if(parentTrace->isReflection()) {
-                    ret.insert(Format::Impedance);
+                    ret.push_back(Format::Impedance);
                 }
                 if(!isnan(parentTrace->getNoise(parentTrace->minX()))) {
-                    ret.insert(Format::Noise);
+                    ret.push_back(Format::Noise);
                 }
             }
 
             break;
         case Type::Bandpass:
-            ret.insert(Format::CenterBandwidth);
-            ret.insert(Format::InsertionLoss);
+            ret.push_back(Format::CenterBandwidth);
+            ret.push_back(Format::InsertionLoss);
             break;
         case Type::Lowpass:
         case Type::Highpass:
-            ret.insert(Format::Cutoff);
-            ret.insert(Format::InsertionLoss);
+            ret.push_back(Format::Cutoff);
+            ret.push_back(Format::InsertionLoss);
             break;
         case Type::PhaseNoise:
-            ret.insert(Format::PhaseNoise);
-            ret.insert(Format::dB);
+            ret.push_back(Format::PhaseNoise);
+            ret.push_back(Format::dB);
             break;
         case Type::TOI:
-            ret.insert(Format::TOI);
-            ret.insert(Format::AvgTone);
-            ret.insert(Format::AvgModulationProduct);
+            ret.push_back(Format::TOI);
+            ret.push_back(Format::AvgTone);
+            ret.push_back(Format::AvgModulationProduct);
             break;
         case Type::Last:
             break;
@@ -490,6 +507,7 @@ void TraceMarker::updateContextmenu()
     }
 
     contextmenu.clear();
+    contextmenu.addSection("Marker");
 
     auto typemenu = contextmenu.addMenu("Type");
     auto typegroup = new QActionGroup(&contextmenu);
@@ -534,9 +552,14 @@ void TraceMarker::updateContextmenu()
             } else {
                 formatGraph.erase(f);
             }
+            emit dataFormatChanged(this);
         });
         graph->addAction(setFormatAction);
     }
+
+    auto deleteAction = new QAction("Delete");
+    connect(deleteAction, &QAction::triggered, this, &TraceMarker::deleteLater);
+    contextmenu.addAction(deleteAction);
 }
 
 std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
@@ -554,16 +577,18 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
             supported.insert(Type::Minimum);
             supported.insert(Type::Delta);
             supported.insert(Type::PeakTable);
+            if(!parentTrace->isReflection()) {
+                supported.insert(Type::Lowpass);
+                supported.insert(Type::Highpass);
+                supported.insert(Type::Bandpass);
+            }
             if(parentTrace->isLive()) {
                 switch(parentTrace->liveParameter()) {
                 case Trace::LiveParameter::S11:
                 case Trace::LiveParameter::S12:
                 case Trace::LiveParameter::S21:
                 case Trace::LiveParameter::S22:
-                    // special VNA marker types
-                    supported.insert(Type::Lowpass);
-                    supported.insert(Type::Highpass);
-                    supported.insert(Type::Bandpass);
+                    // no special marker types for VNA yet
                     break;
                 case Trace::LiveParameter::Port1:
                 case Trace::LiveParameter::Port2:
@@ -595,14 +620,19 @@ void TraceMarker::constrainPosition()
 
 void TraceMarker::constrainFormat()
 {
+    auto vec = applicableFormats();
     // check format
-    if(!applicableFormats().count(formatTable)) {
-        setTableFormat(*applicableFormats().begin());
+    if(std::find(vec.begin(), vec.end(), formatTable) == vec.end()) {
+        setTableFormat(vec.front());
     }
+    std::set<Format> toErase;
     for(auto f : formatGraph) {
-        if(!applicableFormats().count(f)) {
-            formatGraph.erase(f);
+        if(std::find(vec.begin(), vec.end(), f) == vec.end()) {
+            toErase.insert(f);
         }
+    }
+    for(auto f : toErase) {
+        formatGraph.erase(f);
     }
 }
 
@@ -741,14 +771,15 @@ void TraceMarker::setTableFormat(TraceMarker::Format f)
         return;
     }
 
-    if(!applicableFormats().count(f)) {
+    auto vec = applicableFormats();
+    if(std::find(vec.begin(), vec.end(), f) == vec.end()) {
         // can't use requested format for this type of marker
         qWarning() << "Requested marker format" << formatToString(f) << "(not applicable for type" << typeToString(type) <<")";
         return;
     }
 
     formatTable = f;
-    emit dataChanged(this);
+    emit dataFormatChanged(this);
 }
 
 std::set<TraceMarker::Format> TraceMarker::getGraphDisplayFormats() const
