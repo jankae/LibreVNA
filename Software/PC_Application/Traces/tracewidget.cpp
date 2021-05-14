@@ -10,6 +10,7 @@
 #include <QMimeData>
 #include <QDebug>
 #include <QMenu>
+#include "unit.h"
 
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),
@@ -171,7 +172,7 @@ void TraceWidget::SetupSCPI()
             if(std::isnan(d.x)) {
                 return "NaN";
             }
-            return QString::number(20*log10(d.y.real()));
+            return QString::number(Unit::dB(d.y.real()));
         } else {
             if(std::isnan(d.x)) {
                 return "NaN,NaN";

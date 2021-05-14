@@ -345,8 +345,8 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
         auto last = input[i-1];
         auto now = input[i];
 
-        auto y_last = 20*log10(abs(last.y));
-        auto y_now = 20*log10(abs(now.y));
+        auto y_last = Unit::dB(last.y);
+        auto y_now = Unit::dB(now.y);
 
         if(std::isnan(y_last) || std::isnan(y_now) || std::isinf(y_last) || std::isinf(y_now)) {
             continue;
@@ -366,8 +366,8 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
         auto x_last = input[i-1].x;
         auto x_now = input[i].x;
 
-        auto f_last = 20*log10(filter[i-1]);
-        auto f_now = 20*log10(filter[i]);
+        auto f_last = Unit::dB(filter[i-1]);
+        auto f_now = Unit::dB(filter[i]);
 
         if(std::isnan(f_last) || std::isnan(f_now) || std::isinf(f_last) || std::isinf(f_now)) {
             continue;

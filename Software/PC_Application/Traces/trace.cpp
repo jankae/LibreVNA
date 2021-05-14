@@ -5,6 +5,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <functional>
+#include "unit.h"
 
 using namespace std;
 
@@ -867,7 +868,7 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     double max_dbm = -200.0;
     double min_dbm = 200.0;
     for(auto d : lastMath->rData()) {
-        double dbm = 20*log10(abs(d.y));
+        double dbm = Unit::dB(d.y);
         if((dbm >= max_dbm) && (min_dbm <= dbm - minValley)) {
             // potential peak frequency
             frequency = d.x;
@@ -941,7 +942,7 @@ double Trace::getNoise(double frequency)
         return std::numeric_limits<double>::quiet_NaN();
     }
     // convert to dbm
-    auto dbm = 20*log10(abs(lastMath->getInterpolatedSample(frequency).y));
+    auto dbm = Unit::dB(lastMath->getInterpolatedSample(frequency).y);
     // convert to 1Hz bandwidth
     dbm -= 10*log10(settings.SA.RBW);
     return dbm;

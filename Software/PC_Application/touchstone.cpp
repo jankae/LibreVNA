@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cctype>
 #include <string>
+#include "unit.h"
 
 using namespace std;
 
@@ -33,7 +34,7 @@ void Touchstone::AddDatapoint(Touchstone::Datapoint p)
     }
 }
 
-void Touchstone::toFile(string filename, Unit unit, Format format)
+void Touchstone::toFile(string filename, Scale unit, Format format)
 {
     // strip any potential file name extension and apply snp convention
     if(filename.find_last_of('.') != string::npos) {
@@ -49,10 +50,10 @@ void Touchstone::toFile(string filename, Unit unit, Format format)
     // write option line
     file << "# ";
     switch(unit) {
-        case Unit::Hz: file << "HZ "; break;
-        case Unit::kHz: file << "KHZ "; break;
-        case Unit::MHz: file << "MHZ "; break;
-        case Unit::GHz: file << "GHZ "; break;
+        case Scale::Hz: file << "HZ "; break;
+        case Scale::kHz: file << "KHZ "; break;
+        case Scale::MHz: file << "MHZ "; break;
+        case Scale::GHz: file << "GHZ "; break;
     }
     // only S parameters supported so far
     file << "S ";
@@ -73,17 +74,17 @@ void Touchstone::toFile(string filename, Unit unit, Format format)
             out << abs(c) << " " << arg(c) / M_PI * 180.0;
             break;
         case Format::DBAngle:
-            out << 20*log10(abs(c)) << " " << arg(c) / M_PI * 180.0;
+            out << Unit::dB(c) << " " << arg(c) / M_PI * 180.0;
             break;
         }
     };
 
     for(auto p : m_datapoints) {
         switch(unit) {
-            case Unit::Hz: file << p.frequency; break;
-            case Unit::kHz: file << p.frequency / 1e3; break;
-            case Unit::MHz: file << p.frequency / 1e6; break;
-            case Unit::GHz: file << p.frequency / 1e9; break;
+            case Scale::Hz: file << p.frequency; break;
+            case Scale::kHz: file << p.frequency / 1e3; break;
+            case Scale::MHz: file << p.frequency / 1e6; break;
+            case Scale::GHz: file << p.frequency / 1e9; break;
         }
         file << " ";
         // special cases for 1 and 2 port
@@ -141,7 +142,7 @@ Touchstone Touchstone::fromFile(string filename)
     unsigned int ports = filename[index_extension + 2] - '0';
     auto ret = Touchstone(ports);
 
-    Unit unit = Unit::GHz;
+    Scale unit = Scale::GHz;
     Format format = Format::RealImaginary;
 
     bool option_line_found = false;
@@ -187,13 +188,13 @@ Touchstone Touchstone::fromFile(string filename)
                     break;
                 }
                 if (!s.compare("HZ")) {
-                    unit = Unit::Hz;
+                    unit = Scale::Hz;
                 } else if (!s.compare("KHZ")) {
-                    unit = Unit::kHz;
+                    unit = Scale::kHz;
                 } else if (!s.compare("MHZ")) {
-                    unit = Unit::MHz;
+                    unit = Scale::MHz;
                 } else if (!s.compare("GHZ")) {
-                    unit = Unit::GHz;
+                    unit = Scale::GHz;
                 } else if (!s.compare("S")) {
                     // S parameter, nothing to do
                 } else if (!s.compare("Y")) {
@@ -245,10 +246,10 @@ Touchstone Touchstone::fromFile(string filename)
                 iss >> point.frequency;
                 point.S.clear();
                 switch(unit) {
-                    case Unit::Hz: break;
-                    case Unit::kHz: point.frequency *= 1e3; break;
-                    case Unit::MHz: point.frequency *= 1e6; break;
-                    case Unit::GHz: point.frequency *= 1e9; break;
+                    case Scale::Hz: break;
+                    case Scale::kHz: point.frequency *= 1e3; break;
+                    case Scale::MHz: point.frequency *= 1e6; break;
+                    case Scale::GHz: point.frequency *= 1e9; break;
                 }
             }
             unsigned int parameters_per_line;

@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QButtonGroup>
 #include <complex>
+#include "unit.h"
 
 using namespace std;
 
@@ -206,8 +207,8 @@ void ManualControlDialog::NewStatus(Protocol::ManualStatus status)
 
     auto port1referenced = port1 / ref;
     auto port2referenced = port2 / ref;
-    auto port1db = 20*log10(abs(port1referenced));
-    auto port2db = 20*log10(abs(port2referenced));
+    auto port1db = Unit::dB(port1referenced);
+    auto port2db = Unit::dB(port2referenced);
 
     ui->port1referenced->setText(QString::number(port1db, 'f', 1) + "db@" + QString::number(arg(port1referenced)*180/M_PI, 'f', 0) + "°");
     ui->port2referenced->setText(QString::number(port2db, 'f', 1) + "db@" + QString::number(arg(port2referenced)*180/M_PI, 'f', 0) + "°");

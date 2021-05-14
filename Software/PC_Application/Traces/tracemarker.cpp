@@ -1,4 +1,4 @@
-#include "tracemarker.h"
+﻿#include "tracemarker.h"
 #include <QPainter>
 #include "CustomWidgets/siunitedit.h"
 #include <QHBoxLayout>
@@ -9,6 +9,7 @@
 #include "unit.h"
 #include <QMenu>
 #include <QActionGroup>
+#include <QApplication>
 
 using namespace std;
 
@@ -26,7 +27,8 @@ TraceMarker::TraceMarker(TraceMarkerModel *model, int number, TraceMarker *paren
       parent(parent),
       cutoffAmplitude(-3.0),
       peakThreshold(-40.0),
-      offset(10000)
+      offset(10000),
+      formatTable(Format::dBAngle)
 {
     connect(this, &TraceMarker::traceChanged, this, &TraceMarker::updateContextmenu);
     connect(this, &TraceMarker::typeChanged, this, &TraceMarker::updateContextmenu);
@@ -71,6 +73,7 @@ void TraceMarker::assignTrace(Trace *t)
     for(auto m : helperMarkers) {
         m->assignTrace(t);
     }
+    constrainFormat();
     update();
     emit traceChanged(this);
 }
@@ -80,7 +83,110 @@ Trace *TraceMarker::trace()
     return parentTrace;
 }
 
-QString TraceMarker::readableData()
+QString TraceMarker::formatToString(TraceMarker::Format f)
+{
+    switch(f) {
+    case Format::dB: return "dB";
+    case Format::dBAngle: return "dB + angle";
+    case Format::RealImag: return "real + imag";
+    case Format::Impedance: return "Impedance";
+    case Format::TOI: return "Third order intercept";
+    case Format::AvgTone: return "Average Tone Level";
+    case Format::AvgModulationProduct: return "Average Modulation Product Level";
+    case Format::Noise: return "Noise level";
+    case Format::PhaseNoise: return "Phase noise";
+    case Format::Cutoff: return "Cutoff frequency";
+    case Format::CenterBandwidth: return "Center + Bandwidth";
+    case Format::InsertionLoss: return "Insertion loss";
+    case Format::Last: return "";
+    }
+    return "";
+}
+
+TraceMarker::Format TraceMarker::formatFromString(QString s)
+{
+    for(int i=0;i<(int) Format::Last;i++) {
+        if(s.compare(formatToString((Format) i)) == 0) {
+            return (Format) i;
+        }
+    }
+    return Format::Last;
+}
+
+std::vector<TraceMarker::Format> TraceMarker::formats()
+{
+    std::vector<Format> ret;
+    for(int i=0;i<(int) Format::Last;i++) {
+        ret.push_back((Format) i);
+    }
+    return ret;
+}
+
+std::set<TraceMarker::Format> TraceMarker::applicableFormats()
+{
+    std::set<Format> ret;
+    if(isTimeDomain()) {
+        switch(type) {
+        case Type::Manual:
+        case Type::Delta:
+            ret.insert(Format::dB);
+            ret.insert(Format::RealImag);
+            if(parentTrace) {
+                auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
+                if(!isnan(step)) {
+                    ret.insert(Format::Impedance);
+                }
+            }
+            break;
+        default:
+            return {};
+        }
+    } else {
+        switch(type) {
+        case Type::Manual:
+        case Type::Delta:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::PeakTable:
+            ret.insert(Format::dB);
+            ret.insert(Format::dBAngle);
+            ret.insert(Format::RealImag);
+            if(parentTrace) {
+                if(parentTrace->isReflection()) {
+                    ret.insert(Format::Impedance);
+                }
+                if(!isnan(parentTrace->getNoise(parentTrace->minX()))) {
+                    ret.insert(Format::Noise);
+                }
+            }
+
+            break;
+        case Type::Bandpass:
+            ret.insert(Format::CenterBandwidth);
+            ret.insert(Format::InsertionLoss);
+            break;
+        case Type::Lowpass:
+        case Type::Highpass:
+            ret.insert(Format::Cutoff);
+            ret.insert(Format::InsertionLoss);
+            break;
+        case Type::PhaseNoise:
+            ret.insert(Format::PhaseNoise);
+            ret.insert(Format::dB);
+            break;
+        case Type::TOI:
+            ret.insert(Format::TOI);
+            ret.insert(Format::AvgTone);
+            ret.insert(Format::AvgModulationProduct);
+            break;
+        case Type::Last:
+            break;
+        }
+    }
+    return ret;
+}
+
+QString TraceMarker::readableData(Format f)
 {
     if(!parentTrace) {
         return "";
@@ -88,128 +194,128 @@ QString TraceMarker::readableData()
     if(position < parentTrace->minX() || position > parentTrace->maxX()) {
         return "";
     }
+
+    if(f == Format::Last) {
+        // format not explicitly specified, use setting for table
+        f = formatTable;
+    }
+
     if(isTimeDomain()) {
-        switch(type) {
-        case Type::Manual: {
-            QString ret;
-            auto impulse = data.real();
-            auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
-            ret += "Impulse:"+Unit::ToString(impulse, "", "m ", 3);
-            if(!isnan(step)) {
-                ret += " Step:"+Unit::ToString(step, "", "m ", 3);
-                if(abs(step) < 1.0) {
-                    auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
-                    ret += " Impedance:"+Unit::ToString(impedance, "Ω", "m kM", 3);
-                }
+        if(type != Type::Delta) {
+            switch(f) {
+            case Format::dB:
+                return Unit::ToString(Unit::dB(data), "dB", " ", 3);
+            case Format::RealImag:
+                return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
+            case Format::Impedance: {
+                auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
+                auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
+                return Unit::ToString(impedance, "Ω", "m kM", 3);
             }
-            return ret;
-        }
-        case Type::Delta: {
+                break;
+            default:
+                return "Invalid";
+            }
+        } else {
             if(!delta || !delta->isTimeDomain()) {
-                return "Invalid delta marker";
+                return "Invalid";
             }
-            // calculate difference between markers
-            auto impulse = data.real() - delta->data.real();
-            QString ret;
-            auto timeDiff = position - delta->position;
-            auto distanceDiff = parentTrace->timeToDistance(position) - delta->parentTrace->timeToDistance(delta->position);
-            ret += "Δ:"+Unit::ToString(timeDiff, "s", "fpnum ", 4) + "/" + Unit::ToString(distanceDiff, "m", "m k", 4);
-            ret += " ΔImpulse:"+Unit::ToString(impulse, "", "m ", 3);
-            auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
-            auto stepDelta = delta->parentTrace->sample(delta->parentTrace->index(delta->position), Trace::SampleType::TimeStep).y.real();
-            if(!isnan(step) && !isnan(stepDelta)) {
-                auto stepDiff = step - stepDelta;
-                ret += " ΔStep:"+Unit::ToString(stepDiff, "", "m ", 3);
-                if(abs(step) < 1.0 && abs(stepDelta) < 1.0) {
-                    auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
-                    auto impedanceDelta = 50.0 * (1.0 + stepDelta) / (1.0 - stepDelta);
-                    auto impedanceDiff = impedance - impedanceDelta;
-                    ret += " ΔImpedance:"+Unit::ToString(impedanceDiff, "Ω", "m kM", 3);
-                }
+            switch(f) {
+            case Format::dB:
+                return "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 3);
+            case Format::RealImag:
+                return "Δ:"+Unit::ToString(data.real() - delta->data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag() - delta->data.real(), "", " ", 5)+"j";
+            case Format::Impedance: {
+                auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
+                auto stepDelta = delta->parentTrace->sample(delta->parentTrace->index(delta->position), Trace::SampleType::TimeStep).y.real();
+                auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
+                auto impedanceDelta = 50.0 * (1.0 + stepDelta) / (1.0 - stepDelta);
+                return "Δ:"+Unit::ToString(impedance - impedanceDelta, "Ω", "m kM", 3);
             }
-            return ret;
-        }
-        default:
-            return "Invalid type";
+                break;
+            default:
+                return "Invalid";
+            }
         }
     } else {
         switch(type) {
-        case Type::Manual:
-        case Type::Maximum:
-        case Type::Minimum: {
-                auto phase = arg(data);
-                return QString::number(toDecibel(), 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
-            }
-        case Type::Delta:
-            if(!delta || delta->isTimeDomain()) {
-                return "Invalid delta marker";
-            } else {
-                // calculate difference between markers
-                auto freqDiff = position - delta->position;
-                auto valueDiff = data / delta->data;
-                auto phase = arg(valueDiff);
-                auto db = 20*log10(abs(valueDiff));
-                return Unit::ToString(freqDiff, "Hz", " kMG") + " / " + QString::number(db, 'g', 4) + "db@" + QString::number(phase*180/M_PI, 'g', 4);
-            }
-            break;
-        case Type::Noise:
-            return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
         case Type::PeakTable:
             return "Found " + QString::number(helperMarkers.size()) + " peaks";
-        case Type::Lowpass:
-        case Type::Highpass:
-            if(parentTrace->isReflection()) {
-                return "Calculation not possible with reflection measurement";
-            } else {
-                auto insertionLoss = toDecibel();
-                auto cutoff = helperMarkers[0]->toDecibel();
-                QString ret = "fc: ";
-                if(cutoff > insertionLoss + cutoffAmplitude) {
-                    // the trace never dipped below the specified cutoffAmplitude, exact cutoff frequency unknown
-                    ret += type == Type::Lowpass ? ">" : "<";
-                }
-                ret += Unit::ToString(helperMarkers[0]->position, "Hz", " kMG", 4);
-                ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
-                return ret;
-            }
-            break;
-        case Type::Bandpass:
-            if(parentTrace->isReflection()) {
-                return "Calculation not possible with reflection measurement";
-            } else {
-                auto insertionLoss = toDecibel();
-                auto cutoffL = helperMarkers[0]->toDecibel();
-                auto cutoffH = helperMarkers[1]->toDecibel();
-                auto bandwidth = helperMarkers[1]->position - helperMarkers[0]->position;
-                auto center = helperMarkers[2]->position;
-                QString ret = "fc: ";
-                if(cutoffL > insertionLoss + cutoffAmplitude || cutoffH > insertionLoss + cutoffAmplitude) {
-                    // the trace never dipped below the specified cutoffAmplitude, center and exact bandwidth unknown
-                    ret += "?, BW: >";
-                } else {
-                    ret += Unit::ToString(center, "Hz", " kMG", 5)+ ", BW: ";
-                }
-                ret += Unit::ToString(bandwidth, "Hz", " kMG", 4);
-                ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
-                return ret;
-            }
-            break;
-        case Type::TOI: {
-            auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
-            auto avgDistortion = (helperMarkers[2]->toDecibel() + helperMarkers[3]->toDecibel()) / 2;
-            auto TOI = (3 * avgFundamental - avgDistortion) / 2;
-            return "Fundamental: " + Unit::ToString(avgFundamental, "dbm", " ", 3) + ", distortion: " + Unit::ToString(avgDistortion, "dbm", " ", 3) + ", TOI: "+Unit::ToString(TOI, "dbm", " ", 3);
-        }
-            break;
-        case Type::PhaseNoise: {
-            auto carrier = toDecibel();
-            auto phasenoise = parentTrace->getNoise(helperMarkers[0]->position) - carrier;
-            return Unit::ToString(phasenoise, "dbc/Hz", " ", 3)  +"@" + Unit::ToString(offset, "Hz", " kM", 4) + " offset (" + Unit::ToString(position, "Hz", " kMG", 6) + " carrier)";
-        }
+        case Type::Delta:
+            // TODO
+            return "TODO";
         default:
-            return "Unknown marker type";
+            switch(f) {
+            case Format::dB: return Unit::ToString(Unit::dB(data), "dB", " ", 3);
+            case Format::dBAngle: return Unit::ToString(Unit::dB(data), "dB", " ", 3) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 3);
+            case Format::RealImag: return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
+            case Format::Noise: return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
+            case Format::TOI: {
+                auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
+                auto avgDistortion = (helperMarkers[2]->toDecibel() + helperMarkers[3]->toDecibel()) / 2;
+                auto TOI = (3 * avgFundamental - avgDistortion) / 2;
+                return "TOI: "+Unit::ToString(TOI, "dbm", " ", 3);
+            }
+                break;
+            case Format::AvgTone: {
+                auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
+                return "Avg. Tone: " + Unit::ToString(avgFundamental, "dbm", " ", 3);
+            }
+                break;
+            case Format::AvgModulationProduct: {
+                auto avgDistortion = (helperMarkers[2]->toDecibel() + helperMarkers[3]->toDecibel()) / 2;
+                return "Distortion: " + Unit::ToString(avgDistortion, "dbm", " ", 3);
+            }
+                break;
+            case Format::Cutoff:
+                if(parentTrace->isReflection()) {
+                    return "Calculation not possible with reflection measurement";
+                } else {
+                    return "Cutoff:" + Unit::ToString(helperMarkers[0]->position, "Hz", " kMG", 4);
+                }
+            case Format::InsertionLoss:
+                if(parentTrace->isReflection()) {
+                    return "Calculation not possible with reflection measurement";
+                } else {
+                    return "Ins. Loss:"+Unit::ToString(Unit::dB(data), "dB", " ", 3);
+                }
+            case Format::PhaseNoise: {
+                auto carrier = toDecibel();
+                auto phasenoise = parentTrace->getNoise(helperMarkers[0]->position) - carrier;
+                return Unit::ToString(phasenoise, "dbc/Hz", " ", 3)  +"@" + Unit::ToString(offset, "Hz", " kM", 4) + " offset";
+            }
+                break;
+            case Format::Impedance: {
+                auto impedance = 50.0 * (1.0 + data) / (1.0 - data);
+                return Unit::ToString(impedance.real(), "Ω", "m k", 5) + "+"+Unit::ToString(impedance.imag(), "Ω", "m k", 5)+"j";
+            }
+            case Format::CenterBandwidth:
+                if(parentTrace->isReflection()) {
+                    return "Calculation not possible with reflection measurement";
+                } else {
+                    auto insertionLoss = toDecibel();
+                    auto cutoffL = helperMarkers[0]->toDecibel();
+                    auto cutoffH = helperMarkers[1]->toDecibel();
+                    auto bandwidth = helperMarkers[1]->position - helperMarkers[0]->position;
+                    auto center = helperMarkers[2]->position;
+                    QString ret = "fc: ";
+                    if(cutoffL > insertionLoss + cutoffAmplitude || cutoffH > insertionLoss + cutoffAmplitude) {
+                        // the trace never dipped below the specified cutoffAmplitude, center and exact bandwidth unknown
+                        ret += "?, BW: >";
+                    } else {
+                        ret += Unit::ToString(center, "Hz", " kMG", 5)+ ", BW: ";
+                    }
+                    ret += Unit::ToString(bandwidth, "Hz", " kMG", 4);
+                    ret += ", Ins.Loss: >=" + QString::number(-insertionLoss, 'g', 4) + "db";
+                    return ret;
+                }
+                break;
+            case Format::Last:
+                return "Invalid";
+            }
         }
     }
+    return "Invalid";
 }
 
 QString TraceMarker::readableSettings()
@@ -228,7 +334,6 @@ QString TraceMarker::readableSettings()
         case Type::Maximum:
         case Type::Minimum:
         case Type::Delta:
-        case Type::Noise:
             return Unit::ToString(position, "Hz", " kMG", 6);
         case Type::Lowpass:
         case Type::Highpass:
@@ -262,7 +367,6 @@ QString TraceMarker::tooltipSettings()
         case Type::Maximum:
         case Type::Minimum:
         case Type::Delta:
-        case Type::Noise:
             return "Marker frequency";
         case Type::Lowpass:
         case Type::Highpass:
@@ -370,25 +474,70 @@ void TraceMarker::deltaDeleted()
 
 void TraceMarker::updateContextmenu()
 {
-    if(contextmenu) {
-        delete contextmenu;
-    }
-    contextmenu = new QMenu();
-    auto typemenu = new QMenu("Type");
-    auto typegroup = new QActionGroup(contextmenu);
-    for(auto t : getSupportedTypes()) {
-        auto setTypeAction = new QAction(typeToString(t));
-        setTypeAction->setCheckable(true);
-        if(t == type) {
-            setTypeAction->setChecked(true);
+    if(parent) {
+        parent->updateContextmenu();
+        contextmenu = parent->contextmenu;
+    } else {
+        if(contextmenu) {
+            // check if the contextmenu or one of its submenus is currently open
+            auto *activeWidget = QApplication::activePopupWidget();
+            while (activeWidget) {
+                if(activeWidget == contextmenu) {
+                    // contextmenu currently open, do not update
+                    return;
+                }
+                activeWidget = activeWidget->parentWidget();
+            }
+            delete contextmenu;
         }
-        connect(setTypeAction, &QAction::triggered, [=](){
-            setType(t);
-        });
-        typegroup->addAction(setTypeAction);
-        typemenu->addAction(setTypeAction);
+        contextmenu = new QMenu();
+        auto typemenu = contextmenu->addMenu("Type");
+        auto typegroup = new QActionGroup(contextmenu);
+        for(auto t : getSupportedTypes()) {
+            auto setTypeAction = new QAction(typeToString(t));
+            setTypeAction->setCheckable(true);
+            if(t == type) {
+                setTypeAction->setChecked(true);
+            }
+            connect(setTypeAction, &QAction::triggered, [=](){
+                setType(t);
+            });
+            typegroup->addAction(setTypeAction);
+            typemenu->addAction(setTypeAction);
+        }
+
+        auto table = contextmenu->addMenu("Data Format in Table");
+        auto tablegroup = new QActionGroup(contextmenu);
+        for(auto f : applicableFormats()) {
+            auto setFormatAction = new QAction(formatToString(f));
+            setFormatAction->setCheckable(true);
+            if(f == formatTable) {
+                setFormatAction->setChecked(true);
+            }
+            connect(setFormatAction, &QAction::triggered, [=](){
+                setTableFormat(f);
+            });
+            tablegroup->addAction(setFormatAction);
+            table->addAction(setFormatAction);
+        }
+
+        auto graph = contextmenu->addMenu("Show on Graph");
+        for(auto f : applicableFormats()) {
+            auto setFormatAction = new QAction(formatToString(f));
+            setFormatAction->setCheckable(true);
+            if(formatGraph.count(f)) {
+                setFormatAction->setChecked(true);
+            }
+            connect(setFormatAction, &QAction::triggered, [=](bool checked){
+                if(checked) {
+                    formatGraph.insert(f);
+                } else {
+                    formatGraph.erase(f);
+                }
+            });
+            graph->addAction(setFormatAction);
+        }
     }
-    contextmenu->addMenu(typemenu);
 }
 
 std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
@@ -420,7 +569,6 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
                 case Trace::LiveParameter::Port1:
                 case Trace::LiveParameter::Port2:
                     // special SA marker types
-                    supported.insert(Type::Noise);
                     supported.insert(Type::TOI);
                     supported.insert(Type::PhaseNoise);
                     break;
@@ -443,6 +591,19 @@ void TraceMarker::constrainPosition()
             }
         }
         traceDataChanged();
+    }
+}
+
+void TraceMarker::constrainFormat()
+{
+    // check format
+    if(!applicableFormats().count(formatTable)) {
+        setTableFormat(*applicableFormats().begin());
+    }
+    for(auto f : formatGraph) {
+        if(!applicableFormats().count(f)) {
+            formatGraph.erase(f);
+        }
     }
 }
 
@@ -535,7 +696,7 @@ void TraceMarker::setType(TraceMarker::Type t)
         required_helpers = {{"p", "first peak", Type::Manual}, {"p", "second peak", Type::Manual}, {"l", "left intermodulation", Type::Manual}, {"r", "right intermodulation", Type::Manual}};
         break;
     case Type::PhaseNoise:
-        required_helpers = {{"o", "Offset", Type::Noise}};
+        required_helpers = {{"o", "Offset", Type::Manual}};
         break;
     default:
         break;
@@ -548,6 +709,8 @@ void TraceMarker::setType(TraceMarker::Type t)
         helper->setType(h.type);
         helperMarkers.push_back(helper);
     }
+    constrainFormat();
+
     updateSymbol();
     emit typeChanged(this);
     update();
@@ -555,7 +718,7 @@ void TraceMarker::setType(TraceMarker::Type t)
 
 double TraceMarker::toDecibel()
 {
-    return 20*log10(abs(data));
+    return Unit::dB(data);
 }
 
 bool TraceMarker::isVisible()
@@ -565,12 +728,29 @@ bool TraceMarker::isVisible()
     case Type::Delta:
     case Type::Maximum:
     case Type::Minimum:
-    case Type::Noise:
     case Type::PhaseNoise:
         return true;
     default:
         return false;
     }
+}
+
+void TraceMarker::setTableFormat(TraceMarker::Format f)
+{
+    if(formatTable == f) {
+        // already correct format, nothing to do
+        return;
+    }
+
+    if(!applicableFormats().count(f)) {
+        // can't use requested format for this type of marker
+        qWarning() << "Requested marker format" << formatToString(f) << "(not applicable for type" << typeToString(type) <<")";
+        return;
+    }
+
+    formatTable = f;
+    updateContextmenu();
+    emit dataChanged(this);
 }
 
 TraceMarker::Type TraceMarker::getType() const
@@ -609,6 +789,12 @@ nlohmann::json TraceMarker::toJSON()
         // other types have no settings
         break;
     }
+    j["formatTable"] = formatToString(formatTable).toStdString();
+    nlohmann::json jformatGraph;
+    for(auto f : formatGraph) {
+        jformatGraph.push_back(formatToString(f).toStdString());
+    }
+    j["formatGraph"] = jformatGraph;
     return j;
 }
 
@@ -660,6 +846,19 @@ void TraceMarker::fromJSON(nlohmann::json j)
         // other types have no settings
         break;
     }
+    formatTable = formatFromString(QString::fromStdString(j.value("formatTable", formatToString(Format::dBAngle).toStdString())));
+    if(formatTable == Format::Last) {
+        // invalid string, use default
+        formatTable = Format::dBAngle;
+    }
+    formatGraph.clear();
+    for(std::string s : j["formatGraph"]) {
+        auto f = formatFromString(QString::fromStdString(s));
+        if(f != Format::Last) {
+            formatGraph.insert(f);
+        }
+    }
+    updateContextmenu();
     update();
 }
 
@@ -790,7 +989,6 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
         case Type::Maximum:
         case Type::Minimum:
         case Type::Delta:
-        case Type::Noise:
         case Type::PhaseNoise:
         default:
             return new SIUnitEdit("Hz", " kMG", 6);
@@ -829,7 +1027,6 @@ void TraceMarker::adjustSettings(double value)
         case Type::Maximum:
         case Type::Minimum:
         case Type::Delta:
-        case Type::Noise:
             setPosition(value);
             break;
         case Type::Lowpass:
@@ -862,7 +1059,6 @@ void TraceMarker::update()
     switch(type) {
     case Type::Manual:
     case Type::Delta:
-    case Type::Noise:
         // nothing to do
         break;
     case Type::Maximum:
@@ -880,6 +1076,9 @@ void TraceMarker::update()
             helper->suffix = suffix;
             helper->assignTrace(parentTrace);
             helper->setPosition(p);
+            helper->formatTable = formatTable;
+            helper->formatGraph = formatGraph;
+            helper->updateContextmenu();
             suffix++;
             helperMarkers.push_back(helper);
         }
@@ -897,11 +1096,11 @@ void TraceMarker::update()
             setPosition(peakFreq);
             // find the cutoff frequency
             auto index = parentTrace->index(peakFreq);
-            auto peakAmplitude = 20*log10(abs(parentTrace->sample(index).y));
+            auto peakAmplitude = Unit::dB(parentTrace->sample(index).y);
             auto cutoff = peakAmplitude + cutoffAmplitude;
             int inc = type == Type::Lowpass ? 1 : -1;
             while(index >= 0 && index < (int) parentTrace->size()) {
-                auto amplitude = 20*log10(abs(parentTrace->sample(index).y));
+                auto amplitude = Unit::dB(parentTrace->sample(index).y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -927,12 +1126,12 @@ void TraceMarker::update()
             setPosition(peakFreq);
             // find the cutoff frequencies
             auto index = parentTrace->index(peakFreq);
-            auto peakAmplitude = 20*log10(abs(parentTrace->sample(index).y));
+            auto peakAmplitude = Unit::dB(parentTrace->sample(index).y);
             auto cutoff = peakAmplitude + cutoffAmplitude;
 
             auto low_index = index;
             while(low_index >= 0) {
-                auto amplitude = 20*log10(abs(parentTrace->sample(low_index).y));
+                auto amplitude = Unit::dB(parentTrace->sample(low_index).y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -946,7 +1145,7 @@ void TraceMarker::update()
 
             auto high_index = index;
             while(high_index < (int) parentTrace->size()) {
-                auto amplitude = 20*log10(abs(parentTrace->sample(high_index).y));
+                auto amplitude = Unit::dB(parentTrace->sample(high_index).y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -1011,7 +1210,6 @@ bool TraceMarker::isMovable()
     switch(type) {
     case Type::Manual:
     case Type::Delta:
-    case Type::Noise:
         return true;
     default:
         return false;

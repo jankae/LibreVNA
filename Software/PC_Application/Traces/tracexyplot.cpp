@@ -845,7 +845,7 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
     }
     switch(type) {
     case YAxisType::Magnitude:
-        ret.setY(20*log10(abs(data.y)));
+        ret.setY(Unit::dB(data.y));
         break;
     case YAxisType::Phase:
         ret.setY(arg(data.y) * 180.0 / M_PI);
@@ -859,7 +859,7 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
         ret.setY(real(data.y));
         break;
     case YAxisType::ImpulseMag:
-        ret.setY(20*log10(abs(data.y)));
+        ret.setY(Unit::dB(data.y));
         break;
     case YAxisType::Step:
         ret.setY(t->sample(sample, Trace::SampleType::TimeStep).y.real());

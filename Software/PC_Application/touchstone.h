@@ -9,7 +9,7 @@
 class Touchstone
 {
 public:
-    enum class Unit {
+    enum class Scale {
         Hz,
         kHz,
         MHz,
@@ -30,7 +30,7 @@ public:
 
     Touchstone(unsigned int m_ports);
     void AddDatapoint(Datapoint p);
-    void toFile(std::string filename, Unit unit = Unit::GHz, Format format = Format::RealImaginary);
+    void toFile(std::string filename, Scale unit = Scale::GHz, Format format = Format::RealImaginary);
     static Touchstone fromFile(std::string filename);
     double minFreq();
     double maxFreq();

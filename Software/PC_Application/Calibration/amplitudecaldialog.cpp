@@ -416,7 +416,7 @@ void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult re
         if(measured.size() >= averages) {
             measured.pop_front();
         }
-        MeasurementResult m = {.port1 = 20*log10(res.port1), .port2 = 20*log10(res.port2)};
+        MeasurementResult m = {.port1 = Unit::dB(res.port1), .port2 = Unit::dB(res.port2)};
         measured.push_back(m);
     }
 }

@@ -6,6 +6,8 @@
 #include <QLabel>
 #include <QDebug>
 #include "ui_tdrexplanationwidget.h"
+#include "unit.h"
+
 using namespace Math;
 using namespace std;
 
@@ -93,7 +95,7 @@ void TDR::edit()
 
     ui->manualMag->setUnit("dBm");
     ui->manualMag->setPrecision(3);
-    ui->manualMag->setValue(20*log10(abs(manualDC)));
+    ui->manualMag->setValue(Unit::dB(manualDC));
     ui->manualPhase->setUnit("°");
     ui->manualPhase->setPrecision(4);
     ui->manualPhase->setValue(180.0/M_PI * arg(manualDC));

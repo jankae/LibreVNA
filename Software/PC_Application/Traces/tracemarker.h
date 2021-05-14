@@ -18,7 +18,33 @@ public:
     ~TraceMarker();
     void assignTrace(Trace *t);
     Trace* trace();
-    QString readableData();
+
+    enum class Format {
+        dB,
+        dBAngle,
+        RealImag,
+        Impedance,
+        // Noise marker parameters
+        Noise,
+        PhaseNoise,
+        // Filter parameters
+        CenterBandwidth,
+        Cutoff,
+        InsertionLoss,
+        // TOI parameters
+        TOI,                    // third order intercept point
+        AvgTone,                // average level of tone
+        AvgModulationProduct,   // average level of modulation products
+        // keep last at end
+        Last,
+    };
+
+    static QString formatToString(Format f);
+    static Format formatFromString(QString s);
+    static std::vector<Format> formats();
+    std::set<Format> applicableFormats();
+
+    QString readableData(Format format = Format::Last);
     QString readableSettings();
     QString tooltipSettings();
     QString readableType();
@@ -41,7 +67,6 @@ public:
         Maximum,
         Minimum,
         Delta,
-        Noise,
         PeakTable,
         Lowpass,
         Highpass,
@@ -107,7 +132,6 @@ private:
         case Type::Maximum: return "Maximum";
         case Type::Minimum: return "Minimum";
         case Type::Delta: return "Delta";
-        case Type::Noise: return "Noise";
         case Type::PeakTable: return "Peak Table";
         case Type::Lowpass: return "Lowpass";
         case Type::Highpass: return "Highpass";
@@ -118,11 +142,14 @@ private:
         }
     }
     void constrainPosition();
+    void constrainFormat();
     TraceMarker *bestDeltaCandidate();
     void deleteHelperMarkers();
     void setType(Type t);
     double toDecibel();
     bool isVisible();
+
+    void setTableFormat(Format f);
 
     TraceMarkerModel *model;
     Trace *parentTrace;
@@ -145,6 +172,9 @@ private:
     double cutoffAmplitude;
     double peakThreshold;
     double offset;
+
+    Format formatTable;
+    std::set<Format> formatGraph;
 };
 
 #endif // TRACEMARKER_H
