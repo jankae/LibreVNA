@@ -475,68 +475,67 @@ void TraceMarker::deltaDeleted()
 void TraceMarker::updateContextmenu()
 {
     if(parent) {
-        parent->updateContextmenu();
-        contextmenu = parent->contextmenu;
-    } else {
-        if(contextmenu) {
-            // check if the contextmenu or one of its submenus is currently open
-            auto *activeWidget = QApplication::activePopupWidget();
-            while (activeWidget) {
-                if(activeWidget == contextmenu) {
-                    // contextmenu currently open, do not update
-                    return;
-                }
-                activeWidget = activeWidget->parentWidget();
-            }
-            delete contextmenu;
+        // do nothing, using contextmenu from parent anyway
+        return;
+    }
+    // check if the contextmenu or one of its submenus is currently open
+    auto *activeWidget = QApplication::activePopupWidget();
+    while (activeWidget) {
+        if(activeWidget == &contextmenu) {
+            // contextmenu currently open, do not update
+            qDebug() << "Contextmenu open, skipping update";
+            return;
         }
-        contextmenu = new QMenu();
-        auto typemenu = contextmenu->addMenu("Type");
-        auto typegroup = new QActionGroup(contextmenu);
-        for(auto t : getSupportedTypes()) {
-            auto setTypeAction = new QAction(typeToString(t));
-            setTypeAction->setCheckable(true);
-            if(t == type) {
-                setTypeAction->setChecked(true);
-            }
-            connect(setTypeAction, &QAction::triggered, [=](){
-                setType(t);
-            });
-            typegroup->addAction(setTypeAction);
-            typemenu->addAction(setTypeAction);
-        }
+        activeWidget = activeWidget->parentWidget();
+    }
 
-        auto table = contextmenu->addMenu("Data Format in Table");
-        auto tablegroup = new QActionGroup(contextmenu);
-        for(auto f : applicableFormats()) {
-            auto setFormatAction = new QAction(formatToString(f));
-            setFormatAction->setCheckable(true);
-            if(f == formatTable) {
-                setFormatAction->setChecked(true);
-            }
-            connect(setFormatAction, &QAction::triggered, [=](){
-                setTableFormat(f);
-            });
-            tablegroup->addAction(setFormatAction);
-            table->addAction(setFormatAction);
-        }
+    contextmenu.clear();
 
-        auto graph = contextmenu->addMenu("Show on Graph");
-        for(auto f : applicableFormats()) {
-            auto setFormatAction = new QAction(formatToString(f));
-            setFormatAction->setCheckable(true);
-            if(formatGraph.count(f)) {
-                setFormatAction->setChecked(true);
-            }
-            connect(setFormatAction, &QAction::triggered, [=](bool checked){
-                if(checked) {
-                    formatGraph.insert(f);
-                } else {
-                    formatGraph.erase(f);
-                }
-            });
-            graph->addAction(setFormatAction);
+    auto typemenu = contextmenu.addMenu("Type");
+    auto typegroup = new QActionGroup(&contextmenu);
+    for(auto t : getSupportedTypes()) {
+        auto setTypeAction = new QAction(typeToString(t));
+        setTypeAction->setCheckable(true);
+        if(t == type) {
+            setTypeAction->setChecked(true);
         }
+        connect(setTypeAction, &QAction::triggered, [=](){
+            setType(t);
+        });
+        typegroup->addAction(setTypeAction);
+        typemenu->addAction(setTypeAction);
+    }
+
+    auto table = contextmenu.addMenu("Data Format in Table");
+    auto tablegroup = new QActionGroup(&contextmenu);
+    for(auto f : applicableFormats()) {
+        auto setFormatAction = new QAction(formatToString(f));
+        setFormatAction->setCheckable(true);
+        if(f == formatTable) {
+            setFormatAction->setChecked(true);
+        }
+        connect(setFormatAction, &QAction::triggered, [=](){
+            setTableFormat(f);
+        });
+        tablegroup->addAction(setFormatAction);
+        table->addAction(setFormatAction);
+    }
+
+    auto graph = contextmenu.addMenu("Show on Graph");
+    for(auto f : applicableFormats()) {
+        auto setFormatAction = new QAction(formatToString(f));
+        setFormatAction->setCheckable(true);
+        if(formatGraph.count(f)) {
+            setFormatAction->setChecked(true);
+        }
+        connect(setFormatAction, &QAction::triggered, [=](bool checked){
+            if(checked) {
+                formatGraph.insert(f);
+            } else {
+                formatGraph.erase(f);
+            }
+        });
+        graph->addAction(setFormatAction);
     }
 }
 
@@ -749,7 +748,6 @@ void TraceMarker::setTableFormat(TraceMarker::Format f)
     }
 
     formatTable = f;
-    updateContextmenu();
     emit dataChanged(this);
 }
 
@@ -1048,6 +1046,14 @@ void TraceMarker::adjustSettings(double value)
         }
     }
     update();
+}
+
+QMenu *TraceMarker::getContextMenu() {
+    if(parent) {
+        return parent->getContextMenu();
+    } else {
+        return &contextmenu;
+    }
 }
 
 void TraceMarker::update()

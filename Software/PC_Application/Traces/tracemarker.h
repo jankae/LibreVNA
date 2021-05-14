@@ -4,6 +4,7 @@
 #include <QPixmap>
 #include <QObject>
 #include "trace.h"
+#include <QMenu>
 #include <QComboBox>
 #include "CustomWidgets/siunitedit.h"
 #include "savable.h"
@@ -82,7 +83,7 @@ public:
     SIUnitEdit* getSettingsEditor();
     void adjustSettings(double value);
 
-    QMenu *getContextMenu() { return contextmenu;}
+    QMenu *getContextMenu();
 
     // Updates marker position and data on automatic markers. Should be called whenever the tracedata is complete
     void update();
@@ -163,7 +164,7 @@ private:
     QString suffix;
     QString description;
 
-    QMenu *contextmenu;
+    QMenu contextmenu;
 
     TraceMarker *delta;
     std::vector<TraceMarker*> helperMarkers;
