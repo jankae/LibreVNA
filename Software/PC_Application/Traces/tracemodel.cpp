@@ -195,7 +195,7 @@ void TraceModel::fromJSON(nlohmann::json j)
     }
 }
 
-void TraceModel::clearVNAData()
+void TraceModel::clearLiveData()
 {
     for(auto t : traces) {
         if (t->isLive()) {

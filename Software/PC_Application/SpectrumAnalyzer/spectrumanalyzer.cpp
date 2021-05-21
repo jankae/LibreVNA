@@ -266,9 +266,9 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
         SetRBW(pref.Startup.SA.RBW);
         SetAveraging(pref.Startup.SA.averaging);
         settings.pointNum = 1001;
-        cbWindowType->setCurrentIndex(pref.Startup.SA.window);
-        cbDetector->setCurrentIndex(pref.Startup.SA.detector);
-        cbSignalID->setChecked(pref.Startup.SA.signalID);
+        SetWindow((Window) pref.Startup.SA.window);
+        SetDetector((Detector) pref.Startup.SA.detector);
+        SetSignalID(pref.Startup.SA.signalID);
     }
 
     finalize(central);
@@ -412,7 +412,7 @@ void SpectrumAnalyzer::SettingsChanged()
     }
     average.reset(settings.pointNum);
     UpdateAverageCount();
-    traceModel.clearVNAData();
+    traceModel.clearLiveData();
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
 
@@ -937,10 +937,10 @@ void SpectrumAnalyzer::LoadSweepSettings()
     ConstrainAndUpdateFrequencies();
     SetRBW(s.value("SARBW", pref.Startup.SA.RBW).toUInt());
     settings.pointNum = 1001;
-    cbWindowType->setCurrentIndex(s.value("SAWindow", pref.Startup.SA.window).toInt());
-    cbDetector->setCurrentIndex(s.value("SADetector", pref.Startup.SA.detector).toInt());
+    SetWindow((Window) s.value("SAWindow", pref.Startup.SA.window).toInt());
+    SetDetector((Detector) s.value("SADetector", pref.Startup.SA.detector).toInt());
+    SetSignalID(s.value("SASignalID", pref.Startup.SA.signalID).toBool());
     SetAveraging(s.value("SAAveraging", pref.Startup.SA.averaging).toInt());
-    cbSignalID->setChecked(s.value("SASignalID", pref.Startup.SA.signalID).toBool());
 }
 
 void SpectrumAnalyzer::StoreSweepSettings()

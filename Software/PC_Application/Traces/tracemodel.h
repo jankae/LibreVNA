@@ -53,7 +53,7 @@ signals:
     void traceNameChanged(Trace *t);
 
 public slots:
-    void clearVNAData();
+    void clearLiveData();
     void addVNAData(const Protocol::Datapoint& d, const Protocol::SweepSettings& settings);
     void addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings);
 
