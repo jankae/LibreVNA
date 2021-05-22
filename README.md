@@ -9,6 +9,7 @@ This is the improved version of my [first attempt](https://www.github.com/jankae
 * You can find released versions of the GUI application and the device firmware [here](https://github.com/jankae/LibreVNA/releases).
 * If you would like to try out the newest features, the compiled versions of each commit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete).
 * An (incomplete) [user manual](Documentation/UserManual/manual.pdf) is also available.
+* If you would like to control the LibreVNA with a script, see the [SCPI Programming Guide](Documentation/UserManual/ProgrammingGuide.pdf).
 
 Please also take a look at the [FAQ](Documentation/FAQ.md).
 
