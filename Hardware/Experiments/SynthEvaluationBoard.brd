@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="10" display="yes" altdistance="0.025" altunitdist="mm" altunit="mm"/>
+<grid distance="1" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="mm" altunit="mm"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="10" fill="1" visible="no" active="yes"/>
@@ -355,7 +355,7 @@
 <wire x1="68.9" y1="47.6" x2="68.9" y2="49.8" width="0.5" layer="21"/>
 <wire x1="68.9" y1="49.8" x2="69.9" y2="49.8" width="0.5" layer="21"/>
 <text x="96.8" y="60.6" size="1" layer="21" font="vector">OUT</text>
-<text x="75.7" y="95.2" size="1" layer="21" font="vector" rot="R90">REF IN</text>
+<text x="75.7" y="94.2" size="1" layer="21" font="vector" rot="R90">REF IN</text>
 <text x="58.1" y="79.6" size="1.5" layer="21" font="vector">REF:</text>
 <text x="63.4" y="69.6" size="1" layer="21" font="vector" rot="R90">EXT</text>
 <text x="60.6" y="63" size="1" layer="21" font="vector" rot="R90">SI5332 OUT3</text>
@@ -433,7 +433,7 @@ G
 <text x="4" y="48.6" size="1" layer="21" font="vector" rot="R90">GND</text>
 <text x="6.5" y="48.6" size="1" layer="21" font="vector" rot="R90">SCL</text>
 <text x="9.1" y="48.6" size="1" layer="21" font="vector" rot="R90">SDA</text>
-<text x="2.4" y="24" size="1" layer="21" font="vector" rot="R90">+3V3</text>
+<text x="3" y="24" size="1" layer="21" font="vector" rot="R90">+3V3</text>
 <text x="4.9" y="25.1" size="1" layer="21" font="vector" rot="R90">CLK</text>
 <text x="7.5" y="24.8" size="1" layer="21" font="vector" rot="R90">GND</text>
 <text x="10.1" y="25.3" size="1" layer="21" font="vector" rot="R90">DIO</text>
@@ -465,6 +465,12 @@ G
 <text x="0.9" y="11.7" size="1" layer="21" font="vector">PB7</text>
 <text x="40.3" y="8" size="2.5" layer="21" font="vector" rot="R90">STW81200/AD9913/SI5332
 Evaluation Board 05/2021</text>
+<text x="22.5" y="7.4" size="1" layer="21" font="vector" rot="R90">LED1</text>
+<text x="24" y="7.4" size="1" layer="21" font="vector" rot="R90">LED2</text>
+<text x="25.5" y="7.4" size="1" layer="21" font="vector" rot="R90">LED3</text>
+<text x="27" y="7.4" size="1" layer="21" font="vector" rot="R90">LED4</text>
+<text x="34.6" y="67.2" size="1.4" layer="21" font="vector" rot="R90">github.com/jankae/LibreVNA</text>
+<text x="36.6" y="67.2" size="1" layer="21" font="vector" rot="R90">Hardware/Experiments/SynthEvaluationBoard</text>
 </plain>
 <libraries>
 <library name="rcl" urn="urn:adsk.eagle:library:334">
@@ -2669,6 +2675,41 @@ Source: http://www.cypressindustries.com/pdf/32005-301.pdf</description>
 </package3d>
 </packages3d>
 </library>
+<library name="eagle-ltspice">
+<description>Default symbols for import LTspice schematics&lt;p&gt;
+2012-10-29 alf@cadsoft.de&lt;br&gt;</description>
+<packages>
+<package name="LED_SML0603">
+<description>&lt;b&gt;SML0603-XXX (HIGH INTENSITY) LED&lt;/b&gt;&lt;p&gt;
+&lt;table&gt;
+&lt;tr&gt;&lt;td&gt;AG3K&lt;/td&gt;&lt;td&gt;AQUA GREEN&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;B1K&lt;/td&gt;&lt;td&gt;SUPER BLUE&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;R1K&lt;/td&gt;&lt;td&gt;SUPER RED&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;R3K&lt;/td&gt;&lt;td&gt;ULTRA RED&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;O3K&lt;/td&gt;&lt;td&gt;SUPER ORANGE&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;O3KH&lt;/td&gt;&lt;td&gt;SOFT ORANGE&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Y3KH&lt;/td&gt;&lt;td&gt;SUPER YELLOW&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Y3K&lt;/td&gt;&lt;td&gt;SUPER YELLOW&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;2CW&lt;/td&gt;&lt;td&gt;WHITE&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+Source: http://www.ledtronics.com/ds/smd-0603/Dstr0092.pdf</description>
+<wire x1="-0.75" y1="0.35" x2="0.75" y2="0.35" width="0.1016" layer="51"/>
+<wire x1="0.75" y1="0.35" x2="0.75" y2="-0.35" width="0.1016" layer="51"/>
+<wire x1="0.75" y1="-0.35" x2="-0.75" y2="-0.35" width="0.1016" layer="51"/>
+<wire x1="-0.75" y1="-0.35" x2="-0.75" y2="0.35" width="0.1016" layer="51"/>
+<wire x1="-0.45" y1="0.3" x2="-0.45" y2="-0.3" width="0.1016" layer="51"/>
+<wire x1="0.45" y1="0.3" x2="0.45" y2="-0.3" width="0.1016" layer="51"/>
+<wire x1="-0.2" y1="0.35" x2="0.2" y2="0.35" width="0.1016" layer="21"/>
+<wire x1="-0.2" y1="-0.35" x2="0.2" y2="-0.35" width="0.1016" layer="21"/>
+<rectangle x1="-0.4" y1="0.175" x2="0" y2="0.4" layer="51"/>
+<rectangle x1="-0.25" y1="0.175" x2="0" y2="0.4" layer="21"/>
+<smd name="A" x="0.75" y="0" dx="0.8" dy="0.8" layer="1"/>
+<smd name="C" x="-0.75" y="0" dx="0.8" dy="0.8" layer="1"/>
+<text x="-1" y="1" size="1.27" layer="25">&gt;NAME</text>
+<text x="-1" y="-2" size="1.27" layer="27">&gt;VALUE</text>
+</package>
+</packages>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -3296,7 +3337,7 @@ design rules under a new name.</description>
 <attribute name="NAME" x="85.635" y="78.365" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="85.635" y="80.905" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="R46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k" x="85" y="86.6" smashed="yes" rot="R180">
+<element name="R46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="1k" x="85" y="86.6" smashed="yes" rot="R180">
 <attribute name="NAME" x="85.635" y="85.965" size="1.27" layer="25" rot="R180"/>
 <attribute name="VALUE" x="85.635" y="88.505" size="1.27" layer="27" rot="R180"/>
 </element>
@@ -3563,6 +3604,61 @@ design rules under a new name.</description>
 <element name="L11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="FERRITE" x="67" y="66" smashed="yes" rot="R270">
 <attribute name="NAME" x="67.635" y="66.635" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="65.095" y="66.635" size="1.27" layer="27" rot="R270"/>
+</element>
+<element name="LED3" library="eagle-ltspice" package="LED_SML0603" value="Green" x="27" y="41" smashed="yes" rot="R270">
+<attribute name="NAME" x="28" y="42" size="1.27" layer="25" rot="R270"/>
+<attribute name="SPICEMODEL" value="NONE" x="27" y="41" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SPICEPREFIX" value="D" x="27" y="41" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SPICETYPE" value="diode" x="27" y="41" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="25" y="42" size="1.27" layer="27" rot="R270"/>
+</element>
+<element name="LED1" library="eagle-ltspice" package="LED_SML0603" value="Green" x="26.5" y="13" smashed="yes" rot="R90">
+<attribute name="NAME" x="25.5" y="12" size="1.27" layer="25" rot="R90"/>
+<attribute name="SPICEMODEL" value="NONE" x="26.5" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICEPREFIX" value="D" x="26.5" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICETYPE" value="diode" x="26.5" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="28.5" y="12" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="R52" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="470" x="27" y="38" smashed="yes" rot="R270">
+<attribute name="NAME" x="27.635" y="38.635" size="1.27" layer="25" rot="R270"/>
+<attribute name="VALUE" x="25.095" y="38.635" size="1.27" layer="27" rot="R270"/>
+</element>
+<element name="R53" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220" x="26.5" y="16" smashed="yes" rot="R90">
+<attribute name="NAME" x="25.865" y="15.365" size="1.27" layer="25" rot="R90"/>
+<attribute name="VALUE" x="28.405" y="15.365" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="LED2" library="eagle-ltspice" package="LED_SML0603" value="Green" x="25" y="13" smashed="yes" rot="R90">
+<attribute name="NAME" x="24" y="12" size="1.27" layer="25" rot="R90"/>
+<attribute name="SPICEMODEL" value="NONE" x="25" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICEPREFIX" value="D" x="25" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICETYPE" value="diode" x="25" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="27" y="12" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="R54" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220" x="25" y="16" smashed="yes" rot="R90">
+<attribute name="NAME" x="24.365" y="15.365" size="1.27" layer="25" rot="R90"/>
+<attribute name="VALUE" x="26.905" y="15.365" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="LED4" library="eagle-ltspice" package="LED_SML0603" value="Green" x="23.5" y="13" smashed="yes" rot="R90">
+<attribute name="NAME" x="22.5" y="12" size="1.27" layer="25" rot="R90"/>
+<attribute name="SPICEMODEL" value="NONE" x="23.5" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICEPREFIX" value="D" x="23.5" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICETYPE" value="diode" x="23.5" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="25.5" y="12" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="R55" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220" x="23.5" y="16" smashed="yes" rot="R90">
+<attribute name="NAME" x="22.865" y="15.365" size="1.27" layer="25" rot="R90"/>
+<attribute name="VALUE" x="25.405" y="15.365" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="LED5" library="eagle-ltspice" package="LED_SML0603" value="Green" x="22" y="13" smashed="yes" rot="R90">
+<attribute name="NAME" x="21" y="12" size="1.27" layer="25" rot="R90"/>
+<attribute name="SPICEMODEL" value="NONE" x="22" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICEPREFIX" value="D" x="22" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SPICETYPE" value="diode" x="22" y="13" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="24" y="12" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="R56" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220" x="22" y="16" smashed="yes" rot="R90">
+<attribute name="NAME" x="21.365" y="15.365" size="1.27" layer="25" rot="R90"/>
+<attribute name="VALUE" x="23.905" y="15.365" size="1.27" layer="27" rot="R90"/>
 </element>
 </elements>
 <signals>
@@ -5621,6 +5717,100 @@ design rules under a new name.</description>
 <via x="65.5" y="95" extent="1-16" drill="0.2" diameter="0.5"/>
 <via x="72.5" y="95.1" extent="1-16" drill="0.2" diameter="0.5"/>
 <via x="74.1" y="95.2" extent="1-16" drill="0.2" diameter="0.5"/>
+<contactref element="LED3" pad="C"/>
+<contactref element="LED1" pad="C"/>
+<contactref element="LED2" pad="C"/>
+<contactref element="LED4" pad="C"/>
+<contactref element="LED5" pad="C"/>
+<wire x1="27" y1="41.75" x2="27" y2="43" width="0.3" layer="1"/>
+<via x="27" y="43" extent="1-16" drill="0.35"/>
+<via x="22" y="11" extent="1-16" drill="0.2" diameter="0.5"/>
+<via x="23.5" y="11" extent="1-16" drill="0.2" diameter="0.5"/>
+<via x="25" y="11" extent="1-16" drill="0.2" diameter="0.5"/>
+<via x="26.5" y="11" extent="1-16" drill="0.2" diameter="0.5"/>
+<wire x1="22" y1="12.25" x2="22" y2="11" width="0.3" layer="1"/>
+<wire x1="23.5" y1="12.25" x2="23.5" y2="11" width="0.3" layer="1"/>
+<wire x1="25" y1="12.25" x2="25" y2="11" width="0.3" layer="1"/>
+<wire x1="26.5" y1="12.25" x2="26.5" y2="11" width="0.3" layer="1"/>
+<via x="1" y="6" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="8" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="10" extent="1-16" drill="0.5" diameter="1"/>
+<via x="6" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="8" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="10" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="12" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="36" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="26" y="1.1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="50" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="52" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="65" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="67" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="79" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="81" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="94" y="1" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="6" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="8" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="10" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="12" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="14" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="16" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="18" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="20" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="22" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="24" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="26" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="28" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="30" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="94" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="92" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="90" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="88" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="86" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="84" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="82" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="80" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="78" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="76" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="74" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="55" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="57" extent="1-16" drill="0.5" diameter="1"/>
+<via x="99" y="59" extent="1-16" drill="0.5" diameter="1"/>
+<via x="94" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="92" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="90" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="88" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="86" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="84" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="82" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="80" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="78" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="76" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="63" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="61" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="59" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="57" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="55" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="36" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="26" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="24" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="6" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="8" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="10" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="12" y="99" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="56" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="54" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="52" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="50" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="48" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="46" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="44" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="70" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="82" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="94" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="23" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="25" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="27" extent="1-16" drill="0.5" diameter="1"/>
+<via x="1" y="31" extent="1-16" drill="0.5" diameter="1"/>
 </signal>
 <signal name="N$1">
 <contactref element="IC1" pad="10"/>
@@ -7046,6 +7236,10 @@ design rules under a new name.</description>
 <vertex x="6.3" y="7.3"/>
 <vertex x="5" y="8.6"/>
 </polygon>
+<contactref element="R52" pad="2"/>
+<wire x1="27" y1="37.44" x2="20.66" y2="37.44" width="0.3" layer="1"/>
+<wire x1="19" y1="39.1" x2="19" y2="41" width="0.3" layer="1"/>
+<wire x1="20.66" y1="37.44" x2="19" y2="39.1" width="0.3" layer="1"/>
 </signal>
 <signal name="N$77">
 <contactref element="B1" pad="2"/>
@@ -7720,6 +7914,65 @@ design rules under a new name.</description>
 <wire x1="75" y1="87" x2="75" y2="86.6" width="0.8" layer="15"/>
 <wire x1="75" y1="86.6" x2="75" y2="86" width="0.8" layer="15"/>
 <wire x1="83.4" y1="86.6" x2="75" y2="86.6" width="0.2" layer="15"/>
+</signal>
+<signal name="N$48">
+<contactref element="LED3" pad="A"/>
+<contactref element="R52" pad="1"/>
+<wire x1="27" y1="40.25" x2="27" y2="38.56" width="0.3" layer="1"/>
+</signal>
+<signal name="N$50">
+<contactref element="LED1" pad="A"/>
+<contactref element="R53" pad="1"/>
+<wire x1="26.5" y1="15.44" x2="26.5" y2="13.75" width="0.3" layer="1"/>
+</signal>
+<signal name="N$52">
+<contactref element="LED2" pad="A"/>
+<contactref element="R54" pad="1"/>
+<wire x1="25" y1="15.44" x2="25" y2="13.75" width="0.3" layer="1"/>
+</signal>
+<signal name="N$53">
+<contactref element="LED4" pad="A"/>
+<contactref element="R55" pad="1"/>
+<wire x1="23.5" y1="15.44" x2="23.5" y2="13.75" width="0.3" layer="1"/>
+</signal>
+<signal name="N$65">
+<contactref element="LED5" pad="A"/>
+<contactref element="R56" pad="1"/>
+<wire x1="22" y1="15.44" x2="22" y2="13.75" width="0.3" layer="1"/>
+</signal>
+<signal name="N$81">
+<contactref element="IC5" pad="13"/>
+<contactref element="R53" pad="2"/>
+<wire x1="22.4346" y1="20.25" x2="23.15" y2="20.25" width="0.2" layer="1"/>
+<wire x1="25.5" y1="17.9" x2="25.5" y2="17.5" width="0.2" layer="1"/>
+<wire x1="25.5" y1="17.5" x2="26.44" y2="16.56" width="0.2" layer="1"/>
+<wire x1="26.44" y1="16.56" x2="26.5" y2="16.56" width="0.2" layer="1"/>
+<wire x1="23.15" y1="20.25" x2="25.5" y2="17.9" width="0.2" layer="1"/>
+</signal>
+<signal name="N$82">
+<contactref element="IC5" pad="12"/>
+<contactref element="R54" pad="2"/>
+<wire x1="21.75" y1="19.5654" x2="21.75" y2="18.85" width="0.2" layer="1"/>
+<wire x1="25" y1="17.3" x2="25" y2="16.56" width="0.2" layer="1"/>
+<wire x1="21.75" y1="18.85" x2="22.6" y2="18" width="0.2" layer="1"/>
+<wire x1="22.6" y1="18" x2="24.3" y2="18" width="0.2" layer="1"/>
+<wire x1="24.3" y1="18" x2="25" y2="17.3" width="0.2" layer="1"/>
+</signal>
+<signal name="N$83">
+<contactref element="IC5" pad="11"/>
+<contactref element="R55" pad="2"/>
+<wire x1="21.25" y1="19.5654" x2="21.25" y2="18.65" width="0.2" layer="1"/>
+<wire x1="23.2" y1="17.4" x2="23.5" y2="17.1" width="0.2" layer="1"/>
+<wire x1="23.5" y1="17.1" x2="23.5" y2="16.56" width="0.2" layer="1"/>
+<wire x1="21.25" y1="18.65" x2="22.5" y2="17.4" width="0.2" layer="1"/>
+<wire x1="22.5" y1="17.4" x2="23.2" y2="17.4" width="0.2" layer="1"/>
+</signal>
+<signal name="N$84">
+<contactref element="IC5" pad="10"/>
+<contactref element="R56" pad="2"/>
+<wire x1="20.75" y1="19.5654" x2="20.75" y2="18.45" width="0.2" layer="1"/>
+<wire x1="22" y1="17.2" x2="22" y2="16.56" width="0.2" layer="1"/>
+<wire x1="20.75" y1="18.45" x2="22" y2="17.2" width="0.2" layer="1"/>
 </signal>
 </signals>
 <mfgpreviewcolors>
