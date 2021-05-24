@@ -838,7 +838,7 @@ void VNA::ApplyCalibration(Calibration::Type type)
         }
     } else {
         // Not all required traces available
-        InformationBox::ShowMessage("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. The calibration can be enabled after the missing measurements have been acquired.");
+        InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. The calibration can be enabled after the missing measurements have been acquired.");
         DisableCalibration(true);
         StartCalibrationDialog(type);
     }
@@ -1093,7 +1093,7 @@ void VNA::StartCalibrationDialog(Calibration::Type type)
     connect(this, &VNA::CalibrationMeasurementComplete, traceDialog, &CalibrationTraceDialog::measurementComplete);
     connect(traceDialog, &CalibrationTraceDialog::calibrationInvalidated, [=](){
        DisableCalibration(true);
-       InformationBox::ShowMessage("Calibration disabled", "The currently active calibration is no longer supported by the available measurements and was disabled.");
+       InformationBox::ShowMessageBlocking("Calibration disabled", "The currently active calibration is no longer supported by the available measurements and was disabled.");
     });
     traceDialog->show();
 }

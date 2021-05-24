@@ -3,7 +3,7 @@
 #include <QSettings>
 #include <QDebug>
 
-void InformationBox::ShowMessage(QString title, QString message, QString messageID)
+void InformationBox::ShowMessage(QString title, QString message, QString messageID, bool block)
 {
     // check if the user still wants to see this message
     unsigned int hash;
@@ -16,8 +16,17 @@ void InformationBox::ShowMessage(QString title, QString message, QString message
     QSettings s;
     if(!s.contains(hashToSettingsKey(hash))) {
         auto box = new InformationBox(title, message, QMessageBox::Information, hash, nullptr);
-        box->show();
+        if(block) {
+            box->exec();
+        } else {
+            box->show();
+        }
     }
+}
+
+void InformationBox::ShowMessageBlocking(QString title, QString message, QString messageID)
+{
+    ShowMessage(title, message, messageID, true);
 }
 
 void InformationBox::ShowError(QString title, QString message)

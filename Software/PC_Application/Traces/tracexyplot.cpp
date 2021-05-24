@@ -964,16 +964,22 @@ void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 {
     if(t->outputType() == Trace::DataType::Frequency && XAxis.type != XAxisType::Frequency) {
         // needs to switch to frequency domain graph
-        InformationBox::ShowMessage("X Axis Domain Change", "You dropped a frequency domain trace but the graph is still set up for the time domain."
-                                    " All current traces will be removed and the graph changed to frequency domain.");
+        if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a frequency domain trace but the graph is still set up for the time domain."
+                                    " Do you want to remove all traces and change the graph to frequency domain?", true, "DomainChangeRequest")) {
+            // user declined to change domain, to not add trace
+            return;
+        }
         setXAxis(XAxisType::Frequency, XAxisMode::FitTraces, 0, 1, 0.1);
         setYAxis(0, YAxisType::Magnitude, false, true, 0, 1, 1.0);
         setYAxis(1, YAxisType::Phase, false, true, 0, 1, 1.0);
     }
     if(t->outputType() != Trace::DataType::Frequency && XAxis.type == XAxisType::Frequency) {
         // needs to switch to time domain graph
-        InformationBox::ShowMessage("X Axis Domain Change", "You dropped a time domain trace but the graph is still set up for the frequency domain."
-                                    " All current traces will be removed and the graph changed to time domain.");
+        if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a time domain trace but the graph is still set up for the frequency domain."
+                                    " Do you want to remove all traces and change the graph to time domain?", true, "DomainChangeRequest")) {
+            // user declined to change domain, to not add trace
+            return;
+        }
         setXAxis(XAxisType::Time, XAxisMode::FitTraces, 0, 1, 0.1);
         setYAxis(0, YAxisType::ImpulseMag, false, true, 0, 1, 1.0);
         setYAxis(1, YAxisType::Disabled, false, true, 0, 1, 1.0);

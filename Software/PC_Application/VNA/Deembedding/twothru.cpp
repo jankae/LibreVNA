@@ -400,14 +400,14 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
     vector<Point> ret;
 
     if(data_2xthru.size() != data_fix_dut_fix.size()) {
-        InformationBox::ShowMessage("Unable to calculate", "The DUT and 2xthru measurements do not have the same amount of points, calculation not possible");
+        InformationBox::ShowMessageBlocking("Unable to calculate", "The DUT and 2xthru measurements do not have the same amount of points, calculation not possible");
         return ret;
     }
 
     // check if frequencies are the same (measurements must be taken with identical span settings)
     for(unsigned int i=0;i<data_2xthru.size();i++) {
         if(abs((long int)data_2xthru[i].frequency - (long int)data_fix_dut_fix[i].frequency) > (double) data_2xthru[i].frequency / 1e9) {
-            InformationBox::ShowMessage("Unable to calculate", "The DUT and 2xthru measurements do not have identical frequencies for all points, calculation not possible");
+            InformationBox::ShowMessageBlocking("Unable to calculate", "The DUT and 2xthru measurements do not have identical frequencies for all points, calculation not possible");
             return ret;
         }
     }
