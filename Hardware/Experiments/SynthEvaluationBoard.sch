@@ -7891,7 +7891,7 @@ Source: www.kingbright.com</description>
 <part name="FRAME2" library="VNA" library_urn="urn:adsk.eagle:library:19761286" deviceset="FRAMES_A3L-LOC" device=""/>
 <part name="J1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AMPHENOL_901-10510-2" device=""/>
 <part name="GND16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3"/>
+<part name="R23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
 <part name="GND37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="J2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AMPHENOL_901-10510-2" device=""/>
 <part name="J3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AMPHENOL_901-10510-2" device=""/>
@@ -7900,7 +7900,7 @@ Source: www.kingbright.com</description>
 <part name="J5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="BU-1420701851" device=""/>
 <part name="J6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="BU-1420701851" device=""/>
 <part name="GND42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3"/>
+<part name="R24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
 <part name="GND43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME3" library="VNA" library_urn="urn:adsk.eagle:library:19761286" deviceset="FRAMES_A3L-LOC" device=""/>

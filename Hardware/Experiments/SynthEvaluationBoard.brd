@@ -3191,7 +3191,7 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="79" y="39.9" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="J1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_901-10510-2" value="AMPHENOL_901-10510-2" x="17.9" y="100" smashed="yes" rot="R90"/>
-<element name="R23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="" x="17.9" y="92" smashed="yes" rot="R90">
+<element name="R23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9" x="17.9" y="92" smashed="yes" rot="R90">
 <attribute name="NAME" x="17.265" y="91.365" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="19.805" y="91.365" size="1.27" layer="27" rot="R90"/>
 </element>
@@ -3209,7 +3209,7 @@ design rules under a new name.</description>
 <attribute name="NAME" x="36.65" y="0.635" size="1.778" layer="25" rot="R90"/>
 <attribute name="VALUE" x="51.89" y="1.27" size="1.778" layer="27" rot="R90"/>
 </element>
-<element name="R24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="" x="19" y="7" smashed="yes" rot="R270">
+<element name="R24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9" x="19" y="7" smashed="yes" rot="R270">
 <attribute name="NAME" x="19.635" y="7.635" size="1.27" layer="25" rot="R270"/>
 <attribute name="VALUE" x="17.095" y="7.635" size="1.27" layer="27" rot="R270"/>
 </element>
