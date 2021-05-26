@@ -48,6 +48,8 @@ static constexpr int16_t LowBandMaxPower = -190;
 static constexpr int16_t HighBandMinPower = -1060;
 static constexpr int16_t HighBandMaxPower = -160;
 
+static constexpr uint8_t registerDevices = 2;
+
 static constexpr Protocol::DeviceInfo Info = {
 		.ProtocolVersion = Protocol::Version,
 		.FW_major = FW_MAJOR,
@@ -75,6 +77,7 @@ static constexpr Protocol::DeviceInfo Info = {
 		.limits_maxRBW = (uint32_t) (ADCSamplerate * 2.23f / MinSamples),
 		.limits_maxAmplitudePoints = Cal::maxPoints,
 		.limits_maxFreqHarmonic = 18000000000,
+		.num_directRegisterDevices = registerDevices,
 };
 
 enum class Mode {

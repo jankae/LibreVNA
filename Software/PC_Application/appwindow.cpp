@@ -35,6 +35,7 @@
 #include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
 #include "Device/firmwareupdatedialog.h"
+#include "Device/RegisterAccess/rawregisterdialog.h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
 #include <QDesktopWidget>
@@ -183,6 +184,7 @@ AppWindow::AppWindow(QWidget *parent)
     });
 
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
+    connect(ui->actionRaw_Register_Access, &QAction::triggered, this, &AppWindow::RawRegisterAccess);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
     connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
     connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
@@ -228,6 +230,8 @@ AppWindow::AppWindow(QWidget *parent)
     qRegisterMetaType<Protocol::ManualStatus>("Manual");
     qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumAnalyzerResult");
     qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
+    qRegisterMetaType<Protocol::DirectRegisterInfo>("DirectRegisterInfo");
+    qRegisterMetaType<Protocol::DirectRegisterWrite>("DirectRegisterWrite");
 
     // List available devices
     if(UpdateDeviceList() && Preferences::getInstance().Startup.ConnectToFirstDevice) {
@@ -286,6 +290,7 @@ bool AppWindow::ConnectToDevice(QString serial)
            lADCOverload.setVisible(device->Info().ADC_overload);
            lUnlevel.setVisible(device->Info().unlevel);
            lUnlock.setVisible(!device->Info().LO1_locked || !device->Info().source_locked);
+           ui->actionRaw_Register_Access->setEnabled(device->Info().num_directRegisterDevices > 0);
         });
         connect(device, &Device::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
@@ -321,6 +326,7 @@ void AppWindow::DisconnectDevice()
     device = nullptr;
     ui->actionDisconnect->setEnabled(false);
     ui->actionManual_Control->setEnabled(false);
+    ui->actionRaw_Register_Access->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);
     ui->actionSource_Calibration->setEnabled(false);
     ui->actionReceiver_Calibration->setEnabled(false);
@@ -591,6 +597,12 @@ void AppWindow::StartManualControl()
             Mode::getActiveMode()->initializeDevice();
         }
     });
+    control->show();
+}
+
+void AppWindow::RawRegisterAccess()
+{
+    auto control = new RawRegisterDialog(device, this);
     control->show();
 }
 

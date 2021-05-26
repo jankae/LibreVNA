@@ -139,6 +139,7 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .limits_maxRBW = 1000000,
     .limits_maxAmplitudePoints = 255,
     .limits_maxFreqHarmonic = 18000000000,
+    .num_directRegisterDevices = 0,
 };
 
 Protocol::DeviceInfo Device::lastInfo = defaultInfo;
@@ -461,6 +462,12 @@ void Device::ReceivedData()
             break;
         case Protocol::PacketType::FrequencyCorrection:
             emit FrequencyCorrectionReceived(packet.frequencyCorrection.ppm);
+            break;
+        case Protocol::PacketType::DirectRegisterInfo:
+            emit ReceivedDirectRegisterInfo(packet.directRegInfo);
+            break;
+        case Protocol::PacketType::DirectRegisterWrite:
+            emit ReceivedDirectRegister(packet.directRegWrite);
             break;
        default:
             break;

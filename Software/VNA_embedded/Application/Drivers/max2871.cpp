@@ -417,3 +417,18 @@ uint8_t MAX2871::GetTemp() {
 	// convert to celsius and return
 	return 95 - 1.14f * ADC_raw;
 }
+
+void MAX2871::writeRegister(uint32_t address, uint64_t data) {
+	if(address <= 5) {
+		regs[address] = (uint32_t) data;
+		Update();
+	}
+}
+
+uint64_t MAX2871::readRegister(uint32_t address) {
+	if(address <= 5) {
+		return regs[address];
+	} else {
+		return 0;
+	}
+}

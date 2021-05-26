@@ -15,6 +15,9 @@ Q_DECLARE_METATYPE(Protocol::Datapoint);
 Q_DECLARE_METATYPE(Protocol::ManualStatus);
 Q_DECLARE_METATYPE(Protocol::SpectrumAnalyzerResult);
 Q_DECLARE_METATYPE(Protocol::AmplitudeCorrectionPoint);
+Q_DECLARE_METATYPE(Protocol::DirectRegisterInfo);
+Q_DECLARE_METATYPE(Protocol::DirectRegisterWrite);
+
 
 class USBInBuffer : public QObject {
     Q_OBJECT;
@@ -82,6 +85,8 @@ signals:
     void NackReceived();
     void LogLineReceived(QString line);
     void NeedsFirmwareUpdate(int usedProtocol, int requiredProtocol);
+    void ReceivedDirectRegisterInfo(Protocol::DirectRegisterInfo);
+    void ReceivedDirectRegister(Protocol::DirectRegisterWrite);
 private slots:
     void ReceivedData();
     void ReceivedLog();

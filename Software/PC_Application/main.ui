@@ -50,6 +50,7 @@
     <addaction name="actionDisconnect"/>
     <addaction name="separator"/>
     <addaction name="actionManual_Control"/>
+    <addaction name="actionRaw_Register_Access"/>
     <addaction name="actionFirmware_Update"/>
     <addaction name="separator"/>
     <addaction name="actionSource_Calibration"/>
@@ -207,6 +208,14 @@
    </property>
    <property name="text">
     <string>Frequency Calibration</string>
+   </property>
+  </action>
+  <action name="actionRaw_Register_Access">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Raw Register Access</string>
    </property>
   </action>
  </widget>

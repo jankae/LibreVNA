@@ -6,9 +6,7 @@
 
 #include "Calibration/calkit.h"
 #include "touchstone.h"
-
 #include <signal.h>
-
 #include <complex>
 
 static QApplication *app;

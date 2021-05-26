@@ -1,15 +1,17 @@
 #pragma once
 
 #include "stm.hpp"
+#include "RegisterDevice.hpp"
 
-class MAX2871 {
+class MAX2871 : public RegisterDevice {
 public:
-	constexpr MAX2871(SPI_HandleTypeDef *hspi, GPIO_TypeDef *LE = nullptr,
+	constexpr MAX2871(const char *name, SPI_HandleTypeDef *hspi, GPIO_TypeDef *LE = nullptr,
 			uint16_t LEpin = 0, GPIO_TypeDef *RF_EN = nullptr,
 			uint16_t RF_ENpin = 0, GPIO_TypeDef *LD = nullptr, uint16_t LDpin =	0,
 			GPIO_TypeDef *CE = nullptr, uint16_t CEpin = 0,
 			GPIO_TypeDef *MUX = nullptr, uint16_t MUXpin = 0) :
-			regs(), f_PFD(0),
+		RegisterDevice("MAX2871", name),
+		regs(), f_PFD(0),
 		hspi(hspi),
 		CE(CE), CEpin(CEpin),
 		LE(LE), LEpin(LEpin),
@@ -60,6 +62,9 @@ public:
 	uint64_t GetActualFrequency() {
 		return outputFrequency;
 	}
+
+	void writeRegister(uint32_t address, uint64_t data) override;
+	uint64_t readRegister(uint32_t address) override;
 private:
 	static constexpr uint64_t MaxFreq = 6100000000; // 6GHz according to datasheet, but slight overclocking is possible
 

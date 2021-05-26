@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 5;
+static constexpr uint16_t Version = 6;
 
 #pragma pack(push, 1)
 
@@ -68,6 +68,7 @@ using DeviceInfo = struct _deviceInfo {
 	uint32_t limits_maxRBW;
     uint8_t limits_maxAmplitudePoints;
     uint64_t limits_maxFreqHarmonic;
+    uint8_t num_directRegisterDevices; // number of peripheral chips whos registers are exposed via the USB API (for debugging)
 };
 
 using ManualStatus = struct _manualstatus {
@@ -156,6 +157,25 @@ using FrequencyCorrection = struct _frequencycorrection {
 	float ppm;
 };
 
+using DirectRegisterInfo = struct _directregisterinfo {
+    uint8_t num;
+    char type[20]; // Chip partnumber
+    char name[20]; // Arbitrary name
+};
+
+using DirectRegisterWrite = struct _directregisterwrite {
+    uint8_t device;
+    uint32_t address;
+    uint64_t data;
+};
+
+using DirectRegisterRead = struct _directregisterread {
+    // Device will respond with DirectRegisterWrite
+    uint8_t device;
+//    uint8_t read_all:1; // if set to one, address is ignored and all registers returned (each in own packet)
+    uint32_t address;
+};
+
 enum class PacketType : uint8_t {
 	None = 0,
 	Datapoint = 1,
@@ -180,6 +200,10 @@ enum class PacketType : uint8_t {
 	SetIdle = 20,
 	RequestFrequencyCorrection = 21,
 	FrequencyCorrection = 22,
+    RequestDirectRegisterInfo = 23,
+    DirectRegisterInfo = 24,
+    DirectRegisterWrite = 25,
+    DirectRegisterRead = 26,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -197,6 +221,9 @@ using PacketInfo = struct _packetinfo {
         SpectrumAnalyzerResult spectrumResult;
         AmplitudeCorrectionPoint amplitudePoint;
         FrequencyCorrection frequencyCorrection;
+        DirectRegisterInfo directRegInfo;
+        DirectRegisterWrite directRegWrite;
+        DirectRegisterRead directRegRead;
 	};
 };
 

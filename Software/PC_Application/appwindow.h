@@ -48,6 +48,7 @@ private slots:
     void DisconnectDevice();
     int UpdateDeviceList();
     void StartManualControl();
+    void RawRegisterAccess();
     void UpdateReference();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);

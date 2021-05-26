@@ -218,6 +218,47 @@ void App_Start() {
 					Cal::setFrequencyCal(recv_packet.frequencyCorrection.ppm);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
+				case Protocol::PacketType::RequestDirectRegisterInfo:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					LOG_INFO("Requested register devices, sending %d packets", RegisterDevice::getNumDevices());
+					for(uint8_t i=0;i<RegisterDevice::getNumDevices();i++) {
+						auto dev = RegisterDevice::getDevice(i);
+						Protocol::PacketInfo send;
+						send.type = Protocol::PacketType::DirectRegisterInfo;
+						send.directRegInfo = dev->getInfo();
+						Communication::Send(send);
+					}
+					break;
+				case Protocol::PacketType::DirectRegisterWrite:
+					if(recv_packet.directRegWrite.device >= RegisterDevice::getNumDevices()) {
+						// invalid device
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
+					} else {
+						LOG_INFO(
+								"Register write: dev %u, address %u, data 0x%08x",
+								recv_packet.directRegWrite.device,
+								recv_packet.directRegWrite.address,
+								(uint32_t) recv_packet.directRegWrite.data);
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+						auto dev = RegisterDevice::getDevice(recv_packet.directRegWrite.device);
+						dev->writeRegister(recv_packet.directRegWrite.address, recv_packet.directRegWrite.data);
+					}
+					break;
+				case Protocol::PacketType::DirectRegisterRead:
+					if(recv_packet.directRegWrite.device >= RegisterDevice::getNumDevices()) {
+						// invalid device
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
+					} else {
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+						auto dev = RegisterDevice::getDevice(recv_packet.directRegWrite.device);
+						Protocol::PacketInfo send;
+						send.type = Protocol::PacketType::DirectRegisterWrite;
+						send.directRegWrite.device = recv_packet.directRegRead.device;
+						send.directRegWrite.address = recv_packet.directRegRead.address;
+						send.directRegWrite.data = dev->readRegister(recv_packet.directRegRead.address);
+						Communication::Send(send);
+					}
+					break;
 				default:
 					// this packet type is not supported
 					Communication::SendWithoutPayload(Protocol::PacketType::Nack);
