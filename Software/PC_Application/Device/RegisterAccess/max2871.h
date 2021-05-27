@@ -14,6 +14,9 @@ public:
     MAX2871();
     ~MAX2871();
 
+    void fromJSON(nlohmann::json j) override;
+    nlohmann::json toJSON() override;
+
 private:
     Ui::MAX2871Widget *ui;
 };

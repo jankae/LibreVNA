@@ -1,12 +1,14 @@
 #include "register.h"
 #include <exception>
 #include <QHeaderView>
+#include <QDebug>
 
 Register::Register(QString name, int address, int width)
     : QObject(nullptr),
       name(name),
       address(address),
-      width(width)
+      width(width),
+      updating(false)
 {
     value = 0;
 }
@@ -28,27 +30,49 @@ void Register::assignUI(QCheckBox *cb, int bitpos, bool inverted)
     });
 }
 
-void Register::assignUI(QComboBox *cb, int pos, int width)
+void Register::assignUI(QComboBox *cb, int pos, int width, int ui_bitoffset)
 {
     connect(this, &Register::valueChanged, [=]() {
         auto value = getValue(pos, width);
-        if(cb->count() > static_cast<int>(value)) {
-            cb->setCurrentIndex(value);
+        auto mask = (1UL << width) - 1;
+        mask <<= ui_bitoffset;
+        value <<= ui_bitoffset;
+        auto old_gui = cb->currentIndex();
+        old_gui &= ~mask;
+        old_gui |= value;
+        if(cb->count() > static_cast<int>(old_gui)) {
+            updating = true;
+            cb->setCurrentIndex(old_gui);
+            updating = false;
         }
     });
     connect(cb, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index){
-        setValue(index, pos, width);
+        if(!updating) {
+            index >>= ui_bitoffset;
+            setValue(index, pos, width);
+        }
     });
 }
 
-void Register::assignUI(QSpinBox *sb, int pos, int width)
+void Register::assignUI(QSpinBox *sb, int pos, int width, int ui_bitoffset)
 {
     connect(this, &Register::valueChanged, [=]() {
         auto value = getValue(pos, width);
-        sb->setValue(value);
+        auto mask = (1UL << width) - 1;
+        mask <<= ui_bitoffset;
+        value <<= ui_bitoffset;
+        auto old_gui = sb->value();
+        old_gui &= ~mask;
+        old_gui |= value;
+        updating = true;
+        sb->setValue(old_gui);
+        updating = false;
     });
     connect(sb, qOverload<int>(&QSpinBox::valueChanged), [=](int index){
-        setValue(index, pos, width);
+        if(!updating) {
+            index >>= ui_bitoffset;
+            setValue(index, pos, width);
+        }
     });
 }
 
@@ -74,10 +98,7 @@ unsigned long Register::getValue()
 
 unsigned long Register::getValue(int pos, int width)
 {
-    unsigned long mask = 0;
-    for(int i=0;i<width;i++) {
-        mask |= (1UL << i);
-    }
+    unsigned long mask = (1UL << width) - 1;
     mask <<= pos;
     auto masked = value & mask;
     masked >>= pos;
@@ -91,10 +112,7 @@ void Register::setValue(unsigned long newval)
 
 void Register::setValue(unsigned long newval, int pos, int width)
 {
-    unsigned long mask = 0;
-    for(int i=0;i<width;i++) {
-        mask |= (1UL << i);
-    }
+    unsigned long mask = (1UL << width) - 1;
     newval &= mask;
     newval <<= pos;
     mask <<= pos;

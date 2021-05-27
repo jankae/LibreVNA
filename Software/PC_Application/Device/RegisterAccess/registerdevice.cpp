@@ -3,7 +3,7 @@
 #include "max2871.h"
 #include "Device/device.h"
 
-RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumber)
+RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumber, QString name)
 {
     RegisterDevice *regdev = nullptr;
     if(partnumber == "MAX2871") {
@@ -13,6 +13,7 @@ RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumb
         regdev->dev = dev;
         regdev->number = number;
         regdev->partnumber = partnumber;
+        regdev->name = name;
 
         // read initial register content
         Protocol::PacketInfo p;
@@ -45,6 +46,16 @@ RegisterDevice::RegisterDevice()
     widget = new QWidget;
 }
 
+QString RegisterDevice::getName() const
+{
+    return name;
+}
+
+QString RegisterDevice::getPartnumber() const
+{
+    return partnumber;
+}
+
 QWidget *RegisterDevice::getWidget() const
 {
     return widget;
@@ -62,5 +73,27 @@ void RegisterDevice::addRegister(Register *reg)
         p.directRegWrite.data = reg->getValue();
         dev->SendPacket(p);
     });
+}
+
+nlohmann::json RegisterDevice::registersToJSON()
+{
+    nlohmann::json j;
+    for(auto r : regs) {
+        j[r->getAddress()] = r->getValue();
+    }
+    return j;
+}
+
+void RegisterDevice::registersFromJSON(nlohmann::json j)
+{
+    for(auto val : j.items()) {
+        auto address = QString::fromStdString(val.key()).toInt();
+        for(auto r : regs) {
+            if(r->getAddress() == address) {
+                r->setValue(val.value());
+                break;
+            }
+        }
+    }
 }
 

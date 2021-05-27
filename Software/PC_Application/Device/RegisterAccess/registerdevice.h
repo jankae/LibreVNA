@@ -7,26 +7,30 @@
 #include "savable.h"
 #include "Device/device.h"
 
-class RegisterDevice //: public Savable
+class RegisterDevice : public Savable
 {
 public:
-    static RegisterDevice *create(Device *dev, int number, QString partnumber);
+    static RegisterDevice *create(Device *dev, int number, QString partnumber, QString name);
     ~RegisterDevice();
 
     void setRegister(int address, unsigned long value);
-//    void fromJSON(nlohmann::json j) override;
-//    nlohmann::json toJSON() override;
 
     QWidget *getWidget() const;
+    QString getPartnumber() const;
+    QString getName() const;
 
 protected:
     void addRegister(Register *reg);
+
+    nlohmann::json registersToJSON();
+    void registersFromJSON(nlohmann::json j);
 
     RegisterDevice();
     Device *dev;
 
     int number;
     QString partnumber;
+    QString name;
     std::vector<Register*> regs;
     QWidget *widget;
 };

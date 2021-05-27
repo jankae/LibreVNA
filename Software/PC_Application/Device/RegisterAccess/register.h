@@ -14,8 +14,12 @@ public:
     Register(QString name, int address, int width);
 
     void assignUI(QCheckBox *cb, int bitpos, bool inverted = false);
-    void assignUI(QComboBox *cb, int pos, int width);
-    void assignUI(QSpinBox *sb, int pos, int width);
+    // pos: bitpos at which the field in the register starts which is associated with the UI element
+    // width: amount of bits in the field
+    // ui_bitoffset: set to LSB of the ui element in this register field (only required for elements that
+    // are not represented as one field in a register, e.g. when splitting bits across multiple registers)
+    void assignUI(QComboBox *cb, int pos, int width, int ui_bitoffset = 0);
+    void assignUI(QSpinBox *sb, int pos, int width, int ui_bitoffset = 0);
 
     QString hexString();
     bool setFromString(QString hex);
@@ -37,6 +41,7 @@ private:
     int address;
     int width;
     unsigned long value;
+    bool updating; // for preventing endless recursion when updating register/its UI connections
 };
 
 #endif // REGISTER_H

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1432</width>
-    <height>586</height>
+    <width>1283</width>
+    <height>638</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_5">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QVBoxLayout" name="verticalLayout_15">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
@@ -31,7 +31,631 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_13">
+         <item>
+          <widget class="QGroupBox" name="groupBox_11">
+           <property name="title">
+            <string>Reference Input</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_14">
+            <item>
+             <widget class="QComboBox" name="cbRef">
+              <item>
+               <property name="text">
+                <string>Manual</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="SIUnitEdit" name="ref"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_12">
+         <property name="title">
+          <string>Calculated Frequencies</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_12">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_25">
+            <property name="text">
+             <string>Ref In:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="SIUnitEdit" name="freqRef">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_27">
+            <property name="text">
+             <string>PFD:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="SIUnitEdit" name="freqPFD">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_28">
+            <property name="text">
+             <string>VCO:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="SIUnitEdit" name="freqVCO">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_29">
+            <property name="text">
+             <string>Out A:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="SIUnitEdit" name="freqOutA">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_30">
+            <property name="text">
+             <string>Out B:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="SIUnitEdit" name="freqOutB">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_12">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Reference</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QCheckBox" name="DBR">
+            <property name="text">
+             <string>Doubler</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="RDIV2">
+            <property name="text">
+             <string>Div-by-2</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout_9">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>R-divider:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="R">
+              <property name="maximum">
+               <number>1023</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="RST">
+            <property name="text">
+             <string>R/N counter reset</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Divider Settings</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QCheckBox" name="INT">
+            <property name="text">
+             <string>Integer-N mode</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>N:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="N">
+              <property name="minimum">
+               <number>16</number>
+              </property>
+              <property name="maximum">
+               <number>65535</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>FRAC:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="frac">
+              <property name="maximum">
+               <number>4095</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>M:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="M">
+              <property name="maximum">
+               <number>4095</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QSpinBox" name="P">
+              <property name="maximum">
+               <number>4095</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Phase:</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Charge Pump</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Linearity:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="CPL">
+            <item>
+             <property name="text">
+              <string>Disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10%</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>20%</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>30%</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Test:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="CPT">
+            <item>
+             <property name="text">
+              <string>Normal mode</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Long Reset mode</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Force source</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Force sink</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Current:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="CP">
+            <property name="maximum">
+             <number>15</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Polarity:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="PDP">
+            <item>
+             <property name="text">
+              <string>Negative</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Positive</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QCheckBox" name="TRI">
+            <property name="text">
+             <string>High Impedance</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_8">
+         <property name="title">
+          <string>Output</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QFormLayout" name="formLayout_6">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_19">
+              <property name="text">
+               <string>Divider:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="DIVA">
+              <item>
+               <property name="text">
+                <string>1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>8</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>16</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>32</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>64</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>128</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_20">
+              <property name="text">
+               <string>Out B Path:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="BDIV">
+              <item>
+               <property name="text">
+                <string>Divided output</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Fundamental frequency</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="RFB_EN">
+            <property name="text">
+             <string>Enable Out B</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout_5">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_21">
+              <property name="text">
+               <string>Out B Power:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="BPWR">
+              <item>
+               <property name="text">
+                <string>-4 dBm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>-1 dBm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>+2 dBm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>+5 dBm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="RFA_EN">
+            <property name="text">
+             <string>Enable Out A</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout_4">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_22">
+              <property name="text">
+               <string>Out A Power:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="APWR">
+              <item>
+               <property name="text">
+                <string>-4 dBm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>-1 dBm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>+2 dBm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>+5 dBm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QGroupBox" name="groupBox_6">
+           <property name="title">
+            <string>Shutdown</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QCheckBox" name="SDVCO">
+              <property name="text">
+               <string>Shutdown VCO</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="SDLDO">
+              <property name="text">
+               <string>Shutdown VCO LDO</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="SDREF">
+              <property name="text">
+               <string>Shutdown Reference Input</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="SDDIV">
+              <property name="text">
+               <string>Shutdown VCO Divider</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="SHDN">
+              <property name="text">
+               <string>Shutdown Mode</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="SDPLL">
+              <property name="text">
+               <string>Shutdown PLL</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
          <item>
           <widget class="QGroupBox" name="groupBox_5">
            <property name="title">
@@ -135,865 +759,401 @@
            </layout>
           </widget>
          </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_9">
          <item>
-          <widget class="QGroupBox" name="groupBox_6">
+          <widget class="QGroupBox" name="groupBox_7">
            <property name="title">
-            <string>Shutdown</string>
+            <string>VCO</string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QCheckBox" name="SDVCO">
+             <layout class="QFormLayout" name="formLayout_3">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>VCO Band:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="VCO">
+                <property name="maximum">
+                 <number>63</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="VAS_SHDN">
               <property name="text">
-               <string>Shutdown VCO</string>
+               <string>VAS Shutdown</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="SDLDO">
+             <widget class="QCheckBox" name="VAS_TEMP">
               <property name="text">
-               <string>Shutdown VCO LDO</string>
+               <string>VAS temperature compensation</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="SDREF">
+             <layout class="QFormLayout" name="formLayout_11">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_26">
+                <property name="text">
+                 <string>VAS_DLY:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="VAS_DLY">
+                <item>
+                 <property name="text">
+                  <string>00 (when VAS_TEMP=0)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Unknown</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Unknown</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>11 (when VAS_TEMP=1)</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="FB">
               <property name="text">
-               <string>Shutdown Reference Input</string>
+               <string>Fundamental Feedback</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_9">
+           <property name="title">
+            <string>ADC</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QCheckBox" name="ADCS">
+              <property name="text">
+               <string>Start</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="SDDIV">
+             <widget class="QCheckBox" name="ADCV">
               <property name="text">
-               <string>Shutdown VCO Divider</string>
+               <string>Valid Code</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="SHDN">
-              <property name="text">
-               <string>Shutdown Mode</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="SDPLL">
-              <property name="text">
-               <string>Shutdown PLL</string>
-              </property>
-             </widget>
+             <layout class="QFormLayout" name="formLayout_7">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_24">
+                <property name="text">
+                 <string>Mode:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="ADCM">
+                <item>
+                 <property name="text">
+                  <string>Disabled</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Temperature</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Reserved</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Reserved</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Tune pin</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Reserved</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Reserved</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Reserved</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
          </item>
         </layout>
        </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_11">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QGroupBox" name="groupBox_4">
-           <property name="title">
-            <string>Reference</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_8">
-            <item>
-             <widget class="QCheckBox" name="DBR">
-              <property name="text">
-               <string>Doubler</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="RDIV2">
-              <property name="text">
-               <string>Div-by-2</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QFormLayout" name="formLayout_9">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_11">
-                <property name="text">
-                 <string>R-divider:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QSpinBox" name="R">
-                <property name="maximum">
-                 <number>1023</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="RST">
-              <property name="text">
-               <string>R/N counter reset</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupBox_2">
-           <property name="title">
-            <string>Divider Settings</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_6">
-            <item>
-             <widget class="QCheckBox" name="FracNEnable">
-              <property name="text">
-               <string>Fractional-N mode</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QFormLayout" name="formLayout">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label">
-                <property name="text">
-                 <string>N:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QSpinBox" name="N">
-                <property name="minimum">
-                 <number>16</number>
-                </property>
-                <property name="maximum">
-                 <number>65535</number>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>FRAC:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QSpinBox" name="frac">
-                <property name="maximum">
-                 <number>4095</number>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>M:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QSpinBox" name="M">
-                <property name="maximum">
-                 <number>4095</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QSpinBox" name="P">
-                <property name="maximum">
-                 <number>4095</number>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_7">
-                <property name="text">
-                 <string>Phase:</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupBox_3">
-           <property name="title">
-            <string>Charge Pump</string>
-           </property>
-           <layout class="QFormLayout" name="formLayout_2">
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>Mixed</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QCheckBox" name="MTLD">
+            <property name="text">
+             <string>Mute until lock</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="MUTEDEL">
+            <property name="text">
+             <string>Mute Delay</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="CSM">
+            <property name="text">
+             <string>Cycle Slip Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="F01">
+            <property name="text">
+             <string>Integer mode when F=0</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="REG4DB">
+            <property name="text">
+             <string>Double buffer mode</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout_8">
             <item row="0" column="0">
-             <widget class="QLabel" name="label_4">
+             <widget class="QLabel" name="label_16">
               <property name="text">
-               <string>Linearity:</string>
+               <string>Clock Divider Mode:</string>
               </property>
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="CPL">
+             <widget class="QComboBox" name="CDM">
               <item>
                <property name="text">
-                <string>Disabled</string>
+                <string>Mute until Lock Delay</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>10%</string>
+                <string>Fast-lock enabled</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>20%</string>
+                <string>Phase Adjustment mode</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>30%</string>
+                <string>Reserved</string>
                </property>
               </item>
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QLabel" name="label_5">
+             <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>Test:</string>
+               <string>Noise Mode:</string>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QComboBox" name="CPT">
+             <widget class="QComboBox" name="SDN">
               <item>
                <property name="text">
-                <string>Normal mode</string>
+                <string>Low-noise</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Long Reset mode</string>
+                <string>Reserved</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Force source</string>
+                <string>Low-spur 1</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Force sink</string>
+                <string>Low-spur 2</string>
                </property>
               </item>
              </widget>
             </item>
             <item row="2" column="0">
-             <widget class="QLabel" name="label_6">
+             <widget class="QLabel" name="label_10">
               <property name="text">
-               <string>Current:</string>
+               <string> MUX Pin:</string>
               </property>
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QSpinBox" name="CP">
-              <property name="maximum">
-               <number>15</number>
-              </property>
+             <widget class="QComboBox" name="MUX">
+              <item>
+               <property name="text">
+                <string>Three-state output</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>DVDD</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>DGND</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string> R-divider output</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>N-divider/2 output</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Analog lock detect</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Digital lock detect</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Sync input</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Read SPI registers 6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item row="3" column="0">
-             <widget class="QLabel" name="label_14">
+             <widget class="QLabel" name="label_18">
               <property name="text">
-               <string>Polarity:</string>
+               <string>Band Select:</string>
               </property>
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="QComboBox" name="PDP">
-              <item>
-               <property name="text">
-                <string>Negative</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Positive</string>
-               </property>
-              </item>
+             <widget class="QSpinBox" name="BS">
+              <property name="maximum">
+               <number>1023</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_17">
+              <property name="text">
+               <string>Clock Divider:</string>
+              </property>
              </widget>
             </item>
             <item row="4" column="1">
-             <widget class="QCheckBox" name="TRI">
-              <property name="text">
-               <string>High Impedance</string>
+             <widget class="QSpinBox" name="CDIV">
+              <property name="maximum">
+               <number>4095</number>
               </property>
              </widget>
             </item>
            </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupBox_8">
-           <property name="title">
-            <string>Output</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <layout class="QFormLayout" name="formLayout_6">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_19">
-                <property name="text">
-                 <string>Divider:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="DIVA">
-                <item>
-                 <property name="text">
-                  <string>1</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>2</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>4</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>8</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>16</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>32</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>64</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>128</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_20">
-                <property name="text">
-                 <string>Out B Path:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="BDIV">
-                <item>
-                 <property name="text">
-                  <string>Divided output</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Fundamental frequency</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="RFB_EN">
-              <property name="text">
-               <string>Enable Out B</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QFormLayout" name="formLayout_5">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_21">
-                <property name="text">
-                 <string>Out B Power:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="BPWR">
-                <item>
-                 <property name="text">
-                  <string>-4 dBm</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>-1 dBm</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+2 dBm</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+5 dBm</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="RFA_EN">
-              <property name="text">
-               <string>Enable Out B</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QFormLayout" name="formLayout_4">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_22">
-                <property name="text">
-                 <string>Out A Power:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="APWR">
-                <item>
-                 <property name="text">
-                  <string>-4 dBm</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>-1 dBm</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+2 dBm</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+5 dBm</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_9">
-           <item>
-            <widget class="QGroupBox" name="groupBox_7">
-             <property name="title">
-              <string>VCO</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_3">
-              <item>
-               <layout class="QFormLayout" name="formLayout_3">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_15">
-                  <property name="text">
-                   <string>VCO Band:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QSpinBox" name="VCO">
-                  <property name="maximum">
-                   <number>63</number>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="VAS_SHDN">
-                <property name="text">
-                 <string>VAS Shutdown</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="VAS_TEMP">
-                <property name="text">
-                 <string>VAS temperature compensation</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="FB">
-                <property name="text">
-                 <string>Fundamental Feedback</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="groupBox_9">
-             <property name="title">
-              <string>ADC</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_5">
-              <item>
-               <widget class="QCheckBox" name="ADCS">
-                <property name="text">
-                 <string>Start</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="ADCV">
-                <property name="text">
-                 <string>Valid Code</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <layout class="QFormLayout" name="formLayout_7">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_24">
-                  <property name="text">
-                   <string>Mode:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="ADCM">
-                  <item>
-                   <property name="text">
-                    <string>Disabled</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Temperature</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Reserved</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Reserved</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Tune pin</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Reserved</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Reserved</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Reserved</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_25">
-                  <property name="text">
-                   <string>Code:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QSpinBox" name="ADC">
-                  <property name="maximum">
-                   <number>128</number>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupBox_10">
-           <property name="title">
-            <string>Mixed</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_7">
-            <item>
-             <widget class="QCheckBox" name="MTLD">
-              <property name="text">
-               <string>Mute until lock</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="MUTEDEL">
-              <property name="text">
-               <string>Mute Delay</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="CSM">
-              <property name="text">
-               <string>Cycle Slip Mode</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="F01">
-              <property name="text">
-               <string>Integer mode when F=0</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="REG4DB">
-              <property name="text">
-               <string>Double buffer mode</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QFormLayout" name="formLayout_8">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_16">
-                <property name="text">
-                 <string>Clock Divider Mode:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="CDM">
-                <item>
-                 <property name="text">
-                  <string>Mute until Lock Delay</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Fast-lock enabled</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Phase Adjustment mode</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Noise Mode:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="SDN">
-                <item>
-                 <property name="text">
-                  <string>Low-noise</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Low-spur 1</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Low-spur 2</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_10">
-                <property name="text">
-                 <string> MUX Pin:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QComboBox" name="MUX">
-                <item>
-                 <property name="text">
-                  <string>Three-state output</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>DVDD</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>DGND</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string> R-divider output</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>N-divider/2 output</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Analog lock detect</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Digital lock detect</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Sync input</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Read SPI registers 6</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Reserved</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_18">
-                <property name="text">
-                 <string>Band Select:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QSpinBox" name="BS">
-                <property name="maximum">
-                 <number>1023</number>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="label_17">
-                <property name="text">
-                 <string>Clock Divider:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QSpinBox" name="CDIV">
-                <property name="maximum">
-                 <number>4095</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </item>
@@ -1001,6 +1161,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
