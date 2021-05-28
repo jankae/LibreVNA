@@ -100,6 +100,17 @@ void RawRegisterDialog::receivedDirectRegisterInfo(Protocol::DirectRegisterInfo 
     }
     devices[info.num] = regdev;
     ui->tabs->addTab(regdev->getWidget(), QString(info.type)+": "+QString(info.name));
+
+    if(info.num == devices.size() - 1) {
+        // this was the last device, make outputs available as inputs for other devices
+        for(auto outer : devices) {
+            for(auto inner : devices) {
+                if(inner != outer) {
+                    inner->addPossibleInputs(outer);
+                }
+            }
+        }
+    }
 }
 
 void RawRegisterDialog::receivedDirectRegister(Protocol::DirectRegisterWrite reg)

@@ -1,19 +1,19 @@
-#ifndef MAX2871_H
-#define MAX2871_H
+#ifndef STW81200_H
+#define STW81200_H
 
 #include "registerdevice.h"
 #include <QWidget>
 #include "CustomWidgets/siunitedit.h"
 
 namespace Ui {
-class MAX2871Widget;
+class STW81200Widget;
 }
 
-class MAX2871 : public RegisterDevice
+class STW81200 : public RegisterDevice
 {
 public:
-    MAX2871();
-    ~MAX2871();
+    STW81200();
+    ~STW81200();
 
     void fromJSON(nlohmann::json j) override;
     nlohmann::json toJSON() override;
@@ -21,7 +21,7 @@ public:
     void addPossibleInputs(RegisterDevice *inputDevice) override;
 private:
     SIUnitEdit *currentInput;
-    Ui::MAX2871Widget *ui;
+    Ui::STW81200Widget *ui;
 };
 
 #endif // MAX2871_H

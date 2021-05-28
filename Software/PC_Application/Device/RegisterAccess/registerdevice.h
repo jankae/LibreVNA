@@ -6,6 +6,7 @@
 #include "register.h"
 #include "savable.h"
 #include "Device/device.h"
+#include "CustomWidgets/siunitedit.h"
 
 class RegisterDevice : public Savable
 {
@@ -18,6 +19,8 @@ public:
     QWidget *getWidget() const;
     QString getPartnumber() const;
     QString getName() const;
+
+    virtual void addPossibleInputs(RegisterDevice *inputDevice);
 
 protected:
     void addRegister(Register *reg);
@@ -33,6 +36,8 @@ protected:
     QString name;
     std::vector<Register*> regs;
     QWidget *widget;
+    std::map<QString, SIUnitEdit*> outputs;
+    std::map<QString, SIUnitEdit*> possibleInputs;
 };
 
 #endif // REGISTERDEVICE_H

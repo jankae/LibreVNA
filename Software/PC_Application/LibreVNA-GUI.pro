@@ -21,6 +21,8 @@ HEADERS += \
     Device/RegisterAccess/rawregisterdialog.h \
     Device/RegisterAccess/register.h \
     Device/RegisterAccess/registerdevice.h \
+    Device/RegisterAccess/stw81200 \
+    Device/RegisterAccess/stw81200.h \
     Device/device.h \
     Device/devicelog.h \
     Device/firmwareupdatedialog.h \
@@ -149,6 +151,7 @@ SOURCES += \
     Device/RegisterAccess/rawregisterdialog.cpp \
     Device/RegisterAccess/register.cpp \
     Device/RegisterAccess/registerdevice.cpp \
+    Device/RegisterAccess/stw81200.cpp \
     Device/device.cpp \
     Device/devicelog.cpp \
     Device/firmwareupdatedialog.cpp \
@@ -261,6 +264,7 @@ FORMS += \
     CustomWidgets/touchstoneimport.ui \
     Device/RegisterAccess/max2871widget.ui \
     Device/RegisterAccess/rawregisterdialog.ui \
+    Device/RegisterAccess/stw81200widget.ui \
     Device/devicelog.ui \
     Device/firmwareupdatedialog.ui \
     Device/manualcontroldialog.ui \

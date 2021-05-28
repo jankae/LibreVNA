@@ -1,6 +1,7 @@
 #include "registerdevice.h"
 
 #include "max2871.h"
+#include "stw81200.h"
 #include "Device/device.h"
 
 RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumber, QString name)
@@ -8,6 +9,8 @@ RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumb
     RegisterDevice *regdev = nullptr;
     if(partnumber == "MAX2871") {
         regdev = new MAX2871();
+    } else if(partnumber == "STW81200") {
+        regdev = new STW81200();
     }
     if(regdev) {
         regdev->dev = dev;
@@ -49,6 +52,13 @@ RegisterDevice::RegisterDevice()
 QString RegisterDevice::getName() const
 {
     return name;
+}
+
+void RegisterDevice::addPossibleInputs(RegisterDevice *inputDevice)
+{
+    for(auto o : inputDevice->outputs) {
+        possibleInputs[inputDevice->name+":"+o.first] = o.second;
+    }
 }
 
 QString RegisterDevice::getPartnumber() const

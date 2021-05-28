@@ -4,6 +4,8 @@
 
 MAX2871::MAX2871()
 {
+    currentInput = nullptr;
+
     addRegister(new Register("Register 0", 0, 32));
     addRegister(new Register("Register 1", 1, 32));
     addRegister(new Register("Register 2", 2, 32));
@@ -84,10 +86,31 @@ MAX2871::MAX2871()
     ui->freqOutB->setPrefixes(" kMG");
     ui->freqOutB->setUnit("Hz");
 
+    QObject::connect(ui->cbRef, &QComboBox::currentTextChanged, [=](QString input){
+        SIUnitEdit *newInput = nullptr;
+        if(possibleInputs.count(input)) {
+            newInput = possibleInputs[input];
+        }
+        if(currentInput) {
+            QObject::disconnect(currentInput, &SIUnitEdit::valueChanged, ui->freqRef, &SIUnitEdit::setValue);
+            ui->ref->setEnabled(true);
+        } else {
+            QObject::disconnect(ui->ref, &SIUnitEdit::valueChanged, ui->freqRef, &SIUnitEdit::setValue);
+        }
+        if(newInput) {
+            QObject::connect(newInput, &SIUnitEdit::valueChanged, ui->freqRef, &SIUnitEdit::setValue);
+            ui->ref->setEnabled(false);
+            ui->freqRef->setValue(newInput->value());
+        } else {
+            QObject::connect(ui->ref, &SIUnitEdit::valueChanged, ui->freqRef, &SIUnitEdit::setValue);
+            ui->freqRef->setValue(ui->ref->value());
+        }
+        currentInput = newInput;
+    });
+
     // user friendly frequency calculation connections
-    QObject::connect(ui->ref, &SIUnitEdit::valueChanged, ui->freqRef, &SIUnitEdit::setValue);
     auto updatePFD = [=]() {
-        auto pfd = ui->ref->value();
+        auto pfd = ui->freqRef->value();
         if(ui->DBR->isChecked()) {
             pfd *= 2;
         }
@@ -102,7 +125,7 @@ MAX2871::MAX2871()
         palette.setColor(QPalette::Base,valid ? Qt::white : Qt::red);
         ui->freqPFD->setPalette(palette);
     };
-    QObject::connect(ui->ref, &SIUnitEdit::valueChanged, updatePFD);
+    QObject::connect(ui->freqRef, &SIUnitEdit::valueChanged, updatePFD);
     QObject::connect(ui->INT, &QCheckBox::toggled, updatePFD);
     QObject::connect(ui->DBR, &QCheckBox::toggled, updatePFD);
     QObject::connect(ui->RDIV2, &QCheckBox::toggled, updatePFD);
@@ -152,6 +175,9 @@ MAX2871::MAX2871()
     QObject::connect(ui->DIVA, qOverload<int>(&QComboBox::currentIndexChanged), updateOutB);
     QObject::connect(ui->BDIV, qOverload<int>(&QComboBox::currentIndexChanged), updateOutB);
 
+    outputs["OutA"] = ui->freqOutA;
+    outputs["OutB"] = ui->freqOutB;
+
     ui->ref->setValue(100000000);
 }
 
@@ -180,3 +206,12 @@ nlohmann::json MAX2871::toJSON()
     return j;
 }
 
+void MAX2871::addPossibleInputs(RegisterDevice *inputDevice)
+{
+    RegisterDevice::addPossibleInputs(inputDevice);
+    ui->cbRef->clear();
+    ui->cbRef->addItem("Manual");
+    for(auto i : possibleInputs) {
+        ui->cbRef->addItem(i.first);
+    }
+}
