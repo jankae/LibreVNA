@@ -227,6 +227,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.excitePort1);
 	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.excitePort2);
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
+	FPGA::SetAutogain();
 	pointCnt = 0;
 	// starting port depends on whether port 1 is active in sweep
 	excitingPort1 = s.excitePort1;
@@ -260,6 +261,12 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	// normal sweep mode
 	auto port1_raw = std::complex<float>(result.P1I, result.P1Q);
 	auto port2_raw = std::complex<float>(result.P2I, result.P2Q);
+
+	// correct applied gain
+	constexpr uint8_t gainValues[] = {1, 10, 20, 30, 40, 60, 80, 120, 157};
+	port1_raw /= gainValues[result.P1gain];
+	port2_raw /= gainValues[result.P2gain];
+
 	auto ref = std::complex<float>(result.RefI, result.RefQ);
 	auto port1 = port1_raw / ref;
 	auto port2 = port2_raw / ref;

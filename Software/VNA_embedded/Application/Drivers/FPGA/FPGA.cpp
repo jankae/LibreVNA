@@ -13,6 +13,7 @@
 static FPGA::HaltedCallback halted_cb;
 static uint16_t SysCtrlReg = 0x0000;
 static uint16_t ISRMaskReg = 0x0000;
+static uint16_t GainReg = 0x0000;
 static uint32_t ADC_samplerate;
 
 using namespace FPGAHAL;
@@ -88,6 +89,8 @@ bool FPGA::Init(HaltedCallback cb) {
 	halted_cb = cb;
 	SysCtrlReg = 0;
 	ISRMaskReg = 0;
+	GainReg = 0;
+
 	// Reset FPGA
 	High(FPGA_RESET);
 	SetMode(Mode::FPGA);
@@ -243,7 +246,7 @@ static inline int64_t sign_extend_64(int64_t x, uint16_t bits) {
 }
 
 static FPGA::ReadCallback callback;
-static uint8_t raw[40];
+static uint8_t raw[42];
 static FPGA::SamplingResult result;
 static bool busy_reading = false;
 
@@ -257,7 +260,7 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	// Start data read
 	Low(CS);
 	busy_reading = true;
-	HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 40);
+	HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 42);
 	return true;
 }
 
@@ -281,6 +284,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	result.RefQ = assembleSampleResultValue(&raw[2]);
 	result.pointNum = (uint16_t)(raw[38]&0x1F) << 8 | raw[39];
 	result.activePort = raw[38] & 0x80 ? 1 : 0;
+	result.P1gain = raw[41] & 0x0F;
+	result.P2gain = raw[41] >> 4;
 	High(CS);
 	busy_reading = false;
 	if ((status & 0x0004) && callback) {
@@ -414,4 +419,14 @@ FPGA::DFTResult FPGA::ReadDFTResult() {
 	res.P1 = std::abs(p1);
 	res.P2 = std::abs(p2);
 	return res;
+}
+
+void FPGA::SetAutogain() {
+	GainReg |= 0x3000;
+	WriteRegister(Reg::PGAGain, GainReg);
+}
+
+void FPGA::SetManualGain(uint8_t p1gain, uint8_t p2gain) {
+	GainReg = (p1gain & 0x0F) | (p2gain & 0x0F) << 4;
+	WriteRegister(Reg::PGAGain, GainReg);
 }

@@ -177,6 +177,9 @@ bool HW::Init() {
 	FPGA::Disable(FPGA::Periphery::LO1Chip);
 	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
+	// Set default gain (1V/V)
+	FPGA::SetManualGain(0, 0);
+
 	LOG_INFO("Initialized");
 	FPGA::Enable(FPGA::Periphery::ReadyLED);
 

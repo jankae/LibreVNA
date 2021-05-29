@@ -16,6 +16,7 @@ enum class Reg {
 	SystemControl = 0x03,
 	ADCPrescaler = 0x04,
 	PhaseIncrement = 0x05,
+	PGAGain = 0x06,
 	MAX2871Def0LSB = 0x08,
 	MAX2871Def0MSB = 0x09,
 	MAX2871Def1LSB = 0x0A,
@@ -34,6 +35,8 @@ using SamplingResult = struct _samplingresult {
 	int64_t RefI, RefQ;
 	uint16_t pointNum :15;
 	uint16_t activePort :1;
+	uint8_t P1gain :4;
+	uint8_t P2gain :4;
 };
 
 using DFTResult = struct _dftresult {
@@ -114,6 +117,8 @@ void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
+void SetAutogain();
+void SetManualGain(uint8_t p1gain, uint8_t p2gain);
 bool IsEnabled(Periphery p);
 void SetWindow(Window w);
 void EnableInterrupt(Interrupt i);
