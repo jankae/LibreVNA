@@ -1,0 +1,3125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SI5332Widget</class>
+ <widget class="QWidget" name="SI5332Widget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1638</width>
+    <height>783</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_4">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Registers</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QTableWidget" name="table"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_11">
+       <property name="title">
+        <string>External Reference Input</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_14">
+        <item>
+         <widget class="QComboBox" name="cbRef">
+          <item>
+           <property name="text">
+            <string>Manual</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="SIUnitEdit" name="ref"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_12">
+       <property name="title">
+        <string>XTAL</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_15">
+        <item>
+         <widget class="QComboBox" name="cbXTAL">
+          <item>
+           <property name="text">
+            <string>Manual</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="SIUnitEdit" name="xtal"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="title">
+          <string>Main PLL</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_63">
+            <property name="text">
+             <string>Input:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="IMUX_SEL">
+            <item>
+             <property name="text">
+              <string>Disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>XOSC</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>CLKIN_2</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Disabled</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_61">
+            <property name="text">
+             <string>Prescaler:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="IPDA_DIV">
+            <property name="maximum">
+             <number>64</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_59">
+            <property name="text">
+             <string>INTG:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="IPDA_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_60">
+            <property name="text">
+             <string>RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="IPDA_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_58">
+            <property name="text">
+             <string>DEN:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="IPDA_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_62">
+            <property name="text">
+             <string>Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_64">
+            <property name="text">
+             <string>VCO Frequency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="SIUnitEdit" name="freqVCO">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="PLL_MODE">
+            <item>
+             <property name="text">
+              <string>1</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>5</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>6</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>7</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>8</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>9</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>12</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>13</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>14</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>15</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_7">
+         <property name="title">
+          <string>System</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_65">
+              <property name="text">
+               <string>Device Mode:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="USYS_CTRL">
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>READY</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ACTIVE</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_69">
+              <property name="text">
+               <string>I2C Address:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="I2C_ADDR">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="UDRV_OE_ENA">
+            <property name="text">
+             <string>Master Output Enable</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QCheckBox" name="VDD_XTAL_OK">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>VDD XTAL Okay</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="VDDO_OK">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>VDDO Okay</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout_3">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_66">
+              <property name="text">
+               <string>Device PN:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="DEVICE_PN_BASE">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_67">
+              <property name="text">
+               <string>Device Revision:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="DEVICE_REV">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_68">
+              <property name="text">
+               <string>Device Grade:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="DEVICE_GRADE">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="I2C_SCL_PUP_ENA">
+            <property name="text">
+             <string>Enable SCL pullup</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="I2C_SDA_PUP_ENA">
+            <property name="text">
+             <string>Enable SDA pullup</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>HSDIV</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="3" column="2">
+             <widget class="QSpinBox" name="HSDIV2B_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_28">
+              <property name="text">
+               <string>1:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_29">
+              <property name="text">
+               <string>Div bank A:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="3">
+             <widget class="QComboBox" name="HSDIV2_DIV_SEL">
+              <item>
+               <property name="text">
+                <string>Bank A</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Bank B</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="HSDIV0A_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QSpinBox" name="HSDIV2A_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QComboBox" name="HSDIV3_DIV_SEL">
+              <item>
+               <property name="text">
+                <string>Bank A</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Bank B</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_25">
+              <property name="text">
+               <string>4:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_30">
+              <property name="text">
+               <string>Div bank B:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QSpinBox" name="HSDIV4A_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="label_31">
+              <property name="text">
+               <string>Active bank:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="HSDIV1A_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_26">
+              <property name="text">
+               <string>2:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QSpinBox" name="HSDIV0B_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QSpinBox" name="HSDIV1B_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QSpinBox" name="HSDIV4B_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QSpinBox" name="HSDIV3B_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QComboBox" name="HSDIV0_DIV_SEL">
+              <item>
+               <property name="text">
+                <string>Bank A</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Bank B</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_27">
+              <property name="text">
+               <string>0:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QComboBox" name="HSDIV1_DIV_SEL">
+              <item>
+               <property name="text">
+                <string>Bank A</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Bank B</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QSpinBox" name="HSDIV3A_DIV">
+              <property name="maximum">
+               <number>255</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_24">
+              <property name="text">
+               <string>3:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3">
+             <widget class="QComboBox" name="HSDIV4_DIV_SEL">
+              <item>
+               <property name="text">
+                <string>Bank A</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Bank B</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_52">
+              <property name="text">
+               <string>Frequency:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="SIUnitEdit" name="freqHSDIV0">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="4">
+             <widget class="SIUnitEdit" name="freqHSDIV1">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="4">
+             <widget class="SIUnitEdit" name="freqHSDIV2">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="4">
+             <widget class="SIUnitEdit" name="freqHSDIV3">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="4">
+             <widget class="SIUnitEdit" name="freqHSDIV4">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="title">
+        <string>ID</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="0" column="0">
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="2" column="19">
+           <widget class="QLabel" name="label_51">
+            <property name="text">
+             <string>Steps RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="19">
+           <widget class="QSpinBox" name="ID0B_SS_STEP_RES"/>
+          </item>
+          <item row="0" column="1" colspan="9">
+           <widget class="QLabel" name="label_41">
+            <property name="text">
+             <string>Bank A:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_53">
+            <property name="text">
+             <string>0:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="11" colspan="4">
+           <widget class="QLabel" name="label_49">
+            <property name="text">
+             <string>Fractional-N-PLL</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="7">
+           <widget class="QLabel" name="label_36">
+            <property name="text">
+             <string>Steps:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="6">
+           <widget class="QComboBox" name="ID0A_SS_MODE">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>invalid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="ID0A_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="13">
+           <widget class="QLabel" name="label_47">
+            <property name="text">
+             <string>RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="18">
+           <widget class="QLabel" name="label_50">
+            <property name="text">
+             <string>Steps INTG:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="17">
+           <widget class="QLabel" name="label_45">
+            <property name="text">
+             <string>Steps:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="6" colspan="4">
+           <widget class="QLabel" name="label_38">
+            <property name="text">
+             <string>Spread-Spectrum</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="6">
+           <widget class="QLabel" name="label_35">
+            <property name="text">
+             <string>Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4">
+           <widget class="QSpinBox" name="ID0A_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="16">
+           <widget class="QComboBox" name="ID0B_SS_MODE">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>invalid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="11" colspan="9">
+           <widget class="QLabel" name="label_48">
+            <property name="text">
+             <string>Bank B:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="8">
+           <widget class="QSpinBox" name="ID0A_SS_STEP_INTG"/>
+          </item>
+          <item row="3" column="18">
+           <widget class="QSpinBox" name="ID0B_SS_STEP_INTG"/>
+          </item>
+          <item row="3" column="9">
+           <widget class="QSpinBox" name="ID0A_SS_STEP_RES"/>
+          </item>
+          <item row="3" column="17">
+           <widget class="QSpinBox" name="ID0B_SS_STEP_NUM">
+            <property name="maximum">
+             <number>4095</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="7">
+           <widget class="QSpinBox" name="ID0A_SS_STEP_NUM">
+            <property name="maximum">
+             <number>4095</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="21">
+           <widget class="QLabel" name="label_55">
+            <property name="text">
+             <string>Active bank:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="16">
+           <widget class="QLabel" name="label_46">
+            <property name="text">
+             <string>Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="21">
+           <widget class="QComboBox" name="ID0_CFG_SEL">
+            <item>
+             <property name="text">
+              <string>Bank A</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bank B</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="14">
+           <widget class="QSpinBox" name="ID0B_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" colspan="2">
+           <widget class="QSpinBox" name="ID0A_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="11" colspan="2">
+           <widget class="QSpinBox" name="ID0B_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="13">
+           <widget class="QSpinBox" name="ID0B_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="9">
+           <widget class="QLabel" name="label_40">
+            <property name="text">
+             <string>Steps RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="22">
+           <widget class="SIUnitEdit" name="freqID0">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="QLabel" name="label_34">
+            <property name="text">
+             <string>DEN:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="4">
+           <widget class="QLabel" name="label_37">
+            <property name="text">
+             <string>Fractional-N-PLL</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="16" colspan="4">
+           <widget class="QLabel" name="label_44">
+            <property name="text">
+             <string>Spread-Spectrum</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="11" colspan="2">
+           <widget class="QLabel" name="label_43">
+            <property name="text">
+             <string>INTG:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_32">
+            <property name="text">
+             <string>INTG:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="22">
+           <widget class="QLabel" name="label_56">
+            <property name="text">
+             <string>Frequency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="14">
+           <widget class="QLabel" name="label_42">
+            <property name="text">
+             <string>DEN:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2" colspan="2">
+           <widget class="QLabel" name="label_33">
+            <property name="text">
+             <string>RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="8">
+           <widget class="QLabel" name="label_39">
+            <property name="text">
+             <string>Steps INTG:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_57">
+            <property name="text">
+             <string>1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="ID1A_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2" colspan="2">
+           <widget class="QSpinBox" name="ID1A_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="4">
+           <widget class="QSpinBox" name="ID1A_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="6">
+           <widget class="QComboBox" name="ID1A_SS_MODE">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>invalid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="7">
+           <widget class="QSpinBox" name="ID1A_SS_STEP_NUM">
+            <property name="maximum">
+             <number>4095</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="8">
+           <widget class="QSpinBox" name="ID1A_SS_STEP_INTG"/>
+          </item>
+          <item row="4" column="9">
+           <widget class="QSpinBox" name="ID1A_SS_STEP_RES"/>
+          </item>
+          <item row="4" column="11" colspan="2">
+           <widget class="QSpinBox" name="ID1B_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="13">
+           <widget class="QSpinBox" name="ID1B_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="14">
+           <widget class="QSpinBox" name="ID1B_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="16">
+           <widget class="QComboBox" name="ID1B_SS_MODE">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>invalid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="17">
+           <widget class="QSpinBox" name="ID1B_SS_STEP_NUM">
+            <property name="maximum">
+             <number>4095</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="18">
+           <widget class="QSpinBox" name="ID1B_SS_STEP_INTG"/>
+          </item>
+          <item row="4" column="19">
+           <widget class="QSpinBox" name="ID1B_SS_STEP_RES"/>
+          </item>
+          <item row="4" column="21">
+           <widget class="QComboBox" name="ID1_CFG_SEL">
+            <item>
+             <property name="text">
+              <string>Bank A</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bank B</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="22">
+           <widget class="SIUnitEdit" name="freqID1">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="20" rowspan="5">
+           <widget class="Line" name="line_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="15" rowspan="4">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="10" rowspan="5">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5" rowspan="4">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Output Clock Groups:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="3" column="1">
+             <widget class="QComboBox" name="OMUX2_SEL0">
+              <item>
+               <property name="text">
+                <string>PLL reference w/o presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PLL reference w/ presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="SIUnitEdit" name="freqGroup3">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_23">
+              <property name="text">
+               <string>5:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="3">
+             <widget class="SIUnitEdit" name="freqGroup2">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QComboBox" name="OMUX3_SEL1">
+              <item>
+               <property name="text">
+                <string>HSDIV0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Use SEL0</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QComboBox" name="OMUX3_SEL0">
+              <item>
+               <property name="text">
+                <string>PLL reference w/o presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PLL reference w/ presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QComboBox" name="OMUX0_SEL1">
+              <item>
+               <property name="text">
+                <string>HSDIV0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Use SEL0</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="2">
+             <widget class="QComboBox" name="OMUX5_SEL1">
+              <item>
+               <property name="text">
+                <string>HSDIV0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Use SEL0</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QComboBox" name="OMUX2_SEL1">
+              <item>
+               <property name="text">
+                <string>HSDIV0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Use SEL0</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QComboBox" name="OMUX4_SEL0">
+              <item>
+               <property name="text">
+                <string>PLL reference w/o presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PLL reference w/ presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_17">
+              <property name="text">
+               <string>SEL1:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QComboBox" name="OMUX4_SEL1">
+              <item>
+               <property name="text">
+                <string>HSDIV0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Use SEL0</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QComboBox" name="OMUX1_SEL0">
+              <item>
+               <property name="text">
+                <string>PLL reference w/o presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PLL reference w/ presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QComboBox" name="OMUX5_SEL0">
+              <item>
+               <property name="text">
+                <string>PLL reference w/o presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PLL reference w/ presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_21">
+              <property name="text">
+               <string>3:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_22">
+              <property name="text">
+               <string>1:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_18">
+              <property name="text">
+               <string>0:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_20">
+              <property name="text">
+               <string>4:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="label_54">
+              <property name="text">
+               <string>Frequency:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="SIUnitEdit" name="freqGroup1">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_19">
+              <property name="text">
+               <string>2:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="SIUnitEdit" name="freqGroup0">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QComboBox" name="OMUX1_SEL1">
+              <item>
+               <property name="text">
+                <string>HSDIV0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV3</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HSDIV4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID0</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ID1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Use SEL0</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="OMUX0_SEL0">
+              <item>
+               <property name="text">
+                <string>PLL reference w/o presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PLL reference w/ presc</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Input buffer CLKIN_3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>SEL0:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3">
+             <widget class="SIUnitEdit" name="freqGroup4">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="3">
+             <widget class="SIUnitEdit" name="freqGroup5">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Outputs</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="OUT1_OE">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="6">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>CMOS Inv:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="8">
+             <widget class="QComboBox" name="OUT0_CMOS_STR">
+              <item>
+               <property name="text">
+                <string>50 Ohm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>25 Ohm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QComboBox" name="OUT0_SKEW">
+              <item>
+               <property name="text">
+                <string>0ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>35ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>70ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>105ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>140ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>175ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>210ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>245ps</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Divider:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="7">
+             <widget class="QComboBox" name="OUT0_CMOS_SLEW">
+              <item>
+               <property name="text">
+                <string>fastest</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slow</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slower</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slowest</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Mode:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>Enable</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>0:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="5">
+             <widget class="QComboBox" name="OUT0_STOP_HIGHZ">
+              <item>
+               <property name="text">
+                <string>low-Z</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>high-Z</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>When stopped:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QSpinBox" name="OUT0_DIV">
+              <property name="maximum">
+               <number>63</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>1:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QSpinBox" name="OUT1_DIV">
+              <property name="maximum">
+               <number>63</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>2:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Skew:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="8">
+             <widget class="QComboBox" name="OUT1_CMOS_STR">
+              <item>
+               <property name="text">
+                <string>50 Ohm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>25 Ohm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>3:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="6">
+             <widget class="QCheckBox" name="OUT0_CMOS_INV">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="9">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Frequency:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QComboBox" name="OUT0_MODE">
+              <item>
+               <property name="text">
+                <string>off</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (p only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (n only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dual CMOS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5V/3.3V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5v/3.3V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>LVPECL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="8">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>CMOS Imp:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QComboBox" name="OUT1_MODE">
+              <item>
+               <property name="text">
+                <string>off</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (p only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (n only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dual CMOS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5V/3.3V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5v/3.3V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>LVPECL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="2" column="9">
+             <widget class="SIUnitEdit" name="freqOUT1">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="4">
+             <widget class="QComboBox" name="OUT1_SKEW">
+              <item>
+               <property name="text">
+                <string>0ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>35ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>70ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>105ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>140ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>175ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>210ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>245ps</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>4:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="7">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>CMOS Slew:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="9">
+             <widget class="SIUnitEdit" name="freqOUT0">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="6">
+             <widget class="QCheckBox" name="OUT1_CMOS_INV">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="7">
+             <widget class="QComboBox" name="OUT1_CMOS_SLEW">
+              <item>
+               <property name="text">
+                <string>fastest</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slow</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slower</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slowest</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="OUT0_OE">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="5">
+             <widget class="QComboBox" name="OUT1_STOP_HIGHZ">
+              <item>
+               <property name="text">
+                <string>low-Z</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>high-Z</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>5:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="OUT2_OE">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="OUT3_OE">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QCheckBox" name="OUT4_OE">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QCheckBox" name="OUT5_OE">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QComboBox" name="OUT2_MODE">
+              <item>
+               <property name="text">
+                <string>off</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (p only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (n only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dual CMOS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5V/3.3V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5v/3.3V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>LVPECL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QComboBox" name="OUT3_MODE">
+              <item>
+               <property name="text">
+                <string>off</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (p only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (n only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dual CMOS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5V/3.3V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5v/3.3V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>LVPECL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QComboBox" name="OUT4_MODE">
+              <item>
+               <property name="text">
+                <string>off</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (p only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (n only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dual CMOS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5V/3.3V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5v/3.3V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>LVPECL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="2">
+             <widget class="QComboBox" name="OUT5_MODE">
+              <item>
+               <property name="text">
+                <string>off</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (p only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>CMOS (n only)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dual CMOS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5V/3.3V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2.5v/3.3V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.8V LVDS fast</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 50 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm ext</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>HCSL 42.5 Ohm int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>LVPECL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Reserved</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="3">
+             <widget class="QSpinBox" name="OUT2_DIV">
+              <property name="maximum">
+               <number>63</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QSpinBox" name="OUT3_DIV">
+              <property name="maximum">
+               <number>63</number>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3">
+             <widget class="QSpinBox" name="OUT4_DIV">
+              <property name="maximum">
+               <number>63</number>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="3">
+             <widget class="QSpinBox" name="OUT5_DIV">
+              <property name="maximum">
+               <number>63</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="4">
+             <widget class="QComboBox" name="OUT2_SKEW">
+              <item>
+               <property name="text">
+                <string>0ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>35ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>70ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>105ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>140ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>175ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>210ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>245ps</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="4">
+             <widget class="QComboBox" name="OUT3_SKEW">
+              <item>
+               <property name="text">
+                <string>0ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>35ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>70ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>105ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>140ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>175ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>210ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>245ps</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="4">
+             <widget class="QComboBox" name="OUT4_SKEW">
+              <item>
+               <property name="text">
+                <string>0ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>35ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>70ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>105ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>140ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>175ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>210ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>245ps</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="4">
+             <widget class="QComboBox" name="OUT5_SKEW">
+              <item>
+               <property name="text">
+                <string>0ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>35ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>70ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>105ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>140ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>175ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>210ps</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>245ps</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="5">
+             <widget class="QComboBox" name="OUT2_STOP_HIGHZ">
+              <item>
+               <property name="text">
+                <string>low-Z</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>high-Z</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="5">
+             <widget class="QComboBox" name="OUT3_STOP_HIGHZ">
+              <item>
+               <property name="text">
+                <string>low-Z</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>high-Z</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="5">
+             <widget class="QComboBox" name="OUT4_STOP_HIGHZ">
+              <item>
+               <property name="text">
+                <string>low-Z</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>high-Z</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="5">
+             <widget class="QComboBox" name="OUT5_STOP_HIGHZ">
+              <item>
+               <property name="text">
+                <string>low-Z</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>high-Z</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="6">
+             <widget class="QCheckBox" name="OUT2_CMOS_INV">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="6">
+             <widget class="QCheckBox" name="OUT3_CMOS_INV">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="6">
+             <widget class="QCheckBox" name="OUT4_CMOS_INV">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="6">
+             <widget class="QCheckBox" name="OUT5_CMOS_INV">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="7">
+             <widget class="QComboBox" name="OUT2_CMOS_SLEW">
+              <item>
+               <property name="text">
+                <string>fastest</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slow</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slower</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slowest</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="7">
+             <widget class="QComboBox" name="OUT3_CMOS_SLEW">
+              <item>
+               <property name="text">
+                <string>fastest</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slow</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slower</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slowest</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="7">
+             <widget class="QComboBox" name="OUT4_CMOS_SLEW">
+              <item>
+               <property name="text">
+                <string>fastest</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slow</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slower</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slowest</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="7">
+             <widget class="QComboBox" name="OUT5_CMOS_SLEW">
+              <item>
+               <property name="text">
+                <string>fastest</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slow</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slower</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>slowest</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="8">
+             <widget class="QComboBox" name="OUT2_CMOS_STR">
+              <item>
+               <property name="text">
+                <string>50 Ohm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>25 Ohm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="4" column="8">
+             <widget class="QComboBox" name="OUT3_CMOS_STR">
+              <item>
+               <property name="text">
+                <string>50 Ohm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>25 Ohm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="8">
+             <widget class="QComboBox" name="OUT4_CMOS_STR">
+              <item>
+               <property name="text">
+                <string>50 Ohm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>25 Ohm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="6" column="8">
+             <widget class="QComboBox" name="OUT5_CMOS_STR">
+              <item>
+               <property name="text">
+                <string>50 Ohm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>25 Ohm</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="9">
+             <widget class="SIUnitEdit" name="freqOUT2">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="9">
+             <widget class="SIUnitEdit" name="freqOUT3">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="9">
+             <widget class="SIUnitEdit" name="freqOUT4">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="9">
+             <widget class="SIUnitEdit" name="freqOUT5">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

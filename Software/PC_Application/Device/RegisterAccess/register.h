@@ -21,6 +21,11 @@ public:
     void assignUI(QComboBox *cb, int pos, int width, int ui_bitoffset = 0);
     void assignUI(QSpinBox *sb, int pos, int width, int ui_bitoffset = 0);
 
+    // same as above but by specifying the register address instead of using the register directly
+    static void assignUI(std::vector<Register*> regs, int address, QCheckBox *cb, int bitpos, bool inverted = false);
+    static void assignUI(std::vector<Register*> regs, int address, QComboBox *cb, int pos, int width, int ui_bitoffset = 0);
+    static void assignUI(std::vector<Register*> regs, int address, QSpinBox *sb, int pos, int width, int ui_bitoffset = 0);
+
     QString hexString();
     bool setFromString(QString hex);
     unsigned long getValue();
@@ -37,6 +42,7 @@ public slots:
 signals:
     void valueChanged(unsigned long newval);
 private:
+    static Register *findByAddress(std::vector<Register*> regs, int address);
     QString name;
     int address;
     int width;

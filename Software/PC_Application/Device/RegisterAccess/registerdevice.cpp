@@ -2,6 +2,7 @@
 
 #include "max2871.h"
 #include "stw81200.h"
+#include "ad9913.h"
 #include "Device/device.h"
 
 RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumber, QString name)
@@ -11,6 +12,8 @@ RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumb
         regdev = new MAX2871();
     } else if(partnumber == "STW81200") {
         regdev = new STW81200();
+    } else if(partnumber == "AD9913") {
+        regdev = new AD9913();
     }
     if(regdev) {
         regdev->dev = dev;

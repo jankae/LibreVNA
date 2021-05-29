@@ -17,10 +17,12 @@ HEADERS += \
     CustomWidgets/tilewidget.h \
     CustomWidgets/toggleswitch.h \
     CustomWidgets/touchstoneimport.h \
+    Device/RegisterAccess/ad9913.h \
     Device/RegisterAccess/max2871.h \
     Device/RegisterAccess/rawregisterdialog.h \
     Device/RegisterAccess/register.h \
     Device/RegisterAccess/registerdevice.h \
+    Device/RegisterAccess/si5332.h \
     Device/RegisterAccess/stw81200 \
     Device/RegisterAccess/stw81200.h \
     Device/device.h \
@@ -147,10 +149,12 @@ SOURCES += \
     CustomWidgets/tilewidget.cpp \
     CustomWidgets/toggleswitch.cpp \
     CustomWidgets/touchstoneimport.cpp \
+    Device/RegisterAccess/ad9913.cpp \
     Device/RegisterAccess/max2871.cpp \
     Device/RegisterAccess/rawregisterdialog.cpp \
     Device/RegisterAccess/register.cpp \
     Device/RegisterAccess/registerdevice.cpp \
+    Device/RegisterAccess/si5332.cpp \
     Device/RegisterAccess/stw81200.cpp \
     Device/device.cpp \
     Device/devicelog.cpp \
@@ -262,8 +266,10 @@ FORMS += \
     CustomWidgets/jsonpickerdialog.ui \
     CustomWidgets/tilewidget.ui \
     CustomWidgets/touchstoneimport.ui \
+    Device/RegisterAccess/ad9913widget.ui \
     Device/RegisterAccess/max2871widget.ui \
     Device/RegisterAccess/rawregisterdialog.ui \
+    Device/RegisterAccess/si5332widget.ui \
     Device/RegisterAccess/stw81200widget.ui \
     Device/devicelog.ui \
     Device/firmwareupdatedialog.ui \

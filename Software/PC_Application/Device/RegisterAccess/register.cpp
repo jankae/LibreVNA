@@ -76,6 +76,32 @@ void Register::assignUI(QSpinBox *sb, int pos, int width, int ui_bitoffset)
     });
 }
 
+void Register::assignUI(std::vector<Register *> regs, int address, QCheckBox *cb, int bitpos, bool inverted)
+{
+    auto reg = findByAddress(regs, address);
+    if(reg) {
+        reg->assignUI(cb, bitpos, inverted);
+    }
+}
+
+void Register::assignUI(std::vector<Register *> regs, int address, QComboBox *cb, int pos, int width, int ui_bitoffset)
+{
+    auto reg = findByAddress(regs, address);
+    if(reg) {
+        reg->assignUI(cb, pos, width, ui_bitoffset);
+    }
+
+}
+
+void Register::assignUI(std::vector<Register *> regs, int address, QSpinBox *sb, int pos, int width, int ui_bitoffset)
+{
+    auto reg = findByAddress(regs, address);
+    if(reg) {
+        reg->assignUI(sb, pos, width, ui_bitoffset);
+    }
+
+}
+
 QString Register::hexString()
 {
     return "0x" + QString("%1").arg(value, (width-1)/4 + 1, 16, QChar('0'));
@@ -122,6 +148,16 @@ void Register::setValue(unsigned long newval, int pos, int width)
     if(newval != oldval) {
         emit valueChanged(value);
     }
+}
+
+Register *Register::findByAddress(std::vector<Register *> regs, int address)
+{
+    for(auto r : regs) {
+        if(r->getAddress() == address) {
+            return r;
+        }
+    }
+    return nullptr;
 }
 
 int Register::getAddress() const
