@@ -30,7 +30,10 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity Sampling is
-	 Generic(CLK_CYCLES_PRE_DONE : integer);
+	 Generic(CLK_CYCLES_PRE_DONE : integer;
+				AUTOGAIN_SAMPLES : integer;
+				AUTOGAIN_MAX : integer;
+				AUTOGAIN_MIN : integer);
     Port ( CLK : in  STD_LOGIC;
            RESET : in  STD_LOGIC;
 			  ADC_PRESCALER : in STD_LOGIC_VECTOR(7 downto 0);
@@ -42,6 +45,7 @@ entity Sampling is
            NEW_SAMPLE : in  STD_LOGIC;
            DONE : out  STD_LOGIC;
            PRE_DONE : out  STD_LOGIC;
+			  USEDGAIN : out STD_LOGIC_VECTOR (15 downto 0);
            START : in  STD_LOGIC;
            SAMPLES : in  STD_LOGIC_VECTOR (12 downto 0);
            PORT1_I : out  STD_LOGIC_VECTOR (47 downto 0);
@@ -50,7 +54,13 @@ entity Sampling is
            PORT2_Q : out  STD_LOGIC_VECTOR (47 downto 0);
            REF_I : out  STD_LOGIC_VECTOR (47 downto 0);
            REF_Q : out  STD_LOGIC_VECTOR (47 downto 0);
-			  ACTIVE : out STD_LOGIC);
+			  ACTIVE : out STD_LOGIC;
+			  PORT1_GAIN : out STD_LOGIC_VECTOR (3 downto 0);
+			  PORT1_GAIN_READY : in STD_LOGIC;
+			  PORT1_AUTOGAIN : in STD_LOGIC;
+			  PORT2_GAIN : out STD_LOGIC_VECTOR (3 downto 0);
+			  PORT2_GAIN_READY : in STD_LOGIC;
+			  PORT2_AUTOGAIN : in STD_LOGIC);
 end Sampling;
 
 architecture Behavioral of Sampling is
@@ -104,6 +114,14 @@ END COMPONENT;
 	signal mult_enable : std_logic;
 	signal mult_accumulate : std_logic_vector(0 downto 0);
 	
+	signal p1_gain : std_logic_vector(3 downto 0);
+	signal p2_gain : std_logic_vector(3 downto 0);
+	signal p1_max : integer range 0 to 65536;
+	signal p2_max : integer range 0 to 65536;
+	
+	signal autogain_cnt : integer range 0 to AUTOGAIN_SAMPLES + 1;
+	signal autogain_changed : std_logic;
+	
 	type States is (Idle, Sampling, P1Q, P2I, P2Q, RI, RQ, SaveP1Q, SaveP2I, SaveP2Q, SaveRI, SaveRQ, Ready);
 	signal state : States;
 begin
@@ -134,6 +152,9 @@ begin
 	-- sign extend b input of multiplier (sin/cos)
 	mult_b(17 downto 16) <= mult_b(15) & mult_b(15);
 	
+	PORT1_GAIN <= p1_gain;
+	PORT2_GAIN <= p2_gain;
+	
 	process(CLK, RESET)
 	begin
 		if rising_edge(CLK) then
@@ -148,6 +169,8 @@ begin
 				phase <= (others => '0');
 				mult_enable <= '0';
 				mult_accumulate <= "0";
+				p1_gain <= "0000";
+				p2_gain <= "0000";
 			else
 				-- when not idle, generate pulses for ADCs
 				if state /= Idle then
@@ -176,6 +199,9 @@ begin
 						mult_accumulate <= "0";
 						if START = '1' then
 							state <= Sampling;
+							-- reset peak detector for autogain
+							p1_max <= 0;
+							p2_max <= 0;
 							samples_to_take <= to_integer(unsigned(SAMPLES & "0000"));
 						end if;
 					when Sampling =>
@@ -183,15 +209,48 @@ begin
 						PRE_DONE <= '0';
 						ACTIVE <= '1';
 						mult_enable <= '0';
-						if NEW_SAMPLE = '1' then
+						-- only accept new samples when the gain has been transferred to the PGA
+						if NEW_SAMPLE = '1' and PORT1_GAIN_READY = '1' and PORT2_GAIN_READY = '1' then
 							sample_cnt <= sample_cnt + 1;
+							if autogain_cnt /= AUTOGAIN_SAMPLES + 1 then
+								autogain_cnt <= autogain_cnt + 1;
+							end if;
+							autogain_changed <= '0';
 							mult_enable <= '1';
 							mult_a <= PORT1;
 							mult_b(15 downto 0) <= cosine;
 							mult_c <= p1_I;
+							-- keep track of maximum value for autogain
+							if to_integer(signed(PORT1)) > p1_max then
+								p1_max <= to_integer(signed(PORT1));
+							end if;
+							if to_integer(signed(PORT2)) > p2_max then
+								p2_max <= to_integer(signed(PORT2));
+							end if;
 							state <= P1Q;
 						end if;
 					when P1Q =>
+						if autogain_cnt = AUTOGAIN_SAMPLES then
+							-- check signal range and adjust gain if enabled and necessary
+							if PORT1_AUTOGAIN = '1' and p1_max > AUTOGAIN_MAX and p1_gain /= "0000" then
+								-- signal too high, reduce gain
+								autogain_changed <= '1';
+								p1_gain <= std_logic_vector(unsigned(p1_gain) - 1);
+							elsif PORT1_AUTOGAIN = '1' and p1_max < AUTOGAIN_MIN and p1_gain /= "1000" then
+								-- signal too low, increase gain
+								autogain_changed <= '1';
+								p1_gain <= std_logic_vector(unsigned(p1_gain) + 1);
+							end if;
+							if PORT2_AUTOGAIN = '1' and p2_max > AUTOGAIN_MAX and p2_gain /= "0000" then
+								-- signal too high, reduce gain
+								autogain_changed <= '1';
+								p2_gain <= std_logic_vector(unsigned(p2_gain) - 1);
+							elsif PORT2_AUTOGAIN = '1' and p2_max < AUTOGAIN_MIN and p2_gain /= "1000" then
+								-- signal too low, increase gain
+								autogain_changed <= '1';
+								p2_gain <= std_logic_vector(unsigned(p2_gain) + 1);
+							end if;
+						end if;
 						ACTIVE <= '1';
 						DONE <= '0';
 						PRE_DONE <= '0';
@@ -209,6 +268,13 @@ begin
 						mult_b(15 downto 0) <= cosine;
 						mult_c <= p2_I;
 						state <= P2Q;
+						if autogain_changed = '1' then
+							-- reset autogain memory and restart sampling process
+							p1_max <= 0;
+							p2_max <= 0;
+							samples_to_take <= to_integer(unsigned(SAMPLES & "0000"));
+							state <= Sampling;
+						end if;
 					when P2Q =>
 						ACTIVE <= '1';
 						DONE <= '0';
@@ -291,6 +357,7 @@ begin
 						PORT2_Q <= p2_Q;
 						REF_I <= r_I;
 						REF_Q <= r_Q;
+						USEDGAIN <= "00000000" & p2_gain & p1_gain;
 						state <= Idle;
 				end case;
 			end if;

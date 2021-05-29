@@ -37,7 +37,7 @@ entity SPICommands is
            MISO : out  STD_LOGIC;
            NSS : in  STD_LOGIC;
            NEW_SAMPLING_DATA : in  STD_LOGIC;
-           SAMPLING_RESULT : in  STD_LOGIC_VECTOR (303 downto 0);
+           SAMPLING_RESULT : in  STD_LOGIC_VECTOR (319 downto 0);
 			  ADC_MINMAX : in STD_LOGIC_VECTOR(95 downto 0);
            SOURCE_UNLOCKED : in  STD_LOGIC;
            LO_UNLOCKED : in  STD_LOGIC;
@@ -77,7 +77,13 @@ entity SPICommands is
            DFT_OUTPUT : in  STD_LOGIC_VECTOR (191 downto 0);
            DFT_NEXT_OUTPUT : out  STD_LOGIC;
 			  DFT_ENABLE : out STD_LOGIC;
-			  			  
+			  
+			  -- ADC gain settings
+			  PORT1_GAIN : out STD_LOGIC_VECTOR(3 downto 0); -- only used when autogain disabled
+			  PORT2_GAIN : out STD_LOGIC_VECTOR(3 downto 0); -- only used when autogain disabled
+			  PORT1_AUTOGAIN : out STD_LOGIC;
+			  PORT2_AUTOGAIN : out STD_LOGIC;			  			  
+			  
 			  DEBUG_STATUS : in STD_LOGIC_VECTOR(10 downto 0));
 end SPICommands;
 
@@ -116,7 +122,7 @@ architecture Behavioral of SPICommands is
 	signal interrupt_mask : std_logic_vector(15 downto 0);
 	signal interrupt_status : std_logic_vector(15 downto 0);
 	
-	signal latched_result : std_logic_vector(287 downto 0);
+	signal latched_result : std_logic_vector(303 downto 0);
 	signal sweepconfig_buffer : std_logic_vector(79 downto 0);
 begin
 	SPI: spi_slave
@@ -218,7 +224,7 @@ begin
 											spi_buf_in <= DFT_OUTPUT(15 downto 0);
 											dft_next <= '1';
 							when "110" => state <= ReadResult;
-											latched_result <= SAMPLING_RESULT(303 downto 16);
+											latched_result <= SAMPLING_RESULT(319 downto 16);
 											spi_buf_in <= SAMPLING_RESULT(15 downto 0);
 											unread_sampling_data <= '0';
 							when "111" => state <= ReadResult; -- can use same state as read result, but the latched data will contain the min/max ADC values
@@ -247,6 +253,10 @@ begin
 										EXCITE_PORT2 <= spi_buf_out(2);
 							when 4 => ADC_PRESCALER <= spi_buf_out(7 downto 0);
 							when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
+							when 6 => PORT1_GAIN <= spi_buf_out(3 downto 0);
+										PORT2_GAIN <= spi_buf_out(7 downto 4);
+										PORT1_AUTOGAIN <= spi_buf_out(12);
+										PORT2_AUTOGAIN <= spi_buf_out(13);
 							when 8 => MAX2871_DEF_0(15 downto 0) <= spi_buf_out;
 							when 9 => MAX2871_DEF_0(31 downto 16) <= spi_buf_out;
 							when 10 => MAX2871_DEF_1(15 downto 0) <= spi_buf_out;
@@ -272,7 +282,7 @@ begin
 					when ReadResult =>
 						-- pass on next word of latched result
 						spi_buf_in <= latched_result(15 downto 0);
-						latched_result <= "0000000000000000" & latched_result(287 downto 16);
+						latched_result <= "0000000000000000" & latched_result(303 downto 16);
 					end case;
 				end if;
 			end if;

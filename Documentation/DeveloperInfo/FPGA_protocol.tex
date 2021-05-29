@@ -147,7 +147,7 @@ Initiate the reading of sampling data by sending the command word:
 \robits{3}{13}{reserved}
 \end{tikzpicture}
 \end{center}
-Afterwards, read up to 19 words before setting NSS high. These 19 words will contain the sampling result (see section~\ref{result}), transmitted with the least significant word first.
+Afterwards, read up to 20 words before setting NSS high. These 20 words will contain the sampling result (see section~\ref{result}), transmitted with the least significant word first.
 
 \subsection{Resuming a halted sweep}
 When the halt bit is set in the SweepConfig, the FPGA will configure the Source and LO as requested but will not start the settling timer (and subsequently the sampling process) until this resume command is issued. The halted sweep is indicated by the sweep halted bit in the status register.
@@ -405,6 +405,42 @@ $$ PhaseInc = \frac{4096 * f_{IF2}}{SR_{ADC}} $$
 For the the default IF frequency of $f_{IF2} = \SI{250}{\kilo\hertz}$ this evaluates to 10*Presc (see ADC prescaler register).
 \end{itemize}
 
+\subsection{PGA gain settings: 0x06}
+\label{reg:pgagain}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\robits{0}{2}{reserved}
+\rwbits{2}{1}{P2AG}
+\rwbits{3}{1}{P1AG}
+\robits{4}{4}{reserved}
+\rwbits{8}{4}{Port 2 gain[3:0]}
+\rwbits{12}{4}{Port 1 gain[3:0]}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{P2AG:} Autogain enable for ADC at port 2. During each sampling point, the first few initial ADC samples are evaluated and the gain of the PGA adjusted if necessary. Autogain only works correctly when a rectangular window is used.
+\item \textbf{P1AG:} Autogain enable for ADC at port 1.
+\item \textbf{Port 2 gain[3:0]:} Gain selection for port 2 PGA, only used when autogain is disabled.
+\begin{center}
+\begin{tabular}{ c|c }
+Setting & Gain (V/V)\\
+ \hline
+0000 & 1\\
+0001 & 10\\
+0010 & 20\\
+0011 & 30\\
+0100 & 40\\
+0101 & 60\\
+0110 & 80\\
+0111 & 120\\
+1000 & 157\\
+1001--1111 & Reserved\\
+\end{tabular}
+\end{center}
+\item \textbf{Port 1 gain[3:0]:} Gain selection for port 1 PGA, only used when autogain is disabled. Same gain values available as for port 2.
+\end{itemize}
+
 \subsection{MAX2871 Default Values Registers: 0x08-0x0F}
 See datasheet of MAX2871 for bit descriptions. Bits for the fields N, FRAC, M, VCO and DIV\_A are "don't care" as they will be overwritten by the SweepConfig setting.
 \begin{center}
@@ -562,6 +598,12 @@ Setting & Selected Band\\
 Each point in the sweep generates two sampling results. The first one contains the measurement when the source was routed to Port 1, the second sampling result was taken when the source was routed to Port 2. 
 \begin{center}
 \begin{tikzpicture}
+\bitrect{16}{320-\bit}
+\rwbits{0}{8}{reserved}
+\robits{8}{4}{Port 2 gain [3:0]}
+\rwbits{12}{4}{Port 1 gain [3:0]}
+\end{tikzpicture}
+\begin{tikzpicture}
 \bitrect{16}{304-\bit}
 \rwbits{0}{1}{SRC}
 \robits{1}{2}{reserved}
@@ -645,5 +687,12 @@ Each point in the sweep generates two sampling results. The first one contains t
 \rwbits{0}{16}{Reference Signal Q[15:0]}
 \end{tikzpicture}
 \end{center}
+
+\begin{itemize}
+\item \textbf{Port 2 gain:} Used gain setting for port 2 if autoranging is enabled. Meaningless if autoranging is disabled. See section~\ref{reg:pgagain} for the mapping of gain factors to the bits.
+\item \textbf{Port 1 gain:} Used gain setting for port 1 if autoranging is enabled. Meaningless if autoranging is disabled. See section~\ref{reg:pgagain} for the mapping of gain factors to the bits.
+\item \textbf{SRC:} 0 if port 1 was excited during the measurement, 1 if port 2 was excited.
+\item \textbf{POINT\_NUMBER[12:0]:} Indicates the sampling point in the sweep from which the result was acquired (used for verification purposes).
+\end{itemize}
 
 \end{document}

@@ -81,7 +81,13 @@ entity top is
            SOURCE_CE : out  STD_LOGIC;
            REF_CONVSTART : out  STD_LOGIC;
            REF_SDO : in  STD_LOGIC;
-           REF_SCLK : out  STD_LOGIC);
+           REF_SCLK : out  STD_LOGIC;
+			  P1_PGA_CS : out STD_LOGIC;
+			  P1_PGA_SCLK : out STD_LOGIC;
+			  P1_PGA_DIN : out STD_LOGIC;
+			  P2_PGA_CS : out STD_LOGIC;
+			  P2_PGA_SCLK : out STD_LOGIC;
+			  P2_PGA_DIN : out STD_LOGIC);
 end top;
 
 architecture Behavioral of top is
@@ -164,7 +170,10 @@ architecture Behavioral of top is
 	END COMPONENT;
 	
 	COMPONENT Sampling
-	Generic(CLK_CYCLES_PRE_DONE : integer);
+	Generic(CLK_CYCLES_PRE_DONE : integer;
+				AUTOGAIN_SAMPLES : integer;
+				AUTOGAIN_MAX : integer;
+				AUTOGAIN_MIN : integer);
 	PORT(
 		CLK : IN std_logic;
 		RESET : IN std_logic;
@@ -179,13 +188,20 @@ architecture Behavioral of top is
 		ADC_START : OUT std_logic;
 		DONE : OUT std_logic;
 		PRE_DONE : OUT std_logic;
+		USEDGAIN : out STD_LOGIC_VECTOR (15 downto 0);
 		PORT1_I : OUT std_logic_vector(47 downto 0);
 		PORT1_Q : OUT std_logic_vector(47 downto 0);
 		PORT2_I : OUT std_logic_vector(47 downto 0);
 		PORT2_Q : OUT std_logic_vector(47 downto 0);
 		REF_I : OUT std_logic_vector(47 downto 0);
 		REF_Q : OUT std_logic_vector(47 downto 0);
-		ACTIVE : OUT std_logic
+		ACTIVE : OUT std_logic;
+		PORT1_GAIN : out STD_LOGIC_VECTOR (3 downto 0);
+		PORT1_GAIN_READY : in STD_LOGIC;
+		PORT1_AUTOGAIN : in STD_LOGIC;
+		PORT2_GAIN : out STD_LOGIC_VECTOR (3 downto 0);
+		PORT2_GAIN_READY : in STD_LOGIC;
+		PORT2_AUTOGAIN : in STD_LOGIC
 		);
 	END COMPONENT;
 	COMPONENT MCP33131
@@ -203,6 +219,18 @@ architecture Behavioral of top is
 		RESET_MINMAX : in STD_LOGIC;
 		CONVSTART : OUT std_logic;
 		SCLK : OUT std_logic
+		);
+	END COMPONENT;
+	COMPONENT MAX9939
+	Generic(CLK_DIV : integer);
+	PORT(
+		CLK : IN std_logic;
+		RESET : IN std_logic;
+		GAIN : IN std_logic_vector(3 downto 0);          
+		READY : OUT std_logic;
+		CS : OUT std_logic;
+		SCLK : OUT std_logic;
+		DIN : OUT std_logic
 		);
 	END COMPONENT;
 	COMPONENT MAX2871
@@ -229,7 +257,7 @@ architecture Behavioral of top is
 		MOSI : IN std_logic;
 		NSS : IN std_logic;
 		NEW_SAMPLING_DATA : IN std_logic;
-		SAMPLING_RESULT : IN std_logic_vector(303 downto 0);
+		SAMPLING_RESULT : IN std_logic_vector(319 downto 0);
 		ADC_MINMAX : in STD_LOGIC_VECTOR(95 downto 0);
 		SOURCE_UNLOCKED : IN std_logic;
 		LO_UNLOCKED : IN std_logic;          
@@ -268,6 +296,10 @@ architecture Behavioral of top is
 		DFT_OUTPUT : in  STD_LOGIC_VECTOR (191 downto 0);
 		DFT_NEXT_OUTPUT : out  STD_LOGIC;
 		DFT_ENABLE : out STD_LOGIC;
+		PORT1_GAIN : out STD_LOGIC_VECTOR(3 downto 0);
+		PORT2_GAIN : out STD_LOGIC_VECTOR(3 downto 0);
+		PORT1_AUTOGAIN : out STD_LOGIC;
+		PORT2_AUTOGAIN : out STD_LOGIC;
 		DEBUG_STATUS : in STD_LOGIC_VECTOR (10 downto 0)
 		);
 	END COMPONENT;
@@ -353,7 +385,7 @@ architecture Behavioral of top is
 	signal sampling_start : std_logic;
 	signal sampling_samples : std_logic_vector(12 downto 0);
 	signal sampling_user_samples : std_logic_vector(12 downto 0);
-	signal sampling_result : std_logic_vector(303 downto 0);
+	signal sampling_result : std_logic_vector(319 downto 0);
 	signal sampling_window : std_logic_vector(1 downto 0);
 	signal sampling_prescaler : std_logic_vector(7 downto 0);
 	signal sampling_phaseinc : std_logic_vector(11 downto 0);
@@ -419,6 +451,18 @@ architecture Behavioral of top is
 	signal dft_next_output : std_logic;
 	signal dft_enable : std_logic;
 	signal dft_reset : std_logic;
+	
+	-- autogain signals
+	signal p1_autogain_enable : std_logic;
+	signal p2_autogain_enable : std_logic;
+	signal p1_gain_ready : std_logic;
+	signal p2_gain_ready : std_logic;
+	signal p1_gain_auto : std_logic_vector (3 downto 0);
+	signal p2_gain_auto : std_logic_vector (3 downto 0);
+	signal p1_gain_manual : std_logic_vector (3 downto 0);
+	signal p2_gain_manual : std_logic_vector (3 downto 0);
+	signal p1_gain : std_logic_vector (3 downto 0);
+	signal p2_gain : std_logic_vector (3 downto 0);
 begin
 
 	-- Reference CLK LED
@@ -562,6 +606,17 @@ begin
 		CONVSTART => PORT1_CONVSTART,
 		SCLK => PORT1_SCLK
 	);
+	Port1PGA: MAX9939
+	GENERIC MAP(CLK_DIV => 21)
+	PORT MAP(
+		CLK => clk160,
+		RESET => int_reset,
+		GAIN => p1_gain,
+		READY => p1_gain_ready,
+		CS => P1_PGA_CS,
+		SCLK => P1_PGA_SCLK,
+		DIN => P1_PGA_DIN 
+	);
 	Port2ADC: MCP33131
 	GENERIC MAP(CLK_DIV => 2,
 				CONVCYCLES => 77)
@@ -577,6 +632,17 @@ begin
 		SDO => PORT2_SDO,
 		CONVSTART => PORT2_CONVSTART,
 		SCLK => PORT2_SCLK
+	);
+	Port2PGA: MAX9939
+	GENERIC MAP(CLK_DIV => 21)
+	PORT MAP(
+		CLK => clk160,
+		RESET => int_reset,
+		GAIN => p2_gain,
+		READY => p2_gain_ready,
+		CS => P2_PGA_CS,
+		SCLK => P2_PGA_SCLK,
+		DIN => P2_PGA_DIN 
 	);
 	RefADC: MCP33131
 	GENERIC MAP(CLK_DIV => 2,
@@ -612,7 +678,10 @@ begin
 	);
 	
 	Sampler: Sampling
-	GENERIC MAP(CLK_CYCLES_PRE_DONE => 0)
+	GENERIC MAP(CLK_CYCLES_PRE_DONE => 0,
+					AUTOGAIN_SAMPLES => 16,
+					AUTOGAIN_MIN => 7000,
+					AUTOGAIN_MAX => 140000)
 	PORT MAP(
 		CLK => clk160,
 		RESET => sweep_reset,
@@ -625,6 +694,7 @@ begin
 		NEW_SAMPLE => windowing_ready,
 		DONE => sampling_done,
 		PRE_DONE => open,
+		USEDGAIN => sampling_result(319 downto 304),
 		START => sampling_start,
 		SAMPLES => sampling_samples,
 		PORT1_I => sampling_result(287 downto 240),
@@ -633,10 +703,20 @@ begin
 		PORT2_Q => sampling_result(143 downto 96),
 		REF_I => sampling_result(95 downto 48),
 		REF_Q => sampling_result(47 downto 0),
-		ACTIVE => sampling_busy
+		ACTIVE => sampling_busy,
+		PORT1_GAIN => p1_gain_auto,
+		PORT1_GAIN_READY => p1_gain_ready,
+		PORT1_AUTOGAIN => p1_autogain_enable,
+		PORT2_GAIN => p2_gain_auto,
+		PORT2_GAIN_READY => p2_gain_ready,
+		PORT2_AUTOGAIN => p2_autogain_enable
 	);
 
 	sweep_reset <= not aux3_sync;
+	
+	-- gain selection
+	p1_gain <= p1_gain_auto when p1_autogain_enable = '1' else p1_gain_manual;
+	p2_gain <= p2_gain_auto when p2_autogain_enable = '1' else p2_gain_manual;
 
 	SweepModule: Sweep PORT MAP(
 		CLK => clk160,
@@ -748,6 +828,10 @@ begin
 		DFT_OUTPUT => dft_output,
 		DFT_NEXT_OUTPUT => dft_next_output,
 		DFT_ENABLE => dft_enable,
+		PORT1_GAIN => p1_gain_manual,
+		PORT2_GAIN => p2_gain_manual,
+		PORT1_AUTOGAIN => p1_autogain_enable,
+		PORT2_AUTOGAIN => p2_autogain_enable,
 		DEBUG_STATUS => debug
 	);
 	
