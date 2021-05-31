@@ -680,8 +680,8 @@ begin
 	Sampler: Sampling
 	GENERIC MAP(CLK_CYCLES_PRE_DONE => 0,
 					AUTOGAIN_SAMPLES => 16,
-					AUTOGAIN_MIN => 7000,
-					AUTOGAIN_MAX => 140000)
+					AUTOGAIN_MIN => 2000,
+					AUTOGAIN_MAX => 26000)
 	PORT MAP(
 		CLK => clk160,
 		RESET => sweep_reset,

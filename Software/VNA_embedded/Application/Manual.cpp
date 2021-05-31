@@ -76,6 +76,8 @@ void Manual::Setup(Protocol::ManualControl m) {
 	// Enable new data and sweep halt interrupt
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
 
+	FPGA::SetAutogain();
+
 	active = true;
 	FPGA::StartSweep();
 }

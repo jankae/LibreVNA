@@ -116,8 +116,10 @@ END COMPONENT;
 	
 	signal p1_gain : std_logic_vector(3 downto 0);
 	signal p2_gain : std_logic_vector(3 downto 0);
-	signal p1_max : integer range 0 to 65536;
-	signal p2_max : integer range 0 to 65536;
+	signal p1_max : integer range -16384 to 16383;
+	signal p2_max : integer range -16384 to 16383;
+	signal p1_min : integer range -16384 to 16383;
+	signal p2_min : integer range -16384 to 16383;
 	
 	signal autogain_cnt : integer range 0 to AUTOGAIN_SAMPLES + 1;
 	signal autogain_changed : std_logic;
@@ -190,6 +192,7 @@ begin
 				case state is
 					when Idle =>
 						sample_cnt <= 0;
+						autogain_cnt <= 0;
 						DONE <= '0';
 						PRE_DONE <= '0';
 						ACTIVE <= '0';
@@ -197,11 +200,13 @@ begin
 						phase <= (others => '0');
 						mult_enable <= '0';
 						mult_accumulate <= "0";
+						-- reset peak detector for autogain
+						p1_max <= -16384;
+						p2_max <= -16384;
+						p1_min <= 16383;
+						p2_min <= 16383;
 						if START = '1' then
 							state <= Sampling;
-							-- reset peak detector for autogain
-							p1_max <= 0;
-							p2_max <= 0;
 							samples_to_take <= to_integer(unsigned(SAMPLES & "0000"));
 						end if;
 					when Sampling =>
@@ -224,28 +229,34 @@ begin
 							if to_integer(signed(PORT1)) > p1_max then
 								p1_max <= to_integer(signed(PORT1));
 							end if;
+							if to_integer(signed(PORT1)) < p1_min then
+								p1_min <= to_integer(signed(PORT1));
+							end if;
 							if to_integer(signed(PORT2)) > p2_max then
 								p2_max <= to_integer(signed(PORT2));
+							end if;
+							if to_integer(signed(PORT2)) < p2_min then
+								p2_min <= to_integer(signed(PORT2));
 							end if;
 							state <= P1Q;
 						end if;
 					when P1Q =>
 						if autogain_cnt = AUTOGAIN_SAMPLES then
 							-- check signal range and adjust gain if enabled and necessary
-							if PORT1_AUTOGAIN = '1' and p1_max > AUTOGAIN_MAX and p1_gain /= "0000" then
+							if PORT1_AUTOGAIN = '1' and p1_max - p1_min > AUTOGAIN_MAX and p1_gain /= "0000" then
 								-- signal too high, reduce gain
 								autogain_changed <= '1';
 								p1_gain <= std_logic_vector(unsigned(p1_gain) - 1);
-							elsif PORT1_AUTOGAIN = '1' and p1_max < AUTOGAIN_MIN and p1_gain /= "1000" then
+							elsif PORT1_AUTOGAIN = '1' and p1_max - p1_min < AUTOGAIN_MIN and p1_gain /= "1000" then
 								-- signal too low, increase gain
 								autogain_changed <= '1';
 								p1_gain <= std_logic_vector(unsigned(p1_gain) + 1);
 							end if;
-							if PORT2_AUTOGAIN = '1' and p2_max > AUTOGAIN_MAX and p2_gain /= "0000" then
+							if PORT2_AUTOGAIN = '1' and p2_max - p2_min > AUTOGAIN_MAX and p2_gain /= "0000" then
 								-- signal too high, reduce gain
 								autogain_changed <= '1';
 								p2_gain <= std_logic_vector(unsigned(p2_gain) - 1);
-							elsif PORT2_AUTOGAIN = '1' and p2_max < AUTOGAIN_MIN and p2_gain /= "1000" then
+							elsif PORT2_AUTOGAIN = '1' and p2_max - p2_min < AUTOGAIN_MIN and p2_gain /= "1000" then
 								-- signal too low, increase gain
 								autogain_changed <= '1';
 								p2_gain <= std_logic_vector(unsigned(p2_gain) + 1);
@@ -270,9 +281,14 @@ begin
 						state <= P2Q;
 						if autogain_changed = '1' then
 							-- reset autogain memory and restart sampling process
-							p1_max <= 0;
-							p2_max <= 0;
-							samples_to_take <= to_integer(unsigned(SAMPLES & "0000"));
+							p1_max <= -16384;
+							p2_max <= -16384;
+							p1_min <= 16383;
+							p2_min <= 16383;
+							sample_cnt <= 0;
+							autogain_cnt <= 0;
+							mult_accumulate <= "0";
+							phase <= (others => '0');
 							state <= Sampling;
 						end if;
 					when P2Q =>

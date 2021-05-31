@@ -40,7 +40,10 @@ ARCHITECTURE behavior OF Test_Sampling IS
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT Sampling
-	 Generic(CLK_CYCLES_PRE_DONE : integer);
+	 Generic(CLK_CYCLES_PRE_DONE : integer;
+				AUTOGAIN_SAMPLES : integer;
+				AUTOGAIN_MAX : integer;
+				AUTOGAIN_MIN : integer);
 	PORT(
 		CLK : IN std_logic;
 		RESET : IN std_logic;
@@ -55,13 +58,20 @@ ARCHITECTURE behavior OF Test_Sampling IS
 		ADC_START : OUT std_logic;
 		DONE : OUT std_logic;
 		PRE_DONE : OUT std_logic;
+		USEDGAIN : out STD_LOGIC_VECTOR (15 downto 0);
 		PORT1_I : OUT std_logic_vector(47 downto 0);
 		PORT1_Q : OUT std_logic_vector(47 downto 0);
 		PORT2_I : OUT std_logic_vector(47 downto 0);
 		PORT2_Q : OUT std_logic_vector(47 downto 0);
 		REF_I : OUT std_logic_vector(47 downto 0);
 		REF_Q : OUT std_logic_vector(47 downto 0);
-		ACTIVE : OUT std_logic
+		ACTIVE : OUT std_logic;
+		PORT1_GAIN : out STD_LOGIC_VECTOR (3 downto 0);
+		PORT1_GAIN_READY : in STD_LOGIC;
+		PORT1_AUTOGAIN : in STD_LOGIC;
+		PORT2_GAIN : out STD_LOGIC_VECTOR (3 downto 0);
+		PORT2_GAIN_READY : in STD_LOGIC;
+		PORT2_AUTOGAIN : in STD_LOGIC
 		);
     END COMPONENT;
     
@@ -95,7 +105,10 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: Sampling
-	Generic MAP(CLK_CYCLES_PRE_DONE => 0)
+	Generic MAP(CLK_CYCLES_PRE_DONE => 0,
+					AUTOGAIN_SAMPLES => 16,
+					AUTOGAIN_MIN => 2000,
+					AUTOGAIN_MAX => 26000)
 	PORT MAP (
 			CLK => CLK,
 			RESET => RESET,
@@ -110,13 +123,20 @@ BEGIN
 			ADC_START => ADC_START,
 			DONE => DONE,
 			PRE_DONE => PRE_DONE,
+			USEDGAIN => open,
 			PORT1_I => PORT1_I,
 			PORT1_Q => PORT1_Q,
 			PORT2_I => PORT2_I,
 			PORT2_Q => PORT2_Q,
 			REF_I => REF_I,
 			REF_Q => REF_Q,
-			ACTIVE => open
+			ACTIVE => open,
+			PORT1_GAIN => open,
+			PORT1_GAIN_READY => '1',
+			PORT1_AUTOGAIN => '1',
+			PORT2_GAIN => open,
+			PORT2_GAIN_READY => '1',
+			PORT2_AUTOGAIN => '1'
         );
 
    -- Clock process definitions
@@ -139,9 +159,9 @@ BEGIN
       wait for CLK_period*10;
 
       -- insert stimulus here
-		ADC_PRESCALER <= "011110000";
+		ADC_PRESCALER <= "11110000";
 		PHASEINC <= "010001100000";
-		PORT1 <= "000001111111111111";
+		PORT1 <= "000000000000111111";
 		PORT2 <= "000011111111111111";
 		REF <= "000111111111111111";
 		SAMPLES <= "0000000000001";

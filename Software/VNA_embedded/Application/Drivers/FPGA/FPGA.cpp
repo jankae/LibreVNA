@@ -256,7 +256,7 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 		return false;
 	}
 	callback = cb;
-	uint8_t cmd[40] = {0xC0, 0x00};
+	uint8_t cmd[42] = {0xC0, 0x00};
 	// Start data read
 	Low(CS);
 	busy_reading = true;
