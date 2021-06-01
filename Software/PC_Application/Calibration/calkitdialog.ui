@@ -32,7 +32,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -97,7 +97,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="short_delay"/>
+                <widget class="SIUnitEdit" name="short_delay"/>
                </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="label_10">
@@ -107,7 +107,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="short_loss"/>
+                <widget class="SIUnitEdit" name="short_loss"/>
                </item>
                <item row="3" column="0">
                 <widget class="QLabel" name="label_11">
@@ -117,7 +117,7 @@
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLineEdit" name="short_L0"/>
+                <widget class="SIUnitEdit" name="short_L0"/>
                </item>
                <item row="4" column="0">
                 <widget class="QLabel" name="label_12">
@@ -127,7 +127,7 @@
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLineEdit" name="short_L1"/>
+                <widget class="SIUnitEdit" name="short_L1"/>
                </item>
                <item row="5" column="0">
                 <widget class="QLabel" name="label_13">
@@ -137,7 +137,7 @@
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="QLineEdit" name="short_L2"/>
+                <widget class="SIUnitEdit" name="short_L2"/>
                </item>
                <item row="6" column="0">
                 <widget class="QLabel" name="label_14">
@@ -147,7 +147,7 @@
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="QLineEdit" name="short_L3"/>
+                <widget class="SIUnitEdit" name="short_L3"/>
                </item>
                <item row="0" column="1">
                 <widget class="SIUnitEdit" name="short_Z0">
@@ -159,7 +159,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="label_16">
                  <property name="text">
-                  <string>Z0 [Ω]:</string>
+                  <string>Z0:</string>
                  </property>
                 </widget>
                </item>
@@ -243,7 +243,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="open_delay"/>
+                <widget class="SIUnitEdit" name="open_delay"/>
                </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="label_2">
@@ -253,7 +253,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="open_loss"/>
+                <widget class="SIUnitEdit" name="open_loss"/>
                </item>
                <item row="3" column="0">
                 <widget class="QLabel" name="label_3">
@@ -263,7 +263,7 @@
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLineEdit" name="open_C0"/>
+                <widget class="SIUnitEdit" name="open_C0"/>
                </item>
                <item row="4" column="0">
                 <widget class="QLabel" name="label_4">
@@ -273,7 +273,7 @@
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLineEdit" name="open_C1"/>
+                <widget class="SIUnitEdit" name="open_C1"/>
                </item>
                <item row="5" column="0">
                 <widget class="QLabel" name="label_5">
@@ -283,7 +283,7 @@
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="QLineEdit" name="open_C2"/>
+                <widget class="SIUnitEdit" name="open_C2"/>
                </item>
                <item row="6" column="0">
                 <widget class="QLabel" name="label_6">
@@ -293,7 +293,7 @@
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="QLineEdit" name="open_C3"/>
+                <widget class="SIUnitEdit" name="open_C3"/>
                </item>
                <item row="0" column="1">
                 <widget class="SIUnitEdit" name="open_Z0">
@@ -305,7 +305,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="label_15">
                  <property name="text">
-                  <string>Z0 [Ω]:</string>
+                  <string>Z0:</string>
                  </property>
                 </widget>
                </item>
@@ -384,7 +384,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="label_30">
                  <property name="text">
-                  <string>Z0 [Ω]:</string>
+                  <string>Z0:</string>
                  </property>
                 </widget>
                </item>
@@ -403,7 +403,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="load_delay"/>
+                <widget class="SIUnitEdit" name="load_delay"/>
                </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="label_18">
@@ -500,7 +500,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="label_35">
                  <property name="text">
-                  <string>Z0 [Ω]:</string>
+                  <string>Z0:</string>
                  </property>
                 </widget>
                </item>
@@ -519,7 +519,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="through_delay"/>
+                <widget class="SIUnitEdit" name="through_delay"/>
                </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="label_22">
@@ -529,7 +529,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="through_loss"/>
+                <widget class="SIUnitEdit" name="through_loss"/>
                </item>
               </layout>
              </item>
@@ -708,7 +708,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="TRL_line_delay">
+            <widget class="SIUnitEdit" name="TRL_line_delay">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -933,10 +933,10 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="LoadType"/>
-  <buttongroup name="TRL_Rtype"/>
-  <buttongroup name="ShortType"/>
   <buttongroup name="OpenType"/>
+  <buttongroup name="TRL_Rtype"/>
+  <buttongroup name="LoadType"/>
   <buttongroup name="ThroughType"/>
+  <buttongroup name="ShortType"/>
  </buttongroups>
 </ui>

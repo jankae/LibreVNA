@@ -198,29 +198,29 @@ void CalkitDialog::updateEntries()
 {
     // Coefficients
     ui->open_Z0->setValueQuiet(ownKit.SOLT.Open.Z0);
-    ui->open_delay->setText(QString::number(ownKit.SOLT.Open.delay));
-    ui->open_loss->setText(QString::number(ownKit.SOLT.Open.loss));
-    ui->open_C0->setText(QString::number(ownKit.SOLT.Open.C0));
-    ui->open_C1->setText(QString::number(ownKit.SOLT.Open.C1));
-    ui->open_C2->setText(QString::number(ownKit.SOLT.Open.C2));
-    ui->open_C3->setText(QString::number(ownKit.SOLT.Open.C3));
+    ui->open_delay->setValue(ownKit.SOLT.Open.delay);
+    ui->open_loss->setValue(ownKit.SOLT.Open.loss);
+    ui->open_C0->setValue(ownKit.SOLT.Open.C0);
+    ui->open_C1->setValue(ownKit.SOLT.Open.C1);
+    ui->open_C2->setValue(ownKit.SOLT.Open.C2);
+    ui->open_C3->setValue(ownKit.SOLT.Open.C3);
 
     ui->short_Z0->setValueQuiet(ownKit.SOLT.Short.Z0);
-    ui->short_delay->setText(QString::number(ownKit.SOLT.Short.delay));
-    ui->short_loss->setText(QString::number(ownKit.SOLT.Short.loss));
-    ui->short_L0->setText(QString::number(ownKit.SOLT.Short.L0));
-    ui->short_L1->setText(QString::number(ownKit.SOLT.Short.L1));
-    ui->short_L2->setText(QString::number(ownKit.SOLT.Short.L2));
-    ui->short_L3->setText(QString::number(ownKit.SOLT.Short.L3));
+    ui->short_delay->setValue(ownKit.SOLT.Short.delay);
+    ui->short_loss->setValue(ownKit.SOLT.Short.loss);
+    ui->short_L0->setValue(ownKit.SOLT.Short.L0);
+    ui->short_L1->setValue(ownKit.SOLT.Short.L1);
+    ui->short_L2->setValue(ownKit.SOLT.Short.L2);
+    ui->short_L3->setValue(ownKit.SOLT.Short.L3);
 
     ui->load_Z0->setValueQuiet(ownKit.SOLT.Load.Z0);
-    ui->load_delay->setText(QString::number(ownKit.SOLT.Load.delay));
+    ui->load_delay->setValue(ownKit.SOLT.Load.delay);
     ui->load_parC->setValueQuiet(ownKit.SOLT.Load.Cparallel);
     ui->load_serL->setValueQuiet(ownKit.SOLT.Load.Lseries);
 
     ui->through_Z0->setValueQuiet(ownKit.SOLT.Through.Z0);
-    ui->through_delay->setText(QString::number(ownKit.SOLT.Through.delay));
-    ui->through_loss->setText(QString::number(ownKit.SOLT.Through.loss));
+    ui->through_delay->setValue(ownKit.SOLT.Through.delay);
+    ui->through_loss->setValue(ownKit.SOLT.Through.loss);
 
     // Measurements
     ui->open_touchstone->setFile(ownKit.SOLT.Open.file);
@@ -268,7 +268,7 @@ void CalkitDialog::updateEntries()
     } else {
         ui->TRL_R_open->setChecked(true);
     }
-    ui->TRL_line_delay->setText(QString::number(ownKit.TRL.Line.delay));
+    ui->TRL_line_delay->setValue(ownKit.TRL.Line.delay);
     ui->TRL_line_min->setValueQuiet(ownKit.TRL.Line.minFreq);
     ui->TRL_line_max->setValueQuiet(ownKit.TRL.Line.maxFreq);
     // Check if line length is appropriate for frequencies
