@@ -28,6 +28,13 @@
 
 namespace HW {
 
+static constexpr uint32_t TCXOFrequency = 26000000;
+static constexpr uint32_t ExtRefInFrequency = 10000000;
+static constexpr uint32_t ExtRefOut1Frequency = 10000000;
+static constexpr uint32_t ExtRefOut2Frequency = 10000000;
+static constexpr uint32_t SI5351CPLLAlignedFrequency = 832000000;
+static constexpr uint32_t SI5351CPLLConstantFrequency = 800000000;
+static constexpr uint32_t FPGAClkInFrequency = 16000000;
 static constexpr uint32_t ADCSamplerate = 800000;
 static constexpr uint32_t IF1 = 62000000;
 static constexpr uint32_t IF2 = 250000;
@@ -41,6 +48,16 @@ static constexpr uint8_t ADCprescaler = FPGA::Clockrate / ADCSamplerate;
 static_assert(ADCprescaler * ADCSamplerate == FPGA::Clockrate, "ADCSamplerate can not be reached exactly");
 static constexpr uint16_t DFTphaseInc = 4096 * IF2 / ADCSamplerate;
 static_assert(DFTphaseInc * ADCSamplerate == 4096 * IF2, "DFT can not be computed for 2.IF");
+
+static constexpr uint16_t _fpga_div = SI5351CPLLConstantFrequency / FPGAClkInFrequency;
+static_assert(_fpga_div * FPGAClkInFrequency == SI5351CPLLConstantFrequency && _fpga_div >= 6 && _fpga_div <= 254 && (_fpga_div & 0x01) == 0, "Unable to generate FPGA clock input frequency");
+
+static constexpr uint16_t _ref_out1_div = SI5351CPLLConstantFrequency / ExtRefOut1Frequency;
+static_assert(_ref_out1_div * ExtRefOut1Frequency == SI5351CPLLConstantFrequency && _ref_out1_div >= 6 && _ref_out1_div <= 254 && (_ref_out1_div & 0x01) == 0, "Unable to generate first reference output frequency");
+
+static constexpr uint16_t _ref_out2_div = SI5351CPLLConstantFrequency / ExtRefOut2Frequency;
+static_assert(_ref_out2_div * ExtRefOut2Frequency == SI5351CPLLConstantFrequency && _ref_out2_div >= 6 && _ref_out2_div <= 254 && (_ref_out2_div & 0x01) == 0, "Unable to generate first reference output frequency");
+
 
 // approximate output power at low frequencies with different source strength settings (attenuator = 0) in cdbm
 static constexpr int16_t LowBandMinPower = -1350;
