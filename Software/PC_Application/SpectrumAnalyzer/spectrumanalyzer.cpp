@@ -285,7 +285,7 @@ void SpectrumAnalyzer::initializeDevice()
     connect(window->getDevice(), &Device::SpectrumResultReceived, this, &SpectrumAnalyzer::NewDatapoint, Qt::UniqueConnection);
 
     // Configure initial state of device
-    window->getDevice()->Configure(settings);
+    SettingsChanged();
 }
 
 nlohmann::json SpectrumAnalyzer::toJSON()
