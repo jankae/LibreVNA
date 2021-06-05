@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Device Registers</string>
   </property>
+  <property name="modal">
+   <bool>false</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabs">

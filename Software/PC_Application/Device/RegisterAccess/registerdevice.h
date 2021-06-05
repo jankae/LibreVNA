@@ -14,7 +14,7 @@ public:
     static RegisterDevice *create(Device *dev, int number, QString partnumber, QString name);
     ~RegisterDevice();
 
-    void setRegister(int address, unsigned long value);
+    void setRegister(int address, unsigned long long value);
 
     QWidget *getWidget() const;
     QString getPartnumber() const;

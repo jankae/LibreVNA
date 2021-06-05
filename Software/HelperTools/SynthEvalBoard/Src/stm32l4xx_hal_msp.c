@@ -202,7 +202,14 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN SPI2_MspInit 1 */
-
+    // AD9913 at SPI2 has a three wire interface (MISO and MOSI on same pin).
+    // Needs open-drain pins for those (external pull-up on board)
+    GPIO_InitStruct.Pin = GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   /* USER CODE END SPI2_MspInit 1 */
   }
 

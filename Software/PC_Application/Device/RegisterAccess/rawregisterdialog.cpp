@@ -19,6 +19,10 @@ RawRegisterDialog::RawRegisterDialog(Device *dev, QWidget *parent) :
 {
     ui->setupUi(this);
 
+//    setWindowFlags(Qt::Window);
+    setWindowState(windowState() & Qt::WindowMaximized);
+//    showFullScreen();
+
     devices.resize(dev->Info().num_directRegisterDevices);
 
     connect(dev, &Device::ReceivedDirectRegisterInfo, this, &RawRegisterDialog::receivedDirectRegisterInfo);

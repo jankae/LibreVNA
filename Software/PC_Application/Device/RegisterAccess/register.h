@@ -28,8 +28,8 @@ public:
 
     QString hexString();
     bool setFromString(QString hex);
-    unsigned long getValue();
-    unsigned long getValue(int pos, int width);
+    unsigned long long getValue();
+    unsigned long long getValue(int pos, int width);
     QString getName() const;
 
     static void fillTableWidget(QTableWidget *w, std::vector<Register*> regs);
@@ -37,16 +37,17 @@ public:
     int getAddress() const;
 
 public slots:
-    void setValue(unsigned long newval);
-    void setValue(unsigned long newval, int pos, int width);
+    void setValue(unsigned long long newval);
+    void setValue(unsigned long long newval, int pos, int width);
 signals:
-    void valueChanged(unsigned long newval);
+    void valueChanged(unsigned long long newval);
 private:
     static Register *findByAddress(std::vector<Register*> regs, int address);
+    static unsigned long long createMask(int width);
     QString name;
     int address;
     int width;
-    unsigned long value;
+    unsigned long long value;
     bool updating; // for preventing endless recursion when updating register/its UI connections
 };
 

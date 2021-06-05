@@ -55,7 +55,7 @@ UART_HandleTypeDef huart1;
 PCD_HandleTypeDef hpcd_USB_FS;
 
 osThreadId defaultTaskHandle;
-uint32_t defaultTaskBuffer[ 128 ];
+uint32_t defaultTaskBuffer[ 4096 ];
 osStaticThreadDef_t defaultTaskControlBlock;
 /* USER CODE BEGIN PV */
 
@@ -68,8 +68,8 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_USB_PCD_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_USB_PCD_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -114,8 +114,8 @@ int main(void)
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_USART1_UART_Init();
-  MX_USB_PCD_Init();
   MX_TIM2_Init();
+  MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -138,7 +138,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128, defaultTaskBuffer, &defaultTaskControlBlock);
+  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 4096, defaultTaskBuffer, &defaultTaskControlBlock);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -389,10 +389,6 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
@@ -415,8 +411,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
-  if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -471,7 +466,8 @@ static void MX_USB_PCD_Init(void)
 {
 
   /* USER CODE BEGIN USB_Init 0 */
-
+	  /* Enable USB power on Pwrctrl CR2 register. */
+	  HAL_PWREx_EnableVddUSB();
   /* USER CODE END USB_Init 0 */
 
   /* USER CODE BEGIN USB_Init 1 */
@@ -512,8 +508,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, STW_LE_Pin|SI5332_IN2_Pin|SI5332_IN1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, STW_HW_PD_Pin|STW_PD_RF1_Pin|AD9913_PWR_DWN_Pin|AD9913_IO_UPDATE_Pin 
-                          |AD9913_CS_Pin|SI5332_IN3_Pin|SI5332_IN4_Pin|SI5332_IN5_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, STW_HW_PD_Pin|STW_PD_RF1_Pin|AD9913_MRESET_Pin|AD9913_PWR_DWN_Pin 
+                          |AD9913_IO_UPDATE_Pin|AD9913_CS_Pin|SI5332_IN3_Pin|SI5332_IN4_Pin 
+                          |SI5332_IN5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : STW_LE_Pin SI5332_IN2_Pin SI5332_IN1_Pin */
   GPIO_InitStruct.Pin = STW_LE_Pin|SI5332_IN2_Pin|SI5332_IN1_Pin;
@@ -522,10 +519,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : STW_HW_PD_Pin STW_PD_RF1_Pin AD9913_PWR_DWN_Pin AD9913_IO_UPDATE_Pin 
-                           AD9913_CS_Pin SI5332_IN3_Pin SI5332_IN4_Pin SI5332_IN5_Pin */
-  GPIO_InitStruct.Pin = STW_HW_PD_Pin|STW_PD_RF1_Pin|AD9913_PWR_DWN_Pin|AD9913_IO_UPDATE_Pin 
-                          |AD9913_CS_Pin|SI5332_IN3_Pin|SI5332_IN4_Pin|SI5332_IN5_Pin;
+  /*Configure GPIO pins : STW_HW_PD_Pin STW_PD_RF1_Pin AD9913_MRESET_Pin AD9913_PWR_DWN_Pin 
+                           AD9913_IO_UPDATE_Pin AD9913_CS_Pin SI5332_IN3_Pin SI5332_IN4_Pin 
+                           SI5332_IN5_Pin */
+  GPIO_InitStruct.Pin = STW_HW_PD_Pin|STW_PD_RF1_Pin|AD9913_MRESET_Pin|AD9913_PWR_DWN_Pin 
+                          |AD9913_IO_UPDATE_Pin|AD9913_CS_Pin|SI5332_IN3_Pin|SI5332_IN4_Pin 
+                          |SI5332_IN5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

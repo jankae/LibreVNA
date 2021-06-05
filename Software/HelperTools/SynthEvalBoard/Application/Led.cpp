@@ -5,7 +5,7 @@
 #include "task.h"
 
 
-#define LED_TASK_STACK		128
+#define LED_TASK_STACK		4096
 
 extern TIM_HandleTypeDef htim2;
 

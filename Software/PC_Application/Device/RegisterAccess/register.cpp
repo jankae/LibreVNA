@@ -16,7 +16,7 @@ Register::Register(QString name, int address, int width)
 void Register::assignUI(QCheckBox *cb, int bitpos, bool inverted)
 {
     connect(this, &Register::valueChanged, [=](unsigned int newval) {
-        bool bit = newval & (1UL << bitpos);
+        bool bit = newval & (1ULL << bitpos);
         if(inverted) {
             bit = !bit;
         }
@@ -34,7 +34,7 @@ void Register::assignUI(QComboBox *cb, int pos, int width, int ui_bitoffset)
 {
     connect(this, &Register::valueChanged, [=]() {
         auto value = getValue(pos, width);
-        auto mask = (1UL << width) - 1;
+        auto mask = createMask(width);
         mask <<= ui_bitoffset;
         value <<= ui_bitoffset;
         auto old_gui = cb->currentIndex();
@@ -58,7 +58,7 @@ void Register::assignUI(QSpinBox *sb, int pos, int width, int ui_bitoffset)
 {
     connect(this, &Register::valueChanged, [=]() {
         auto value = getValue(pos, width);
-        auto mask = (1UL << width) - 1;
+        auto mask = createMask(width);
         mask <<= ui_bitoffset;
         value <<= ui_bitoffset;
         auto old_gui = sb->value();
@@ -117,28 +117,28 @@ bool Register::setFromString(QString s)
     return okay;
 }
 
-unsigned long Register::getValue()
+unsigned long long Register::getValue()
 {
     return value;
 }
 
-unsigned long Register::getValue(int pos, int width)
+unsigned long long Register::getValue(int pos, int width)
 {
-    unsigned long mask = (1UL << width) - 1;
+    unsigned long mask = createMask(width);
     mask <<= pos;
     auto masked = value & mask;
     masked >>= pos;
     return masked;
 }
 
-void Register::setValue(unsigned long newval)
+void Register::setValue(unsigned long long newval)
 {
     setValue(newval, 0, width);
 }
 
-void Register::setValue(unsigned long newval, int pos, int width)
+void Register::setValue(unsigned long long newval, int pos, int width)
 {
-    unsigned long mask = (1UL << width) - 1;
+    unsigned long long mask = createMask(width);
     newval &= mask;
     newval <<= pos;
     mask <<= pos;
@@ -158,6 +158,13 @@ Register *Register::findByAddress(std::vector<Register *> regs, int address)
         }
     }
     return nullptr;
+}
+
+unsigned long long Register::createMask(int width)
+{
+    // can't shift by 64 bits at a time (apparantly a limit of the instruction set: https://stackoverflow.com/questions/55376273/weird-result-in-left-shift-1ull-s-1-if-s-64)
+    // Maximum register width is 64 for now, so shift by one less than width and then shift again by one
+    return ((1ULL << (width - 1)) << 1) - 1;
 }
 
 int Register::getAddress() const

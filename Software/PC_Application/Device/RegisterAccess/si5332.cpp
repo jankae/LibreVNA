@@ -60,10 +60,16 @@ SI5332::SI5332()
     Register::assignUI(regs, 0x35, ui->ID0_CFG_SEL, 6, 1);
     Register::assignUI(regs, 0x35, ui->HSDIV4_DIV_SEL, 4, 1);
     Register::assignUI(regs, 0x35, ui->ID1_CFG_SEL, 7, 1);
-    Register::assignUI(regs, 0x35, ui->HSDIV2_DIV_SEL, 3, 1);
-    Register::assignUI(regs, 0x35, ui->HSDIV0_DIV_SEL, 2, 1);
-    Register::assignUI(regs, 0x35, ui->HSDIV3_DIV_SEL, 0, 1);
-    Register::assignUI(regs, 0x35, ui->HSDIV0_DIV_SEL, 1, 1);
+    Register::assignUI(regs, 0x35, ui->HSDIV2_DIV_SEL, 2, 1);
+    Register::assignUI(regs, 0x35, ui->HSDIV0_DIV_SEL, 0, 1);
+    Register::assignUI(regs, 0x35, ui->HSDIV1_DIV_SEL, 1, 1);
+
+    Register::assignUI(regs, 0x36, ui->ID0A_INTG, 0, 8);
+    Register::assignUI(regs, 0x37, ui->ID0A_INTG, 0, 8, 8);
+    Register::assignUI(regs, 0x38, ui->ID0A_RES, 0, 8);
+    Register::assignUI(regs, 0x39, ui->ID0A_RES, 0, 8, 8);
+    Register::assignUI(regs, 0x3A, ui->ID0A_DEN, 0, 8);
+    Register::assignUI(regs, 0x3B, ui->ID0A_DEN, 0, 8, 8);
 
     Register::fillTableWidget(ui->table, regs);
 

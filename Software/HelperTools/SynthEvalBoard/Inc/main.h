@@ -66,6 +66,8 @@ void Error_Handler(void);
 #define STW_HW_PD_GPIO_Port GPIOB
 #define STW_PD_RF1_Pin GPIO_PIN_1
 #define STW_PD_RF1_GPIO_Port GPIOB
+#define AD9913_MRESET_Pin GPIO_PIN_2
+#define AD9913_MRESET_GPIO_Port GPIOB
 #define AD9913_PWR_DWN_Pin GPIO_PIN_10
 #define AD9913_PWR_DWN_GPIO_Port GPIOB
 #define AD9913_IO_UPDATE_Pin GPIO_PIN_11

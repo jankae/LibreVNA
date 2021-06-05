@@ -3,6 +3,7 @@
 #include "max2871.h"
 #include "stw81200.h"
 #include "ad9913.h"
+#include "si5332.h"
 #include "Device/device.h"
 
 RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumber, QString name)
@@ -14,6 +15,8 @@ RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumb
         regdev = new STW81200();
     } else if(partnumber == "AD9913") {
         regdev = new AD9913();
+    } else if(partnumber == "Si5332") {
+        regdev = new SI5332();
     }
     if(regdev) {
         regdev->dev = dev;
@@ -38,7 +41,7 @@ RegisterDevice::~RegisterDevice()
     delete widget;
 }
 
-void RegisterDevice::setRegister(int address, unsigned long value)
+void RegisterDevice::setRegister(int address, unsigned long long value)
 {
     for(auto reg : regs) {
         if(reg->getAddress() == address) {

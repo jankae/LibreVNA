@@ -216,7 +216,7 @@ void usb_init(usbd_recv_callback_t receive_callback) {
 	USBD_Init(&hUsbDeviceFS, &FS_Desc, 0);
 	USBD_RegisterClass(&hUsbDeviceFS, &USBD_ClassDriver);
 	USBD_Start(&hUsbDeviceFS);
-    HAL_NVIC_SetPriority(USB_FS_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(USB_FS_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(USB_FS_IRQn);
 }
 bool usb_transmit(const uint8_t *data, uint16_t length) {
