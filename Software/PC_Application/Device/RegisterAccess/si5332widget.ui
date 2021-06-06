@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1638</width>
+    <width>1722</width>
     <height>783</height>
    </rect>
   </property>
@@ -82,14 +82,14 @@
           <string>Main PLL</string>
          </property>
          <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label_63">
             <property name="text">
              <string>Input:</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QComboBox" name="IMUX_SEL">
             <item>
              <property name="text">
@@ -113,84 +113,70 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="label_61">
             <property name="text">
              <string>Prescaler:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QSpinBox" name="IPDA_DIV">
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="PDIV_DIV">
             <property name="maximum">
              <number>64</number>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="label_59">
             <property name="text">
              <string>INTG:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QSpinBox" name="IPDA_INTG">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_60">
-            <property name="text">
-             <string>RES:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QSpinBox" name="IPDA_RES">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_58">
-            <property name="text">
-             <string>DEN:</string>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="1">
-           <widget class="QSpinBox" name="IPDA_DEN">
+           <widget class="QSpinBox" name="IDPA_INTG">
             <property name="maximum">
              <number>65535</number>
             </property>
            </widget>
           </item>
           <item row="5" column="0">
+           <widget class="QLabel" name="label_60">
+            <property name="text">
+             <string>RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QSpinBox" name="IDPA_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_58">
+            <property name="text">
+             <string>DEN:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QSpinBox" name="IDPA_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
            <widget class="QLabel" name="label_62">
             <property name="text">
              <string>Mode:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_64">
-            <property name="text">
-             <string>VCO Frequency:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="SIUnitEdit" name="freqVCO">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
+          <item row="7" column="1">
            <widget class="QComboBox" name="PLL_MODE">
             <item>
              <property name="text">
@@ -267,6 +253,65 @@
               <string>15</string>
              </property>
             </item>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_64">
+            <property name="text">
+             <string>VCO Frequency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="SIUnitEdit" name="freqVCO">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_72">
+            <property name="text">
+             <string>CLKIN 2:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="CLKIN_2_CLK_SEL">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>differential</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>CMOS DC</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>CMOS AC</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_73">
+            <property name="text">
+             <string>Reference frequency:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="SIUnitEdit" name="freqPLLref">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>
@@ -720,35 +765,11 @@
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="2" column="19">
-           <widget class="QLabel" name="label_51">
-            <property name="text">
-             <string>Steps RES:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="19">
+          <item row="3" column="21">
            <widget class="QSpinBox" name="ID0B_SS_STEP_RES"/>
           </item>
-          <item row="0" column="1" colspan="9">
-           <widget class="QLabel" name="label_41">
-            <property name="text">
-             <string>Bank A:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_53">
-            <property name="text">
-             <string>0:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="11" colspan="4">
-           <widget class="QLabel" name="label_49">
+          <item row="1" column="1" colspan="4">
+           <widget class="QLabel" name="label_37">
             <property name="text">
              <string>Fractional-N-PLL</string>
             </property>
@@ -757,162 +778,15 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="7">
-           <widget class="QLabel" name="label_36">
+          <item row="2" column="12" colspan="2">
+           <widget class="QLabel" name="label_43">
             <property name="text">
-             <string>Steps:</string>
+             <string>INTG:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="6">
-           <widget class="QComboBox" name="ID0A_SS_MODE">
-            <item>
-             <property name="text">
-              <string>disabled</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>center</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>invalid</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Down</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QSpinBox" name="ID0A_INTG">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="13">
-           <widget class="QLabel" name="label_47">
-            <property name="text">
-             <string>RES:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="18">
-           <widget class="QLabel" name="label_50">
-            <property name="text">
-             <string>Steps INTG:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="17">
-           <widget class="QLabel" name="label_45">
-            <property name="text">
-             <string>Steps:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="6" colspan="4">
-           <widget class="QLabel" name="label_38">
-            <property name="text">
-             <string>Spread-Spectrum</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="6">
-           <widget class="QLabel" name="label_35">
-            <property name="text">
-             <string>Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="4">
-           <widget class="QSpinBox" name="ID0A_DEN">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="16">
-           <widget class="QComboBox" name="ID0B_SS_MODE">
-            <item>
-             <property name="text">
-              <string>disabled</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>center</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>invalid</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Down</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="11" colspan="9">
-           <widget class="QLabel" name="label_48">
-            <property name="text">
-             <string>Bank B:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="8">
-           <widget class="QSpinBox" name="ID0A_SS_STEP_INTG"/>
-          </item>
-          <item row="3" column="18">
-           <widget class="QSpinBox" name="ID0B_SS_STEP_INTG"/>
-          </item>
-          <item row="3" column="9">
-           <widget class="QSpinBox" name="ID0A_SS_STEP_RES"/>
-          </item>
-          <item row="3" column="17">
-           <widget class="QSpinBox" name="ID0B_SS_STEP_NUM">
-            <property name="maximum">
-             <number>4095</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="7">
-           <widget class="QSpinBox" name="ID0A_SS_STEP_NUM">
-            <property name="maximum">
-             <number>4095</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="21">
-           <widget class="QLabel" name="label_55">
-            <property name="text">
-             <string>Active bank:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="16">
-           <widget class="QLabel" name="label_46">
-            <property name="text">
-             <string>Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="21">
-           <widget class="QComboBox" name="ID0_CFG_SEL">
+          <item row="4" column="23">
+           <widget class="QComboBox" name="ID1_CFG_SEL">
             <item>
              <property name="text">
               <string>Bank A</string>
@@ -925,204 +799,31 @@
             </item>
            </widget>
           </item>
-          <item row="3" column="14">
-           <widget class="QSpinBox" name="ID0B_DEN">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
+          <item row="4" column="20">
+           <widget class="QSpinBox" name="ID1B_SS_STEP_INTG"/>
           </item>
-          <item row="3" column="2" colspan="2">
-           <widget class="QSpinBox" name="ID0A_RES">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="11" colspan="2">
-           <widget class="QSpinBox" name="ID0B_INTG">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="13">
-           <widget class="QSpinBox" name="ID0B_RES">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="9">
-           <widget class="QLabel" name="label_40">
-            <property name="text">
-             <string>Steps RES:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="22">
-           <widget class="SIUnitEdit" name="freqID0">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4">
-           <widget class="QLabel" name="label_34">
-            <property name="text">
-             <string>DEN:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="4">
-           <widget class="QLabel" name="label_37">
-            <property name="text">
-             <string>Fractional-N-PLL</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="16" colspan="4">
-           <widget class="QLabel" name="label_44">
-            <property name="text">
-             <string>Spread-Spectrum</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="11" colspan="2">
-           <widget class="QLabel" name="label_43">
-            <property name="text">
-             <string>INTG:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="label_32">
-            <property name="text">
-             <string>INTG:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="22">
+          <item row="2" column="24">
            <widget class="QLabel" name="label_56">
             <property name="text">
              <string>Frequency:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="14">
-           <widget class="QLabel" name="label_42">
-            <property name="text">
-             <string>DEN:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2" colspan="2">
-           <widget class="QLabel" name="label_33">
-            <property name="text">
-             <string>RES:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="8">
-           <widget class="QLabel" name="label_39">
+          <item row="2" column="20">
+           <widget class="QLabel" name="label_50">
             <property name="text">
              <string>Steps INTG:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_57">
+          <item row="3" column="6">
+           <widget class="QCheckBox" name="ID0A_SS_ENA">
             <property name="text">
-             <string>1:</string>
+             <string/>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QSpinBox" name="ID1A_INTG">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2" colspan="2">
-           <widget class="QSpinBox" name="ID1A_RES">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="4">
-           <widget class="QSpinBox" name="ID1A_DEN">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="6">
-           <widget class="QComboBox" name="ID1A_SS_MODE">
-            <item>
-             <property name="text">
-              <string>disabled</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>center</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>invalid</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Down</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="4" column="7">
-           <widget class="QSpinBox" name="ID1A_SS_STEP_NUM">
-            <property name="maximum">
-             <number>4095</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="8">
-           <widget class="QSpinBox" name="ID1A_SS_STEP_INTG"/>
-          </item>
-          <item row="4" column="9">
-           <widget class="QSpinBox" name="ID1A_SS_STEP_RES"/>
-          </item>
-          <item row="4" column="11" colspan="2">
-           <widget class="QSpinBox" name="ID1B_INTG">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="13">
-           <widget class="QSpinBox" name="ID1B_RES">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="14">
-           <widget class="QSpinBox" name="ID1B_DEN">
-            <property name="maximum">
-             <number>65535</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="16">
+          <item row="4" column="18">
            <widget class="QComboBox" name="ID1B_SS_MODE">
             <item>
              <property name="text">
@@ -1146,21 +847,346 @@
             </item>
            </widget>
           </item>
-          <item row="4" column="17">
+          <item row="3" column="9">
+           <widget class="QSpinBox" name="ID0A_SS_STEP_INTG"/>
+          </item>
+          <item row="4" column="2" colspan="2">
+           <widget class="QSpinBox" name="ID1A_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="14">
+           <widget class="QLabel" name="label_47">
+            <property name="text">
+             <string>RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="18">
+           <widget class="QLabel" name="label_46">
+            <property name="text">
+             <string>Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="10">
+           <widget class="QSpinBox" name="ID1A_SS_STEP_RES"/>
+          </item>
+          <item row="4" column="6">
+           <widget class="QCheckBox" name="ID1A_SS_ENA">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="19">
+           <widget class="QSpinBox" name="ID0B_SS_STEP_NUM">
+            <property name="maximum">
+             <number>4095</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="15">
+           <widget class="QSpinBox" name="ID0B_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="18">
+           <widget class="QComboBox" name="ID0B_SS_MODE">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>invalid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="2" colspan="2">
+           <widget class="QLabel" name="label_33">
+            <property name="text">
+             <string>RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="8">
+           <widget class="QSpinBox" name="ID0A_SS_STEP_NUM">
+            <property name="maximum">
+             <number>4095</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="12" colspan="4">
+           <widget class="QLabel" name="label_49">
+            <property name="text">
+             <string>Fractional-N-PLL</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="15">
+           <widget class="QSpinBox" name="ID1B_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5" rowspan="4">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="19">
+           <widget class="QLabel" name="label_45">
+            <property name="text">
+             <string>Steps:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="7">
+           <widget class="QComboBox" name="ID0A_SS_MODE">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>invalid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="16" rowspan="4">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="14">
+           <widget class="QSpinBox" name="ID0B_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="ID0A_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="7">
+           <widget class="QLabel" name="label_35">
+            <property name="text">
+             <string>Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="4">
+           <widget class="QSpinBox" name="ID1A_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="10">
+           <widget class="QLabel" name="label_41">
+            <property name="text">
+             <string>Bank A:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="21">
+           <widget class="QLabel" name="label_51">
+            <property name="text">
+             <string>Steps RES:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="10">
+           <widget class="QSpinBox" name="ID0A_SS_STEP_RES"/>
+          </item>
+          <item row="4" column="24">
+           <widget class="SIUnitEdit" name="freqID1">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="ID1A_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="9">
+           <widget class="QLabel" name="label_39">
+            <property name="text">
+             <string>Steps INTG:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" colspan="2">
+           <widget class="QSpinBox" name="ID0A_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_32">
+            <property name="text">
+             <string>INTG:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4">
+           <widget class="QSpinBox" name="ID0A_DEN">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="7">
+           <widget class="QComboBox" name="ID1A_SS_MODE">
+            <item>
+             <property name="text">
+              <string>disabled</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>center</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>invalid</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Down</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="12" colspan="10">
+           <widget class="QLabel" name="label_48">
+            <property name="text">
+             <string>Bank B:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="19">
            <widget class="QSpinBox" name="ID1B_SS_STEP_NUM">
             <property name="maximum">
              <number>4095</number>
             </property>
            </widget>
           </item>
-          <item row="4" column="18">
-           <widget class="QSpinBox" name="ID1B_SS_STEP_INTG"/>
+          <item row="3" column="20">
+           <widget class="QSpinBox" name="ID0B_SS_STEP_INTG"/>
           </item>
-          <item row="4" column="19">
-           <widget class="QSpinBox" name="ID1B_SS_STEP_RES"/>
+          <item row="2" column="10">
+           <widget class="QLabel" name="label_40">
+            <property name="text">
+             <string>Steps RES:</string>
+            </property>
+           </widget>
           </item>
-          <item row="4" column="21">
-           <widget class="QComboBox" name="ID1_CFG_SEL">
+          <item row="2" column="4">
+           <widget class="QLabel" name="label_34">
+            <property name="text">
+             <string>DEN:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_53">
+            <property name="text">
+             <string>0:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="22" rowspan="5">
+           <widget class="Line" name="line_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="12" colspan="2">
+           <widget class="QSpinBox" name="ID1B_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_57">
+            <property name="text">
+             <string>1:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="23">
+           <widget class="QLabel" name="label_55">
+            <property name="text">
+             <string>Active bank:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="15">
+           <widget class="QLabel" name="label_42">
+            <property name="text">
+             <string>DEN:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="23">
+           <widget class="QComboBox" name="ID0_CFG_SEL">
             <item>
              <property name="text">
               <string>Bank A</string>
@@ -1173,38 +1199,99 @@
             </item>
            </widget>
           </item>
-          <item row="4" column="22">
-           <widget class="SIUnitEdit" name="freqID1">
-            <property name="readOnly">
-             <bool>true</bool>
+          <item row="4" column="8">
+           <widget class="QSpinBox" name="ID1A_SS_STEP_NUM">
+            <property name="maximum">
+             <number>4095</number>
             </property>
            </widget>
           </item>
-          <item row="0" column="20" rowspan="5">
-           <widget class="Line" name="line_4">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="15" rowspan="4">
-           <widget class="Line" name="line_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="10" rowspan="5">
+          <item row="0" column="11" rowspan="5">
            <widget class="Line" name="line_2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>
-          <item row="1" column="5" rowspan="4">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item row="3" column="12" colspan="2">
+           <widget class="QSpinBox" name="ID0B_INTG">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="24">
+           <widget class="SIUnitEdit" name="freqID0">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="14">
+           <widget class="QSpinBox" name="ID1B_RES">
+            <property name="maximum">
+             <number>65535</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="6" colspan="5">
+           <widget class="QLabel" name="label_38">
+            <property name="text">
+             <string>Spread-Spectrum</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="8">
+           <widget class="QLabel" name="label_36">
+            <property name="text">
+             <string>Steps:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="6">
+           <widget class="QLabel" name="label_70">
+            <property name="text">
+             <string>En:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="9">
+           <widget class="QSpinBox" name="ID1A_SS_STEP_INTG"/>
+          </item>
+          <item row="4" column="21">
+           <widget class="QSpinBox" name="ID1B_SS_STEP_RES"/>
+          </item>
+          <item row="3" column="17">
+           <widget class="QCheckBox" name="ID0B_SS_ENA">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="17">
+           <widget class="QLabel" name="label_71">
+            <property name="text">
+             <string>En:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="17" colspan="5">
+           <widget class="QLabel" name="label_44">
+            <property name="text">
+             <string>Spread-Spectrum</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="17">
+           <widget class="QCheckBox" name="ID1B_SS_ENA">
+            <property name="text">
+             <string/>
             </property>
            </widget>
           </item>

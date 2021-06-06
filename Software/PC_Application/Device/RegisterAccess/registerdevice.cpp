@@ -95,7 +95,7 @@ nlohmann::json RegisterDevice::registersToJSON()
 {
     nlohmann::json j;
     for(auto r : regs) {
-        j[r->getAddress()] = r->getValue();
+        j["0x"+QString::number(r->getAddress(), 16).toStdString()] = r->getValue();
     }
     return j;
 }
@@ -103,7 +103,7 @@ nlohmann::json RegisterDevice::registersToJSON()
 void RegisterDevice::registersFromJSON(nlohmann::json j)
 {
     for(auto val : j.items()) {
-        auto address = QString::fromStdString(val.key()).toInt();
+        auto address = QString::fromStdString(val.key()).toInt(Q_NULLPTR, 16);
         for(auto r : regs) {
             if(r->getAddress() == address) {
                 r->setValue(val.value());

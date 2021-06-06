@@ -118,6 +118,7 @@ void AD9913::setReset(bool p) {
 
 void AD9913::updateRegisters() {
 	setIO_UPDATE(true);
+	vTaskDelay(1);
 	setIO_UPDATE(false);
 }
 

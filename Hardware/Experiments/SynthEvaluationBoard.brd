@@ -3217,7 +3217,7 @@ design rules under a new name.</description>
 <attribute name="NAME" x="77.1909" y="76.9" size="1.27" layer="25" rot="R270" align="bottom-center"/>
 <attribute name="VALUE" x="70.0091" y="76.9" size="1.27" layer="27" rot="R270" align="top-center"/>
 </element>
-<element name="R29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9" x="75.9" y="71.9" smashed="yes" rot="R90">
+<element name="R29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="4k64" x="75.9" y="71.9" smashed="yes" rot="R90">
 <attribute name="NAME" x="75.265" y="71.265" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="77.805" y="71.265" size="1.27" layer="27" rot="R90"/>
 </element>

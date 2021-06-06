@@ -101,6 +101,8 @@ AD9913::AD9913()
     ui->freqRef->setUnit("Hz");
     ui->freqDDS->setPrefixes(" kMG");
     ui->freqDDS->setUnit("Hz");
+    ui->freqOUT->setPrefixes(" kMG");
+    ui->freqOUT->setUnit("Hz");
 
     QObject::connect(ui->cbRef, &QComboBox::currentTextChanged, [=](QString input){
         SIUnitEdit *newInput = nullptr;
@@ -175,6 +177,7 @@ AD9913::AD9913()
     QObject::connect(ui->UseInternalProfile, &QCheckBox::toggled, updateOutput);
     QObject::connect(ui->DCoutput, &QCheckBox::toggled, updateOutput);
     QObject::connect(ui->InternalProfile, qOverload<int>(&QComboBox::currentIndexChanged), updateOutput);
+    QObject::connect(ui->FreqTuneWord, qOverload<int>(&QSpinBox::valueChanged), updateOutput);
     QObject::connect(ui->Profile0Freq, qOverload<int>(&QSpinBox::valueChanged), updateOutput);
     QObject::connect(ui->Profile1Freq, qOverload<int>(&QSpinBox::valueChanged), updateOutput);
     QObject::connect(ui->Profile2Freq, qOverload<int>(&QSpinBox::valueChanged), updateOutput);

@@ -767,7 +767,7 @@
         <item row="0" column="1">
          <widget class="QSpinBox" name="FreqTuneWord">
           <property name="maximum">
-           <number>429496729</number>
+           <number>2147483647</number>
           </property>
          </widget>
         </item>
@@ -1059,7 +1059,7 @@
           <item row="8" column="1">
            <widget class="QSpinBox" name="Profile7Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
@@ -1087,7 +1087,7 @@
           <item row="3" column="1">
            <widget class="QSpinBox" name="Profile2Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
@@ -1143,14 +1143,14 @@
           <item row="1" column="1">
            <widget class="QSpinBox" name="Profile0Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
           <item row="6" column="1">
            <widget class="QSpinBox" name="Profile5Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
@@ -1171,7 +1171,7 @@
           <item row="2" column="1">
            <widget class="QSpinBox" name="Profile1Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
@@ -1199,7 +1199,7 @@
           <item row="4" column="1">
            <widget class="QSpinBox" name="Profile3Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
@@ -1213,7 +1213,7 @@
           <item row="5" column="1">
            <widget class="QSpinBox" name="Profile4Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
@@ -1227,7 +1227,7 @@
           <item row="7" column="1">
            <widget class="QSpinBox" name="Profile6Freq">
             <property name="maximum">
-             <number>429496729</number>
+             <number>2147483647</number>
             </property>
            </widget>
           </item>

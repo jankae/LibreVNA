@@ -7906,7 +7906,7 @@ Source: www.kingbright.com</description>
 <part name="FRAME3" library="VNA" library_urn="urn:adsk.eagle:library:19761286" deviceset="FRAMES_A3L-LOC" device=""/>
 <part name="IC2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AD9913" device="" package3d_urn="urn:adsk.eagle:package:22367293/2"/>
 <part name="GND45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="4k64"/>
 <part name="GND46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="R30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
 <part name="R31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
