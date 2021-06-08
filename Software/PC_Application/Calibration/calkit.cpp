@@ -27,6 +27,10 @@ Calkit::Calkit()
 
 void Calkit::toFile(QString filename)
 {
+    if(!filename.endsWith(".calkit")) {
+        filename.append(".calkit");
+    }
+
     qDebug() << "Saving calkit to file" << filename;
 
     TransformPathsToRelative(filename);

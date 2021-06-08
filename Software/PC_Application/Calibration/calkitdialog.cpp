@@ -68,7 +68,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
        updateEntries();
     });
     connect(ui->TRL_line_delay, &QLineEdit::editingFinished, [=](){
-        ownKit.TRL.Line.delay = ui->TRL_line_delay->text().toDouble();
+        ownKit.TRL.Line.delay = ui->TRL_line_delay->value();
         updateEntries();
     });
 
@@ -148,29 +148,29 @@ void CalkitDialog::parseEntries()
 
     // coefficients
     ownKit.SOLT.Open.Z0 = ui->open_Z0->value();
-    ownKit.SOLT.Open.delay = ui->open_delay->text().toDouble();
-    ownKit.SOLT.Open.loss = ui->open_loss->text().toDouble();
-    ownKit.SOLT.Open.C0 = ui->open_C0->text().toDouble();
-    ownKit.SOLT.Open.C1 = ui->open_C1->text().toDouble();
-    ownKit.SOLT.Open.C2 = ui->open_C2->text().toDouble();
-    ownKit.SOLT.Open.C3 = ui->open_C3->text().toDouble();
+    ownKit.SOLT.Open.delay = ui->open_delay->value();
+    ownKit.SOLT.Open.loss = ui->open_loss->value();
+    ownKit.SOLT.Open.C0 = ui->open_C0->value();
+    ownKit.SOLT.Open.C1 = ui->open_C1->value();
+    ownKit.SOLT.Open.C2 = ui->open_C2->value();
+    ownKit.SOLT.Open.C3 = ui->open_C3->value();
 
     ownKit.SOLT.Short.Z0 = ui->short_Z0->value();
-    ownKit.SOLT.Short.delay = ui->short_delay->text().toDouble();
-    ownKit.SOLT.Short.loss = ui->short_loss->text().toDouble();
-    ownKit.SOLT.Short.L0 = ui->short_L0->text().toDouble();
-    ownKit.SOLT.Short.L1 = ui->short_L1->text().toDouble();
-    ownKit.SOLT.Short.L2 = ui->short_L2->text().toDouble();
-    ownKit.SOLT.Short.L3 = ui->short_L3->text().toDouble();
+    ownKit.SOLT.Short.delay = ui->short_delay->value();
+    ownKit.SOLT.Short.loss = ui->short_loss->value();
+    ownKit.SOLT.Short.L0 = ui->short_L0->value();
+    ownKit.SOLT.Short.L1 = ui->short_L1->value();
+    ownKit.SOLT.Short.L2 = ui->short_L2->value();
+    ownKit.SOLT.Short.L3 = ui->short_L3->value();
 
     ownKit.SOLT.Load.Z0 = ui->load_Z0->value();
-    ownKit.SOLT.Load.delay = ui->load_delay->text().toDouble();
+    ownKit.SOLT.Load.delay = ui->load_delay->value();
     ownKit.SOLT.Load.Cparallel = ui->load_parC->value();
     ownKit.SOLT.Load.Lseries = ui->load_serL->value();
 
     ownKit.SOLT.Through.Z0 = ui->through_Z0->value();
-    ownKit.SOLT.Through.delay = ui->through_delay->text().toDouble();
-    ownKit.SOLT.Through.loss = ui->through_loss->text().toDouble();
+    ownKit.SOLT.Through.delay = ui->through_delay->value();
+    ownKit.SOLT.Through.loss = ui->through_loss->value();
 
     // file
     ownKit.SOLT.Open.file = ui->open_touchstone->getFilename();
@@ -187,7 +187,7 @@ void CalkitDialog::parseEntries()
     // TRL
     ownKit.TRL.Through.Z0 = ui->TRL_through_Z0->value();
     ownKit.TRL.Reflection.isShort = ui->TRL_R_short->isChecked();
-    ownKit.TRL.Line.delay = ui->TRL_line_delay->text().toDouble();
+    ownKit.TRL.Line.delay = ui->TRL_line_delay->value();
     ownKit.TRL.Line.minFreq = ui->TRL_line_min->value();
     ownKit.TRL.Line.maxFreq = ui->TRL_line_max->value();
 
@@ -198,29 +198,29 @@ void CalkitDialog::updateEntries()
 {
     // Coefficients
     ui->open_Z0->setValueQuiet(ownKit.SOLT.Open.Z0);
-    ui->open_delay->setValue(ownKit.SOLT.Open.delay);
-    ui->open_loss->setValue(ownKit.SOLT.Open.loss);
-    ui->open_C0->setValue(ownKit.SOLT.Open.C0);
-    ui->open_C1->setValue(ownKit.SOLT.Open.C1);
-    ui->open_C2->setValue(ownKit.SOLT.Open.C2);
-    ui->open_C3->setValue(ownKit.SOLT.Open.C3);
+    ui->open_delay->setValueQuiet(ownKit.SOLT.Open.delay);
+    ui->open_loss->setValueQuiet(ownKit.SOLT.Open.loss);
+    ui->open_C0->setValueQuiet(ownKit.SOLT.Open.C0);
+    ui->open_C1->setValueQuiet(ownKit.SOLT.Open.C1);
+    ui->open_C2->setValueQuiet(ownKit.SOLT.Open.C2);
+    ui->open_C3->setValueQuiet(ownKit.SOLT.Open.C3);
 
     ui->short_Z0->setValueQuiet(ownKit.SOLT.Short.Z0);
-    ui->short_delay->setValue(ownKit.SOLT.Short.delay);
-    ui->short_loss->setValue(ownKit.SOLT.Short.loss);
-    ui->short_L0->setValue(ownKit.SOLT.Short.L0);
-    ui->short_L1->setValue(ownKit.SOLT.Short.L1);
-    ui->short_L2->setValue(ownKit.SOLT.Short.L2);
-    ui->short_L3->setValue(ownKit.SOLT.Short.L3);
+    ui->short_delay->setValueQuiet(ownKit.SOLT.Short.delay);
+    ui->short_loss->setValueQuiet(ownKit.SOLT.Short.loss);
+    ui->short_L0->setValueQuiet(ownKit.SOLT.Short.L0);
+    ui->short_L1->setValueQuiet(ownKit.SOLT.Short.L1);
+    ui->short_L2->setValueQuiet(ownKit.SOLT.Short.L2);
+    ui->short_L3->setValueQuiet(ownKit.SOLT.Short.L3);
 
     ui->load_Z0->setValueQuiet(ownKit.SOLT.Load.Z0);
-    ui->load_delay->setValue(ownKit.SOLT.Load.delay);
+    ui->load_delay->setValueQuiet(ownKit.SOLT.Load.delay);
     ui->load_parC->setValueQuiet(ownKit.SOLT.Load.Cparallel);
     ui->load_serL->setValueQuiet(ownKit.SOLT.Load.Lseries);
 
     ui->through_Z0->setValueQuiet(ownKit.SOLT.Through.Z0);
-    ui->through_delay->setValue(ownKit.SOLT.Through.delay);
-    ui->through_loss->setValue(ownKit.SOLT.Through.loss);
+    ui->through_delay->setValueQuiet(ownKit.SOLT.Through.delay);
+    ui->through_loss->setValueQuiet(ownKit.SOLT.Through.loss);
 
     // Measurements
     ui->open_touchstone->setFile(ownKit.SOLT.Open.file);
@@ -268,7 +268,7 @@ void CalkitDialog::updateEntries()
     } else {
         ui->TRL_R_open->setChecked(true);
     }
-    ui->TRL_line_delay->setValue(ownKit.TRL.Line.delay);
+    ui->TRL_line_delay->setValueQuiet(ownKit.TRL.Line.delay);
     ui->TRL_line_min->setValueQuiet(ownKit.TRL.Line.minFreq);
     ui->TRL_line_max->setValueQuiet(ownKit.TRL.Line.maxFreq);
     // Check if line length is appropriate for frequencies
