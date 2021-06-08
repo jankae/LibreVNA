@@ -446,7 +446,7 @@ SI5332::SI5332()
             switch(sel0->currentIndex()) {
             case 0: group = ui->freqPLLref->value(); break;
             case 1: group = ui->freqPLLref->value() / ui->PDIV_DIV->value(); break;
-            case 2: group = ui->ref->value();
+            case 2: group = ui->ref->value(); break;
             case 3: group = 0; // CLKIN_3, not available at this part
             }
             break;

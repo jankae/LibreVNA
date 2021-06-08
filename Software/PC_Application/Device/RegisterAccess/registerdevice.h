@@ -19,6 +19,7 @@ public:
     QWidget *getWidget() const;
     QString getPartnumber() const;
     QString getName() const;
+    void reloadRegisters();
 
     virtual void addPossibleInputs(RegisterDevice *inputDevice);
 

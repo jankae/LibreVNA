@@ -990,7 +990,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="REG_VC_4V5_VOUT">
+               <widget class="QComboBox" name="REG_VCO_4V5_VOUT">
                 <item>
                  <property name="text">
                   <string>5.0V</string>

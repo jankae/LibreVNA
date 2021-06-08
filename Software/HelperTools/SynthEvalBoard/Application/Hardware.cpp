@@ -4,6 +4,7 @@
 
 #include "AD9913.hpp"
 #include "Si5332.hpp"
+#include "STW81200.hpp"
 #include "main.h"
 
 extern I2C_HandleTypeDef hi2c1;
@@ -16,11 +17,19 @@ static AD9913 ad9913 = AD9913("AD9913", &hspi2, AD9913_CS_GPIO_Port,
 	AD9913_MRESET_GPIO_Port, AD9913_MRESET_Pin, AD9913_PWR_DWN_GPIO_Port,
 	AD9913_PWR_DWN_Pin);
 
+
+static STW81200 stw81200 = STW81200("STW81200", &hspi1, STW_LE_GPIO_Port,
+		STW_LE_Pin, STW_HW_PD_GPIO_Port, STW_HW_PD_Pin, STW_PD_RF1_GPIO_Port,
+		STW_PD_RF1_Pin);
+
 bool HW::Init() {
 	if(!ad9913.Init()) {
 		return false;
 	}
 	if(!si5332.Init()) {
+		return false;
+	}
+	if(!stw81200.Init()) {
 		return false;
 	}
 	return true;

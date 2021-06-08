@@ -31,6 +31,10 @@ RawRegisterDialog::RawRegisterDialog(Device *dev, QWidget *parent) :
     // trigger extraction of device information, this will trigger the receivedDirectRegisterInfo slot which will further populate the dialog
     dev->SendCommandWithoutPayload(Protocol::PacketType::RequestDirectRegisterInfo);
 
+    connect(ui->reload, &QPushButton::clicked, [=](){
+        devices[ui->tabs->currentIndex()]->reloadRegisters();
+    });
+
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
         auto filename = QFileDialog::getSaveFileName(this, "Save register settigns", "", "Raw register file (*.regs)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.length() > 0) {

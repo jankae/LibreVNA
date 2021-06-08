@@ -17,6 +17,7 @@ STW81200::STW81200()
     addRegister(new Register("ST8", 8, 26));
     addRegister(new Register("ST9", 9, 26));
     addRegister(new Register("ST10", 10, 26));
+    addRegister(new Register("ST11", 11, 26));
 
     ui = new Ui::STW81200Widget;
     ui->setupUi(widget);
@@ -44,9 +45,6 @@ STW81200::STW81200()
     regs[3]->assignUI(ui->PFD_DEL_MODE, 15, 2);
     regs[3]->assignUI(ui->REF_PATH_SEL, 13, 2);
     regs[3]->assignUI(ui->R, 0, 12);
-    regs[3]->assignUI(ui->RF1_OUT_PD, 24, true);
-    regs[3]->assignUI(ui->RF1_DIV_SEL, 21, 3);
-    regs[3]->assignUI(ui->frac, 0, 21);
 
     regs[4]->assignUI(ui->RF_OUT_PWR, 23, 2);
     regs[4]->assignUI(ui->VCO_2V5_MODE, 22);
@@ -90,7 +88,7 @@ STW81200::STW81200()
     regs[7]->assignUI(ui->LD_SDO_SEL, 21, 2);
     regs[7]->assignUI(ui->CYCLE_SLIP_EN, 19);
     regs[7]->assignUI(ui->FSTLCK_EN, 18);
-    regs[7]->assignUI(ui->CP_SEL, 13, 5);
+    regs[7]->assignUI(ui->CP_SEL_FL, 13, 5);
     regs[7]->assignUI(ui->FSTLCK_CNT, 0, 13);
 
     regs[8]->assignUI(ui->PD_RF2_DISABLE, 26);
@@ -103,7 +101,7 @@ STW81200::STW81200()
     regs[8]->assignUI(ui->REG_VCO_PD, 6);
     regs[8]->assignUI(ui->REG_VCO_VOUT, 4, 2);
     regs[8]->assignUI(ui->REG_VCO_4V5_PD, 2);
-    regs[8]->assignUI(ui->REG_VCO_4V5_OCP, 0, 2);
+    regs[8]->assignUI(ui->REG_VCO_4V5_VOUT, 0, 2);
 
     regs[10]->assignUI(ui->REG_DIG_STARTUP, 17);
     regs[10]->assignUI(ui->REG_REF_STARTUP, 16);

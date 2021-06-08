@@ -4,7 +4,7 @@
 
 namespace HW {
 
-static constexpr uint8_t registerDevices = 2;
+static constexpr uint8_t registerDevices = 3;
 
 static constexpr Protocol::DeviceInfo Info = {
 		.ProtocolVersion = Protocol::Version,

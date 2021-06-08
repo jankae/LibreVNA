@@ -25,13 +25,7 @@ RegisterDevice *RegisterDevice::create(Device *dev, int number, QString partnumb
         regdev->name = name;
 
         // read initial register content
-        Protocol::PacketInfo p;
-        p.type = Protocol::PacketType::DirectRegisterRead;
-        p.directRegRead.device = number;
-        for(unsigned int i=0;i<regdev->regs.size();i++) {
-            p.directRegRead.address = regdev->regs[i]->getAddress();
-            dev->SendPacket(p);
-        }
+        regdev->reloadRegisters();
     }
     return regdev;
 }
@@ -58,6 +52,17 @@ RegisterDevice::RegisterDevice()
 QString RegisterDevice::getName() const
 {
     return name;
+}
+
+void RegisterDevice::reloadRegisters()
+{
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::DirectRegisterRead;
+    p.directRegRead.device = number;
+    for(unsigned int i=0;i<regs.size();i++) {
+        p.directRegRead.address = regs[i]->getAddress();
+        dev->SendPacket(p);
+    }
 }
 
 void RegisterDevice::addPossibleInputs(RegisterDevice *inputDevice)
