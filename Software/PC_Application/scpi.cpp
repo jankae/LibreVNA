@@ -26,7 +26,7 @@ bool SCPI::match(QString s1, QString s2)
 
 QString SCPI::alternateName(QString name)
 {
-    while(name[name.size()-1].isLower()) {
+    while(name.size() > 0 && name[name.size()-1].isLower()) {
         name.chop(1);
     }
     return name;

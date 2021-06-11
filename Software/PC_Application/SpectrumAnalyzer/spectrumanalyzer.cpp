@@ -784,6 +784,12 @@ void SpectrumAnalyzer::SetupSCPI()
     }, [=](QStringList) -> QString {
         return QString::number(averages);
     }));
+    scpi_acq->add(new SCPICommand("AVGLEVel", nullptr, [=](QStringList) -> QString {
+        return QString::number(average.getLevel());
+    }));
+    scpi_acq->add(new SCPICommand("FINished", nullptr, [=](QStringList) -> QString {
+        return average.getLevel() == averages ? "TRUE" : "FALSE";
+    }));
     scpi_acq->add(new SCPICommand("SIGid", [=](QStringList params) -> QString {
         if (params.size() != 1) {
             return "ERROR";

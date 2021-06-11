@@ -346,8 +346,26 @@ These commands change or query VNA settings. Although most of them are available
 \query{Queries the currently selected number of points}{VNA:ACQuisition:POINTS?}{None}{points}
 
 \subsubsection{VNA:ACQuisition:AVG}
-\event{Sets the number of sweeps over which a moving average is calculated}{VNA:ACQuisition:AVG}{<sweeps>}
-\query{Queries the currently configured number of sweeps}{VNA:ACQuisition:AVG?}{None}{sweeps}
+\event{Sets the number of sweeps over which a moving average is calculated}{VNA:ACQuisition:AVG}{<averaging sweeps>}
+\query{Queries the currently configured number of sweeps}{VNA:ACQuisition:AVG?}{None}{<averaging sweeps>}
+
+\subsubsection{VNA:ACQuisition:AVGLEVel}
+\query{Queries the number of sweeps that have been acquired by the average function.}{VNA:ACQuisition:AVGLVLel?}{None}{<acquired sweeps>}
+<acquired sweeps> resets to zero whenever a setting is changed. It is incremented at the end of each sweep, but will not go above the number of configured sweeps for the averaging.
+
+Example (assuming <averaging sweep> = 3):
+\begin{longtable}{p{.2\textwidth} | p{.2\textwidth} }
+\textbf{\# of active sweep} & \textbf{<acquired sweeps>}\\
+\hline
+1 & 0\\
+2 & 1\\
+3 & 2\\
+4 & 3\\
+5 & 3\\
+\end{longtable}
+
+\subsubsection{VNA:ACQuisition:FINished}
+\query{Queries whether the average filter has reached a steady state (that is <acquired sweeps> = <averaging sweeps>)}{VNA:ACQuisition:FINished?}{None}{TRUE or FALSE}
 
 \subsubsection{VNA:STIMulus:LVL}
 \event{Sets the output power of the stimulus signal}{VNA:STIMulus:LVL}{<power>, in dBm}
@@ -512,6 +530,24 @@ These commands change or query spectrum analyzer settings. Although most of them
 \subsubsection{SA:ACQuisition:AVG}
 \event{Sets the number of sweeps over which a moving average is calculated}{SA:ACQuisition:AVG}{<sweeps>}
 \query{Queries the currently configured number of sweeps}{SA:ACQuisition:AVG?}{None}{sweeps}
+
+\subsubsection{SA:ACQuisition:AVGLEVel}
+\query{Queries the number of sweeps that have been acquired by the average function.}{SA:ACQuisition:AVGLVLel?}{None}{<acquired sweeps>}
+<acquired sweeps> resets to zero whenever a setting is changed. It is incremented at the end of each sweep, but will not go above the number of configured sweeps for the averaging.
+
+Example (assuming <averaging sweep> = 3):
+\begin{longtable}{p{.2\textwidth} | p{.2\textwidth} }
+\textbf{\# of active sweep} & \textbf{<acquired sweeps>}\\
+\hline
+1 & 0\\
+2 & 1\\
+3 & 2\\
+4 & 3\\
+5 & 3\\
+\end{longtable}
+
+\subsubsection{SA:ACQuisition:FINished}
+\query{Queries whether the average filter has reached a steady state (that is <acquired sweeps> = <averaging sweeps>)}{SA:ACQuisition:FINished?}{None}{TRUE or FALSE}
 
 \subsubsection{SA:ACQuisition:SIGid}
 \event{Enables/disables signal identification}{SA:ACQuisition:SIGid}{<enabled>, option are TRUE, FALSE, 1 or 0}
