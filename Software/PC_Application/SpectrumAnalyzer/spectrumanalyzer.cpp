@@ -30,7 +30,7 @@
 #include "CustomWidgets/tilewidget.h"
 #include "CustomWidgets/siunitedit.h"
 #include <QDockWidget>
-#include "Traces/markerwidget.h"
+#include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
 #include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
@@ -232,7 +232,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     window->addToolBar(tb_trackgen);
     toolbars.insert(tb_trackgen);
 
-    markerModel = new TraceMarkerModel(traceModel, this);
+    markerModel = new MarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
     traceWidget = new TraceWidgetSA(traceModel, window);

@@ -49,5 +49,6 @@
         <file>icons/port2.svg</file>
         <file>icons/down.png</file>
         <file>icons/up.png</file>
+        <file>icons/chainlink.png</file>
     </qresource>
 </RCC>

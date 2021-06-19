@@ -2,7 +2,7 @@
 #define MARKERWIDGET_H
 
 #include <QWidget>
-#include "tracemarkermodel.h"
+#include "markermodel.h"
 
 namespace Ui {
 class MarkerWidget;
@@ -13,7 +13,7 @@ class MarkerWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit MarkerWidget(TraceMarkerModel &model, QWidget *parent = nullptr);
+    explicit MarkerWidget(MarkerModel &model, QWidget *parent = nullptr);
     ~MarkerWidget();
 
 private slots:
@@ -22,8 +22,9 @@ private slots:
     void updatePersistentEditors();
 
 private:
+    bool eventFilter(QObject *obj, QEvent *event) override;
     Ui::MarkerWidget *ui;
-    TraceMarkerModel &model;
+    MarkerModel &model;
 };
 
 #endif // MARKERWIDGET_H

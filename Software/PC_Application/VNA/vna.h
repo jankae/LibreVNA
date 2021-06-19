@@ -69,7 +69,7 @@ private:
     unsigned int averages;
     TraceModel traceModel;
     TraceWidget *traceWidget;
-    TraceMarkerModel *markerModel;
+    MarkerModel *markerModel;
     Averaging average;
 
     // Calibration

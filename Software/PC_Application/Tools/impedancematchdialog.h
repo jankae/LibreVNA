@@ -2,7 +2,7 @@
 #define IMPEDANCEMATCHDIALOG_H
 
 #include <QDialog>
-#include "Traces/tracemarkermodel.h"
+#include "Traces/Marker/markermodel.h"
 
 namespace Ui {
 class ImpedanceMatchDialog;
@@ -13,7 +13,7 @@ class ImpedanceMatchDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ImpedanceMatchDialog(TraceMarkerModel &model, TraceMarker *marker = nullptr, QWidget *parent = nullptr);
+    explicit ImpedanceMatchDialog(MarkerModel &model, Marker *marker = nullptr, QWidget *parent = nullptr);
     ~ImpedanceMatchDialog();
 
 private slots:

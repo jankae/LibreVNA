@@ -1,11 +1,11 @@
 #include "traceplot.h"
-#include "tracemarker.h"
+#include "Marker/marker.h"
 #include "preferences.h"
 #include <QPainter>
 #include <QMimeData>
 #include <QDebug>
 #include "unit.h"
-#include "tracemarkermodel.h"
+#include "Marker/markermodel.h"
 
 std::set<TracePlot*> TracePlot::plots;
 
@@ -229,12 +229,12 @@ void TracePlot::leaveEvent(QEvent *event)
     selectedMarker = nullptr;
 }
 
-TraceMarker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
+Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
 {
     auto clickPoint = p - QPoint(marginLeft, marginTop);
     // check if click was near a marker
     unsigned int closestDistance = numeric_limits<unsigned int>::max();
-    TraceMarker *closestMarker = nullptr;
+    Marker *closestMarker = nullptr;
     for(auto t : traces) {
         if(!t.second) {
             // this trace is disabled, skip
@@ -378,16 +378,16 @@ void TracePlot::checkIfStillSupported(Trace *t)
     }
 }
 
-void TracePlot::markerAdded(TraceMarker *m)
+void TracePlot::markerAdded(Marker *m)
 {
-    connect(m, &TraceMarker::dataChanged, this, &TracePlot::triggerReplot);
-    connect(m, &TraceMarker::symbolChanged, this, &TracePlot::triggerReplot);
+    connect(m, &Marker::dataChanged, this, &TracePlot::triggerReplot);
+    connect(m, &Marker::symbolChanged, this, &TracePlot::triggerReplot);
     triggerReplot();
 }
 
-void TracePlot::markerRemoved(TraceMarker *m)
+void TracePlot::markerRemoved(Marker *m)
 {
-    disconnect(m, &TraceMarker::dataChanged, this, &TracePlot::triggerReplot);
-    disconnect(m, &TraceMarker::symbolChanged, this, &TracePlot::triggerReplot);
+    disconnect(m, &Marker::dataChanged, this, &TracePlot::triggerReplot);
+    disconnect(m, &Marker::symbolChanged, this, &TracePlot::triggerReplot);
     triggerReplot();
 }

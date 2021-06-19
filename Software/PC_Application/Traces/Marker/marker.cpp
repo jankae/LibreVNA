@@ -1,20 +1,21 @@
-﻿#include "tracemarker.h"
+﻿#include "marker.h"
 #include <QPainter>
 #include "CustomWidgets/siunitedit.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSpinBox>
 #include <QDebug>
-#include "tracemarkermodel.h"
+#include "markermodel.h"
 #include "unit.h"
 #include <QMenu>
 #include <QActionGroup>
 #include <QApplication>
 #include "preferences.h"
+#include "markergroup.h"
 
 using namespace std;
 
-TraceMarker::TraceMarker(TraceMarkerModel *model, int number, TraceMarker *parent, QString descr)
+Marker::Marker(MarkerModel *model, int number, Marker *parent, QString descr)
     : editingFrequency(false),
       model(model),
       parentTrace(nullptr),
@@ -29,14 +30,15 @@ TraceMarker::TraceMarker(TraceMarkerModel *model, int number, TraceMarker *paren
       cutoffAmplitude(-3.0),
       peakThreshold(-40.0),
       offset(10000),
-      formatTable(Format::dBAngle)
+      formatTable(Format::dBAngle),
+      group(nullptr)
 {
-    connect(this, &TraceMarker::traceChanged, this, &TraceMarker::updateContextmenu);
-    connect(this, &TraceMarker::typeChanged, this, &TraceMarker::updateContextmenu);
+    connect(this, &Marker::traceChanged, this, &Marker::updateContextmenu);
+    connect(this, &Marker::typeChanged, this, &Marker::updateContextmenu);
     updateContextmenu();
 }
 
-TraceMarker::~TraceMarker()
+Marker::~Marker()
 {
     if(parentTrace) {
         parentTrace->removeMarker(this);
@@ -45,7 +47,7 @@ TraceMarker::~TraceMarker()
     emit deleted(this);
 }
 
-void TraceMarker::assignTrace(Trace *t)
+void Marker::assignTrace(Trace *t)
 {
     bool firstAssignment = false;
     if(parentTrace) {
@@ -64,11 +66,11 @@ void TraceMarker::assignTrace(Trace *t)
         setType(type);
     }
 
-    connect(parentTrace, &Trace::deleted, this, &TraceMarker::parentTraceDeleted);
-    connect(parentTrace, &Trace::dataChanged, this, &TraceMarker::traceDataChanged);
-    connect(parentTrace, &Trace::colorChanged, this, &TraceMarker::updateSymbol);
-    connect(parentTrace, &Trace::typeChanged, this, &TraceMarker::domainChanged);
-    connect(parentTrace, &Trace::typeChanged, this, &TraceMarker::checkDeltaMarker);
+    connect(parentTrace, &Trace::deleted, this, &Marker::parentTraceDeleted);
+    connect(parentTrace, &Trace::dataChanged, this, &Marker::traceDataChanged);
+    connect(parentTrace, &Trace::colorChanged, this, &Marker::updateSymbol);
+    connect(parentTrace, &Trace::typeChanged, this, &Marker::traceTypeChanged);
+    connect(parentTrace, &Trace::typeChanged, this, &Marker::checkDeltaMarker);
     constrainPosition();
     updateSymbol();
     parentTrace->addMarker(this);
@@ -95,18 +97,19 @@ void TraceMarker::assignTrace(Trace *t)
     emit traceChanged(this);
 }
 
-Trace *TraceMarker::trace()
+Trace *Marker::trace()
 {
     return parentTrace;
 }
 
-QString TraceMarker::formatToString(TraceMarker::Format f)
+QString Marker::formatToString(Marker::Format f)
 {
     switch(f) {
     case Format::dB: return "dB";
     case Format::dBAngle: return "dB + angle";
     case Format::RealImag: return "real + imag";
     case Format::Impedance: return "Impedance";
+    case Format::VSWR: return "VSWR";
     case Format::TOI: return "Third order intercept";
     case Format::AvgTone: return "Average Tone Level";
     case Format::AvgModulationProduct: return "Average Modulation Product Level";
@@ -120,7 +123,7 @@ QString TraceMarker::formatToString(TraceMarker::Format f)
     return "";
 }
 
-TraceMarker::Format TraceMarker::formatFromString(QString s)
+Marker::Format Marker::formatFromString(QString s)
 {
     for(int i=0;i<(int) Format::Last;i++) {
         if(s.compare(formatToString((Format) i)) == 0) {
@@ -130,7 +133,7 @@ TraceMarker::Format TraceMarker::formatFromString(QString s)
     return Format::Last;
 }
 
-std::vector<TraceMarker::Format> TraceMarker::formats()
+std::vector<Marker::Format> Marker::formats()
 {
     std::vector<Format> ret;
     for(int i=0;i<(int) Format::Last;i++) {
@@ -139,7 +142,7 @@ std::vector<TraceMarker::Format> TraceMarker::formats()
     return ret;
 }
 
-std::vector<TraceMarker::Format> TraceMarker::applicableFormats()
+std::vector<Marker::Format> Marker::applicableFormats()
 {
     std::vector<Format> ret;
     if(isTimeDomain()) {
@@ -171,12 +174,12 @@ std::vector<TraceMarker::Format> TraceMarker::applicableFormats()
             if(parentTrace) {
                 if(parentTrace->isReflection()) {
                     ret.push_back(Format::Impedance);
+                    ret.push_back(Format::VSWR);
                 }
                 if(!isnan(parentTrace->getNoise(parentTrace->minX()))) {
                     ret.push_back(Format::Noise);
                 }
             }
-
             break;
         case Type::Bandpass:
             ret.push_back(Format::CenterBandwidth);
@@ -203,7 +206,7 @@ std::vector<TraceMarker::Format> TraceMarker::applicableFormats()
     return ret;
 }
 
-QString TraceMarker::readableData(Format f)
+QString Marker::readableData(Format f)
 {
     if(!parentTrace) {
         return "";
@@ -293,6 +296,13 @@ QString TraceMarker::readableData(Format f)
             case Format::dB: return Unit::ToString(Unit::dB(data), "dB", " ", 4);
             case Format::dBAngle: return Unit::ToString(Unit::dB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 4);
             case Format::RealImag: return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
+            case Format::VSWR:
+                if(abs(data) < 1.0) {
+                    return "VSWR: "+Unit::ToString(((1+abs(data)) / (1-abs(data))), ":1", " ", 5);
+                } else {
+                    return "VSWR: NaN";
+                }
+                break;
             case Format::Noise: return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
             case Format::TOI: {
                 auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
@@ -362,7 +372,7 @@ QString TraceMarker::readableData(Format f)
     return "Invalid";
 }
 
-QString TraceMarker::readablePosition()
+QString Marker::readablePosition()
 {
     auto pos = position;
     QString ret;
@@ -378,7 +388,7 @@ QString TraceMarker::readablePosition()
     return ret;
 }
 
-QString TraceMarker::readableSettings()
+QString Marker::readableSettings()
 {
     if(isTimeDomain()) {
         switch(type) {
@@ -411,7 +421,7 @@ QString TraceMarker::readableSettings()
     }
 }
 
-QString TraceMarker::tooltipSettings()
+QString Marker::tooltipSettings()
 {
     if(isTimeDomain()) {
         switch(type) {
@@ -442,7 +452,7 @@ QString TraceMarker::tooltipSettings()
     }
 }
 
-QString TraceMarker::readableType()
+QString Marker::readableType()
 {
     if(parent) {
         return description;
@@ -451,20 +461,21 @@ QString TraceMarker::readableType()
     }
 }
 
-void TraceMarker::setPosition(double pos)
+void Marker::setPosition(double pos)
 {
     position = pos;
     constrainPosition();
+    emit positionChanged(position);
 }
 
-void TraceMarker::parentTraceDeleted(Trace *t)
+void Marker::parentTraceDeleted(Trace *t)
 {
     if(t == parentTrace) {
         delete this;
     }
 }
 
-void TraceMarker::traceDataChanged()
+void Marker::traceDataChanged()
 {
     complex<double> newdata;
     if(!parentTrace || parentTrace->numSamples() == 0) {
@@ -488,7 +499,7 @@ void TraceMarker::traceDataChanged()
     }
 }
 
-void TraceMarker::updateSymbol()
+void Marker::updateSymbol()
 {
     if(isVisible()) {
         constexpr int width = 15, height = 15;
@@ -510,7 +521,7 @@ void TraceMarker::updateSymbol()
     emit symbolChanged(this);
 }
 
-void TraceMarker::checkDeltaMarker()
+void Marker::checkDeltaMarker()
 {
     if(type != Type::Delta) {
         // not a delta marker, nothing to do
@@ -523,7 +534,7 @@ void TraceMarker::checkDeltaMarker()
     }
 }
 
-void TraceMarker::deltaDeleted()
+void Marker::deltaDeleted()
 {
     // the delta marker of this marker has been deleted, find new match
     delta = nullptr;
@@ -532,7 +543,7 @@ void TraceMarker::deltaDeleted()
     update();
 }
 
-void TraceMarker::updateContextmenu()
+void Marker::updateContextmenu()
 {
     if(parent) {
         // do nothing, using contextmenu from parent anyway
@@ -600,14 +611,66 @@ void TraceMarker::updateContextmenu()
         graph->addAction(setFormatAction);
     }
 
+    std::vector<MarkerGroup*> applicableGroups;
+    for(auto g : model->getGroups()) {
+        if(g->applicable(this)) {
+            applicableGroups.push_back(g);
+        }
+    }
+
+    contextmenu.addSeparator();
+
+    bool needsSeparator = false;
+    if((applicableGroups.size() > 0 && group == nullptr) || applicableGroups.size() > 1) {
+        // there are other groups available than the one the marker might already be assigned to
+        auto addGroupMenu = new QMenu("Add to linked group");
+        auto groupGroup = new QActionGroup(addGroupMenu);
+        for(auto g : model->getGroups()) {
+            auto addGroupAction = new QAction(QString::number(g->getNumber()));
+            groupGroup->addAction(addGroupAction);
+            addGroupAction->setCheckable(true);
+            if(g == group) {
+                // already assigned to this group
+                addGroupAction->setChecked(true);
+            }
+            connect(addGroupAction, &QAction::triggered, [=](bool checked){
+                if(checked) {
+                    g->add(this);
+                }
+            });
+            addGroupMenu->addAction(addGroupAction);
+        }
+        contextmenu.addMenu(addGroupMenu);
+        needsSeparator = true;
+    }
+    if(group != nullptr) {
+        // "remove from group" available
+        auto removeGroup = new QAction("Remove from linked group");
+        connect(removeGroup, &QAction::triggered, [=](){
+            group->remove(this);
+        });
+        contextmenu.addAction(removeGroup);
+        needsSeparator = true;
+    }
+    if(needsSeparator) {
+        contextmenu.addSeparator();
+    }
+
+
     auto deleteAction = new QAction("Delete");
-    connect(deleteAction, &QAction::triggered, this, &TraceMarker::deleteLater);
+    connect(deleteAction, &QAction::triggered, this, &Marker::deleteLater);
     contextmenu.addAction(deleteAction);
 }
 
-std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
+void Marker::traceTypeChanged()
 {
-    set<TraceMarker::Type> supported;
+    // domain may have changed
+    emit domainChanged(this);
+}
+
+std::set<Marker::Type> Marker::getSupportedTypes()
+{
+    set<Marker::Type> supported;
     if(parentTrace) {
         if(isTimeDomain()) {
             // only basic markers in time domain
@@ -647,7 +710,7 @@ std::set<TraceMarker::Type> TraceMarker::getSupportedTypes()
     return supported;
 }
 
-void TraceMarker::constrainPosition()
+void Marker::constrainPosition()
 {
     if(parentTrace) {
         if(parentTrace->size() > 0)  {
@@ -661,7 +724,7 @@ void TraceMarker::constrainPosition()
     }
 }
 
-void TraceMarker::constrainFormat()
+void Marker::constrainFormat()
 {
     auto vec = applicableFormats();
     // check format
@@ -679,9 +742,9 @@ void TraceMarker::constrainFormat()
     }
 }
 
-TraceMarker *TraceMarker::bestDeltaCandidate()
+Marker *Marker::bestDeltaCandidate()
 {
-    TraceMarker *match = nullptr;
+    Marker *match = nullptr;
     // invalid delta marker assigned, attempt to find a matching marker
     for(int pass = 0;pass < 3;pass++) {
         for(auto m : model->getMarkers()) {
@@ -707,26 +770,26 @@ TraceMarker *TraceMarker::bestDeltaCandidate()
     return match;
 }
 
-void TraceMarker::assignDeltaMarker(TraceMarker *m)
+void Marker::assignDeltaMarker(Marker *m)
 {
     if(type != Type::Delta) {
         // ignore
         return;
     }
     if(delta) {
-        disconnect(delta, &TraceMarker::dataChanged, this, &TraceMarker::update);
+        disconnect(delta, &Marker::dataChanged, this, &Marker::update);
     }
     delta = m;
     if(delta && delta != this) {
         // this marker has to be updated when the delta marker changes
-        connect(delta, &TraceMarker::rawDataChanged, this, &TraceMarker::update);
-        connect(delta, &TraceMarker::domainChanged, this, &TraceMarker::checkDeltaMarker);
-        connect(delta, &TraceMarker::deleted, this, &TraceMarker::deltaDeleted);
+        connect(delta, &Marker::rawDataChanged, this, &Marker::update);
+        connect(delta, &Marker::domainChanged, this, &Marker::checkDeltaMarker);
+        connect(delta, &Marker::deleted, this, &Marker::deltaDeleted);
     }
     emit assignedDeltaChanged(this);
 }
 
-void TraceMarker::deleteHelperMarkers()
+void Marker::deleteHelperMarkers()
 {
     if(helperMarkers.size() > 0) {
         emit beginRemoveHelperMarkers(this);
@@ -738,7 +801,7 @@ void TraceMarker::deleteHelperMarkers()
     }
 }
 
-void TraceMarker::setType(TraceMarker::Type t)
+void Marker::setType(Marker::Type t)
 {
     // remove any potential helper markers
     deleteHelperMarkers();
@@ -775,7 +838,7 @@ void TraceMarker::setType(TraceMarker::Type t)
     }
     // create helper markers
     for(auto h : required_helpers) {
-        auto helper = new TraceMarker(model, number, this, h.description);
+        auto helper = new Marker(model, number, this, h.description);
         helper->suffix = h.suffix;
         helper->assignTrace(parentTrace);
         helper->setType(h.type);
@@ -788,12 +851,12 @@ void TraceMarker::setType(TraceMarker::Type t)
     update();
 }
 
-double TraceMarker::toDecibel()
+double Marker::toDecibel()
 {
     return Unit::dB(data);
 }
 
-bool TraceMarker::isVisible()
+bool Marker::isVisible()
 {
     switch(type) {
     case Type::Manual:
@@ -807,7 +870,7 @@ bool TraceMarker::isVisible()
     }
 }
 
-void TraceMarker::setTableFormat(TraceMarker::Format f)
+void Marker::setTableFormat(Marker::Format f)
 {
     if(formatTable == f) {
         // already correct format, nothing to do
@@ -825,28 +888,42 @@ void TraceMarker::setTableFormat(TraceMarker::Format f)
     emit dataFormatChanged(this);
 }
 
-std::set<TraceMarker::Format> TraceMarker::getGraphDisplayFormats() const
+MarkerGroup *Marker::getGroup() const
+{
+    return group;
+}
+
+void Marker::setGroup(MarkerGroup *value)
+{
+    group = value;
+    updateContextmenu();
+}
+
+std::set<Marker::Format> Marker::getGraphDisplayFormats() const
 {
     return formatGraph;
 }
 
-TraceMarker::Type TraceMarker::getType() const
+Marker::Type Marker::getType() const
 {
     return type;
 }
 
-QString TraceMarker::getSuffix() const
+QString Marker::getSuffix() const
 {
     return suffix;
 }
 
-nlohmann::json TraceMarker::toJSON()
+nlohmann::json Marker::toJSON()
 {
     nlohmann::json j;
     j["trace"] = parentTrace->toHash();
     j["type"] = typeToString(type).toStdString();
     j["number"] = number;
     j["position"] = position;
+    if(group) {
+        j["group"] = group->getNumber();
+    }
     switch(type) {
     case Type::Delta:
         j["delta_marker"] = delta->toHash();
@@ -875,7 +952,7 @@ nlohmann::json TraceMarker::toJSON()
     return j;
 }
 
-void TraceMarker::fromJSON(nlohmann::json j)
+void Marker::fromJSON(nlohmann::json j)
 {
     if(!j.contains("trace")) {
         throw runtime_error("Marker has no trace assigned");
@@ -937,9 +1014,14 @@ void TraceMarker::fromJSON(nlohmann::json j)
     }
     updateContextmenu();
     update();
+
+    if(j.contains("group")) {
+        unsigned int number = j.value("group", 1);
+        model->addToGroupCreateIfNotExisting(this, number);
+    }
 }
 
-unsigned int TraceMarker::toHash()
+unsigned int Marker::toHash()
 {
     // taking the easy way: create the json string and hash it (already contains all necessary information)
     // This is slower than it could be, but this function is only used when loading setups, so this isn't a big problem
@@ -947,12 +1029,12 @@ unsigned int TraceMarker::toHash()
     return hash<std::string>{}(json_string);
 }
 
-const std::vector<TraceMarker *> &TraceMarker::getHelperMarkers() const
+const std::vector<Marker *> &Marker::getHelperMarkers() const
 {
     return helperMarkers;
 }
 
-TraceMarker *TraceMarker::helperMarker(unsigned int i)
+Marker *Marker::helperMarker(unsigned int i)
 {
     if(i < helperMarkers.size()) {
         return helperMarkers[i];
@@ -961,12 +1043,12 @@ TraceMarker *TraceMarker::helperMarker(unsigned int i)
     }
 }
 
-TraceMarker *TraceMarker::getParent() const
+Marker *Marker::getParent() const
 {
     return parent;
 }
 
-void TraceMarker::setNumber(int value)
+void Marker::setNumber(int value)
 {
     number = value;
     updateSymbol();
@@ -975,7 +1057,7 @@ void TraceMarker::setNumber(int value)
     }
 }
 
-QWidget *TraceMarker::getTypeEditor(QAbstractItemDelegate *delegate)
+QWidget *Marker::getTypeEditor(QAbstractItemDelegate *delegate)
 {
     auto c = new QComboBox;
     for(auto t : getSupportedTypes()) {
@@ -1032,7 +1114,7 @@ QWidget *TraceMarker::getTypeEditor(QAbstractItemDelegate *delegate)
     }
 }
 
-void TraceMarker::updateTypeFromEditor(QWidget *w)
+void Marker::updateTypeFromEditor(QWidget *w)
 {
     QComboBox *c;
     if(type == Type::Delta) {
@@ -1050,13 +1132,16 @@ void TraceMarker::updateTypeFromEditor(QWidget *w)
     update();
 }
 
-SIUnitEdit *TraceMarker::getSettingsEditor()
+SIUnitEdit *Marker::getSettingsEditor()
 {
+    SIUnitEdit *ret = nullptr;
     if(isTimeDomain()) {
         switch(type) {
         case Type::Manual:
         case Type::Delta:
-            return new SIUnitEdit("", "fpnum k", 6);
+            ret = new SIUnitEdit("", "fpnum k", 6);
+            ret->setValue(position);
+            break;
         default:
             return nullptr;
         }
@@ -1066,21 +1151,32 @@ SIUnitEdit *TraceMarker::getSettingsEditor()
         case Type::Maximum:
         case Type::Minimum:
         case Type::Delta:
+            ret = new SIUnitEdit("Hz", " kMG", 6);
+            ret->setValue(position);
+            break;
         case Type::PhaseNoise:
-        default:
-            return new SIUnitEdit("Hz", " kMG", 6);
+            ret = new SIUnitEdit("Hz", " kMG", 6);
+            ret->setValue(offset);
+            break;
         case Type::Lowpass:
         case Type::Highpass:
-        case Type::PeakTable:
         case Type::Bandpass:        // initialize with "dB"
-            return new SIUnitEdit("db", " ", 3);
+            ret = new SIUnitEdit("db", " ", 3);
+            ret->setValue(cutoffAmplitude);
+            break;
+        case Type::PeakTable:
+            ret = new SIUnitEdit("db", " ", 3);
+            ret->setValue(peakThreshold);
+            break;
         case Type::TOI:
+        case Type::Last:
             return nullptr;
         }
     }
+    return ret;
 }
 
-void TraceMarker::adjustSettings(double value)
+void Marker::adjustSettings(double value)
 {
     if(isTimeDomain()) {
         switch(type) {
@@ -1127,7 +1223,7 @@ void TraceMarker::adjustSettings(double value)
     update();
 }
 
-QMenu *TraceMarker::getContextMenu() {
+QMenu *Marker::getContextMenu() {
     if(parent) {
         return parent->getContextMenu();
     } else {
@@ -1135,7 +1231,7 @@ QMenu *TraceMarker::getContextMenu() {
     }
 }
 
-void TraceMarker::update()
+void Marker::update()
 {
     if(!parentTrace->size()) {
         // empty trace, nothing to do
@@ -1157,7 +1253,7 @@ void TraceMarker::update()
         auto peaks = parentTrace->findPeakFrequencies(100, peakThreshold);
         char suffix = 'a';
         for(auto p : peaks) {
-            auto helper = new TraceMarker(model, number, this);
+            auto helper = new Marker(model, number, this);
             helper->suffix = suffix;
             helper->assignTrace(parentTrace);
             helper->setPosition(p);
@@ -1271,22 +1367,22 @@ void TraceMarker::update()
     emit dataChanged(this);
 }
 
-Trace *TraceMarker::getTrace() const
+Trace *Marker::getTrace() const
 {
     return parentTrace;
 }
 
-int TraceMarker::getNumber() const
+int Marker::getNumber() const
 {
     return number;
 }
 
-std::complex<double> TraceMarker::getData() const
+std::complex<double> Marker::getData() const
 {
     return data;
 }
 
-bool TraceMarker::isMovable()
+bool Marker::isMovable()
 {
     if(parent) {
         // helper traces are never movable by the user
@@ -1301,17 +1397,17 @@ bool TraceMarker::isMovable()
     }
 }
 
-QPixmap &TraceMarker::getSymbol()
+QPixmap &Marker::getSymbol()
 {
     return symbol;
 }
 
-double TraceMarker::getPosition() const
+double Marker::getPosition() const
 {
     return position;
 }
 
-bool TraceMarker::isTimeDomain()
+bool Marker::isTimeDomain()
 {
     if(parentTrace) {
         if(parentTrace->outputType() == Trace::DataType::Time) {

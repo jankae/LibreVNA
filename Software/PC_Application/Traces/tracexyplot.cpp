@@ -3,7 +3,7 @@
 #include "trace.h"
 #include <cmath>
 #include <QFrame>
-#include "tracemarker.h"
+#include "Marker/marker.h"
 #include "xyplotaxisdialog.h"
 #include <preferences.h>
 #include <QPainter>
@@ -913,7 +913,7 @@ QPointF TraceXYPlot::pixelToPlotValue(QPoint pixel, int Yaxis)
     return p;
 }
 
-QPoint TraceXYPlot::markerToPixel(TraceMarker *m)
+QPoint TraceXYPlot::markerToPixel(Marker *m)
 {
     auto t = m->getTrace();
     QPointF plotPoint = traceToCoordinate(t, t->index(m->getPosition()), YAxis[0].type);

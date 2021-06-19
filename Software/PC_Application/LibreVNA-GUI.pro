@@ -28,6 +28,10 @@ HEADERS += \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
     Tools/parameters.h \
+    Traces/Marker/marker.h \
+    Traces/Marker/markergroup.h \
+    Traces/Marker/markermodel.h \
+    Traces/Marker/markerwidget.h \
     Traces/Math/dft.h \
     Traces/Math/expression.h \
     Traces/Math/medianfilter.h \
@@ -84,14 +88,11 @@ HEADERS += \
     Traces/Math/tracemath.h \
     Traces/Math/windowfunction.h \
     Traces/fftcomplex.h \
-    Traces/markerwidget.h \
     Traces/sparamtraceselector.h \
     Traces/trace.h \
     Traces/tracecsvexport.h \
     Traces/traceeditdialog.h \
     Traces/traceimportdialog.h \
-    Traces/tracemarker.h \
-    Traces/tracemarkermodel.h \
     Traces/tracemodel.h \
     Traces/traceplot.h \
     Traces/tracesmithchart.h \
@@ -152,6 +153,10 @@ SOURCES += \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
     Tools/parameters.cpp \
+    Traces/Marker/marker.cpp \
+    Traces/Marker/markergroup.cpp \
+    Traces/Marker/markermodel.cpp \
+    Traces/Marker/markerwidget.cpp \
     Traces/Math/dft.cpp \
     Traces/Math/expression.cpp \
     Traces/Math/medianfilter.cpp \
@@ -197,14 +202,11 @@ SOURCES += \
     Traces/Math/tracemath.cpp \
     Traces/Math/windowfunction.cpp \
     Traces/fftcomplex.cpp \
-    Traces/markerwidget.cpp \
     Traces/sparamtraceselector.cpp \
     Traces/trace.cpp \
     Traces/tracecsvexport.cpp \
     Traces/traceeditdialog.cpp \
     Traces/traceimportdialog.cpp \
-    Traces/tracemarker.cpp \
-    Traces/tracemarkermodel.cpp \
     Traces/tracemodel.cpp \
     Traces/traceplot.cpp \
     Traces/tracesmithchart.cpp \
@@ -256,6 +258,7 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
+    Traces/Marker/markerwidget.ui \
     Traces/Math/dftdialog.ui \
     Traces/Math/dftexplanationwidget.ui \
     Traces/Math/expressiondialog.ui \
@@ -268,7 +271,6 @@ FORMS += \
     Traces/Math/timedomaingatingexplanationwidget.ui \
     Traces/Math/timegatedialog.ui \
     Traces/Math/timegateexplanationwidget.ui \
-    Traces/markerwidget.ui \
     Traces/smithchartdialog.ui \
     Traces/tracecsvexport.ui \
     Traces/traceeditdialog.ui \

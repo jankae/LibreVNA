@@ -243,12 +243,12 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
     }
 }
 
-TraceMarkerModel *TraceModel::getMarkerModel() const
+MarkerModel *TraceModel::getMarkerModel() const
 {
     return markerModel;
 }
 
-void TraceModel::setMarkerModel(TraceMarkerModel *value)
+void TraceModel::setMarkerModel(MarkerModel *value)
 {
     markerModel = value;
 }

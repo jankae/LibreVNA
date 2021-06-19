@@ -2,7 +2,7 @@
 #include <QPainter>
 #include <array>
 #include <math.h>
-#include "tracemarker.h"
+#include "Marker/marker.h"
 #include <QDebug>
 #include "preferences.h"
 #include "ui_smithchartdialog.h"
@@ -82,7 +82,7 @@ std::complex<double> TraceSmithChart::pixelToData(QPoint p)
     return complex<double>(data.x() / smithCoordMax, -data.y() / smithCoordMax);
 }
 
-QPoint TraceSmithChart::markerToPixel(TraceMarker *m)
+QPoint TraceSmithChart::markerToPixel(Marker *m)
 {
     QPoint ret = QPoint();
 //    if(!m->isTimeDomain()) {

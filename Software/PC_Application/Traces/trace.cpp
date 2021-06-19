@@ -6,7 +6,7 @@
 #include <QSettings>
 #include <functional>
 #include "unit.h"
-#include "tracemarker.h"
+#include "Marker/marker.h"
 
 using namespace std;
 
@@ -261,16 +261,16 @@ void Trace::setColor(QColor color) {
     }
 }
 
-void Trace::addMarker(TraceMarker *m)
+void Trace::addMarker(Marker *m)
 {
     markers.insert(m);
-    connect(m, &TraceMarker::dataFormatChanged, this, &Trace::markerFormatChanged);
+    connect(m, &Marker::dataFormatChanged, this, &Trace::markerFormatChanged);
     emit markerAdded(m);
 }
 
-void Trace::removeMarker(TraceMarker *m)
+void Trace::removeMarker(Marker *m)
 {
-    disconnect(m, &TraceMarker::dataFormatChanged, this, &Trace::markerFormatChanged);
+    disconnect(m, &Marker::dataFormatChanged, this, &Trace::markerFormatChanged);
     markers.erase(m);
     emit markerRemoved(m);
 }
@@ -652,7 +652,7 @@ void Trace::setCalibration(bool value)
     calibration = value;
 }
 
-std::set<TraceMarker *> Trace::getMarkers() const
+std::set<Marker *> Trace::getMarkers() const
 {
     return markers;
 }

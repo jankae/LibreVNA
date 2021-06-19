@@ -75,7 +75,7 @@ private:
     QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
     QPointF pixelToPlotValue(QPoint pixel, int YAxis);
-    QPoint markerToPixel(TraceMarker *m) override;
+    QPoint markerToPixel(Marker *m) override;
     double nearestTracePoint(Trace *t, QPoint pixel, double *distance = nullptr) override;
     virtual bool xCoordinateVisible(double x);
     void traceDropped(Trace *t, QPoint position) override;

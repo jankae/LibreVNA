@@ -11,7 +11,7 @@
 #include "Calibration/calibration.h"
 #include <QProgressDialog>
 #include "Traces/tracemodel.h"
-#include "Traces/tracemarkermodel.h"
+#include "Traces/Marker/markermodel.h"
 #include "averaging.h"
 #include "Device/devicelog.h"
 #include "preferences.h"

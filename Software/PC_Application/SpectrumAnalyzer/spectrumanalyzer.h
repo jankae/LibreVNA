@@ -78,7 +78,7 @@ private:
     unsigned int averages;
     TraceModel traceModel;
     TraceWidget *traceWidget;
-    TraceMarkerModel *markerModel;
+    MarkerModel *markerModel;
     Averaging average;
 
     TileWidget *central;

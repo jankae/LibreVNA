@@ -16,6 +16,9 @@
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <widget class="QTreeView" name="treeView">
+     <property name="selectionMode">
+      <enum>QAbstractItemView::MultiSelection</enum>
+     </property>
      <property name="itemsExpandable">
       <bool>true</bool>
      </property>
@@ -25,6 +28,9 @@
      <property name="expandsOnDoubleClick">
       <bool>true</bool>
      </property>
+     <attribute name="headerMinimumSectionSize">
+      <number>0</number>
+     </attribute>
     </widget>
    </item>
    <item>
@@ -44,7 +50,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-add" resource="../icons.qrc">
+        <iconset theme="list-add" resource="../../icons.qrc">
          <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
        </property>
       </widget>
@@ -64,7 +70,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="list-remove" resource="../icons.qrc">
+        <iconset theme="list-remove" resource="../../icons.qrc">
          <normaloff>:/icons/remove.png</normaloff>:/icons/remove.png</iconset>
        </property>
       </widget>
@@ -87,7 +93,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../icons.qrc"/>
+  <include location="../../icons.qrc"/>
  </resources>
  <connections/>
 </ui>

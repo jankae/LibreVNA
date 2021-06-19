@@ -30,7 +30,7 @@
 #include "CustomWidgets/tilewidget.h"
 #include "CustomWidgets/siunitedit.h"
 #include <QDockWidget>
-#include "Traces/markerwidget.h"
+#include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
 #include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"

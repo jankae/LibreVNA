@@ -2,9 +2,9 @@
 #define TRACEMARKERMODEL_H
 
 #include <QAbstractTableModel>
-#include "tracemarker.h"
+#include "marker.h"
 #include <vector>
-#include "tracemodel.h"
+#include "../tracemodel.h"
 #include <QStyledItemDelegate>
 #include "savable.h"
 
@@ -44,19 +44,20 @@ class MarkerSettingsDelegate : public QStyledItemDelegate
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
 };
 
-class TraceMarkerModel : public QAbstractItemModel, public Savable
+class MarkerModel : public QAbstractItemModel, public Savable
 {
     Q_OBJECT
 public:
-    TraceMarkerModel(TraceModel &model, QObject *parent = 0);
-    ~TraceMarkerModel();
+    MarkerModel(TraceModel &model, QObject *parent = 0);
+    ~MarkerModel();
 
     enum {
-        ColIndexNumber = 0,
-        ColIndexTrace = 1,
-        ColIndexType = 2,
-        ColIndexSettings = 3,
-        ColIndexData = 4,
+        ColIndexNumber,
+        ColIndexGroup,
+        ColIndexTrace,
+        ColIndexType,
+        ColIndexSettings,
+        ColIndexData,
         ColIndexLast,
     };
 
@@ -69,33 +70,41 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    TraceMarker* createDefaultMarker();
-    TraceMarker *marker(int index);
-    std::vector<TraceMarker*> getMarkers();
-    std::vector<TraceMarker*> getMarkers(Trace *t);
+    Marker* createDefaultMarker();
+    Marker *marker(int index);
+    std::vector<Marker*> getMarkers();
+    std::vector<Marker*> getMarkers(Trace *t);
     TraceModel& getModel();
     void updateMarkers();
-    TraceMarker *markerFromIndex(const QModelIndex &index) const;
+    Marker *markerFromIndex(const QModelIndex &index) const;
+
+    MarkerGroup *createMarkerGroup();
+    void addToGroupCreateIfNotExisting(Marker *m, unsigned int number);
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    std::set<MarkerGroup *> getGroups() const;
+
 public slots:
-    void addMarker(TraceMarker *t);
+    void addMarker(Marker *t);
     void removeMarker(unsigned int index);
-    void removeMarker(TraceMarker *m);
+    void removeMarker(Marker *m);
 
 
 signals:
-    void markerAdded(TraceMarker *t);
+    void markerAdded(Marker *t);
     void setupLoadComplete();
 
 private slots:
-    void markerDataChanged(TraceMarker *m);
+    void markerDataChanged(Marker *m);
+    void groupEmptied(MarkerGroup *g);
 private:
-    std::vector<TraceMarker*> markers;
+    MarkerGroup* createMarkerGroup(unsigned int number);
+    std::vector<Marker*> markers;
+    std::set<MarkerGroup*> groups;
     TraceModel &model;
-    TraceMarker *root;
+    Marker *root;
 };
 
 #endif // TRACEMARKERMODEL_H

@@ -31,7 +31,7 @@
 #include "CustomWidgets/tilewidget.h"
 #include "CustomWidgets/siunitedit.h"
 #include <QDockWidget>
-#include "Traces/markerwidget.h"
+#include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
 #include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
@@ -416,7 +416,7 @@ VNA::VNA(AppWindow *window)
 //    toolbars.insert(tb_portExtension);
 
 
-    markerModel = new TraceMarkerModel(traceModel, this);
+    markerModel = new MarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
     traceWidget = new TraceWidgetVNA(traceModel, cal, deembedding);
