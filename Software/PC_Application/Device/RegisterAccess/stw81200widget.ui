@@ -943,7 +943,7 @@
               <item>
                <widget class="QLabel" name="label_39">
                 <property name="text">
-                 <string>Voltage REF:</string>
+                 <string>Voltage VCO:</string>
                 </property>
                </widget>
               </item>
@@ -985,7 +985,7 @@
               <item>
                <widget class="QLabel" name="label_40">
                 <property name="text">
-                 <string>Voltage REF:</string>
+                 <string>Voltage 4V5:</string>
                 </property>
                </widget>
               </item>

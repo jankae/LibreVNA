@@ -46,7 +46,7 @@ STW81200::STW81200()
     regs[3]->assignUI(ui->REF_PATH_SEL, 13, 2);
     regs[3]->assignUI(ui->R, 0, 12);
 
-    regs[4]->assignUI(ui->RF_OUT_PWR, 23, 2);
+    regs[4]->assignUI(ui->RF_OUT_PWR, 23, 3);
     regs[4]->assignUI(ui->VCO_2V5_MODE, 22);
     regs[4]->assignUI(ui->EXT_VCO_EN, 19);
     regs[4]->assignUI(ui->VCO_AMP, 15, 4);
