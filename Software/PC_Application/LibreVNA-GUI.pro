@@ -102,6 +102,7 @@ HEADERS += \
     Traces/xyplotaxisdialog.h \
     Util/qpointervariant.h \
     Util/util.h \
+    Util/app_common.h \
     VNA/Deembedding/deembedding.h \
     VNA/Deembedding/deembeddingdialog.h \
     VNA/Deembedding/deembeddingoption.h \
@@ -111,6 +112,7 @@ HEADERS += \
     VNA/Deembedding/twothru.h \
     VNA/tracewidgetvna.h \
     VNA/vna.h \
+    about.h \
     appwindow.h \
     averaging.h \
     csv.h \
@@ -223,6 +225,7 @@ SOURCES += \
     VNA/Deembedding/twothru.cpp \
     VNA/tracewidgetvna.cpp \
     VNA/vna.cpp \
+    about.cpp \
     appwindow.cpp \
     averaging.cpp \
     csv.cpp \
@@ -285,6 +288,7 @@ FORMS += \
     VNA/Deembedding/portextensioneditdialog.ui \
     VNA/Deembedding/twothrudialog.ui \
     VNA/s2pImportOptions.ui \
+    aboutdialog.ui \
     main.ui \
     preferencesdialog.ui
 

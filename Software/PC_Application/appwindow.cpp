@@ -50,28 +50,31 @@
 #include <QDebug>
 #include "CustomWidgets/jsonpickerdialog.h"
 #include <QCommandLineParser>
+#include "Util/app_common.h"
+#include "about.h"
 
 using namespace std;
+
+
+static const QString APP_VERSION = QString::number(FW_MAJOR) + "." +
+                                   QString::number(FW_MINOR) + "." +
+                                   QString::number(FW_PATCH);
+static const QString APP_GIT_HASH = QString(GITHASH);
 
 AppWindow::AppWindow(QWidget *parent)
     : QMainWindow(parent)
     , deviceActionGroup(new QActionGroup(this))
     , ui(new Ui::MainWindow)
     , server(nullptr)
+    , appVersion(APP_VERSION)
+    , appGitHash(APP_GIT_HASH)
 {
-    QCoreApplication::setOrganizationName("LibreVNA");
-    QCoreApplication::setApplicationName("LibreVNA-GUI");
-    auto commit = QString(GITHASH);
-    commit.truncate(7);
-    QCoreApplication::setApplicationVersion(QString::number(FW_MAJOR) + "." + QString::number(FW_MINOR)
-                                            + "." + QString::number(FW_PATCH) + FW_SUFFIX + " ("+ commit+")");
-
     qSetMessagePattern("%{time process}: [%{type}] %{message}");
 
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 
-    parser.setApplicationDescription("LibreVNA-GUI");
+    parser.setApplicationDescription(qlibrevnaApp->applicationName());
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addOption(QCommandLineOption({"p","port"}, "Specify port to listen for SCPI commands", "port"));
@@ -202,12 +205,13 @@ AppWindow::AppWindow(QWidget *parent)
         // settings might have changed, update necessary stuff
 //        TraceXYPlot::updateGraphColors();
     });
+
     connect(ui->actionAbout, &QAction::triggered, [=](){
-        QMessageBox::about(this, "About", "More information: github.com/jankae/LibreVNA\n"
-                           "\nVersion: " + QCoreApplication::applicationVersion());
+        auto &a = About::getInstance();
+        a.about();
     });
 
-    setWindowTitle("LibreVNA-GUI");
+    setWindowTitle(qlibrevnaApp->applicationName() + " v"  + getAppVersion());
 
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -695,4 +699,14 @@ QStackedWidget *AppWindow::getCentral() const
 Ui::MainWindow *AppWindow::getUi() const
 {
     return ui;
+}
+
+const QString& AppWindow::getAppVersion() const
+{
+    return appVersion;
+}
+
+const QString& AppWindow::getAppGitHash() const
+{
+    return appGitHash;
 }
