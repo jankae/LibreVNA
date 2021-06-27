@@ -10,6 +10,7 @@
 #include "json.hpp"
 #include <fstream>
 #include <CustomWidgets/informationbox.h>
+#include "Util/util.h"
 
 using namespace std;
 using namespace nlohmann;
@@ -416,7 +417,7 @@ void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult re
         if(measured.size() >= averages) {
             measured.pop_front();
         }
-        MeasurementResult m = {.port1 = Unit::dB(res.port1), .port2 = Unit::dB(res.port2)};
+        MeasurementResult m = {.port1 = Util::SparamTodB(res.port1), .port2 = Util::SparamTodB(res.port2)};
         measured.push_back(m);
     }
 }

@@ -764,13 +764,18 @@ TraceXYPlot::XAxisMode TraceXYPlot::AxisModeFromName(QString name)
 QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
 {
     switch(type) {
-    case YAxisType::Magnitude: return "Magnitude"; break;
-    case YAxisType::Phase: return "Phase"; break;
-    case YAxisType::VSWR: return "VSWR"; break;
-    case YAxisType::ImpulseReal: return "Impulse Response (Real)"; break;
-    case YAxisType::ImpulseMag: return "Impulse Response (Magnitude)"; break;
-    case YAxisType::Step: return "Step Response"; break;
-    case YAxisType::Impedance: return "Impedance"; break;
+    case YAxisType::Disabled: return "Disabled";
+    case YAxisType::Magnitude: return "Magnitude";
+    case YAxisType::Phase: return "Phase";
+    case YAxisType::VSWR: return "VSWR";
+    case YAxisType::SeriesR: return "Resistance";
+    case YAxisType::Capacitance: return "Capacitance";
+    case YAxisType::Inductance: return "Inductance";
+    case YAxisType::QualityFactor: return "Quality Factor";
+    case YAxisType::ImpulseReal: return "Impulse Response (Real)";
+    case YAxisType::ImpulseMag: return "Impulse Response (Magnitude)";
+    case YAxisType::Step: return "Step Response";
+    case YAxisType::Impedance: return "Impedance";
     default: return "Unknown";
     }
 }
@@ -827,6 +832,10 @@ bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
     case YAxisType::Disabled:
         return false;
     case YAxisType::VSWR:
+    case YAxisType::SeriesR:
+    case YAxisType::Capacitance:
+    case YAxisType::Inductance:
+    case YAxisType::QualityFactor:
         if(!t->isReflection()) {
             return false;
         }
@@ -863,21 +872,31 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
     }
     switch(type) {
     case YAxisType::Magnitude:
-        ret.setY(Unit::dB(data.y));
+        ret.setY(Util::SparamTodB(data.y));
         break;
     case YAxisType::Phase:
-        ret.setY(arg(data.y) * 180.0 / M_PI);
+        ret.setY(Util::SparamToDegree(data.y));
         break;
     case YAxisType::VSWR:
-        if(abs(data.y) < 1.0) {
-            ret.setY((1+abs(data.y)) / (1-abs(data.y)));
-        }
+        ret.setY(Util::SparamToVSWR(data.y));
+        break;
+    case YAxisType::SeriesR:
+        ret.setY(Util::SparamToResistance(data.y));
+        break;
+    case YAxisType::Capacitance:
+        ret.setY(Util::SparamToCapacitance(data.y, data.x));
+        break;
+    case YAxisType::Inductance:
+        ret.setY(Util::SparamToInductance(data.y, data.x));
+        break;
+    case YAxisType::QualityFactor:
+        ret.setY(Util::SparamToQualityFactor(data.y));
         break;
     case YAxisType::ImpulseReal:
         ret.setY(real(data.y));
         break;
     case YAxisType::ImpulseMag:
-        ret.setY(Unit::dB(data.y));
+        ret.setY(Util::SparamTodB(data.y));
         break;
     case YAxisType::Step:
         ret.setY(t->sample(sample, Trace::SampleType::TimeStep).y.real());
@@ -885,7 +904,7 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
     case YAxisType::Impedance: {
         double step = t->sample(sample, Trace::SampleType::TimeStep).y.real();
         if(abs(step) < 1.0) {
-            ret.setY(50 * (1.0+step) / (1.0-step));
+            ret.setY(Util::SparamToImpedance(step).real());
         }
     }
         break;

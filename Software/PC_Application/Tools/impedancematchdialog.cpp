@@ -1,7 +1,7 @@
 #include "impedancematchdialog.h"
 #include "ui_impedancematchdialog.h"
 #include "Tools/eseries.h"
-#include "unit.h"
+#include "Util/util.h"
 
 using namespace std;
 
@@ -240,7 +240,7 @@ void ImpedanceMatchDialog::calculateMatch()
         ui->mReal->setValue(Zmatched.real());
         ui->mImag->setValue(Zmatched.imag());
         double reflection = abs((Zmatched-Z0)/(Zmatched+Z0));
-        auto loss = Unit::dB(reflection);
+        auto loss = Util::SparamTodB(reflection);
         ui->mLoss->setValue(loss);
 
         // set correct image

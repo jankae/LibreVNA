@@ -12,6 +12,7 @@
 #include <QApplication>
 #include "preferences.h"
 #include "markergroup.h"
+#include "Util/util.h"
 
 using namespace std;
 
@@ -110,6 +111,10 @@ QString Marker::formatToString(Marker::Format f)
     case Format::RealImag: return "real + imag";
     case Format::Impedance: return "Impedance";
     case Format::VSWR: return "VSWR";
+    case Format::SeriesR: return "Resistance";
+    case Format::Capacitance: return "Capacitance";
+    case Format::Inductance: return "Inductance";
+    case Format::QualityFactor: return "Quality Factor";
     case Format::TOI: return "Third order intercept";
     case Format::AvgTone: return "Average Tone Level";
     case Format::AvgModulationProduct: return "Average Modulation Product Level";
@@ -175,6 +180,10 @@ std::vector<Marker::Format> Marker::applicableFormats()
                 if(parentTrace->isReflection()) {
                     ret.push_back(Format::Impedance);
                     ret.push_back(Format::VSWR);
+                    ret.push_back(Format::SeriesR);
+                    ret.push_back(Format::Capacitance);
+                    ret.push_back(Format::Inductance);
+                    ret.push_back(Format::QualityFactor);
                 }
                 if(!isnan(parentTrace->getNoise(parentTrace->minX()))) {
                     ret.push_back(Format::Noise);
@@ -224,12 +233,12 @@ QString Marker::readableData(Format f)
         if(type != Type::Delta) {
             switch(f) {
             case Format::dB:
-                return Unit::ToString(Unit::dB(data), "dB", " ", 4);
+                return Unit::ToString(Util::SparamTodB(data), "dB", " ", 4);
             case Format::RealImag:
                 return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
             case Format::Impedance: {
                 auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
-                auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
+                auto impedance = Util::SparamToImpedance(step).real();
                 return Unit::ToString(impedance, "Ω", "m kM", 3);
             }
                 break;
@@ -242,14 +251,14 @@ QString Marker::readableData(Format f)
             }
             switch(f) {
             case Format::dB:
-                return "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 4);
+                return "Δ:"+Unit::ToString(Util::SparamTodB(data) - Util::SparamTodB(delta->data), "dB", " ", 4);
             case Format::RealImag:
                 return "Δ:"+Unit::ToString(data.real() - delta->data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag() - delta->data.real(), "", " ", 5)+"j";
             case Format::Impedance: {
                 auto step = parentTrace->sample(parentTrace->index(position), Trace::SampleType::TimeStep).y.real();
                 auto stepDelta = delta->parentTrace->sample(delta->parentTrace->index(delta->position), Trace::SampleType::TimeStep).y.real();
-                auto impedance = 50.0 * (1.0 + step) / (1.0 - step);
-                auto impedanceDelta = 50.0 * (1.0 + stepDelta) / (1.0 - stepDelta);
+                auto impedance = Util::SparamToImpedance(step).real();
+                auto impedanceDelta = Util::SparamToImpedance(stepDelta).real();
                 return "Δ:"+Unit::ToString(impedance - impedanceDelta, "Ω", "m kM", 3);
             }
                 break;
@@ -266,9 +275,9 @@ QString Marker::readableData(Format f)
                 return "Invalid delta marker";
             }
             switch(f) {
-            case Format::dB: return "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 4);
+            case Format::dB: return "Δ:"+Unit::ToString(Util::SparamTodB(data) - Util::SparamTodB(delta->data), "dB", " ", 4);
             case Format::dBAngle: {
-                QString ret = "Δ:"+Unit::ToString(Unit::dB(data) - Unit::dB(delta->data), "dB", " ", 4) + "/";
+                QString ret = "Δ:"+Unit::ToString(Util::SparamTodB(data) - Util::SparamTodB(delta->data), "dB", " ", 4) + "/";
                 auto phase = arg(data)*180/M_PI;
                 auto deltaphase = arg(delta->data)*180/M_PI;
                 auto phasediff = phase - deltaphase;
@@ -282,10 +291,14 @@ QString Marker::readableData(Format f)
             }
             case Format::RealImag: return "Δ:"+Unit::ToString(data.real() - delta->data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag() - delta->data.imag(), "", " ", 5)+"j";
             case Format::Impedance: {
-                auto impedance = 50.0 * (1.0 + data) / (1.0 - data);
-                auto delta_impedance = 50.0 * (1.0 + delta->data) / (1.0 - delta->data);
+                auto impedance = Util::SparamToImpedance(data);
+                auto delta_impedance = Util::SparamToImpedance(delta->data);
                 return "Δ:"+Unit::ToString(impedance.real() - delta_impedance.real(), "Ω", "m k", 5) + "+"+Unit::ToString(impedance.imag() - delta_impedance.imag(), "Ω", "m k", 5)+"j";
             }
+            case Format::SeriesR: return "Δ:"+Unit::ToString(Util::SparamToResistance(data) - Util::SparamToResistance(delta->data), "Ω", "m kM", 4);
+            case Format::Capacitance: return "Δ:"+Unit::ToString(Util::SparamToCapacitance(data, position) - Util::SparamToCapacitance(delta->data, delta->position), "F", "pnum ", 4);
+            case Format::Inductance: return "Δ:"+Unit::ToString(Util::SparamToInductance(data, position) - Util::SparamToInductance(delta->data, delta->position), "H", "pnum ", 4);
+            case Format::QualityFactor: return "ΔQ:" + Unit::ToString(Util::SparamToQualityFactor(data) - Util::SparamToQualityFactor(delta->data), "", " ", 3);
             case Format::Noise: return "Δ:"+Unit::ToString(parentTrace->getNoise(position) - delta->parentTrace->getNoise(delta->position), "dbm/Hz", " ", 3);
             default: return "Invalid";
             }
@@ -293,16 +306,20 @@ QString Marker::readableData(Format f)
             break;
         default:
             switch(f) {
-            case Format::dB: return Unit::ToString(Unit::dB(data), "dB", " ", 4);
-            case Format::dBAngle: return Unit::ToString(Unit::dB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 4);
+            case Format::dB: return Unit::ToString(Util::SparamTodB(data), "dB", " ", 4);
+            case Format::dBAngle: return Unit::ToString(Util::SparamTodB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 4);
             case Format::RealImag: return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
             case Format::VSWR:
                 if(abs(data) < 1.0) {
-                    return "VSWR: "+Unit::ToString(((1+abs(data)) / (1-abs(data))), ":1", " ", 5);
+                    return "VSWR: "+Unit::ToString(Util::SparamToVSWR(data), ":1", " ", 5);
                 } else {
                     return "VSWR: NaN";
                 }
                 break;
+            case Format::SeriesR: return Unit::ToString(Util::SparamToResistance(data), "Ω", "m kM", 4);
+            case Format::Capacitance: return Unit::ToString(Util::SparamToCapacitance(data, position), "F", "pnum ", 4);
+            case Format::Inductance: return Unit::ToString(Util::SparamToInductance(data, position), "H", "pnum ", 4);
+            case Format::QualityFactor: return "Q:" + Unit::ToString(Util::SparamToQualityFactor(data), "", " ", 3);
             case Format::Noise: return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
             case Format::TOI: {
                 auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;
@@ -331,7 +348,7 @@ QString Marker::readableData(Format f)
                 if(parentTrace->isReflection()) {
                     return "Calculation not possible with reflection measurement";
                 } else {
-                    return "Ins. Loss:"+Unit::ToString(Unit::dB(data), "dB", " ", 3);
+                    return "Ins. Loss:"+Unit::ToString(Util::SparamTodB(data), "dB", " ", 3);
                 }
             case Format::PhaseNoise: {
                 auto carrier = toDecibel();
@@ -340,7 +357,7 @@ QString Marker::readableData(Format f)
             }
                 break;
             case Format::Impedance: {
-                auto impedance = 50.0 * (1.0 + data) / (1.0 - data);
+                auto impedance = Util::SparamToImpedance(data);
                 return Unit::ToString(impedance.real(), "Ω", "m k", 5) + "+"+Unit::ToString(impedance.imag(), "Ω", "m k", 5)+"j";
             }
             case Format::CenterBandwidth:
@@ -853,7 +870,7 @@ void Marker::setType(Marker::Type t)
 
 double Marker::toDecibel()
 {
-    return Unit::dB(data);
+    return Util::SparamTodB(data);
 }
 
 bool Marker::isVisible()
@@ -1277,11 +1294,11 @@ void Marker::update()
             setPosition(peakFreq);
             // find the cutoff frequency
             auto index = parentTrace->index(peakFreq);
-            auto peakAmplitude = Unit::dB(parentTrace->sample(index).y);
+            auto peakAmplitude = Util::SparamTodB(parentTrace->sample(index).y);
             auto cutoff = peakAmplitude + cutoffAmplitude;
             int inc = type == Type::Lowpass ? 1 : -1;
             while(index >= 0 && index < (int) parentTrace->size()) {
-                auto amplitude = Unit::dB(parentTrace->sample(index).y);
+                auto amplitude = Util::SparamTodB(parentTrace->sample(index).y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -1307,12 +1324,12 @@ void Marker::update()
             setPosition(peakFreq);
             // find the cutoff frequencies
             auto index = parentTrace->index(peakFreq);
-            auto peakAmplitude = Unit::dB(parentTrace->sample(index).y);
+            auto peakAmplitude = Util::SparamTodB(parentTrace->sample(index).y);
             auto cutoff = peakAmplitude + cutoffAmplitude;
 
             auto low_index = index;
             while(low_index >= 0) {
-                auto amplitude = Unit::dB(parentTrace->sample(low_index).y);
+                auto amplitude = Util::SparamTodB(parentTrace->sample(low_index).y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -1326,7 +1343,7 @@ void Marker::update()
 
             auto high_index = index;
             while(high_index < (int) parentTrace->size()) {
-                auto amplitude = Unit::dB(parentTrace->sample(high_index).y);
+                auto amplitude = Util::SparamTodB(parentTrace->sample(high_index).y);
                 if(amplitude <= cutoff) {
                     break;
                 }

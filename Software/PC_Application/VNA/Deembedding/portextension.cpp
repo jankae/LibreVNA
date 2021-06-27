@@ -3,7 +3,7 @@
 #include <QCheckBox>
 #include <cmath>
 #include <QDebug>
-#include "unit.h"
+#include "Util/util.h"
 
 using namespace std;
 
@@ -244,7 +244,7 @@ void PortExtension::measurementCompleted(std::vector<Protocol::Datapoint> m)
             }
 
             double x = sqrt(p.frequency / m.back().frequency);
-            double y = Unit::dB(reflection);
+            double y = Util::SparamTodB(reflection);
             att_x.push_back(x);
             att_y.push_back(y);
             avg_x += x;

@@ -87,13 +87,3 @@ double Unit::SIPrefixToFactor(char prefix)
     default: return 1e0; break;
     }
 }
-
-double Unit::dB(double d)
-{
-    return 20*log10(d);
-}
-
-double Unit::dB(std::complex<double> d)
-{
-    return dB(abs(d));
-}

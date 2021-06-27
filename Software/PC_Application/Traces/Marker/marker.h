@@ -27,6 +27,10 @@ public:
         RealImag,
         Impedance,
         VSWR,
+        SeriesR,
+        Capacitance,
+        Inductance,
+        QualityFactor,
         // Noise marker parameters
         Noise,
         PhaseNoise,

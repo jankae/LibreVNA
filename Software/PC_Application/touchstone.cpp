@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cctype>
 #include <string>
-#include "unit.h"
+#include "Util/util.h"
 
 using namespace std;
 
@@ -74,7 +74,7 @@ void Touchstone::toFile(string filename, Scale unit, Format format)
             out << abs(c) << " " << arg(c) / M_PI * 180.0;
             break;
         case Format::DBAngle:
-            out << Unit::dB(c) << " " << arg(c) / M_PI * 180.0;
+            out << Util::SparamTodB(c) << " " << arg(c) / M_PI * 180.0;
             break;
         }
     };
