@@ -73,7 +73,7 @@
               <bool>false</bool>
              </property>
              <property name="text">
-              <string>LibreVNA it's a Vector Network Analyzer instrument that comes with a set of tools aside of hardware as LibreVNA-GUI application and the firmware that runs over theboard itself. </string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;LibreVNA is a Vector Network Analyzer that consists of the hardware, the LibreVNA-GUI (this application) and the firmware/FPGA configuration on the board. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
@@ -144,7 +144,7 @@
               <enum>Qt::LeftToRight</enum>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pull request are always welcome and this project is always in on-going development. If you have any proposal or feature just go to: &lt;a href=&quot;https://github.com/jankae/LibreVNA/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;LibreVNA issues&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pull request are always welcome as this project is still in on-going development. If you have any proposal or feature, please create an issue or a pull request: &lt;a href=&quot;https://github.com/jankae/LibreVNA/issues&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;LibreVNA issues&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>

@@ -11,8 +11,6 @@
 
 #include <complex>
 
-static void setApplicationData();
-
 static QApplication *app;
 static AppWindow *window;
 
@@ -36,17 +34,12 @@ int main(int argc, char *argv[]) {
         }
     }
     app = new QApplication(argc, argv_ext);
+    QCoreApplication::setOrganizationName("LibreVNA");
+    QCoreApplication::setApplicationName("LibreVNA-GUI");
     window = new AppWindow;
-    setApplicationData();
+    QCoreApplication::setApplicationVersion(window->getAppVersion() + "-" +
+                                            window->getAppGitHash().left(9));
     signal(SIGINT, sig_handler);
     app->exec();
     return 0;
-}
-
-static void setApplicationData()
-{
-    QCoreApplication::setOrganizationName("LibreVNA");
-    QCoreApplication::setApplicationName("LibreVNA-GUI");
-    QCoreApplication::setApplicationVersion(window->getAppVersion() + "-" +
-                                            window->getAppGitHash().left(9));
 }
