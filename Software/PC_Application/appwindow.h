@@ -41,6 +41,9 @@ public:
     QStackedWidget *getCentral() const;
     Device *getDevice() const;
 
+    const QString& getAppVersion() const;
+    const QString& getAppGitHash() const;
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
@@ -95,6 +98,9 @@ private:
 
     SCPI scpi;
     TCPServer *server;
+
+    QString appVersion;
+    QString appGitHash;
 };
 
 #endif // VNA_H
