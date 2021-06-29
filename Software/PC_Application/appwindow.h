@@ -103,4 +103,4 @@ private:
     QString appGitHash;
 };
 
-#endif // VNA_H
+#endif // APPWINDOW_H
