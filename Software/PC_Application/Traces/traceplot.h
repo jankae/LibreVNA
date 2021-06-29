@@ -28,6 +28,9 @@ public:
 
     static std::set<TracePlot *> getPlots();
 
+public slots:
+    void updateGraphColors();
+
 signals:
     void doubleClicked(QWidget *w);
     void deleted(TracePlot*);
