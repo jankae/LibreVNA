@@ -202,8 +202,15 @@ AppWindow::AppWindow(QWidget *parent)
                 StartTCPServer(p.General.SCPI.port);
             }
         }
-        // settings might have changed, update necessary stuff
-//        TraceXYPlot::updateGraphColors();
+        auto active = Mode::getActiveMode();
+
+        if(active == spectrumAnalyzer) {
+            spectrumAnalyzer->updateGraphColors();
+        }
+        else if (active == vna) {
+             vna->updateGraphColors();
+        }
+
     });
 
     connect(ui->actionAbout, &QAction::triggered, [=](){

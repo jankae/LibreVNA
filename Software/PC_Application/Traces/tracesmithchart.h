@@ -18,6 +18,7 @@ public:
     virtual void fromJSON(nlohmann::json j) override;
 public slots:
     void axisSetupDialog();
+
 protected:
     static constexpr double ReferenceImpedance = 50.0;
     static constexpr double screenUsage = 0.9;

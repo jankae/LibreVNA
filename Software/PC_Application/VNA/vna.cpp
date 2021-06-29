@@ -75,6 +75,7 @@ VNA::VNA(AppWindow *window)
 
     auto tracesmith1 = new TraceSmithChart(traceModel);
     tracesmith1->enableTrace(tS11, true);
+
     auto tracesmith2 = new TraceSmithChart(traceModel);
     tracesmith2->enableTrace(tS22, true);
 
@@ -82,6 +83,12 @@ VNA::VNA(AppWindow *window)
     traceXY1->enableTrace(tS12, true);
     auto traceXY2 = new TraceXYPlot(traceModel);
     traceXY2->enableTrace(tS21, true);
+
+    connect(this, &VNA::graphColorsChanged, [=](){
+        for (auto p : TracePlot::getPlots()) {
+            p->updateGraphColors();
+        }
+    });
 
     connect(&traceModel, &TraceModel::requiredExcitation, this, &VNA::ExcitationRequired);
 
@@ -1116,4 +1123,9 @@ void VNA::EnableDeembedding(bool enable)
     enableDeembeddingAction->blockSignals(true);
     enableDeembeddingAction->setChecked(enable);
     enableDeembeddingAction->blockSignals(false);
+}
+
+void VNA::updateGraphColors()
+{
+    emit graphColorsChanged();
 }

@@ -24,6 +24,9 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    void updateGraphColors();
+
+
 private:
     enum class Window {
         None = 0,
@@ -117,6 +120,7 @@ signals:
     void NormalizationLevelChanged(double level);
 
     void averagingChanged(unsigned int averages);
+    void graphColorsChanged();
 };
 
 #endif // VNA_H

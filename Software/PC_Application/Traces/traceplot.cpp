@@ -391,3 +391,8 @@ void TracePlot::markerRemoved(Marker *m)
     disconnect(m, &Marker::symbolChanged, this, &TracePlot::triggerReplot);
     triggerReplot();
 }
+
+void TracePlot::updateGraphColors()
+{
+    replot();
+}

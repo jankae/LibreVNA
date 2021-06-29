@@ -26,6 +26,9 @@ public:
     // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+    void updateGraphColors();
+
 private slots:
     void NewDatapoint(Protocol::Datapoint d);
     void StartImpedanceMatching();
@@ -48,8 +51,10 @@ private slots:
     void ApplyCalibration(Calibration::Type type);
     void StartCalibrationMeasurement(Calibration::Measurement m);
 
+
 signals:
     void CalibrationMeasurementComplete(Calibration::Measurement m);
+    void graphColorsChanged();
 
 private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
