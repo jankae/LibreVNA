@@ -15,7 +15,7 @@ Please also take a look at the [FAQ](Documentation/FAQ.md).
 
 If you notice bugs or have ideas for improvements, please create an issue for that.
 
-For general questions or discussions, the [LibreVNA group](https://groups.io/g/LibreVNA) is probably the best place.
+For general questions or discussions, the [LibreVNA group](https://groups.io/g/LibreVNA-support/) is probably the best place.
 
 ### Preliminary specifications
 Some [specifications](Documentation/UserManual/specsheet.pdf) are available but this project is still under development and the specifications might change.

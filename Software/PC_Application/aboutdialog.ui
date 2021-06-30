@@ -93,7 +93,7 @@
            <item>
             <widget class="QLabel" name="headerDescription">
              <property name="text">
-              <string>For general questions or discussions, the &lt;a href=&quot;https://groups.io/g/LibreVNA&quot;&gt;LibreVNA group&lt;/a&gt; is probably the best place.</string>
+              <string>For general questions or discussions, the &lt;a href=&quot;https://groups.io/g/LibreVNA-support&quot;&gt;LibreVNA group&lt;/a&gt; is probably the best place.</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
