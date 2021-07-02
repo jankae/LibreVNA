@@ -5,4 +5,10 @@
 *.op.raw
 *.raw
 *.vnafw
+*.aux
+*.log
+*.synctex.gz
+*.xcf
+*.out
+*.toc
 Hardware/Renderings

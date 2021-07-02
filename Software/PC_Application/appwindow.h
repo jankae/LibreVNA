@@ -21,6 +21,7 @@
 #include <QCommandLineParser>
 #include "scpi.h"
 #include "tcpserver.h"
+#include "Device/manualcontroldialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -79,6 +80,8 @@ private:
     DeviceLog deviceLog;
     QString deviceSerial;
     QActionGroup *deviceActionGroup;
+
+    ManualControlDialog *manual;
 
     // Modes
     VNA *vna;

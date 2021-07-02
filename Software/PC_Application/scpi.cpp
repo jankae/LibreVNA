@@ -62,6 +62,22 @@ bool SCPI::paramToLong(QStringList params, int index, long &dest)
     return okay;
 }
 
+bool SCPI::paramToBool(QStringList params, int index, bool &dest)
+{
+    if(index >= params.size()) {
+        return false;
+    }
+    bool okay = false;
+    if(params[index] == "TRUE") {
+        dest = true;
+        okay = true;
+    } else if(params[index] == "FALSE") {
+        dest = false;
+        okay = true;
+    }
+    return okay;
+}
+
 void SCPI::input(QString line)
 {
     auto cmds = line.split(";");

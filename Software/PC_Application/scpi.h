@@ -54,6 +54,7 @@ public:
     static bool paramToDouble(QStringList params, int index, double &dest);
     static bool paramToULong(QStringList params, int index, unsigned long &dest);
     static bool paramToLong(QStringList params, int index, long &dest);
+    static bool paramToBool(QStringList params, int index, bool &dest);
 
 public slots:
     void input(QString line);
