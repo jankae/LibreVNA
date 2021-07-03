@@ -647,6 +647,15 @@ void AppWindow::SetupSCPI()
             return QString::number(get_fn());
         }));
     };
+    auto addBooleanManualQuery = [=](QString cmd, bool(ManualControlDialog::*get)(void)) {
+        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
+            if(!manual) {
+                return "ERROR";
+            }
+            auto get_fn = std::bind(get, manual);
+            return get_fn() ? "TRUE" : "FALSE";
+        }));
+    };
     auto addComplexManualQuery = [=](QString cmd, std::complex<double>(ManualControlDialog::*get)(void)) {
         scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
             if(!manual) {
@@ -660,8 +669,44 @@ void AppWindow::SetupSCPI()
 
     addBooleanManualSetting("HSRC_CE", &ManualControlDialog::setHighSourceChipEnable, &ManualControlDialog::getHighSourceChipEnable);
     addBooleanManualSetting("HSRC_RFEN", &ManualControlDialog::setHighSourceRFEnable, &ManualControlDialog::getHighSourceRFEnable);
+    addBooleanManualQuery("HSRC_LOCKed", &ManualControlDialog::getHighSourceLocked);
     addIntegerManualSettingWithReturnValue("HSRC_PWR", &ManualControlDialog::setHighSourcePower, &ManualControlDialog::getHighSourcePower);
     addDoubleManualSetting("HSRC_FREQ", &ManualControlDialog::setHighSourceFrequency, &ManualControlDialog::getHighSourceFrequency);
+    scpi_manual->add(new SCPICommand("HSRC_LPF", [=](QStringList params) -> QString {
+        long value;
+        if(!manual || !SCPI::paramToLong(params, 0, value)) {
+            return "ERROR";
+        }
+        switch(value) {
+        case 947:
+            manual->setHighSourceLPF(ManualControlDialog::LPF::M947);
+            break;
+        case 1880:
+            manual->setHighSourceLPF(ManualControlDialog::LPF::M1880);
+            break;
+        case 3500:
+            manual->setHighSourceLPF(ManualControlDialog::LPF::M3500);
+            break;
+        case 0:
+            manual->setHighSourceLPF(ManualControlDialog::LPF::None);
+            break;
+        default:
+            return "ERROR";
+        }
+        return "";
+    }, [=](QStringList) -> QString {
+        if(!manual) {
+            return "ERROR";
+        }
+        auto lpf = manual->getHighSourceLPF();
+        switch(lpf) {
+        case ManualControlDialog::LPF::M947: return "947";
+        case ManualControlDialog::LPF::M1880: return "1880";
+        case ManualControlDialog::LPF::M3500: return "3500";
+        case ManualControlDialog::LPF::None: return "0";
+        default: return "ERROR";
+        }
+    }));
     addBooleanManualSetting("LSRC_EN", &ManualControlDialog::setLowSourceEnable, &ManualControlDialog::getLowSourceEnable);
     addIntegerManualSettingWithReturnValue("LSRC_PWR", &ManualControlDialog::setLowSourcePower, &ManualControlDialog::getLowSourcePower);
     addDoubleManualSetting("LSRC_FREQ", &ManualControlDialog::setLowSourceFrequency, &ManualControlDialog::getLowSourceFrequency);
@@ -671,6 +716,7 @@ void AppWindow::SetupSCPI()
     addIntegerManualSettingWithReturnValue("PORT_SW", &ManualControlDialog::setPortSwitch, &ManualControlDialog::getPortSwitch);
     addBooleanManualSetting("LO1_CE", &ManualControlDialog::setLO1ChipEnable, &ManualControlDialog::getLO1ChipEnable);
     addBooleanManualSetting("LO1_RFEN", &ManualControlDialog::setLO1RFEnable, &ManualControlDialog::getLO1RFEnable);
+    addBooleanManualQuery("LO1_LOCKed", &ManualControlDialog::getLO1Locked);
     addDoubleManualSetting("LO1_FREQ", &ManualControlDialog::setLO1Frequency, &ManualControlDialog::getLO1Frequency);
     addDoubleManualSetting("IF1_FREQ", &ManualControlDialog::setIF1Frequency, &ManualControlDialog::getIF1Frequency);
     addBooleanManualSetting("LO2_EN", &ManualControlDialog::setLO2Enable, &ManualControlDialog::getLO2Enable);
@@ -679,7 +725,35 @@ void AppWindow::SetupSCPI()
     addBooleanManualSetting("PORT1_EN", &ManualControlDialog::setPort1Enable, &ManualControlDialog::getPort1Enable);
     addBooleanManualSetting("PORT2_EN", &ManualControlDialog::setPort2Enable, &ManualControlDialog::getPort2Enable);
     addBooleanManualSetting("REF_EN", &ManualControlDialog::setRefEnable, &ManualControlDialog::getRefEnable);
-    addIntegerManualSetting("LSRC_FREQ", &ManualControlDialog::setNumSamples, &ManualControlDialog::getNumSamples);
+    addIntegerManualSetting("SAMPLES", &ManualControlDialog::setNumSamples, &ManualControlDialog::getNumSamples);
+    scpi_manual->add(new SCPICommand("WINdow", [=](QStringList params) -> QString {
+        if(!manual || params.size() < 1) {
+            return "ERROR";
+        }
+        if (params[0] == "NONE") {
+            manual->setWindow(ManualControlDialog::Window::None);
+        } else if(params[0] == "KAISER") {
+            manual->setWindow(ManualControlDialog::Window::Kaiser);
+        } else if(params[0] == "HANN") {
+            manual->setWindow(ManualControlDialog::Window::Hann);
+        } else if(params[0] == "FLATTOP") {
+            manual->setWindow(ManualControlDialog::Window::FlatTop);
+        } else {
+            return "INVALID WINDOW";
+        }
+        return "";
+    }, [=](QStringList) -> QString {
+        if(!manual) {
+            return "ERROR";
+        }
+        switch((ManualControlDialog::Window) manual->getWindow()) {
+        case ManualControlDialog::Window::None: return "NONE";
+        case ManualControlDialog::Window::Kaiser: return "KAISER";
+        case ManualControlDialog::Window::Hann: return "HANN";
+        case ManualControlDialog::Window::FlatTop: return "FLATTOP";
+        default: return "ERROR";
+        }
+    }));
     addIntegerManualQuery("PORT1_MIN", &ManualControlDialog::getPort1MinADC);
     addIntegerManualQuery("PORT1_MAX", &ManualControlDialog::getPort1MaxADC);
     addDoubleManualQuery("PORT1_MAG", &ManualControlDialog::getPort1Magnitude);

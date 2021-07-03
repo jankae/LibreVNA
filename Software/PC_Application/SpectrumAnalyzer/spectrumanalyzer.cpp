@@ -739,7 +739,7 @@ void SpectrumAnalyzer::SetupSCPI()
         } else if(params[0] == "FLATTOP") {
             SetWindow(Window::FlatTop);
         } else {
-            return "INVALID MDOE";
+            return "INVALID WINDOW";
         }
         return "";
     }, [=](QStringList) -> QString {
