@@ -13,13 +13,17 @@ TileWidget::TileWidget(TraceModel &model, QWidget *parent) :
     child1(0),
     child2(0),
     hasContent(false),
+    isFullScreen(false),
     content(0),
     model(model)
 {
     ui->setupUi(this);
     auto layout = new QGridLayout;
     layout->setContentsMargins(0,0,0,0);
+    auto fsLayout = new QGridLayout;
+    fsLayout->setContentsMargins(0,0,0,0);
     ui->ContentPage->setLayout(layout);
+    ui->ContentFullScreenMode->setLayout(fsLayout);
     ui->bClose->setVisible(false);
 }
 
@@ -188,6 +192,49 @@ void TileWidget::setContent(TracePlot *plot)
     ui->ContentPage->layout()->addWidget(plot);
     ui->stack->setCurrentWidget(ui->ContentPage);
     connect(content, &TracePlot::deleted, this, &TileWidget::traceDeleted);
+    connect(content, &TracePlot::doubleClicked, this, &TileWidget::on_plotDoubleClicked);
+}
+
+void TileWidget::on_plotDoubleClicked()
+{
+    setFullScreen();
+}
+
+void TileWidget::setFullScreen(void)
+{
+    auto clickedTile = this;
+
+    if(!clickedTile->parent) {
+        // Toplevel tile is already in full screen
+        return;
+    }
+
+    auto rootTile = findRootTile();
+
+    rootTile->fullScreenPlot = clickedTile->content;
+
+    if (isFullScreen == false)
+    {
+        ui->ContentPage->layout()->removeWidget(clickedTile->content);
+        rootTile->ui->ContentFullScreenMode->layout()->addWidget(rootTile->fullScreenPlot);
+        rootTile->ui->stack->setCurrentWidget(rootTile->ui->ContentFullScreenMode);
+        isFullScreen = true;
+    }
+    else {
+        rootTile->ui->stack->setCurrentWidget(rootTile->ui->ContentPage);
+        rootTile->ui->ContentFullScreenMode->layout()->removeWidget(rootTile->fullScreenPlot);
+        ui->ContentPage->layout()->addWidget(clickedTile->content);
+        isFullScreen = false;
+    }
+}
+
+TileWidget* TileWidget::findRootTile(void)
+{
+    auto node = this;
+    while (node->parent != nullptr) { // root tile should nullptr
+        node = node->parent;
+    }
+    return node;
 }
 
 void TileWidget::on_bSmithchart_clicked()
@@ -204,6 +251,13 @@ void TileWidget::on_bXYplot_clicked()
 
 void TileWidget::traceDeleted(TracePlot *)
 {
+
+    if (isFullScreen)
+    {
+        auto rootTile = findRootTile();
+        rootTile->ui->stack->setCurrentWidget(rootTile->ui->ContentPage);
+    }
+
     ui->stack->setCurrentWidget(ui->TilePage);
     hasContent = false;
     content = nullptr;

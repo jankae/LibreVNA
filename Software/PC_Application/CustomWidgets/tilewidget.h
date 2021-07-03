@@ -36,6 +36,7 @@ public slots:
 private slots:
     void on_bSmithchart_clicked();
     void on_bXYplot_clicked();
+    void on_plotDoubleClicked();
     void traceDeleted(TracePlot *t);
 
 private:
@@ -43,12 +44,16 @@ private:
     void split();
     void setContent(TracePlot *plot);
     void setChild();
+    TileWidget* findRootTile();
+    void setFullScreen();
+    TracePlot *fullScreenPlot;
     Ui::TileWidget *ui;
     QSplitter *splitter;
     bool isSplit;
     TileWidget *parent;
     TileWidget *child1, *child2;
     bool hasContent;
+    bool isFullScreen;
     TracePlot *content;
     TraceModel &model;
 };

@@ -200,6 +200,7 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="ContentFullScreenMode"/>
      <widget class="QWidget" name="ContentPage"/>
     </widget>
    </item>
