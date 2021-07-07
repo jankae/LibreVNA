@@ -8,34 +8,34 @@
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="yes" active="no"/>
-<layer number="2" name="Route2" color="10" fill="1" visible="yes" active="no"/>
-<layer number="3" name="Route3" color="17" fill="1" visible="yes" active="no"/>
-<layer number="4" name="Route4" color="18" fill="1" visible="yes" active="no"/>
-<layer number="5" name="Route5" color="19" fill="1" visible="yes" active="no"/>
-<layer number="6" name="Route6" color="25" fill="1" visible="yes" active="no"/>
-<layer number="7" name="Route7" color="26" fill="1" visible="yes" active="no"/>
-<layer number="8" name="Route8" color="27" fill="1" visible="yes" active="no"/>
-<layer number="9" name="Route9" color="28" fill="1" visible="yes" active="no"/>
-<layer number="10" name="Route10" color="29" fill="1" visible="yes" active="no"/>
-<layer number="11" name="Route11" color="30" fill="1" visible="yes" active="no"/>
-<layer number="12" name="Route12" color="20" fill="1" visible="yes" active="no"/>
-<layer number="13" name="Route13" color="21" fill="1" visible="yes" active="no"/>
-<layer number="14" name="Route14" color="22" fill="1" visible="yes" active="no"/>
-<layer number="15" name="Route15" color="14" fill="1" visible="yes" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="no"/>
-<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="no"/>
-<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="no"/>
-<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="no"/>
-<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="no"/>
-<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="no"/>
-<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="no"/>
-<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="no"/>
-<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="no"/>
-<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="no"/>
-<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="no"/>
-<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="no"/>
-<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="no"/>
+<layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
+<layer number="2" name="Route2" color="10" fill="1" visible="no" active="no"/>
+<layer number="3" name="Route3" color="17" fill="1" visible="no" active="no"/>
+<layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
+<layer number="5" name="Route5" color="19" fill="1" visible="no" active="no"/>
+<layer number="6" name="Route6" color="25" fill="1" visible="no" active="no"/>
+<layer number="7" name="Route7" color="26" fill="1" visible="no" active="no"/>
+<layer number="8" name="Route8" color="27" fill="1" visible="no" active="no"/>
+<layer number="9" name="Route9" color="28" fill="1" visible="no" active="no"/>
+<layer number="10" name="Route10" color="29" fill="1" visible="no" active="no"/>
+<layer number="11" name="Route11" color="30" fill="1" visible="no" active="no"/>
+<layer number="12" name="Route12" color="20" fill="1" visible="no" active="no"/>
+<layer number="13" name="Route13" color="21" fill="1" visible="no" active="no"/>
+<layer number="14" name="Route14" color="22" fill="1" visible="no" active="no"/>
+<layer number="15" name="Route15" color="14" fill="1" visible="no" active="no"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="no"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="no" active="no"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="no" active="no"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="no" active="no"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="no" active="no"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="no" active="no"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="no" active="no"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="no" active="no"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="no" active="no"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="no" active="no"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="no" active="no"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="no" active="no"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="no" active="no"/>
 <layer number="29" name="tStop" color="7" fill="3" visible="no" active="no"/>
 <layer number="30" name="bStop" color="7" fill="6" visible="no" active="no"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="no"/>
@@ -44,8 +44,8 @@
 <layer number="34" name="bFinish" color="6" fill="6" visible="no" active="no"/>
 <layer number="35" name="tGlue" color="7" fill="4" visible="no" active="no"/>
 <layer number="36" name="bGlue" color="7" fill="5" visible="no" active="no"/>
-<layer number="37" name="tTest" color="7" fill="1" visible="yes" active="no"/>
-<layer number="38" name="bTest" color="7" fill="1" visible="yes" active="no"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="no" active="no"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="no"/>
 <layer number="39" name="tKeepout" color="4" fill="11" visible="no" active="no"/>
 <layer number="40" name="bKeepout" color="1" fill="11" visible="no" active="no"/>
 <layer number="41" name="tRestrict" color="4" fill="10" visible="no" active="no"/>
@@ -53,17 +53,17 @@
 <layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="no"/>
 <layer number="44" name="Drills" color="7" fill="1" visible="no" active="no"/>
 <layer number="45" name="Holes" color="7" fill="1" visible="no" active="no"/>
-<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="no"/>
-<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="no"/>
-<layer number="48" name="Document" color="7" fill="1" visible="yes" active="no"/>
-<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="no"/>
-<layer number="50" name="dxf" color="7" fill="1" visible="yes" active="no"/>
-<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="no"/>
-<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="no"/>
-<layer number="53" name="tPadExt" color="7" fill="1" visible="yes" active="no"/>
-<layer number="54" name="bPadExt" color="1" fill="1" visible="yes" active="no"/>
-<layer number="56" name="wert" color="7" fill="1" visible="yes" active="no"/>
-<layer number="57" name="tCAD" color="7" fill="1" visible="yes" active="no"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="no" active="no"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="no" active="no"/>
+<layer number="48" name="Document" color="7" fill="1" visible="no" active="no"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="no" active="no"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="no" active="no"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="no" active="no"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="no" active="no"/>
+<layer number="53" name="tPadExt" color="7" fill="1" visible="no" active="no"/>
+<layer number="54" name="bPadExt" color="1" fill="1" visible="no" active="no"/>
+<layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
+<layer number="57" name="tCAD" color="7" fill="1" visible="no" active="no"/>
 <layer number="88" name="SimResults" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="89" name="SimProbes" color="9" fill="1" visible="yes" active="yes"/>
 <layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
@@ -189,7 +189,7 @@ by exp-lbrs.ulp</description>
 <text x="-1.27" y="1.27" size="1.27" layer="25">&gt;NAME</text>
 <text x="-1.27" y="-2.54" size="1.27" layer="27">&gt;VALUE</text>
 </package>
-<package name="C0402" urn="urn:adsk.eagle:footprint:22367264/1" locally_modified="yes" library_version="2" library_locally_modified="yes">
+<package name="C0402" urn="urn:adsk.eagle:footprint:22367264/2" library_version="3" library_locally_modified="yes">
 <description>&lt;b&gt;CAPACITOR&lt;/b&gt;</description>
 <wire x1="-0.245" y1="0.224" x2="0.245" y2="0.224" width="0.1524" layer="51"/>
 <wire x1="0.245" y1="-0.224" x2="-0.245" y2="-0.224" width="0.1524" layer="51"/>
@@ -287,7 +287,7 @@ by exp-lbrs.ulp</description>
 <text x="-2" y="2.8" size="0.8128" layer="25">&gt;Name</text>
 <text x="-1.9" y="-3.6" size="0.8128" layer="27">&gt;Value</text>
 </package>
-<package name="R0402" urn="urn:adsk.eagle:footprint:22367265/1" locally_modified="yes" library_version="2" library_locally_modified="yes">
+<package name="R0402" urn="urn:adsk.eagle:footprint:22367265/2" library_version="3" library_locally_modified="yes">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
 <wire x1="-0.245" y1="0.224" x2="0.245" y2="0.224" width="0.1524" layer="51"/>
 <wire x1="0.245" y1="-0.224" x2="-0.245" y2="-0.224" width="0.1524" layer="51"/>
@@ -750,39 +750,6 @@ Source: www.johnsoncomponents.com .. J502-ND.pdf</description>
 <smd name="25" x="0" y="0" dx="2.5" dy="2.5" layer="1" thermals="no"/>
 <text x="0" y="2.9996" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-2.9996" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
-</package>
-<package name="AMPHENOL_132289" urn="urn:adsk.eagle:footprint:22367257/1" library_version="1">
-<wire x1="0" y1="5.588" x2="0" y2="-5.588" width="0" layer="20"/>
-<wire x1="-1.55" y1="-4.65" x2="-1.55" y2="-2" width="0.2032" layer="21"/>
-<wire x1="-1.55" y1="-2" x2="-3.7" y2="-2" width="0.2032" layer="21"/>
-<wire x1="-3.7" y1="-2" x2="-4.45" y2="-2.75" width="0.2032" layer="21"/>
-<wire x1="-4.45" y1="-2.75" x2="-8.25" y2="-2.75" width="0.2032" layer="21"/>
-<wire x1="-8.25" y1="-2.75" x2="-8.25" y2="-1.9" width="0.2032" layer="21"/>
-<wire x1="-8.25" y1="-1.9" x2="-9.425" y2="-1.9" width="0.2032" layer="21"/>
-<wire x1="-9.425" y1="-1.9" x2="-9.425" y2="1.9" width="0.2032" layer="21"/>
-<wire x1="-9.425" y1="1.9" x2="-8.25" y2="1.9" width="0.2032" layer="21"/>
-<wire x1="-8.25" y1="1.9" x2="-8.25" y2="2.75" width="0.2032" layer="21"/>
-<wire x1="-8.25" y1="2.75" x2="-4.45" y2="2.75" width="0.2032" layer="21"/>
-<wire x1="-4.45" y1="2.75" x2="-3.7" y2="2" width="0.2032" layer="21"/>
-<wire x1="-3.7" y1="2" x2="-1.55" y2="2" width="0.2032" layer="21"/>
-<wire x1="-1.55" y1="2" x2="-1.55" y2="4.65" width="0.2032" layer="21"/>
-<wire x1="-0.1" y1="-3.85" x2="-0.1" y2="3.85" width="0.2032" layer="21"/>
-<wire x1="-1.55" y1="4.65" x2="-0.1" y2="4.65" width="0.2032" layer="21"/>
-<wire x1="-0.1" y1="-4.65" x2="-1.55" y2="-4.65" width="0.2032" layer="21"/>
-<wire x1="-1.55" y1="4.65" x2="4.65" y2="4.65" width="0.2032" layer="51"/>
-<wire x1="4.65" y1="-4.65" x2="-1.55" y2="-4.65" width="0.2032" layer="51"/>
-<wire x1="4.65" y1="-4.65" x2="4.65" y2="-3.85" width="0.2032" layer="51"/>
-<wire x1="4.65" y1="-3.85" x2="-0.1" y2="-3.85" width="0.2032" layer="51"/>
-<wire x1="-0.1" y1="3.85" x2="4.65" y2="3.85" width="0.2032" layer="51"/>
-<wire x1="4.65" y1="3.85" x2="4.65" y2="4.65" width="0.2032" layer="51"/>
-<rectangle x1="-0.025" y1="-0.5" x2="4.05" y2="0.5" layer="51"/>
-<smd name="1" x="2.5654" y="0" dx="5.08" dy="1.143" layer="1"/>
-<smd name="G@1" x="2.5654" y="4.4196" dx="5.08" dy="2.286" layer="1"/>
-<smd name="G@2" x="2.5654" y="-4.4196" dx="5.08" dy="2.286" layer="1"/>
-<smd name="G@3" x="2.5654" y="4.4196" dx="5.08" dy="2.286" layer="16"/>
-<smd name="G@4" x="2.5654" y="-4.4196" dx="5.08" dy="2.286" layer="16"/>
-<text x="0.635" y="6.35" size="1.778" layer="25">&gt;NAME</text>
-<text x="1.27" y="-8.89" size="1.778" layer="27">&gt;VALUE</text>
 </package>
 <package name="EASTEVER_BALUN" urn="urn:adsk.eagle:footprint:22367266/1" library_version="1">
 <circle x="-1.2" y="-2.68" radius="0.22360625" width="0" layer="21"/>
@@ -1532,7 +1499,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="0" y="2.764" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-2.324" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
-<package name="PJ-014D" urn="urn:adsk.eagle:footprint:23404881/1" locally_modified="yes" library_version="2" library_locally_modified="yes">
+<package name="PJ-014D" urn="urn:adsk.eagle:footprint:23404881/2" library_version="3" library_locally_modified="yes">
 <pad name="2" x="0.75" y="8" drill="0.8" shape="long" rot="R90"/>
 <pad name="3" x="4.55" y="8" drill="0.8" shape="long" rot="R90"/>
 <pad name="1" x="8.25" y="8" drill="0.8" shape="long" rot="R90"/>
@@ -1593,6 +1560,49 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="0" y="1.6817" size="1.27" layer="25" align="bottom-center">&gt;NAME</text>
 <text x="0" y="-1.6817" size="1.27" layer="27" align="top-center">&gt;VALUE</text>
 </package>
+<package name="BU-1420701851" library_version="3" library_locally_modified="yes">
+<wire x1="0" y1="5.588" x2="0" y2="-5.588" width="0" layer="20"/>
+<wire x1="-1.55" y1="-4.65" x2="-1.55" y2="-2" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="-2" x2="-3.7" y2="-2" width="0.2032" layer="21"/>
+<wire x1="-3.7" y1="-2" x2="-4.45" y2="-2.75" width="0.2032" layer="21"/>
+<wire x1="-4.45" y1="-2.75" x2="-8.25" y2="-2.75" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="-2.75" x2="-8.25" y2="-1.9" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="-1.9" x2="-9.425" y2="-1.9" width="0.2032" layer="21"/>
+<wire x1="-9.425" y1="-1.9" x2="-9.425" y2="1.9" width="0.2032" layer="21"/>
+<wire x1="-9.425" y1="1.9" x2="-8.25" y2="1.9" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="1.9" x2="-8.25" y2="2.75" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="2.75" x2="-4.45" y2="2.75" width="0.2032" layer="21"/>
+<wire x1="-4.45" y1="2.75" x2="-3.7" y2="2" width="0.2032" layer="21"/>
+<wire x1="-3.7" y1="2" x2="-1.55" y2="2" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="2" x2="-1.55" y2="4.65" width="0.2032" layer="21"/>
+<wire x1="-0.1" y1="-3.85" x2="-0.1" y2="3.85" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="4.65" x2="-0.1" y2="4.65" width="0.2032" layer="21"/>
+<wire x1="-0.1" y1="-4.65" x2="-1.55" y2="-4.65" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="4.65" x2="4.65" y2="4.65" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="-4.65" x2="-1.55" y2="-4.65" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="-4.65" x2="4.65" y2="-3.85" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="-3.85" x2="-0.1" y2="-3.85" width="0.2032" layer="51"/>
+<wire x1="-0.1" y1="3.85" x2="4.65" y2="3.85" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="3.85" x2="4.65" y2="4.65" width="0.2032" layer="51"/>
+<rectangle x1="-0.025" y1="-0.25" x2="1.9" y2="0.25" layer="51"/>
+<smd name="1" x="1" y="0" dx="2.1" dy="0.6" layer="1"/>
+<smd name="G@1" x="2.5654" y="4.4196" dx="5.08" dy="2.286" layer="1"/>
+<smd name="G@2" x="2.5654" y="-4.4196" dx="5.08" dy="2.286" layer="1"/>
+<smd name="G@3" x="2.5654" y="4.4196" dx="5.08" dy="2.286" layer="16"/>
+<smd name="G@4" x="2.5654" y="-4.4196" dx="5.08" dy="2.286" layer="16"/>
+<text x="0.635" y="6.35" size="1.778" layer="25">&gt;NAME</text>
+<text x="1.27" y="-8.89" size="1.778" layer="27">&gt;VALUE</text>
+</package>
+<package name="PAT0816" library_version="3" library_locally_modified="yes">
+<smd name="1" x="-0.55" y="0.35" dx="0.6" dy="0.3" layer="1"/>
+<smd name="3" x="0" y="-0.35" dx="1.7" dy="0.35" layer="1"/>
+<smd name="2" x="0.55" y="0.35" dx="0.6" dy="0.3" layer="1"/>
+<wire x1="-0.8" y1="0" x2="-0.8" y2="0.4" width="0.127" layer="51"/>
+<wire x1="-0.8" y1="0.4" x2="0.8" y2="0.4" width="0.127" layer="51"/>
+<wire x1="0.8" y1="0.4" x2="0.8" y2="-0.4" width="0.127" layer="51"/>
+<wire x1="0.8" y1="-0.4" x2="-0.8" y2="-0.4" width="0.127" layer="51"/>
+<wire x1="-0.8" y1="-0.4" x2="-0.8" y2="0" width="0.127" layer="51"/>
+</package>
 </packages>
 <packages3d>
 <package3d name="C0603" urn="urn:adsk.eagle:package:22367301/2" type="model" library_version="1" library_locally_modified="yes">
@@ -1607,7 +1617,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <packageinstance name="C1206"/>
 </packageinstances>
 </package3d>
-<package3d name="C0402" urn="urn:adsk.eagle:package:22367275/2" locally_modified="yes" type="model" library_version="2" library_locally_modified="yes">
+<package3d name="C0402" urn="urn:adsk.eagle:package:22367275/3" type="model" library_version="3" library_locally_modified="yes">
 <description>&lt;b&gt;CAPACITOR&lt;/b&gt;</description>
 <packageinstances>
 <packageinstance name="C0402"/>
@@ -1637,7 +1647,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <packageinstance name="SRN5040"/>
 </packageinstances>
 </package3d>
-<package3d name="R0402" urn="urn:adsk.eagle:package:22367274/2" locally_modified="yes" type="model" library_version="2" library_locally_modified="yes">
+<package3d name="R0402" urn="urn:adsk.eagle:package:22367274/3" type="model" library_version="3" library_locally_modified="yes">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
 <packageinstances>
 <packageinstance name="R0402"/>
@@ -1748,11 +1758,6 @@ Source: www.johnsoncomponents.com .. J502-ND.pdf</description>
 <packageinstance name="QFN50P400X400X100-25T250N"/>
 </packageinstances>
 </package3d>
-<package3d name="AMPHENOL_132289" urn="urn:adsk.eagle:package:22367282/2" type="model" library_version="1" library_locally_modified="yes">
-<packageinstances>
-<packageinstance name="AMPHENOL_132289"/>
-</packageinstances>
-</package3d>
 <package3d name="EASTEVER_BALUN" urn="urn:adsk.eagle:package:22367273/2" type="model" library_version="1" library_locally_modified="yes">
 <packageinstances>
 <packageinstance name="EASTEVER_BALUN"/>
@@ -1816,7 +1821,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <packageinstance name="SON50P300X300X90-13T170X240N"/>
 </packageinstances>
 </package3d>
-<package3d name="PJ-014D" urn="urn:adsk.eagle:package:23404883/2" locally_modified="yes" type="model" library_version="2" library_locally_modified="yes">
+<package3d name="PJ-014D" urn="urn:adsk.eagle:package:23404883/3" type="model" library_version="3" library_locally_modified="yes">
 <packageinstances>
 <packageinstance name="PJ-014D"/>
 </packageinstances>
@@ -1928,7 +1933,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="-10.16" y="-10.16" size="1.778" layer="95">&gt;Name</text>
 <text x="2.54" y="-10.16" size="1.778" layer="96">&gt;Value</text>
 </symbol>
-<symbol name="DC-JACK-SWITCH" urn="urn:adsk.eagle:symbol:22367191/1" locally_modified="yes" library_version="2" library_locally_modified="yes">
+<symbol name="DC-JACK-SWITCH" urn="urn:adsk.eagle:symbol:22367191/2" library_version="3" library_locally_modified="yes">
 <rectangle x1="-3.302" y1="-2.54" x2="-1.778" y2="1.27" layer="94"/>
 <wire x1="5.08" y1="2.54" x2="-2.54" y2="2.54" width="0.1524" layer="94"/>
 <wire x1="-2.54" y1="2.54" x2="-2.54" y2="1.27" width="0.1524" layer="94"/>
@@ -2325,19 +2330,6 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <pin name="VSET" x="17.78" y="-10.16" length="middle" rot="R180"/>
 <text x="-17.78" y="-20.32" size="1.778" layer="95">&gt;Name</text>
 <text x="10.16" y="-20.32" size="1.778" layer="96">&gt;Value</text>
-</symbol>
-<symbol name="COAX" urn="urn:adsk.eagle:symbol:22367220/1" library_version="1">
-<wire x1="-5.08" y1="2.54" x2="-5.08" y2="-2.54" width="0.254" layer="94" curve="-180" cap="flat"/>
-<wire x1="-2.54" y1="-2.54" x2="-3.302" y2="-1.778" width="0.254" layer="94"/>
-<wire x1="-2.54" y1="0" x2="-3.048" y2="0" width="0.1524" layer="94"/>
-<wire x1="-5.08" y1="0.254" x2="-3.302" y2="0.254" width="0.254" layer="94"/>
-<wire x1="-3.302" y1="0.254" x2="-3.048" y2="0" width="0.254" layer="94"/>
-<wire x1="-3.048" y1="0" x2="-3.302" y2="-0.254" width="0.254" layer="94"/>
-<wire x1="-3.302" y1="-0.254" x2="-5.08" y2="-0.254" width="0.254" layer="94"/>
-<pin name="1" x="0" y="0" visible="off" length="short" direction="pas" rot="R180"/>
-<pin name="2" x="0" y="-2.54" visible="off" length="short" direction="pas" rot="R180"/>
-<text x="-5.08" y="-5.08" size="1.778" layer="96">&gt;VALUE</text>
-<text x="-5.08" y="3.302" size="1.778" layer="95">&gt;NAME</text>
 </symbol>
 <symbol name="BALUN_1:1" urn="urn:adsk.eagle:symbol:22367230/1" library_version="1">
 <wire x1="-5.08" y1="0.254" x2="5.08" y2="0.254" width="0.254" layer="94"/>
@@ -2765,7 +2757,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <text x="5.08" y="-12.7" size="1.778" layer="95">&gt;Name</text>
 <text x="5.08" y="-15.24" size="1.778" layer="96">&gt;Value</text>
 </symbol>
-<symbol name="P-MOSFET" library_version="2" library_locally_modified="yes">
+<symbol name="P-MOSFET" urn="urn:adsk.eagle:symbol:28953506/1" library_version="3" library_locally_modified="yes">
 <wire x1="-1.778" y1="-0.762" x2="-1.778" y2="0" width="0.254" layer="94"/>
 <wire x1="-1.778" y1="0" x2="-1.778" y2="0.762" width="0.254" layer="94"/>
 <wire x1="-1.778" y1="-3.175" x2="-1.778" y2="-2.54" width="0.254" layer="94"/>
@@ -2801,6 +2793,18 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <vertex x="-1.016" y="0.762"/>
 <vertex x="-1.016" y="-0.762"/>
 </polygon>
+</symbol>
+<symbol name="ATTENUATOR_3PIN" library_version="3" library_locally_modified="yes">
+<pin name="IN" x="-10.16" y="0" visible="pad" length="middle"/>
+<pin name="OUT" x="10.16" y="0" visible="pad" length="middle" rot="R180"/>
+<pin name="GND" x="0" y="-10.16" visible="pad" length="middle" rot="R90"/>
+<wire x1="-5.08" y1="5.08" x2="-5.08" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="-5.08" y1="-5.08" x2="5.08" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="5.08" y1="-5.08" x2="5.08" y2="5.08" width="0.254" layer="94"/>
+<wire x1="5.08" y1="5.08" x2="-5.08" y2="5.08" width="0.254" layer="94"/>
+<text x="-3.302" y="-3.556" size="10.16" layer="94" font="vector">π</text>
+<text x="-5.08" y="7.62" size="1.27" layer="95">&gt;Name</text>
+<text x="-5.08" y="5.08" size="1.27" layer="96">&gt;Value</text>
 </symbol>
 </symbols>
 <devicesets>
@@ -2869,7 +2873,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="C-EU*?:2" urn="urn:adsk.eagle:component:22367345/2" locally_modified="yes" prefix="C" uservalue="yes" library_version="2" library_locally_modified="yes">
+<deviceset name="C-EU*?:2" urn="urn:adsk.eagle:component:22367345/3" prefix="C" uservalue="yes" library_version="3" library_locally_modified="yes">
 <description>&lt;B&gt;CAPACITOR&lt;/B&gt;, European symbol</description>
 <gates>
 <gate name="G$1" symbol="C-EU:1" x="0" y="0"/>
@@ -2881,7 +2885,7 @@ Source: http://www.osram.convergy.de/ ... LG_LY Q971.pdf</description>
 <connect gate="G$1" pin="2" pad="2"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:22367275/2"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:22367275/3"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -2958,7 +2962,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="FERRITE" urn="urn:adsk.eagle:component:23404886/1" locally_modified="yes" prefix="L" library_version="2" library_locally_modified="yes">
+<deviceset name="FERRITE" urn="urn:adsk.eagle:component:23404886/2" prefix="L" library_version="3" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="L-EU:1" x="0" y="0"/>
 </gates>
@@ -2969,7 +2973,7 @@ DIN A3, landscape with location and doc. field</description>
 <connect gate="G$1" pin="2" pad="2"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:22367274/2"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:22367274/3"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -2977,7 +2981,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="INDUCTOR" urn="urn:adsk.eagle:component:22367349/2" locally_modified="yes" prefix="L" library_version="2" library_locally_modified="yes">
+<deviceset name="INDUCTOR" urn="urn:adsk.eagle:component:22367349/3" prefix="L" library_version="3" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="L-EU:1" x="0" y="0"/>
 </gates>
@@ -3027,7 +3031,7 @@ DIN A3, landscape with location and doc. field</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="R-EU_" urn="urn:adsk.eagle:component:22367346/2" locally_modified="yes" prefix="R" uservalue="yes" library_version="2" library_locally_modified="yes">
+<deviceset name="R-EU_" urn="urn:adsk.eagle:component:22367346/3" prefix="R" uservalue="yes" library_version="3" library_locally_modified="yes">
 <description>&lt;B&gt;RESISTOR&lt;/B&gt;, European symbol</description>
 <gates>
 <gate name="G$1" symbol="R-EU" x="0" y="0"/>
@@ -3039,7 +3043,7 @@ DIN A3, landscape with location and doc. field</description>
 <connect gate="G$1" pin="2" pad="2"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:22367274/2"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:22367274/3"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -3519,25 +3523,6 @@ DIN A3, landscape with location and doc. field</description>
 </connects>
 <package3dinstances>
 <package3dinstance package3d_urn="urn:adsk.eagle:package:22367306/2"/>
-</package3dinstances>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="AMPHENOL_132289" urn="urn:adsk.eagle:component:22367309/2" prefix="J" library_version="2" library_locally_modified="yes">
-<gates>
-<gate name="G$1" symbol="COAX" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="AMPHENOL_132289">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="G@1 G@2 G@3 G@4"/>
-</connects>
-<package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:22367282/2"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -4077,7 +4062,7 @@ Source: www.kingbright.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="PJ-014D" urn="urn:adsk.eagle:component:23404887/1" locally_modified="yes" prefix="J" library_version="2" library_locally_modified="yes">
+<deviceset name="PJ-014D" urn="urn:adsk.eagle:component:23404887/2" prefix="J" library_version="3" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="DC-JACK-SWITCH" x="-2.54" y="0"/>
 </gates>
@@ -4089,7 +4074,7 @@ Source: www.kingbright.com</description>
 <connect gate="G$1" pin="3" pad="3"/>
 </connects>
 <package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:23404883/2"/>
+<package3dinstance package3d_urn="urn:adsk.eagle:package:23404883/3"/>
 </package3dinstances>
 <technologies>
 <technology name=""/>
@@ -4097,7 +4082,7 @@ Source: www.kingbright.com</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="SSM3J338R" prefix="Q" library_version="2" library_locally_modified="yes">
+<deviceset name="SSM3J338R" urn="urn:adsk.eagle:component:28953517/1" prefix="Q" library_version="3" library_locally_modified="yes">
 <gates>
 <gate name="G$1" symbol="P-MOSFET" x="0" y="0"/>
 </gates>
@@ -4111,6 +4096,40 @@ Source: www.kingbright.com</description>
 <package3dinstances>
 <package3dinstance package3d_urn="urn:adsk.eagle:package:23405723/1"/>
 </package3dinstances>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="BU-1420701851" prefix="J" library_version="3" library_locally_modified="yes">
+<gates>
+<gate name="G$1" symbol="BNC-FGND" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="BU-1420701851">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="G@1 G@2 G@3 G@4"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="PAT0816-C-3DB-T5" prefix="R" library_version="3" library_locally_modified="yes">
+<description>3dB pad attenuator</description>
+<gates>
+<gate name="G$1" symbol="ATTENUATOR_3PIN" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="PAT0816">
+<connects>
+<connect gate="G$1" pin="GND" pad="3"/>
+<connect gate="G$1" pin="IN" pad="1"/>
+<connect gate="G$1" pin="OUT" pad="2"/>
+</connects>
 <technologies>
 <technology name=""/>
 </technologies>
@@ -4523,36 +4542,36 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 </classes>
 <parts>
 <part name="GND156" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C99" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="R41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="R40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="R42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="18"/>
-<part name="R43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="R44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="C96" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
+<part name="C99" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="R41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="R40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="R42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="18"/>
+<part name="R43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="R44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="C96" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
 <part name="GND135" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND140" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND139" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND134" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R50" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
+<part name="R45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R50" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
 <part name="GND145" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C109" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="C110" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="C107" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C117" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C114" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C109" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="C110" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="C107" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C117" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C114" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND159" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C111" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C108" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
+<part name="C111" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C108" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
 <part name="GND153" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND154" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="L32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="L33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
-<part name="C120" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C119" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C122" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C120" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C119" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C122" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND161" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND162" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
@@ -4560,45 +4579,45 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="IC23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:23390808/1"/>
 <part name="GND143" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND155" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C97" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C97" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND137" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R53" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R54" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="C100" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C101" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C102" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C103" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R53" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R54" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="C100" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C101" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C102" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C103" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND148" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND149" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R55" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="6k8"/>
-<part name="C112" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="R56" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="6k8"/>
-<part name="C113" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C116" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="R59" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R58" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="C121" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
+<part name="R55" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="6k8"/>
+<part name="C112" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="R56" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="6k8"/>
+<part name="C113" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C116" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="R59" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R58" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="C121" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
 <part name="GND158" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND164" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND163" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C115" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C115" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND157" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C123" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C124" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="120p"/>
+<part name="C123" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C124" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="120p"/>
 <part name="L34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n"/>
 <part name="L35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n"/>
 <part name="L36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n"/>
 <part name="L37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n"/>
-<part name="C128" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="150p"/>
-<part name="C130" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="33p"/>
+<part name="C128" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="150p"/>
+<part name="C130" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="33p"/>
 <part name="L30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="L31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="GND136" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND138" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C98" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C126" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
-<part name="C125" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
-<part name="C127" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
+<part name="C98" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C126" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
+<part name="C125" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
+<part name="C127" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
 <part name="SUPPLY11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/1" device=""/>
 <part name="SUPPLY9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/1" device=""/>
 <part name="SUPPLY7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/1" device=""/>
@@ -4606,27 +4625,27 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="SUPPLY10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/1" device=""/>
 <part name="GND167" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="SUPPLY13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/1" device=""/>
-<part name="C132" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C132" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND169" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="MCP33131D-10-E/MS" device="" package3d_urn="urn:adsk.eagle:package:22367287/2"/>
 <part name="+3V312" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="GND215" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C170" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="C178" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="C179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="C176" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C185" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C183" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C170" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="C178" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="C179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="C176" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C185" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C183" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND216" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C177" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
+<part name="C180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C177" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
 <part name="GND211" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND212" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="L46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="L47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
-<part name="C191" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C190" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C193" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C191" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C190" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C193" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND220" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND221" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
@@ -4634,47 +4653,47 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="IC32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:23390808/1"/>
 <part name="GND229" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND208" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C199" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C199" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND227" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R102" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R103" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="C202" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C203" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C204" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C205" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R102" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R103" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="C202" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C203" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C204" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C205" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND231" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND232" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R94" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="4k7"/>
-<part name="C173" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="R95" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="4k7"/>
-<part name="C174" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C182" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="R97" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R96" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="C184" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
+<part name="R94" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="4k7"/>
+<part name="C173" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="R95" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="4k7"/>
+<part name="C174" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C182" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="R97" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R96" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="C184" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
 <part name="GND214" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND219" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND218" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C181" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C181" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND213" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C192" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C194" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="120p"/>
+<part name="C192" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C194" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="120p"/>
 <part name="L48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n"/>
 <part name="L49" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n"/>
 <part name="L50" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n"/>
 <part name="L51" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n"/>
-<part name="C196" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="150p"/>
-<part name="C197" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="33p"/>
+<part name="C196" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="150p"/>
+<part name="C197" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="33p"/>
 <part name="L52" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="L53" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="GND226" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND228" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C200" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C188" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
-<part name="C187" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
-<part name="C189" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
+<part name="C200" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C188" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
+<part name="C187" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
+<part name="C189" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
 <part name="GND224" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C201" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C201" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND230" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="MCP33131D-10-E/MS" device="" package3d_urn="urn:adsk.eagle:package:22367287/2"/>
 <part name="+3V314" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
@@ -4684,36 +4703,36 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="SUPPLY27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/3" device=""/>
 <part name="SUPPLY21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/3" device=""/>
 <part name="SUPPLY22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/3" device=""/>
-<part name="R63" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="56"/>
-<part name="R64" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R65" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R66" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="56"/>
+<part name="R63" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="56"/>
+<part name="R64" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R65" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R66" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="56"/>
 <part name="GND192" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R68" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="R67" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="R69" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="18"/>
-<part name="R70" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="R71" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="C133" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
+<part name="R68" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="R67" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="R69" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="18"/>
+<part name="R70" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="R71" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="C133" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
 <part name="GND171" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND176" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND175" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND170" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C146" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="C147" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="C144" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C154" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C151" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C146" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="C147" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="C144" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C154" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C151" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND195" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C148" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C145" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
+<part name="C148" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C145" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
 <part name="GND189" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND190" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="L40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="L41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
-<part name="C157" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C156" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C159" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C157" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C156" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C159" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND197" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND198" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
@@ -4721,54 +4740,54 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="IC28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="THS4521IDGKR" device="" package3d_urn="urn:adsk.eagle:package:23390808/1"/>
 <part name="GND179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND191" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C134" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C134" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND173" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R80" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R81" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="C137" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C138" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C139" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C140" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R80" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R81" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="C137" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C138" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C139" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C140" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND184" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND185" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R82" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="6k8"/>
-<part name="C149" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="R83" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="6k8"/>
-<part name="C150" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C153" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="R86" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R85" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="C158" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
+<part name="R82" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="6k8"/>
+<part name="C149" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="R83" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="6k8"/>
+<part name="C150" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C153" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="R86" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R85" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="C158" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
 <part name="GND194" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND200" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND199" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C152" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C152" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND193" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C160" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="C161" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="120p"/>
+<part name="C160" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="C161" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="120p"/>
 <part name="L42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n"/>
 <part name="L43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="68n"/>
 <part name="L44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n"/>
 <part name="L45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="33n"/>
-<part name="C165" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="150p"/>
-<part name="C167" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="33p"/>
+<part name="C165" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="150p"/>
+<part name="C167" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="33p"/>
 <part name="L38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="L39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
 <part name="GND172" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND174" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C135" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C163" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
-<part name="C162" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
-<part name="C164" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="330p"/>
+<part name="C135" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C163" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
+<part name="C162" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
+<part name="C164" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="330p"/>
 <part name="GND203" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C169" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C169" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND205" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="MCP33131D-10-E/MS" device="" package3d_urn="urn:adsk.eagle:package:22367287/2"/>
 <part name="+3V313" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R90" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="56"/>
-<part name="R91" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R92" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R93" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="56"/>
+<part name="R90" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="56"/>
+<part name="R91" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R92" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R93" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="56"/>
 <part name="SUPPLY16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/2" device=""/>
 <part name="SUPPLY18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/2" device=""/>
 <part name="SUPPLY14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/2" device=""/>
@@ -4777,54 +4796,54 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="FRAME2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="IC7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="SI5351C" device="" package3d_urn="urn:adsk.eagle:package:22367294/2"/>
 <part name="GND48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="R6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="C30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="R6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="+3V32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="C29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="+3V33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="GND42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND53" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
+<part name="C44" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
 <part name="GND49" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND54" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND58" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
+<part name="C45" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
 <part name="GND50" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND55" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND59" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
-<part name="C37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="DNP"/>
+<part name="C46" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C42" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
+<part name="C37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="DNP"/>
 <part name="GND51" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND56" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND60" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="IC10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="MAX2871" device="" package3d_urn="urn:adsk.eagle:package:22367293/2"/>
 <part name="GND75" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R15" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="1k8"/>
-<part name="R16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="82"/>
-<part name="R17" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="C58" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C59" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C60" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C63" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="180p"/>
-<part name="C67" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="18p"/>
-<part name="C66" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="3n3"/>
+<part name="R15" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="1k8"/>
+<part name="R16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="82"/>
+<part name="R17" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="C58" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C59" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C60" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C63" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="180p"/>
+<part name="C67" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="18p"/>
+<part name="C66" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="3n3"/>
 <part name="GND85" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND84" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND82" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -4832,10 +4851,10 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND78" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND76" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND77" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="5k1"/>
+<part name="R10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="5k1"/>
 <part name="GND68" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="NCP702" device="" package3d_urn="urn:adsk.eagle:package:22367286/2" value="NCP702-3.3"/>
-<part name="C54" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C54" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="C50" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:1" device="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u"/>
 <part name="C52" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:1" device="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u"/>
 <part name="C49" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU" device="C1206" package3d_urn="urn:adsk.eagle:package:22367300/2" value="10u"/>
@@ -4846,26 +4865,26 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND66" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND64" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND70" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C55" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C55" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND72" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C57" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C56" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C57" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C56" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND73" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND74" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C51" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="R13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="C62" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C65" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="R11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="C51" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="R13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="C62" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C65" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="R11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND71" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AP2114" device="H" package3d_urn="urn:adsk.eagle:package:22367285/2"/>
 <part name="+3V34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="L19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
-<part name="L20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
+<part name="L20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="SUPPLY5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/4" device=""/>
 <part name="IC11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="RFSW6042" device="" package3d_urn="urn:adsk.eagle:package:22367295/2"/>
-<part name="R14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
+<part name="R14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
 <part name="GND81" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND86" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="RFSW6042" device="" package3d_urn="urn:adsk.eagle:package:22367295/2"/>
@@ -4876,19 +4895,19 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="LP1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LP0603A" device="" package3d_urn="urn:adsk.eagle:package:22367297/2" value="LP0603A0947ANTR"/>
 <part name="LP3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LP0603A" device="" package3d_urn="urn:adsk.eagle:package:22367297/2" value="LP0603A1880ANTR"/>
 <part name="LP2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LP0603A" device="" package3d_urn="urn:adsk.eagle:package:22367297/2" value="LP0603N3500ANTR"/>
-<part name="C68" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
+<part name="C68" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
 <part name="FRAME5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="IC21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="MAX2871" device="" package3d_urn="urn:adsk.eagle:package:22367293/2"/>
 <part name="GND123" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="1k8"/>
-<part name="R37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="82"/>
-<part name="R39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="C87" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C88" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C89" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C90" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="180p"/>
-<part name="C95" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="18p"/>
-<part name="C92" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="3n3"/>
+<part name="R36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="1k8"/>
+<part name="R37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="82"/>
+<part name="R39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="C87" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C88" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C89" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C90" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="180p"/>
+<part name="C95" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="18p"/>
+<part name="C92" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="3n3"/>
 <part name="GND133" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND131" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND128" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -4896,10 +4915,10 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND126" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND124" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND125" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="5k1"/>
+<part name="R30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="5k1"/>
 <part name="GND116" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="NCP702" device="" package3d_urn="urn:adsk.eagle:package:22367286/2" value="NCP702-3.3"/>
-<part name="C83" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C83" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="C79" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:1" device="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u"/>
 <part name="C81" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:1" device="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u"/>
 <part name="C78" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU" device="C1206" package3d_urn="urn:adsk.eagle:package:22367300/2" value="10u"/>
@@ -4910,72 +4929,72 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND114" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND112" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND118" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C84" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C84" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND120" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C86" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C85" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C86" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C85" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND121" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND122" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C80" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="R33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="C80" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="R33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R32" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R31" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND119" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AP2114" device="H" package3d_urn="urn:adsk.eagle:package:22367285/2"/>
 <part name="+3V311" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="L28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
-<part name="L29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
+<part name="L29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="SUPPLY6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/4" device=""/>
-<part name="R34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="C93" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
-<part name="R38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
+<part name="R34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="C93" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
+<part name="R38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
 <part name="GND132" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="GND96" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="+3V35" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="C69" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C69" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND95" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="+3V36" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="C70" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C70" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND97" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND99" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND98" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC15" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="TRF37A73" device="" package3d_urn="urn:adsk.eagle:package:22367290/2"/>
-<part name="C71" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
+<part name="C71" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
 <part name="GND100" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="L24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
-<part name="C73" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C72" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C73" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C72" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND101" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND102" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="+3V37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="C74" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="R26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="2R7"/>
-<part name="R29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="2R7"/>
-<part name="R27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="402"/>
-<part name="R28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="56"/>
+<part name="C74" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="R26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="2R7"/>
+<part name="R29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="2R7"/>
+<part name="R27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="402"/>
+<part name="R28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="56"/>
 <part name="GND103" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND105" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND109" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND108" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="+3V310" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="C77" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C75" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C76" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C77" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C75" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C76" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND107" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND104" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND110" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="R8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="62"/>
-<part name="R9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
+<part name="R7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="R8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="62"/>
+<part name="R9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
 <part name="GND62" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND63" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="FRAME1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="IC3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LDL212PU50R" device="" package3d_urn="urn:adsk.eagle:package:22367288/2"/>
 <part name="GND30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -5003,15 +5022,15 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="C26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:1" device="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u"/>
 <part name="GND38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="C27" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:1" device="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u"/>
 <part name="GND39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="C28" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:1" device="C0603" package3d_urn="urn:adsk.eagle:package:22367301/2" value="1u"/>
 <part name="GND40" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="GND41" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="SUPPLY1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/1" device=""/>
 <part name="SUPPLY2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/2" device=""/>
 <part name="SUPPLY3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/3" device=""/>
@@ -5024,13 +5043,13 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="C12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU" device="C1206" package3d_urn="urn:adsk.eagle:package:22367300/2" value="10u"/>
 <part name="C13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU" device="C1206" package3d_urn="urn:adsk.eagle:package:22367300/2" value="10u"/>
 <part name="C1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU" device="C1206" package3d_urn="urn:adsk.eagle:package:22367300/2" value="10u"/>
-<part name="R1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="620"/>
-<part name="C5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="R1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="620"/>
+<part name="C5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="38k3"/>
-<part name="C9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="38k3"/>
+<part name="C9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -5065,15 +5084,15 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND237" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="+3V319" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="+3V320" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="C210" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C212" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C214" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C216" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C218" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C211" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C213" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C215" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C217" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C210" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C212" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C214" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C216" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C218" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C211" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C213" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C215" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C217" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND240" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND242" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND244" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -5085,55 +5104,55 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND247" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="+3V328" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="GND239" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R129" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R128" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R129" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R128" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="+3V327" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="+3V326" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R127" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R127" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="+3V325" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="FRAME9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
-<part name="C207" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C206" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C207" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C206" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND234" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="+3V315" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="GND238" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R119" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R118" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R116" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R117" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R119" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R118" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R116" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R117" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="+3V321" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="+3V316" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="GND233" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="FRAME10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="A3L-LOC" device=""/>
 <part name="+3V330" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R126" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R126" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R21" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R20" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND87" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND88" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="R24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R23" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R22" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="R24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND92" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND93" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="NCP702" device="" package3d_urn="urn:adsk.eagle:package:22367286/2" value="NCP702-1.8"/>
-<part name="C129" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C131" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
+<part name="C129" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C131" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
 <part name="GND165" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND166" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND168" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC30" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="NCP702" device="" package3d_urn="urn:adsk.eagle:package:22367286/2" value="NCP702-1.8"/>
-<part name="C166" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C168" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
+<part name="C166" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C168" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
 <part name="GND201" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND202" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND204" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC34" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="NCP702" device="" package3d_urn="urn:adsk.eagle:package:22367286/2" value="NCP702-1.8"/>
-<part name="C195" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
-<part name="C198" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="1u"/>
+<part name="C195" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
+<part name="C198" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="1u"/>
 <part name="GND222" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND223" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND225" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -5148,20 +5167,20 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="LED8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:22367278/2" value="Green"/>
 <part name="LED9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:22367278/2" value="Green"/>
 <part name="LED10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:22367278/2" value="Green"/>
-<part name="R142" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
+<part name="R142" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
 <part name="+3V334" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R141" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="R140" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="R139" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="R138" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="R137" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="R136" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="R135" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
-<part name="R134" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
+<part name="R141" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="R140" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="R139" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="R138" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="R137" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="R136" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="R135" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
+<part name="R134" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
 <part name="GND261" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R122" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R122" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND251" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R133" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R133" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND260" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="TP1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="TP" device="B1,27" package3d_urn="urn:adsk.eagle:package:22367308/2"/>
 <part name="TP2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="TP" device="B1,27" package3d_urn="urn:adsk.eagle:package:22367308/2"/>
@@ -5183,8 +5202,8 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="TP13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="TP" device="B1,27" package3d_urn="urn:adsk.eagle:package:22367308/2"/>
 <part name="TP15" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="TP" device="B1,27" package3d_urn="urn:adsk.eagle:package:22367308/2"/>
 <part name="TP16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="TP" device="B1,27" package3d_urn="urn:adsk.eagle:package:22367308/2"/>
-<part name="C61" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C64" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C61" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C64" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND80" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND83" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="RFSA3714" device="" package3d_urn="urn:adsk.eagle:package:22367305/2"/>
@@ -5192,52 +5211,52 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="IC16" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="QPC6324" device="" package3d_urn="urn:adsk.eagle:package:22367304/2"/>
 <part name="IC18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="QPC6324" device="" package3d_urn="urn:adsk.eagle:package:22367304/2"/>
 <part name="IC17" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="QPC6324" device="" package3d_urn="urn:adsk.eagle:package:22367304/2"/>
-<part name="C91" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C94" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C91" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C94" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND129" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND130" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC24" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="ADL5801" device="" package3d_urn="urn:adsk.eagle:package:22367306/2"/>
-<part name="C106" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C106" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND152" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C105" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C105" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND151" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C104" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C104" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND150" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R60" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="1k"/>
-<part name="R57" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="C118" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R60" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="1k"/>
+<part name="R57" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
+<part name="C118" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="SUPPLY12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/1" device=""/>
 <part name="GND160" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="IC29" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="ADL5801" device="" package3d_urn="urn:adsk.eagle:package:22367306/2"/>
-<part name="C143" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C143" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND188" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C142" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C142" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND187" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C141" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C141" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND186" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R87" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="1k"/>
-<part name="R84" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="C155" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R87" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="1k"/>
+<part name="R84" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
+<part name="C155" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND196" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="SUPPLY19" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/2" device=""/>
 <part name="IC33" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="ADL5801" device="" package3d_urn="urn:adsk.eagle:package:22367306/2"/>
-<part name="C175" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C175" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND210" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C172" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C172" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND209" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C171" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="10n"/>
+<part name="C171" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="10n"/>
 <part name="GND207" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R101" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="1k"/>
-<part name="R100" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="C186" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R101" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="1k"/>
+<part name="R100" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
+<part name="C186" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND217" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="SUPPLY25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+5V/3" device=""/>
-<part name="R61" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R62" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R88" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R89" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R98" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
-<part name="R99" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="220"/>
+<part name="R61" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R62" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R88" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R89" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R98" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
+<part name="R99" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="220"/>
 <part name="GND111" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND106" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND256" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
@@ -5246,87 +5265,67 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="T3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="B012-617DB-1-63-B331" device="" package3d_urn="urn:adsk.eagle:package:22367273/2"/>
 <part name="X2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="SMA_CONNECTOR" device="" package3d_urn="urn:adsk.eagle:package:22367296/2" value="SMA_CONNECTOR"/>
 <part name="X1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="SMA_CONNECTOR" device="" package3d_urn="urn:adsk.eagle:package:22367296/2" value="SMA_CONNECTOR"/>
-<part name="R52" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R49" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R51" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="GND147" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="GND146" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="GND141" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="GND142" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="J2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AMPHENOL_132289" device="" package3d_urn="urn:adsk.eagle:package:22367282/2"/>
 <part name="GND144" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C136" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n/RF"/>
-<part name="R72" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R73" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
-<part name="R76" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9"/>
+<part name="C136" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n/RF"/>
+<part name="R72" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R73" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
+<part name="R76" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="49R9"/>
 <part name="GND181" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="T2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="B012-617DB-1-63-B331" device="" package3d_urn="urn:adsk.eagle:package:22367273/2"/>
-<part name="R79" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R75" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R77" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R74" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R78" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="GND183" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="GND182" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="GND177" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="GND178" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="J3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="AMPHENOL_132289" device="" package3d_urn="urn:adsk.eagle:package:22367282/2"/>
 <part name="GND180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="L26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L26" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="+3V39" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="L25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/2" value="Ferrite"/>
+<part name="L25" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="+3V38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="L18" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
-<part name="C47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="56p"/>
-<part name="C43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="180p"/>
+<part name="C47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="56p"/>
+<part name="C43" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="180p"/>
 <part name="L14" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="0402" package3d_urn="urn:adsk.eagle:package:22367307/3" value="330n"/>
-<part name="C38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="56p"/>
+<part name="C38" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="56p"/>
 <part name="GND52" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND57" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND61" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R132" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R132" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="+3V332" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R130" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R130" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="+3V331" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R131" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R131" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND259" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="+3V335" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R124" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R123" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="20"/>
-<part name="R121" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R124" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R123" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="20"/>
+<part name="R121" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="+3V324" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="J4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="TYPE-C16P(073)" device="" package3d_urn="urn:adsk.eagle:package:22367281/2"/>
 <part name="JP1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PINHD-1X10" device="/90" package3d_urn="urn:adsk.eagle:package:22367277/2" value="DNP"/>
-<part name="C219" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C219" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND249" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C209" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C209" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="+3V318" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="GND236" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C220" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C221" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
-<part name="C222" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C220" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C221" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
+<part name="C222" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND250" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND252" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND253" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R111" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R112" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R113" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R114" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
-<part name="R115" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="DNP"/>
+<part name="R111" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
+<part name="R112" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
+<part name="R113" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
+<part name="R114" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
+<part name="R115" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="DNP"/>
 <part name="+3V317" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="R108" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R107" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R106" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R105" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R104" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R109" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R110" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
+<part name="R108" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R107" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R106" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R105" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R104" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R109" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R110" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
 <part name="IC37" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="STM32G431CB" device="" package3d_urn="urn:adsk.eagle:package:22367280/2"/>
-<part name="C208" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C208" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="LED1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="LED" device="CHIPLED_0603" package3d_urn="urn:adsk.eagle:package:22367278/2" value="Red"/>
-<part name="R120" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="330"/>
+<part name="R120" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="330"/>
 <part name="+3V322" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
 <part name="JP2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PINHD-2X10" device="" package3d_urn="urn:adsk.eagle:package:22367276/2" value="DNP"/>
 <part name="+3V333" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
@@ -5344,167 +5343,173 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="GND7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="D1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="D-" device="SMB" package3d_urn="urn:adsk.eagle:package:22367279/2" value="MBRS2040LT3G"/>
-<part name="R2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="4k7"/>
-<part name="R3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="4k7"/>
+<part name="R3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="GND12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="C6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="Y1" library="crystal-geyer_V1_0" library_urn="urn:adsk.eagle:library:203" deviceset="KXO-TCXO-CMOS" device="-86" package3d_urn="urn:adsk.eagle:package:11955/1" value="DSB221SDN/26MHz"/>
 <part name="GND262" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="+3V1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="+3V3" device=""/>
-<part name="J1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PJ-014D" device="" package3d_urn="urn:adsk.eagle:package:23404883/2"/>
+<part name="J1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PJ-014D" device="" package3d_urn="urn:adsk.eagle:package:23404883/3"/>
 <part name="Q1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="SSM3J338R" device="" package3d_urn="urn:adsk.eagle:package:23405723/1"/>
 <part name="Q2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="SSM3J338R" device="" package3d_urn="urn:adsk.eagle:package:23405723/1"/>
-<part name="R125" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
+<part name="R125" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
 <part name="P+4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
-<part name="R143" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C223" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C224" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R143" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C223" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C224" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND255" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND263" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R144" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C225" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C226" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R144" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C225" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C226" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND264" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND265" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R145" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C227" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C228" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R145" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C227" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C228" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND266" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND267" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R146" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C229" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C230" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R146" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C229" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C230" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND268" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND269" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R147" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C231" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C232" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R147" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C231" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C232" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND270" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND271" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R148" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C233" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C234" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R148" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C233" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C234" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND272" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND273" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R149" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C235" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C236" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R149" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C235" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C236" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND274" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND275" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R150" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C237" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C238" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R150" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C237" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C238" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND276" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND277" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R151" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C239" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C240" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R151" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C239" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C240" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND278" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND279" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R152" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C241" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C242" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R152" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C241" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C242" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND280" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND281" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R153" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C243" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C244" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R153" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C243" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C244" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND282" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND283" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R154" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C245" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C246" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R154" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C245" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C246" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND284" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND285" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R155" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C247" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C248" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R155" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C247" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C248" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND286" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND287" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R156" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C249" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C250" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R156" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C249" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C250" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND288" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND289" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R157" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C251" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C252" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R157" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C251" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C252" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND290" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND291" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R158" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C253" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C254" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R158" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C253" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C254" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND292" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND293" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R159" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C255" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C256" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R159" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C255" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C256" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND294" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND295" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R160" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C257" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C258" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R160" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C257" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C258" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND296" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND297" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R161" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C259" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C260" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R161" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C259" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C260" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND298" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND299" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R162" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C261" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C262" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R162" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C261" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C262" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND300" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND301" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C263" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C264" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="C263" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C264" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND302" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND303" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="C265" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C266" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="C265" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C266" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND304" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND305" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R163" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C267" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C268" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R163" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C267" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C268" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND306" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND307" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R164" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="R165" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C271" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C272" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R164" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="R165" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C271" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C272" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND310" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND311" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R166" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="10k"/>
-<part name="C273" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
-<part name="C274" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100p"/>
+<part name="R166" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="10k"/>
+<part name="C273" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
+<part name="C274" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100p"/>
 <part name="GND312" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND313" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R167" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="R170" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="R171" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="R168" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="75"/>
-<part name="R169" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="R172" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="C269" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R167" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="R170" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="R171" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="R168" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="75"/>
+<part name="R169" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="R172" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="C269" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND308" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND309" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R173" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="75"/>
-<part name="R174" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="R175" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="100"/>
-<part name="C270" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/2" value="100n"/>
+<part name="R173" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="75"/>
+<part name="R174" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="R175" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="100"/>
+<part name="C270" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="C-EU*?:2" device="C0402" package3d_urn="urn:adsk.eagle:package:22367275/3" value="100n"/>
 <part name="GND314" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND315" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R176" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R177" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R178" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
-<part name="R181" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="0"/>
+<part name="R176" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R177" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R178" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R179" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R180" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
+<part name="R181" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="R-EU_" device="R0402" package3d_urn="urn:adsk.eagle:package:22367274/3" value="0"/>
 <part name="L11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="INDUCTOR" device="" package3d_urn="urn:adsk.eagle:package:26452824/1" value="10u"/>
+<part name="J2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="BU-1420701851" device=""/>
+<part name="J3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="BU-1420701851" device=""/>
+<part name="GND141" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
+<part name="GND142" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
+<part name="R48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PAT0816-C-3DB-T5" device=""/>
+<part name="R47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PAT0816-C-3DB-T5" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -10504,6 +10509,7 @@ current consumption</text>
 <text x="215.9" y="7.62" size="1.778" layer="97">300kHz lowpass</text>
 <text x="289.56" y="27.94" size="1.778" layer="97">1MS/s ADC</text>
 <text x="345.44" y="20.32" size="2.1844" layer="94">Port 1</text>
+<text x="76.2" y="203.2" size="1.27" layer="97" rot="R90">Cut wire if attenuator placed</text>
 </plain>
 <instances>
 <instance part="GND156" gate="1" x="177.8" y="160.02" smashed="yes">
@@ -10924,42 +10930,6 @@ current consumption</text>
 <attribute name="NAME" x="104.14" y="185.42" size="1.4224" layer="95" rot="R180"/>
 <attribute name="VALUE" x="104.14" y="195.58" size="1.4224" layer="96" rot="R180"/>
 </instance>
-<instance part="R52" gate="G$1" x="93.98" y="205.74" smashed="yes" rot="R180">
-<attribute name="NAME" x="97.79" y="204.2414" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="97.79" y="209.042" size="1.778" layer="96" rot="R180"/>
-</instance>
-<instance part="R48" gate="G$1" x="78.74" y="205.74" smashed="yes" rot="R180">
-<attribute name="NAME" x="82.55" y="204.2414" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="82.55" y="209.042" size="1.778" layer="96" rot="R180"/>
-</instance>
-<instance part="R49" gate="G$1" x="86.36" y="213.36" smashed="yes" rot="R270">
-<attribute name="NAME" x="87.8586" y="217.17" size="1.778" layer="95" rot="R270"/>
-<attribute name="VALUE" x="83.058" y="217.17" size="1.778" layer="96" rot="R270"/>
-</instance>
-<instance part="R47" gate="G$1" x="78.74" y="220.98" smashed="yes">
-<attribute name="NAME" x="74.93" y="222.4786" size="1.778" layer="95"/>
-<attribute name="VALUE" x="74.93" y="217.678" size="1.778" layer="96"/>
-</instance>
-<instance part="R51" gate="G$1" x="93.98" y="220.98" smashed="yes">
-<attribute name="NAME" x="90.17" y="222.4786" size="1.778" layer="95"/>
-<attribute name="VALUE" x="90.17" y="217.678" size="1.778" layer="96"/>
-</instance>
-<instance part="GND147" gate="1" x="101.6" y="205.74" smashed="yes" rot="R90">
-<attribute name="VALUE" x="104.14" y="203.2" size="1.778" layer="96" rot="R90"/>
-</instance>
-<instance part="GND146" gate="1" x="101.6" y="220.98" smashed="yes" rot="R90">
-<attribute name="VALUE" x="104.14" y="218.44" size="1.778" layer="96" rot="R90"/>
-</instance>
-<instance part="GND141" gate="1" x="71.12" y="220.98" smashed="yes" rot="R270">
-<attribute name="VALUE" x="68.58" y="223.52" size="1.778" layer="96" rot="R270"/>
-</instance>
-<instance part="GND142" gate="1" x="71.12" y="205.74" smashed="yes" rot="R270">
-<attribute name="VALUE" x="68.58" y="208.28" size="1.778" layer="96" rot="R270"/>
-</instance>
-<instance part="J2" gate="G$1" x="76.2" y="241.3" smashed="yes">
-<attribute name="VALUE" x="71.12" y="236.22" size="1.778" layer="96"/>
-<attribute name="NAME" x="71.12" y="244.602" size="1.778" layer="95"/>
-</instance>
 <instance part="GND144" gate="1" x="78.74" y="228.6" smashed="yes">
 <attribute name="VALUE" x="76.2" y="226.06" size="1.778" layer="96"/>
 </instance>
@@ -10984,6 +10954,17 @@ current consumption</text>
 </instance>
 <instance part="GND309" gate="1" x="167.64" y="231.14" smashed="yes">
 <attribute name="VALUE" x="165.1" y="228.6" size="1.778" layer="96"/>
+</instance>
+<instance part="J2" gate="G$1" x="73.66" y="241.3" smashed="yes">
+<attribute name="VALUE" x="71.12" y="236.22" size="1.778" layer="96"/>
+<attribute name="NAME" x="71.12" y="244.602" size="1.778" layer="95"/>
+</instance>
+<instance part="GND142" gate="1" x="99.06" y="208.28" smashed="yes">
+<attribute name="VALUE" x="96.52" y="205.74" size="1.778" layer="96"/>
+</instance>
+<instance part="R48" gate="G$1" x="86.36" y="213.36" smashed="yes" rot="R90">
+<attribute name="NAME" x="78.74" y="208.28" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="81.28" y="208.28" size="1.27" layer="96" rot="R90"/>
 </instance>
 </instances>
 <busses>
@@ -11127,26 +11108,10 @@ current consumption</text>
 <wire x1="210.82" y1="160.02" x2="210.82" y2="162.56" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="R52" gate="G$1" pin="1"/>
-<pinref part="GND147" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="R51" gate="G$1" pin="2"/>
-<pinref part="GND146" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="R47" gate="G$1" pin="1"/>
-<pinref part="GND141" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="R48" gate="G$1" pin="2"/>
-<pinref part="GND142" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="J2" gate="G$1" pin="2"/>
 <pinref part="GND144" gate="1" pin="GND"/>
 <wire x1="76.2" y1="238.76" x2="78.74" y2="238.76" width="0.1524" layer="91"/>
 <wire x1="78.74" y1="238.76" x2="78.74" y2="231.14" width="0.1524" layer="91"/>
+<pinref part="J2" gate="G$1" pin="2"/>
 </segment>
 <segment>
 <pinref part="R172" gate="G$1" pin="2"/>
@@ -11155,6 +11120,12 @@ current consumption</text>
 <segment>
 <pinref part="R169" gate="G$1" pin="2"/>
 <pinref part="GND309" gate="1" pin="GND"/>
+</segment>
+<segment>
+<wire x1="96.52" y1="213.36" x2="99.06" y2="213.36" width="0.1524" layer="91"/>
+<pinref part="GND142" gate="1" pin="GND"/>
+<wire x1="99.06" y1="213.36" x2="99.06" y2="210.82" width="0.1524" layer="91"/>
+<pinref part="R48" gate="G$1" pin="GND"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -11194,24 +11165,6 @@ current consumption</text>
 <wire x1="22.86" y1="190.5" x2="25.4" y2="190.5" width="0.1524" layer="91"/>
 <pinref part="C96" gate="G$1" pin="1"/>
 <label x="22.86" y="190.5" size="1.778" layer="95" rot="R180" xref="yes"/>
-</segment>
-</net>
-<net name="N$4" class="0">
-<segment>
-<wire x1="86.36" y1="193.04" x2="86.36" y2="195.58" width="0.1524" layer="91"/>
-<pinref part="R45" gate="G$1" pin="1"/>
-<wire x1="86.36" y1="195.58" x2="81.28" y2="195.58" width="0.1524" layer="91"/>
-<pinref part="R49" gate="G$1" pin="2"/>
-<pinref part="R48" gate="G$1" pin="1"/>
-<wire x1="86.36" y1="205.74" x2="86.36" y2="208.28" width="0.1524" layer="91"/>
-<wire x1="83.82" y1="205.74" x2="86.36" y2="205.74" width="0.1524" layer="91"/>
-<junction x="86.36" y="205.74"/>
-<pinref part="R52" gate="G$1" pin="2"/>
-<wire x1="86.36" y1="205.74" x2="88.9" y2="205.74" width="0.1524" layer="91"/>
-<wire x1="86.36" y1="195.58" x2="86.36" y2="205.74" width="0.1524" layer="91"/>
-<junction x="86.36" y="195.58"/>
-<pinref part="T1" gate="G$1" pin="OUT-"/>
-<wire x1="86.36" y1="193.04" x2="88.9" y2="193.04" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$5" class="0">
@@ -11760,25 +11713,12 @@ current consumption</text>
 <pinref part="IC24" gate="G$1" pin="ENBL"/>
 </segment>
 </net>
-<net name="N$236" class="0">
-<segment>
-<pinref part="R49" gate="G$1" pin="1"/>
-<pinref part="R47" gate="G$1" pin="2"/>
-<wire x1="86.36" y1="218.44" x2="86.36" y2="220.98" width="0.1524" layer="91"/>
-<wire x1="86.36" y1="220.98" x2="83.82" y2="220.98" width="0.1524" layer="91"/>
-<pinref part="R51" gate="G$1" pin="1"/>
-<wire x1="86.36" y1="220.98" x2="88.9" y2="220.98" width="0.1524" layer="91"/>
-<junction x="86.36" y="220.98"/>
-<pinref part="C99" gate="G$1" pin="2"/>
-<wire x1="86.36" y1="226.06" x2="86.36" y2="220.98" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$6" class="0">
 <segment>
-<pinref part="J2" gate="G$1" pin="1"/>
 <pinref part="C99" gate="G$1" pin="1"/>
 <wire x1="76.2" y1="241.3" x2="86.36" y2="241.3" width="0.1524" layer="91"/>
 <wire x1="86.36" y1="241.3" x2="86.36" y2="233.68" width="0.1524" layer="91"/>
+<pinref part="J2" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$217" class="0">
@@ -11850,6 +11790,26 @@ current consumption</text>
 <label x="139.7" y="246.38" size="1.778" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
+<net name="N$271" class="0">
+<segment>
+<wire x1="86.36" y1="226.06" x2="86.36" y2="223.52" width="0.1524" layer="91"/>
+<pinref part="C99" gate="G$1" pin="2"/>
+<pinref part="R48" gate="G$1" pin="OUT"/>
+<wire x1="86.36" y1="223.52" x2="76.2" y2="223.52" width="0.1524" layer="91"/>
+<junction x="86.36" y="223.52"/>
+<wire x1="86.36" y1="193.04" x2="86.36" y2="195.58" width="0.1524" layer="91"/>
+<pinref part="R45" gate="G$1" pin="1"/>
+<wire x1="86.36" y1="195.58" x2="81.28" y2="195.58" width="0.1524" layer="91"/>
+<pinref part="T1" gate="G$1" pin="OUT-"/>
+<wire x1="86.36" y1="193.04" x2="88.9" y2="193.04" width="0.1524" layer="91"/>
+<pinref part="R48" gate="G$1" pin="IN"/>
+<wire x1="86.36" y1="203.2" x2="86.36" y2="195.58" width="0.1524" layer="91"/>
+<junction x="86.36" y="195.58"/>
+<wire x1="76.2" y1="223.52" x2="76.2" y2="203.2" width="0.1524" layer="91"/>
+<wire x1="76.2" y1="203.2" x2="86.36" y2="203.2" width="0.1524" layer="91"/>
+<junction x="86.36" y="203.2"/>
+</segment>
+</net>
 </nets>
 </sheet>
 <sheet>
@@ -11878,6 +11838,7 @@ current consumption</text>
 <text x="215.9" y="7.62" size="1.778" layer="97">300kHz lowpass</text>
 <text x="289.56" y="27.94" size="1.778" layer="97">1MS/s ADC</text>
 <text x="345.44" y="20.32" size="2.1844" layer="94">Port 2</text>
+<text x="76.2" y="203.2" size="1.27" layer="97" rot="R90">Cut wire if attenuator placed</text>
 </plain>
 <instances>
 <instance part="GND192" gate="1" x="177.8" y="160.02" smashed="yes">
@@ -12298,44 +12259,19 @@ current consumption</text>
 <attribute name="NAME" x="104.14" y="185.42" size="1.4224" layer="95" rot="R180"/>
 <attribute name="VALUE" x="104.14" y="195.58" size="1.4224" layer="96" rot="R180"/>
 </instance>
-<instance part="R79" gate="G$1" x="93.98" y="205.74" smashed="yes" rot="R180">
-<attribute name="NAME" x="97.79" y="204.2414" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="97.79" y="209.042" size="1.778" layer="96" rot="R180"/>
+<instance part="GND180" gate="1" x="78.74" y="228.6" smashed="yes">
+<attribute name="VALUE" x="76.2" y="226.06" size="1.778" layer="96"/>
 </instance>
-<instance part="R75" gate="G$1" x="78.74" y="205.74" smashed="yes" rot="R180">
-<attribute name="NAME" x="82.55" y="204.2414" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="82.55" y="209.042" size="1.778" layer="96" rot="R180"/>
-</instance>
-<instance part="R77" gate="G$1" x="86.36" y="213.36" smashed="yes" rot="R270">
-<attribute name="NAME" x="87.8586" y="217.17" size="1.778" layer="95" rot="R270"/>
-<attribute name="VALUE" x="83.058" y="217.17" size="1.778" layer="96" rot="R270"/>
-</instance>
-<instance part="R74" gate="G$1" x="78.74" y="220.98" smashed="yes">
-<attribute name="NAME" x="74.93" y="222.4786" size="1.778" layer="95"/>
-<attribute name="VALUE" x="74.93" y="217.678" size="1.778" layer="96"/>
-</instance>
-<instance part="R78" gate="G$1" x="93.98" y="220.98" smashed="yes">
-<attribute name="NAME" x="90.17" y="222.4786" size="1.778" layer="95"/>
-<attribute name="VALUE" x="90.17" y="217.678" size="1.778" layer="96"/>
-</instance>
-<instance part="GND183" gate="1" x="101.6" y="205.74" smashed="yes" rot="R90">
-<attribute name="VALUE" x="104.14" y="203.2" size="1.778" layer="96" rot="R90"/>
-</instance>
-<instance part="GND182" gate="1" x="101.6" y="220.98" smashed="yes" rot="R90">
-<attribute name="VALUE" x="104.14" y="218.44" size="1.778" layer="96" rot="R90"/>
-</instance>
-<instance part="GND177" gate="1" x="71.12" y="220.98" smashed="yes" rot="R270">
-<attribute name="VALUE" x="68.58" y="223.52" size="1.778" layer="96" rot="R270"/>
-</instance>
-<instance part="GND178" gate="1" x="71.12" y="205.74" smashed="yes" rot="R270">
-<attribute name="VALUE" x="68.58" y="208.28" size="1.778" layer="96" rot="R270"/>
-</instance>
-<instance part="J3" gate="G$1" x="76.2" y="241.3" smashed="yes">
+<instance part="J3" gate="G$1" x="73.66" y="241.3" smashed="yes">
 <attribute name="VALUE" x="71.12" y="236.22" size="1.778" layer="96"/>
 <attribute name="NAME" x="71.12" y="244.602" size="1.778" layer="95"/>
 </instance>
-<instance part="GND180" gate="1" x="78.74" y="228.6" smashed="yes">
-<attribute name="VALUE" x="76.2" y="226.06" size="1.778" layer="96"/>
+<instance part="GND141" gate="1" x="99.06" y="208.28" smashed="yes">
+<attribute name="VALUE" x="96.52" y="205.74" size="1.778" layer="96"/>
+</instance>
+<instance part="R47" gate="G$1" x="86.36" y="213.36" smashed="yes" rot="R90">
+<attribute name="NAME" x="78.74" y="208.28" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="81.28" y="208.28" size="1.27" layer="96" rot="R90"/>
 </instance>
 </instances>
 <busses>
@@ -12479,26 +12415,16 @@ current consumption</text>
 <pinref part="GND181" gate="1" pin="GND"/>
 </segment>
 <segment>
-<pinref part="R79" gate="G$1" pin="1"/>
-<pinref part="GND183" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="R78" gate="G$1" pin="2"/>
-<pinref part="GND182" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="R74" gate="G$1" pin="1"/>
-<pinref part="GND177" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="R75" gate="G$1" pin="2"/>
-<pinref part="GND178" gate="1" pin="GND"/>
-</segment>
-<segment>
-<pinref part="J3" gate="G$1" pin="2"/>
 <pinref part="GND180" gate="1" pin="GND"/>
 <wire x1="76.2" y1="238.76" x2="78.74" y2="238.76" width="0.1524" layer="91"/>
 <wire x1="78.74" y1="238.76" x2="78.74" y2="231.14" width="0.1524" layer="91"/>
+<pinref part="J3" gate="G$1" pin="2"/>
+</segment>
+<segment>
+<wire x1="96.52" y1="213.36" x2="99.06" y2="213.36" width="0.1524" layer="91"/>
+<pinref part="GND141" gate="1" pin="GND"/>
+<wire x1="99.06" y1="213.36" x2="99.06" y2="210.82" width="0.1524" layer="91"/>
+<pinref part="R47" gate="G$1" pin="GND"/>
 </segment>
 </net>
 <net name="N$21" class="0">
@@ -13079,24 +13005,6 @@ current consumption</text>
 <label x="157.48" y="48.26" size="1.778" layer="95" xref="yes"/>
 </segment>
 </net>
-<net name="N$25" class="0">
-<segment>
-<pinref part="R72" gate="G$1" pin="1"/>
-<wire x1="86.36" y1="195.58" x2="81.28" y2="195.58" width="0.1524" layer="91"/>
-<pinref part="R77" gate="G$1" pin="2"/>
-<pinref part="R75" gate="G$1" pin="1"/>
-<wire x1="86.36" y1="205.74" x2="86.36" y2="208.28" width="0.1524" layer="91"/>
-<wire x1="83.82" y1="205.74" x2="86.36" y2="205.74" width="0.1524" layer="91"/>
-<junction x="86.36" y="205.74"/>
-<pinref part="R79" gate="G$1" pin="2"/>
-<wire x1="86.36" y1="205.74" x2="88.9" y2="205.74" width="0.1524" layer="91"/>
-<wire x1="86.36" y1="195.58" x2="86.36" y2="205.74" width="0.1524" layer="91"/>
-<wire x1="86.36" y1="187.96" x2="86.36" y2="195.58" width="0.1524" layer="91"/>
-<junction x="86.36" y="195.58"/>
-<pinref part="T2" gate="G$1" pin="OUT+"/>
-<wire x1="86.36" y1="187.96" x2="88.9" y2="187.96" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$26" class="0">
 <segment>
 <pinref part="R73" gate="G$1" pin="1"/>
@@ -13109,25 +13017,12 @@ current consumption</text>
 <wire x1="83.82" y1="193.04" x2="88.9" y2="193.04" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$238" class="0">
-<segment>
-<pinref part="R77" gate="G$1" pin="1"/>
-<pinref part="R74" gate="G$1" pin="2"/>
-<wire x1="86.36" y1="218.44" x2="86.36" y2="220.98" width="0.1524" layer="91"/>
-<wire x1="86.36" y1="220.98" x2="83.82" y2="220.98" width="0.1524" layer="91"/>
-<pinref part="R78" gate="G$1" pin="1"/>
-<wire x1="86.36" y1="220.98" x2="88.9" y2="220.98" width="0.1524" layer="91"/>
-<junction x="86.36" y="220.98"/>
-<pinref part="C136" gate="G$1" pin="2"/>
-<wire x1="86.36" y1="226.06" x2="86.36" y2="220.98" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$239" class="0">
 <segment>
-<pinref part="J3" gate="G$1" pin="1"/>
 <pinref part="C136" gate="G$1" pin="1"/>
 <wire x1="76.2" y1="241.3" x2="86.36" y2="241.3" width="0.1524" layer="91"/>
 <wire x1="86.36" y1="241.3" x2="86.36" y2="233.68" width="0.1524" layer="91"/>
+<pinref part="J3" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$23" class="0">
@@ -13168,6 +13063,26 @@ current consumption</text>
 <wire x1="320.04" y1="193.04" x2="340.36" y2="193.04" width="0.1524" layer="91"/>
 <wire x1="340.36" y1="193.04" x2="340.36" y2="180.34" width="0.1524" layer="91"/>
 <junction x="320.04" y="193.04"/>
+</segment>
+</net>
+<net name="N$4" class="0">
+<segment>
+<wire x1="76.2" y1="223.52" x2="76.2" y2="203.2" width="0.1524" layer="91"/>
+<pinref part="R72" gate="G$1" pin="1"/>
+<wire x1="86.36" y1="195.58" x2="81.28" y2="195.58" width="0.1524" layer="91"/>
+<wire x1="86.36" y1="187.96" x2="86.36" y2="195.58" width="0.1524" layer="91"/>
+<pinref part="T2" gate="G$1" pin="OUT+"/>
+<wire x1="86.36" y1="187.96" x2="88.9" y2="187.96" width="0.1524" layer="91"/>
+<pinref part="R47" gate="G$1" pin="IN"/>
+<wire x1="86.36" y1="203.2" x2="86.36" y2="195.58" width="0.1524" layer="91"/>
+<junction x="86.36" y="195.58"/>
+<wire x1="76.2" y1="203.2" x2="86.36" y2="203.2" width="0.1524" layer="91"/>
+<junction x="86.36" y="203.2"/>
+<pinref part="C136" gate="G$1" pin="2"/>
+<wire x1="86.36" y1="226.06" x2="86.36" y2="223.52" width="0.1524" layer="91"/>
+<pinref part="R47" gate="G$1" pin="OUT"/>
+<wire x1="76.2" y1="223.52" x2="86.36" y2="223.52" width="0.1524" layer="91"/>
+<junction x="86.36" y="223.52"/>
 </segment>
 </net>
 </nets>
