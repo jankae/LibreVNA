@@ -7,17 +7,17 @@ STW81200::STW81200()
     currentInput = nullptr;
 
     addRegister(new Register("ST0", 0, 26));
-    addRegister(new Register("ST0", 1, 26));
-    addRegister(new Register("ST2", 2, 26));
-    addRegister(new Register("ST3", 3, 26));
-    addRegister(new Register("ST4", 4, 26));
-    addRegister(new Register("ST5", 5, 26));
-    addRegister(new Register("ST6", 6, 26));
-    addRegister(new Register("ST7", 7, 26));
-    addRegister(new Register("ST8", 8, 26));
-    addRegister(new Register("ST9", 9, 26));
-    addRegister(new Register("ST10", 10, 26));
-    addRegister(new Register("ST11", 11, 26));
+    addRegister(new Register("ST0", 1, 27));
+    addRegister(new Register("ST2", 2, 27));
+    addRegister(new Register("ST3", 3, 27));
+    addRegister(new Register("ST4", 4, 27));
+    addRegister(new Register("ST5", 5, 27));
+    addRegister(new Register("ST6", 6, 27));
+    addRegister(new Register("ST7", 7, 27));
+    addRegister(new Register("ST8", 8, 27));
+    addRegister(new Register("ST9", 9, 27));
+    addRegister(new Register("ST10", 10, 27));
+    addRegister(new Register("ST11", 11, 27));
 
     ui = new Ui::STW81200Widget;
     ui->setupUi(widget);
@@ -44,7 +44,7 @@ STW81200::STW81200()
     regs[3]->assignUI(ui->DNSPLIT_EN, 17);
     regs[3]->assignUI(ui->PFD_DEL_MODE, 15, 2);
     regs[3]->assignUI(ui->REF_PATH_SEL, 13, 2);
-    regs[3]->assignUI(ui->R, 0, 12);
+    regs[3]->assignUI(ui->R, 0, 13);
 
     regs[4]->assignUI(ui->RF_OUT_PWR, 23, 3);
     regs[4]->assignUI(ui->VCO_2V5_MODE, 22);
