@@ -711,9 +711,10 @@ void TraceXYPlot::updateAxisTicks()
 QString TraceXYPlot::AxisTypeToName(TraceXYPlot::XAxisType type)
 {
     switch(type) {
-    case XAxisType::Frequency: return "Frequency"; break;
-    case XAxisType::Time: return "Time"; break;
-    case XAxisType::Distance: return "Distance"; break;
+    case XAxisType::Frequency: return "Frequency";
+    case XAxisType::Time: return "Time";
+    case XAxisType::Distance: return "Distance";
+    case XAxisType::Power: return "Power";
     default: return "Unknown";
     }
 }
@@ -821,6 +822,11 @@ bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
     case XAxisType::Distance:
     case XAxisType::Time:
         if(t->outputType() != Trace::DataType::Time) {
+            return false;
+        }
+        break;
+    case XAxisType::Power:
+        if(t->outputType() != Trace::DataType::Power) {
             return false;
         }
         break;
@@ -981,29 +987,34 @@ bool TraceXYPlot::xCoordinateVisible(double x)
 
 void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 {
-    if(t->outputType() == Trace::DataType::Frequency && XAxis.type != XAxisType::Frequency) {
-        // needs to switch to frequency domain graph
-        if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a frequency domain trace but the graph is still set up for the time domain."
-                                    " Do you want to remove all traces and change the graph to frequency domain?", true, "DomainChangeRequest")) {
+    if(!supported(t)) {
+        // needs to switch to a different domain for the graph
+        if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a trace that is not supported with the currently selected X axis domain."
+                                    " Do you want to remove all traces and change the graph to the correct domain?", true, "DomainChangeRequest")) {
             // user declined to change domain, to not add trace
             return;
         }
-        setXAxis(XAxisType::Frequency, XAxisMode::FitTraces, 0, 1, 0.1);
-        setYAxis(0, YAxisType::Magnitude, false, true, 0, 1, 1.0);
-        setYAxis(1, YAxisType::Phase, false, true, 0, 1, 1.0);
-    }
-    if(t->outputType() != Trace::DataType::Frequency && XAxis.type == XAxisType::Frequency) {
-        // needs to switch to time domain graph
-        if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a time domain trace but the graph is still set up for the frequency domain."
-                                    " Do you want to remove all traces and change the graph to time domain?", true, "DomainChangeRequest")) {
-            // user declined to change domain, to not add trace
+        switch(t->outputType()) {
+        case Trace::DataType::Frequency:
+            setXAxis(XAxisType::Frequency, XAxisMode::FitTraces, 0, 1, 0.1);
+            setYAxis(0, YAxisType::Magnitude, false, true, 0, 1, 1.0);
+            setYAxis(1, YAxisType::Phase, false, true, 0, 1, 1.0);
+            break;
+        case Trace::DataType::Time:
+            setXAxis(XAxisType::Time, XAxisMode::FitTraces, 0, 1, 0.1);
+            setYAxis(0, YAxisType::ImpulseMag, false, true, 0, 1, 1.0);
+            setYAxis(1, YAxisType::Disabled, false, true, 0, 1, 1.0);
+            break;
+        case Trace::DataType::Power:
+            setXAxis(XAxisType::Power, XAxisMode::FitTraces, 0, 1, 0.1);
+            setYAxis(0, YAxisType::Magnitude, false, true, 0, 1, 1.0);
+            setYAxis(1, YAxisType::Phase, false, true, 0, 1, 1.0);
+            break;
+        case Trace::DataType::Invalid:
+            // unable to add
             return;
         }
-        setXAxis(XAxisType::Time, XAxisMode::FitTraces, 0, 1, 0.1);
-        setYAxis(0, YAxisType::ImpulseMag, false, true, 0, 1, 1.0);
-        setYAxis(1, YAxisType::Disabled, false, true, 0, 1, 1.0);
     }
-
     if(YAxis[0].type == YAxisType::Disabled && YAxis[1].type == YAxisType::Disabled) {
         // no Y axis enabled, unable to drop
         return;
@@ -1053,23 +1064,24 @@ QString TraceXYPlot::mouseText(QPoint pos)
 QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
 {
     switch(type) {
-    case TraceXYPlot::YAxisType::Magnitude: return "db"; break;
-    case TraceXYPlot::YAxisType::Phase: return "°"; break;
-    case TraceXYPlot::YAxisType::VSWR: return ""; break;
-    case TraceXYPlot::YAxisType::ImpulseReal: return ""; break;
-    case TraceXYPlot::YAxisType::ImpulseMag: return "db"; break;
-    case TraceXYPlot::YAxisType::Step: return ""; break;
-    case TraceXYPlot::YAxisType::Impedance: return "Ohm"; break;
-    default: return ""; break;
+    case TraceXYPlot::YAxisType::Magnitude: return "db";
+    case TraceXYPlot::YAxisType::Phase: return "°";
+    case TraceXYPlot::YAxisType::VSWR: return "";
+    case TraceXYPlot::YAxisType::ImpulseReal: return "";
+    case TraceXYPlot::YAxisType::ImpulseMag: return "db";
+    case TraceXYPlot::YAxisType::Step: return "";
+    case TraceXYPlot::YAxisType::Impedance: return "Ohm";
+    default: return "";
     }
 }
 
 QString TraceXYPlot::AxisUnit(TraceXYPlot::XAxisType type)
 {
     switch(type) {
-    case XAxisType::Frequency: return "Hz"; break;
-    case XAxisType::Time: return "s"; break;
-    case XAxisType::Distance: return "m"; break;
+    case XAxisType::Frequency: return "Hz";
+    case XAxisType::Time: return "s";
+    case XAxisType::Distance: return "m";
+    case XAxisType::Power: return "dBm";
     default: return ""; break;
     }
 }

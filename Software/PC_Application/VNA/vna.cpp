@@ -235,6 +235,16 @@ VNA::VNA(AppWindow *window)
 
     // Sweep toolbar
     auto tb_sweep = new QToolBar("Sweep");
+
+    std::vector<QAction*> frequencySweepActions;
+    std::vector<QAction*> powerSweepActions;
+
+    tb_sweep->addWidget(new QLabel("Sweep type:"));
+    auto cbSweepType = new QComboBox();
+    cbSweepType->addItem("Frequency");
+    cbSweepType->addItem("Power");
+    tb_sweep->addWidget(cbSweepType);
+
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
     // calculate width required with expected string length
     auto width = QFontMetrics(eStart->font()).width("3.00000GHz") + 15;
@@ -242,47 +252,80 @@ VNA::VNA(AppWindow *window)
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &VNA::SetStartFreq);
     connect(this, &VNA::startFreqChanged, eStart, &SIUnitEdit::setValueQuiet);
-    tb_sweep->addWidget(new QLabel("Start:"));
-    tb_sweep->addWidget(eStart);
+    frequencySweepActions.push_back(tb_sweep->addWidget(new QLabel("Start:")));
+    frequencySweepActions.push_back(tb_sweep->addWidget(eStart));
 
     auto eCenter = new SIUnitEdit("Hz", " kMG", 6);
     eCenter->setFixedWidth(width);
     eCenter->setToolTip("Center frequency");
     connect(eCenter, &SIUnitEdit::valueChanged, this, &VNA::SetCenterFreq);
     connect(this, &VNA::centerFreqChanged, eCenter, &SIUnitEdit::setValueQuiet);
-    tb_sweep->addWidget(new QLabel("Center:"));
-    tb_sweep->addWidget(eCenter);
+    frequencySweepActions.push_back(tb_sweep->addWidget(new QLabel("Center:")));
+    frequencySweepActions.push_back(tb_sweep->addWidget(eCenter));
 
     auto eStop = new SIUnitEdit("Hz", " kMG", 6);
     eStop->setFixedWidth(width);
     eStop->setToolTip("Stop frequency");
     connect(eStop, &SIUnitEdit::valueChanged, this, &VNA::SetStopFreq);
     connect(this, &VNA::stopFreqChanged, eStop, &SIUnitEdit::setValueQuiet);
-    tb_sweep->addWidget(new QLabel("Stop:"));
-    tb_sweep->addWidget(eStop);
+    frequencySweepActions.push_back(tb_sweep->addWidget(new QLabel("Stop:")));
+    frequencySweepActions.push_back(tb_sweep->addWidget(eStop));
 
     auto eSpan = new SIUnitEdit("Hz", " kMG", 6);
     eSpan->setFixedWidth(width);
     eSpan->setToolTip("Span");
     connect(eSpan, &SIUnitEdit::valueChanged, this, &VNA::SetSpan);
     connect(this, &VNA::spanChanged, eSpan, &SIUnitEdit::setValueQuiet);
-    tb_sweep->addWidget(new QLabel("Span:"));
-    tb_sweep->addWidget(eSpan);
+    frequencySweepActions.push_back(tb_sweep->addWidget(new QLabel("Span:")));
+    frequencySweepActions.push_back(tb_sweep->addWidget(eSpan));
 
     auto bFull = new QPushButton(QIcon::fromTheme("zoom-fit-best", QIcon(":/icons/zoom-fit.png")), "");
     bFull->setToolTip("Full span");
     connect(bFull, &QPushButton::clicked, this, &VNA::SetFullSpan);
-    tb_sweep->addWidget(bFull);
+    frequencySweepActions.push_back(tb_sweep->addWidget(bFull));
 
     auto bZoomIn = new QPushButton(QIcon::fromTheme("zoom-in", QIcon(":/icons/zoom-in.png")), "");
     bZoomIn->setToolTip("Zoom in");
     connect(bZoomIn, &QPushButton::clicked, this, &VNA::SpanZoomIn);
-    tb_sweep->addWidget(bZoomIn);
+    frequencySweepActions.push_back(tb_sweep->addWidget(bZoomIn));
 
     auto bZoomOut = new QPushButton(QIcon::fromTheme("zoom-out", QIcon(":/icons/zoom-out.png")), "");
     bZoomOut->setToolTip("Zoom out");
     connect(bZoomOut, &QPushButton::clicked, this, &VNA::SpanZoomOut);
-    tb_sweep->addWidget(bZoomOut);
+    frequencySweepActions.push_back(tb_sweep->addWidget(bZoomOut));
+
+    // power sweep widgets
+    auto sbPowerLow = new QDoubleSpinBox();
+    width = QFontMetrics(sbPowerLow->font()).width("-30.00dBm") + 20;
+    sbPowerLow->setFixedWidth(width);
+    sbPowerLow->setRange(-100.0, 100.0);
+    sbPowerLow->setSingleStep(0.25);
+    sbPowerLow->setSuffix("dbm");
+    sbPowerLow->setToolTip("Stimulus level");
+    sbPowerLow->setKeyboardTracking(false);
+    // TODO connect
+    powerSweepActions.push_back(tb_sweep->addWidget(new QLabel("From:")));
+    powerSweepActions.push_back(tb_sweep->addWidget(sbPowerLow));
+
+    auto sbPowerHigh = new QDoubleSpinBox();
+    width = QFontMetrics(sbPowerHigh->font()).width("-30.00dBm") + 20;
+    sbPowerHigh->setFixedWidth(width);
+    sbPowerHigh->setRange(-100.0, 100.0);
+    sbPowerHigh->setSingleStep(0.25);
+    sbPowerHigh->setSuffix("dbm");
+    sbPowerHigh->setToolTip("Stimulus level");
+    sbPowerHigh->setKeyboardTracking(false);
+    // TODO connect
+    powerSweepActions.push_back(tb_sweep->addWidget(new QLabel("To:")));
+    powerSweepActions.push_back(tb_sweep->addWidget(sbPowerHigh));
+
+    auto ePowerFreq = new SIUnitEdit("Hz", " kMG", 6);
+    width = QFontMetrics(ePowerFreq->font()).width("3.00000GHz") + 15;
+    ePowerFreq->setFixedWidth(width);
+    ePowerFreq->setToolTip("Start frequency");
+    // TODO connect
+    powerSweepActions.push_back(tb_sweep->addWidget(new QLabel("at:")));
+    powerSweepActions.push_back(tb_sweep->addWidget(ePowerFreq));
 
     window->addToolBar(tb_sweep);
     toolbars.insert(tb_sweep);
@@ -299,8 +342,36 @@ VNA::VNA(AppWindow *window)
     dbm->setKeyboardTracking(false);
     connect(dbm, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &VNA::SetSourceLevel);
     connect(this, &VNA::sourceLevelChanged, dbm, &QDoubleSpinBox::setValue);
-    tb_acq->addWidget(new QLabel("Level:"));
-    tb_acq->addWidget(dbm);
+    frequencySweepActions.push_back(tb_acq->addWidget(new QLabel("Level:")));
+    frequencySweepActions.push_back(tb_acq->addWidget(dbm));
+
+    auto configureToolbarForFrequencySweep = [=](){
+        for(auto a : frequencySweepActions) {
+            a->setVisible(true);
+        }
+        for(auto a : powerSweepActions) {
+            a->setVisible(false);
+        }
+    };
+    auto configureToolbarForPowerSweep = [=](){
+        for(auto a : frequencySweepActions) {
+            a->setVisible(false);
+        }
+        for(auto a : powerSweepActions) {
+            a->setVisible(true);
+        }
+    };
+
+    connect(cbSweepType, &QComboBox::currentTextChanged, [=](QString text) {
+        if(text == "Frequency") {
+            configureToolbarForFrequencySweep();
+        } else if(text == "Power") {
+            configureToolbarForPowerSweep();
+        }
+    });
+
+    // initial setup is frequency sweep
+    configureToolbarForFrequencySweep();
 
     auto points = new QSpinBox();
     points->setFixedWidth(55);

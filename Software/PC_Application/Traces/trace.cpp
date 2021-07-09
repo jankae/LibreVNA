@@ -21,7 +21,7 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       paused(false),
       createdFromFile(false),
       calibration(false),
-      timeDomain(false),
+      domain(DataType::Frequency),
       lastMath(nullptr)
 {
     MathInfo self = {.math = this, .enabled = true};
@@ -31,7 +31,7 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
     self.enabled = false;
     dataType = DataType::Frequency;
     connect(this, &Trace::typeChanged, [=](){
-        dataType = timeDomain ? DataType::Time : DataType::Frequency;
+        dataType = domain;
         emit outputTypeChanged(dataType);
     });
 }
@@ -120,7 +120,7 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
         throw runtime_error("Parameter for touchstone out of range");
     }
     clear();
-    timeDomain = false;
+    domain = DataType::Frequency;
     fileParemeter = parameter;
     filename = t.getFilename();
     for(unsigned int i=0;i<t.points();i++) {
@@ -206,7 +206,13 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     fileParemeter = parameter;
     filename = csv.getFilename();
     auto xColumn = csv.getColumn(0);
-    timeDomain = csv.getHeader(0).compare("time", Qt::CaseInsensitive) == 0;
+    if(csv.getHeader(0).compare("time", Qt::CaseInsensitive) == 0) {
+        domain = DataType::Time;
+    } else if(csv.getHeader(0).compare("power", Qt::CaseInsensitive) == 0) {
+        domain = DataType::Power;
+    } else {
+        domain = DataType::Frequency;
+    }
     for(unsigned int i=0;i<xColumn.size();i++) {
         Data d;
         d.x = xColumn[i];
@@ -242,7 +248,8 @@ void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, c
 
 void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
 {
-    timeDomain = false;
+    // TODO set domain depending on incoming data
+    domain = DataType::Frequency;
     createdFromFile = false;
     _liveType = type;
     _liveParam = param;
@@ -635,11 +642,7 @@ void Trace::setReflection(bool value)
 TraceMath::DataType Trace::outputType(TraceMath::DataType inputType)
 {
     Q_UNUSED(inputType);
-    if(timeDomain) {
-        return DataType::Time;
-    } else {
-        return DataType::Frequency;
-    }
+    return domain;
 }
 
 QString Trace::description()

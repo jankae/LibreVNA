@@ -18,6 +18,10 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         ui->Y2type->addItem(TraceXYPlot::AxisTypeToName((TraceXYPlot::YAxisType) i));
     }
 
+    for(int i=0;i<(int) TraceXYPlot::XAxisType::Last;i++) {
+        ui->XType->addItem(TraceXYPlot::AxisTypeToName((TraceXYPlot::XAxisType) i));
+    }
+
     // Setup GUI connections
     connect(ui->Y1type, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
        //ui->Y1log->setEnabled(index != 0);
@@ -178,6 +182,7 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
     set<TraceXYPlot::YAxisType> ret = {TraceXYPlot::YAxisType::Disabled};
     switch(type) {
     case TraceXYPlot::XAxisType::Frequency:
+    case TraceXYPlot::XAxisType::Power:
         ret.insert(TraceXYPlot::YAxisType::Magnitude);
         ret.insert(TraceXYPlot::YAxisType::Phase);
         ret.insert(TraceXYPlot::YAxisType::VSWR);

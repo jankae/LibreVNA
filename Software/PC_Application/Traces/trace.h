@@ -173,7 +173,7 @@ private:
     bool paused;
     bool createdFromFile;
     bool calibration;
-    bool timeDomain;
+    DataType domain;
     QString filename;
     unsigned int fileParemeter;
     std::set<Marker*> markers;

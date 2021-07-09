@@ -41,6 +41,7 @@ void Math::Expression::edit()
         exp = ui->expEdit->text();
         expressionChanged();
     });
+    // TODO add power domain
     if(dataType == DataType::Time) {
         // select the label explaining the time domain variables (frequency label is the default)
         ui->stackedWidget->setCurrentIndex(1);

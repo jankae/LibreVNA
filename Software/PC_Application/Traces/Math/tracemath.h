@@ -60,6 +60,7 @@ public:
     enum class DataType {
         Frequency,
         Time,
+        Power,
         Invalid,
     };
 

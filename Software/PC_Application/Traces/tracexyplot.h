@@ -34,6 +34,7 @@ public:
         Frequency,
         Time,
         Distance,
+        Power,
         Last,
     };
     enum class XAxisMode {

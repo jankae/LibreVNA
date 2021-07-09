@@ -294,6 +294,8 @@ QVariant MathModel::data(const QModelIndex &index, int role) const
                 return "Time";
             case TraceMath::DataType::Frequency:
                 return "Frequency";
+            case TraceMath::DataType::Power:
+                return "Power";
             case TraceMath::DataType::Invalid:
                 return "Invalid";
             }

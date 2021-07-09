@@ -313,23 +313,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="XType">
-           <item>
-            <property name="text">
-             <string>Frequency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Time</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Distance</string>
-            </property>
-           </item>
-          </widget>
+          <widget class="QComboBox" name="XType"/>
          </item>
         </layout>
        </item>

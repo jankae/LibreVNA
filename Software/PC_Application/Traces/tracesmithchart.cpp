@@ -337,9 +337,14 @@ bool TraceSmithChart::supported(Trace *t)
 
 bool TraceSmithChart::dropSupported(Trace *t)
 {
-    if(t->outputType() == Trace::DataType::Frequency && t->isReflection()) {
+    if(!t->isReflection()) {
+        return false;
+    }
+    switch(t->outputType()) {
+    case Trace::DataType::Frequency:
+    case Trace::DataType::Power:
         return true;
-    } else {
+    default:
         return false;
     }
 }
