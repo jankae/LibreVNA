@@ -13,6 +13,8 @@
 {geometry}
 \usepackage{tikz}
 \usepackage{siunitx} 
+\DeclareSIUnit{\belmilliwatt}{Bm}
+\DeclareSIUnit{\dBm}{\deci\belmilliwatt}
 
 \pgfdeclarelayer{background}
 \pgfdeclarelayer{foreground}
@@ -494,24 +496,26 @@ The SweepConfig contains data for the source and LO1 PLL as well as the attenuat
 \bitrect{16}{64-\bit}
 \rwbits{0}{3}{LO DIV\_A[2:0]}
 \rwbits{3}{6}{LO VCO[5:0]}
-\rwbits{9}{7}{LO N[6:0]}
+\rwbits{9}{6}{LO N[5:0]}
+\rwbits{15}{1}{BS}
 \end{tikzpicture}
 \begin{tikzpicture}
 \bitrect{16}{48-\bit}
-\rwbits{0}{1}{BS}
-\rwbits{1}{7}{Attenuator[6:0]}
-\rwbits{8}{8}{Source M[11:4]}
+\rwbits{0}{2}{PWR[1:0]}
+\rwbits{2}{7}{Attenuator[6:0]}
+\rwbits{9}{7}{Source M[11:5]}
 \end{tikzpicture}
 \begin{tikzpicture}
 \bitrect{16}{32-\bit}
-\rwbits{0}{4}{Source M[3:0]}
-\rwbits{4}{12}{Source FRAC[11:0]}
+\rwbits{0}{5}{Source M[4:0]}
+\rwbits{5}{11}{Source FRAC[11:1]}
 \end{tikzpicture}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
-\rwbits{0}{3}{Source DIV\_A[2:0]}
-\rwbits{3}{6}{Source VCO[5:0]}
-\rwbits{9}{7}{Source N[6:0]}
+\rwbits{0}{1}{F[0]}
+\rwbits{1}{3}{Source DIV\_A[2:0]}
+\rwbits{4}{6}{Source VCO[5:0]}
+\rwbits{10}{6}{Source N[5:0]}
 \end{tikzpicture}
 \end{center}
 \begin{itemize}
@@ -554,6 +558,17 @@ Setting & Selected Band\\
 \end{tabular}
 \end{center}
 \item \textbf{BS: Band select.} Set to 0 for highband, set to 1 for lowband.
+\item \textbf{PWR:} Power setting of source PLL. Will be written to register 4, bits [4:3] of the source PLL, controlling the output power of output A.
+\begin{center}
+\begin{tabular}{ c|c }
+Setting & Selected Power\\
+ \hline
+00 & \SI{-4}{\dBm}\\
+01 & \SI{-1}{\dBm}\\
+10 & \SI{2}{\dBm}\\
+11 & \SI{5}{\dBm}\\
+\end{tabular}
+\end{center}
 \item \textbf{Attenuator:} Attenuation of source signal in \SI{0.25}{\decibel}.
 \end{itemize}
 

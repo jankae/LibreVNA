@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 5;
+static constexpr uint16_t Version = 7;
 
 #pragma pack(push, 1)
 
@@ -22,10 +22,12 @@ using SweepSettings = struct _sweepSettings {
 	uint64_t f_stop;
     uint16_t points;
     uint32_t if_bandwidth;
-    int16_t cdbm_excitation; // in 1/100 dbm
+    int16_t cdbm_excitation_start; // in 1/100 dbm
 	uint8_t excitePort1:1;
 	uint8_t excitePort2:1;
 	uint8_t suppressPeaks:1;
+	uint8_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
+    int16_t cdbm_excitation_stop; // in 1/100 dbm
 };
 
 using ReferenceSettings = struct _referenceSettings {

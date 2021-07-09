@@ -23,7 +23,7 @@ static uint16_t pointCnt;
 static bool excitingPort1;
 static Protocol::Datapoint data;
 static bool active = false;
-static bool sourceHighPower;
+static Si5351C::DriveStrength fixedPowerLowband;
 static bool adcShifted;
 static uint32_t actualBandwidth;
 
@@ -76,26 +76,24 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
-	// Set level (not very accurate)
-	int16_t cdbm = s.cdbm_excitation;
-	if(cdbm > -1000) {
-		// use higher source power (approx 0dbm with no attenuation)
-		sourceHighPower = true;
-		Source.SetPowerOutA(MAX2871::Power::p5dbm, true);
-	} else {
-		// use lower source power (approx -10dbm with no attenuation)
-		sourceHighPower = false;
-		Source.SetPowerOutA(MAX2871::Power::n4dbm, true);
-		cdbm += 1000;
+	// Start with average level
+	auto cdbm = (s.cdbm_excitation_start + s.cdbm_excitation_stop) / 2;
+	// correct for port 1, assumes port 2 is identical
+	auto centerFreq = (s.f_start + s.f_stop) / 2;
+	// force calculation of amplitude setting for PLL, even with lower frequencies
+	if(centerFreq < HW::BandSwitchFrequency) {
+		centerFreq = HW::BandSwitchFrequency;
 	}
-	uint8_t attenuator;
-	if(cdbm >= 0) {
-		attenuator = 0;
-	} else if (cdbm <= -3175){
-		attenuator = 127;
-	} else {
-		attenuator = (-cdbm) / 25;
-	}
+	auto amplitude = HW::GetAmplitudeSettings(cdbm, centerFreq, true, false);
+
+	uint8_t fixedAttenuatorHighband = amplitude.attenuator;
+	Source.SetPowerOutA(amplitude.highBandPower, true);
+
+	// amplitude calculation for lowband
+	amplitude = HW::GetAmplitudeSettings(cdbm, HW::BandSwitchFrequency / 2, true, false);
+	uint8_t fixedAttenuatorLowband = amplitude.attenuator;
+	fixedPowerLowband = amplitude.lowBandPower;
+
 	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
 	uint32_t last_LO2 = HW::IF1 - HW::IF2;
@@ -117,6 +115,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	for (uint16_t i = 0; i < points; i++) {
 		bool harmonic_mixing = false;
 		uint64_t freq = s.f_start + (s.f_stop - s.f_start) * i / (points - 1);
+		int16_t power = s.cdbm_excitation_start + (s.cdbm_excitation_stop - s.cdbm_excitation_start) * i / (points - 1);
 		freq = Cal::FrequencyCorrectionToDevice(freq);
 
 		if(freq > 6000000000ULL) {
@@ -204,6 +203,16 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		}
 		if(needs_halt) {
 			pointsWithoutHalt = 0;
+		}
+
+		uint8_t attenuator = freq >= HW::BandSwitchFrequency ? fixedAttenuatorHighband : fixedAttenuatorLowband;
+		if(!s.fixedPowerSetting) {
+			// adapt power level throughout the sweep
+			amplitude = HW::GetAmplitudeSettings(power, freq, true, false);
+			if(freq >= HW::BandSwitchFrequency) {
+				Source.SetPowerOutA(amplitude.highBandPower, true);
+			}
+			attenuator = amplitude.attenuator;
 		}
 
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
@@ -331,11 +340,20 @@ void VNA::SweepHalted() {
 	uint64_t frequency = settings.f_start
 			+ (settings.f_stop - settings.f_start) * pointCnt
 					/ (settings.points - 1);
+	int16_t power = settings.cdbm_excitation_start
+			+ (settings.cdbm_excitation_stop - settings.cdbm_excitation_start)
+					* pointCnt / (settings.points - 1);
 	bool adcShiftRequired = false;
 	if (frequency < HW::BandSwitchFrequency) {
+		auto driveStrength = fixedPowerLowband;
+		if(!settings.fixedPowerSetting) {
+			auto amplitude = HW::GetAmplitudeSettings(power, frequency, true, false);
+			// attenuator value has already been set in sweep setup
+			driveStrength = amplitude.lowBandPower;
+		}
+
 		// need the Si5351 as Source
-		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B,
-				sourceHighPower ? Si5351C::DriveStrength::mA8 : Si5351C::DriveStrength::mA4);
+		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B, driveStrength);
 		if (pointCnt == 0) {
 			// First point in sweep, enable CLK
 			Si5351.Enable(SiChannel::LowbandSource);

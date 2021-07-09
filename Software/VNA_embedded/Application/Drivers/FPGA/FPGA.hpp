@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "Flash.hpp"
+#include "max2871.hpp"
 
 namespace FPGA {
 

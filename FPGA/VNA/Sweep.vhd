@@ -89,16 +89,16 @@ begin
 	
 	-- assemble registers
 	-- source register 0: N divider and fractional division value
-	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(6 downto 0) & config_reg(27 downto 16) & "000";
+	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "0000000000" & config_reg(5 downto 0) & config_reg(26 downto 15) & "000";
 	-- source register 1: Modulus value
-	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(39 downto 28) & "001";
+	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(38 downto 27) & "001";
 	-- source register 3: VCO selection
-	SOURCE_REG_3 <= config_reg(12 downto 7) & MAX2871_DEF_3(25 downto 3) & "011";
-	-- output power A passed on from default registers, output B disabled
-	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(15 downto 13) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5 downto 3) & "100";
+	SOURCE_REG_3 <= config_reg(11 downto 6) & MAX2871_DEF_3(25 downto 3) & "011";
+	-- output power A from config, output B disabled
+	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(14 downto 12) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5) & config_reg(47 downto 46) & "100";
 	
 	-- LO register 0: N divider and fractional division value
-	LO_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(54 downto 48) & config_reg(75 downto 64) & "000";
+	LO_REG_0 <= MAX2871_DEF_0(31) & "0000000000" & config_reg(54 downto 49) & config_reg(75 downto 64) & "000";
 	-- LO register 1: Modulus value
 	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(87 downto 76) & "001";
 	-- LO register 3: VCO selection
@@ -106,9 +106,9 @@ begin
 	-- both outputs enabled at +5dbm
 	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(63 downto 61) & MAX2871_DEF_4(19 downto 9) & "111111100";
 	
-	ATTENUATOR <= config_reg(46 downto 40);
+	ATTENUATOR <= config_reg(45 downto 39);
 	SOURCE_FILTER <= config_reg(89 downto 88);
-	BAND_SELECT <= config_reg(47);
+	BAND_SELECT <= config_reg(48);
 							
 	NSAMPLES <= USER_NSAMPLES when config_reg(92 downto 90) = "000" else
 					std_logic_vector(to_unsigned(6, 13)) when config_reg(92 downto 90) = "001" else
