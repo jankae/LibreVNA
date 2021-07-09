@@ -1047,7 +1047,7 @@ QString TraceXYPlot::mouseText(QPoint pos)
         QPointF coords[2];
         coords[0] = pixelToPlotValue(pos, 0);
         coords[1] = pixelToPlotValue(pos, 1);
-        int significantDigits = floor(log10(XAxis.rangeMax)) - floor(log10((XAxis.rangeMax - XAxis.rangeMin) / 1000.0)) + 1;
+        int significantDigits = floor(log10(abs(XAxis.rangeMax))) - floor(log10((abs(XAxis.rangeMax - XAxis.rangeMin)) / 1000.0)) + 1;
         ret += Unit::ToString(coords[0].x(), AxisUnit(XAxis.type), "fpnum kMG", significantDigits) + "\n";
         for(int i=0;i<2;i++) {
             if(YAxis[i].type != YAxisType::Disabled) {
@@ -1082,6 +1082,6 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::XAxisType type)
     case XAxisType::Time: return "s";
     case XAxisType::Distance: return "m";
     case XAxisType::Power: return "dBm";
-    default: return ""; break;
+    default: return "";
     }
 }

@@ -303,7 +303,8 @@ VNA::VNA(AppWindow *window)
     sbPowerLow->setSuffix("dbm");
     sbPowerLow->setToolTip("Stimulus level");
     sbPowerLow->setKeyboardTracking(false);
-    // TODO connect
+    connect(sbPowerLow, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &VNA::SetStartPower);
+    connect(this, &VNA::startPowerChanged, sbPowerLow, &QDoubleSpinBox::setValue);
     powerSweepActions.push_back(tb_sweep->addWidget(new QLabel("From:")));
     powerSweepActions.push_back(tb_sweep->addWidget(sbPowerLow));
 
@@ -315,7 +316,8 @@ VNA::VNA(AppWindow *window)
     sbPowerHigh->setSuffix("dbm");
     sbPowerHigh->setToolTip("Stimulus level");
     sbPowerHigh->setKeyboardTracking(false);
-    // TODO connect
+    connect(sbPowerHigh, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &VNA::SetStopPower);
+    connect(this, &VNA::stopPowerChanged, sbPowerHigh, &QDoubleSpinBox::setValue);
     powerSweepActions.push_back(tb_sweep->addWidget(new QLabel("To:")));
     powerSweepActions.push_back(tb_sweep->addWidget(sbPowerHigh));
 
@@ -323,7 +325,8 @@ VNA::VNA(AppWindow *window)
     width = QFontMetrics(ePowerFreq->font()).width("3.00000GHz") + 15;
     ePowerFreq->setFixedWidth(width);
     ePowerFreq->setToolTip("Start frequency");
-    // TODO connect
+    connect(ePowerFreq, &SIUnitEdit::valueChanged, this, &VNA::SetPowerSweepFrequency);
+    connect(this, &VNA::powerSweepFrequencyChanged, ePowerFreq, &SIUnitEdit::setValueQuiet);
     powerSweepActions.push_back(tb_sweep->addWidget(new QLabel("at:")));
     powerSweepActions.push_back(tb_sweep->addWidget(ePowerFreq));
 
@@ -344,34 +347,6 @@ VNA::VNA(AppWindow *window)
     connect(this, &VNA::sourceLevelChanged, dbm, &QDoubleSpinBox::setValue);
     frequencySweepActions.push_back(tb_acq->addWidget(new QLabel("Level:")));
     frequencySweepActions.push_back(tb_acq->addWidget(dbm));
-
-    auto configureToolbarForFrequencySweep = [=](){
-        for(auto a : frequencySweepActions) {
-            a->setVisible(true);
-        }
-        for(auto a : powerSweepActions) {
-            a->setVisible(false);
-        }
-    };
-    auto configureToolbarForPowerSweep = [=](){
-        for(auto a : frequencySweepActions) {
-            a->setVisible(false);
-        }
-        for(auto a : powerSweepActions) {
-            a->setVisible(true);
-        }
-    };
-
-    connect(cbSweepType, &QComboBox::currentTextChanged, [=](QString text) {
-        if(text == "Frequency") {
-            configureToolbarForFrequencySweep();
-        } else if(text == "Power") {
-            configureToolbarForPowerSweep();
-        }
-    });
-
-    // initial setup is frequency sweep
-    configureToolbarForFrequencySweep();
 
     auto points = new QSpinBox();
     points->setFixedWidth(55);
@@ -487,6 +462,41 @@ VNA::VNA(AppWindow *window)
     tb_cal->addWidget(cbType);
 
     window->addToolBar(tb_cal);
+
+    auto configureToolbarForFrequencySweep = [=](){
+        for(auto a : frequencySweepActions) {
+            a->setVisible(true);
+        }
+        for(auto a : powerSweepActions) {
+            a->setVisible(false);
+        }
+        // enable calibration menu entries
+        calData->setEnabled(true);
+    };
+    auto configureToolbarForPowerSweep = [=](){
+        for(auto a : frequencySweepActions) {
+            a->setVisible(false);
+        }
+        for(auto a : powerSweepActions) {
+            a->setVisible(true);
+        }
+        // disable calibration menu entries
+        calData->setEnabled(false);
+    };
+
+    connect(cbSweepType, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
+        SetSweepType((SweepType) index);
+    });
+    connect(this, &VNA::sweepTypeChanged, [=](SweepType sw) {
+        if(sw == SweepType::Frequency) {
+            configureToolbarForFrequencySweep();
+        } else if(sw == SweepType::Power) {
+            configureToolbarForPowerSweep();
+        }
+    });
+    // initial setup is frequency sweep
+    SetSweepType(SweepType::Frequency);
+
     toolbars.insert(tb_cal);
 
 //    auto tb_portExtension = portExtension.createToolbar();
@@ -514,20 +524,17 @@ VNA::VNA(AppWindow *window)
 
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
-    if(pref.Acquisition.alwaysExciteBothPorts) {
-        settings.excitePort1 = 1;
-        settings.excitePort2 = 1;
-    } else {
-        settings.excitePort1 = traceModel.PortExcitationRequired(1);
-        settings.excitePort2 = traceModel.PortExcitationRequired(2);
-    }
+
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
-        settings.f_start = pref.Startup.DefaultSweep.start;
-        settings.f_stop = pref.Startup.DefaultSweep.stop;
+        settings.Freq.start = pref.Startup.DefaultSweep.f_start;
+        settings.Freq.stop = pref.Startup.DefaultSweep.f_stop;
+        SetSourceLevel(pref.Startup.DefaultSweep.f_excitation);
         ConstrainAndUpdateFrequencies();
-        SetSourceLevel(pref.Startup.DefaultSweep.excitation);
+        SetStartPower(pref.Startup.DefaultSweep.dbm_start);
+        SetStopPower(pref.Startup.DefaultSweep.dbm_stop);
+        SetPowerSweepFrequency(pref.Startup.DefaultSweep.dbm_freq);
         SetIFBandwidth(pref.Startup.DefaultSweep.bandwidth);
         SetAveraging(pref.Startup.DefaultSweep.averaging);
         SetPoints(pref.Startup.DefaultSweep.points);
@@ -544,9 +551,25 @@ VNA::VNA(AppWindow *window)
     finalize(central);
 }
 
+Calibration::InterpolationType VNA::getCalInterpolation()
+{
+    double f_min, f_max;
+    switch(settings.sweepType) {
+    case SweepType::Frequency:
+        f_min = settings.Freq.start;
+        f_max = settings.Freq.stop;
+        break;
+    case SweepType::Power:
+        f_min = settings.Power.frequency;
+        f_max = settings.Power.frequency;
+        break;
+    }
+    return cal.getInterpolation(f_min, f_max, settings.npoints);
+}
+
 QString VNA::getCalStyle()
 {
-    Calibration::InterpolationType interpol = cal.getInterpolation(settings);
+    Calibration::InterpolationType interpol = getCalInterpolation();
     QString style = "";
     switch (interpol)
     {
@@ -568,7 +591,7 @@ QString VNA::getCalStyle()
 
 QString VNA::getCalToolTip()
 {
-    Calibration::InterpolationType interpol = cal.getInterpolation(settings);
+    Calibration::InterpolationType interpol = getCalInterpolation();
     QString txt = "";
     switch (interpol)
     {
@@ -579,8 +602,8 @@ QString VNA::getCalToolTip()
     {
         QString lo = Unit::ToString(cal.getMinFreq(), "", " kMG", 5);
         QString hi = Unit::ToString(cal.getMaxFreq(), "", " kMG", 5);
-        if (settings.f_start < cal.getMinFreq() ) { lo = "<font color=\"red\">" + lo + "</font>";}
-        if (settings.f_stop > cal.getMaxFreq() ) { hi = "<font color=\"red\">" + hi + "</font>";}
+        if (settings.Freq.start < cal.getMinFreq() ) { lo = "<font color=\"red\">" + lo + "</font>";}
+        if (settings.Freq.stop > cal.getMaxFreq() ) { hi = "<font color=\"red\">" + hi + "</font>";}
         txt =
                 "limits: " + lo + " - " + hi
                 + "<br>"
@@ -688,14 +711,14 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
             if(!calWaitFirst || d.pointNum == 0) {
                 calWaitFirst = false;
                 cal.addMeasurement(calMeasurement, d);
-                if(d.pointNum == settings.points - 1) {
+                if(d.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
                     qDebug() << "Calibration measurement" << cal.MeasurementToString(calMeasurement) << "complete";
                     emit CalibrationMeasurementComplete(calMeasurement);
                 }
             }
         }
-        int percentage = (((average.currentSweep() - 1) * 100) + (d.pointNum + 1) * 100 / settings.points) / averages;
+        int percentage = (((average.currentSweep() - 1) * 100) + (d.pointNum + 1) * 100 / settings.npoints) / averages;
         calDialog.setValue(percentage);
     }
     if(calValid) {
@@ -706,9 +729,19 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
         deembedding.Deembed(d);
     }
 
-    traceModel.addVNAData(d, settings);
+    TraceMath::DataType type;
+    switch(settings.sweepType) {
+    case SweepType::Frequency:
+        type = TraceMath::DataType::Frequency;
+        break;
+    case SweepType::Power:
+        type = TraceMath::DataType::Power;
+        break;
+    }
+
+    traceModel.addVNAData(d, type);
     emit dataChanged();
-    if(d.pointNum == settings.points - 1) {
+    if(d.pointNum == settings.npoints - 1) {
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
@@ -726,11 +759,39 @@ void VNA::UpdateAverageCount()
 
 void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
 {
-    settings.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
+    // assemble VNA protocol settings
+    Protocol::SweepSettings s;
+    s.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
+    if(Preferences::getInstance().Acquisition.alwaysExciteBothPorts) {
+        s.excitePort1 = 1;
+        s.excitePort2 = 1;
+    } else {
+        s.excitePort1 = traceModel.PortExcitationRequired(1);
+        s.excitePort2 = traceModel.PortExcitationRequired(2);
+    }
+    settings.excitingPort1 = s.excitePort1;
+    settings.excitingPort2 = s.excitePort2;
+    if(settings.sweepType == SweepType::Frequency) {
+        s.fixedPowerSetting = Preferences::getInstance().Acquisition.adjustPowerLevel ? 0 : 1;
+        s.f_start = settings.Freq.start;
+        s.f_stop = settings.Freq.stop;
+        s.points = settings.npoints;
+        s.if_bandwidth = settings.bandwidth;
+        s.cdbm_excitation_start = settings.Freq.excitation_power * 100;
+        s.cdbm_excitation_stop = settings.Freq.excitation_power * 100;
+    } else if(settings.sweepType == SweepType::Power) {
+        s.fixedPowerSetting = 0;
+        s.f_start = settings.Power.frequency;
+        s.f_stop = settings.Power.frequency;
+        s.points = settings.npoints;
+        s.if_bandwidth = settings.bandwidth;
+        s.cdbm_excitation_start = settings.Power.start * 100;
+        s.cdbm_excitation_stop = settings.Power.stop * 100;
+    }
     if(window->getDevice() && Mode::getActiveMode() == this) {
-        window->getDevice()->Configure(settings, [=](Device::TransmissionResult res){
+        window->getDevice()->Configure(s, [=](Device::TransmissionResult res){
             // device received command, reset traces now
-            average.reset(settings.points);
+            average.reset(s.points);
             traceModel.clearLiveData();
             UpdateAverageCount();
             UpdateCalWidget();
@@ -739,7 +800,7 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
             }
         });
     }
-    emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
+    emit traceModel.SpanChanged(s.f_start, s.f_stop);
 }
 
 void VNA::StartImpedanceMatching()
@@ -748,38 +809,48 @@ void VNA::StartImpedanceMatching()
     dialog->show();
 }
 
+
+void VNA::SetSweepType(SweepType sw)
+{
+    if(settings.sweepType != sw) {
+        settings.sweepType = sw;
+        emit sweepTypeChanged(sw);
+        SettingsChanged();
+    }
+}
+
 void VNA::SetStartFreq(double freq)
 {
-    settings.f_start = freq;
-    if(settings.f_stop < freq) {
-        settings.f_stop = freq;
+    settings.Freq.start = freq;
+    if(settings.Freq.stop < freq) {
+        settings.Freq.stop = freq;
     }
     ConstrainAndUpdateFrequencies();
 }
 
 void VNA::SetStopFreq(double freq)
 {
-    settings.f_stop = freq;
-    if(settings.f_start > freq) {
-        settings.f_start = freq;
+    settings.Freq.stop = freq;
+    if(settings.Freq.start > freq) {
+        settings.Freq.start = freq;
     }
     ConstrainAndUpdateFrequencies();
 }
 
 void VNA::SetCenterFreq(double freq)
 {
-    auto old_span = settings.f_stop - settings.f_start;
+    auto old_span = settings.Freq.stop - settings.Freq.start;
     if (freq - old_span / 2 <= Device::Info().limits_minFreq) {
         // would shift start frequency below minimum
-        settings.f_start = 0;
-        settings.f_stop = 2 * freq;
+        settings.Freq.start = 0;
+        settings.Freq.stop = 2 * freq;
     } else if(freq + old_span / 2 >= Device::Info().limits_maxFreq) {
         // would shift stop frequency above maximum
-        settings.f_start = 2 * freq - Device::Info().limits_maxFreq;
-        settings.f_stop = Device::Info().limits_maxFreq;
+        settings.Freq.start = 2 * freq - Device::Info().limits_maxFreq;
+        settings.Freq.stop = Device::Info().limits_maxFreq;
     } else {
-        settings.f_start = freq - old_span / 2;
-        settings.f_stop = freq + old_span / 2;
+        settings.Freq.start = freq - old_span / 2;
+        settings.Freq.stop = freq + old_span / 2;
     }
     ConstrainAndUpdateFrequencies();
 }
@@ -787,48 +858,48 @@ void VNA::SetCenterFreq(double freq)
 void VNA::SetSpan(double span)
 {
     auto maxFreq = Preferences::getInstance().Acquisition.harmonicMixing ? Device::Info().limits_maxFreqHarmonic : Device::Info().limits_maxFreq;
-    auto old_center = (settings.f_start + settings.f_stop) / 2;
+    auto old_center = (settings.Freq.start + settings.Freq.stop) / 2;
     if(old_center < Device::Info().limits_minFreq + span / 2) {
         // would shift start frequency below minimum
-        settings.f_start = Device::Info().limits_minFreq;
-        settings.f_stop = Device::Info().limits_minFreq + span;
+        settings.Freq.start = Device::Info().limits_minFreq;
+        settings.Freq.stop = Device::Info().limits_minFreq + span;
     } else if(old_center > maxFreq - span / 2) {
         // would shift stop frequency above maximum
-        settings.f_start = maxFreq - span;
-        settings.f_stop = maxFreq;
+        settings.Freq.start = maxFreq - span;
+        settings.Freq.stop = maxFreq;
     } else {
-        settings.f_start = old_center - span / 2;
-         settings.f_stop = settings.f_start + span;
+        settings.Freq.start = old_center - span / 2;
+         settings.Freq.stop = settings.Freq.start + span;
     }
     ConstrainAndUpdateFrequencies();
 }
 
 void VNA::SetFullSpan()
 {
-    settings.f_start = Device::Info().limits_minFreq;
-    settings.f_stop = Device::Info().limits_maxFreq;
+    settings.Freq.start = Device::Info().limits_minFreq;
+    settings.Freq.stop = Device::Info().limits_maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
 void VNA::SpanZoomIn()
 {
-    auto center = (settings.f_start + settings.f_stop) / 2;
-    auto old_span = settings.f_stop - settings.f_start;
-    settings.f_start = center - old_span / 4;
-    settings.f_stop = center + old_span / 4;
+    auto center = (settings.Freq.start + settings.Freq.stop) / 2;
+    auto old_span = settings.Freq.stop - settings.Freq.start;
+    settings.Freq.start = center - old_span / 4;
+    settings.Freq.stop = center + old_span / 4;
     ConstrainAndUpdateFrequencies();
 }
 
 void VNA::SpanZoomOut()
 {
-    auto center = (settings.f_start + settings.f_stop) / 2;
-    auto old_span = settings.f_stop - settings.f_start;
+    auto center = (settings.Freq.start + settings.Freq.stop) / 2;
+    auto old_span = settings.Freq.stop - settings.Freq.start;
     if(center > old_span) {
-        settings.f_start = center - old_span;
+        settings.Freq.start = center - old_span;
     } else {
-        settings.f_start = 0;
+        settings.Freq.start = 0;
     }
-    settings.f_stop = center + old_span;
+    settings.Freq.stop = center + old_span;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -840,7 +911,28 @@ void VNA::SetSourceLevel(double level)
         level = Device::Info().limits_cdbm_min / 100.0;
     }
     emit sourceLevelChanged(level);
-    settings.cdbm_excitation = level * 100;
+    settings.Freq.excitation_power = level;
+    SettingsChanged();
+}
+
+void VNA::SetStartPower(double level)
+{
+    settings.Power.start = level;
+    emit startPowerChanged(level);
+    SettingsChanged();
+}
+
+void VNA::SetStopPower(double level)
+{
+    settings.Power.stop = level;
+    emit stopPowerChanged(level);
+    SettingsChanged();
+}
+
+void VNA::SetPowerSweepFrequency(double freq)
+{
+    settings.Power.frequency = freq;
+    emit powerSweepFrequencyChanged(freq);
     SettingsChanged();
 }
 
@@ -852,7 +944,7 @@ void VNA::SetPoints(unsigned int points)
         points = 2;
     }
     emit pointsChanged(points);
-    settings.points = points;
+    settings.npoints = points;
     SettingsChanged();
 }
 
@@ -863,8 +955,8 @@ void VNA::SetIFBandwidth(double bandwidth)
     } else if(bandwidth < Device::Info().limits_minIFBW) {
         bandwidth = Device::Info().limits_minIFBW;
     }
-    settings.if_bandwidth = bandwidth;
-    emit IFBandwidthChanged(bandwidth);
+    settings.bandwidth = bandwidth;
+    emit IFBandwidthChanged(settings.bandwidth);
     SettingsChanged();
 }
 
@@ -883,10 +975,10 @@ void VNA::ExcitationRequired(bool port1, bool port2)
         port2 = true;
     }
     // check if settings actually changed
-    if(settings.excitePort1 != port1
-        || settings.excitePort2 != port2) {
-        settings.excitePort1 = port1;
-        settings.excitePort2 = port2;
+    if(settings.excitingPort1 != port1
+        || settings.excitingPort2 != port2) {
+        settings.excitingPort1 = port1;
+        settings.excitingPort2 = port2;
         SettingsChanged();
     }
 }
@@ -915,10 +1007,16 @@ void VNA::ApplyCalibration(Calibration::Type type)
             DisableCalibration(true);
         }
     } else {
-        // Not all required traces available
-        InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. The calibration can be enabled after the missing measurements have been acquired.");
-        DisableCalibration(true);
-        StartCalibrationDialog(type);
+        if(settings.sweepType == SweepType::Frequency) {
+            // Not all required traces available
+            InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. The calibration can be enabled after the missing measurements have been acquired.");
+            DisableCalibration(true);
+            StartCalibrationDialog(type);
+        } else {
+            // Not all required traces available
+            InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. Please switch to frequency sweep to take these measurements.");
+            DisableCalibration(true);
+        }
     }
 }
 
@@ -971,7 +1069,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_stop - settings.f_start);
+        return QString::number(settings.Freq.stop - settings.Freq.start);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
         unsigned long newval;
@@ -982,7 +1080,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_start);
+        return QString::number(settings.Freq.start);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
         unsigned long newval;
@@ -993,7 +1091,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number((settings.f_start + settings.f_stop)/2);
+        return QString::number((settings.Freq.start + settings.Freq.stop)/2);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
         unsigned long newval;
@@ -1004,7 +1102,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_stop);
+        return QString::number(settings.Freq.stop);
     }));
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
@@ -1022,7 +1120,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.if_bandwidth);
+        return QString::number(settings.bandwidth);
     }));
     scpi_acq->add(new SCPICommand("POINTS", [=](QStringList params) -> QString {
         unsigned long newval;
@@ -1033,7 +1131,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.points);
+        return QString::number(settings.npoints);
     }));
     scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
         unsigned long newval;
@@ -1063,7 +1161,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.cdbm_excitation / 100.0);
+        return QString::number(settings.Freq.excitation_power);
     }));
     SCPINode::add(traceWidget);
     auto scpi_cal = new SCPINode("CALibration");
@@ -1122,19 +1220,19 @@ void VNA::ConstrainAndUpdateFrequencies()
     } else {
         maxFreq = Device::Info().limits_maxFreq;
     }
-    if(settings.f_stop > maxFreq) {
-        settings.f_stop = maxFreq;
+    if(settings.Freq.stop > maxFreq) {
+        settings.Freq.stop = maxFreq;
     }
-    if(settings.f_start > settings.f_stop) {
-        settings.f_start = settings.f_stop;
+    if(settings.Freq.start > settings.Freq.stop) {
+        settings.Freq.start = settings.Freq.stop;
     }
-    if(settings.f_start < Device::Info().limits_minFreq) {
-        settings.f_start = Device::Info().limits_minFreq;
+    if(settings.Freq.start < Device::Info().limits_minFreq) {
+        settings.Freq.start = Device::Info().limits_minFreq;
     }
-    emit startFreqChanged(settings.f_start);
-    emit stopFreqChanged(settings.f_stop);
-    emit spanChanged(settings.f_stop - settings.f_start);
-    emit centerFreqChanged((settings.f_stop + settings.f_start)/2);
+    emit startFreqChanged(settings.Freq.start);
+    emit stopFreqChanged(settings.Freq.stop);
+    emit spanChanged(settings.Freq.stop - settings.Freq.start);
+    emit centerFreqChanged((settings.Freq.stop + settings.Freq.start)/2);
     SettingsChanged();
 }
 
@@ -1142,24 +1240,39 @@ void VNA::LoadSweepSettings()
 {
     auto pref = Preferences::getInstance();
     QSettings s;
-    settings.f_start = s.value("SweepStart", pref.Startup.DefaultSweep.start).toULongLong();
-    settings.f_stop = s.value("SweepStop", pref.Startup.DefaultSweep.stop).toULongLong();
+    auto typeString = s.value("SweepType", pref.Startup.DefaultSweep.type).toString();
+    if(typeString == "Power") {
+        SetSweepType(SweepType::Power);
+    } else {
+        SetSweepType(SweepType::Frequency);
+    }
+    // frequency sweep settings
+    settings.Freq.start = s.value("SweepFreqStart", pref.Startup.DefaultSweep.f_start).toULongLong();
+    settings.Freq.stop = s.value("SweepFreqStop", pref.Startup.DefaultSweep.f_stop).toULongLong();
+    SetSourceLevel(s.value("SweepFreqLevel", pref.Startup.DefaultSweep.f_excitation).toDouble());
+    // power sweep settings
+    SetStartPower(s.value("SweepPowerStart", pref.Startup.DefaultSweep.dbm_start).toDouble());
+    SetStopPower(s.value("SweepPowerStop", pref.Startup.DefaultSweep.dbm_stop).toDouble());
+    SetPowerSweepFrequency(s.value("SweepFreqStop", pref.Startup.DefaultSweep.dbm_freq).toULongLong());
     SetPoints(s.value("SweepPoints", pref.Startup.DefaultSweep.points).toInt());
     SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
     SetAveraging(s.value("SweepAveraging", pref.Startup.DefaultSweep.averaging).toInt());
-    SetSourceLevel(s.value("SweepLevel", pref.Startup.DefaultSweep.excitation).toDouble());
     ConstrainAndUpdateFrequencies();
 }
 
 void VNA::StoreSweepSettings()
 {
     QSettings s;
-    s.setValue("SweepStart", static_cast<unsigned long long>(settings.f_start));
-    s.setValue("SweepStop", static_cast<unsigned long long>(settings.f_stop));
-    s.setValue("SweepBandwidth", settings.if_bandwidth);
-    s.setValue("SweepPoints", settings.points);
+    s.setValue("SweepType", settings.sweepType == SweepType::Frequency ? "Frequency" : "Power");
+    s.setValue("SweepFreqStart", static_cast<unsigned long long>(settings.Freq.start));
+    s.setValue("SweepFreqStop", static_cast<unsigned long long>(settings.Freq.stop));
+    s.setValue("SweepFreqLevel", settings.Freq.excitation_power);
+    s.setValue("SweepPowerStart", settings.Power.start);
+    s.setValue("SweepPowerStop", settings.Power.stop);
+    s.setValue("SweepPowerFreq", static_cast<unsigned long long>(settings.Power.frequency));
+    s.setValue("SweepBandwidth", settings.bandwidth);
+    s.setValue("SweepPoints", settings.npoints);
     s.setValue("SweepAveraging", averages);
-    s.setValue("SweepLevel", (double) settings.cdbm_excitation / 100.0);
 }
 
 void VNA::StopSweep()
@@ -1171,7 +1284,7 @@ void VNA::StopSweep()
 
 void VNA::StartCalibrationDialog(Calibration::Type type)
 {
-    auto traceDialog = new CalibrationTraceDialog(&cal, settings, type);
+    auto traceDialog = new CalibrationTraceDialog(&cal, settings.Freq.start, settings.Freq.stop, type);
     connect(traceDialog, &CalibrationTraceDialog::triggerMeasurement, this, &VNA::StartCalibrationMeasurement);
     connect(traceDialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
     connect(this, &VNA::CalibrationMeasurementComplete, traceDialog, &CalibrationTraceDialog::measurementComplete);

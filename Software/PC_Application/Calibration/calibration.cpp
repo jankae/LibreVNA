@@ -400,30 +400,33 @@ void Calibration::correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22)
     }
 }
 
-Calibration::InterpolationType Calibration::getInterpolation(Protocol::SweepSettings settings)
+Calibration::InterpolationType Calibration::getInterpolation(double f_start, double f_stop, int npoints)
 {
     if(!points.size()) {
         return InterpolationType::NoCalibration;
     }
-    if(settings.f_start < points.front().frequency || settings.f_stop > points.back().frequency) {
+    if(f_start < points.front().frequency || f_stop > points.back().frequency) {
         return InterpolationType::Extrapolate;
     }
     // Either exact or interpolation, check individual frequencies
     uint32_t f_step;
-    if(settings.points > 1) {
-        f_step = (settings.f_stop - settings.f_start) / (settings.points - 1);
+    if(npoints > 1) {
+        f_step = (f_stop - f_start) / (npoints - 1);
     } else {
-        f_step = settings.f_stop - settings.f_start;
+        f_step = f_stop - f_start;
     }
-    for(uint64_t f = settings.f_start; f <= settings.f_stop; f += f_step) {
+    uint64_t f = f_start;
+    do {
         if(find_if(points.begin(), points.end(), [&f](const Point& p){
             return abs(f - p.frequency) < 100;
         }) == points.end()) {
             return InterpolationType::Interpolate;
         }
-    }
+        f += f_step;
+    } while(f <= f_stop);
+
     // if we get here all frequency points were matched
-    if(points.front().frequency == settings.f_start && points.back().frequency == settings.f_stop) {
+    if(points.front().frequency == f_start && points.back().frequency == f_stop) {
         return InterpolationType::Unchanged;
     } else {
         return InterpolationType::Exact;
@@ -617,7 +620,7 @@ std::vector<Trace *> Calibration::getErrorTermTraces()
             case 10: d.y = p.re22; break;
             case 11: d.y = p.re03; break;
             }
-            traces[i]->addData(d);
+            traces[i]->addData(d, TraceMath::DataType::Frequency);
         }
     }
     return traces;
@@ -665,7 +668,7 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
                     } else {
                         d.y = complex<double>(p.real_S22, p.imag_S22);
                     }
-                    t->addData(d);
+                    t->addData(d, TraceMath::DataType::Frequency);
                 }
                 traces.push_back(t);
             }

@@ -52,7 +52,12 @@ void Trace::clear() {
     emit outputSamplesChanged(0, 0);
 }
 
-void Trace::addData(const Trace::Data& d) {
+void Trace::addData(const Trace::Data& d, DataType domain) {
+    if(this->domain != domain) {
+        clear();
+        this->domain = domain;
+        emit typeChanged(this);
+    }
     // add or replace data in vector while keeping it sorted with increasing frequency
     auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
         return lhs.x < rhs.x;
@@ -90,18 +95,11 @@ void Trace::addData(const Trace::Data& d) {
     emit outputSamplesChanged(index, index + 1);
 }
 
-void Trace::addData(const Trace::Data &d, const Protocol::SweepSettings &s)
-{
-    settings.VNA = s;
-    settings.valid = true;
-    addData(d);
-}
-
 void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettings &s)
 {
     settings.SA = s;
     settings.valid = true;
-    addData(d);
+    addData(d, DataType::Frequency);
 }
 
 void Trace::setName(QString name) {
@@ -128,7 +126,7 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
         Data d;
         d.x = tData.frequency;
         d.y = t.point(i).S[parameter];
-        addData(d);
+        addData(d, DataType::Frequency);
     }
     // check if parameter is square (e.i. S11/S22/S33/...)
     parameter++;
@@ -217,7 +215,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
         Data d;
         d.x = xColumn[i];
         d.y = complex<double>(real[i], imag[i]);
-        addData(d);
+        addData(d, DataType::Frequency);
     }
     reflection = false;
     createdFromFile = true;
@@ -236,13 +234,13 @@ void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, c
         Trace::Data td;
         td.x = d.frequency;
         td.y = complex<double>(d.real_S11, d.imag_S11);
-        S11.addData(td);
+        S11.addData(td, DataType::Frequency);
         td.y = complex<double>(d.real_S12, d.imag_S12);
-        S12.addData(td);
+        S12.addData(td, DataType::Frequency);
         td.y = complex<double>(d.real_S21, d.imag_S21);
-        S21.addData(td);
+        S21.addData(td, DataType::Frequency);
         td.y = complex<double>(d.real_S22, d.imag_S22);
-        S22.addData(td);
+        S22.addData(td, DataType::Frequency);
     }
 }
 

@@ -42,8 +42,7 @@ public:
 
 
     void clear();
-    void addData(const Data& d);
-    void addData(const Data& d, const Protocol::SweepSettings& s);
+    void addData(const Data& d, DataType domain);
     void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
     void setName(QString name);
     void setVelocityFactor(double v);
@@ -179,7 +178,6 @@ private:
     std::set<Marker*> markers;
     struct {
         union {
-            Protocol::SweepSettings VNA;
             Protocol::SpectrumAnalyzerSettings SA;
         };
         bool valid;

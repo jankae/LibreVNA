@@ -4,7 +4,7 @@
 #include <QStyle>
 #include "CustomWidgets/informationbox.h"
 
-CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, Protocol::SweepSettings sweep, Calibration::Type type) :
+CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, double f_max, Calibration::Type type) :
     QDialog(nullptr),
     ui(new Ui::CalibrationTraceDialog),
     cal(cal),
@@ -28,7 +28,7 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, Protocol::Sweep
     if(type != Calibration::Type::None) {
         auto kit = cal->getCalibrationKit();
         auto isTRL = type == Calibration::Type::TRL;
-        if(kit.minFreq(isTRL) > sweep.f_start || kit.maxFreq(isTRL) < sweep.f_stop) {
+        if(kit.minFreq(isTRL) > f_min || kit.maxFreq(isTRL) < f_max) {
             InformationBox::ShowMessage("Warning", "The calibration kit does not completely cover the currently selected span. "
                                         "Applying a calibration will not be possible for any measurements taken with these settings.");
         }

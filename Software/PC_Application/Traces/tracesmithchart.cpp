@@ -190,7 +190,7 @@ void TraceSmithChart::draw(QPainter &p) {
         for(int i=1;i<nPoints;i++) {
             auto last = trace->sample(i-1);
             auto now = trace->sample(i);
-            if (limitToSpan && (last.x < sweep_fmin || now.x > sweep_fmax)) {
+            if (limitToSpan && (trace->getDataType() == Trace::DataType::Frequency) && (last.x < sweep_fmin || now.x > sweep_fmax)) {
                 continue;
             }
             if(isnan(now.y.real())) {

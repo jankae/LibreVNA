@@ -14,6 +14,7 @@ using Datapoint = struct _datapoint {
 	float real_S12, imag_S12;
 	float real_S22, imag_S22;
 	uint64_t frequency;
+    int16_t cdbm;
 	uint16_t pointNum;
 };
 

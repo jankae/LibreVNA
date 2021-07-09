@@ -221,10 +221,10 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 	}
 	send[2] = (LO_M & 0x000F) << 12 | LO_FRAC;
 	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | LO_N << 1;
-	send[4] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
 	if (lowband) {
 		send[3] |= 0x0001;
 	}
+	send[4] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
 	send[5] = (Source_M & 0x001F) << 11 | Source_FRAC >> 1;
 	send[6] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | Source_N;
 	SwitchBytes(send[0]);

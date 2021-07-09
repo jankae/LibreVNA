@@ -59,7 +59,7 @@ public:
         NoCalibration, // No calibration available
     };
 
-    InterpolationType getInterpolation(Protocol::SweepSettings settings);
+    InterpolationType getInterpolation(double f_start, double f_stop, int points);
 
     static Measurement MeasurementFromString(QString s);
     static QString MeasurementToString(Measurement m);

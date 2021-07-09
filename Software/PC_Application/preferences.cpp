@@ -18,46 +18,42 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
 {
     ui->setupUi(this);
 
+    auto setDefaultSettingsEnabled = [=](bool en) {
+        ui->StartupSweepType->setEnabled(en);
+        ui->StartupSweepStart->setEnabled(en);
+        ui->StartupSweepStop->setEnabled(en);
+        ui->StartupSweepPoints->setEnabled(en);
+        ui->StartupSweepPowerStart->setEnabled(en);
+        ui->StartupSweepPowerStop->setEnabled(en);
+        ui->StartupSweepPowerFrequency->setEnabled(en);
+        ui->StartupSweepLevel->setEnabled(en);
+        ui->StartupSweepBandwidth->setEnabled(en);
+        ui->StartupSweepAveraging->setEnabled(en);
+        ui->StartupGeneratorFrequency->setEnabled(en);
+        ui->StartupGeneratorLevel->setEnabled(en);
+        ui->StartupSAStart->setEnabled(en);
+        ui->StartupSAStop->setEnabled(en);
+        ui->StartupSARBW->setEnabled(en);
+        ui->StartupSAWindow->setEnabled(en);
+        ui->StartupSADetector->setEnabled(en);
+        ui->StartupSAAveraging->setEnabled(en);
+        ui->StartupSASignalID->setEnabled(en);
+    };
+
     // Setup GUI connections and adjustments
     // Startup page
     connect(ui->StartupSweepLastUsed, &QPushButton::clicked, [=](){
-       ui->StartupSweepStart->setEnabled(false);
-       ui->StartupSweepStop->setEnabled(false);
-       ui->StartupSweepPoints->setEnabled(false);
-       ui->StartupSweepLevel->setEnabled(false);
-       ui->StartupSweepBandwidth->setEnabled(false);
-       ui->StartupSweepAveraging->setEnabled(false);
-       ui->StartupGeneratorFrequency->setEnabled(false);
-       ui->StartupGeneratorLevel->setEnabled(false);
-       ui->StartupSAStart->setEnabled(false);
-       ui->StartupSAStop->setEnabled(false);
-       ui->StartupSARBW->setEnabled(false);
-       ui->StartupSAWindow->setEnabled(false);
-       ui->StartupSADetector->setEnabled(false);
-       ui->StartupSAAveraging->setEnabled(false);
-       ui->StartupSASignalID->setEnabled(false);
+       setDefaultSettingsEnabled(false);
     });
     connect(ui->StartupSweepDefault, &QPushButton::clicked, [=](){
-       ui->StartupSweepStart->setEnabled(true);
-       ui->StartupSweepStop->setEnabled(true);
-       ui->StartupSweepPoints->setEnabled(true);
-       ui->StartupSweepLevel->setEnabled(true);
-       ui->StartupSweepBandwidth->setEnabled(true);
-       ui->StartupSweepAveraging->setEnabled(true);
-       ui->StartupGeneratorFrequency->setEnabled(true);
-       ui->StartupGeneratorLevel->setEnabled(true);
-       ui->StartupSAStart->setEnabled(true);
-       ui->StartupSAStop->setEnabled(true);
-       ui->StartupSARBW->setEnabled(true);
-       ui->StartupSAWindow->setEnabled(true);
-       ui->StartupSADetector->setEnabled(true);
-       ui->StartupSAAveraging->setEnabled(true);
-       ui->StartupSASignalID->setEnabled(true);
+       setDefaultSettingsEnabled(true);
     });
     ui->StartupSweepStart->setUnit("Hz");
     ui->StartupSweepStart->setPrefixes(" kMG");
     ui->StartupSweepStop->setUnit("Hz");
     ui->StartupSweepStop->setPrefixes(" kMG");
+    ui->StartupSweepPowerFrequency->setUnit("Hz");
+    ui->StartupSweepPowerFrequency->setPrefixes(" kMG");
     ui->StartupSweepBandwidth->setUnit("Hz");
     ui->StartupSweepBandwidth->setPrefixes(" k");
     ui->StartupGeneratorFrequency->setUnit("Hz");
@@ -110,11 +106,15 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         // apply GUI state to settings
         p->Startup.ConnectToFirstDevice = ui->StartupAutoconnect->isChecked();
         p->Startup.RememberSweepSettings = ui->StartupSweepLastUsed->isChecked();
-        p->Startup.DefaultSweep.start = ui->StartupSweepStart->value();
-        p->Startup.DefaultSweep.stop = ui->StartupSweepStop->value();
+        p->Startup.DefaultSweep.type = ui->StartupSweepType->currentText();
+        p->Startup.DefaultSweep.f_start = ui->StartupSweepStart->value();
+        p->Startup.DefaultSweep.f_stop = ui->StartupSweepStop->value();
+        p->Startup.DefaultSweep.f_excitation = ui->StartupSweepLevel->value();
+        p->Startup.DefaultSweep.dbm_start = ui->StartupSweepPowerStart->value();
+        p->Startup.DefaultSweep.dbm_stop = ui->StartupSweepPowerStop->value();
+        p->Startup.DefaultSweep.dbm_freq = ui->StartupSweepPowerFrequency->value();
         p->Startup.DefaultSweep.bandwidth = ui->StartupSweepBandwidth->value();
         p->Startup.DefaultSweep.points = ui->StartupSweepPoints->value();
-        p->Startup.DefaultSweep.excitation = ui->StartupSweepLevel->value();
         p->Startup.DefaultSweep.averaging = ui->StartupSweepAveraging->value();
         p->Startup.Generator.frequency = ui->StartupGeneratorFrequency->value();
         p->Startup.Generator.level = ui->StartupGeneratorLevel->value();
@@ -126,6 +126,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
         p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
         p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
+        p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
         p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
@@ -165,11 +166,15 @@ void PreferencesDialog::setInitialGUIState()
     } else {
         ui->StartupSweepDefault->click();
     }
-    ui->StartupSweepStart->setValueQuiet(p->Startup.DefaultSweep.start);
-    ui->StartupSweepStop->setValueQuiet(p->Startup.DefaultSweep.stop);
+    ui->StartupSweepType->setCurrentText(p->Startup.DefaultSweep.type);
+    ui->StartupSweepStart->setValueQuiet(p->Startup.DefaultSweep.f_start);
+    ui->StartupSweepStop->setValueQuiet(p->Startup.DefaultSweep.f_stop);
+    ui->StartupSweepLevel->setValue(p->Startup.DefaultSweep.f_excitation);
+    ui->StartupSweepPowerStart->setValue(p->Startup.DefaultSweep.dbm_start);
+    ui->StartupSweepPowerStop->setValue(p->Startup.DefaultSweep.dbm_stop);
+    ui->StartupSweepPowerFrequency->setValueQuiet(p->Startup.DefaultSweep.dbm_freq);
     ui->StartupSweepBandwidth->setValueQuiet(p->Startup.DefaultSweep.bandwidth);
     ui->StartupSweepPoints->setValue(p->Startup.DefaultSweep.points);
-    ui->StartupSweepLevel->setValue(p->Startup.DefaultSweep.excitation);
     ui->StartupGeneratorFrequency->setValue(p->Startup.Generator.frequency);
     ui->StartupGeneratorLevel->setValue(p->Startup.Generator.level);
     ui->StartupSweepAveraging->setValue(p->Startup.DefaultSweep.averaging);
@@ -183,6 +188,7 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteBothPorts);
     ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
+    ui->AcquisitionAdjustPowerLevel->setChecked(p->Acquisition.adjustPowerLevel);
     ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);

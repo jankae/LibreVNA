@@ -274,6 +274,7 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	auto port2 = port2_raw / ref;
 	data.pointNum = pointCnt;
 	data.frequency = settings.f_start + (settings.f_stop - settings.f_start) * pointCnt / (settings.points - 1);
+	data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
 	if(excitingPort1) {
 		data.real_S11 = port1.real();
 		data.imag_S11 = port1.imag();

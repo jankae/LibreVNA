@@ -15,7 +15,7 @@ class CalibrationTraceDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CalibrationTraceDialog(Calibration *cal, Protocol::SweepSettings sweep, Calibration::Type type = Calibration::Type::None);
+    explicit CalibrationTraceDialog(Calibration *cal, double f_min, double f_max, Calibration::Type type = Calibration::Type::None);
     ~CalibrationTraceDialog();
 
 public slots:

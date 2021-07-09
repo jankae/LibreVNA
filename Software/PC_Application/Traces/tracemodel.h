@@ -54,7 +54,7 @@ signals:
 
 public slots:
     void clearLiveData();
-    void addVNAData(const Protocol::Datapoint& d, const Protocol::SweepSettings& settings);
+    void addVNAData(const Protocol::Datapoint& d, TraceMath::DataType datatype);
     void addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings);
 
 private:

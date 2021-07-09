@@ -205,12 +205,22 @@ void TraceModel::clearLiveData()
     }
 }
 
-void TraceModel::addVNAData(const Protocol::Datapoint &d, const Protocol::SweepSettings& settings)
+void TraceModel::addVNAData(const Protocol::Datapoint &d, TraceMath::DataType datatype)
 {
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
             Trace::Data td;
-            td.x = d.frequency;
+            switch(datatype) {
+            case TraceMath::DataType::Frequency:
+                td.x = d.frequency;
+                break;
+            case TraceMath::DataType::Power:
+                td.x = (double) d.cdbm / 100.0;
+                break;
+            default:
+                // invalid type, can not add
+                return;
+            }
             switch(t->liveParameter()) {
             case Trace::LiveParameter::S11: td.y = complex<double>(d.real_S11, d.imag_S11); break;
             case Trace::LiveParameter::S12: td.y = complex<double>(d.real_S12, d.imag_S12); break;
@@ -220,7 +230,7 @@ void TraceModel::addVNAData(const Protocol::Datapoint &d, const Protocol::SweepS
                 // not a VNA trace, skip
                 continue;
             }
-            t->addData(td, settings);
+            t->addData(td, datatype);
         }
     }
 }

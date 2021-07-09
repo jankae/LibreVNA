@@ -48,7 +48,6 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 		m.SourceHighPower = (int) MAX2871::Power::n4dbm;
 		m.SourceHighband = false;
 		m.SourceLowPower = (int) amplitude.lowBandPower;
-		m.SourceHighPower = (int) MAX2871::Power::n4dbm;
 	} else {
 		m.SourceLowEN = 0;
 		m.SourceLowFrequency = HW::BandSwitchFrequency;
@@ -66,7 +65,7 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 		}
 		m.SourceHighband = true;
 		m.SourceHighPower = (int) amplitude.highBandPower;
-		m.SourceLowPower = (int) MAX2871::Power::n4dbm;
+		m.SourceLowPower = (int) Si5351C::DriveStrength::mA2;
 	}
 
 	m.attenuator = amplitude.attenuator;
