@@ -493,6 +493,7 @@ VNA::VNA(AppWindow *window)
         } else if(sw == SweepType::Power) {
             configureToolbarForPowerSweep();
         }
+        cbSweepType->setCurrentIndex((int) sw);
     });
     // initial setup is frequency sweep
     SetSweepType(SweepType::Frequency);
@@ -538,6 +539,9 @@ VNA::VNA(AppWindow *window)
         SetIFBandwidth(pref.Startup.DefaultSweep.bandwidth);
         SetAveraging(pref.Startup.DefaultSweep.averaging);
         SetPoints(pref.Startup.DefaultSweep.points);
+        if(pref.Startup.DefaultSweep.type == "Power Sweep") {
+            SetSweepType(SweepType::Power);
+        }
     }
 
     // Set ObjectName for toolbars and docks
@@ -1240,12 +1244,6 @@ void VNA::LoadSweepSettings()
 {
     auto pref = Preferences::getInstance();
     QSettings s;
-    auto typeString = s.value("SweepType", pref.Startup.DefaultSweep.type).toString();
-    if(typeString == "Power") {
-        SetSweepType(SweepType::Power);
-    } else {
-        SetSweepType(SweepType::Frequency);
-    }
     // frequency sweep settings
     settings.Freq.start = s.value("SweepFreqStart", pref.Startup.DefaultSweep.f_start).toULongLong();
     settings.Freq.stop = s.value("SweepFreqStop", pref.Startup.DefaultSweep.f_stop).toULongLong();
@@ -1253,11 +1251,17 @@ void VNA::LoadSweepSettings()
     // power sweep settings
     SetStartPower(s.value("SweepPowerStart", pref.Startup.DefaultSweep.dbm_start).toDouble());
     SetStopPower(s.value("SweepPowerStop", pref.Startup.DefaultSweep.dbm_stop).toDouble());
-    SetPowerSweepFrequency(s.value("SweepFreqStop", pref.Startup.DefaultSweep.dbm_freq).toULongLong());
+    SetPowerSweepFrequency(s.value("SweepPowerFreq", pref.Startup.DefaultSweep.dbm_freq).toULongLong());
     SetPoints(s.value("SweepPoints", pref.Startup.DefaultSweep.points).toInt());
     SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
     SetAveraging(s.value("SweepAveraging", pref.Startup.DefaultSweep.averaging).toInt());
     ConstrainAndUpdateFrequencies();
+    auto typeString = s.value("SweepType", pref.Startup.DefaultSweep.type).toString();
+    if(typeString == "Power") {
+        SetSweepType(SweepType::Power);
+    } else {
+        SetSweepType(SweepType::Frequency);
+    }
 }
 
 void VNA::StoreSweepSettings()

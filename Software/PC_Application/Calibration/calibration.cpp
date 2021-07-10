@@ -423,7 +423,7 @@ Calibration::InterpolationType Calibration::getInterpolation(double f_start, dou
             return InterpolationType::Interpolate;
         }
         f += f_step;
-    } while(f <= f_stop);
+    } while(f <= f_stop && f_step > std::numeric_limits<double>::epsilon());
 
     // if we get here all frequency points were matched
     if(points.front().frequency == f_start && points.back().frequency == f_stop) {
