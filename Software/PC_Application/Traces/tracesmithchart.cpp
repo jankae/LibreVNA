@@ -145,14 +145,14 @@ void TraceSmithChart::draw(QPainter &p) {
     transform = p.transform();
 
     // Outer circle
-    auto pen = QPen(pref.General.graphColors.axis);
+    auto pen = QPen(pref.Graphs.Color.axis);
     pen.setCosmetic(true);
     p.setPen(pen);
     QRectF rectangle(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
     p.drawArc(rectangle, 0, 5760);
 
     constexpr int Circles = 6;
-    pen = QPen(pref.General.graphColors.divisions, 0.5, Qt::DashLine);
+    pen = QPen(pref.Graphs.Color.divisions, 0.5, Qt::DashLine);
     pen.setCosmetic(true);
     p.setPen(pen);
     for(int i=1;i<Circles;i++) {

@@ -60,6 +60,7 @@ public slots:
     void axisSetupDialog();
 
 protected:
+    virtual bool configureForTrace(Trace *t) override;
     virtual void updateContextMenu() override;
     virtual bool dropSupported(Trace *t) override;
     virtual void draw(QPainter &p) override;
@@ -77,7 +78,6 @@ private:
     void enableTraceAxis(Trace *t, int axis, bool enabled);
     bool supported(Trace *t) override;
     bool supported(Trace *t, YAxisType type);
-    void removeUnsupportedTraces();
     QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
     QPointF pixelToPlotValue(QPoint pixel, int YAxis);

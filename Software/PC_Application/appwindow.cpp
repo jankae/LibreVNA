@@ -92,12 +92,12 @@ AppWindow::AppWindow(QWidget *parent)
         auto port = parser.value("port").toUInt(&OK);
         if(!OK) {
             // set default port
-            port = Preferences::getInstance().General.SCPI.port;
+            port = Preferences::getInstance().SCPIServer.port;
         }
         StartTCPServer(port);
         Preferences::getInstance().manualTCPport();
-    } else if(Preferences::getInstance().General.SCPI.enabled) {
-        StartTCPServer(Preferences::getInstance().General.SCPI.port);
+    } else if(Preferences::getInstance().SCPIServer.enabled) {
+        StartTCPServer(Preferences::getInstance().SCPIServer.port);
     }
 
     ui->setupUi(this);
@@ -194,13 +194,13 @@ AppWindow::AppWindow(QWidget *parent)
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         // save previous SCPI settings in case they change
         auto &p = Preferences::getInstance();
-        auto SCPIenabled = p.General.SCPI.enabled;
-        auto SCPIport = p.General.SCPI.port;
+        auto SCPIenabled = p.SCPIServer.enabled;
+        auto SCPIport = p.SCPIServer.port;
         p.edit();
-        if(SCPIenabled != p.General.SCPI.enabled || SCPIport != p.General.SCPI.port) {
+        if(SCPIenabled != p.SCPIServer.enabled || SCPIport != p.SCPIServer.port) {
             StopTCPServer();
-            if(p.General.SCPI.enabled) {
-                StartTCPServer(p.General.SCPI.port);
+            if(p.SCPIServer.enabled) {
+                StartTCPServer(p.SCPIServer.port);
             }
         }
         auto active = Mode::getActiveMode();

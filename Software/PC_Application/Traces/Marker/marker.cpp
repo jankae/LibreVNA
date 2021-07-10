@@ -83,8 +83,8 @@ void Marker::assignTrace(Trace *t)
         // Marker was just created and this is the first assignment to a trace.
         // Use display format on graph from preferences
         auto p = Preferences::getInstance();
-        if(p.General.markerDefault.showDataOnGraphs) {
-            if(p.General.markerDefault.showAllData) {
+        if(p.Graphs.markerBehavior.showDataOnGraphs) {
+            if(p.Graphs.markerBehavior.showAllData) {
                 for(auto f : applicableFormats()) {
                     formatGraph.insert(f);
                 }

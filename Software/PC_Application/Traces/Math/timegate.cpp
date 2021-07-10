@@ -334,8 +334,8 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     auto pref = Preferences::getInstance();
     QPainter p(this);
     // fill background
-    p.setBackground(QBrush(pref.General.graphColors.background));
-    p.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
+    p.setBackground(QBrush(pref.Graphs.Color.background));
+    p.fillRect(0, 0, width(), height(), QBrush(pref.Graphs.Color.background));
 
     // plot trace
     auto pen = QPen(Qt::green, 1);

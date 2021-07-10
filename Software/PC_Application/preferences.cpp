@@ -74,17 +74,19 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
 
     // General page
     if(p->TCPoverride) {
-        ui->GeneralSCPIPort->setEnabled(false);
-        ui->GeneralSCPIEnabled->setEnabled(false);
+        ui->SCPIServerPort->setEnabled(false);
+        ui->SCPIServerEnabled->setEnabled(false);
     }
 
-    connect(ui->GeneralMarkerDataGraph, &QCheckBox::toggled, [=](bool enabled) {
-         ui->GeneralMarkerDataGraphAll->setEnabled(enabled);
+    connect(ui->GraphsShowMarkerData, &QCheckBox::toggled, [=](bool enabled) {
+         ui->GraphsShowAllMarkerData->setEnabled(enabled);
     });
 
     // Page selection
     connect(ui->treeWidget, &QTreeWidget::currentItemChanged, [=](QTreeWidgetItem *current, QTreeWidgetItem *) {
         auto name = current->text(0);
+        // remove any potential white space in name (can't have whitespace in page names)
+        name.replace(" ", "");
         for(int i=0;i<ui->pageWidget->count();i++) {
             auto w = ui->pageWidget->widget(i);
             if(name == w->objectName()) {
@@ -130,13 +132,14 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
-        p->General.graphColors.background = ui->GeneralGraphBackground->getColor();
-        p->General.graphColors.axis = ui->GeneralGraphAxis->getColor();
-        p->General.graphColors.divisions = ui->GeneralGraphDivisions->getColor();
-        p->General.markerDefault.showDataOnGraphs = ui->GeneralMarkerDataGraph->isChecked();
-        p->General.markerDefault.showAllData = ui->GeneralMarkerDataGraphAll->isChecked();
-        p->General.SCPI.enabled = ui->GeneralSCPIEnabled->isChecked();
-        p->General.SCPI.port = ui->GeneralSCPIPort->value();
+        p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
+        p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
+        p->Graphs.Color.divisions = ui->GraphsColorDivisions->getColor();
+        p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
+        p->Graphs.markerBehavior.showDataOnGraphs = ui->GraphsShowMarkerData->isChecked();
+        p->Graphs.markerBehavior.showAllData = ui->GraphsShowAllMarkerData->isChecked();
+        p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
+        p->SCPIServer.port = ui->SCPIServerPort->value();
         accept();
     });
 
@@ -193,13 +196,14 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
 
-    ui->GeneralGraphBackground->setColor(p->General.graphColors.background);
-    ui->GeneralGraphAxis->setColor(p->General.graphColors.axis);
-    ui->GeneralGraphDivisions->setColor(p->General.graphColors.divisions);
-    ui->GeneralMarkerDataGraph->setChecked(p->General.markerDefault.showDataOnGraphs);
-    ui->GeneralMarkerDataGraphAll->setChecked(p->General.markerDefault.showAllData);
-    ui->GeneralSCPIEnabled->setChecked(p->General.SCPI.enabled);
-    ui->GeneralSCPIPort->setValue(p->General.SCPI.port);
+    ui->GraphsColorBackground->setColor(p->Graphs.Color.background);
+    ui->GraphsColorAxis->setColor(p->Graphs.Color.axis);
+    ui->GraphsColorDivisions->setColor(p->Graphs.Color.divisions);
+    ui->GraphsDomainChangeBehavior->setCurrentIndex((int) p->Graphs.domainChangeBehavior);
+    ui->GraphsShowMarkerData->setChecked(p->Graphs.markerBehavior.showDataOnGraphs);
+    ui->GraphsShowAllMarkerData->setChecked(p->Graphs.markerBehavior.showAllData);
+    ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
+    ui->SCPIServerPort->setValue(p->SCPIServer.port);
 
     QTreeWidgetItem *item = ui->treeWidget->topLevelItem(0);
     if (item != nullptr) {

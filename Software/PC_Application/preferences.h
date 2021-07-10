@@ -6,6 +6,15 @@
 #include <exception>
 #include "Util/qpointervariant.h"
 
+enum GraphDomainChangeBehavior {
+    RemoveChangedTraces = 0,
+    AdjustGraphs = 1,
+    AdjustGrahpsIfOnlyTrace = 2,
+};
+
+Q_DECLARE_METATYPE(GraphDomainChangeBehavior);
+
+
 class Preferences {
 public:
     static Preferences& getInstance() {
@@ -62,16 +71,17 @@ public:
             QColor background;
             QColor axis;
             QColor divisions;
-        } graphColors;
+        } Color;
+        GraphDomainChangeBehavior domainChangeBehavior;
         struct {
             bool showDataOnGraphs;
             bool showAllData;
-        } markerDefault;
-        struct {
-            bool enabled;
-            int port;
-        } SCPI;
-    } General;
+        } markerBehavior;
+    } Graphs;
+    struct {
+        bool enabled;
+        int port;
+    } SCPIServer;
 
     bool TCPoverride; // in case of manual port specification via command line
 private:
@@ -83,7 +93,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 34> descr = {{
+    const std::array<SettingDescription, 35> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -111,13 +121,14 @@ private:
         {&Acquisition.harmonicMixing, "Acquisition.harmonicMixing", false},
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
-        {&General.graphColors.background, "General.graphColors.background", QColor(Qt::black)},
-        {&General.graphColors.axis, "General.graphColors.axis", QColor(Qt::white)},
-        {&General.graphColors.divisions, "General.graphColors.divisions", QColor(Qt::gray)},
-        {&General.markerDefault.showDataOnGraphs, "General.MarkerDefault.ShowDataOnGraphs", true},
-        {&General.markerDefault.showAllData, "General.MarkerDefault.ShowAllData", false},
-        {&General.SCPI.enabled, "General.SCPI.enabled", true},
-        {&General.SCPI.port, "General.SCPI.port", 19542},
+        {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
+        {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
+        {&Graphs.Color.divisions, "Graphs.Color.divisions", QColor(Qt::gray)},
+        {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
+        {&Graphs.markerBehavior.showDataOnGraphs, "Graphs.markerBehavior.ShowDataOnGraphs", true},
+        {&Graphs.markerBehavior.showAllData, "Graphs.markerBehavior.ShowAllData", false},
+        {&SCPIServer.enabled, "SCPIServer.enabled", true},
+        {&SCPIServer.port, "SCPIServer.port", 19542},
     }};
 };
 

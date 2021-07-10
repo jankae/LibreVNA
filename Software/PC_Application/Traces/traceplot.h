@@ -39,6 +39,9 @@ protected:
     static constexpr int MinUpdateInterval = 100;
     // need to be called in derived class constructor
     void initializeTraceInfo();
+    std::vector<Trace*> activeTraces();
+    // changes the graph settings to make it possible to display a specific trace. The trace is not aded yet
+    virtual bool configureForTrace(Trace *t) { Q_UNUSED(t) return false; }; // default implementation fails for all traces
     void contextMenuEvent(QContextMenuEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu(){};
@@ -91,6 +94,9 @@ protected:
     double sweep_fmin, sweep_fmax;
     TraceModel &model;
     Marker *selectedMarker;
+
+    // graph settings have been changed, check and possibly remove incompatible traces before next paint event
+    bool traceRemovalPending;
 
     bool dropPending;
     QPoint dropPosition;
