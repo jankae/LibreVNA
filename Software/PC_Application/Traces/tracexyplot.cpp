@@ -498,20 +498,7 @@ void TraceXYPlot::draw(QPainter &p)
                 // only draw markers on primary YAxis and if the trace has at least one point
                 auto markers = t->getMarkers();
                 for(auto m : markers) {
-//                    if(m->isTimeDomain() != (XAxis.type != XAxisType::Frequency)) {
-//                        // wrong domain, skip this marker
-//                        continue;
-//                    }
-                    double xPosition;
-//                    if(m->isTimeDomain()) {
-//                        if(XAxis.type == XAxisType::Distance) {
-//                            xPosition = m->getTimeData().distance;
-//                        } else {
-//                            xPosition = m->getTimeData().time;
-//                        }
-//                    } else {
-                        xPosition = m->getPosition();
-//                    }
+                    double xPosition = m->getPosition();
                     if (xPosition < XAxis.rangeMin || xPosition > XAxis.rangeMax) {
                         // marker not in graph range
                         continue;
@@ -905,10 +892,10 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
         ret.setY(Util::SparamTodB(data.y));
         break;
     case YAxisType::Step:
-        ret.setY(t->sample(sample, Trace::SampleType::TimeStep).y.real());
+        ret.setY(t->sample(sample, true).y.real());
         break;
     case YAxisType::Impedance: {
-        double step = t->sample(sample, Trace::SampleType::TimeStep).y.real();
+        double step = t->sample(sample, true).y.real();
         if(abs(step) < 1.0) {
             ret.setY(Util::SparamToImpedance(step).real());
         }

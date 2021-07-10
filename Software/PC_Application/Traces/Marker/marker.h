@@ -42,6 +42,8 @@ public:
         TOI,                    // third order intercept point
         AvgTone,                // average level of tone
         AvgModulationProduct,   // average level of modulation products
+        // compression parameters
+        P1dB,                   // power level at 1dB compression
         // keep last at end
         Last,
     };
@@ -60,7 +62,7 @@ public:
     double getPosition() const;
     std::complex<double> getData() const;
     bool isMovable();
-    bool isTimeDomain();
+    Trace::DataType getDomain();
 
     QPixmap& getSymbol();
 
@@ -81,6 +83,7 @@ public:
         Bandpass,
         TOI,
         PhaseNoise,
+        P1dB,
         // keep last at end
         Last,
     };
@@ -154,6 +157,7 @@ private:
         case Type::Bandpass: return "Bandpass";
         case Type::TOI: return "TOI/IP3";
         case Type::PhaseNoise: return "Phase noise";
+        case Type::P1dB: return "1dB compression";
         default: return QString();
         }
     }

@@ -68,10 +68,10 @@ bool MarkerGroup::applicable(Marker *m)
     }
     if(markers.size() == 0) {
         // first marker in group
-        isTimeDomain = m->isTimeDomain();
+        domain = m->getDomain();
     } else {
         // check domain
-        if(isTimeDomain != m->isTimeDomain()) {
+        if(domain != m->getDomain()) {
             // only markers of the same domain are allowed in a group
             return false;
         }

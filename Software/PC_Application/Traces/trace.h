@@ -66,7 +66,7 @@ public:
     unsigned int size() const;
     double minX();
     double maxX();
-    double findExtremumFreq(bool max);
+    double findExtremum(bool max);
     /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
      * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.
      * Only peaks with at least minLevel will be considered.
@@ -79,8 +79,8 @@ public:
         TimeStep,
     };
 
-    Data sample(unsigned int index, SampleType type = SampleType::Frequency) const;
-    // returns a (possibly interpolated sample) at a specified frequency/time
+    Data sample(unsigned int index, bool getStepResponse = false) const;
+    // returns a (possibly interpolated sample) at a specified frequency/time/power
     Data interpolatedSample(double x);
     QString getFilename() const;
     unsigned int getFileParameter() const;

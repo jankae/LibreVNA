@@ -838,12 +838,8 @@ double Trace::maxX()
     }
 }
 
-double Trace::findExtremumFreq(bool max)
+double Trace::findExtremum(bool max)
 {
-    if(lastMath->getDataType() != DataType::Frequency) {
-        // not in frequency domain
-        return numeric_limits<double>::quiet_NaN();
-    }
     double compare = max ? numeric_limits<double>::min() : numeric_limits<double>::max();
     double freq = 0.0;
     for(auto sample : lastMath->rData()) {
@@ -913,10 +909,10 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     return frequencies;
 }
 
-Trace::Data Trace::sample(unsigned int index, SampleType type) const
+Trace::Data Trace::sample(unsigned int index, bool getStepResponse) const
 {
     auto data = lastMath->getSample(index);
-    if(type == SampleType::TimeStep) {
+    if(outputType() == Trace::DataType::Time && getStepResponse) {
         // exchange impulse data with step data
         data.y = lastMath->getStepResponse(index);
     }

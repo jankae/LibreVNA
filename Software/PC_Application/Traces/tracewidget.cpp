@@ -239,7 +239,7 @@ void TraceWidget::SetupSCPI()
         if(!t) {
            return "ERROR";
         }
-        auto d = t->interpolatedSample(t->findExtremumFreq(true));
+        auto d = t->interpolatedSample(t->findExtremum(true));
         return QString::number(d.x)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("MINAmplitude", nullptr, [=](QStringList params) -> QString {
@@ -247,7 +247,7 @@ void TraceWidget::SetupSCPI()
         if(!t) {
            return "ERROR";
         }
-        auto d = t->interpolatedSample(t->findExtremumFreq(false));
+        auto d = t->interpolatedSample(t->findExtremum(false));
         return QString::number(d.x)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("NEW", [=](QStringList params) -> QString {
