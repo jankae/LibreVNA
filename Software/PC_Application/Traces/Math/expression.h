@@ -30,7 +30,7 @@ private slots:
 private:
     QString exp;
     mup::ParserX *parser;
-    mup::Value t, d, f, w, x;
+    mup::Value t, d, f, w, x, P;
 };
 
 }
