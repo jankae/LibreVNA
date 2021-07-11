@@ -1062,6 +1062,21 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
 
 void VNA::SetupSCPI()
 {
+    SCPINode::add(new SCPICommand("SWEEP", [=](QStringList params) -> QString {
+        if(params.size() >= 1) {
+            if(params[0] == "FREQUENCY") {
+                SetSweepType(SweepType::Frequency);
+                return "";
+            } else if(params[0] == "POWER") {
+                SetSweepType(SweepType::Power);
+                return "";
+            }
+        }
+        // either no parameter or invalid
+        return "ERROR";
+    }, [=](QStringList) -> QString {
+        return settings.sweepType == SweepType::Frequency ? "FREQUENCY" : "POWER";
+    }));
     auto scpi_freq = new SCPINode("FREQuency");
     SCPINode::add(scpi_freq);
     scpi_freq->add(new SCPICommand("SPAN", [=](QStringList params) -> QString {
@@ -1113,6 +1128,30 @@ void VNA::SetupSCPI()
         SetFullSpan();
         return "";
     }, nullptr));
+    auto scpi_power = new SCPINode("POWer");
+    SCPINode::add(scpi_power);
+    scpi_power->add(new SCPICommand("START", [=](QStringList params) -> QString {
+        double newval;
+        if(!SCPI::paramToDouble(params, 0, newval)) {
+            return "ERROR";
+        } else {
+            SetStartPower(newval);
+            return "";
+        }
+    }, [=](QStringList) -> QString {
+        return QString::number(settings.Power.start);
+    }));
+    scpi_power->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
+        double newval;
+        if(!SCPI::paramToDouble(params, 0, newval)) {
+            return "ERROR";
+        } else {
+            SetStopPower(newval);
+            return "";
+        }
+    }, [=](QStringList) -> QString {
+        return QString::number(settings.Power.stop);
+    }));
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
     scpi_acq->add(new SCPICommand("IFBW", [=](QStringList params) -> QString {
@@ -1166,6 +1205,17 @@ void VNA::SetupSCPI()
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Freq.excitation_power);
+    }));
+    scpi_stim->add(new SCPICommand("FREQuency", [=](QStringList params) -> QString {
+        unsigned long newval;
+        if(!SCPI::paramToULong(params, 0, newval)) {
+            return "ERROR";
+        } else {
+            SetPowerSweepFrequency(newval);
+            return "";
+        }
+    }, [=](QStringList) -> QString {
+        return QString::number(settings.Power.frequency);
     }));
     SCPINode::add(traceWidget);
     auto scpi_cal = new SCPINode("CALibration");

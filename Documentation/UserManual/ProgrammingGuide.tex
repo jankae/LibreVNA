@@ -318,6 +318,10 @@ B
 \subsection{VNA Commands}
 These commands change or query VNA settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the VNA mode is active (e.g. it is possible to change the span while in signal generator mode but it does not effect the \vna{} until the mode is switched to VNA). Certain commands (like taking a calibration measurement) are only available in VNA mode and will return an error if another mode is active.
 
+\subsubsection{VNA:SWEEP}
+\event{Sets the type of the sweep}{VNA:SWEEP}{<type>, either FREQUENCY or POWER}
+\query{Queries the currently selected type}{VNA:SWEEP?}{None}{<type>, either FREQUENCY or POWER}
+
 \subsubsection{VNA:FREQuency:SPAN}
 \event{Sets the span of the sweep}{VNA:FREQuency:SPAN}{<span>, in Hz}
 \query{Queries the currently selected span}{VNA:FREQuency:SPAN?}{None}{span in Hz}
@@ -336,6 +340,14 @@ These commands change or query VNA settings. Although most of them are available
 
 \subsubsection{VNA:FREQuency:FULL}
 \event{Sets the device to the maximum span possible}{VNA:FREQuency:FULL}{None}
+
+\subsubsection{VNA:POWer:START}
+\event{Sets the start power of the power sweep}{VNA:POWer:START}{<start power>, in dBm}
+\query{Queries the currently selected start power}{VNA:POWer:START?}{None}{start power in dBm}
+
+\subsubsection{VNA:POWer:STOP}
+\event{Sets the stop power of the power sweep}{VNA:POWer:STOP}{<stop power>, in dBm}
+\query{Queries the currently selected stop power}{VNA:POWer:STOP?}{None}{stop power in dBm}
 
 \subsubsection{VNA:ACQuisition:IFBW}
 \event{Sets the IF bandwidth}{VNA:ACQuisition:IFBW}{<IF bandwidth>, in Hz}
@@ -368,8 +380,12 @@ Example (assuming <averaging sweep> = 3):
 \query{Queries whether the average filter has reached a steady state (that is <acquired sweeps> = <averaging sweeps>)}{VNA:ACQuisition:FINished?}{None}{TRUE or FALSE}
 
 \subsubsection{VNA:STIMulus:LVL}
-\event{Sets the output power of the stimulus signal}{VNA:STIMulus:LVL}{<power>, in dBm}
+\event{Sets the output power of the stimulus signal when sweep type is frequency}{VNA:STIMulus:LVL}{<power>, in dBm}
 \query{Queries the currently selected output power}{VNA:STIMulus:LVL?}{None}{power in dBm}
+
+\subsubsection{VNA:STIMulus:FREQuency}
+\event{Sets the frequency of the stimulus signal when sweep type is power}{VNA:STIMulus:FREQuency}{<freq>, in Hz}
+\query{Queries the currently selected frequency}{VNA:STIMulus:FREQuency?}{None}{frequency in Hz}
 
 \subsubsection{VNA:TRACe:LIST}
 \query{Lists the names of all available traces}{VNA:TRACe:LIST?}{None}{comma-separated list of trace name}
@@ -380,6 +396,7 @@ S11,S12,S21,S22
 
 \subsubsection{VNA:TRACe:DATA}
 \query{Returns the data of a trace}{VNA:TRACe:DATA?}{<trace>, either by name or by index}{comma-separated list of tuples [x, real(y), imag(y]}
+Depending on the sweep and possible confiigured math operations, x may be either frequency, power or time.
 \begin{example}
 :VNA:TRAC:DATA? S11
 [1e+6,0.400172,0.0377869],
