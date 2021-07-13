@@ -19,6 +19,27 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->name->setText(t.name());
     ui->color->setColor(trace.color());
     ui->vFactor->setValue(t.velocityFactor());
+
+    connect(ui->bLive, &QPushButton::clicked, [=](bool live) {
+        if(live) {
+            ui->stack->setCurrentIndex(0);
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+        }
+    });
+    connect(ui->bFile, &QPushButton::clicked, [&](bool file) {
+        if(file) {
+            if(t.getFilename().endsWith(".csv")) {
+                ui->stack->setCurrentIndex(2);
+                ui->csvImport->setFile(t.getFilename());
+                ui->csvImport->selectTrace(t.getFileParameter());
+            } else {
+                // attempt to parse as touchstone
+                ui->stack->setCurrentIndex(1);
+                ui->touchstoneImport->setFile(t.getFilename());
+            }
+        }
+    });
+
     connect(ui->color, &ColorPickerButton::colorChanged, [=](const QColor& color){
        trace.setColor(color);
     });
@@ -26,7 +47,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->GSource->setId(ui->bLive, 0);
     ui->GSource->setId(ui->bFile, 1);
 
-    if(t.isCalibration() || (t.isFromFile() && t.getFilename().endsWith(".csv"))) {
+    if(t.isCalibration()) {
         // prevent editing imported calibration traces (and csv files for now)
         ui->bLive->setEnabled(false);
         ui->bFile->setEnabled(false);
@@ -34,12 +55,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         ui->CLiveParam->setEnabled(false);
     }
 
-    if(t.isFromFile() && !t.getFilename().endsWith(".csv")) {
-        ui->bFile->click();
-        ui->touchstoneImport->setFile(t.getFilename());
-    }
-
-    auto updateFileStatus = [this]() {
+    auto updateTouchstoneFileStatus = [this]() {
         // remove all options from paramater combo box
         while(ui->CParameter->count() > 0) {
             ui->CParameter->removeItem(0);
@@ -60,6 +76,25 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             } else {
                 ui->CParameter->setCurrentIndex(0);
             }
+        }
+        if(ui->touchstoneImport->getFilename().endsWith(".csv")) {
+            // switch to csv import dialog
+            ui->stack->setCurrentIndex(2);
+            ui->csvImport->setFile(ui->touchstoneImport->getFilename());
+        }
+    };
+
+    auto updateCSVFileStatus = [this]() {
+        if (ui->bFile->isChecked() && !ui->csvImport->getStatus())  {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        } else {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+            auto touchstone = ui->touchstoneImport->getTouchstone();
+        }
+        if(!(ui->touchstoneImport->getFilename().endsWith(".csv"))) {
+            // switch to touchstone import dialog
+            ui->stack->setCurrentIndex(1);
+            ui->touchstoneImport->setFile(ui->csvImport->getFilename());
         }
     };
 
@@ -91,11 +126,13 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     default: break;
     }
 
-    connect(ui->GSource, qOverload<int>(&QButtonGroup::buttonClicked), updateFileStatus);
-    connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, updateFileStatus);
-    connect(ui->touchstoneImport, &TouchstoneImport::filenameChanged, updateFileStatus);
+    connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, updateTouchstoneFileStatus);
+    connect(ui->touchstoneImport, &TouchstoneImport::filenameChanged, updateTouchstoneFileStatus);
+    connect(ui->csvImport, &CSVImport::filenameChanged, updateCSVFileStatus);
 
-    updateFileStatus();
+    if(t.isFromFile()) {
+        ui->bFile->click();
+    }
 
     // setup math part of the GUI
     auto model = new MathModel(t);
@@ -208,8 +245,14 @@ void TraceEditDialog::on_buttonBox_accepted()
     if(!trace.isCalibration()) {
         // only apply changes if it is not a calibration trace
         if (ui->bFile->isChecked()) {
-            auto t = ui->touchstoneImport->getTouchstone();
-            trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
+            if(ui->stack->currentIndex() == 1) {
+                // touchstone page active
+                auto t = ui->touchstoneImport->getTouchstone();
+                trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
+            } else {
+                // CSV page active
+                ui->csvImport->fillTrace(trace);
+            }
         } else {
             Trace::LivedataType type = Trace::LivedataType::Overwrite;
             Trace::LiveParameter param = Trace::LiveParameter::S11;

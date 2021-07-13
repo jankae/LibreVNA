@@ -117,7 +117,7 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="page">
+         <widget class="QWidget" name="LivePage">
           <layout class="QFormLayout" name="formLayout_2">
            <item row="0" column="0">
             <widget class="QLabel" name="label_3">
@@ -157,7 +157,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="page_2">
+         <widget class="QWidget" name="TouchstonePage">
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="TouchstoneImport" name="touchstoneImport" native="true"/>
@@ -175,6 +175,13 @@
               <widget class="QComboBox" name="CParameter"/>
              </item>
             </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="CSVPage">
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="CSVImport" name="csvImport" native="true"/>
            </item>
           </layout>
          </widget>
@@ -336,6 +343,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+  <customwidget>
    <class>TouchstoneImport</class>
    <extends>QWidget</extends>
    <header>CustomWidgets/touchstoneimport.h</header>
@@ -347,32 +359,16 @@
    <header>CustomWidgets/colorpickerbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>SIUnitEdit</class>
-   <extends>QLineEdit</extends>
-   <header>CustomWidgets/siunitedit.h</header>
+   <class>CSVImport</class>
+   <extends>QWidget</extends>
+   <header>CustomWidgets/csvimport.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
   <include location="../icons.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>GSource</sender>
-   <signal>buttonClicked(int)</signal>
-   <receiver>stack</receiver>
-   <slot>setCurrentIndex(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>146</x>
-     <y>216</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <buttongroups>
   <buttongroup name="GSource"/>
  </buttongroups>
