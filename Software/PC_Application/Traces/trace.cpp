@@ -119,7 +119,7 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
     }
     clear();
     domain = DataType::Frequency;
-    fileParemeter = parameter;
+    fileParameter = parameter;
     filename = t.getFilename();
     for(unsigned int i=0;i<t.points();i++) {
         auto tData = t.point(i);
@@ -201,7 +201,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
         fill(imag.begin(), imag.end(), 0.0);
     }
     clear();
-    fileParemeter = parameter;
+    fileParameter = parameter;
     filename = csv.getFilename();
     auto xColumn = csv.getColumn(0);
     if(csv.getHeader(0).compare("time", Qt::CaseInsensitive) == 0) {
@@ -215,7 +215,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
         Data d;
         d.x = xColumn[i];
         d.y = complex<double>(real[i], imag[i]);
-        addData(d, DataType::Frequency);
+        addData(d, domain);
     }
     reflection = false;
     createdFromFile = true;
@@ -246,8 +246,6 @@ void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, c
 
 void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
 {
-    // TODO set domain depending on incoming data
-    domain = DataType::Frequency;
     createdFromFile = false;
     _liveType = type;
     _liveParam = param;
@@ -328,7 +326,7 @@ nlohmann::json Trace::toJSON()
     } else if(isFromFile()) {
         j["type"] = "File";
         j["filename"] = filename.toStdString();
-        j["parameter"] = fileParemeter;
+        j["parameter"] = fileParameter;
     }
     j["velocityFactor"] = vFactor;
     j["reflection"] = reflection;
@@ -366,15 +364,15 @@ void Trace::fromJSON(nlohmann::json j)
         paused = j.value("paused", false);
     } else if(type == "Touchstone" || type == "File") {
         auto filename = QString::fromStdString(j.value("filename", ""));
-        fileParemeter = j.value("parameter", 0);
+        fileParameter = j.value("parameter", 0);
         try {
             if(filename.endsWith(".csv")) {
                 auto csv = CSV::fromFile(filename);
-                fillFromCSV(csv, fileParemeter);
+                fillFromCSV(csv, fileParameter);
             } else {
                 // has to be a touchstone file
                 Touchstone t = Touchstone::fromFile(filename.toStdString());
-                fillFromTouchstone(t, fileParemeter);
+                fillFromTouchstone(t, fileParameter);
             }
         } catch (const exception &e) {
             std::string what = e.what();
@@ -932,7 +930,7 @@ QString Trace::getFilename() const
 
 unsigned int Trace::getFileParameter() const
 {
-    return fileParemeter;
+    return fileParameter;
 }
 
 double Trace::getNoise(double frequency)

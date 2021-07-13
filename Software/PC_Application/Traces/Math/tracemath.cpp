@@ -127,6 +127,31 @@ unsigned int TraceMath::numSamples()
     return data.size();
 }
 
+QString TraceMath::dataTypeToString(TraceMath::DataType type)
+{
+    switch(type) {
+    case DataType::Frequency:
+        return "Frequency";
+    case DataType::Power:
+        return "Power";
+    case DataType::Time:
+        return "Time";
+    default:
+        return "Invalid";
+    }
+}
+
+TraceMath::DataType TraceMath::dataTypeFromString(QString s)
+{
+    for(unsigned int i=0;i<(int) DataType::Invalid;i++) {
+        if(s.compare(dataTypeToString((DataType) i), Qt::CaseInsensitive) == 0) {
+            return (DataType) i;
+        }
+    }
+    // not found
+    return DataType::Invalid;
+}
+
 void TraceMath::removeInput()
 {
     if(input) {

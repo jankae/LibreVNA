@@ -94,6 +94,9 @@ public:
     Data getInterpolatedSample(double x);
     unsigned int numSamples();
 
+    static QString dataTypeToString(DataType type);
+    static DataType dataTypeFromString(QString s);
+
     // indicate whether this function produces time or frequency domain data
     virtual DataType outputType(DataType inputType) = 0;
     virtual QString description() = 0;

@@ -174,7 +174,7 @@ private:
     bool calibration;
     DataType domain;
     QString filename;
-    unsigned int fileParemeter;
+    unsigned int fileParameter;
     std::set<Marker*> markers;
     struct {
         union {

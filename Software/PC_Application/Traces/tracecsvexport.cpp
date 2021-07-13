@@ -42,7 +42,7 @@ void TraceCSVExport::on_buttonBox_accepted()
     CSV csv;
     // create the first column (X data)
     vector<double> X;
-    QString Xname = traces[0]->outputType() == Trace::DataType::Frequency ? "Frequency" : "Time";
+    QString Xname = Trace::dataTypeToString(traces[0]->outputType());
     auto samples = traces[0]->numSamples();
     for(unsigned int i=0;i<samples;i++) {
         X.push_back(traces[0]->sample(i).x);
