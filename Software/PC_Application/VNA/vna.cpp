@@ -496,6 +496,7 @@ VNA::VNA(AppWindow *window)
         cbSweepType->setCurrentIndex((int) sw);
     });
     // initial setup is frequency sweep
+    configureToolbarForFrequencySweep();
     SetSweepType(SweepType::Frequency);
 
     toolbars.insert(tb_cal);
