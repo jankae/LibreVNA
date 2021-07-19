@@ -7,9 +7,9 @@
 #include "max2871.hpp"
 #include "Si5351C.hpp"
 
-#define USE_DEBUG_PINS
+#define USE_DEBUG_PINS	0
 
-#ifdef USE_DEBUG_PINS
+#if USE_DEBUG_PINS
 #define DEBUG1_GPIO		GPIOA
 #define DEBUG1_PIN		GPIO_PIN_13
 #define DEBUG2_GPIO		GPIOA
