@@ -27,6 +27,7 @@
 static Protocol::PacketInfo recv_packet;
 static Protocol::PacketInfo last_measure_packet; // contains the command that started the last measured (replay in case of timeout)
 static TaskHandle_t handle;
+static bool sweepActive;
 
 #if HW_REVISION >= 'B'
 // has MCU controllable flash chip, firmware update supported
@@ -45,7 +46,7 @@ static void USBPacketReceived(const Protocol::PacketInfo &p) {
 	portYIELD_FROM_ISR(woken);
 }
 
-void App_Start() {
+inline void App_Init() {
 	STM::Init();
 	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 	handle = xTaskGetCurrentTaskHandle();
@@ -98,10 +99,13 @@ void App_Start() {
 	USB_EN_GPIO_Port->BSRR = USB_EN_Pin;
 #endif
 
-	bool sweepActive = false;
-
 	LED::Off();
-	while (1) {
+
+	sweepActive = false;
+}
+
+inline void App_Process() {
+	while(1) {
 		uint32_t notification;
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
 			// something happened
@@ -153,7 +157,7 @@ void App_Start() {
 					sweepActive = false;
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-#ifdef HAS_FLASH
+		#ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;
@@ -188,7 +192,7 @@ void App_Start() {
 					}
 				}
 					break;
-#endif
+		#endif
 				case Protocol::PacketType::RequestSourceCal:
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					Cal::SendSource();
@@ -231,4 +235,9 @@ void App_Start() {
 			USBPacketReceived(last_measure_packet);
 		}
 	}
+}
+
+void App_Start() {
+	App_Init();
+	App_Process();
 }
