@@ -76,6 +76,8 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
+	// reset unlevel flag if it was set from a previous sweep/mode
+	HW::SetOutputUnlevel(false);
 	// Start with average level
 	auto cdbm = (s.cdbm_excitation_start + s.cdbm_excitation_stop) / 2;
 	// correct for port 1, assumes port 2 is identical
@@ -85,12 +87,18 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		centerFreq = HW::BandSwitchFrequency;
 	}
 	auto amplitude = HW::GetAmplitudeSettings(cdbm, centerFreq, true, false);
+	if(amplitude.unlevel) {
+		HW::SetOutputUnlevel(true);
+	}
 
 	uint8_t fixedAttenuatorHighband = amplitude.attenuator;
 	Source.SetPowerOutA(amplitude.highBandPower, true);
 
 	// amplitude calculation for lowband
 	amplitude = HW::GetAmplitudeSettings(cdbm, HW::BandSwitchFrequency / 2, true, false);
+	if(amplitude.unlevel) {
+		HW::SetOutputUnlevel(true);
+	}
 	uint8_t fixedAttenuatorLowband = amplitude.attenuator;
 	fixedPowerLowband = amplitude.lowBandPower;
 
@@ -212,6 +220,9 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			if(freq >= HW::BandSwitchFrequency) {
 				Source.SetPowerOutA(amplitude.highBandPower, true);
 			}
+			if(amplitude.unlevel) {
+				HW::SetOutputUnlevel(true);
+			}
 			attenuator = amplitude.attenuator;
 		}
 
@@ -319,6 +330,7 @@ void VNA::Work() {
 	packet.type = Protocol::PacketType::DeviceInfo;
 	HW::fillDeviceInfo(&packet.info, true);
 	Communication::Send(packet);
+	// do not reset unlevel flag here, as it is calculated only once at the setup of the sweep
 	// Start next sweep
 	FPGA::StartSweep();
 }
