@@ -75,7 +75,7 @@ void HW::Work() {
 }
 
 bool HW::Init() {
-#ifdef USE_DEBUG_PINS
+#if USE_DEBUG_PINS
 	// initialize debug pins
 	GPIO_InitTypeDef gpio;
 	gpio.Pin = DEBUG1_PIN;

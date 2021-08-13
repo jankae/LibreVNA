@@ -16,7 +16,7 @@ bool Flash::isPresent() {
 	HAL_SPI_TransmitReceive(spi, send, recv, 4, 100);
 	CS(true);
 	// Check against valid manufacturer IDs
-	constexpr uint8_t valid_ids[] = {0xEF, 0x68};
+	constexpr uint8_t valid_ids[] = {0xEF, 0x68, 0x9D};
 	bool valid = false;
 	for (uint8_t i = 0; i < sizeof(valid_ids); i++) {
 		if (recv[1] == valid_ids[i]) {
