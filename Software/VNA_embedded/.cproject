@@ -189,9 +189,9 @@
                                     									
                                     <listOptionValue builtIn="false" value="FW_MAJOR=1"/>
                                     									
-                                    <listOptionValue builtIn="false" value="FW_PATCH=1"/>
+                                    <listOptionValue builtIn="false" value="FW_PATCH=0"/>
                                     									
-                                    <listOptionValue builtIn="false" value="FW_MINOR=1"/>
+                                    <listOptionValue builtIn="false" value="FW_MINOR=2"/>
                                     									
                                     <listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
                                     									
