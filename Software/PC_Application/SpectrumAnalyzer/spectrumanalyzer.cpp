@@ -297,6 +297,37 @@ void SpectrumAnalyzer::initializeDevice()
 nlohmann::json SpectrumAnalyzer::toJSON()
 {
     nlohmann::json j;
+    // save current sweep/acquisition settings
+    nlohmann::json sweep;
+    nlohmann::json freq;
+    freq["start"] = settings.f_start;
+    freq["stop"] = settings.f_stop;
+    sweep["frequency"] = freq;
+    nlohmann::json acq;
+    acq["RBW"] = settings.RBW;
+    acq["window"] = WindowToString((Window) settings.WindowType).toStdString();
+    acq["detector"] = DetectorToString((Detector) settings.Detector).toStdString();
+    acq["signal ID"] = settings.SignalID ? true : false;
+    sweep["acquisition"] = acq;
+    nlohmann::json tracking;
+    tracking["enabled"] = settings.trackingGenerator ? true : false;
+    tracking["port"] = settings.trackingGeneratorPort ? 2 : 1;
+    tracking["offset"] = settings.trackingGeneratorOffset;
+    tracking["power"] = settings.trackingPower;
+    sweep["trackingGenerator"] = tracking;
+
+    if(normalize.active) {
+        nlohmann::json norm;
+        norm["start"] = normalize.f_start;
+        norm["stop"] = normalize.f_stop;
+        norm["points"] = normalize.points;
+        norm["level"] = normalize.Level->value();
+        norm["port1"] = normalize.port1Correction;
+        norm["port2"] = normalize.port2Correction;
+        sweep["normalization"] = norm;
+    }
+    j["sweep"] = sweep;
+
     j["traces"] = traceModel.toJSON();
     j["tiles"] = central->toJSON();
     j["markers"] = markerModel->toJSON();
@@ -305,6 +336,9 @@ nlohmann::json SpectrumAnalyzer::toJSON()
 
 void SpectrumAnalyzer::fromJSON(nlohmann::json j)
 {
+    if(j.is_null()) {
+        return;
+    }
     if(j.contains("traces")) {
         traceModel.fromJSON(j["traces"]);
     }
@@ -313,6 +347,63 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
     }
     if(j.contains("markers")) {
         markerModel->fromJSON(j["markers"]);
+    }
+    if(j.contains("sweep")) {
+        // restore sweep settings
+        auto sweep = j["sweep"];
+        if(sweep.contains("frequency")) {
+            auto freq = sweep["frequency"];
+            SetStartFreq(freq.value("start", settings.f_start));
+            SetStartFreq(freq.value("start", settings.f_start));
+        }
+        if(sweep.contains("acquisition")) {
+            auto acq = sweep["acquisition"];
+            SetRBW(acq.value("RBW", settings.RBW));
+            auto w = WindowFromString(QString::fromStdString(acq.value("window", "")));
+            if(w == Window::Last) {
+                // invalid, keep current value
+                w = (Window) settings.WindowType;
+            }
+            SetWindow(w);
+            auto d = DetectorFromString(QString::fromStdString(acq.value("detector", "")));
+            if(d == Detector::Last) {
+                // invalid, keep current value
+                d = (Detector) settings.Detector;
+            }
+            SetDetector(d);
+            SetSignalID(acq.value("signal ID", settings.SignalID ? true : false));
+        }
+        if(sweep.contains("trackingGenerator")) {
+            auto tracking = sweep["trackingGenerator"];
+            SetTGEnabled(tracking.value("enabled", settings.trackingGenerator ? true : false));
+            int port = tracking.value("port", 1);
+            // Function expects 0 for port1, 1 for port2
+            SetTGPort(port - 1);
+            SetTGLevel(tracking.value("power", settings.trackingPower));
+            SetTGOffset(tracking.value("offset", settings.trackingGeneratorOffset));
+        }
+        if(sweep.contains("normalization")) {
+            auto norm = sweep["normalization"];
+            // restore normalization data
+            normalize.port1Correction.clear();
+            for(double p1 : norm["port1"]) {
+                normalize.port1Correction.push_back(p1);
+            }
+            normalize.port2Correction.clear();
+            for(double p2 : norm["port2"]) {
+                normalize.port2Correction.push_back(p2);
+            }
+            normalize.f_start = norm.value("start", normalize.f_start);
+            normalize.f_stop = norm.value("stop", normalize.f_stop);
+            normalize.points = norm.value("points", normalize.points);
+            normalize.Level->setValue(norm.value("level", normalize.Level->value()));
+            if((normalize.port1Correction.size() == normalize.points) && (normalize.port1Correction.size() == normalize.points)) {
+                // got the correct number of points
+                EnableNormalization(true);
+            } else {
+                EnableNormalization(false);
+            }
+        }
     }
 }
 
@@ -570,7 +661,7 @@ void SpectrumAnalyzer::SetTGEnabled(bool enabled)
 
 void SpectrumAnalyzer::SetTGPort(int port)
 {
-    if(port < 01 || port > 1) {
+    if(port < 0 || port > 1) {
         return;
     }
     if(port != settings.trackingGeneratorPort) {
@@ -970,4 +1061,49 @@ void SpectrumAnalyzer::StoreSweepSettings()
 void SpectrumAnalyzer::updateGraphColors()
 {
     emit graphColorsChanged();
+}
+
+QString SpectrumAnalyzer::WindowToString(SpectrumAnalyzer::Window w)
+{
+    switch(w) {
+    case Window::None: return "None";
+    case Window::Kaiser: return "Kaiser";
+    case Window::Hann: return "Hann";
+    case Window::FlatTop: return "FlatTop";
+    default: return "Unknown";
+    }
+}
+
+SpectrumAnalyzer::Window SpectrumAnalyzer::WindowFromString(QString s)
+{
+    for(int i=0;i<(int)Window::Last;i++) {
+        if(WindowToString((Window) i) == s) {
+            return (Window) i;
+        }
+    }
+    // not found
+    return Window::Last;
+}
+
+QString SpectrumAnalyzer::DetectorToString(SpectrumAnalyzer::Detector d)
+{
+    switch(d) {
+    case Detector::PPeak: return "+Peak";
+    case Detector::NPeak: return "-Peak";
+    case Detector::Sample: return "Sample";
+    case Detector::Normal: return "Normal";
+    case Detector::Average: return "Average";
+    default: return "Unknown";
+    }
+}
+
+SpectrumAnalyzer::Detector SpectrumAnalyzer::DetectorFromString(QString s)
+{
+    for(int i=0;i<(int)Detector::Last;i++) {
+        if(DetectorToString((Detector) i) == s) {
+            return (Detector) i;
+        }
+    }
+    // not found
+    return Detector::Last;
 }

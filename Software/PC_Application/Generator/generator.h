@@ -13,8 +13,8 @@ public:
     void initializeDevice() override;
 
     // Nothing to do for now
-    virtual nlohmann::json toJSON() override {return nlohmann::json();};
-    virtual void fromJSON(nlohmann::json j) override {Q_UNUSED(j)};
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 
 private slots:
     void updateDevice();

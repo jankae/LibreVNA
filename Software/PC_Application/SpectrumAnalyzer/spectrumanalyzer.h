@@ -32,7 +32,8 @@ private:
         None = 0,
         Kaiser = 1,
         Hann = 2,
-        FlatTop = 3
+        FlatTop = 3,
+        Last
     };
     enum class Detector {
         PPeak = 0,
@@ -40,7 +41,13 @@ private:
         Sample = 2,
         Normal = 3,
         Average = 4,
+        Last
     };
+
+    static QString WindowToString(Window w);
+    static Window WindowFromString(QString s);
+    static QString DetectorToString(Detector d);
+    static Detector DetectorFromString(QString s);
 
 private slots:
     void NewDatapoint(Protocol::SpectrumAnalyzerResult d);

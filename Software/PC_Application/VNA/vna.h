@@ -32,7 +32,12 @@ public:
     enum class SweepType {
         Frequency = 0,
         Power = 1,
+        Last,
     };
+
+    static QString SweepTypeToString(SweepType sw);
+    static SweepType SweepTypeFromString(QString s);
+
     using Settings = struct {
         SweepType sweepType;
         struct {

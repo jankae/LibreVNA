@@ -181,7 +181,7 @@
           <item row="0" column="1">
            <widget class="SIUnitEdit" name="span">
             <property name="text">
-             <string>0MHz</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -195,7 +195,7 @@
           <item row="1" column="1">
            <widget class="SIUnitEdit" name="steps">
             <property name="text">
-             <string>100</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -209,7 +209,7 @@
           <item row="2" column="1">
            <widget class="SIUnitEdit" name="dwell">
             <property name="text">
-             <string>100ms</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -226,7 +226,7 @@
              <bool>false</bool>
             </property>
             <property name="text">
-             <string>0MHz</string>
+             <string/>
             </property>
             <property name="readOnly">
              <bool>true</bool>

@@ -911,6 +911,7 @@ void AppWindow::FrequencyCalibrationDialog()
 nlohmann::json AppWindow::SaveSetup()
 {
     nlohmann::json j;
+    j["activeMode"] = Mode::getActiveMode()->getName().toStdString();
     j["VNA"] = vna->toJSON();
     j["Generator"] = generator->toJSON();
     j["SpectrumAnalyzer"] = spectrumAnalyzer->toJSON();
@@ -924,6 +925,16 @@ void AppWindow::LoadSetup(nlohmann::json j)
     vna->fromJSON(j["VNA"]);
     generator->fromJSON(j["Generator"]);
     spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
+
+    // activate the correct mode
+    QString modeName = QString::fromStdString(j.value("activeMode", ""));
+    std::vector<Mode*> modes = {vna, generator, spectrumAnalyzer};
+    for(auto m : modes) {
+        if(m->getName() == modeName) {
+            m->activate();
+            break;
+        }
+    }
 }
 
 Device *AppWindow::getDevice() const

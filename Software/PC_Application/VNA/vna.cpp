@@ -560,6 +560,8 @@ Calibration::InterpolationType VNA::getCalInterpolation()
 {
     double f_min, f_max;
     switch(settings.sweepType) {
+    case SweepType::Last:
+        // should never get here, use frequency values just in case
     case SweepType::Frequency:
         f_min = settings.Freq.start;
         f_max = settings.Freq.stop;
@@ -678,6 +680,23 @@ void VNA::shutdown()
 nlohmann::json VNA::toJSON()
 {
     nlohmann::json j;
+    // save current sweep/acquisition settings
+    nlohmann::json sweep;
+    sweep["type"] = SweepTypeToString(settings.sweepType).toStdString();
+    nlohmann::json freq;
+    freq["start"] = settings.Freq.start;
+    freq["stop"] = settings.Freq.stop;
+    freq["power"] = settings.Freq.excitation_power;
+    sweep["frequency"] = freq;
+    nlohmann::json power;
+    power["start"] = settings.Power.start;
+    power["stop"] = settings.Power.stop;
+    power["frequency"] = settings.Power.frequency;
+    sweep["power"] = power;
+    sweep["points"] = settings.npoints;
+    sweep["IFBW"] = settings.bandwidth;
+    j["sweep"] = sweep;
+
     j["traces"] = traceModel.toJSON();
     j["tiles"] = central->toJSON();
     j["markers"] = markerModel->toJSON();
@@ -688,6 +707,9 @@ nlohmann::json VNA::toJSON()
 
 void VNA::fromJSON(nlohmann::json j)
 {
+    if(j.is_null()) {
+        return;
+    }
     if(j.contains("traces")) {
         traceModel.fromJSON(j["traces"]);
     }
@@ -702,6 +724,32 @@ void VNA::fromJSON(nlohmann::json j)
         EnableDeembedding(j.value("de-embedding_enabled", true));
     } else {
         EnableDeembedding(false);
+    }
+
+    // sweep configuration has to go last sog graphs can catch events from changed sweep
+    if(j.contains("sweep")) {
+        auto sweep = j["sweep"];
+        // restore sweep settings, keep current value as default in case of missing entry
+        SetPoints(sweep.value("points", settings.npoints));
+        SetIFBandwidth(sweep.value("IFBW", settings.bandwidth));
+        if(sweep.contains("frequency")) {
+            auto freq = sweep["frequency"];
+            SetStartFreq(freq.value("start", settings.Freq.start));
+            SetStopFreq(freq.value("stop", settings.Freq.stop));
+            SetSourceLevel(freq.value("power", settings.Freq.excitation_power));
+        }
+        if(sweep.contains("power")) {
+            auto power = sweep["power"];
+            SetStartPower(power.value("start", settings.Power.start));
+            SetStopPower(power.value("stop", settings.Power.stop));
+            SetPowerSweepFrequency(power.value("frequency", settings.Power.frequency));
+        }
+        auto type = SweepTypeFromString(QString::fromStdString(sweep["type"]));
+        if(type == SweepType::Last) {
+            // default to frequency sweep
+            type = SweepType::Frequency;
+        }
+        SetSweepType(type);
     }
 }
 
@@ -735,6 +783,7 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
 
     TraceMath::DataType type;
     switch(settings.sweepType) {
+    case SweepType::Last:
     case SweepType::Frequency:
         type = TraceMath::DataType::Frequency;
         break;
@@ -793,16 +842,21 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
         s.cdbm_excitation_stop = settings.Power.stop * 100;
     }
     if(window->getDevice() && Mode::getActiveMode() == this) {
-        window->getDevice()->Configure(s, [=](Device::TransmissionResult res){
-            // device received command, reset traces now
-            average.reset(s.points);
-            traceModel.clearLiveData();
-            UpdateAverageCount();
-            UpdateCalWidget();
-            if(cb) {
-                cb(res);
-            }
-        });
+        if(s.excitePort1 == 0 && s.excitePort2 == 0) {
+            // no signal at either port, just set the device to idel
+            window->getDevice()->SetIdle();
+        } else {
+            window->getDevice()->Configure(s, [=](Device::TransmissionResult res){
+                // device received command, reset traces now
+                average.reset(s.points);
+                traceModel.clearLiveData();
+                UpdateAverageCount();
+                UpdateCalWidget();
+                if(cb) {
+                    cb(res);
+                }
+            });
+        }
     }
     emit traceModel.SpanChanged(s.f_start, s.f_stop);
 }
@@ -1373,4 +1427,24 @@ void VNA::EnableDeembedding(bool enable)
 void VNA::updateGraphColors()
 {
     emit graphColorsChanged();
+}
+
+QString VNA::SweepTypeToString(VNA::SweepType sw)
+{
+    switch(sw) {
+    case SweepType::Frequency: return "Frequency";
+    case SweepType::Power: return "Power";
+    default: return "Unknown";
+    }
+}
+
+VNA::SweepType VNA::SweepTypeFromString(QString s)
+{
+    for(int i=0;i<(int)SweepType::Last;i++) {
+        if(SweepTypeToString((SweepType) i) == s) {
+            return (SweepType) i;
+        }
+    }
+    // not found
+    return SweepType::Last;
 }

@@ -3,12 +3,13 @@
 
 #include <QWidget>
 #include "Device/device.h"
+#include "savable.h"
 
 namespace Ui {
 class SignalgeneratorWidget;
 }
 
-class SignalgeneratorWidget : public QWidget
+class SignalgeneratorWidget : public QWidget, public Savable
 {
     Q_OBJECT
 
@@ -17,6 +18,8 @@ public:
     ~SignalgeneratorWidget();
 
     Protocol::GeneratorSettings getDeviceStatus();
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 
 signals:
     void SettingsChanged();
