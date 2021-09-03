@@ -29,9 +29,23 @@ public:
         Line,
         Last,
     };
+
+    enum class Standard {
+        Open,
+        Short,
+        Load,
+        Through,
+        Any,
+    };
+
+    static Standard getPort1Standard(Measurement m);
+    static Standard getPort2Standard(Measurement m);
+
     void clearMeasurements();
+    void clearMeasurements(std::set<Measurement> types);
     void clearMeasurement(Measurement type);
     void addMeasurement(Measurement type, Protocol::Datapoint &d);
+    void addMeasurements(std::set<Measurement> types, Protocol::Datapoint &d);
 
     enum class Type {
         Port1SOL,

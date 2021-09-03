@@ -77,11 +77,11 @@ private slots:
     // Calibration
     void DisableCalibration(bool force = false);
     void ApplyCalibration(Calibration::Type type);
-    void StartCalibrationMeasurement(Calibration::Measurement m);
+    void StartCalibrationMeasurements(std::set<Calibration::Measurement> m);
 
 
 signals:
-    void CalibrationMeasurementComplete(Calibration::Measurement m);
+    void CalibrationMeasurementsComplete(std::set<Calibration::Measurement> m);
     void graphColorsChanged();
 
 private:
@@ -109,7 +109,7 @@ private:
     Calibration cal;
     bool calValid;
     bool calEdited;
-    Calibration::Measurement calMeasurement;
+    std::set<Calibration::Measurement> calMeasurements;
     bool calMeasuring;
     bool calWaitFirst;
     QProgressDialog calDialog;

@@ -19,9 +19,10 @@ public:
     ~CalibrationTraceDialog();
 
 public slots:
+    void measurementsComplete(std::set<Calibration::Measurement> m);
     void measurementComplete(Calibration::Measurement m);
 signals:
-    void triggerMeasurement(Calibration::Measurement m);
+    void triggerMeasurements(std::set<Calibration::Measurement> m);
     void applyCalibration(Calibration::Type type);
     void calibrationInvalidated();
 

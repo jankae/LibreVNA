@@ -715,11 +715,10 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
             // this is the last averaging sweep, use values for calibration
             if(!calWaitFirst || d.pointNum == 0) {
                 calWaitFirst = false;
-                cal.addMeasurement(calMeasurement, d);
+                cal.addMeasurements(calMeasurements, d);
                 if(d.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
-                    qDebug() << "Calibration measurement" << cal.MeasurementToString(calMeasurement) << "complete";
-                    emit CalibrationMeasurementComplete(calMeasurement);
+                    emit CalibrationMeasurementsComplete(calMeasurements);
                 }
             }
         }
@@ -1025,7 +1024,7 @@ void VNA::ApplyCalibration(Calibration::Type type)
     }
 }
 
-void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
+void VNA::StartCalibrationMeasurements(std::set<Calibration::Measurement> m)
 {
     auto device = window->getDevice();
     if(!device) {
@@ -1033,14 +1032,19 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
     }
     // Stop sweep
     StopSweep();
-    qDebug() << "Taking" << Calibration::MeasurementToString(m) << "measurement";
-    calMeasurement = m;
+    calMeasurements = m;
     // Delete any already captured data of this measurement
-    cal.clearMeasurement(m);
+    cal.clearMeasurements(m);
     calWaitFirst = true;
-    QString text = "Measuring \"";
-    text.append(Calibration::MeasurementToString(m));
-    text.append("\" parameters.");
+    // show messagebox
+    QString text = "Measuring ";
+    if(m.size() == 1) {
+        text.append("\"");
+        text.append(Calibration::MeasurementToString(*m.begin()));
+        text.append("\" parameters.");
+    } else {
+        text.append("multiple calibration standards.");
+    }
     calDialog.setLabelText(text);
     calDialog.setCancelButtonText("Abort");
     calDialog.setWindowTitle("Taking calibration measurement...");
@@ -1051,7 +1055,7 @@ void VNA::StartCalibrationMeasurement(Calibration::Measurement m)
     connect(&calDialog, &QProgressDialog::canceled, [=]() {
         // the user aborted the calibration measurement
         calMeasuring = false;
-        cal.clearMeasurement(calMeasurement);
+        cal.clearMeasurements(calMeasurements);
     });
     // Trigger sweep to start from beginning
     SettingsChanged([=](Device::TransmissionResult){
@@ -1256,7 +1260,9 @@ void VNA::SetupSCPI()
                 // failed to parse string
                 return "ERROR";
             } else {
-                StartCalibrationMeasurement(meas);
+                std::set<Calibration::Measurement> m;
+                m.insert(meas);
+                StartCalibrationMeasurements(m);
             }
         }
         return "";
@@ -1340,9 +1346,9 @@ void VNA::StopSweep()
 void VNA::StartCalibrationDialog(Calibration::Type type)
 {
     auto traceDialog = new CalibrationTraceDialog(&cal, settings.Freq.start, settings.Freq.stop, type);
-    connect(traceDialog, &CalibrationTraceDialog::triggerMeasurement, this, &VNA::StartCalibrationMeasurement);
+    connect(traceDialog, &CalibrationTraceDialog::triggerMeasurements, this, &VNA::StartCalibrationMeasurements);
     connect(traceDialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
-    connect(this, &VNA::CalibrationMeasurementComplete, traceDialog, &CalibrationTraceDialog::measurementComplete);
+    connect(this, &VNA::CalibrationMeasurementsComplete, traceDialog, &CalibrationTraceDialog::measurementsComplete);
     connect(traceDialog, &CalibrationTraceDialog::calibrationInvalidated, [=](){
        DisableCalibration(true);
        InformationBox::ShowMessageBlocking("Calibration disabled", "The currently active calibration is no longer supported by the available measurements and was disabled.");

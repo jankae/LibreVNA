@@ -25,11 +25,50 @@ Calibration::Calibration()
     type = Type::None;
 }
 
+Calibration::Standard Calibration::getPort1Standard(Calibration::Measurement m)
+{
+    switch(m) {
+    case Measurement::Port1Open: return Standard::Open;
+    case Measurement::Port1Short: return Standard::Short;
+    case Measurement::Port1Load: return Standard::Load;
+    case Measurement::Port2Open: return Standard::Any;
+    case Measurement::Port2Short: return Standard::Any;
+    case Measurement::Port2Load: return Standard::Any;
+    case Measurement::Through: return Standard::Through;
+    case Measurement::Isolation: return Standard::Load;
+    case Measurement::Line: return Standard::Through;
+    default: return Standard::Any;
+    }
+}
+
+Calibration::Standard Calibration::getPort2Standard(Calibration::Measurement m)
+{
+    switch(m) {
+    case Measurement::Port1Open: return Standard::Any;
+    case Measurement::Port1Short: return Standard::Any;
+    case Measurement::Port1Load: return Standard::Any;
+    case Measurement::Port2Open: return Standard::Open;
+    case Measurement::Port2Short: return Standard::Short;
+    case Measurement::Port2Load: return Standard::Load;
+    case Measurement::Through: return Standard::Through;
+    case Measurement::Isolation: return Standard::Load;
+    case Measurement::Line: return Standard::Through;
+    default: return Standard::Any;
+    }
+}
+
 void Calibration::clearMeasurements()
 {
     qDebug() << "Clearing all calibration measurements...";
     for(auto m : measurements) {
         clearMeasurement(m.first);
+    }
+}
+
+void Calibration::clearMeasurements(std::set<Calibration::Measurement> types)
+{
+    for(auto t : types) {
+        clearMeasurement(t);
     }
 }
 
@@ -44,6 +83,13 @@ void Calibration::addMeasurement(Calibration::Measurement type, Protocol::Datapo
 {
     measurements[type].datapoints.push_back(d);
     measurements[type].timestamp = QDateTime::currentDateTime();
+}
+
+void Calibration::addMeasurements(std::set<Calibration::Measurement> types, Protocol::Datapoint &d)
+{
+    for(auto t : types) {
+        addMeasurement(t, d);
+    }
 }
 
 bool Calibration::calculationPossible(Calibration::Type type)
