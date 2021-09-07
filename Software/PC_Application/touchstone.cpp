@@ -7,6 +7,7 @@
 #include <cctype>
 #include <string>
 #include "Util/util.h"
+#include <QDebug>
 
 using namespace std;
 
@@ -45,25 +46,34 @@ void Touchstone::toFile(string filename, Scale unit, Format format)
     // create file
     ofstream file;
     file.open(filename);
-    file << std::fixed << std::setprecision(12);
 
+    file << toString(unit, format).rdbuf();
+
+    file.close();
+    this->filename = QString::fromStdString(filename);
+}
+
+stringstream Touchstone::toString(Touchstone::Scale unit, Touchstone::Format format)
+{
+    stringstream s;
+    s << std::fixed << std::setprecision(12);
     // write option line
-    file << "# ";
+    s << "# ";
     switch(unit) {
-        case Scale::Hz: file << "HZ "; break;
-        case Scale::kHz: file << "KHZ "; break;
-        case Scale::MHz: file << "MHZ "; break;
-        case Scale::GHz: file << "GHZ "; break;
+        case Scale::Hz: s << "HZ "; break;
+        case Scale::kHz: s << "KHZ "; break;
+        case Scale::MHz: s << "MHZ "; break;
+        case Scale::GHz: s << "GHZ "; break;
     }
     // only S parameters supported so far
-    file << "S ";
+    s << "S ";
     switch(format) {
-        case Format::DBAngle: file << "DB "; break;
-        case Format::RealImaginary: file << "RI "; break;
-        case Format::MagnitudeAngle: file << "MA "; break;
+        case Format::DBAngle: s << "DB "; break;
+        case Format::RealImaginary: s << "RI "; break;
+        case Format::MagnitudeAngle: s << "MA "; break;
     }
     // reference impedance is always 50 ohm
-    file << "R 50\n";
+    s << "R 50\n";
 
     auto printParameter = [format](ostream &out, complex<double> &c) {
         switch (format) {
@@ -81,45 +91,44 @@ void Touchstone::toFile(string filename, Scale unit, Format format)
 
     for(auto p : m_datapoints) {
         switch(unit) {
-            case Scale::Hz: file << p.frequency; break;
-            case Scale::kHz: file << p.frequency / 1e3; break;
-            case Scale::MHz: file << p.frequency / 1e6; break;
-            case Scale::GHz: file << p.frequency / 1e9; break;
+            case Scale::Hz: s << p.frequency; break;
+            case Scale::kHz: s << p.frequency / 1e3; break;
+            case Scale::MHz: s << p.frequency / 1e6; break;
+            case Scale::GHz: s << p.frequency / 1e9; break;
         }
-        file << " ";
+        s << " ";
         // special cases for 1 and 2 port
         if (m_ports == 1) {
-            printParameter(file, p.S[0]);
-            file << "\n";
+            printParameter(s, p.S[0]);
+            s << "\n";
         } else if (m_ports == 2){
-            printParameter(file, p.S[0]);
+            printParameter(s, p.S[0]);
             // touchstone expects S11 S21 S12 S22 order, swap S12 and S21
-            file << " ";
-            printParameter(file, p.S[2]);
-            file << " ";
-            printParameter(file, p.S[1]);
-            file << " ";
-            printParameter(file, p.S[3]);
-            file << "\n";
+            s << " ";
+            printParameter(s, p.S[2]);
+            s << " ";
+            printParameter(s, p.S[1]);
+            s << " ";
+            printParameter(s, p.S[3]);
+            s << "\n";
         } else {
             // print parameters in matrix form
             for(unsigned int i=0;i<m_ports;i++) {
                 for(unsigned int j=0;j<m_ports;j++) {
-                    printParameter(file, p.S[i*m_ports + j]);
+                    printParameter(s, p.S[i*m_ports + j]);
                     if (j%4 == 3) {
-                        file << "\n";
+                        s << "\n";
                     } else {
-                        file << " ";
+                        s << " ";
                     }
                 }
                 if(m_ports%4 != 0) {
-                    file << "\n";
+                    s << "\n";
                 }
             }
         }
     }
-    file.close();
-    this->filename = QString::fromStdString(filename);
+    return s;
 }
 
 Touchstone Touchstone::fromFile(string filename)

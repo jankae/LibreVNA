@@ -422,6 +422,30 @@ Depending on the sweep and possible confiigured math operations, x may be either
 -0.0458452,-0.028729
 \end{example}
 
+\subsubsection{VNA:TRACe:TOUCHSTONE}
+\query{Returns the content of multiple trace according to the touchstone format}{VNA:TRACe:TOUCHSTONE?}{<trace1>,<trace2>,<trace3>,...}{Touchstone file content in ASCII}
+Some additional constraints apply:
+\begin{itemize}
+\item The number of specified traces must be a square number. The number of ports in the touchstone file is inferred from that.
+\item Only frequency domain traces are allowed.
+\item All traces must have the same number of points and the same start/stop frequency.
+\item The order in which the traces are specified matters and depending on its index and each trace must be a reflection or transmission measurement:
+\begin{itemize}
+\item Assuming that $n$ is the number of ports of the desired touchstone file, the $n*n$ number of traces must be specified in this order:
+$$ S_{11}...S_{1n},S_{21}...S_{2n},...,S_{n1}...S_{nn} $$
+\item For every trace $S_{ij}$, the trace must contain a reflection measurement if $i=j$ and a transmission measurement if $i\neq j$.
+\end{itemize}
+\item Traces can be specified either by name or by index.
+\item A deviation from any of these points (invalid number of traces, non-existing trace, wrong order, ...) will result in an error being returned.
+\end{itemize}
+\begin{example}
+:VNA:TRACE:TOUCHSTONE? S11 S12 S21 S22
+# GHZ S RI R 50
+1.000000000000 1.000497817993 0.010679213330 0.000013886895 -0.000054684886 -0.000023392624 -0.000021111371 0.401717424393 0.702864229679
+1.002000000000 1.000323534012 0.010577851906 -0.000011075452 -0.000013504875 0.000000477609 -0.000007789199 0.413144201040 0.696514129639
+...
+\end{example}
+
 \subsubsection{VNA:TRACe:MAXFrequency}
 \query{Returns the highest frequency contained in the trace}{VNA:TRACe:MAXFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
 

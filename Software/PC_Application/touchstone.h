@@ -31,6 +31,7 @@ public:
     Touchstone(unsigned int m_ports);
     void AddDatapoint(Datapoint p);
     void toFile(std::string filename, Scale unit = Scale::GHz, Format format = Format::RealImaginary);
+    std::stringstream toString(Scale unit = Scale::GHz, Format format = Format::RealImaginary);
     static Touchstone fromFile(std::string filename);
     double minFreq();
     double maxFreq();

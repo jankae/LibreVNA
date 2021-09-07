@@ -141,13 +141,10 @@ void TraceWidget::on_view_clicked(const QModelIndex &index)
 
 void TraceWidget::SetupSCPI()
 {
-    auto findTrace = [=](QStringList params) -> Trace* {
-        if(params.size() < 1) {
-            return nullptr;
-        }
+    auto findTraceFromName = [=](QString name) -> Trace* {
         // check if trace is specified by number
         bool ok;
-        auto n = params[0].toUInt(&ok);
+        auto n = name.toUInt(&ok);
         if(ok) {
             // check if enough traces exist
             if(n < model.getTraces().size()) {
@@ -159,13 +156,19 @@ void TraceWidget::SetupSCPI()
         } else {
             // trace specified by name
             for(auto t : model.getTraces()) {
-                if(t->name().compare(params[0], Qt::CaseInsensitive) == 0) {
+                if(t->name().compare(name, Qt::CaseInsensitive) == 0) {
                     return t;
                 }
             }
             // not found
             return nullptr;
         }
+    };
+    auto findTrace = [=](QStringList params) -> Trace* {
+        if(params.size() < 1) {
+            return nullptr;
+        }
+        return findTraceFromName(params[0]);
     };
 
     auto createStringFromData = [](Trace *t, const Trace::Data &d) -> QString {
@@ -219,6 +222,63 @@ void TraceWidget::SetupSCPI()
                 return createStringFromData(t, d);
             }
         }
+    }));
+    add(new SCPICommand("TOUCHSTONE", nullptr, [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            // no traces given
+            return "ERROR";
+        }
+        // check number of paramaters, must be a square number
+        int numTraces = params.size();
+        int ports = round(sqrt(numTraces));
+        if(ports * ports != numTraces) {
+            // invalid number of traces
+            return "ERROR";
+        }
+        Trace* traces[numTraces];
+        for(int i=0;i<numTraces;i++) {
+            traces[i] = findTraceFromName(params[i]);
+            if(!traces[i]) {
+                // couldn't find that trace
+                return "ERROR";
+            }
+        }
+        // check if trace selection is valid
+        auto npoints = traces[0]->size();
+        auto f_start = traces[0]->minX();
+        auto f_stop = traces[0]->maxX();
+        for(int i=0;i<ports;i++) {
+            for(int j=0;j<ports;j++) {
+                bool need_reflection = i==j;
+                auto t = traces[j+i*ports];
+                if(t->getDataType() != Trace::DataType::Frequency) {
+                    // invalid domain
+                    return "ERROR";
+                }
+                if(t->isReflection() != need_reflection) {
+                    // invalid measurement at this position
+                    return "ERROR";
+                }
+                if((t->size() != npoints) || (t->minX() != f_start) || (t->maxX() != f_stop)) {
+                    // frequency points are not identical
+                    return "ERROR";
+                }
+            }
+        }
+        // all traces checked, they are valid.
+        // Constructing touchstone
+        Touchstone t = Touchstone(ports);
+        for(unsigned int i=0;i<npoints;i++) {
+            Touchstone::Datapoint d;
+            d.frequency = traces[0]->getSample(i).x;
+            for(auto trace : traces) {
+                d.S.push_back(trace->getSample(i).y);
+            }
+            t.AddDatapoint(d);
+        }
+        // touchstone assembled, save to dummyfile
+        auto s = t.toString(Touchstone::Scale::GHz, Touchstone::Format::RealImaginary);
+        return QString::fromStdString(s.str());
     }));
     add(new SCPICommand("MAXFrequency", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
