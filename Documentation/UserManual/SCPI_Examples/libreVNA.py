@@ -80,3 +80,20 @@ class libreVNA:
         self.sock.sendall(query.encode())
         self.sock.send(b"\n")
         return self.__read_response()
+    
+    @staticmethod
+    def parse_trace_data(data):
+        ret = []
+        # Remove brackets (order of data implicitly known)
+        data = data.replace(']','').replace('[','')
+        values = data.split(',')
+        if int(len(values) / 3) * 3 != len(values):
+            # number of values must be a multiple of three (frequency, real, imaginary)
+            raise Exception("Invalid input data: expected tuples of three values each")
+        for i in range(0, len(values), 3):
+            freq = float(values[i])
+            real = float(values[i+1])
+            imag = float(values[i+2])
+            ret.append((freq, complex(real, imag)))
+        return ret       
+
