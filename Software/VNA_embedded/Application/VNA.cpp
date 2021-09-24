@@ -408,7 +408,17 @@ void VNA::SweepHalted() {
 		// This function is called from a low level interrupt, need to dispatch to lower priority to allow USB
 		// handling to continue
 		STM::DispatchToInterrupt([](){
-			while(usb_available_buffer() < reservedUSBbuffer);
+			uint32_t start = HAL_GetTick();
+			while(usb_available_buffer() < reservedUSBbuffer) {
+				if(HAL_GetTick() - start > 100) {
+					// still no buffer space after some time, something more serious must have gone wrong
+					// -> abort sweep and return to idle
+					usb_clear_buffer();
+					FPGA::AbortSweep();
+					HW::SetIdle();
+					return;
+				}
+			}
 			FPGA::ResumeHaltedSweep();
 		});
 	}

@@ -231,6 +231,7 @@ void HW::SetIdle() {
 	FPGA::Enable(FPGA::Periphery::Port2Mixer, false);
 	FPGA::Enable(FPGA::Periphery::RefMixer, false);
 	FPGA::Enable(FPGA::Periphery::PortSwitch, false);
+	activeMode = Mode::Idle;
 }
 
 HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool applyCorrections, bool port2) {

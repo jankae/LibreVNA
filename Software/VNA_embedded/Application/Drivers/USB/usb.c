@@ -284,3 +284,8 @@ void USB_LP_IRQHandler(void)
 uint16_t usb_available_buffer() {
 	return sizeof(usb_transmit_fifo) - usb_transmit_fifo_level;
 }
+
+void usb_clear_buffer() {
+	usb_transmit_fifo_level = 0;
+	data_transmission_active = 0;
+}
