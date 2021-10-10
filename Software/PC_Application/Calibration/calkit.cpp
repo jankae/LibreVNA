@@ -181,8 +181,6 @@ Calkit Calkit::fromFile(QString filename)
 
     // set default values for non-editable items (for now)
     c.TRL.Through.Z0 = 50.0;
-    c.SOLT.Short.Z0 = 50.0;
-    c.SOLT.Open.Z0 = 50.0;
     c.SOLT.Through.Z0 = 50.0;
 
     return c;
@@ -201,6 +199,26 @@ void Calkit::edit(std::function<void (void)> done)
 
 class Calkit::SOLT Calkit::toSOLT(double frequency)
 {
+    auto addTransmissionLine = [](complex<double> termination_reflection, double offset_impedance, double offset_delay, double offset_loss, double frequency) -> complex<double> {
+        // nomenclature and formulas from https://loco.lab.asu.edu/loco-memos/edges_reports/report_20130807.pdf
+        auto Gamma_T = termination_reflection;
+        auto f = frequency;
+        auto w = 2.0 * M_PI * frequency;
+        auto f_sqrt = sqrt(f / 1e9);
+
+        auto Z_c = complex<double>(offset_impedance + (offset_loss / (2*w)) * f_sqrt, -(offset_loss / (2*w)) * f_sqrt);
+        auto gamma_l = complex<double>(offset_loss*offset_delay/(2*offset_impedance)*f_sqrt, w*offset_delay+offset_loss*offset_delay/(2*offset_impedance)*f_sqrt);
+
+        auto Z_r = complex<double>(50.0);
+
+        auto Gamma_1 = (Z_c - Z_r) / (Z_c + Z_r);
+
+        auto Gamma_i = (Gamma_1*(1.0-exp(-2.0*gamma_l)-Gamma_1*Gamma_T)+exp(-2.0*gamma_l)*Gamma_T)
+                / (1.0-Gamma_1*(exp(-2.0*gamma_l)*Gamma_1+Gamma_T*(1.0-exp(-2.0*gamma_l))));
+
+        return Gamma_i;
+    };
+
     fillTouchstoneCache();
     class SOLT ref;
     if(SOLT.Load.useMeasurements) {
@@ -216,9 +234,7 @@ class Calkit::SOLT Calkit::toSOLT(double frequency)
         auto imp_L = complex<double>(0, frequency * 2 * M_PI * SOLT.Load.Lseries);
         imp_load += imp_L;
         ref.Load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
-        // apply phaseshift due to delay
-        double load_phaseshift = -2 * M_PI * frequency * 2 * SOLT.Load.delay * 1e-12;
-        ref.Load *= polar<double>(1.0, load_phaseshift);
+        ref.Load = addTransmissionLine(ref.Load, SOLT.Load.Z0, SOLT.Load.delay*1e-12, 0, frequency);
     }
 
     if(SOLT.Open.useMeasurements) {
@@ -234,12 +250,7 @@ class Calkit::SOLT Calkit::toSOLT(double frequency)
             auto imp_open = complex<double>(0, -1.0 / (frequency * 2 * M_PI * Cfringing));
             ref.Open = (imp_open - complex<double>(50.0)) / (imp_open + complex<double>(50.0));
         }
-        // transform the delay into a phase shift for the given frequency
-        double open_phaseshift = -2 * M_PI * frequency * 2 * SOLT.Open.delay * 1e-12;
-        double open_att_db = SOLT.Open.loss * 1e9 * 4.3429 * 2 * SOLT.Open.delay * 1e-12 / SOLT.Open.Z0 * sqrt(frequency / 1e9);
-        double open_att = pow(10.0, -open_att_db / 10.0);
-        auto open_correction = polar<double>(open_att, open_phaseshift);
-        ref.Open *= open_correction;
+        ref.Open = addTransmissionLine(ref.Open, SOLT.Open.Z0, SOLT.Open.delay*1e-12, SOLT.Open.loss*1e9, frequency);
     }
 
     if(SOLT.Short.useMeasurements) {
@@ -250,12 +261,7 @@ class Calkit::SOLT Calkit::toSOLT(double frequency)
         // convert to impedance
         auto imp_short = complex<double>(0, frequency * 2 * M_PI * Lseries);
         ref.Short =  (imp_short - complex<double>(50.0)) / (imp_short + complex<double>(50.0));
-        // transform the delay into a phase shift for the given frequency
-        double short_phaseshift = -2 * M_PI * frequency * 2 * SOLT.Short.delay * 1e-12;
-        double short_att_db = SOLT.Short.loss * 1e9 * 4.3429 * 2 * SOLT.Short.delay * 1e-12 / SOLT.Short.Z0 * sqrt(frequency / 1e9);;
-        double short_att = pow(10.0, -short_att_db / 10.0);
-        auto short_correction = polar<double>(short_att, short_phaseshift);
-        ref.Short *= short_correction;
+        ref.Short = addTransmissionLine(ref.Short, SOLT.Short.Z0, SOLT.Short.delay*1e-12, SOLT.Short.loss*1e9, frequency);
     }
 
     if(SOLT.Through.useMeasurements) {

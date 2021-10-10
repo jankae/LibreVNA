@@ -140,6 +140,10 @@ CalkitDialog::~CalkitDialog()
 
 void CalkitDialog::parseEntries()
 {
+    ownKit.manufacturer = ui->manufacturer->text();
+    ownKit.serialnumber = ui->serialnumber->text();
+    ownKit.description = ui->description->toPlainText();
+
     // type
     ownKit.SOLT.Open.useMeasurements = ui->open_measurement->isChecked();
     ownKit.SOLT.Short.useMeasurements = ui->short_measurement->isChecked();
@@ -196,6 +200,10 @@ void CalkitDialog::parseEntries()
 
 void CalkitDialog::updateEntries()
 {
+    ui->manufacturer->setText(ownKit.manufacturer);
+    ui->serialnumber->setText(ownKit.serialnumber);
+    ui->description->setPlainText(ownKit.description);
+
     // Coefficients
     ui->open_Z0->setValueQuiet(ownKit.SOLT.Open.Z0);
     ui->open_delay->setValueQuiet(ownKit.SOLT.Open.delay);

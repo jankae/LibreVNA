@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1141</width>
-    <height>394</height>
+    <height>602</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -28,11 +28,66 @@
   <property name="sizeGripEnabled">
    <bool>false</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_9">
+  <layout class="QVBoxLayout" name="verticalLayout_13">
+   <item>
+    <layout class="QFormLayout" name="formLayout_7">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_27">
+       <property name="text">
+        <string>Manufacturer:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="manufacturer"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_31">
+       <property name="text">
+        <string>Serial number:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="serialnumber"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QLabel" name="label_28">
+         <property name="text">
+          <string>Description:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="description"/>
+     </item>
+    </layout>
+   </item>
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -152,7 +207,7 @@
                <item row="0" column="1">
                 <widget class="SIUnitEdit" name="short_Z0">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -298,7 +353,7 @@
                <item row="0" column="1">
                 <widget class="SIUnitEdit" name="open_Z0">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -933,10 +988,10 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="TRL_Rtype"/>
-  <buttongroup name="ShortType"/>
+  <buttongroup name="ThroughType"/>
   <buttongroup name="LoadType"/>
   <buttongroup name="OpenType"/>
-  <buttongroup name="ThroughType"/>
+  <buttongroup name="ShortType"/>
+  <buttongroup name="TRL_Rtype"/>
  </buttongroups>
 </ui>

@@ -14,6 +14,9 @@ public:
     Calkit();
     Calkit& operator=(const Calkit& other)
     {
+        this->manufacturer = other.manufacturer;
+        this->serialnumber = other.serialnumber;
+        this->description = other.description;
         this->SOLT = other.SOLT;
         this->TRL = other.TRL;
         this->startDialogWithSOLT = other.startDialogWithSOLT;
@@ -46,6 +49,8 @@ public:
 private:
     void TransformPathsToRelative(QFileInfo d);
     void TransformPathsToAbsolute(QFileInfo d);
+
+    QString manufacturer, serialnumber, description;
     // SOLT standard definitions
     struct {
         struct {
@@ -94,7 +99,11 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<JSONDescription, 40> json_descr = {{
+    const std::array<JSONDescription, 43> json_descr = {{
+        {&manufacturer, "Manufacturer", ""},
+        {&serialnumber, "Serialnumber", ""},
+        {&description, "Description", ""},
+
         {&SOLT.Open.Z0, "SOLT/Open/Param/Z0", 50.0},
         {&SOLT.Open.delay, "SOLT/Open/Param/Delay", 0.0},
         {&SOLT.Open.loss, "SOLT/Open/Param/Loss", 0.0},
