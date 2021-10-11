@@ -19,6 +19,12 @@ const set<TraceXYPlot::YAxisType> TraceXYPlot::YAxisTypes = {TraceXYPlot::YAxisT
                                            TraceXYPlot::YAxisType::Magnitude,
                                            TraceXYPlot::YAxisType::Phase,
                                            TraceXYPlot::YAxisType::VSWR,
+                                           TraceXYPlot::YAxisType::Real,
+                                           TraceXYPlot::YAxisType::Imaginary,
+                                           TraceXYPlot::YAxisType::SeriesR,
+                                           TraceXYPlot::YAxisType::Capacitance,
+                                           TraceXYPlot::YAxisType::Inductance,
+                                           TraceXYPlot::YAxisType::QualityFactor,
                                            TraceXYPlot::YAxisType::ImpulseReal,
                                            TraceXYPlot::YAxisType::ImpulseMag,
                                            TraceXYPlot::YAxisType::Step,
@@ -782,6 +788,8 @@ QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
     case YAxisType::Magnitude: return "Magnitude";
     case YAxisType::Phase: return "Phase";
     case YAxisType::VSWR: return "VSWR";
+    case YAxisType::Real: return "Real (R)";
+    case YAxisType::Imaginary: return "Imaginary (X)";
     case YAxisType::SeriesR: return "Resistance";
     case YAxisType::Capacitance: return "Capacitance";
     case YAxisType::Inductance: return "Inductance";
@@ -886,6 +894,12 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
         break;
     case YAxisType::VSWR:
         ret.setY(Util::SparamToVSWR(data.y));
+        break;
+    case YAxisType::Real:
+        ret.setY(data.y.real());
+        break;
+    case YAxisType::Imaginary:
+        ret.setY(data.y.imag());
         break;
     case YAxisType::SeriesR:
         ret.setY(Util::SparamToResistance(data.y));

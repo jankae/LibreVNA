@@ -17,6 +17,8 @@ public:
         Magnitude,
         Phase,
         VSWR,
+        Real,
+        Imaginary,
         // derived parameter options
         SeriesR,
         Capacitance,

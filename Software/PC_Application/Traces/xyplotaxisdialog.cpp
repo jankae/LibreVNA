@@ -12,6 +12,8 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->setupUi(this);
     ui->Y1type->clear();
     ui->Y2type->clear();
+    ui->Y1type->setMaxVisibleItems(20);
+    ui->Y2type->setMaxVisibleItems(20);
 
     for(int i=0;i<(int) TraceXYPlot::YAxisType::Last;i++) {
         ui->Y1type->addItem(TraceXYPlot::AxisTypeToName((TraceXYPlot::YAxisType) i));
@@ -186,6 +188,8 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
         ret.insert(TraceXYPlot::YAxisType::Magnitude);
         ret.insert(TraceXYPlot::YAxisType::Phase);
         ret.insert(TraceXYPlot::YAxisType::VSWR);
+        ret.insert(TraceXYPlot::YAxisType::Real);
+        ret.insert(TraceXYPlot::YAxisType::Imaginary);
         ret.insert(TraceXYPlot::YAxisType::SeriesR);
         ret.insert(TraceXYPlot::YAxisType::Capacitance);
         ret.insert(TraceXYPlot::YAxisType::Inductance);
