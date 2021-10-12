@@ -49,6 +49,7 @@
 #include "Calibration/frequencycaldialog.h"
 #include <QDebug>
 #include "CustomWidgets/jsonpickerdialog.h"
+#include "CustomWidgets/informationbox.h"
 #include <QCommandLineParser>
 #include "Util/app_common.h"
 #include "about.h"
@@ -181,7 +182,7 @@ AppWindow::AppWindow(QWidget *parent)
         try {
             file >> j;
         } catch (exception &e) {
-            QMessageBox::warning(nullptr, "Error", "Failed to parse the setup file (" + QString(e.what()) + ")");
+            InformationBox::ShowError("Error", "Failed to parse the setup file (" + QString(e.what()) + ")");
             qWarning() << "Parsing of setup file failed: " << e.what();
         }
         file.close();
@@ -252,8 +253,11 @@ AppWindow::AppWindow(QWidget *parent)
         ConnectToDevice();
     }
     if(!parser.isSet("no-gui")) {
+        InformationBox::setGUI(true);
         resize(1280, 800);
         show();
+    } else {
+        InformationBox::setGUI(false);
     }
 }
 
@@ -357,7 +361,7 @@ void AppWindow::DisconnectDevice()
 void AppWindow::DeviceConnectionLost()
 {
     DisconnectDevice();
-    QMessageBox::warning(this, "Disconnected", "The USB connection to the device has been lost");
+    InformationBox::ShowError("Disconnected", "The USB connection to the device has been lost");
     UpdateDeviceList();
 }
 
@@ -885,12 +889,11 @@ void AppWindow::StartFirmwareUpdateDialog()
 
 void AppWindow::DeviceNeedsUpdate(int reported, int expected)
 {
-    auto ret = QMessageBox::warning(this, "Warning",
+    auto ret = InformationBox::AskQuestion("Warning",
                                 "The device reports a different protocol"
                                 "version (" + QString::number(reported) + ") than expected (" + QString::number(expected) + ").\n"
-                                "A firmware update is strongly recommended. Do you want to update now?",
-                                   QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-    if (ret == QMessageBox::Yes) {
+                                "A firmware update is strongly recommended. Do you want to update now?", false);
+    if (ret) {
         StartFirmwareUpdateDialog();
     }
 }

@@ -7,6 +7,7 @@
 #include "json.hpp"
 #include <QMessageBox>
 #include <QDebug>
+#include "CustomWidgets/informationbox.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -171,13 +172,9 @@ Calkit Calkit::fromFile(QString filename)
         c.TRL.Line.minFreq = readLine(file).toDouble();
         c.TRL.Line.maxFreq = readLine(file).toDouble();
 
-        auto msg = new QMessageBox();
-        msg->setWindowTitle("Loading calkit file");
-        msg->setText("The file \"" + filename + "\" is stored in a deprecated"
+        InformationBox::ShowMessage("Loading calkit file", "The file \"" + filename + "\" is stored in a deprecated"
                      " calibration kit format. Future versions of this application might not support"
                      " it anymore. Please save the calibration kit to update to the new format");
-        msg->setStandardButtons(QMessageBox::Ok);
-        msg->show();
     }
     file.close();
 

@@ -7,7 +7,7 @@
 #include <fstream>
 #include <touchstone.h>
 #include <QtGlobal>
-#include <QMessageBox>
+#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 
@@ -123,7 +123,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
             try {
                 ownKit = Calkit::fromFile(filename);
             } catch (runtime_error e) {
-                QMessageBox::warning(nullptr, "Error", "The calibration kit file could not be parsed (" + QString(e.what()) + ")");
+                InformationBox::ShowError("Error", "The calibration kit file could not be parsed (" + QString(e.what()) + ")");
                 qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
             }
             updateEntries();

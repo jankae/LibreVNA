@@ -41,12 +41,10 @@ private:
 
     // status variables for automatic measurements
     Calkit *kit;
-//    bool measuring;
     bool isPort1;
     bool isOpen;
     bool isIdeal;
-//    std::vector<Protocol::Datapoint> measurements;
-    QMessageBox *msgBox;
+
     Ui::PortExtensionEditDialog *ui;
 };
 

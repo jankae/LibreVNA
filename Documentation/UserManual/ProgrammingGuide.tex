@@ -505,6 +505,18 @@ $$ S_{11}...S_{1n},S_{21}...S_{2n},...,S_{n1}...S_{nn} $$
 \subsubsection{VNA:CALibration:BUSY}
 \query{Queries whether a calibration measurement is ongoing}{VNA:CALibration:BUSY?}{None}{TRUE or FALSE}
 
+\subsubsection{VNA:CALibration:SAVE}
+\event{Saves the active calibration to a file}{VNA:CALibration:SAVE}{<filename>}
+Important points when saving/loading calibration files through SCPI commands:
+\begin{itemize}
+\item Filenames must be either absolute or relative to the location of the GUI application.
+\item SCPI parsing implicitly capitalizes all commands, the file will be saved using only uppercase letters. Similarly, it is not possible to load a file whose filename contains lowercase characters.
+\item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the calibration files will be saved/loaded from the machine that runs the GUI.
+\end{itemize}
+
+\subsubsection{VNA:CALibration:LOAD}
+\query{Loads a calibration file}{VNA:CALibration:LOAD?}{<filename>}{TRUE or FALSE}
+
 \subsection{Signal Generator Commands}
 These commands change or query signal generator settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the generator mode is active.
 

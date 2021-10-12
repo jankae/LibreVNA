@@ -99,7 +99,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
 
     // Reset and OK action
     connect(ui->buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, [=](){
-        if(QMessageBox::question(this, "Restore defaults?", "Do you really want to set all preferences to their default values?") == QMessageBox::StandardButton::Yes) {
+        if(InformationBox::AskQuestion("Restore defaults?", "Do you really want to set all preferences to their default values?", true)) {
             p->setDefault();
             setInitialGUIState();
         }

@@ -5,6 +5,7 @@
 #include <QString>
 #include <QMessageBox>
 #include <mutex>
+#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 
@@ -169,8 +170,7 @@ Device::Device(QString serial)
 
     if(!m_handle) {
         QString message =  "No device found";
-        auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-        msg->show();
+        InformationBox::ShowError("Error opening device", message);
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
         return;
@@ -186,8 +186,7 @@ Device::Device(QString serial)
         message.append(libusb_strerror((libusb_error) ret));
         message.append("\" Maybe you are already connected to this device?");
         qWarning() << message;
-        auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-        msg->show();
+        InformationBox::ShowError("Error opening device", message);
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
     }
@@ -359,8 +358,7 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
                                "this device (is another instance of the application already runnning? "
                                "If that is not the case, you can try installing the WinUSB driver using Zadig (https://zadig.akeo.ie/)");
                 qWarning() << message;
-                auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-                msg->show();
+                InformationBox::ShowError("Error opening device", message);
             }
             continue;
         }
