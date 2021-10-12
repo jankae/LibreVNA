@@ -7,6 +7,7 @@
 #include <fstream>
 #include <touchstone.h>
 #include <QtGlobal>
+#include <QMessageBox>
 
 using namespace std;
 
@@ -119,7 +120,12 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
         auto filename = QFileDialog::getOpenFileName(this, "Open calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.length() > 0) {
-            ownKit = Calkit::fromFile(filename);
+            try {
+                ownKit = Calkit::fromFile(filename);
+            } catch (runtime_error e) {
+                QMessageBox::warning(nullptr, "Error", "The calibration kit file could not be parsed (" + QString(e.what()) + ")");
+                qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
+            }
             updateEntries();
         }
     });

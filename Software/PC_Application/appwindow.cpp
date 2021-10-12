@@ -178,7 +178,12 @@ AppWindow::AppWindow(QWidget *parent)
             return;
         }
         nlohmann::json j;
-        file >> j;
+        try {
+            file >> j;
+        } catch (exception &e) {
+            QMessageBox::warning(nullptr, "Error", "Failed to parse the setup file (" + QString(e.what()) + ")");
+            qWarning() << "Parsing of setup file failed: " << e.what();
+        }
         file.close();
         LoadSetup(j);
     });

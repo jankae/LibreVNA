@@ -79,7 +79,11 @@ Calkit Calkit::fromFile(QString filename)
     }
 
     json j;
-    file >> j;
+    try {
+        file >> j;
+    } catch (exception &e) {
+        throw runtime_error("JSON parsing error: " + string(e.what()));
+    }
     if(j.contains("SOLT")) {
         qDebug() << "JSON format detected";
         // calkit file uses json format, parse
