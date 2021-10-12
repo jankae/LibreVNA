@@ -789,8 +789,8 @@ QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
     case YAxisType::Magnitude: return "Magnitude";
     case YAxisType::Phase: return "Phase";
     case YAxisType::VSWR: return "VSWR";
-    case YAxisType::Real: return "Real (R)";
-    case YAxisType::Imaginary: return "Imaginary (X)";
+    case YAxisType::Real: return "Real";
+    case YAxisType::Imaginary: return "Imaginary";
     case YAxisType::SeriesR: return "Resistance";
     case YAxisType::Reactance: return "Reactance";
     case YAxisType::Capacitance: return "Capacitance";
@@ -862,6 +862,7 @@ bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
         return false;
     case YAxisType::VSWR:
     case YAxisType::SeriesR:
+    case YAxisType::Reactance:
     case YAxisType::Capacitance:
     case YAxisType::Inductance:
     case YAxisType::QualityFactor:
