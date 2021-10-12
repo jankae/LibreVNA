@@ -22,6 +22,7 @@ const set<TraceXYPlot::YAxisType> TraceXYPlot::YAxisTypes = {TraceXYPlot::YAxisT
                                            TraceXYPlot::YAxisType::Real,
                                            TraceXYPlot::YAxisType::Imaginary,
                                            TraceXYPlot::YAxisType::SeriesR,
+                                           TraceXYPlot::YAxisType::Reactance,
                                            TraceXYPlot::YAxisType::Capacitance,
                                            TraceXYPlot::YAxisType::Inductance,
                                            TraceXYPlot::YAxisType::QualityFactor,
@@ -791,6 +792,7 @@ QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
     case YAxisType::Real: return "Real (R)";
     case YAxisType::Imaginary: return "Imaginary (X)";
     case YAxisType::SeriesR: return "Resistance";
+    case YAxisType::Reactance: return "Reactance";
     case YAxisType::Capacitance: return "Capacitance";
     case YAxisType::Inductance: return "Inductance";
     case YAxisType::QualityFactor: return "Quality Factor";
@@ -903,6 +905,9 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
         break;
     case YAxisType::SeriesR:
         ret.setY(Util::SparamToResistance(data.y));
+        break;
+    case YAxisType::Reactance:
+        ret.setY(Util::SparamToImpedance(data.y).imag());
         break;
     case YAxisType::Capacitance:
         ret.setY(Util::SparamToCapacitance(data.y, data.x));

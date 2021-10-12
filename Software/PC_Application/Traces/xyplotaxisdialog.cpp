@@ -191,6 +191,7 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
         ret.insert(TraceXYPlot::YAxisType::Real);
         ret.insert(TraceXYPlot::YAxisType::Imaginary);
         ret.insert(TraceXYPlot::YAxisType::SeriesR);
+        ret.insert(TraceXYPlot::YAxisType::Reactance);
         ret.insert(TraceXYPlot::YAxisType::Capacitance);
         ret.insert(TraceXYPlot::YAxisType::Inductance);
         ret.insert(TraceXYPlot::YAxisType::QualityFactor);

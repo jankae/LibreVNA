@@ -21,6 +21,7 @@ public:
         Imaginary,
         // derived parameter options
         SeriesR,
+        Reactance,
         Capacitance,
         Inductance,
         QualityFactor,
