@@ -101,30 +101,12 @@ AppWindow::AppWindow(QWidget *parent)
     }
 
     ui->setupUi(this);
-    ui->statusbar->addWidget(&lConnectionStatus);
-    auto div1 = new QFrame;
-    div1->setFrameShape(QFrame::VLine);
-    ui->statusbar->addWidget(div1);
-    ui->statusbar->addWidget(&lDeviceInfo);
-    ui->statusbar->addWidget(new QLabel, 1);
 
-    lADCOverload.setStyleSheet("color : red");
-    lADCOverload.setText("ADC overload");
-    lADCOverload.setVisible(false);
-    ui->statusbar->addWidget(&lADCOverload);
-
-    lUnlevel.setStyleSheet("color : red");
-    lUnlevel.setText("Unlevel");
-    lUnlevel.setVisible(false);
-    ui->statusbar->addWidget(&lUnlevel);
-
-    lUnlock.setStyleSheet("color : red");
-    lUnlock.setText("Unlock");
-    lUnlock.setVisible(false);
-    ui->statusbar->addWidget(&lUnlock);
-    //ui->statusbar->setStyleSheet("QStatusBar::item { border: 1px solid black; };");
+    SetupStatusBar();
+    UpdateStatusBar(Disconnected);
 
     CreateToolbars();
+
     auto logDock = new QDockWidget("Device Log");
     logDock->setWidget(&deviceLog);
     logDock->setObjectName("Log Dock");
@@ -288,16 +270,11 @@ bool AppWindow::ConnectToDevice(QString serial)
     try {
         qDebug() << "Attempting to connect to device...";
         device = new Device(serial);
-        lConnectionStatus.setText("Connected to " + device->serial());
-        qInfo() << "Connected to" << device->serial();
-        lDeviceInfo.setText(device->getLastDeviceInfoString());
+        UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
         connect(device, &Device::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &Device::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
         connect(device, &Device::DeviceInfoUpdated, [this]() {
-           lDeviceInfo.setText(device->getLastDeviceInfoString());
-           lADCOverload.setVisible(device->Info().ADC_overload);
-           lUnlevel.setVisible(device->Info().unlevel);
-           lUnlock.setVisible(!device->Info().LO1_locked || !device->Info().source_locked);
+            UpdateStatusBar(AppWindow::DeviceStatusBar::Updated);
         });
         connect(device, &Device::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
@@ -343,8 +320,7 @@ void AppWindow::DisconnectDevice()
     if(deviceActionGroup->checkedAction()) {
         deviceActionGroup->checkedAction()->setChecked(false);
     }
-    lConnectionStatus.setText("No device connected");
-    lDeviceInfo.setText("No device information available yet");
+    UpdateStatusBar(AppWindow::DeviceStatusBar::Disconnected);
     Mode::getActiveMode()->deviceDisconnected();
     qDebug() << "Disconnected device";
 }
@@ -960,4 +936,55 @@ const QString& AppWindow::getAppVersion() const
 const QString& AppWindow::getAppGitHash() const
 {
     return appGitHash;
+}
+
+void AppWindow::SetupStatusBar()
+{
+    ui->statusbar->addWidget(&lConnectionStatus);
+    auto div1 = new QFrame;
+    div1->setFrameShape(QFrame::VLine);
+    ui->statusbar->addWidget(div1);
+    ui->statusbar->addWidget(&lDeviceInfo);
+    ui->statusbar->addWidget(new QLabel, 1);
+
+    lADCOverload.setStyleSheet("color : red");
+    lADCOverload.setText("ADC overload");
+    lADCOverload.setVisible(false);
+    ui->statusbar->addWidget(&lADCOverload);
+
+    lUnlevel.setStyleSheet("color : red");
+    lUnlevel.setText("Unlevel");
+    lUnlevel.setVisible(false);
+    ui->statusbar->addWidget(&lUnlevel);
+
+    lUnlock.setStyleSheet("color : red");
+    lUnlock.setText("Unlock");
+    lUnlock.setVisible(false);
+    ui->statusbar->addWidget(&lUnlock);
+    //ui->statusbar->setStyleSheet("QStatusBar::item { border: 1px solid black; };");
+}
+
+void AppWindow::UpdateStatusBar(DeviceStatusBar status)
+{
+    switch(status) {
+    case Connected:
+        lConnectionStatus.setText("Connected to " + device->serial());
+        qInfo() << "Connected to" << device->serial();
+        lDeviceInfo.setText(device->getLastDeviceInfoString());
+        break;
+    case Disconnected:
+        lConnectionStatus.setText("No device connected");
+        lDeviceInfo.setText("No device information available yet");
+        break;
+    case Updated:
+        lDeviceInfo.setText(device->getLastDeviceInfoString());
+        lADCOverload.setVisible(device->Info().ADC_overload);
+        lUnlevel.setVisible(device->Info().unlevel);
+        lUnlock.setVisible(!device->Info().LO1_locked || !device->Info().source_locked);
+        break;
+    default:
+        // invalid status
+        break;
+    }
+
 }
