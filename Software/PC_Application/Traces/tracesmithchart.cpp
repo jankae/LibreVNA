@@ -97,8 +97,9 @@ QPoint TraceSmithChart::markerToPixel(Marker *m)
 double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
 {
     double closestDistance = numeric_limits<double>::max();
-    unsigned int closestIndex = 0;
-    for(unsigned int i=0;i<t->size();i++) {
+    double closestXpos = 0;
+    auto samples = t->size();
+    for(unsigned int i=0;i<samples;i++) {
         auto data = t->sample(i);
         auto plotPoint = dataToPixel(data);
         if (plotPoint.isNull()) {
@@ -109,13 +110,13 @@ double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel, double *distan
         unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
         if(distance < closestDistance) {
             closestDistance = distance;
-            closestIndex = i;
+            closestXpos = t->sample(i).x;
         }
     }
     if(distance) {
         *distance = closestDistance;
     }
-    return t->sample(closestIndex).x;
+    return closestXpos;
 }
 
 bool TraceSmithChart::xCoordinateVisible(double x)
