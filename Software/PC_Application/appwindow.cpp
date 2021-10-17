@@ -103,7 +103,7 @@ AppWindow::AppWindow(QWidget *parent)
     ui->setupUi(this);
 
     SetupStatusBar();
-    UpdateStatusBar(Disconnected);
+    UpdateStatusBar(DeviceStatusBar::Disconnected);
 
     CreateToolbars();
 
@@ -320,7 +320,7 @@ void AppWindow::DisconnectDevice()
     if(deviceActionGroup->checkedAction()) {
         deviceActionGroup->checkedAction()->setChecked(false);
     }
-    UpdateStatusBar(AppWindow::DeviceStatusBar::Disconnected);
+    UpdateStatusBar(DeviceStatusBar::Disconnected);
     Mode::getActiveMode()->deviceDisconnected();
     qDebug() << "Disconnected device";
 }
@@ -967,16 +967,16 @@ void AppWindow::SetupStatusBar()
 void AppWindow::UpdateStatusBar(DeviceStatusBar status)
 {
     switch(status) {
-    case Connected:
+    case DeviceStatusBar::Connected:
         lConnectionStatus.setText("Connected to " + device->serial());
         qInfo() << "Connected to" << device->serial();
         lDeviceInfo.setText(device->getLastDeviceInfoString());
         break;
-    case Disconnected:
+    case DeviceStatusBar::Disconnected:
         lConnectionStatus.setText("No device connected");
         lDeviceInfo.setText("No device information available yet");
         break;
-    case Updated:
+    case DeviceStatusBar::Updated:
         lDeviceInfo.setText(device->getLastDeviceInfoString());
         lADCOverload.setVisible(device->Info().ADC_overload);
         lUnlevel.setVisible(device->Info().unlevel);

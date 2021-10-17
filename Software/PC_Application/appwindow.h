@@ -62,7 +62,7 @@ private slots:
     void LoadSetup(nlohmann::json j);
 private:
 
-    enum DeviceStatusBar {
+    enum class DeviceStatusBar {
         Connected,
         Updated,
         Disconnected,
