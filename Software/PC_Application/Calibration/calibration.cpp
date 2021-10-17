@@ -6,6 +6,7 @@
 #include "unit.h"
 #include <QDebug>
 #include "Tools/parameters.h"
+#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 
@@ -127,7 +128,7 @@ bool Calibration::constructErrorTerms(Calibration::Type type)
                 + "The measured calibration data covers " + Unit::ToString(minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(maxFreq, "Hz", " kMG", 4)
                 + ", however the calibration kit is only valid from " + Unit::ToString(kit_minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(kit_maxFreq, "Hz", " kMG", 4) + ".\n\n"
                 + "Please adjust the calibration kit or the span and take the calibration measurements again.";
-        QMessageBox::critical(nullptr, "Unable to perform calibration", msg);
+        InformationBox::ShowError("Unable to perform calibration", msg);
         qWarning() << msg;
         return false;
     }
@@ -732,6 +733,13 @@ bool Calibration::openFromFile(QString filename)
             return false;
         }
     }
+
+    // force correct file ending
+    if(filename.toLower().endsWith(".cal")) {
+        filename.chop(4);
+        filename += ".cal";
+    }
+
     qDebug() << "Attempting to open calibration from file" << filename;
 
     // reset all data before loading new calibration
@@ -749,16 +757,24 @@ bool Calibration::openFromFile(QString filename)
     try {
         kit = Calkit::fromFile(calkit_file);
     } catch (runtime_error e) {
-        QMessageBox::warning(nullptr, "Missing calibration kit", "The calibration kit file associated with the selected calibration could not be parsed. The calibration might not be accurate. (" + QString(e.what()) + ")");
+        InformationBox::ShowError("Missing calibration kit", "The calibration kit file associated with the selected calibration could not be parsed. The calibration might not be accurate. (" + QString(e.what()) + ")");
         qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
     }
 
     ifstream file;
+
     file.open(filename.toStdString());
+    if(!file.good()) {
+        QString msg = "Unable to open file: "+filename;
+        InformationBox::ShowError("Error", msg);
+        qWarning() << msg;
+        return false;
+    }
+
     try {
         file >> *this;
-    } catch(runtime_error e) {
-        QMessageBox::warning(nullptr, "File parsing error", e.what());
+    } catch(exception e) {
+        InformationBox::ShowError("File parsing error", e.what());
         qWarning() << "Calibration file parsing failed: " << e.what();
         return false;
     }
@@ -778,7 +794,7 @@ bool Calibration::saveToFile(QString filename)
         }
     }
 
-    if(filename.endsWith(".cal")) {
+    if(filename.toLower().endsWith(".cal")) {
         filename.chop(4);
     }
     auto calibration_file = filename + ".cal";

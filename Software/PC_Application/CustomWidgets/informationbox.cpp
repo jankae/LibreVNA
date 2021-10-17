@@ -3,8 +3,15 @@
 #include <QSettings>
 #include <QDebug>
 
+bool InformationBox::has_gui = true;
+
 void InformationBox::ShowMessage(QString title, QString message, QString messageID, bool block)
 {
+    if(!has_gui) {
+        // no gui option active, do not show any messages
+        return;
+    }
+
     // check if the user still wants to see this message
     unsigned int hash;
     if(messageID.isEmpty()) {
@@ -31,12 +38,21 @@ void InformationBox::ShowMessageBlocking(QString title, QString message, QString
 
 void InformationBox::ShowError(QString title, QString message)
 {
+    if(!has_gui) {
+        // no gui option active, do not show any messages
+        return;
+    }
     auto box = new InformationBox(title, message, QMessageBox::Information, 0, nullptr);
     box->show();
 }
 
 bool InformationBox::AskQuestion(QString title, QString question, bool defaultAnswer, QString messageID)
 {
+    if(!has_gui) {
+        // no gui option active, do not show any messages
+        return defaultAnswer;
+    }
+
     // check if the user still wants to see this message
     unsigned int hash;
     if(messageID.isEmpty()) {
@@ -59,6 +75,11 @@ bool InformationBox::AskQuestion(QString title, QString question, bool defaultAn
         // don't show this question anymore
         return defaultAnswer;
     }
+}
+
+void InformationBox::setGUI(bool enable)
+{
+    has_gui = enable;
 }
 
 InformationBox::InformationBox(QString title, QString message, Icon icon, unsigned int hash, QWidget *parent)

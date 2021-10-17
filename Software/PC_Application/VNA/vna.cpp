@@ -1062,7 +1062,7 @@ void VNA::ApplyCalibration(Calibration::Type type)
                 DisableCalibration(true);
             }
         } catch (runtime_error e) {
-            QMessageBox::critical(window, "Calibration failure", e.what());
+            InformationBox::ShowError("Calibration failure", e.what());
             DisableCalibration(true);
         }
     } else {
@@ -1324,6 +1324,35 @@ void VNA::SetupSCPI()
     }, nullptr));
     scpi_cal->add(new SCPICommand("BUSy", nullptr, [=](QStringList) -> QString {
         return CalibrationMeasurementActive() ? "TRUE" : "FALSE";
+    }));
+    scpi_cal->add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
+        if(params.size() != 1 || !calValid) {
+            // no filename given or no calibration active
+            return "ERROR";
+        }
+        if(!cal.saveToFile(params[0])) {
+            // some error when writing the calibration file
+            return "ERROR";
+        }
+        calEdited = false;
+        return "";
+    }, nullptr));
+    scpi_cal->add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // no filename given or no calibration active
+            return "FALSE";
+        }
+        if(!cal.openFromFile(params[0])) {
+            // some error when loading the calibration file
+            return "FALSE";
+        }
+        if(cal.getType() == Calibration::Type::None) {
+            DisableCalibration();
+        } else {
+            ApplyCalibration(cal.getType());
+        }
+        calEdited = false;
+        return "TRUE";
     }));
 }
 

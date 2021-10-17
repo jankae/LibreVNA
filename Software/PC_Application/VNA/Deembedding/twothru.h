@@ -41,7 +41,6 @@ private:
     std::vector<Point> points;
     bool measuring2xthru;
     bool measuringDUT;
-    QMessageBox *msgBox;
     Ui::TwoThruDialog *ui;
 };
 
