@@ -61,7 +61,17 @@ private slots:
     nlohmann::json SaveSetup();
     void LoadSetup(nlohmann::json j);
 private:
+
+    enum class DeviceStatusBar {
+        Connected,
+        Updated,
+        Disconnected,
+    };
+
     void DeviceConnectionLost();
+
+    void SetupStatusBar();
+    void UpdateStatusBar(DeviceStatusBar status);
     void CreateToolbars();
     void SetupSCPI();
     void StartTCPServer(int port);
