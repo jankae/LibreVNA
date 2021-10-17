@@ -13,8 +13,8 @@
   <property name="windowTitle">
    <string>Preferences</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <item row="0" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout_13">
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
      <item>
       <widget class="QTreeWidget" name="treeWidget">
@@ -78,7 +78,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -690,18 +690,53 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_17">
-                <property name="text">
-                 <string>Divisions:</string>
+              <item row="3" column="0" colspan="2">
+               <widget class="QGroupBox" name="groupBox_13">
+                <property name="title">
+                 <string>Ticks</string>
                 </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="ColorPickerButton" name="GraphsColorDivisions">
-                <property name="text">
-                 <string/>
+                <property name="checkable">
+                 <bool>false</bool>
                 </property>
+                <layout class="QGridLayout" name="gridLayout">
+                 <item row="1" column="1">
+                  <widget class="ColorPickerButton" name="GraphsColorTicksBackground">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="checkable">
+                    <bool>false</bool>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_17">
+                   <property name="text">
+                    <string>Divisions:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="ColorPickerButton" name="GraphsColorTicksDivisions">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QCheckBox" name="GraphsColorTicksBackgroundEnabled">
+                   <property name="text">
+                    <string>Enable background</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
               </item>
              </layout>
@@ -873,7 +908,7 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0">
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

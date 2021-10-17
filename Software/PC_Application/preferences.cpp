@@ -134,7 +134,9 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
         p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
         p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
-        p->Graphs.Color.divisions = ui->GraphsColorDivisions->getColor();
+        p->Graphs.Color.Ticks.Background.enabled = ui->GraphsColorTicksBackgroundEnabled->isChecked();
+        p->Graphs.Color.Ticks.Background.background = ui->GraphsColorTicksBackground->getColor();
+        p->Graphs.Color.Ticks.divisions = ui->GraphsColorTicksDivisions->getColor();
         p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
         p->Graphs.markerBehavior.showDataOnGraphs = ui->GraphsShowMarkerData->isChecked();
         p->Graphs.markerBehavior.showAllData = ui->GraphsShowAllMarkerData->isChecked();
@@ -198,7 +200,9 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->GraphsColorBackground->setColor(p->Graphs.Color.background);
     ui->GraphsColorAxis->setColor(p->Graphs.Color.axis);
-    ui->GraphsColorDivisions->setColor(p->Graphs.Color.divisions);
+    ui->GraphsColorTicksDivisions->setColor(p->Graphs.Color.Ticks.divisions);
+    ui->GraphsColorTicksBackgroundEnabled->setChecked(p->Graphs.Color.Ticks.Background.enabled);
+    ui->GraphsColorTicksBackground->setColor(p->Graphs.Color.Ticks.Background.background);
     ui->GraphsDomainChangeBehavior->setCurrentIndex((int) p->Graphs.domainChangeBehavior);
     ui->GraphsShowMarkerData->setChecked(p->Graphs.markerBehavior.showDataOnGraphs);
     ui->GraphsShowAllMarkerData->setChecked(p->Graphs.markerBehavior.showAllData);

@@ -360,6 +360,7 @@ void TraceXYPlot::draw(QPainter &p)
     p.setPen(pen);
     plotAreaLeft = YAxis[0].type == YAxisType::Disabled ? yAxisDisabledSpace : yAxisSpace;
     plotAreaWidth = w.width();
+    plotAreaTop = 10;
     plotAreaBottom = w.height() - xAxisSpace;
     if(YAxis[0].type != YAxisType::Disabled) {
         plotAreaWidth -= yAxisSpace;
@@ -372,7 +373,7 @@ void TraceXYPlot::draw(QPainter &p)
         plotAreaWidth -= yAxisDisabledSpace;
     }
 
-    auto plotRect = QRect(plotAreaLeft, 0, plotAreaWidth + 1, plotAreaBottom);
+    auto plotRect = QRect(plotAreaLeft, plotAreaTop, plotAreaWidth + 1, plotAreaBottom-plotAreaTop);
     p.drawRect(plotRect);
 
     // draw axis types
@@ -437,8 +438,8 @@ void TraceXYPlot::draw(QPainter &p)
             }
             p.drawLine(xCoord, plotAreaBottom, xCoord, plotAreaBottom + 2);
             if(xCoord != plotAreaLeft && xCoord != plotAreaLeft + plotAreaWidth) {
-                p.setPen(QPen(pref.Graphs.Color.divisions, 0.5, Qt::DashLine));
-                p.drawLine(xCoord, 0, xCoord, plotAreaBottom);
+                p.setPen(QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine));
+                p.drawLine(xCoord, plotAreaTop, xCoord, plotAreaBottom);
             }
         }
     }
@@ -467,14 +468,18 @@ void TraceXYPlot::draw(QPainter &p)
                 step = max / 1000;
             }
             int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
-            for(auto t : YAxis[i].ticks) {
-                auto yCoord = Util::Scale<double>(t, YAxis[i].rangeMax, YAxis[i].rangeMin, 0, w.height() - xAxisSpace);
+
+            auto yCoordWidth = 0;
+            auto yCoordLast = 0;
+
+            for(unsigned int j = 0; j < YAxis[i].ticks.size(); j++) {
+                auto yCoord = Util::Scale<double>(YAxis[i].ticks[j], YAxis[i].rangeMax, YAxis[i].rangeMin, plotAreaTop, w.height() - xAxisSpace);
                 p.setPen(QPen(pref.Graphs.Color.axis, 1));
                 // draw tickmark on axis
                 auto tickStart = i == 0 ? plotAreaLeft : plotAreaLeft + plotAreaWidth;
                 auto tickLen = i == 0 ? -2 : 2;
                 p.drawLine(tickStart, yCoord, tickStart + tickLen, yCoord);
-                auto tickValue = Unit::ToString(t, "", "fpnum kMG", significantDigits);
+                auto tickValue = Unit::ToString(YAxis[i].ticks[j], "", "fpnum kMG", significantDigits);
                 if(i == 0) {
                     p.drawText(QRectF(0, yCoord - AxisLabelSize/2 - 2, tickStart + 2 * tickLen, AxisLabelSize), Qt::AlignRight, tickValue);
                 } else {
@@ -482,14 +487,25 @@ void TraceXYPlot::draw(QPainter &p)
                 }
 
                 // tick lines
-                if(yCoord == 0 || yCoord == w.height() - xAxisSpace) {
+                if(yCoord == plotAreaTop || yCoord == w.height() - xAxisSpace) {
                     // skip tick lines right on the plot borders
                     continue;
                 }
                 if(i == 0) {
                     // only draw tick lines for primary axis
-                    p.setPen(QPen(pref.Graphs.Color.divisions, 0.5, Qt::DashLine));
+                    p.setPen(QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine));
                     p.drawLine(plotAreaLeft, yCoord, plotAreaLeft + plotAreaWidth, yCoord);
+
+                    if (pref.Graphs.Color.Ticks.Background.enabled) {
+                        yCoordWidth =  floor((w.height() - xAxisSpace - plotAreaTop)/(YAxis[i].ticks.size()-1));
+                        if (j%2)
+                        {
+                            p.setBrush(pref.Graphs.Color.Ticks.Background.background);
+                            auto rect = QRect(plotAreaLeft, yCoord, plotAreaWidth, yCoordWidth);
+                            p.drawRect(rect);
+                        }
+                        yCoordLast = yCoord;
+                    }
                 }
             }
         }
@@ -947,7 +963,7 @@ QPoint TraceXYPlot::plotValueToPixel(QPointF plotValue, int Yaxis)
 {
     QPoint p;
     p.setX(Util::Scale<double>(plotValue.x(), XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
-    p.setY(Util::Scale<double>(plotValue.y(), YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax, plotAreaBottom, 0));
+    p.setY(Util::Scale<double>(plotValue.y(), YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax, plotAreaBottom, plotAreaTop));
     return p;
 }
 
@@ -955,7 +971,7 @@ QPointF TraceXYPlot::pixelToPlotValue(QPoint pixel, int Yaxis)
 {
     QPointF p;
     p.setX(Util::Scale<double>(pixel.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth, XAxis.rangeMin, XAxis.rangeMax));
-    p.setY(Util::Scale<double>(pixel.y(), plotAreaBottom, 0, YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax));
+    p.setY(Util::Scale<double>(pixel.y(), plotAreaBottom, plotAreaTop, YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax));
     return p;
 }
 

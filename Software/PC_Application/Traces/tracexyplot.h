@@ -119,7 +119,7 @@ private:
     YAxis YAxis[2];
     XAxis XAxis;
 
-    int plotAreaLeft, plotAreaWidth, plotAreaBottom;
+    int plotAreaLeft, plotAreaWidth, plotAreaBottom, plotAreaTop;
 };
 
 #endif // TRACEXYPLOT_H
