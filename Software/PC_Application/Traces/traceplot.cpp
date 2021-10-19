@@ -2,6 +2,7 @@
 #include "Marker/marker.h"
 #include "preferences.h"
 #include <QPainter>
+#include <QPainterPath>
 #include <QMimeData>
 #include <QDebug>
 #include "unit.h"
@@ -153,18 +154,32 @@ void TracePlot::paintEvent(QPaintEvent *event)
     bool hasMarkerData = false;
     int x = 1; // xcoordinate for the next trace name
     int y = marginTop; // ycoordinate for the next marker data
+    auto areaTextTop = 5;
+    auto labelMarginRight = 4;
+    auto borderRadius = 5;
     for(auto t : traces) {
         if(!t.second || !t.first->isVisible()) {
             continue;
         }
-        auto textArea = QRect(x, 0, width() - x, marginTop);
-        QRect usedArea;
+
+        auto textArea = QRect(x, areaTextTop, width() - x, marginTop);
+
         QFont font = p.font();
         font.setPixelSize(12);
         p.setFont(font);
         p.setPen(t.first->color());
-        p.drawText(textArea, 0, t.first->name() + " ", &usedArea);
-        x += usedArea.width();
+
+        auto space = " ";
+        auto label = space + t.first->name() + space;
+        QRectF usedLabelArea = p.boundingRect(textArea, 0, label);
+        QPainterPath path;
+        path.addRoundedRect(usedLabelArea, borderRadius, borderRadius);
+        p.fillPath(path, t.first->color());
+        p.drawPath(path);
+        p.setPen(QColor(Qt::white));
+        p.drawText(textArea, 0, label);
+        p.setPen(t.first->color());
+        x += usedLabelArea.width()+labelMarginRight;
 
         auto tmarkers = t.first->getMarkers();
 
@@ -181,17 +196,29 @@ void TracePlot::paintEvent(QPaintEvent *event)
             }
             hasMarkerData = true;
 
+            auto space = "  ";
             auto textArea = QRect(width() - marginRight - marginMarkerData, y, width() - marginRight, y + 100);
-            p.drawText(textArea, 0, "Marker "+QString::number(m->getNumber())+m->getSuffix()+": "+m->readablePosition(), &usedArea);
-            y += usedArea.height();
+            auto description = m->getSuffix() + space + m->readablePosition();
+            auto label = space + QString::number(m->getNumber()) + space;
+            QRectF textAreaConsumed = p.boundingRect(textArea, 0, label);
+            QPainterPath pathM;
+            pathM.addRoundedRect(textAreaConsumed, borderRadius, borderRadius);
+            p.fillPath(pathM, t.first->color());
+            p.drawPath(pathM);
+
+            p.setPen(QColor(Qt::white));
+            p.drawText(textArea, 0, label);
+            p.setPen(t.first->color());
+            p.drawText(textAreaConsumed.x()+textAreaConsumed.width(), textAreaConsumed.y(), textArea.width(), textArea.height(), 0, description);
+            y += textAreaConsumed.height();
 
             for(auto f : m->getGraphDisplayFormats()) {
                 auto textArea = QRect(width() - marginRight - marginMarkerData, y, width() - marginRight, y + 100);
-                p.drawText(textArea, 0, m->readableData(f), &usedArea);
-                y += usedArea.height();
+                p.drawText(textArea, 0, m->readableData(f), &textAreaConsumed);
+                y += textAreaConsumed.height();
             }
             // leave one row empty between markers
-            y += usedArea.height();
+            y += textAreaConsumed.height();
         }
     }
 
