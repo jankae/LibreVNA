@@ -1,12 +1,13 @@
 #ifndef PORTEXTENSION_H
 #define PORTEXTENSION_H
 
-#include <QObject>
 #include "../VNA_embedded/Application/Communication/Protocol.hpp"
-#include <QToolBar>
 #include "Calibration/calkit.h"
-#include <QMessageBox>
 #include "deembeddingoption.h"
+
+#include <QObject>
+#include <QMessageBox>
+#include <QToolBar>
 
 namespace Ui {
 class PortExtensionEditDialog;

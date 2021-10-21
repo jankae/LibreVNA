@@ -1,13 +1,14 @@
 #include "calkit.h"
 
+#include "calkitdialog.h"
+#include "json.hpp"
+#include "CustomWidgets/informationbox.h"
+
 #include <fstream>
 #include <iomanip>
-#include "calkitdialog.h"
-#include <math.h>
-#include "json.hpp"
 #include <QMessageBox>
 #include <QDebug>
-#include "CustomWidgets/informationbox.h"
+#include <math.h>
 
 using json = nlohmann::json;
 using namespace std;

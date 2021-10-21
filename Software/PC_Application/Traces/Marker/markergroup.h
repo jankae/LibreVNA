@@ -1,9 +1,9 @@
 ﻿#ifndef MARKERGROUP_H
 #define MARKERGROUP_H
 
-#include <QObject>
-
 #include "marker.h"
+
+#include <QObject>
 
 class MarkerGroup : public QObject
 {

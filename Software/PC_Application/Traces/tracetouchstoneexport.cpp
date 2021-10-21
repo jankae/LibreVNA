@@ -1,8 +1,10 @@
 ﻿#include "tracetouchstoneexport.h"
+
 #include "ui_tracetouchstoneexport.h"
+#include "touchstone.h"
+
 #include <QDebug>
 #include <QFileDialog>
-#include "touchstone.h"
 #include <QPushButton>
 
 TraceTouchstoneExport::TraceTouchstoneExport(TraceModel &model, QWidget *parent) :

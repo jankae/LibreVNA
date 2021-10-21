@@ -1,17 +1,20 @@
 #include "tracewidget.h"
+
 #include "ui_tracewidget.h"
-#include "trace.h"
-#include <QKeyEvent>
 #include "traceeditdialog.h"
 #include "traceimportdialog.h"
 #include "tracetouchstoneexport.h"
+#include "trace.h"
+#include "unit.h"
+#include "Util/util.h"
+
+#include <QKeyEvent>
 #include <QFileDialog>
 #include <QDrag>
 #include <QMimeData>
 #include <QDebug>
 #include <QMenu>
-#include "unit.h"
-#include "Util/util.h"
+
 
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),

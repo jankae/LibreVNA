@@ -1,6 +1,8 @@
 #include "deembeddingdialog.h"
+
 #include "ui_deembeddingdialog.h"
 #include "deembeddingoption.h"
+
 #include <QMenu>
 
 DeembeddingDialog::DeembeddingDialog(Deembedding *d, QWidget *parent) :

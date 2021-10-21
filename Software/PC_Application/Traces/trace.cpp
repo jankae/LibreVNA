@@ -1,12 +1,14 @@
 #include "trace.h"
-#include <math.h>
+
 #include "fftcomplex.h"
+#include "Util/util.h"
+#include "Marker/marker.h"
+
+#include <math.h>
 #include <QDebug>
 #include <QScrollBar>
 #include <QSettings>
 #include <functional>
-#include "Util/util.h"
-#include "Marker/marker.h"
 
 using namespace std;
 

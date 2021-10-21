@@ -2,6 +2,7 @@
 #define TRACEXYPLOT_H
 
 #include "traceplot.h"
+
 #include <set>
 
 class TraceXYPlot : public TracePlot

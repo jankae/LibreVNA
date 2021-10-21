@@ -1,9 +1,10 @@
 #ifndef DEEMBEDDINGOPTION_H
 #define DEEMBEDDINGOPTION_H
 
-#include <QWidget>
 #include "savable.h"
 #include "Device/device.h"
+
+#include <QWidget>
 
 class DeembeddingOption : public QObject, public Savable
 {

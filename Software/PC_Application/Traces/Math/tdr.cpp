@@ -2,11 +2,12 @@
 
 #include "Traces/fftcomplex.h"
 #include "ui_tdrdialog.h"
+#include "ui_tdrexplanationwidget.h"
+#include "Util/util.h"
+
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDebug>
-#include "ui_tdrexplanationwidget.h"
-#include "Util/util.h"
 
 using namespace Math;
 using namespace std;

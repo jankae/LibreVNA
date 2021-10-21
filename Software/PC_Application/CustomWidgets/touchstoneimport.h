@@ -1,8 +1,9 @@
 #ifndef TOUCHSTONEIMPORT_H
 #define TOUCHSTONEIMPORT_H
 
-#include <QWidget>
 #include "touchstone.h"
+
+#include <QWidget>
 #include <QButtonGroup>
 
 namespace Ui {

@@ -1,13 +1,15 @@
 ﻿#include "tracesmithchart.h"
-#include <QPainter>
-#include <array>
-#include <math.h>
+
 #include "Marker/marker.h"
-#include <QDebug>
 #include "preferences.h"
 #include "ui_smithchartdialog.h"
 #include "unit.h"
 #include "QFileDialog"
+
+#include <QPainter>
+#include <array>
+#include <math.h>
+#include <QDebug>
 
 using namespace std;
 

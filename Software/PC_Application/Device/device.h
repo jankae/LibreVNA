@@ -2,6 +2,7 @@
 #define DEVICE_H
 
 #include "../VNA_embedded/Application/Communication/Protocol.hpp"
+
 #include <functional>
 #include <libusb-1.0/libusb.h>
 #include <thread>

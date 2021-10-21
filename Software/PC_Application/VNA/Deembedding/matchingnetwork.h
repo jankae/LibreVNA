@@ -1,12 +1,14 @@
 #ifndef MATCHINGNETWORK_H
 #define MATCHINGNETWORK_H
 
-#include <QWidget>
-#include <CustomWidgets/siunitedit.h>
+#include "CustomWidgets/siunitedit.h"
 #include "deembeddingoption.h"
-#include <vector>
 #include "Tools/parameters.h"
 #include "savable.h"
+
+#include <QWidget>
+#include <vector>
+
 
 class MatchingComponent : public QFrame, public Savable
 {

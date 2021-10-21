@@ -2,10 +2,11 @@
 #define DEEMBEDDING_H
 
 #include "deembeddingoption.h"
-#include <vector>
-#include <QObject>
 #include "savable.h"
 #include "Traces/tracemodel.h"
+
+#include <vector>
+#include <QObject>
 #include <QDialog>
 #include <QComboBox>
 

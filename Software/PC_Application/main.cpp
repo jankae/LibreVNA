@@ -1,14 +1,11 @@
-#include <iostream>
-
-#include <unistd.h>
-#include <QtWidgets/QApplication>
 #include "appwindow.h"
-
 #include "Calibration/calkit.h"
 #include "touchstone.h"
 
+#include <iostream>
+#include <unistd.h>
+#include <QtWidgets/QApplication>
 #include <signal.h>
-
 #include <complex>
 
 static QApplication *app;

@@ -1,10 +1,11 @@
 #ifndef MEASUREMENTMODEL_H
 #define MEASUREMENTMODEL_H
 
+#include "calibration.h"
+
 #include <QObject>
 #include <QWidget>
 #include <QAbstractTableModel>
-#include "calibration.h"
 
 class MeasurementModel : public QAbstractTableModel
 {

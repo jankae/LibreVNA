@@ -1,13 +1,14 @@
 #ifndef TRACEMARKER_H
 #define TRACEMARKER_H
 
-#include <QPixmap>
-#include <QObject>
 #include "../trace.h"
-#include <QMenu>
-#include <QComboBox>
 #include "CustomWidgets/siunitedit.h"
 #include "savable.h"
+
+#include <QPixmap>
+#include <QObject>
+#include <QMenu>
+#include <QComboBox>
 
 class MarkerModel;
 class MarkerGroup;

@@ -1,4 +1,29 @@
 #include "spectrumanalyzer.h"
+
+#include "unit.h"
+#include "CustomWidgets/toggleswitch.h"
+#include "Device/manualcontroldialog.h"
+#include "Traces/tracemodel.h"
+#include "tracewidgetsa.h"
+#include "Traces/tracesmithchart.h"
+#include "Traces/tracexyplot.h"
+#include "Traces/traceimportdialog.h"
+#include "CustomWidgets/tilewidget.h"
+#include "CustomWidgets/siunitedit.h"
+#include "Traces/Marker/markerwidget.h"
+#include "Tools/impedancematchdialog.h"
+#include "Calibration/calibrationtracedialog.h"
+#include "ui_main.h"
+#include "Device/firmwareupdatedialog.h"
+#include "preferences.h"
+#include "Generator/signalgenwidget.h"
+
+#include <QDockWidget>
+#include <QDesktopWidget>
+#include <QApplication>
+#include <QActionGroup>
+#include "CustomWidgets/informationbox.h"
+#include <QDebug>
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -19,29 +44,6 @@
 #include <iostream>
 #include <fstream>
 #include <QDateTime>
-#include "unit.h"
-#include "CustomWidgets/toggleswitch.h"
-#include "Device/manualcontroldialog.h"
-#include "Traces/tracemodel.h"
-#include "tracewidgetsa.h"
-#include "Traces/tracesmithchart.h"
-#include "Traces/tracexyplot.h"
-#include "Traces/traceimportdialog.h"
-#include "CustomWidgets/tilewidget.h"
-#include "CustomWidgets/siunitedit.h"
-#include <QDockWidget>
-#include "Traces/Marker/markerwidget.h"
-#include "Tools/impedancematchdialog.h"
-#include "Calibration/calibrationtracedialog.h"
-#include "ui_main.h"
-#include "Device/firmwareupdatedialog.h"
-#include "preferences.h"
-#include "Generator/signalgenwidget.h"
-#include <QDesktopWidget>
-#include <QApplication>
-#include <QActionGroup>
-#include "CustomWidgets/informationbox.h"
-#include <QDebug>
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     : Mode(window, "Spectrum Analyzer"),

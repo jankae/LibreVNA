@@ -1,8 +1,9 @@
 #ifndef MANUALCONTROLDIALOG_H
 #define MANUALCONTROLDIALOG_H
 
-#include <QDialog>
 #include "device.h"
+
+#include <QDialog>
 #include <complex>
 
 namespace Ui {

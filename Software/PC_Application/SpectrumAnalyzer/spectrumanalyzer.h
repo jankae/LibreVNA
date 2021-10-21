@@ -1,15 +1,16 @@
 #ifndef SPECTRUMANALYZER_H
 #define SPECTRUMANALYZER_H
 
-#include <QObject>
-#include <QWidget>
 #include "appwindow.h"
 #include "mode.h"
 #include "CustomWidgets/tilewidget.h"
-#include <QComboBox>
-#include <QCheckBox>
 #include "scpi.h"
 #include "Traces/tracewidget.h"
+
+#include <QObject>
+#include <QWidget>
+#include <QComboBox>
+#include <QCheckBox>
 
 class SpectrumAnalyzer : public Mode, public SCPINode
 {

@@ -1,7 +1,8 @@
 #include "matchingnetwork.h"
-#include "ui_matchingnetworkdialog.h"
-#include <QDialog>
 
+#include "ui_matchingnetworkdialog.h"
+
+#include <QDialog>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QSpacerItem>

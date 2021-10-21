@@ -1,8 +1,9 @@
 #ifndef MARKERWIDGET_H
 #define MARKERWIDGET_H
 
-#include <QWidget>
 #include "markermodel.h"
+
+#include <QWidget>
 
 namespace Ui {
 class MarkerWidget;

@@ -1,7 +1,7 @@
 #include "medianfilter.h"
+
 #include "ui_medianfilterdialog.h"
 #include "ui_medianexplanationwidget.h"
-
 #include "CustomWidgets/informationbox.h"
 
 using namespace Math;

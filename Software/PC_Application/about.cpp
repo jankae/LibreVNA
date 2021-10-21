@@ -1,5 +1,6 @@
-#include "Util/app_common.h"
 #include "about.h"
+
+#include "Util/app_common.h"
 #include "ui_aboutdialog.h"
 
 About About::instance;

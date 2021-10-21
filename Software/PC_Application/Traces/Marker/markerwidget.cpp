@@ -1,8 +1,10 @@
 #include "markerwidget.h"
+
 #include "ui_markerwidget.h"
+#include "markergroup.h"
+
 #include <QKeyEvent>
 #include <QMenu>
-#include "markergroup.h"
 
 MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
     QWidget(parent),

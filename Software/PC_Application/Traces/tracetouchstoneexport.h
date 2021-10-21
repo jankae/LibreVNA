@@ -1,9 +1,10 @@
 #ifndef TRACETOUCHSTONEEXPORT_H
 #define TRACETOUCHSTONEEXPORT_H
 
+#include "tracemodel.h"
+
 #include <QDialog>
 #include <QComboBox>
-#include "tracemodel.h"
 #include <QSignalMapper>
 
 namespace Ui {

@@ -1,14 +1,15 @@
 #ifndef MODE_H
 #define MODE_H
 
+#include "appwindow.h"
+#include "savable.h"
+
 #include <QString>
 #include <QWidget>
 #include <QButtonGroup>
 #include <QToolBar>
 #include <QDockWidget>
 #include <set>
-#include "appwindow.h"
-#include "savable.h"
 
 class Mode : public QObject, public Savable
 {

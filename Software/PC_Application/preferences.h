@@ -1,10 +1,11 @@
 #ifndef PREFERENCESDIALOG_H
 #define PREFERENCESDIALOG_H
 
+#include "Util/qpointervariant.h"
+
 #include <QDialog>
 #include <QVariant>
 #include <exception>
-#include "Util/qpointervariant.h"
 
 enum GraphDomainChangeBehavior {
     RemoveChangedTraces = 0,

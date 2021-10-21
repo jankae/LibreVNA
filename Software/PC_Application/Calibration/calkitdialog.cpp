@@ -1,13 +1,14 @@
 #include "calkitdialog.h"
-#include "ui_calkitdialog.h"
-#include <QPushButton>
 
+#include "ui_calkitdialog.h"
+#include "CustomWidgets/informationbox.h"
+
+#include <QPushButton>
 #include <QDebug>
 #include <QFileDialog>
 #include <fstream>
 #include <touchstone.h>
 #include <QtGlobal>
-#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 

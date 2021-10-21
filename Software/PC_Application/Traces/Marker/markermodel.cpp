@@ -1,10 +1,13 @@
 #include "markermodel.h"
+
+#include "markergroup.h"
+#include "CustomWidgets/siunitedit.h"
 #include "unit.h"
+
 #include <QComboBox>
 #include <QApplication>
-#include "CustomWidgets/siunitedit.h"
 #include <QDebug>
-#include "markergroup.h"
+
 
 using namespace std;
 

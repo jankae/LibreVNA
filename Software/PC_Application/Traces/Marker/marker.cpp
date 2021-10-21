@@ -1,18 +1,20 @@
 ﻿#include "marker.h"
-#include <QPainter>
+
 #include "CustomWidgets/siunitedit.h"
+#include "markermodel.h"
+#include "unit.h"
+#include "preferences.h"
+#include "markergroup.h"
+#include "Util/util.h"
+
+#include <QPainter>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSpinBox>
 #include <QDebug>
-#include "markermodel.h"
-#include "unit.h"
 #include <QMenu>
 #include <QActionGroup>
 #include <QApplication>
-#include "preferences.h"
-#include "markergroup.h"
-#include "Util/util.h"
 
 using namespace std;
 

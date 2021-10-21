@@ -1,9 +1,12 @@
 #include "tracecsvexport.h"
+
 #include "ui_tracecsvexport.h"
+#include "csv.h"
+
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QFileDialog>
-#include "csv.h"
+
 
 using namespace std;
 

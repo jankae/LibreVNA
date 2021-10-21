@@ -1,7 +1,8 @@
 #include "csvimport.h"
 #include "ui_csvimport.h"
-#include <QFileDialog>
 #include "Traces/trace.h"
+
+#include <QFileDialog>
 #include <QDebug>
 
 CSVImport::CSVImport(QWidget *parent) :

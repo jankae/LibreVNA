@@ -1,11 +1,11 @@
 #ifndef TRACEMATH_H
 #define TRACEMATH_H
 
+#include "savable.h"
+
 #include <QObject>
 #include <vector>
 #include <complex>
-#include "savable.h"
-
 /*
  * How to implement a new type of math operation:
  * 1. Create your new math operation class by deriving from this class. Put the new class in the namespace

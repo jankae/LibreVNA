@@ -1,8 +1,10 @@
 #include "calibrationtracedialog.h"
+
 #include "ui_calibrationtracedialog.h"
 #include "measurementmodel.h"
-#include <QStyle>
 #include "CustomWidgets/informationbox.h"
+
+#include <QStyle>
 
 CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, double f_max, Calibration::Type type) :
     QDialog(nullptr),

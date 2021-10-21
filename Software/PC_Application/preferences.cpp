@@ -1,11 +1,13 @@
 #include "preferences.h"
+
 #include "ui_preferencesdialog.h"
+#include "CustomWidgets/informationbox.h"
+
 #include <QSettings>
 #include <QPushButton>
 #include <QMessageBox>
 #include <map>
 #include <QDebug>
-#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 

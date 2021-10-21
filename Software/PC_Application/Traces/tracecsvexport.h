@@ -1,8 +1,9 @@
 #ifndef TRACECSVEXPORT_H
 #define TRACECSVEXPORT_H
 
-#include <QDialog>
 #include "tracemodel.h"
+
+#include <QDialog>
 
 namespace Ui {
 class TraceCSVExport;

@@ -1,5 +1,7 @@
 #include "touchstoneimport.h"
+
 #include "ui_touchstoneimport.h"
+
 #include <QFileDialog>
 #include <QDebug>
 #include <QtGlobal>

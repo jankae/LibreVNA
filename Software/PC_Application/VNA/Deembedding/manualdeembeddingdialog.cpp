@@ -1,4 +1,5 @@
 #include "manualdeembeddingdialog.h"
+
 #include "ui_manualdeembeddingdialog.h"
 #include "Traces/sparamtraceselector.h"
 

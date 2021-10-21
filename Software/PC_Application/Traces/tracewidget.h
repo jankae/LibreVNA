@@ -1,9 +1,10 @@
 #ifndef TRACEWIDGET_H
 #define TRACEWIDGET_H
 
-#include <QWidget>
 #include "tracemodel.h"
 #include "scpi.h"
+
+#include <QWidget>
 
 namespace Ui {
 class TraceWidget;

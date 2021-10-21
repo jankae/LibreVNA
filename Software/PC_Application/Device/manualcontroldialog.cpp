@@ -1,10 +1,13 @@
 #include "manualcontroldialog.h"
+
 #include "ui_manualcontroldialog.h"
+#include "Util/util.h"
+
 #include <QComboBox>
 #include <QDebug>
 #include <QButtonGroup>
 #include <complex>
-#include "Util/util.h"
+
 
 using namespace std;
 

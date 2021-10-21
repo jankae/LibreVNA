@@ -1,9 +1,10 @@
 #ifndef FREQUENCYCALDIALOG_H
 #define FREQUENCYCALDIALOG_H
 
-#include <QDialog>
 #include "Device/device.h"
 #include "mode.h"
+
+#include <QDialog>
 
 namespace Ui {
 class FrequencyCalDialog;

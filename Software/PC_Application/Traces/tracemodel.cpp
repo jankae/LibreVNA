@@ -1,4 +1,5 @@
 #include "tracemodel.h"
+
 #include <QIcon>
 #include <QDebug>
 

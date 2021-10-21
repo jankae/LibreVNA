@@ -1,8 +1,9 @@
 #ifndef MANUALCALIBRATIONDIALOG_H
 #define MANUALCALIBRATIONDIALOG_H
 
-#include <QDialog>
 #include "calibration.h"
+
+#include <QDialog>
 
 namespace Ui {
 class ManualCalibrationDialog;
