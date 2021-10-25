@@ -7,6 +7,7 @@
 #include "Util/util.h"
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QMimeData>
 #include <QDebug>
 
