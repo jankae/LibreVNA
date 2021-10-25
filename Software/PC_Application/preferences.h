@@ -70,7 +70,13 @@ public:
         struct {
             QColor background;
             QColor axis;
-            QColor divisions;
+            struct {
+                QColor divisions;
+                struct {
+                    bool enabled;
+                    QColor background;
+                } Background;
+            } Ticks;
         } Color;
         GraphDomainChangeBehavior domainChangeBehavior;
         struct {
@@ -93,7 +99,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 35> descr = {{
+    const std::array<SettingDescription, 37> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -123,7 +129,9 @@ private:
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
-        {&Graphs.Color.divisions, "Graphs.Color.divisions", QColor(Qt::gray)},
+        {&Graphs.Color.Ticks.Background.enabled, "Graphs.Color.Ticks.Background.enabled", true},
+        {&Graphs.Color.Ticks.Background.background, "Graphs.Color.Ticks.Background.background", QColor(20, 20, 20)},
+        {&Graphs.Color.Ticks.divisions, "Graphs.Color.Ticks.divisions", QColor(Qt::gray)},
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
         {&Graphs.markerBehavior.showDataOnGraphs, "Graphs.markerBehavior.ShowDataOnGraphs", true},
         {&Graphs.markerBehavior.showAllData, "Graphs.markerBehavior.ShowAllData", false},

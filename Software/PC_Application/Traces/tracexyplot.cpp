@@ -360,6 +360,7 @@ void TraceXYPlot::draw(QPainter &p)
     p.setPen(pen);
     plotAreaLeft = YAxis[0].type == YAxisType::Disabled ? yAxisDisabledSpace : yAxisSpace;
     plotAreaWidth = w.width();
+    plotAreaTop = 10;
     plotAreaBottom = w.height() - xAxisSpace;
     if(YAxis[0].type != YAxisType::Disabled) {
         plotAreaWidth -= yAxisSpace;
@@ -372,7 +373,7 @@ void TraceXYPlot::draw(QPainter &p)
         plotAreaWidth -= yAxisDisabledSpace;
     }
 
-    auto plotRect = QRect(plotAreaLeft, 0, plotAreaWidth + 1, plotAreaBottom);
+    auto plotRect = QRect(plotAreaLeft, plotAreaTop, plotAreaWidth + 1, plotAreaBottom-plotAreaTop);
     p.drawRect(plotRect);
 
     // draw axis types
@@ -380,69 +381,6 @@ void TraceXYPlot::draw(QPainter &p)
     font.setPixelSize(AxisLabelSize);
     p.setFont(font);
     p.drawText(QRect(0, w.height()-AxisLabelSize*1.5, w.width(), AxisLabelSize*1.5), Qt::AlignHCenter, AxisTypeToName(XAxis.type));
-    if(XAxis.ticks.size() >= 1) {
-        // draw X ticks
-        // this only works for evenly distributed ticks:
-        auto max = qMax(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
-        auto minLabel = qMin(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
-        double step;
-        if(XAxis.ticks.size() >= 2) {
-            step = abs(XAxis.ticks[0] - XAxis.ticks[1]);
-        } else {
-            // only one tick, set arbitrary number of digits
-            step = max / 1000;
-        }
-        if(minLabel > 0 && minLabel < step) {
-            step = minLabel;
-        }
-        int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
-        bool displayFullFreq = significantDigits <= 5;
-        constexpr int displayLastDigits = 4;
-        QString prefixes = "fpnum kMG";
-        QString commonPrefix = QString();
-        if(!displayFullFreq) {
-            auto fullFreq = Unit::ToString(XAxis.ticks.front(), "", prefixes, significantDigits);
-            commonPrefix = fullFreq.at(fullFreq.size() - 1);
-            auto front = fullFreq;
-            front.truncate(fullFreq.size() - displayLastDigits);
-            auto back = fullFreq;
-            back.remove(0, front.size());
-            back.append("..");
-            p.setPen(QPen(QColor("orange")));
-            QRect bounding;
-            p.drawText(QRect(2, plotAreaBottom + AxisLabelSize + 5, w.width(), AxisLabelSize), 0, front, &bounding);
-            p.setPen(pref.Graphs.Color.axis);
-            p.drawText(QRect(bounding.x() + bounding.width(), plotAreaBottom + AxisLabelSize + 5, w.width(), AxisLabelSize), 0, back);
-        }
-
-        for(auto t : XAxis.ticks) {
-            auto xCoord = Util::Scale<double>(t, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth);
-            auto tickValue = Unit::ToString(t, "", prefixes, significantDigits);
-            p.setPen(QPen(pref.Graphs.Color.axis, 1));
-            if(displayFullFreq) {
-                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue);
-            } else {
-                // check if the same prefix was used as in the fullFreq string
-                if(tickValue.at(tickValue.size() - 1) != commonPrefix) {
-                    // prefix changed, we reached the next order of magnitude. Force same prefix as in fullFreq and add extra digit
-                    tickValue = Unit::ToString(t, "", commonPrefix, significantDigits + 1);
-                }
-
-                tickValue.remove(0, tickValue.size() - displayLastDigits);
-                QRect bounding;
-                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue, &bounding);
-                p.setPen(QPen(QColor("orange")));
-                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, AxisLabelSize), Qt::AlignRight, "..");
-                p.setPen(QPen(pref.Graphs.Color.axis, 1));
-            }
-            p.drawLine(xCoord, plotAreaBottom, xCoord, plotAreaBottom + 2);
-            if(xCoord != plotAreaLeft && xCoord != plotAreaLeft + plotAreaWidth) {
-                p.setPen(QPen(pref.Graphs.Color.divisions, 0.5, Qt::DashLine));
-                p.drawLine(xCoord, 0, xCoord, plotAreaBottom);
-            }
-        }
-    }
-
     for(int i=0;i<2;i++) {
         if(YAxis[i].type == YAxisType::Disabled) {
             continue;
@@ -467,14 +405,17 @@ void TraceXYPlot::draw(QPainter &p)
                 step = max / 1000;
             }
             int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
-            for(auto t : YAxis[i].ticks) {
-                auto yCoord = Util::Scale<double>(t, YAxis[i].rangeMax, YAxis[i].rangeMin, 0, w.height() - xAxisSpace);
+
+            auto yCoordWidth = 0;
+
+            for(unsigned int j = 0; j < YAxis[i].ticks.size(); j++) {
+                auto yCoord = Util::Scale<double>(YAxis[i].ticks[j], YAxis[i].rangeMax, YAxis[i].rangeMin, plotAreaTop, w.height() - xAxisSpace);
                 p.setPen(QPen(pref.Graphs.Color.axis, 1));
                 // draw tickmark on axis
                 auto tickStart = i == 0 ? plotAreaLeft : plotAreaLeft + plotAreaWidth;
                 auto tickLen = i == 0 ? -2 : 2;
                 p.drawLine(tickStart, yCoord, tickStart + tickLen, yCoord);
-                auto tickValue = Unit::ToString(t, "", "fpnum kMG", significantDigits);
+                auto tickValue = Unit::ToString(YAxis[i].ticks[j], "", "fpnum kMG", significantDigits);
                 if(i == 0) {
                     p.drawText(QRectF(0, yCoord - AxisLabelSize/2 - 2, tickStart + 2 * tickLen, AxisLabelSize), Qt::AlignRight, tickValue);
                 } else {
@@ -482,13 +423,23 @@ void TraceXYPlot::draw(QPainter &p)
                 }
 
                 // tick lines
-                if(yCoord == 0 || yCoord == w.height() - xAxisSpace) {
+                if(yCoord == plotAreaTop || yCoord == w.height() - xAxisSpace) {
                     // skip tick lines right on the plot borders
                     continue;
                 }
                 if(i == 0) {
                     // only draw tick lines for primary axis
-                    p.setPen(QPen(pref.Graphs.Color.divisions, 0.5, Qt::DashLine));
+                    if (pref.Graphs.Color.Ticks.Background.enabled) {
+                        yCoordWidth =  floor((w.height() - xAxisSpace - plotAreaTop)/(YAxis[i].ticks.size()-1));
+                        if (j%2)
+                        {
+                            p.setBrush(pref.Graphs.Color.Ticks.Background.background);
+                            p.setPen(pref.Graphs.Color.Ticks.Background.background);
+                            auto rect = QRect(plotAreaLeft+1, yCoord+1, plotAreaWidth-2, yCoordWidth-2);
+                            p.drawRect(rect);
+                        }
+                    }
+                    p.setPen(QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine));
                     p.drawLine(plotAreaLeft, yCoord, plotAreaLeft + plotAreaWidth, yCoord);
                 }
             }
@@ -554,6 +505,69 @@ void TraceXYPlot::draw(QPainter &p)
             }
         }
         p.setClipping(false);
+    }
+
+    if(XAxis.ticks.size() >= 1) {
+        // draw X ticks
+        // this only works for evenly distributed ticks:
+        auto max = qMax(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
+        auto minLabel = qMin(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
+        double step;
+        if(XAxis.ticks.size() >= 2) {
+            step = abs(XAxis.ticks[0] - XAxis.ticks[1]);
+        } else {
+            // only one tick, set arbitrary number of digits
+            step = max / 1000;
+        }
+        if(minLabel > 0 && minLabel < step) {
+            step = minLabel;
+        }
+        int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
+        bool displayFullFreq = significantDigits <= 5;
+        constexpr int displayLastDigits = 4;
+        QString prefixes = "fpnum kMG";
+        QString commonPrefix = QString();
+        if(!displayFullFreq) {
+            auto fullFreq = Unit::ToString(XAxis.ticks.front(), "", prefixes, significantDigits);
+            commonPrefix = fullFreq.at(fullFreq.size() - 1);
+            auto front = fullFreq;
+            front.truncate(fullFreq.size() - displayLastDigits);
+            auto back = fullFreq;
+            back.remove(0, front.size());
+            back.append("..");
+            p.setPen(QPen(QColor("orange")));
+            QRect bounding;
+            p.drawText(QRect(2, plotAreaBottom + AxisLabelSize + 5, w.width(), AxisLabelSize), 0, front, &bounding);
+            p.setPen(pref.Graphs.Color.axis);
+            p.drawText(QRect(bounding.x() + bounding.width(), plotAreaBottom + AxisLabelSize + 5, w.width(), AxisLabelSize), 0, back);
+        }
+
+        for(auto t : XAxis.ticks) {
+            auto xCoord = Util::Scale<double>(t, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth);
+            auto tickValue = Unit::ToString(t, "", prefixes, significantDigits);
+            p.setPen(QPen(pref.Graphs.Color.axis, 1));
+            if(displayFullFreq) {
+                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue);
+            } else {
+                // check if the same prefix was used as in the fullFreq string
+                if(tickValue.at(tickValue.size() - 1) != commonPrefix) {
+                    // prefix changed, we reached the next order of magnitude. Force same prefix as in fullFreq and add extra digit
+                    tickValue = Unit::ToString(t, "", commonPrefix, significantDigits + 1);
+                }
+
+                tickValue.remove(0, tickValue.size() - displayLastDigits);
+                QRect bounding;
+                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue, &bounding);
+                p.setPen(QPen(QColor("orange")));
+                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, AxisLabelSize), Qt::AlignRight, "..");
+                p.setPen(QPen(pref.Graphs.Color.axis, 1));
+            }
+            p.drawLine(xCoord, plotAreaBottom, xCoord, plotAreaBottom + 2);
+            if(xCoord != plotAreaLeft && xCoord != plotAreaLeft + plotAreaWidth) {
+                p.setPen(QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine));
+                p.drawLine(xCoord, plotAreaTop, xCoord, plotAreaBottom);
+            }
+        }
     }
 
     if(dropPending) {
@@ -947,7 +961,7 @@ QPoint TraceXYPlot::plotValueToPixel(QPointF plotValue, int Yaxis)
 {
     QPoint p;
     p.setX(Util::Scale<double>(plotValue.x(), XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
-    p.setY(Util::Scale<double>(plotValue.y(), YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax, plotAreaBottom, 0));
+    p.setY(Util::Scale<double>(plotValue.y(), YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax, plotAreaBottom, plotAreaTop));
     return p;
 }
 
@@ -955,7 +969,7 @@ QPointF TraceXYPlot::pixelToPlotValue(QPoint pixel, int Yaxis)
 {
     QPointF p;
     p.setX(Util::Scale<double>(pixel.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth, XAxis.rangeMin, XAxis.rangeMax));
-    p.setY(Util::Scale<double>(pixel.y(), plotAreaBottom, 0, YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax));
+    p.setY(Util::Scale<double>(pixel.y(), plotAreaBottom, plotAreaTop, YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax));
     return p;
 }
 

@@ -153,7 +153,7 @@ void TraceSmithChart::draw(QPainter &p) {
     p.drawArc(rectangle, 0, 5760);
 
     constexpr int Circles = 6;
-    pen = QPen(pref.Graphs.Color.divisions, 0.5, Qt::DashLine);
+    pen = QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine);
     pen.setCosmetic(true);
     p.setPen(pen);
     for(int i=1;i<Circles;i++) {
