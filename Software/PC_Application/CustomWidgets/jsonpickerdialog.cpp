@@ -1,8 +1,6 @@
 #include "jsonpickerdialog.h"
+
 #include "ui_jsonpickerdialog.h"
-
-
-
 
 JSONPickerDialog::JSONPickerDialog(const nlohmann::json &json, QWidget *parent) :
     QDialog(parent),

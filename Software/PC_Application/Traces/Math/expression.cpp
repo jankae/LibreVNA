@@ -1,10 +1,11 @@
 #include "expression.h"
-#include <QWidget>
+
 #include "ui_expressiondialog.h"
-#include <QWidget>
-#include <QDebug>
 #include "Traces/trace.h"
 #include "ui_expressionexplanationwidget.h"
+
+#include <QWidget>
+#include <QDebug>
 
 using namespace mup;
 using namespace std;

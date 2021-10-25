@@ -1,8 +1,10 @@
 #include "tracewidgetsa.h"
+
 #include "Traces/tracecsvexport.h"
-#include <QFileDialog>
 #include "Traces/traceimportdialog.h"
 #include "CustomWidgets/informationbox.h"
+
+#include <QFileDialog>
 
 TraceWidgetSA::TraceWidgetSA(TraceModel &model, QWidget *parent)
     : TraceWidget(model, parent)

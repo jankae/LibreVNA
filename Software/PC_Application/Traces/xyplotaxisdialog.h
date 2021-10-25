@@ -1,8 +1,9 @@
 #ifndef XYPLOTAXISDIALOG_H
 #define XYPLOTAXISDIALOG_H
 
-#include <QDialog>
 #include "tracexyplot.h"
+
+#include <QDialog>
 
 namespace Ui {
 class XYplotAxisDialog;

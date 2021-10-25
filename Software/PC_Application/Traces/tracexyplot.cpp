@@ -1,16 +1,18 @@
 #include "tracexyplot.h"
-#include <QGridLayout>
+
 #include "trace.h"
-#include <cmath>
-#include <QFrame>
+#include "CustomWidgets/informationbox.h"
 #include "Marker/marker.h"
 #include "xyplotaxisdialog.h"
-#include <preferences.h>
-#include <QPainter>
 #include "Util/util.h"
 #include "unit.h"
+#include "preferences.h"
+
+#include <QGridLayout>
+#include <cmath>
+#include <QFrame>
+#include <QPainter>
 #include <QDebug>
-#include "CustomWidgets/informationbox.h"
 #include <QFileDialog>
 
 using namespace std;

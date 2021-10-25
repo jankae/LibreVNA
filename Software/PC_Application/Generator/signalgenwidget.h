@@ -1,9 +1,10 @@
 #ifndef SIGNALGENERATOR_H
 #define SIGNALGENERATOR_H
 
-#include <QWidget>
 #include "Device/device.h"
 #include "savable.h"
+
+#include <QWidget>
 
 namespace Ui {
 class SignalgeneratorWidget;

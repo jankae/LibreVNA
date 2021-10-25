@@ -1,5 +1,7 @@
 #include "measurementmodel.h"
+
 #include "../unit.h"
+
 #include <algorithm>
 
 MeasurementModel::MeasurementModel(Calibration *cal, std::vector<Calibration::Measurement> measurements) :

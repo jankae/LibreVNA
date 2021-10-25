@@ -1,4 +1,5 @@
 #include "frequencycaldialog.h"
+
 #include "ui_frequencycaldialog.h"
 
 FrequencyCalDialog::FrequencyCalDialog(Device *dev, QWidget *parent) :

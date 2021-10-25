@@ -1,16 +1,17 @@
 #ifndef VNA_H
 #define VNA_H
 
-#include <QObject>
-#include <QWidget>
 #include "appwindow.h"
 #include "mode.h"
 #include "CustomWidgets/tilewidget.h"
 #include "Device/device.h"
-#include <functional>
 #include "Deembedding/deembedding.h"
 #include "scpi.h"
 #include "Traces/tracewidget.h"
+
+#include <QObject>
+#include <QWidget>
+#include <functional>
 
 class VNA : public Mode, public SCPINode
 {

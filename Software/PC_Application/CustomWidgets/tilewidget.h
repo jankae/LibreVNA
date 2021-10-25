@@ -3,9 +3,10 @@
 
 #include <QWidget>
 #include "Traces/traceplot.h"
-#include <QSplitter>
 #include "Traces/tracemodel.h"
 #include "savable.h"
+
+#include <QSplitter>
 
 namespace Ui {
 class TileWidget;

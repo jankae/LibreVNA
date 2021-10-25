@@ -1,13 +1,14 @@
 #ifndef TRACEPLOT_H
 #define TRACEPLOT_H
 
-#include <QWidget>
 #include "tracemodel.h"
+#include "savable.h"
+
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QTime>
 #include <QLabel>
-#include "savable.h"
+#include <QWidget>
 
 class TracePlot : public QWidget, public Savable
 {

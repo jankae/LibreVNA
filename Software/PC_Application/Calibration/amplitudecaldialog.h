@@ -1,9 +1,10 @@
 #ifndef AMPLITUDECALDIALOG_H
 #define AMPLITUDECALDIALOG_H
 
-#include <QDialog>
 #include "mode.h"
 #include "Device/device.h"
+
+#include <QDialog>
 
 namespace Ui {
 class AmplitudeCalDialog;

@@ -1,10 +1,11 @@
 #ifndef CALIBRATIONTRACEDIALOG_H
 #define CALIBRATIONTRACEDIALOG_H
 
-#include <QDialog>
 #include "calibration.h"
 #include "measurementmodel.h"
 #include "Device/device.h"
+
+#include <QDialog>
 
 namespace Ui {
 class CalibrationTraceDialog;

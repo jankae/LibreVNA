@@ -1,6 +1,5 @@
 #include "tracewidgetvna.h"
 
-#include <QFileDialog>
 #include "Traces/traceimportdialog.h"
 #include "Traces/tracetouchstoneexport.h"
 #include "Traces/tracecsvexport.h"
@@ -8,6 +7,7 @@
 #include "ui_s2pImportOptions.h"
 #include "CustomWidgets/informationbox.h"
 
+#include <QFileDialog>
 #include <QMenu>
 
 TraceWidgetVNA::TraceWidgetVNA(TraceModel &model, Calibration &cal, Deembedding &deembed, QWidget *parent)

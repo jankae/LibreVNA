@@ -1,16 +1,18 @@
 #include "amplitudecaldialog.h"
+
 #include "ui_amplitudecaldialog.h"
 #include "mode.h"
 #include "unit.h"
-#include <QDebug>
 #include "ui_addamplitudepointsdialog.h"
 #include "ui_automaticamplitudedialog.h"
+#include "json.hpp"
+#include "Util/util.h"
+
+#include <QDebug>
 #include <QMessageBox>
 #include <QFileDialog>
-#include "json.hpp"
 #include <fstream>
 #include <CustomWidgets/informationbox.h>
-#include "Util/util.h"
 
 using namespace std;
 using namespace nlohmann;

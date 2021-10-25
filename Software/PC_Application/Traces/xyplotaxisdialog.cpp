@@ -1,5 +1,7 @@
 #include "xyplotaxisdialog.h"
+
 #include "ui_xyplotaxisdialog.h"
+
 #include <QStandardItemModel>
 
 using namespace std;

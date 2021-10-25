@@ -1,10 +1,11 @@
 #ifndef CALKIT_H
 #define CALKIT_H
 
-#include <string>
-#include <complex>
 #include "touchstone.h"
 #include "Util/qpointervariant.h"
+
+#include <string>
+#include <complex>
 #include <QDir>
 
 class Calkit

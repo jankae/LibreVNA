@@ -1,4 +1,7 @@
 #include "touchstone.h"
+
+#include "Util/util.h"
+
 #include <limits>
 #include <algorithm>
 #include <fstream>
@@ -6,7 +9,6 @@
 #include <cmath>
 #include <cctype>
 #include <string>
-#include "Util/util.h"
 #include <QDebug>
 
 using namespace std;

@@ -1,8 +1,9 @@
 #ifndef FIRMWAREUPDATEDIALOG_H
 #define FIRMWAREUPDATEDIALOG_H
 
-#include <QDialog>
 #include "device.h"
+
+#include <QDialog>
 #include <QFile>
 #include <QTimer>
 

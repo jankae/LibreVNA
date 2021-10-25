@@ -1,4 +1,5 @@
 #include "colorpickerbutton.h"
+
 #include <QColorDialog>
 
 ColorPickerButton::ColorPickerButton(QWidget *parent)

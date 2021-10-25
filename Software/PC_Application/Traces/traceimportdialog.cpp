@@ -1,5 +1,7 @@
 #include "traceimportdialog.h"
+
 #include "ui_traceimportdialog.h"
+
 #include <QAbstractTableModel>
 #include <QObject>
 #include <QModelIndex>

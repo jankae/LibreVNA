@@ -1,10 +1,12 @@
 #include "windowfunction.h"
+
+#include "CustomWidgets/siunitedit.h"
 #define _USE_MATH_DEFINES
+
 #include <math.h>
 #include <QComboBox>
 #include <QLabel>
 #include <QFormLayout>
-#include "CustomWidgets/siunitedit.h"
 #include <QDebug>
 
 QString WindowFunction::typeToName(WindowFunction::Type type)

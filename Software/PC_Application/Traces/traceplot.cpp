@@ -1,13 +1,14 @@
 #include "traceplot.h"
+
 #include "Marker/marker.h"
-#include "preferences.h"
-#include <QPainter>
-#include <QPainterPath>
-#include <QMimeData>
-#include <QDebug>
 #include "unit.h"
 #include "Marker/markermodel.h"
+#include "preferences.h"
 #include "Util/util.h"
+
+#include <QPainter>
+#include <QMimeData>
+#include <QDebug>
 
 std::set<TracePlot*> TracePlot::plots;
 

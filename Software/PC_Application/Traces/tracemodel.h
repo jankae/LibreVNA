@@ -1,11 +1,12 @@
 #ifndef TRACEMODEL_H
 #define TRACEMODEL_H
 
-#include <QAbstractTableModel>
-#include "trace.h"
-#include <vector>
 #include "Device/device.h"
 #include "savable.h"
+#include "trace.h"
+
+#include <QAbstractTableModel>
+#include <vector>
 
 class MarkerModel;
 

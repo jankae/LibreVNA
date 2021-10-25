@@ -1,5 +1,7 @@
 #include "firmwareupdatedialog.h"
+
 #include "ui_firmwareupdatedialog.h"
+
 #include <QFileDialog>
 #include <QStyle>
 

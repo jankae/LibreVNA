@@ -1,8 +1,8 @@
 #ifndef AVERAGING_H
 #define AVERAGING_H
 
-
 #include "Device/device.h"
+
 #include <array>
 #include <deque>
 #include <complex>

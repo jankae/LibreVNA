@@ -1,11 +1,12 @@
 #include "device.h"
 
+#include "CustomWidgets/informationbox.h"
+
 #include <signal.h>
 #include <QDebug>
 #include <QString>
 #include <QMessageBox>
 #include <mutex>
-#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 

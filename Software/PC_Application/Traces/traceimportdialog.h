@@ -1,8 +1,9 @@
 #ifndef TRACEIMPORTDIALOG_H
 #define TRACEIMPORTDIALOG_H
 
-#include <QDialog>
 #include "tracemodel.h"
+
+#include <QDialog>
 #include <vector>
 
 namespace Ui {

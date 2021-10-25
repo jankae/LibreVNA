@@ -1,9 +1,11 @@
 #include "twothru.h"
+
 #include "CustomWidgets/informationbox.h"
 #include "ui_twothrudialog.h"
 #include "Traces/fftcomplex.h"
-#include <QDebug>
 #include "unit.h"
+
+#include <QDebug>
 
 using namespace std;
 

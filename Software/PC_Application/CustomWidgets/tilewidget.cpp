@@ -1,8 +1,10 @@
 #include "tilewidget.h"
+
 #include "ui_tilewidget.h"
-#include <QDebug>
 #include "Traces/tracexyplot.h"
 #include "Traces/tracesmithchart.h"
+
+#include <QDebug>
 
 TileWidget::TileWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),

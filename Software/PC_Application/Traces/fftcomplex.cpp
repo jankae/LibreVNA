@@ -21,11 +21,13 @@
  *   Software.
  */
 
+
+#include "fftcomplex.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
 #include <utility>
-#include "fftcomplex.h"
 #include <algorithm>
 
 using std::complex;

@@ -1,4 +1,5 @@
 #include "informationbox.h"
+
 #include <QCheckBox>
 #include <QSettings>
 #include <QDebug>

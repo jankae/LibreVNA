@@ -1,9 +1,11 @@
 #include "dft.h"
+
 #include "tdr.h"
 #include "Traces/fftcomplex.h"
 #include "unit.h"
 #include "ui_dftdialog.h"
 #include "ui_dftexplanationwidget.h"
+
 using namespace std;
 
 Math::DFT::DFT()

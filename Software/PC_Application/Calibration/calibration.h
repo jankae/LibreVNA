@@ -2,15 +2,15 @@
 #define CALIBRATION_H
 
 #include "Device/device.h"
+#include "calkit.h"
+#include "Traces/tracemodel.h"
+
 #include <complex>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <iomanip>
-#include "calkit.h"
-#include "Traces/tracemodel.h"
 #include <QDateTime>
-#include "calkit.h"
 
 class Calibration
 {

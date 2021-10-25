@@ -1,11 +1,12 @@
 #ifndef CALKITDIALOG_H
 #define CALKITDIALOG_H
 
+#include "calkit.h"
+
 #include <QDialog>
 #include <QAbstractButton>
 #include <iostream>
 #include <iomanip>
-#include "calkit.h"
 
 namespace Ui {
 class CalkitDialog;

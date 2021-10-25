@@ -1,9 +1,11 @@
 #include "traceeditdialog.h"
+
 #include "ui_traceeditdialog.h"
-#include <QColorDialog>
-#include <QFileDialog>
 #include "ui_newtracemathdialog.h"
 #include "Math/tdr.h"
+
+#include <QColorDialog>
+#include <QFileDialog>
 
 namespace Ui {
 class NewTraceMathDialog;

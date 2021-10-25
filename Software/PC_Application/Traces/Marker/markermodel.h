@@ -1,12 +1,13 @@
 #ifndef TRACEMARKERMODEL_H
 #define TRACEMARKERMODEL_H
 
-#include <QAbstractTableModel>
 #include "marker.h"
-#include <vector>
 #include "../tracemodel.h"
-#include <QStyledItemDelegate>
 #include "savable.h"
+
+#include <QAbstractTableModel>
+#include <vector>
+#include <QStyledItemDelegate>
 
 class MarkerTraceDelegate : public QStyledItemDelegate
 {

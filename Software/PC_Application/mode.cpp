@@ -1,8 +1,9 @@
 #include "mode.h"
 
+#include "ui_main.h"
+
 #include <QPushButton>
 #include <QSettings>
-#include "ui_main.h"
 #include <QDebug>
 #include <QFileDialog>
 

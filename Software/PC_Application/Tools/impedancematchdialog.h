@@ -1,8 +1,9 @@
 #ifndef IMPEDANCEMATCHDIALOG_H
 #define IMPEDANCEMATCHDIALOG_H
 
-#include <QDialog>
 #include "Traces/Marker/markermodel.h"
+
+#include <QDialog>
 
 namespace Ui {
 class ImpedanceMatchDialog;

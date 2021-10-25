@@ -1,9 +1,11 @@
 #include "portextension.h"
+
 #include "ui_portextensioneditdialog.h"
+#include "Util/util.h"
+
 #include <QCheckBox>
 #include <cmath>
 #include <QDebug>
-#include "Util/util.h"
 
 using namespace std;
 

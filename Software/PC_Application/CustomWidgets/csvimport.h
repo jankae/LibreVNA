@@ -1,9 +1,10 @@
 #ifndef CSVIMPORT_H
 #define CSVIMPORT_H
 
-#include <QWidget>
 #include "csv.h"
 #include "Traces/trace.h"
+
+#include <QWidget>
 
 namespace Ui {
 class csvimport;

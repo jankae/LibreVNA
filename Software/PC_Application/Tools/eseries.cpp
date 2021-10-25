@@ -1,4 +1,5 @@
 #include "eseries.h"
+
 #include <math.h>
 #include <vector>
 

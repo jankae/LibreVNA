@@ -1,5 +1,7 @@
 #include "devicelog.h"
+
 #include "ui_devicelog.h"
+
 #include <QScrollBar>
 #include <QFileDialog>
 #include <fstream>

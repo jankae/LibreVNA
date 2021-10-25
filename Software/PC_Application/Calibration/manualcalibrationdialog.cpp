@@ -1,4 +1,5 @@
 #include "manualcalibrationdialog.h"
+
 #include "ui_manualcalibrationdialog.h"
 #include "Traces/sparamtraceselector.h"
 

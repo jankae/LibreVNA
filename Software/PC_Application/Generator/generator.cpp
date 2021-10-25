@@ -1,4 +1,5 @@
 #include "generator.h"
+
 #include <QSettings>
 
 Generator::Generator(AppWindow *window)

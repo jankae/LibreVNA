@@ -1,15 +1,16 @@
 #ifndef TRACE_H
 #define TRACE_H
 
+#include "touchstone.h"
+#include "csv.h"
+#include "Device/device.h"
+#include "Math/tracemath.h"
+
 #include <QObject>
 #include <complex>
 #include <map>
 #include <QColor>
 #include <set>
-#include "touchstone.h"
-#include "csv.h"
-#include "Device/device.h"
-#include "Math/tracemath.h"
 
 class Marker;
 

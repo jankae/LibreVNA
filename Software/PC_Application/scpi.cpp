@@ -1,4 +1,5 @@
 #include "scpi.h"
+
 #include <QDebug>
 
 SCPI::SCPI() :

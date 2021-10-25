@@ -1,4 +1,5 @@
 #include "csv.h"
+
 #include <exception>
 #include <fstream>
 #include <QStringList>

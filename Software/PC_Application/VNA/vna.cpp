@@ -1,4 +1,26 @@
 #include "vna.h"
+
+#include "unit.h"
+#include "CustomWidgets/toggleswitch.h"
+#include "Device/manualcontroldialog.h"
+#include "Traces/tracemodel.h"
+#include "tracewidgetvna.h"
+#include "Traces/tracesmithchart.h"
+#include "Traces/tracexyplot.h"
+#include "Traces/traceimportdialog.h"
+#include "CustomWidgets/tilewidget.h"
+#include "CustomWidgets/siunitedit.h"
+#include "Traces/Marker/markerwidget.h"
+#include "Tools/impedancematchdialog.h"
+#include "Calibration/calibrationtracedialog.h"
+#include "ui_main.h"
+#include "Device/firmwareupdatedialog.h"
+#include "preferences.h"
+#include "Generator/signalgenwidget.h"
+#include "CustomWidgets/informationbox.h"
+#include "Deembedding/manualdeembeddingdialog.h"
+#include "Calibration/manualcalibrationdialog.h"
+
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -19,33 +41,13 @@
 #include <iostream>
 #include <fstream>
 #include <QDateTime>
-#include "unit.h"
-#include <queue>
-#include "CustomWidgets/toggleswitch.h"
-#include "Device/manualcontroldialog.h"
-#include "Traces/tracemodel.h"
-#include "tracewidgetvna.h"
-#include "Traces/tracesmithchart.h"
-#include "Traces/tracexyplot.h"
-#include "Traces/traceimportdialog.h"
-#include "CustomWidgets/tilewidget.h"
-#include "CustomWidgets/siunitedit.h"
 #include <QDockWidget>
-#include "Traces/Marker/markerwidget.h"
-#include "Tools/impedancematchdialog.h"
-#include "Calibration/calibrationtracedialog.h"
-#include "ui_main.h"
-#include "Device/firmwareupdatedialog.h"
-#include "preferences.h"
-#include "Generator/signalgenwidget.h"
+#include <queue>
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
 #include <QErrorMessage>
-#include "CustomWidgets/informationbox.h"
 #include <QDebug>
-#include "Deembedding/manualdeembeddingdialog.h"
-#include "Calibration/manualcalibrationdialog.h"
 
 VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),

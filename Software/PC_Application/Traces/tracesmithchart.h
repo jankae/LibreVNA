@@ -2,6 +2,7 @@
 #define TRACESMITHCHART_H
 
 #include "traceplot.h"
+
 #include <QPen>
 #include <QPainterPath>
 #include <QTransform>
