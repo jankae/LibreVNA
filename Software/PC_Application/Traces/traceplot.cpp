@@ -7,6 +7,7 @@
 #include <QDebug>
 #include "unit.h"
 #include "Marker/markermodel.h"
+#include "Util/util.h"
 
 std::set<TracePlot*> TracePlot::plots;
 
@@ -176,7 +177,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
         path.addRoundedRect(usedLabelArea, borderRadius, borderRadius);
         p.fillPath(path, t.first->color());
         p.drawPath(path);
-        p.setPen(QColor(Qt::white));
+        p.setPen(Util::getFontColorFromBackground(t.first->color()));
         p.drawText(textArea, 0, label);
         p.setPen(t.first->color());
         x += usedLabelArea.width()+labelMarginRight;
@@ -206,7 +207,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
             p.fillPath(pathM, t.first->color());
             p.drawPath(pathM);
 
-            p.setPen(QColor(Qt::white));
+            p.setPen(Util::getFontColorFromBackground(t.first->color()));
             p.drawText(textArea, 0, label);
             p.setPen(t.first->color());
             p.drawText(textAreaConsumed.x()+textAreaConsumed.width(), textAreaConsumed.y(), textArea.width(), textArea.height(), 0, description);

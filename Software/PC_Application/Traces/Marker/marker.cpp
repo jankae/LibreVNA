@@ -619,8 +619,7 @@ void Marker::updateSymbol()
         p.setPen(traceColor);
         p.setBrush(traceColor);
         p.drawConvexPolygon(points, 3);
-        auto brightness = traceColor.redF() * 0.299 + traceColor.greenF() * 0.587 + traceColor.blueF() * 0.114;
-        p.setPen((brightness > 0.6) ? Qt::black : Qt::white);
+        p.setPen(Util::getFontColorFromBackground(traceColor));
         p.drawText(QRectF(0,0,width, height*2.0/3.0), Qt::AlignCenter, QString::number(number) + suffix);
     } else {
         symbol = QPixmap(1,1);

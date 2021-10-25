@@ -5,6 +5,8 @@
 #include <math.h>
 #include <limits>
 
+#include <QColor>
+
 namespace Util {
     template<typename T> T Scale(T value, T from_low, T from_high, T to_low, T to_high) {
         value -= from_low;
@@ -47,6 +49,11 @@ namespace Util {
     }
     static inline double SparamToQualityFactor(std::complex<double> d) {
         return abs(d.imag()) / d.real();
+    }
+    // attempts to return a font color with good contrast against the given background color
+    static inline QColor getFontColorFromBackground(QColor q) {
+        auto brightness = q.redF() * 0.299 + q.greenF() * 0.587 + q.blueF() * 0.114;
+        return brightness > 0.6 ? Qt::black : Qt::white;
     }
 }
 
