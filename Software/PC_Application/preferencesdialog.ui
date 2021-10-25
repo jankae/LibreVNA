@@ -715,7 +715,7 @@
                  <item row="2" column="0">
                   <widget class="QLabel" name="label_17">
                    <property name="text">
-                    <string>Divisions:</string>
+                    <string>Tick lines:</string>
                    </property>
                   </widget>
                  </item>
@@ -729,7 +729,7 @@
                  <item row="1" column="0">
                   <widget class="QCheckBox" name="GraphsColorTicksBackgroundEnabled">
                    <property name="text">
-                    <string>Enable background</string>
+                    <string>Different background for every 2nd Y tick</string>
                    </property>
                    <property name="checked">
                     <bool>true</bool>

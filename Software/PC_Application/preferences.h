@@ -130,7 +130,7 @@ private:
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
         {&Graphs.Color.Ticks.Background.enabled, "Graphs.Color.Ticks.Background.enabled", true},
-        {&Graphs.Color.Ticks.Background.background, "Graphs.Color.Ticks.Background.background", QColor(Qt::white)},
+        {&Graphs.Color.Ticks.Background.background, "Graphs.Color.Ticks.Background.background", QColor(20, 20, 20)},
         {&Graphs.Color.Ticks.divisions, "Graphs.Color.Ticks.divisions", QColor(Qt::gray)},
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
         {&Graphs.markerBehavior.showDataOnGraphs, "Graphs.markerBehavior.ShowDataOnGraphs", true},
