@@ -408,8 +408,6 @@ void TraceXYPlot::draw(QPainter &p)
             }
             int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
 
-            auto yCoordWidth = 0;
-
             for(unsigned int j = 0; j < YAxis[i].ticks.size(); j++) {
                 auto yCoord = Util::Scale<double>(YAxis[i].ticks[j], YAxis[i].rangeMax, YAxis[i].rangeMin, plotAreaTop, w.height() - xAxisSpace);
                 p.setPen(QPen(pref.Graphs.Color.axis, 1));
@@ -432,12 +430,18 @@ void TraceXYPlot::draw(QPainter &p)
                 if(i == 0) {
                     // only draw tick lines for primary axis
                     if (pref.Graphs.Color.Ticks.Background.enabled) {
-                        yCoordWidth =  floor((w.height() - xAxisSpace - plotAreaTop)/(YAxis[i].ticks.size()-1));
+                        int yCoordTop = Util::Scale<double>(YAxis[i].ticks[j], YAxis[i].rangeMax, YAxis[i].rangeMin, plotAreaTop, w.height() - xAxisSpace);
+                        int yCoordBot = Util::Scale<double>(YAxis[i].ticks[j-1], YAxis[i].rangeMax, YAxis[i].rangeMin, plotAreaTop, w.height() - xAxisSpace);
+                        if(yCoordTop > yCoordBot) {
+                            auto buf = yCoordBot;
+                            yCoordBot = yCoordTop;
+                            yCoordTop = buf;
+                        }
                         if (j%2)
                         {
                             p.setBrush(pref.Graphs.Color.Ticks.Background.background);
                             p.setPen(pref.Graphs.Color.Ticks.Background.background);
-                            auto rect = QRect(plotAreaLeft+1, yCoord+1, plotAreaWidth-2, yCoordWidth-2);
+                            auto rect = QRect(plotAreaLeft+1, yCoordTop+1, plotAreaWidth-2, yCoordBot-yCoordTop-2);
                             p.drawRect(rect);
                         }
                     }
