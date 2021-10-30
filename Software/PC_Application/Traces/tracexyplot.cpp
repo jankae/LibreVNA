@@ -192,9 +192,9 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
         }
         auto yauto = jY[i].value("autorange", true);
         auto ylog = jY[i].value("log", false);
-        auto ymin = jY[i].value("min", -120);
-        auto ymax = jY[i].value("max", 20);
-        auto ydiv = jY[i].value("div", 10);
+        auto ymin = jY[i].value("min", -120.0);
+        auto ymax = jY[i].value("max", 20.0);
+        auto ydiv = jY[i].value("div", 10.0);
         setYAxis(i, ytype, ylog, yauto, ymin, ymax, ydiv);
         for(unsigned int hash : jY[i]["traces"]) {
             // attempt to find the traces with this hash
