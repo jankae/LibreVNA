@@ -704,16 +704,18 @@ void TraceXYPlot::updateAxisTicks()
             // automatic mode, figure out limits
             double max = std::numeric_limits<double>::lowest();
             double min = std::numeric_limits<double>::max();
+
+            bool samplesEmpty = false;
+
             for(auto t : tracesAxis[i]) {
                 unsigned int samples = t->size();
+                samplesEmpty = samples > 0 ? false : true;
                 for(unsigned int j=0;j<samples;j++) {
                     auto point = traceToCoordinate(t, j, YAxis[i].type);
-
                     if(point.x() < XAxis.rangeMin || point.x() > XAxis.rangeMax) {
                         // this point is not in the displayed X range, skip for auto Y range calculation
                         continue;
                     }
-
                     if(point.y() > max) {
                         max = point.y();
                     }
@@ -722,7 +724,8 @@ void TraceXYPlot::updateAxisTicks()
                     }
                 }
             }
-            if(max >= min) {
+
+            if(max >= min || samplesEmpty) {
                 auto range = max - min;
                 if(range == 0.0) {
                     // this could happen if all values in a trace are identical (e.g. imported ideal touchstone files)
@@ -735,7 +738,14 @@ void TraceXYPlot::updateAxisTicks()
                         max += abs(max * 0.05);
                         min -= abs(max * 0.05);
                     }
-                } else {
+                }
+                else if (samplesEmpty)
+                {
+                    // simply use +/-1 range
+                    max = 1.0;
+                    min = -1.0;
+                }
+                else {
                     // add 5% of range at both ends
                     min -= range * 0.05;
                     max += range * 0.05;
