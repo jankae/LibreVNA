@@ -78,6 +78,8 @@ AppWindow::AppWindow(QWidget *parent)
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 
+    this->setWindowIcon(QIcon(":/app/logo.png"));
+
     parser.setApplicationDescription(qlibrevnaApp->applicationName());
     parser.addHelpOption();
     parser.addVersionOption();

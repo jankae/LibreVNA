@@ -1,4 +1,5 @@
-# LibreVNA
+![LibreVNA](https://raw.githubusercontent.com/sophiekovalevsky/LibreVNA/dev/Software/PC_Application/resources/banner.png)
+
 **100kHz to 6GHz VNA**
 
 This is the improved version of my [first attempt](https://www.github.com/jankae/VNA) at a VNA.
