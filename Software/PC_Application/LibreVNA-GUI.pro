@@ -298,7 +298,8 @@ FORMS += \
 DISTFILES +=
 
 RESOURCES += \
-    icons.qrc
+    icons.qrc \
+    resources/librevna.qrc
 
 CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)
