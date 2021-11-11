@@ -300,6 +300,10 @@ void SA::Work() {
 	if(!s.SignalID || signalIDstep >= signalIDsteps - 1) {
 		// this measurement point is done, handle result according to detector
 		for(uint16_t i=0;i<DFTpoints;i++) {
+			if(pointCnt + i >= points) {
+				// DFT covered more points than are required for the remaining sweep, can abort here
+				break;
+			}
 			uint16_t binIndex = (pointCnt + i) / binSize;
 			uint32_t pointInBin = (pointCnt + i) % binSize;
 			bool lastPointInBin = pointInBin >= binSize - 1;
@@ -386,7 +390,7 @@ void SA::Work() {
 			Communication::Send(packet);
 		}
 
-		if(pointCnt < points - DFTpoints) {
+		if(pointCnt + DFTpoints < points) {
 			pointCnt += DFTpoints;
 		} else {
 			pointCnt = 0;
