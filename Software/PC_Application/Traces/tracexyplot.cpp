@@ -705,6 +705,9 @@ void TraceXYPlot::updateAxisTicks()
             double max = std::numeric_limits<double>::lowest();
             double min = std::numeric_limits<double>::max();
             for(auto t : tracesAxis[i]) {
+                if(!t->isVisible()) {
+                    continue;
+                }
                 unsigned int samples = t->size();
                 for(unsigned int j=0;j<samples;j++) {
                     auto point = traceToCoordinate(t, j, YAxis[i].type);
