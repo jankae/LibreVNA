@@ -1560,6 +1560,9 @@ bool Marker::isMovable()
         // helper traces are never movable by the user
         return false;
     }
+    if(trace()->size() == 0) {
+        return false;
+    }
     switch(type) {
     case Type::Manual:
     case Type::Delta:

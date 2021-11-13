@@ -84,7 +84,14 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
 
 TraceMath::Data TraceMath::getSample(unsigned int index)
 {
-    return data.at(index);
+    if(index < data.size()) {
+        return data[index];
+    } else {
+        TraceMath::Data d;
+        d.x = 0;
+        d.y = 0;
+        return d;
+    }
 }
 
 double TraceMath::getStepResponse(unsigned int index)
