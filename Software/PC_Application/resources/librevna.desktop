@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=LibreVNA GUI
+Comment=Vector Network Analyzer for LibreVNA board
+Exec=/opt/LibreVNA-GUI
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Science;Engineering;Electronics
+Icon=librevna.png
