@@ -180,9 +180,11 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 					// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
 					// the correct clock settings
 					last_LO2 = actualFirstIF - HW::IF2;
-					LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency",
+					LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency (1.LO: %lu%06luHz, 1.IF: %lu%06luHz)",
 							last_LO2, i, (uint32_t ) (freq / 1000000),
-							(uint32_t ) (freq % 1000000));
+							(uint32_t ) (freq % 1000000), (uint32_t ) (actualLO1 / 1000000),
+							(uint32_t ) (actualLO1 % 1000000), (uint32_t ) (actualFirstIF / 1000000),
+							(uint32_t ) (actualFirstIF % 1000000));
 				} else {
 					// last entry in IF table, revert LO2 to default
 					last_LO2 = HW::IF1 - HW::IF2;
