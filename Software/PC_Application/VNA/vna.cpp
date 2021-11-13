@@ -760,6 +760,11 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
+    if(d.pointNum >= settings.npoints) {
+        qWarning() << "Ignoring point with too large point number (" << d.pointNum << ")";
+        return;
+    }
+
     d = average.process(d);
     if(calMeasuring) {
         if(average.currentSweep() == averages) {

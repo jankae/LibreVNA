@@ -413,6 +413,11 @@ using namespace std;
 
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
+    if(d.pointNum >= settings.pointNum) {
+        qWarning() << "Ignoring point with too large point number (" << d.pointNum << ")";
+        return;
+    }
+
     d = average.process(d);
 
     if(normalize.measuring) {
@@ -451,6 +456,11 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
+    static unsigned int lastPoint = 0;
+    if(d.pointNum > 0 && d.pointNum != lastPoint + 1) {
+        qWarning() << "Got point" << d.pointNum << "but last received point was" << lastPoint << "("<<(d.pointNum-lastPoint-1)<<"missed points)";
+    }
+    lastPoint = d.pointNum;
 }
 
 void SpectrumAnalyzer::SettingsChanged()
