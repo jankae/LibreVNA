@@ -311,7 +311,7 @@ architecture Behavioral of top is
 		);
 	END COMPONENT;
 	
-	signal clk160 : std_logic;
+	signal clk_pll : std_logic;
 	signal clk_locked : std_logic;
 	signal inv_clk_locked : std_logic;
 	signal int_reset : std_logic;
@@ -453,7 +453,7 @@ begin
 		-- Clock in ports
 		CLK_IN1 => CLK,
 		-- Clock out ports
-		CLK_OUT1 => clk160,
+		CLK_OUT1 => clk_pll,
 		-- Status and control signals
 		RESET  => RESET,
 		LOCKED => clk_locked
@@ -464,7 +464,7 @@ begin
 	Inst_ResetDelay: ResetDelay
 	GENERIC MAP(CLK_DELAY => 100)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		IN_RESET => inv_clk_locked,
 		OUT_RESET => int_reset
 	);
@@ -472,42 +472,42 @@ begin
 	Sync_AUX1 : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_AUX1,
 		SYNC_OUT => aux1_sync
 	);
 	Sync_AUX2 : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_AUX2,
 		SYNC_OUT => aux2_sync
 	);
 	Sync_AUX3 : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_AUX3,
 		SYNC_OUT => aux3_sync
 	);
 	Sync_LO_LD : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => LO1_LD,
 		SYNC_OUT => lo_ld_sync
 	);
 	Sync_SOURCE_LD : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => SOURCE_LD,
 		SYNC_OUT => source_ld_sync
 	);	
 	Sync_NSS : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_NSS,
 		SYNC_OUT => nss_sync
 	);	
@@ -516,7 +516,7 @@ begin
 	Source: MAX2871
 	GENERIC MAP(CLK_DIV => 10)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		REG4 => source_reg_4,
 		REG3 => source_reg_3,
@@ -531,7 +531,7 @@ begin
 	LO1: MAX2871
 	GENERIC MAP(CLK_DIV => 10)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		REG4 => lo_reg_4,
 		REG3 => lo_reg_3,
@@ -550,7 +550,7 @@ begin
 	GENERIC MAP(CLK_DIV => 2,
 				CONVCYCLES => 77)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		START => adc_trigger_sample,
 		READY => adc_port1_ready,
@@ -566,7 +566,7 @@ begin
 	GENERIC MAP(CLK_DIV => 2,
 				CONVCYCLES => 77)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		START => adc_trigger_sample,
 		READY => open, -- synchronous ADCs, ready indicated by port 1 ADC
@@ -582,7 +582,7 @@ begin
 	GENERIC MAP(CLK_DIV => 2,
 				CONVCYCLES => 77)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		START => adc_trigger_sample,
 		READY => open, -- synchronous ADCs, ready indicated by port 1 ADC
@@ -597,7 +597,7 @@ begin
 	
 	
 	Windower: Windowing PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => sampling_start,
 		WINDOW_TYPE => sampling_window,
 		PORT1_RAW => adc_port1_data,
@@ -614,7 +614,7 @@ begin
 	Sampler: Sampling
 	GENERIC MAP(CLK_CYCLES_PRE_DONE => 0)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => sweep_reset,
 		ADC_PRESCALER => sampling_prescaler,
 		PHASEINC => sampling_phaseinc,
@@ -639,7 +639,7 @@ begin
 	sweep_reset <= not aux3_sync;
 
 	SweepModule: Sweep PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => sweep_reset,
 		NPOINTS => sweep_points,
 		CONFIG_ADDRESS => sweep_config_address,
@@ -703,7 +703,7 @@ begin
 	source_unlocked <= not source_ld_sync;
 
 	SPI: SPICommands PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		SCLK => MCU_SCK,
 		MOSI => MCU_MOSI,
@@ -755,7 +755,7 @@ begin
 	
 	SA_DFT: DFT GENERIC MAP(BINS => 96)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => dft_reset,
 		PORT1 => port1_windowed,
 		PORT2 => port2_windowed,
@@ -770,12 +770,12 @@ begin
 	
 	ConfigMem : SweepConfigMem
 	PORT MAP (
-		clka => clk160,
+		clka => clk_pll,
 		ena => '1',
 		wea => sweep_config_write,
 		addra => sweep_config_write_address,
 		dina => sweep_config_write_data,
-		clkb => clk160,
+		clkb => clk_pll,
 		addrb => sweep_config_address,
 		doutb => sweep_config_data
 	);
