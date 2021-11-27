@@ -315,7 +315,7 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     tracking["enabled"] = settings.trackingGenerator ? true : false;
     tracking["port"] = settings.trackingGeneratorPort ? 2 : 1;
     tracking["offset"] = settings.trackingGeneratorOffset;
-    tracking["power"] = settings.trackingPower;
+    tracking["power"] = (double) settings.trackingPower / 100.0; // convert to dBm
     sweep["trackingGenerator"] = tracking;
 
     if(normalize.active) {

@@ -1,6 +1,8 @@
 #include "matchingnetwork.h"
 
 #include "ui_matchingnetworkdialog.h"
+#include "unit.h"
+#include "CustomWidgets/informationbox.h"
 
 #include <QDialog>
 #include <QHBoxLayout>
@@ -11,6 +13,7 @@
 #include <QMimeData>
 #include <algorithm>
 #include <QDebug>
+#include <QFileDialog>
 
 using namespace std;
 
@@ -83,24 +86,25 @@ void MatchingNetwork::edit()
     ui->lParallelC->installEventFilter(this);
     ui->lParallelL->installEventFilter(this);
     ui->lParallelR->installEventFilter(this);
+    ui->lDefinedThrough->installEventFilter(this);
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
     layout->addStretch(1);
     auto p1 = new QWidget();
-    p1->setMinimumSize(portWidth, 150);
-    p1->setMaximumSize(portWidth, 150);
+    p1->setMinimumSize(portWidth, 151);
+    p1->setMaximumSize(portWidth, 151);
     p1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    p1->setStyleSheet("image: url(:/icons/port1.svg);");
+    p1->setStyleSheet("image: url(:/icons/port1.png);");
     auto DUT = new QWidget();
-    DUT->setMinimumSize(DUTWidth, 150);
-    DUT->setMaximumSize(DUTWidth, 150);
+    DUT->setMinimumSize(DUTWidth, 151);
+    DUT->setMaximumSize(DUTWidth, 151);
     DUT->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    DUT->setStyleSheet("image: url(:/icons/DUT.svg);");
+    DUT->setStyleSheet("image: url(:/icons/DUT.png);");
     auto p2 = new QWidget();
-    p2->setMinimumSize(portWidth, 150);
-    p2->setMaximumSize(portWidth, 150);
+    p2->setMinimumSize(portWidth, 151);
+    p2->setMaximumSize(portWidth, 151);
     p2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    p2->setStyleSheet("image: url(:/icons/port2.svg);");
+    p2->setStyleSheet("image: url(:/icons/port2.png);");
     layout->addWidget(p1);
     for(auto w : p1Network) {
         layout->addWidget(w);
@@ -136,27 +140,31 @@ void MatchingNetwork::edit()
 nlohmann::json MatchingNetwork::toJSON()
 {
     nlohmann::json j;
-    for(int i=0;i<2;i++) {
-        auto network = i==0 ? p1Network : p2Network;
-        nlohmann::json jn;
-        for(auto c : network) {
-            nlohmann::json jc;
-            jc["component"] = c->getName().toStdString();
-            jc["params"] = c->toJSON();
-            jn.push_back(jc);
-        }
-        j.push_back(jn);
+    nlohmann::json jn1, jn2;
+    for(auto c : p1Network) {
+        nlohmann::json jc;
+        jc["component"] = c->getName().toStdString();
+        jc["params"] = c->toJSON();
+        jn1.push_back(jc);
     }
+    for(auto c : p2Network) {
+        nlohmann::json jc;
+        jc["component"] = c->getName().toStdString();
+        jc["params"] = c->toJSON();
+        jn2.push_back(jc);
+    }
+    j["port1"] = jn1;
+    j["port2"] = jn2;
+    j["addNetwork"] = addNetwork;
     return j;
 }
 
 void MatchingNetwork::fromJSON(nlohmann::json j)
 {
-    for(int i=0;i<2;i++) {
-        auto jn = j[i];
-        auto &network = i==0 ? p1Network : p2Network;
-        network.clear();
-        for(auto jc : jn) {
+    p1Network.clear();
+    p2Network.clear();
+    if(j.contains("port1")) {
+        for(auto jc : j["port1"]) {
             if(!jc.contains("component")) {
                 continue;
             }
@@ -165,9 +173,23 @@ void MatchingNetwork::fromJSON(nlohmann::json j)
                 continue;
             }
             c->fromJSON(jc["params"]);
-            network.push_back(c);
+            p1Network.push_back(c);
         }
     }
+    if(j.contains("port2")) {
+        for(auto jc : j["port2"]) {
+            if(!jc.contains("component")) {
+                continue;
+            }
+            auto c = MatchingComponent::createFromName(QString::fromStdString(jc["component"]));
+            if(!c) {
+                continue;
+            }
+            c->fromJSON(jc["params"]);
+            p2Network.push_back(c);
+        }
+    }
+    addNetwork = j.value("addNetwork", true);
     matching.clear();
 }
 
@@ -329,8 +351,8 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
                 dropComponent = (MatchingComponent*) dropPtr;
                 dragEvent->acceptProposedAction();
                 insertIndicator = new QWidget();
-                insertIndicator->setMinimumSize(2, 150);
-                insertIndicator->setMaximumSize(2, 150);
+                insertIndicator->setMinimumSize(2, imageHeight);
+                insertIndicator->setMaximumSize(2, imageHeight);
                 insertIndicator->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
                 insertIndicator->setStyleSheet("background-color:red;");
                 updateInsertIndicator(dragEvent->pos().x());
@@ -368,6 +390,8 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
                     dragComponent = new MatchingComponent(MatchingComponent::Type::ParallelL);
                 } else if(object->objectName() == "lParallelR") {
                     dragComponent = new MatchingComponent(MatchingComponent::Type::ParallelR);
+                } else if(object->objectName() == "lDefinedThrough") {
+                    dragComponent = new MatchingComponent(MatchingComponent::Type::DefinedThrough);
                 } else {
                     dragComponent = nullptr;
                 }
@@ -397,18 +421,21 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
 MatchingComponent::MatchingComponent(Type type)
 {
     this->type = type;
-    setMinimumSize(150, 150);
-    setMaximumSize(150, 150);
+    eValue = nullptr;
+    touchstone = nullptr;
+    touchstoneLabel = nullptr;
+    setMinimumSize(151, 151);
+    setMaximumSize(151, 151);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    eValue = new SIUnitEdit();
-    eValue->setPrecision(4);
-    eValue->setPrefixes("fpnum k");
-    connect(eValue, &SIUnitEdit::valueChanged, this, &MatchingComponent::valueChanged);
     setFocusPolicy(Qt::FocusPolicy::ClickFocus);
     switch(type) {
     case Type::SeriesR:
     case Type::SeriesL:
     case Type::SeriesC: {
+        eValue = new SIUnitEdit();
+        eValue->setPrecision(4);
+        eValue->setPrefixes("fpnum k");
+        connect(eValue, &SIUnitEdit::valueChanged, this, &MatchingComponent::valueChanged);
         auto layout = new QVBoxLayout();
         layout->addWidget(eValue);
         setLayout(layout);
@@ -417,13 +444,16 @@ MatchingComponent::MatchingComponent(Type type)
     case Type::ParallelR:
     case Type::ParallelL:
     case Type::ParallelC: {
+        eValue = new SIUnitEdit();
+        eValue->setPrecision(4);
+        eValue->setPrefixes("fpnum k");
+        connect(eValue, &SIUnitEdit::valueChanged, this, &MatchingComponent::valueChanged);
         auto layout = new QVBoxLayout();
         layout->addWidget(eValue);
         layout->addStretch(1);
         layout->setContentsMargins(9, 5, 9, 9);
         setLayout(layout);
     }
-        break;
     default:
         break;
     }
@@ -431,36 +461,56 @@ MatchingComponent::MatchingComponent(Type type)
     case Type::SeriesR:
         eValue->setUnit("Ω");
         eValue->setValue(50);
-        setStyleSheet("image: url(:/icons/seriesR.svg);");
+        setStyleSheet("image: url(:/icons/seriesR.png);");
         break;
     case Type::SeriesL:
         eValue->setUnit("H");
         eValue->setValue(1e-9);
-        setStyleSheet("image: url(:/icons/seriesL.svg);");
+        setStyleSheet("image: url(:/icons/seriesL.png);");
         break;
     case Type::SeriesC:
         eValue->setUnit("F");
         eValue->setValue(1e-12);
-        setStyleSheet("image: url(:/icons/seriesC.svg);");
+        setStyleSheet("image: url(:/icons/seriesC.png);");
         break;
     case Type::ParallelR:
         eValue->setUnit("Ω");
         eValue->setValue(50);
-        setStyleSheet("image: url(:/icons/parallelR.svg);");
+        setStyleSheet("image: url(:/icons/parallelR.png);");
         break;
     case Type::ParallelL:
         eValue->setUnit("H");
         eValue->setValue(1e-9);
-        setStyleSheet("image: url(:/icons/parallelL.svg);");
+        setStyleSheet("image: url(:/icons/parallelL.png);");
         break;
     case Type::ParallelC:
         eValue->setUnit("F");
         eValue->setValue(1e-12);
-        setStyleSheet("image: url(:/icons/parallelC.svg);");
+        setStyleSheet("image: url(:/icons/parallelC.png);");
+        break;
+    case Type::DefinedThrough: {
+        touchstone = new Touchstone(2);
+        touchstoneLabel = new QLabel();
+        touchstoneLabel->setWordWrap(true);
+        touchstoneLabel->setAlignment(Qt::AlignCenter);
+        auto layout = new QVBoxLayout();
+        layout->addWidget(touchstoneLabel);
+        layout->setContentsMargins(0, 0, 0, 0);
+        setLayout(layout);
+        setStyleSheet("image: url(:/icons/definedThrough.png);");
+        updateTouchstoneLabel();
+    }
         break;
     default:
         break;
     }
+}
+
+MatchingComponent::~MatchingComponent()
+{
+    delete eValue;
+    delete touchstone;
+    delete touchstoneLabel;
 }
 
 ABCDparam MatchingComponent::parameters(double freq)
@@ -478,6 +528,15 @@ ABCDparam MatchingComponent::parameters(double freq)
         return ABCDparam(1.0, 0.0, 1.0/complex<double>(0, freq * 2 * M_PI * eValue->value()), 1.0);
     case Type::ParallelC:
         return ABCDparam(1.0, 0.0, 1.0/complex<double>(0, -1.0 / (freq * 2 * M_PI * eValue->value())), 1.0);
+    case Type::DefinedThrough:
+        if(touchstone->points() == 0 || freq < touchstone->minFreq() || freq > touchstone->maxFreq()) {
+            // outside of provided frequency range, pass through unchanged
+            return ABCDparam(1.0, 0.0, 0.0, 1.0);
+        } else {
+            auto d = touchstone->interpolate(freq);
+            auto S = Sparam(d.S[0], d.S[1], d.S[2], d.S[3]);
+            return ABCDparam(S, 50.0);
+        }
     default:
         return ABCDparam(1.0, 0.0, 0.0, 1.0);
     }
@@ -485,7 +544,9 @@ ABCDparam MatchingComponent::parameters(double freq)
 
 void MatchingComponent::MatchingComponent::setValue(double v)
 {
-    eValue->setValue(v);
+    if(eValue) {
+        eValue->setValue(v);
+    }
 }
 
 MatchingComponent *MatchingComponent::createFromName(QString name)
@@ -507,13 +568,73 @@ QString MatchingComponent::getName()
 nlohmann::json MatchingComponent::toJSON()
 {
     nlohmann::json j;
-    j["value"] = eValue->value();
+    switch(type) {
+    case Type::SeriesC:
+    case Type::SeriesR:
+    case Type::SeriesL:
+    case Type::ParallelC:
+    case Type::ParallelR:
+    case Type::ParallelL:
+        j["value"] = eValue->value();
+        break;
+    case Type::DefinedThrough:
+        j["touchstone"] = touchstone->toJSON();
+        break;
+    case Type::Last:
+        break;
+    }
     return j;
 }
 
 void MatchingComponent::fromJSON(nlohmann::json j)
 {
-    eValue->setValue(j.value("value", 1e-12));
+    switch(type) {
+    case Type::SeriesC:
+    case Type::SeriesR:
+    case Type::SeriesL:
+    case Type::ParallelC:
+    case Type::ParallelR:
+    case Type::ParallelL:
+        eValue->setValue(j.value("value", 1e-12));
+        break;
+    case Type::DefinedThrough:
+        touchstone->fromJSON(j["touchstone"]);
+        updateTouchstoneLabel();
+        break;
+    case Type::Last:
+        break;
+    }
+}
+
+void MatchingComponent::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    Q_UNUSED(e);
+    if(type == Type::DefinedThrough) {
+        // select new touchstone file
+        auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s2p)", nullptr, QFileDialog::DontUseNativeDialog);
+        if (!filename.isEmpty()) {
+            try {
+                *touchstone = Touchstone::fromFile(filename.toStdString());
+            } catch(const std::exception& e) {
+                InformationBox::ShowError("Failed to load file", QString("Attempt to load file ended with error: \"") + e.what()+"\"");
+            }
+            updateTouchstoneLabel();
+        }
+    }
+}
+
+void MatchingComponent::updateTouchstoneLabel()
+{
+    if(!touchstone || !touchstoneLabel) {
+        return;
+    }
+    if(touchstone->points() == 0) {
+        touchstoneLabel->setText("No data. Double-click to select touchstone file");
+    } else {
+        QString text = QString::number(touchstone->points()) + " points from "+Unit::ToString(touchstone->minFreq(), "Hz", " kMG", 4)
+                + " to "+Unit::ToString(touchstone->maxFreq(), "Hz", " kMG", 4);
+        touchstoneLabel->setText(text);
+    }
 }
 
 QString MatchingComponent::typeToName(MatchingComponent::Type type)
@@ -525,6 +646,7 @@ QString MatchingComponent::typeToName(MatchingComponent::Type type)
     case Type::ParallelR: return "ParallelR";
     case Type::ParallelL: return "ParallelL";
     case Type::ParallelC: return "ParallelC";
+    case Type::DefinedThrough: return "Touchstone Through";
     default: return "";
     }
 }

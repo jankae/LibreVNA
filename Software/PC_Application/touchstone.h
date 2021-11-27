@@ -1,12 +1,14 @@
 #ifndef TOUCHSTONE_H
 #define TOUCHSTONE_H
 
+#include "savable.h"
+
 #include <complex>
 #include <vector>
 #include <string>
 #include <QString>
 
-class Touchstone
+class Touchstone : public Savable
 {
 public:
     enum class Scale {
@@ -29,6 +31,7 @@ public:
     };
 
     Touchstone(unsigned int m_ports);
+    virtual ~Touchstone(){};
     void AddDatapoint(Datapoint p);
     void toFile(std::string filename, Scale unit = Scale::GHz, Format format = Format::RealImaginary);
     std::stringstream toString(Scale unit = Scale::GHz, Format format = Format::RealImaginary);
@@ -44,6 +47,9 @@ public:
     void reduceTo1Port(unsigned int port);
     unsigned int ports() { return m_ports; }
     QString getFilename() const;
+
+    virtual nlohmann::json toJSON();
+    virtual void fromJSON(nlohmann::json j);
 
 private:
     unsigned int m_ports;

@@ -5,8 +5,10 @@
 #include "deembeddingoption.h"
 #include "Tools/parameters.h"
 #include "savable.h"
+#include "touchstone.h"
 
 #include <QWidget>
+#include <QLabel>
 #include <vector>
 
 
@@ -21,11 +23,13 @@ public:
         ParallelR,
         ParallelL,
         ParallelC,
+        DefinedThrough,
         // Add new matching components here, do not explicitly assign values and keep the Last entry at the last position
         Last,
     };
 
     MatchingComponent(Type type);
+    ~MatchingComponent();
     ABCDparam parameters(double freq);
     void setValue(double v);
 
@@ -40,7 +44,11 @@ signals:
     void deleted(MatchingComponent* m);
 protected:
     SIUnitEdit *eValue;
+    Touchstone *touchstone;
+    QLabel *touchstoneLabel;
 private:
+    void mouseDoubleClickEvent(QMouseEvent *e) override;
+    void updateTouchstoneLabel();
     static QString typeToName(Type type);
     Type type;
     void keyPressEvent(QKeyEvent *event) override;
@@ -62,9 +70,10 @@ public:
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;
 private:
-    static constexpr int componentWidth = 150;
-    static constexpr int DUTWidth = 150;
-    static constexpr int portWidth = 75;
+    static constexpr int imageHeight = 151;
+    static constexpr int componentWidth = 151;
+    static constexpr int DUTWidth = 151;
+    static constexpr int portWidth = 76;
     MatchingComponent *componentAtPosition(int pos);
     unsigned int findInsertPosition(int xcoord);
     void addComponentAtPosition(int pos, MatchingComponent *c);

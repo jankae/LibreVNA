@@ -50,5 +50,13 @@
         <file>icons/down.png</file>
         <file>icons/up.png</file>
         <file>icons/chainlink.png</file>
+        <file>icons/definedThrough.svg</file>
+        <file>icons/seriesR.png</file>
+        <file>icons/seriesL.png</file>
+        <file>icons/seriesC.png</file>
+        <file>icons/parallelR.png</file>
+        <file>icons/parallelL.png</file>
+        <file>icons/parallelC.png</file>
+        <file>icons/definedThrough.png</file>
     </qresource>
 </RCC>
