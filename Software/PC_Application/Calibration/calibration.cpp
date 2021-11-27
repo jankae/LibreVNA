@@ -122,13 +122,14 @@ bool Calibration::constructErrorTerms(Calibration::Type type)
     }
     qDebug() << "Constructing error terms for" << TypeToString(type) << "calibration";
     bool isTRL = type == Type::TRL;
-    double kit_minFreq = kit.minFreq(isTRL);
-    double kit_maxFreq = kit.maxFreq(isTRL);
-    if(minFreq < kit_minFreq || maxFreq > kit_maxFreq) {
+    bool uses_male = true;
+    bool uses_female = true;
+    if(kit.checkIfValid(minFreq, maxFreq, isTRL, uses_male, uses_female)) {
+        // TODO adjust for male/female standards
         // Calkit does not support complete calibration range
         QString msg = QString("The calibration kit does not support the complete span.\n\n")
                 + "The measured calibration data covers " + Unit::ToString(minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(maxFreq, "Hz", " kMG", 4)
-                + ", however the calibration kit is only valid from " + Unit::ToString(kit_minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(kit_maxFreq, "Hz", " kMG", 4) + ".\n\n"
+                + ", however the calibration kit does not support the whole frequency range.\n\n"
                 + "Please adjust the calibration kit or the span and take the calibration measurements again.";
         InformationBox::ShowError("Unable to perform calibration", msg);
         qWarning() << msg;

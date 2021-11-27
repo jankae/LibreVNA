@@ -30,7 +30,8 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
     if(type != Calibration::Type::None) {
         auto kit = cal->getCalibrationKit();
         auto isTRL = type == Calibration::Type::TRL;
-        if(kit.minFreq(isTRL) > f_min || kit.maxFreq(isTRL) < f_max) {
+        if(isTRL && (kit.minFreqTRL() > f_min || kit.maxFreqTRL() < f_max)) {
+            // TODO check SOLT frequency range depending on selected male/female kit
             InformationBox::ShowMessage("Warning", "The calibration kit does not completely cover the currently selected span. "
                                         "Applying a calibration will not be possible for any measurements taken with these settings.");
         }
