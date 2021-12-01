@@ -530,6 +530,12 @@ VNA::VNA(AppWindow *window)
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
 
+    if(pref.Acquisition.useMedianAveraging) {
+        average.setMode(Averaging::Mode::Median);
+    } else {
+        average.setMode(Averaging::Mode::Mean);
+    }
+
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
@@ -1464,6 +1470,11 @@ void VNA::EnableDeembedding(bool enable)
 void VNA::updateGraphColors()
 {
     emit graphColorsChanged();
+}
+
+void VNA::setAveragingMode(Averaging::Mode mode)
+{
+    average.setMode(mode);
 }
 
 QString VNA::SweepTypeToString(VNA::SweepType sw)

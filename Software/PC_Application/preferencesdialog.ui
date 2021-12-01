@@ -78,7 +78,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -633,6 +633,36 @@
                <widget class="SIUnitEdit" name="AcquisitionDFTlimitRBW"/>
               </item>
              </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_14">
+           <property name="title">
+            <string>Common</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_26">
+              <property name="text">
+               <string>Averaging mode:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="AcquisitionAveragingMode">
+              <item>
+               <property name="text">
+                <string>Mean</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Median</string>
+               </property>
+              </item>
+             </widget>
             </item>
            </layout>
           </widget>

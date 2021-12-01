@@ -265,6 +265,13 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
 
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
+
+    if(pref.Acquisition.useMedianAveraging) {
+        average.setMode(Averaging::Mode::Median);
+    } else {
+        average.setMode(Averaging::Mode::Mean);
+    }
+
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
@@ -1073,6 +1080,11 @@ void SpectrumAnalyzer::StoreSweepSettings()
 void SpectrumAnalyzer::updateGraphColors()
 {
     emit graphColorsChanged();
+}
+
+void SpectrumAnalyzer::setAveragingMode(Averaging::Mode mode)
+{
+    average.setMode(mode);
 }
 
 QString SpectrumAnalyzer::WindowToString(SpectrumAnalyzer::Window w)

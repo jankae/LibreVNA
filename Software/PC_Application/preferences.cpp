@@ -134,6 +134,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
+        p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
         p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
         p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
         p->Graphs.Color.Ticks.Background.enabled = ui->GraphsColorTicksBackgroundEnabled->isChecked();
@@ -199,6 +200,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
+    ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
 
     ui->GraphsColorBackground->setColor(p->Graphs.Color.background);
     ui->GraphsColorAxis->setColor(p->Graphs.Color.axis);
