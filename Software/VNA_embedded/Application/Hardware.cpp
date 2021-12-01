@@ -281,7 +281,7 @@ HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool
 }
 
 bool HW::TimedOut() {
-	constexpr uint32_t timeout = 1000;
+	constexpr uint32_t timeout = 5000;
 	if(activeMode != Mode::Idle && HAL_GetTick() - lastISR > timeout) {
 		return true;
 	} else {

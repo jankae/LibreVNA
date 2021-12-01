@@ -35,9 +35,18 @@ using IFTableEntry = struct {
 	uint8_t clkconfig[8];
 };
 
+using ADCTableEntry = struct {
+	uint16_t pointCnt;
+	uint8_t adcPrescaler;
+};
+
 static constexpr uint16_t IFTableNumEntries = 500;
 static IFTableEntry IFTable[IFTableNumEntries];
 static uint16_t IFTableIndexCnt = 0;
+
+static constexpr uint16_t ADCTableNumEntries = 500;
+static ADCTableEntry ADCTable[ADCTableNumEntries];
+static uint16_t ADCTableIndexCnt = 0;
 
 static constexpr float alternativeSamplerate = 914285.7143f;
 static constexpr uint8_t alternativePrescaler = 102400000UL / alternativeSamplerate;
@@ -111,11 +120,10 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	Si5351.ResetPLL(Si5351C::PLL::B);
 
 	IFTableIndexCnt = 0;
+	ADCTableIndexCnt = 0;
+	uint8_t last_ADC_prescaler = HW::ADCprescaler;
 
 	bool last_lowband = false;
-
-	// invalidate first entry of IFTable, preventing switing of 2.LO in halted callback
-	IFTable[0].pointCnt = 0xFFFF;
 
 	uint16_t pointsWithoutHalt = 0;
 
@@ -155,7 +163,92 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			// additional halt before first highband point to enable highband source
 			needs_halt = true;
 		}
+
 		uint64_t LOFreq = freq + HW::IF1;
+
+		// check for collision between IF and point frequency
+		if(s.suppressPeaks && IFTableIndexCnt < IFTableNumEntries - 1) {
+			static constexpr int8_t max_multiple = 3;
+			bool needs_alternate_IF = false;
+			for(int8_t i=-max_multiple;i<=max_multiple;i++) {
+				if(i==0) {
+					continue;
+				}
+				for(int8_t j=-max_multiple;j<=max_multiple;j++) {
+					if(j==0) {
+						continue;
+					}
+					float m_IF, m_freq;
+					if(i<0) {
+						m_IF = (float) HW::IF1 / -i;
+					} else {
+						m_IF = HW::IF1 * i;
+					}
+					if(j<0) {
+						m_freq = (float) freq / -j;
+					} else {
+						m_freq = freq * j;
+					}
+					float ratio = m_IF / m_freq;
+					if(ratio >= 0.97f && ratio <= 1.03f) {
+						needs_alternate_IF = true;
+						break;
+					}
+				}
+				if(needs_alternate_IF) {
+					break;
+				}
+			}
+			if(needs_alternate_IF) {
+				LOFreq += 2150000;
+			}
+		}
+
+//		if(s.suppressPeaks && IFTableIndexCnt < IFTableNumEntries - 1) {
+//			bool ADC_alias;
+//			static constexpr uint64_t max_LO_shift = 2000000;
+//			static constexpr uint64_t LO_shift_inc = 71777;
+//			static constexpr uint32_t max_mixing_freq = 30000000;
+//			do {
+//				ADC_alias = false;
+//				static uint8_t max_harmonic_LO1 = 5;
+//				static uint8_t max_harmonic_LO2 = 97;
+//				for (uint64_t harmonic_1LO = 1; harmonic_1LO <= max_harmonic_LO1;
+//						harmonic_1LO+=2) {
+//					for (uint64_t harmonic_2LO = 1; harmonic_2LO <= max_harmonic_LO2;
+//							harmonic_2LO+=2) {
+//						int64_t harmonic_freq_1LO = harmonic_1LO * LOFreq;
+//						int64_t harmonic_freq_2LO = harmonic_2LO * (HW::IF1 - HW::IF2);
+//
+//						if (harmonic_freq_2LO > harmonic_freq_1LO + max_mixing_freq) {
+//							break;
+//						}
+//
+//						uint64_t mixing_freq = llabs(harmonic_freq_1LO - harmonic_freq_2LO);
+//						if(mixing_freq > max_mixing_freq) {
+//							// ADC filter will take care of frequencies this high
+//							continue;
+//						}
+//						if(abs(Util::Alias(mixing_freq, HW::ADCSamplerate) - HW::IF2) <= actualBandwidth * 2) {
+//							// this frequency point aliases into the final IF frequency, need to shift ADC samplerate
+//							LOG_INFO("ADC alias with f=%lu%06luHz at point %lu (%lu%06luHz), 1.LO harmonic: %d, 2.LO harmonic: %d",
+//														(uint32_t ) (mixing_freq / 1000000),
+//														(uint32_t ) (mixing_freq % 1000000),i,  (uint32_t ) (freq / 1000000),
+//														(uint32_t ) (freq % 1000000), (uint16_t) harmonic_1LO, (uint16_t) harmonic_2LO);
+//							ADC_alias = true;
+//							// select different 1.LO
+//							LOFreq -= LO_shift_inc;
+//							break;
+//						}
+//					}
+//					if(ADC_alias) {
+//						// already detected a problem, no need for further loop execution
+//						break;
+//					}
+//				}
+//			} while(ADC_alias && LOFreq >= freq + HW::IF1 - (max_LO_shift - LO_shift_inc));
+//		}
+
 		if(harmonic_mixing) {
 			LOFreq /= LOHarmonic;
 		}
@@ -204,6 +297,56 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 					IFdeviation, (uint32_t ) (freq / 1000000), (uint32_t ) (freq % 1000000));
 		}
 
+		// Check if we have an ADC alias problem at this frequency. The 1.LO (and its harmonics) will mix with
+		// the 2.LO (and its harmonics) in the 2.mixer stage. The mixing product may alias to the final IF in
+		// the ADCs. This would cause a peak at this frequency in the spectrum
+//		bool ADC_alias = false;
+//		static uint8_t max_harmonic = 3;
+//		for (uint64_t harmonic_1LO = 1; harmonic_1LO <= max_harmonic;
+//				harmonic_1LO++) {
+//			for (uint64_t harmonic_2LO = 1; harmonic_2LO <= max_harmonic;
+//					harmonic_2LO++) {
+//				uint64_t harmonic_freq_1LO = harmonic_1LO * actualLO1;
+//				uint64_t harmonic_freq_2LO = harmonic_2LO * last_LO2;
+//
+//				uint64_t mixing_freq = abs(harmonic_freq_1LO - harmonic_freq_2LO);
+//				if(abs(Util::Alias(mixing_freq, HW::ADCSamplerate) - HW::IF2) <= actualBandwidth * 2) {
+//					// this frequency point aliases into the final IF frequency, need to shift ADC samplerate
+//					ADC_alias = true;
+//					break;
+//				}
+//			}
+//			if(ADC_alias) {
+//				// already detected a problem, no need for further loop execution
+//				break;
+//			}
+//		}
+//
+//		uint8_t required_prescaler = HW::ADCprescaler;
+//		if(ADC_alias) {
+//			required_prescaler = alternativePrescaler;
+//		}
+//
+//		if(required_prescaler != last_ADC_prescaler) {
+//			// needs to shift ADC prescaler at this point
+//			if (ADCTableIndexCnt < ADCTableNumEntries) {
+//				// still room in table
+//				needs_halt = true;
+//				ADCTable[ADCTableIndexCnt].pointCnt = i;
+//				if(ADCTableIndexCnt < ADCTableNumEntries - 1) {
+//					ADCTable[ADCTableIndexCnt].adcPrescaler = required_prescaler;
+//				} else {
+//					// last entry in ADC table, revert ADC prescaler to default
+//					ADCTable[ADCTableIndexCnt].adcPrescaler = HW::ADCprescaler;
+//				}
+//				last_ADC_prescaler = ADCTable[ADCTableIndexCnt].adcPrescaler;
+//				LOG_INFO("Changing ADC prescaler to %d at point %lu (%lu%06luHz) to prevent alias.",
+//						ADCTable[ADCTableIndexCnt].adcPrescaler, i, (uint32_t ) (freq / 1000000),
+//											(uint32_t ) (freq % 1000000));
+//				ADCTableIndexCnt++;
+//			}
+//		}
+
 		// halt on regular intervals to prevent USB buffer overflow
 		if(!needs_halt) {
 			pointsWithoutHalt++;
@@ -236,8 +379,13 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// revert clk configuration to previous value (might have been changed in sweep calculation)
 	Si5351.SetCLK(SiChannel::RefLO2, HW::IF1 - HW::IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
+	if (s.f_start >= HW::BandSwitchFrequency) {
+		// first point already uses the MAX2871 as the source and (probably) does not have the "halt sweep" bit
+		// set. Give Si5351 some time to ramp up the 2.LO, otherwise the first samples might be invalid
+		Delay::us(1300);
+	}
 	// Enable mixers/amplifier/PLLs
-	FPGA::SetWindow(FPGA::Window::None);
+	FPGA::SetWindow(FPGA::Window::Hann);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 	FPGA::Enable(FPGA::Periphery::RefMixer);
@@ -252,7 +400,13 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	pointCnt = 0;
 	// starting port depends on whether port 1 is active in sweep
 	excitingPort1 = s.excitePort1;
+	// invalidate first invalid entry of IFTable, preventing switching of 2.LO in halted callback
+	IFTable[IFTableIndexCnt].pointCnt = 0xFFFF;
+	ADCTable[ADCTableIndexCnt].pointCnt = 0xFFFF;
+	// reset table index
 	IFTableIndexCnt = 0;
+	ADCTableIndexCnt = 0;
+
 	adcShifted = false;
 	active = true;
 	// Enable new data and sweep halt interrupt
@@ -376,31 +530,37 @@ void VNA::SweepHalted() {
 			Delay::us(1300);
 		}
 
-		// At low frequencies the 1.LO feedtrough mixes with the 2.LO in the second mixer.
-		// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
-		// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
-		uint32_t LO_mixing = (HW::IF1 + frequency) - (HW::IF1 - HW::IF2);
-		if(abs(Util::Alias(LO_mixing, HW::ADCSamplerate) - HW::IF2) <= actualBandwidth * 2) {
-			// the image is in or near the IF bandwidth and would cause a peak
-			// Use a slightly different ADC samplerate
-			adcShiftRequired = true;
-		}
+//		// At low frequencies the 1.LO feedthrough mixes with the 2.LO in the second mixer.
+//		// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
+//		// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
+//		uint32_t LO_mixing = (HW::IF1 + frequency) - (HW::IF1 - HW::IF2);
+//		if(abs(Util::Alias(LO_mixing, HW::ADCSamplerate) - HW::IF2) <= actualBandwidth * 2) {
+//			// the image is in or near the IF bandwidth and would cause a peak
+//			// Use a slightly different ADC samplerate
+//			adcShiftRequired = true;
+//		}
 	} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
 		// first sweep point in highband is also halted, disable lowband source
 		Si5351.Disable(SiChannel::LowbandSource);
 		FPGA::Enable(FPGA::Periphery::SourceRF);
 	}
 
-	if(adcShiftRequired) {
-		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, alternativePrescaler);
-		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, alternativePhaseInc);
-		adcShifted = true;
-	} else if(adcShifted) {
-		// reset to default value
-		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
-		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
-		adcShifted = false;
-	}
+//	if(adcShiftRequired) {
+//		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, alternativePrescaler);
+//		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, alternativePhaseInc);
+//		adcShifted = true;
+//	} else if(adcShifted) {
+//		// reset to default value
+//		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
+//		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
+//		adcShifted = false;
+//	}
+//	// Check if IF table has entry at this point
+//	if (ADCTableIndexCnt < ADCTableNumEntries && ADCTable[ADCTableIndexCnt].pointCnt == pointCnt) {
+//		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, ADCTable[ADCTableIndexCnt].adcPrescaler);
+//		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, ADCTable[ADCTableIndexCnt].adcPrescaler * 10);
+//		ADCTableIndexCnt++;
+//	}
 
 	if(usb_available_buffer() >= reservedUSBbuffer) {
 		// enough space available, can resume immediately
