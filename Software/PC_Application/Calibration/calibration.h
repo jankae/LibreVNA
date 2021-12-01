@@ -11,8 +11,9 @@
 #include <iostream>
 #include <iomanip>
 #include <QDateTime>
+#include <savable.h>
 
-class Calibration
+class Calibration : public Savable
 {
 public:
     Calibration();
@@ -108,6 +109,21 @@ public:
     Calkit& getCalibrationKit();
     void setCalibrationKit(const Calkit &value);
 
+    enum class PortStandard {
+        Male,
+        Female,
+    };
+    void setPortStandard(int port, PortStandard standard);
+    PortStandard getPortStandard(int port);
+
+    QString getCurrentCalibrationFile();
+    double getMinFreq();
+    double getMaxFreq();
+    int getNumPoints();
+
+    nlohmann::json toJSON() override;
+    void fromJSON(nlohmann::json j) override;
+
 private:
     void construct12TermPoints();
     void constructPort1SOL();
@@ -157,14 +173,9 @@ private:
 
     Calkit kit;
     QString descriptiveCalName();
-
-private:
     QString currentCalFile;
-public:
-    QString getCurrentCalibrationFile();
-    double getMinFreq();
-    double getMaxFreq();
-    int getNumPoints();
+
+    PortStandard port1Standard, port2Standard;
 };
 
 #endif // CALIBRATION_H

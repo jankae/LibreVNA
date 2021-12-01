@@ -204,6 +204,11 @@ void Calkit::edit(std::function<void (void)> done)
     dialog->show();
 }
 
+bool Calkit::hasSeparateMaleFemaleStandards()
+{
+    return SOLT.separate_male_female;
+}
+
 class Calkit::SOLT Calkit::toSOLT(double frequency, bool male_standards)
 {
     auto addTransmissionLine = [](complex<double> termination_reflection, double offset_impedance, double offset_delay, double offset_loss, double frequency) -> complex<double> {

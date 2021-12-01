@@ -148,7 +148,7 @@
                <item>
                 <widget class="QTabWidget" name="mf_short">
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>0</number>
                  </property>
                  <widget class="QWidget" name="tab_3">
                   <attribute name="title">
@@ -435,7 +435,7 @@
                <item>
                 <widget class="QTabWidget" name="mf_open">
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>0</number>
                  </property>
                  <widget class="QWidget" name="tab_5">
                   <attribute name="title">
@@ -722,7 +722,7 @@
                <item>
                 <widget class="QTabWidget" name="mf_load">
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>0</number>
                  </property>
                  <widget class="QWidget" name="tab_7">
                   <attribute name="title">
@@ -1457,12 +1457,12 @@
  </connections>
  <buttongroups>
   <buttongroup name="OpenType"/>
-  <buttongroup name="TRL_Rtype"/>
   <buttongroup name="LoadType"/>
-  <buttongroup name="ThroughType"/>
-  <buttongroup name="ShortType"/>
   <buttongroup name="ShortType_f"/>
-  <buttongroup name="OpenType_f"/>
+  <buttongroup name="TRL_Rtype"/>
   <buttongroup name="LoadType_f"/>
+  <buttongroup name="OpenType_f"/>
+  <buttongroup name="ShortType"/>
+  <buttongroup name="ThroughType"/>
  </buttongroups>
 </ui>
