@@ -26,11 +26,51 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
     ui->tableView->setColumnWidth(3, 160);
     UpdateCalibrationStatus();
 
+    connect(ui->port1Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
+        if(ui->port1Male->isChecked()) {
+            cal->setPortStandard(1, Calibration::PortStandard::Male);
+        } else {
+            cal->setPortStandard(1, Calibration::PortStandard::Female);
+        }
+        UpdateCalibrationStatus();
+    });
+
+    connect(ui->port2Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
+        if(ui->port2Male->isChecked()) {
+            cal->setPortStandard(2, Calibration::PortStandard::Male);
+        } else {
+            cal->setPortStandard(2, Calibration::PortStandard::Female);
+        }
+        UpdateCalibrationStatus();
+    });
+
+    // hide selector if calkit does not have separate male/female standards
+    if(!cal->getCalibrationKit().hasSeparateMaleFemaleStandards()) {
+        ui->port1Standards->hide();
+        ui->port2Standards->hide();
+        // default selection is male
+        ui->port1Male->click();
+        ui->port2Male->click();
+    } else {
+        // separate standards defined
+        if(cal->getPortStandard(1) == Calibration::PortStandard::Male) {
+            ui->port1Male->setChecked(true);
+        } else {
+            ui->port1Female->setChecked(true);
+        }
+        if(cal->getPortStandard(2) == Calibration::PortStandard::Male) {
+            ui->port2Male->setChecked(true);
+        } else {
+            ui->port2Female->setChecked(true);
+        }
+    }
+
     // Check calibration kit span
     if(type != Calibration::Type::None) {
         auto kit = cal->getCalibrationKit();
         auto isTRL = type == Calibration::Type::TRL;
-        if(kit.minFreq(isTRL) > f_min || kit.maxFreq(isTRL) < f_max) {
+        if(isTRL && (kit.minFreqTRL() > f_min || kit.maxFreqTRL() < f_max)) {
+            // TODO check SOLT frequency range depending on selected male/female kit
             InformationBox::ShowMessage("Warning", "The calibration kit does not completely cover the currently selected span. "
                                         "Applying a calibration will not be possible for any measurements taken with these settings.");
         }

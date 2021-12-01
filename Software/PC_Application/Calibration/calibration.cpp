@@ -26,6 +26,7 @@ Calibration::Calibration()
     measurements[Measurement::Line].datapoints = vector<Protocol::Datapoint>();
 
     type = Type::None;
+    port1Standard = port2Standard = PortStandard::Male;
 }
 
 Calibration::Standard Calibration::getPort1Standard(Calibration::Measurement m)
@@ -122,17 +123,23 @@ bool Calibration::constructErrorTerms(Calibration::Type type)
     }
     qDebug() << "Constructing error terms for" << TypeToString(type) << "calibration";
     bool isTRL = type == Type::TRL;
-    double kit_minFreq = kit.minFreq(isTRL);
-    double kit_maxFreq = kit.maxFreq(isTRL);
-    if(minFreq < kit_minFreq || maxFreq > kit_maxFreq) {
+    bool uses_male = true;
+    bool uses_female = true;
+    if(!kit.checkIfValid(minFreq, maxFreq, isTRL, uses_male, uses_female)) {
+        // TODO adjust for male/female standards
         // Calkit does not support complete calibration range
         QString msg = QString("The calibration kit does not support the complete span.\n\n")
                 + "The measured calibration data covers " + Unit::ToString(minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(maxFreq, "Hz", " kMG", 4)
-                + ", however the calibration kit is only valid from " + Unit::ToString(kit_minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(kit_maxFreq, "Hz", " kMG", 4) + ".\n\n"
+                + ", however the calibration kit does not support the whole frequency range.\n\n"
                 + "Please adjust the calibration kit or the span and take the calibration measurements again.";
         InformationBox::ShowError("Unable to perform calibration", msg);
         qWarning() << msg;
         return false;
+    }
+    // check calkit standards and adjust if necessary
+    if(!kit.hasSeparateMaleFemaleStandards()) {
+        port1Standard = PortStandard::Male;
+        port2Standard = PortStandard::Male;
     }
     switch(type) {
     case Type::Port1SOL: constructPort1SOL(); break;
@@ -181,7 +188,7 @@ void Calibration::construct12TermPoints()
         auto S22_through = complex<double>(measurements[Measurement::Through].datapoints[i].real_S22, measurements[Measurement::Through].datapoints[i].imag_S22);
         auto S12_through = complex<double>(measurements[Measurement::Through].datapoints[i].real_S12, measurements[Measurement::Through].datapoints[i].imag_S12);
 
-        auto actual = kit.toSOLT(p.frequency);
+        auto actual = kit.toSOLT(p.frequency, port1Standard == PortStandard::Male);
         // Forward calibration
         computeSOL(S11_short, S11_open, S11_load, p.fe00, p.fe11, p.fe10e01, actual.Open, actual.Short, actual.Load);
         p.fe30 = S21_isolation;
@@ -192,6 +199,7 @@ void Calibration::construct12TermPoints()
                 / ((S11_through - p.fe00)*(actual.ThroughS22-p.fe11*deltaS)-deltaS*p.fe10e01);
         p.fe10e32 = (S21_through - p.fe30)*(1.0 - p.fe11*actual.ThroughS11 - p.fe22*actual.ThroughS22 + p.fe11*p.fe22*deltaS) / actual.ThroughS21;
         // Reverse calibration
+        actual = kit.toSOLT(p.frequency, port2Standard == PortStandard::Male);
         computeSOL(S22_short, S22_open, S22_load, p.re33, p.re22, p.re23e32, actual.Open, actual.Short, actual.Load);
         p.re03 = S12_isolation;
         p.re11 = ((S22_through - p.re33)*(1.0 - p.re22 * actual.ThroughS22)-actual.ThroughS22*p.re23e32)
@@ -212,7 +220,7 @@ void Calibration::constructPort1SOL()
         auto S11_short = complex<double>(measurements[Measurement::Port1Short].datapoints[i].real_S11, measurements[Measurement::Port1Short].datapoints[i].imag_S11);
         auto S11_load = complex<double>(measurements[Measurement::Port1Load].datapoints[i].real_S11, measurements[Measurement::Port1Load].datapoints[i].imag_S11);
         // OSL port1
-        auto actual = kit.toSOLT(p.frequency);
+        auto actual = kit.toSOLT(p.frequency, port1Standard == PortStandard::Male);
         // See page 13 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
         computeSOL(S11_short, S11_open, S11_load, p.fe00, p.fe11, p.fe10e01, actual.Open, actual.Short, actual.Load);
         // All other calibration coefficients to ideal values
@@ -240,7 +248,7 @@ void Calibration::constructPort2SOL()
         auto S22_short = complex<double>(measurements[Measurement::Port2Short].datapoints[i].real_S22, measurements[Measurement::Port2Short].datapoints[i].imag_S22);
         auto S22_load = complex<double>(measurements[Measurement::Port2Load].datapoints[i].real_S22, measurements[Measurement::Port2Load].datapoints[i].imag_S22);
         // OSL port2
-        auto actual = kit.toSOLT(p.frequency);
+        auto actual = kit.toSOLT(p.frequency, port1Standard == PortStandard::Male);
         // See page 19 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
         computeSOL(S22_short, S22_open, S22_load, p.re33, p.re22, p.re23e32, actual.Open, actual.Short, actual.Load);
         // All other calibration coefficients to ideal values
@@ -774,11 +782,23 @@ bool Calibration::openFromFile(QString filename)
     }
 
     try {
-        file >> *this;
+        nlohmann::json j;
+        file >> j;
+        fromJSON(j);
     } catch(exception e) {
-        InformationBox::ShowError("File parsing error", e.what());
-        qWarning() << "Calibration file parsing failed: " << e.what();
-        return false;
+        // json parsing failed, probably using a legacy file format
+        try {
+            file.clear();
+            file.seekg(0);
+            file >> *this;
+            InformationBox::ShowMessage("Loading calibration file", "The file \"" + filename + "\" is stored in a deprecated"
+                         " calibration format. Future versions of this application might not support"
+                         " it anymore. Please save the calibration to update to the new format");
+        } catch(exception e) {
+            InformationBox::ShowError("File parsing error", e.what());
+            qWarning() << "Calibration file parsing failed: " << e.what();
+            return false;
+        }
     }
     this->currentCalFile = filename;    // if all ok, remember this
 
@@ -802,7 +822,7 @@ bool Calibration::saveToFile(QString filename)
     auto calibration_file = filename + ".cal";
     ofstream file;
     file.open(calibration_file.toStdString());
-    file << *this;
+    file << setw(1) << toJSON();
 
     auto calkit_file = filename + ".calkit";
     qDebug() << "Saving associated calibration kit to file" << calkit_file;
@@ -848,6 +868,95 @@ double Calibration::getMaxFreq(){
 int Calibration::getNumPoints(){
     return this->points.size();
 }
+
+nlohmann::json Calibration::toJSON()
+{
+    nlohmann::json j;
+    nlohmann::json j_measurements;
+    for(auto m : measurements) {
+        if(m.second.datapoints.size() > 0) {
+            nlohmann::json j_measurement;
+            j_measurement["name"] = MeasurementToString(m.first).toStdString();
+            j_measurement["timestamp"] = m.second.timestamp.toSecsSinceEpoch();
+            nlohmann::json j_points;
+            for(auto p : m.second.datapoints) {
+                nlohmann::json j_point;
+                j_point["frequency"] = p.frequency;
+                j_point["S11_real"] = p.real_S11;
+                j_point["S11_imag"] = p.imag_S11;
+                j_point["S12_real"] = p.real_S12;
+                j_point["S12_imag"] = p.imag_S12;
+                j_point["S21_real"] = p.real_S21;
+                j_point["S21_imag"] = p.imag_S21;
+                j_point["S22_real"] = p.real_S22;
+                j_point["S22_imag"] = p.imag_S22;
+                j_points.push_back(j_point);
+            }
+            j_measurement["points"] = j_points;
+            j_measurements.push_back(j_measurement);
+        }
+    }
+    j["measurements"] = j_measurements;
+    j["type"] = TypeToString(getType()).toStdString();
+    j["port1StandardMale"] = port1Standard == PortStandard::Male;
+    j["port2StandardMale"] = port2Standard == PortStandard::Male;
+
+    return j;
+}
+
+void Calibration::fromJSON(nlohmann::json j)
+{
+    clearMeasurements();
+    resetErrorTerms();
+    port1Standard = j.value("port1StandardMale", true) ? PortStandard::Male : PortStandard::Female;
+    port2Standard = j.value("port2StandardMale", true) ? PortStandard::Male : PortStandard::Female;
+    if(j.contains("measurements")) {
+        // grab measurements
+        for(auto j_m : j["measurements"]) {
+            if(!j_m.contains("name")) {
+                throw runtime_error("Measurement without name given");
+            }
+            auto m = MeasurementFromString(QString::fromStdString(j_m["name"]));
+            if(m == Measurement::Last) {
+                throw runtime_error("Measurement name unknown: "+std::string(j_m["name"]));
+            }
+            // get timestamp
+            measurements[m].timestamp = QDateTime::fromSecsSinceEpoch(j_m.value("timestamp", 0));
+            // extract points
+            if(!j_m.contains("points")) {
+                throw runtime_error("Measurement "+MeasurementToString(m).toStdString()+" does not contain any points");
+            }
+            int pointNum = 0;
+            for(auto j_p : j_m["points"]) {
+                Protocol::Datapoint p;
+                p.pointNum = pointNum++;
+                p.frequency = j_p.value("frequency", 0.0);
+                p.real_S11 = j_p.value("S11_real", 0.0);
+                p.imag_S11 = j_p.value("S11_imag", 0.0);
+                p.real_S12 = j_p.value("S12_real", 0.0);
+                p.imag_S12 = j_p.value("S12_imag", 0.0);
+                p.real_S21 = j_p.value("S21_real", 0.0);
+                p.imag_S21 = j_p.value("S21_imag", 0.0);
+                p.real_S22 = j_p.value("S22_real", 0.0);
+                p.imag_S22 = j_p.value("S22_imag", 0.0);
+                measurements[m].datapoints.push_back(p);
+            }
+        }
+    }
+    // got all measurements, construct calibration according to type
+    if(j.contains("type")) {
+        auto t = TypeFromString(QString::fromStdString(j["type"]));
+        if(t == Type::Last) {
+            throw runtime_error("Calibration type unknown: "+std::string(j["type"]));
+        }
+        if(calculationPossible(t)) {
+            constructErrorTerms(t);
+        } else {
+            throw runtime_error("Incomplete calibration data, the requested calibration could not be performed.");
+        }
+    }
+}
+
 QString Calibration::getCurrentCalibrationFile(){
     return this->currentCalFile;
 }
@@ -911,6 +1020,9 @@ istream& operator >>(istream &in, Calibration &c)
             }
         }
     }
+    // old file format did not contain port standard gender, set default
+    c.port1Standard = Calibration::PortStandard::Male;
+    c.port2Standard = Calibration::PortStandard::Male;
     qDebug() << "Calibration file parsing complete";
     return in;
 }
@@ -1015,6 +1127,26 @@ Calkit &Calibration::getCalibrationKit()
 void Calibration::setCalibrationKit(const Calkit &value)
 {
     kit = value;
+}
+
+void Calibration::setPortStandard(int port, Calibration::PortStandard standard)
+{
+    if(port == 1) {
+        port1Standard = standard;
+    } else if(port == 2) {
+        port2Standard = standard;
+    }
+}
+
+Calibration::PortStandard Calibration::getPortStandard(int port)
+{
+    if(port == 1) {
+        return port1Standard;
+    } else if(port == 2) {
+        return port2Standard;
+    } else {
+        return PortStandard::Male;
+    }
 }
 
 Calibration::Type Calibration::getType() const

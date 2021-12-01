@@ -47,6 +47,29 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     ui->load_parC->setPrefixes("fpnum ");
     ui->load_serL->setUnit("H");
     ui->load_serL->setPrefixes("fpnum ");
+
+    // Same setup for female standards
+    ui->OpenType_f->setId(ui->open_coefficients_f, 0);
+    ui->OpenType_f->setId(ui->open_measurement_f, 1);
+
+    ui->ShortType_f->setId(ui->short_coefficients_f, 0);
+    ui->ShortType_f->setId(ui->short_measurement_f, 1);
+
+    ui->LoadType_f->setId(ui->load_coefficients_f, 0);
+    ui->LoadType_f->setId(ui->load_measurement_f, 1);
+
+    ui->open_touchstone_f->setPorts(1);
+    ui->short_touchstone_f->setPorts(1);
+    ui->load_touchstone_f->setPorts(1);
+
+    ui->short_Z0_f->setUnit("Ω");
+    ui->open_Z0_f->setUnit("Ω");
+    ui->load_Z0_f->setUnit("Ω");
+    ui->load_parC_f->setUnit("F");
+    ui->load_parC_f->setPrefixes("fpnum ");
+    ui->load_serL_f->setUnit("H");
+    ui->load_serL_f->setPrefixes("fpnum ");
+
     ui->through_Z0->setUnit("Ω");
 
     ui->TRL_through_Z0->setUnit("Ω");
@@ -59,6 +82,24 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
 
     editKit.clearTouchstoneCache();
     ownKit = editKit;
+
+    connect(ui->cbStandardDefinition, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index){
+        if (index == 0) {
+            // common definition, hide tab bars, set all to male tab
+            ui->mf_short->setCurrentIndex(0);
+            ui->mf_short->tabBar()->hide();
+            ui->mf_open->setCurrentIndex(0);
+            ui->mf_open->tabBar()->hide();
+            ui->mf_load->setCurrentIndex(0);
+            ui->mf_load->tabBar()->hide();
+        } else {
+            // separate definitions for male/female standards
+            ui->mf_short->tabBar()->show();
+            ui->mf_open->tabBar()->show();
+            ui->mf_load->tabBar()->show();
+        }
+    });
+
     updateEntries();
 
     connect(ui->TRL_line_min, &SIUnitEdit::valueChanged, [=](double newval){
@@ -85,6 +126,15 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
         if(ui->load_measurement->isChecked() && !ui->load_touchstone->getStatus()) {
             ok = false;
         }
+        if(ui->open_measurement_f->isChecked() && !ui->open_touchstone_f->getStatus()) {
+            ok = false;
+        }
+        if(ui->short_measurement_f->isChecked() && !ui->short_touchstone_f->getStatus()) {
+            ok = false;
+        }
+        if(ui->load_measurement_f->isChecked() && !ui->load_touchstone_f->getStatus()) {
+            ok = false;
+        }
         if(ui->through_measurement->isChecked() && !ui->through_touchstone->getStatus()) {
             ok = false;
         }
@@ -95,6 +145,9 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     connect(ui->open_touchstone, &TouchstoneImport::statusChanged, UpdateStatus);
     connect(ui->short_touchstone, &TouchstoneImport::statusChanged, UpdateStatus);
     connect(ui->load_touchstone, &TouchstoneImport::statusChanged, UpdateStatus);
+    connect(ui->open_touchstone_f, &TouchstoneImport::statusChanged, UpdateStatus);
+    connect(ui->short_touchstone_f, &TouchstoneImport::statusChanged, UpdateStatus);
+    connect(ui->load_touchstone_f, &TouchstoneImport::statusChanged, UpdateStatus);
     connect(ui->through_touchstone, &TouchstoneImport::statusChanged, UpdateStatus);
 
     connect(ui->OpenType, qOverload<int>(&QButtonGroup::buttonClicked), [=](int) {
@@ -104,6 +157,15 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
         UpdateStatus();
     });
     connect(ui->LoadType, qOverload<int>(&QButtonGroup::buttonClicked), [=](int) {
+        UpdateStatus();
+    });
+    connect(ui->OpenType_f, qOverload<int>(&QButtonGroup::buttonClicked), [=](int) {
+        UpdateStatus();
+    });
+    connect(ui->ShortType_f, qOverload<int>(&QButtonGroup::buttonClicked), [=](int) {
+        UpdateStatus();
+    });
+    connect(ui->LoadType_f, qOverload<int>(&QButtonGroup::buttonClicked), [=](int) {
         UpdateStatus();
     });
     connect(ui->ThroughType, qOverload<int>(&QButtonGroup::buttonClicked), [=](int) {
@@ -152,48 +214,82 @@ void CalkitDialog::parseEntries()
     ownKit.description = ui->description->toPlainText();
 
     // type
-    ownKit.SOLT.Open.useMeasurements = ui->open_measurement->isChecked();
-    ownKit.SOLT.Short.useMeasurements = ui->short_measurement->isChecked();
-    ownKit.SOLT.Load.useMeasurements = ui->load_measurement->isChecked();
+    ownKit.SOLT.open_m.useMeasurements = ui->open_measurement->isChecked();
+    ownKit.SOLT.short_m.useMeasurements = ui->short_measurement->isChecked();
+    ownKit.SOLT.load_m.useMeasurements = ui->load_measurement->isChecked();
+    ownKit.SOLT.open_f.useMeasurements = ui->open_measurement_f->isChecked();
+    ownKit.SOLT.short_f.useMeasurements = ui->short_measurement_f->isChecked();
+    ownKit.SOLT.load_f.useMeasurements = ui->load_measurement_f->isChecked();
     ownKit.SOLT.Through.useMeasurements = ui->through_measurement->isChecked();
 
     // coefficients
-    ownKit.SOLT.Open.Z0 = ui->open_Z0->value();
-    ownKit.SOLT.Open.delay = ui->open_delay->value();
-    ownKit.SOLT.Open.loss = ui->open_loss->value();
-    ownKit.SOLT.Open.C0 = ui->open_C0->value();
-    ownKit.SOLT.Open.C1 = ui->open_C1->value();
-    ownKit.SOLT.Open.C2 = ui->open_C2->value();
-    ownKit.SOLT.Open.C3 = ui->open_C3->value();
+    ownKit.SOLT.open_m.Z0 = ui->open_Z0->value();
+    ownKit.SOLT.open_m.delay = ui->open_delay->value();
+    ownKit.SOLT.open_m.loss = ui->open_loss->value();
+    ownKit.SOLT.open_m.C0 = ui->open_C0->value();
+    ownKit.SOLT.open_m.C1 = ui->open_C1->value();
+    ownKit.SOLT.open_m.C2 = ui->open_C2->value();
+    ownKit.SOLT.open_m.C3 = ui->open_C3->value();
 
-    ownKit.SOLT.Short.Z0 = ui->short_Z0->value();
-    ownKit.SOLT.Short.delay = ui->short_delay->value();
-    ownKit.SOLT.Short.loss = ui->short_loss->value();
-    ownKit.SOLT.Short.L0 = ui->short_L0->value();
-    ownKit.SOLT.Short.L1 = ui->short_L1->value();
-    ownKit.SOLT.Short.L2 = ui->short_L2->value();
-    ownKit.SOLT.Short.L3 = ui->short_L3->value();
+    ownKit.SOLT.short_m.Z0 = ui->short_Z0->value();
+    ownKit.SOLT.short_m.delay = ui->short_delay->value();
+    ownKit.SOLT.short_m.loss = ui->short_loss->value();
+    ownKit.SOLT.short_m.L0 = ui->short_L0->value();
+    ownKit.SOLT.short_m.L1 = ui->short_L1->value();
+    ownKit.SOLT.short_m.L2 = ui->short_L2->value();
+    ownKit.SOLT.short_m.L3 = ui->short_L3->value();
 
-    ownKit.SOLT.Load.Z0 = ui->load_Z0->value();
-    ownKit.SOLT.Load.delay = ui->load_delay->value();
-    ownKit.SOLT.Load.Cparallel = ui->load_parC->value();
-    ownKit.SOLT.Load.Lseries = ui->load_serL->value();
+    ownKit.SOLT.load_m.Z0 = ui->load_Z0->value();
+    ownKit.SOLT.load_m.delay = ui->load_delay->value();
+    ownKit.SOLT.load_m.Cparallel = ui->load_parC->value();
+    ownKit.SOLT.load_m.Lseries = ui->load_serL->value();
+
+    ownKit.SOLT.open_f.Z0 = ui->open_Z0_f->value();
+    ownKit.SOLT.open_f.delay = ui->open_delay_f->value();
+    ownKit.SOLT.open_f.loss = ui->open_loss_f->value();
+    ownKit.SOLT.open_f.C0 = ui->open_C0_f->value();
+    ownKit.SOLT.open_f.C1 = ui->open_C1_f->value();
+    ownKit.SOLT.open_f.C2 = ui->open_C2_f->value();
+    ownKit.SOLT.open_f.C3 = ui->open_C3_f->value();
+
+    ownKit.SOLT.short_f.Z0 = ui->short_Z0_f->value();
+    ownKit.SOLT.short_f.delay = ui->short_delay_f->value();
+    ownKit.SOLT.short_f.loss = ui->short_loss_f->value();
+    ownKit.SOLT.short_f.L0 = ui->short_L0_f->value();
+    ownKit.SOLT.short_f.L1 = ui->short_L1_f->value();
+    ownKit.SOLT.short_f.L2 = ui->short_L2_f->value();
+    ownKit.SOLT.short_f.L3 = ui->short_L3_f->value();
+
+    ownKit.SOLT.load_f.Z0 = ui->load_Z0_f->value();
+    ownKit.SOLT.load_f.delay = ui->load_delay_f->value();
+    ownKit.SOLT.load_f.Cparallel = ui->load_parC_f->value();
+    ownKit.SOLT.load_f.Lseries = ui->load_serL_f->value();
 
     ownKit.SOLT.Through.Z0 = ui->through_Z0->value();
     ownKit.SOLT.Through.delay = ui->through_delay->value();
     ownKit.SOLT.Through.loss = ui->through_loss->value();
 
+    ownKit.SOLT.separate_male_female = ui->cbStandardDefinition->currentIndex() == 1;
+
     // file
-    ownKit.SOLT.Open.file = ui->open_touchstone->getFilename();
-    ownKit.SOLT.Short.file = ui->short_touchstone->getFilename();
-    ownKit.SOLT.Load.file = ui->load_touchstone->getFilename();
+    ownKit.SOLT.open_m.file = ui->open_touchstone->getFilename();
+    ownKit.SOLT.short_m.file = ui->short_touchstone->getFilename();
+    ownKit.SOLT.load_m.file = ui->load_touchstone->getFilename();
     ownKit.SOLT.Through.file = ui->through_touchstone->getFilename();
 
-    ownKit.SOLT.Open.Sparam = ui->open_touchstone->getPorts()[0];
-    ownKit.SOLT.Short.Sparam = ui->short_touchstone->getPorts()[0];
-    ownKit.SOLT.Load.Sparam = ui->load_touchstone->getPorts()[0];
+    ownKit.SOLT.open_m.Sparam = ui->open_touchstone->getPorts()[0];
+    ownKit.SOLT.short_m.Sparam = ui->short_touchstone->getPorts()[0];
+    ownKit.SOLT.load_m.Sparam = ui->load_touchstone->getPorts()[0];
     ownKit.SOLT.Through.Sparam1 = ui->through_touchstone->getPorts()[0];
     ownKit.SOLT.Through.Sparam2 = ui->through_touchstone->getPorts()[1];
+
+    ownKit.SOLT.open_f.file = ui->open_touchstone_f->getFilename();
+    ownKit.SOLT.short_f.file = ui->short_touchstone_f->getFilename();
+    ownKit.SOLT.load_f.file = ui->load_touchstone_f->getFilename();
+
+    ownKit.SOLT.open_f.Sparam = ui->open_touchstone_f->getPorts()[0];
+    ownKit.SOLT.short_f.Sparam = ui->short_touchstone_f->getPorts()[0];
+    ownKit.SOLT.load_f.Sparam = ui->load_touchstone_f->getPorts()[0];
 
     // TRL
     ownKit.TRL.Through.Z0 = ui->TRL_through_Z0->value();
@@ -212,68 +308,122 @@ void CalkitDialog::updateEntries()
     ui->description->setPlainText(ownKit.description);
 
     // Coefficients
-    ui->open_Z0->setValueQuiet(ownKit.SOLT.Open.Z0);
-    ui->open_delay->setValueQuiet(ownKit.SOLT.Open.delay);
-    ui->open_loss->setValueQuiet(ownKit.SOLT.Open.loss);
-    ui->open_C0->setValueQuiet(ownKit.SOLT.Open.C0);
-    ui->open_C1->setValueQuiet(ownKit.SOLT.Open.C1);
-    ui->open_C2->setValueQuiet(ownKit.SOLT.Open.C2);
-    ui->open_C3->setValueQuiet(ownKit.SOLT.Open.C3);
+    ui->open_Z0->setValueQuiet(ownKit.SOLT.open_m.Z0);
+    ui->open_delay->setValueQuiet(ownKit.SOLT.open_m.delay);
+    ui->open_loss->setValueQuiet(ownKit.SOLT.open_m.loss);
+    ui->open_C0->setValueQuiet(ownKit.SOLT.open_m.C0);
+    ui->open_C1->setValueQuiet(ownKit.SOLT.open_m.C1);
+    ui->open_C2->setValueQuiet(ownKit.SOLT.open_m.C2);
+    ui->open_C3->setValueQuiet(ownKit.SOLT.open_m.C3);
 
-    ui->short_Z0->setValueQuiet(ownKit.SOLT.Short.Z0);
-    ui->short_delay->setValueQuiet(ownKit.SOLT.Short.delay);
-    ui->short_loss->setValueQuiet(ownKit.SOLT.Short.loss);
-    ui->short_L0->setValueQuiet(ownKit.SOLT.Short.L0);
-    ui->short_L1->setValueQuiet(ownKit.SOLT.Short.L1);
-    ui->short_L2->setValueQuiet(ownKit.SOLT.Short.L2);
-    ui->short_L3->setValueQuiet(ownKit.SOLT.Short.L3);
+    ui->short_Z0->setValueQuiet(ownKit.SOLT.short_m.Z0);
+    ui->short_delay->setValueQuiet(ownKit.SOLT.short_m.delay);
+    ui->short_loss->setValueQuiet(ownKit.SOLT.short_m.loss);
+    ui->short_L0->setValueQuiet(ownKit.SOLT.short_m.L0);
+    ui->short_L1->setValueQuiet(ownKit.SOLT.short_m.L1);
+    ui->short_L2->setValueQuiet(ownKit.SOLT.short_m.L2);
+    ui->short_L3->setValueQuiet(ownKit.SOLT.short_m.L3);
 
-    ui->load_Z0->setValueQuiet(ownKit.SOLT.Load.Z0);
-    ui->load_delay->setValueQuiet(ownKit.SOLT.Load.delay);
-    ui->load_parC->setValueQuiet(ownKit.SOLT.Load.Cparallel);
-    ui->load_serL->setValueQuiet(ownKit.SOLT.Load.Lseries);
+    ui->load_Z0->setValueQuiet(ownKit.SOLT.load_m.Z0);
+    ui->load_delay->setValueQuiet(ownKit.SOLT.load_m.delay);
+    ui->load_parC->setValueQuiet(ownKit.SOLT.load_m.Cparallel);
+    ui->load_serL->setValueQuiet(ownKit.SOLT.load_m.Lseries);
+
+    ui->open_Z0_f->setValueQuiet(ownKit.SOLT.open_f.Z0);
+    ui->open_delay_f->setValueQuiet(ownKit.SOLT.open_f.delay);
+    ui->open_loss_f->setValueQuiet(ownKit.SOLT.open_f.loss);
+    ui->open_C0_f->setValueQuiet(ownKit.SOLT.open_f.C0);
+    ui->open_C1_f->setValueQuiet(ownKit.SOLT.open_f.C1);
+    ui->open_C2_f->setValueQuiet(ownKit.SOLT.open_f.C2);
+    ui->open_C3_f->setValueQuiet(ownKit.SOLT.open_f.C3);
+
+    ui->short_Z0_f->setValueQuiet(ownKit.SOLT.short_f.Z0);
+    ui->short_delay_f->setValueQuiet(ownKit.SOLT.short_f.delay);
+    ui->short_loss_f->setValueQuiet(ownKit.SOLT.short_f.loss);
+    ui->short_L0_f->setValueQuiet(ownKit.SOLT.short_f.L0);
+    ui->short_L1_f->setValueQuiet(ownKit.SOLT.short_f.L1);
+    ui->short_L2_f->setValueQuiet(ownKit.SOLT.short_f.L2);
+    ui->short_L3_f->setValueQuiet(ownKit.SOLT.short_f.L3);
+
+    ui->load_Z0_f->setValueQuiet(ownKit.SOLT.load_f.Z0);
+    ui->load_delay_f->setValueQuiet(ownKit.SOLT.load_f.delay);
+    ui->load_parC_f->setValueQuiet(ownKit.SOLT.load_f.Cparallel);
+    ui->load_serL_f->setValueQuiet(ownKit.SOLT.load_f.Lseries);
 
     ui->through_Z0->setValueQuiet(ownKit.SOLT.Through.Z0);
     ui->through_delay->setValueQuiet(ownKit.SOLT.Through.delay);
     ui->through_loss->setValueQuiet(ownKit.SOLT.Through.loss);
 
     // Measurements
-    ui->open_touchstone->setFile(ownKit.SOLT.Open.file);
-    ui->open_touchstone->selectPort(0, ownKit.SOLT.Open.Sparam);
+    ui->open_touchstone->setFile(ownKit.SOLT.open_m.file);
+    ui->open_touchstone->selectPort(0, ownKit.SOLT.open_m.Sparam);
 
-    ui->short_touchstone->setFile(ownKit.SOLT.Short.file);
-    ui->short_touchstone->selectPort(0, ownKit.SOLT.Short.Sparam);
+    ui->short_touchstone->setFile(ownKit.SOLT.short_m.file);
+    ui->short_touchstone->selectPort(0, ownKit.SOLT.short_m.Sparam);
 
-    ui->load_touchstone->setFile(ownKit.SOLT.Load.file);
-    ui->load_touchstone->selectPort(0, ownKit.SOLT.Load.Sparam);
+    ui->load_touchstone->setFile(ownKit.SOLT.load_m.file);
+    ui->load_touchstone->selectPort(0, ownKit.SOLT.load_m.Sparam);
+
+    ui->open_touchstone_f->setFile(ownKit.SOLT.open_f.file);
+    ui->open_touchstone_f->selectPort(0, ownKit.SOLT.open_f.Sparam);
+
+    ui->short_touchstone_f->setFile(ownKit.SOLT.short_f.file);
+    ui->short_touchstone_f->selectPort(0, ownKit.SOLT.short_f.Sparam);
+
+    ui->load_touchstone_f->setFile(ownKit.SOLT.load_f.file);
+    ui->load_touchstone_f->selectPort(0, ownKit.SOLT.load_f.Sparam);
 
     ui->through_touchstone->setFile(ownKit.SOLT.Through.file);
     ui->through_touchstone->selectPort(0, ownKit.SOLT.Through.Sparam1);
     ui->through_touchstone->selectPort(1, ownKit.SOLT.Through.Sparam2);
 
     // Type
-    if (ownKit.SOLT.Open.useMeasurements) {
+    if (ownKit.SOLT.open_m.useMeasurements) {
         ui->open_measurement->click();
     } else {
         ui->open_coefficients->click();
     }
 
-    if (ownKit.SOLT.Short.useMeasurements) {
+    if (ownKit.SOLT.short_m.useMeasurements) {
         ui->short_measurement->click();
     } else {
         ui->short_coefficients->click();
     }
 
-    if (ownKit.SOLT.Load.useMeasurements) {
+    if (ownKit.SOLT.load_m.useMeasurements) {
         ui->load_measurement->click();
     } else {
         ui->load_coefficients->click();
+    }
+
+    if (ownKit.SOLT.open_f.useMeasurements) {
+        ui->open_measurement_f->click();
+    } else {
+        ui->open_coefficients_f->click();
+    }
+
+    if (ownKit.SOLT.short_f.useMeasurements) {
+        ui->short_measurement_f->click();
+    } else {
+        ui->short_coefficients_f->click();
+    }
+
+    if (ownKit.SOLT.load_f.useMeasurements) {
+        ui->load_measurement_f->click();
+    } else {
+        ui->load_coefficients_f->click();
     }
 
     if (ownKit.SOLT.Through.useMeasurements) {
         ui->through_measurement->click();
     } else {
         ui->through_coefficients->click();
+    }
+
+    if (ownKit.SOLT.separate_male_female) {
+        ui->cbStandardDefinition->setCurrentIndex(1);
+    } else {
+        ui->cbStandardDefinition->setCurrentIndex(0);
     }
 
     // TRL
