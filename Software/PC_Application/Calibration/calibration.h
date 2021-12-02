@@ -115,6 +115,8 @@ public:
     };
     void setPortStandard(int port, PortStandard standard);
     PortStandard getPortStandard(int port);
+    bool getThroughZeroLength() const;
+    void setThroughZeroLength(bool value);
 
     QString getCurrentCalibrationFile();
     double getMinFreq();
@@ -176,6 +178,7 @@ private:
     QString currentCalFile;
 
     PortStandard port1Standard, port2Standard;
+    bool throughZeroLength;
 };
 
 #endif // CALIBRATION_H

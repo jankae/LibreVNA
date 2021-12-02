@@ -27,6 +27,7 @@ Calibration::Calibration()
 
     type = Type::None;
     port1Standard = port2Standard = PortStandard::Male;
+    throughZeroLength = false;
 }
 
 Calibration::Standard Calibration::getPort1Standard(Calibration::Measurement m)
@@ -141,6 +142,10 @@ bool Calibration::constructErrorTerms(Calibration::Type type)
         port1Standard = PortStandard::Male;
         port2Standard = PortStandard::Male;
     }
+    if(port1Standard == port2Standard) {
+        // unable to use zero-length through
+        throughZeroLength = false;
+    }
     switch(type) {
     case Type::Port1SOL: constructPort1SOL(); break;
     case Type::Port2SOL: constructPort2SOL(); break;
@@ -194,6 +199,14 @@ void Calibration::construct12TermPoints()
         p.fe30 = S21_isolation;
         // See page 18 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
         // Formulas for S11M and S21M solved for e22 and e10e32
+        if (throughZeroLength) {
+            // use ideal through
+            actual.ThroughS11 = 0.0;
+            actual.ThroughS12 = 1.0;
+            actual.ThroughS21 = 1.0;
+            actual.ThroughS22 = 0.0;
+        }
+
         auto deltaS = actual.ThroughS11*actual.ThroughS22 - actual.ThroughS21 * actual.ThroughS12;
         p.fe22 = ((S11_through - p.fe00)*(1.0 - p.fe11 * actual.ThroughS11)-actual.ThroughS11*p.fe10e01)
                 / ((S11_through - p.fe00)*(actual.ThroughS22-p.fe11*deltaS)-deltaS*p.fe10e01);
@@ -859,6 +872,16 @@ QString Calibration::descriptiveCalName(){
     return tmp;
 }
 
+bool Calibration::getThroughZeroLength() const
+{
+    return throughZeroLength;
+}
+
+void Calibration::setThroughZeroLength(bool value)
+{
+    throughZeroLength = value;
+}
+
 double Calibration::getMinFreq(){
     return this->minFreq;
 }
@@ -900,6 +923,7 @@ nlohmann::json Calibration::toJSON()
     j["type"] = TypeToString(getType()).toStdString();
     j["port1StandardMale"] = port1Standard == PortStandard::Male;
     j["port2StandardMale"] = port2Standard == PortStandard::Male;
+    j["throughZeroLength"] = throughZeroLength;
 
     return j;
 }
@@ -910,6 +934,7 @@ void Calibration::fromJSON(nlohmann::json j)
     resetErrorTerms();
     port1Standard = j.value("port1StandardMale", true) ? PortStandard::Male : PortStandard::Female;
     port2Standard = j.value("port2StandardMale", true) ? PortStandard::Male : PortStandard::Female;
+    throughZeroLength = j.value("throughZeroLength", false);
     if(j.contains("measurements")) {
         // grab measurements
         for(auto j_m : j["measurements"]) {
@@ -981,6 +1006,11 @@ ostream& operator<<(ostream &os, const Calibration &c)
 
 istream& operator >>(istream &in, Calibration &c)
 {
+    // old file format did not contain port standard gender, set default
+    c.port1Standard = Calibration::PortStandard::Male;
+    c.port2Standard = Calibration::PortStandard::Male;
+    c.throughZeroLength = false;
+
     std::string line;
     while(getline(in, line)) {
         QString qLine = QString::fromStdString(line).simplified();
@@ -1020,9 +1050,6 @@ istream& operator >>(istream &in, Calibration &c)
             }
         }
     }
-    // old file format did not contain port standard gender, set default
-    c.port1Standard = Calibration::PortStandard::Male;
-    c.port2Standard = Calibration::PortStandard::Male;
     qDebug() << "Calibration file parsing complete";
     return in;
 }

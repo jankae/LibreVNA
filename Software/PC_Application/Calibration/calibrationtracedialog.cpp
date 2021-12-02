@@ -26,12 +26,26 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
     ui->tableView->setColumnWidth(3, 160);
     UpdateCalibrationStatus();
 
+    auto updateThroughStandardUI = [=](){
+        if(cal->getPortStandard(1) == cal->getPortStandard(2)) {
+            // same gender on both ports, can't use zero length through
+            ui->throughCalkit->click();
+            ui->throughZero->setEnabled(false);
+            ui->throughCalkit->setEnabled(false);
+        } else {
+            // user may select option for through
+            ui->throughZero->setEnabled(true);
+            ui->throughCalkit->setEnabled(true);
+        }
+    };
+
     connect(ui->port1Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
         if(ui->port1Male->isChecked()) {
             cal->setPortStandard(1, Calibration::PortStandard::Male);
         } else {
             cal->setPortStandard(1, Calibration::PortStandard::Female);
         }
+        updateThroughStandardUI();
         UpdateCalibrationStatus();
     });
 
@@ -41,6 +55,16 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
         } else {
             cal->setPortStandard(2, Calibration::PortStandard::Female);
         }
+        updateThroughStandardUI();
+        UpdateCalibrationStatus();
+    });
+
+    connect(ui->throughGroup, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
+        if(ui->throughZero->isChecked()) {
+            cal->setThroughZeroLength(true);
+        } else {
+            cal->setThroughZeroLength(false);
+        }
         UpdateCalibrationStatus();
     });
 
@@ -48,9 +72,11 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
     if(!cal->getCalibrationKit().hasSeparateMaleFemaleStandards()) {
         ui->port1Standards->hide();
         ui->port2Standards->hide();
+        ui->throughStandard->hide();
         // default selection is male
         ui->port1Male->click();
         ui->port2Male->click();
+        ui->throughCalkit->click();
     } else {
         // separate standards defined
         if(cal->getPortStandard(1) == Calibration::PortStandard::Male) {
@@ -63,6 +89,12 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
         } else {
             ui->port2Female->setChecked(true);
         }
+        if(cal->getThroughZeroLength()) {
+            ui->throughZero->setChecked(true);
+        } else {
+            ui->throughCalkit->setChecked(true);
+        }
+        updateThroughStandardUI();
     }
 
     // Check calibration kit span

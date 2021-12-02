@@ -18,7 +18,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QGroupBox" name="port1Standards">
        <property name="title">
@@ -71,6 +71,35 @@
           </property>
           <attribute name="buttonGroup">
            <string notr="true">port2Group</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="throughStandard">
+       <property name="title">
+        <string>Through Standard</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QRadioButton" name="throughCalkit">
+          <property name="text">
+           <string>From calibration kit</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">throughGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="throughZero">
+          <property name="text">
+           <string>Zero-length through</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">throughGroup</string>
           </attribute>
          </widget>
         </item>
@@ -173,5 +202,6 @@
  <buttongroups>
   <buttongroup name="port1Group"/>
   <buttongroup name="port2Group"/>
+  <buttongroup name="throughGroup"/>
  </buttongroups>
 </ui>
