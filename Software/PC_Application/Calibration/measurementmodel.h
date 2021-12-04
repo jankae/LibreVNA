@@ -11,6 +11,15 @@ class MeasurementModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
+    enum class ColIndex {
+        Name,
+        Gender,
+        Description,
+        Data,
+        Date,
+        Last
+    };
+
     MeasurementModel(Calibration *cal, std::vector<Calibration::Measurement> measurements);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -20,15 +29,9 @@ public:
 
 public slots:
     void measurementUpdated(Calibration::Measurement m);
+    void genderUpdated();
 
 private:
-    enum {
-        ColIndexName,
-        ColIndexDescription,
-        ColIndexData,
-        ColIndexDate,
-        ColIndexLast
-    };
     Calibration *cal;
     std::vector<Calibration::Measurement> measurements;
 };

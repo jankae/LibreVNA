@@ -21,9 +21,10 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
     model = new MeasurementModel(cal, measurements);
     ui->tableView->setModel(model);
     ui->tableView->setColumnWidth(0, 100);
-    ui->tableView->setColumnWidth(1, 350);
-    ui->tableView->setColumnWidth(2, 320);
-    ui->tableView->setColumnWidth(3, 160);
+    ui->tableView->setColumnWidth(1, 80);
+    ui->tableView->setColumnWidth(2, 350);
+    ui->tableView->setColumnWidth(3, 320);
+    ui->tableView->setColumnWidth(4, 160);
     UpdateCalibrationStatus();
 
     auto updateThroughStandardUI = [=](){
@@ -37,6 +38,7 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
             ui->throughZero->setEnabled(true);
             ui->throughCalkit->setEnabled(true);
         }
+        model->genderUpdated();
     };
 
     connect(ui->port1Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
@@ -73,6 +75,7 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
         ui->port1Standards->hide();
         ui->port2Standards->hide();
         ui->throughStandard->hide();
+        ui->tableView->hideColumn((int) MeasurementModel::ColIndex::Gender);
         // default selection is male
         ui->port1Male->click();
         ui->port2Male->click();

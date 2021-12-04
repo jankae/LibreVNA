@@ -138,9 +138,9 @@ private:
     public:
         double frequency;
         // Forward error terms
-        std::complex<double> fe00, fe11, fe10e01, fe10e32, fe22, fe30;
+        std::complex<double> fe00, fe11, fe10e01, fe10e32, fe22, fe30, fex;
         // Reverse error terms
-        std::complex<double> re33, re11, re23e32, re23e01, re22, re03;
+        std::complex<double> re33, re11, re23e32, re23e01, re22, re03, rex;
     };
     Point getCalibrationPoint(Protocol::Datapoint &d);
     /*
@@ -158,6 +158,15 @@ private:
                     std::complex<double> o_c = std::complex<double>(1.0, 0),
                     std::complex<double> s_c = std::complex<double>(-1.0, 0),
                     std::complex<double> l_c = std::complex<double>(0, 0));
+    void computeIsolation(std::complex<double> x0_m,
+                          std::complex<double> x1_m,
+                          std::complex<double> reverse_match,
+                          std::complex<double> reverse_tracking,
+                          std::complex<double> reverse_directivity,
+                          std::complex<double> x0,
+                          std::complex<double> x1,
+                          std::complex<double> &internal_isolation,
+                          std::complex<double> &external_isolation);
     std::complex<double> correctSOL(std::complex<double> measured,
                                     std::complex<double> directivity,
                                     std::complex<double> match,

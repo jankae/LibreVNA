@@ -218,6 +218,9 @@ void Calibration::construct12TermPoints()
         p.re11 = ((S22_through - p.re33)*(1.0 - p.re22 * actual.ThroughS22)-actual.ThroughS22*p.re23e32)
                 / ((S22_through - p.re33)*(actual.ThroughS11-p.re22*deltaS)-deltaS*p.re23e32);
         p.re23e01 = (S12_through - p.re03)*(1.0 - p.re11*actual.ThroughS11 - p.re22*actual.ThroughS22 + p.re11*p.re22*deltaS) / actual.ThroughS12;
+
+
+
         points.push_back(p);
     }
 }
@@ -237,6 +240,7 @@ void Calibration::constructPort1SOL()
         // See page 13 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
         computeSOL(S11_short, S11_open, S11_load, p.fe00, p.fe11, p.fe10e01, actual.Open, actual.Short, actual.Load);
         // All other calibration coefficients to ideal values
+        p.fex = 0.0;
         p.fe30 = 0.0;
         p.fe22 = 0.0;
         p.fe10e32 = 1.0;
@@ -244,6 +248,7 @@ void Calibration::constructPort1SOL()
         p.re22 = 0.0;
         p.re23e32 = 1.0;
         p.re03 = 0.0;
+        p.rex = 0.0;
         p.re11 = 0.0;
         p.re23e01 = 1.0;
         points.push_back(p);
@@ -265,6 +270,7 @@ void Calibration::constructPort2SOL()
         // See page 19 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
         computeSOL(S22_short, S22_open, S22_load, p.re33, p.re22, p.re23e32, actual.Open, actual.Short, actual.Load);
         // All other calibration coefficients to ideal values
+        p.fex = 0.0;
         p.fe30 = 0.0;
         p.fe22 = 0.0;
         p.fe10e32 = 1.0;
@@ -272,6 +278,7 @@ void Calibration::constructPort2SOL()
         p.fe11 = 0.0;
         p.fe10e01 = 1.0;
         p.re03 = 0.0;
+        p.rex = 0.0;
         p.re11 = 0.0;
         p.re23e01 = 1.0;
         points.push_back(p);
@@ -292,11 +299,13 @@ void Calibration::constructTransmissionNormalization()
         p.re23e01 = S12_through / actual.ThroughS12;
         // All other calibration coefficients to ideal values
         p.fe30 = 0.0;
+        p.fex = 0.0;
         p.fe22 = 0.0;
         p.fe00 = 0.0;
         p.fe11 = 0.0;
         p.fe10e01 = 1.0;
         p.re03 = 0.0;
+        p.rex = 0.0;
         p.re11 = 0.0;
         p.re33 = 0.0;
         p.re22 = 0.0;
@@ -396,6 +405,7 @@ void Calibration::constructTRL()
         p.fe10e32 = S_B.m21;
         // no isolation measurement available
         p.fe30 = 0.0;
+        p.fex = 0.0;
 
         // Reverse coefficients, normalize for S12 = 1.0
         // => det(T)/T22 = 1.0
@@ -416,6 +426,7 @@ void Calibration::constructTRL()
         p.re33 = S_B.m22;
         // no isolation measurement available
         p.re03 = 0.0;
+        p.rex = 0.0;
 
         points.push_back(p);
     }
@@ -1117,7 +1128,9 @@ Calibration::Point Calibration::getCalibrationPoint(Protocol::Datapoint &d)
     ret.fe11 = low->fe11 * (1 - alpha) + high->fe11 * alpha;
     ret.fe22 = low->fe22 * (1 - alpha) + high->fe22 * alpha;
     ret.fe30 = low->fe30 * (1 - alpha) + high->fe30 * alpha;
+    ret.fex = low->fex * (1 - alpha) + high->fex * alpha;
     ret.re03 = low->re03 * (1 - alpha) + high->re03 * alpha;
+    ret.rex = low->rex * (1 - alpha) + high->rex * alpha;
     ret.re11 = low->re11 * (1 - alpha) + high->re11 * alpha;
     ret.re22 = low->re22 * (1 - alpha) + high->re22 * alpha;
     ret.re33 = low->re33 * (1 - alpha) + high->re33 * alpha;
@@ -1139,6 +1152,12 @@ void Calibration::computeSOL(std::complex<double> s_m, std::complex<double> o_m,
     match = (l_c * (o_m - s_m) + o_c * (s_m - l_m) + s_c * (l_m - o_m)) / denom;
     auto delta = (l_c * l_m * (o_m - s_m) + o_c * o_m * (s_m - l_m) + s_c * s_m * (l_m - o_m)) / denom;
     tracking = directivity * match - delta;
+}
+
+void Calibration::computeIsolation(std::complex<double> x0_m, std::complex<double> x1_m, std::complex<double> reverse_match, std::complex<double> reverse_tracking, std::complex<double> reverse_directivity, std::complex<double> x0, std::complex<double> x1, std::complex<double> &internal_isolation, std::complex<double> &external_isolation)
+{
+    external_isolation = (x1_m - x0_m)*(1.0 - reverse_match * (x1 - x0) + x1*x0*reverse_match*reverse_match) / (reverse_tracking * (x1 - x0));
+    internal_isolation = x0_m - external_isolation*(reverse_directivity + reverse_tracking*x0 / (1.0 - x0*reverse_match));
 }
 
 std::complex<double> Calibration::correctSOL(std::complex<double> measured, std::complex<double> directivity, std::complex<double> match, std::complex<double> tracking)
