@@ -22,9 +22,7 @@ bool MarkerGroup::add(Marker *m)
     connect(m, &Marker::positionChanged, this, &MarkerGroup::markerMoved);
     connect(m, &Marker::typeChanged, this, &MarkerGroup::checkMarker);
     connect(m, &Marker::domainChanged, this, &MarkerGroup::checkMarker);
-    connect(m, &Marker::deleted, [=](){
-        remove(m);
-    });
+    connect(m, &Marker::deleted, this, &MarkerGroup::remove);
 
     if(markers.size() > 0) {
         m->setPosition((*markers.begin())->getPosition());
