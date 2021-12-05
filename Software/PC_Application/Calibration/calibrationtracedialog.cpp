@@ -145,9 +145,11 @@ void CalibrationTraceDialog::UpdateCalibrationStatus()
 
 void CalibrationTraceDialog::on_bDelete_clicked()
 {
-    auto measurement = measurements[ui->tableView->currentIndex().row()];
-    cal->clearMeasurement(measurement);
-    model->measurementUpdated(measurement);
+    auto selected = ui->tableView->selectionModel()->selectedRows();
+    for(auto s : selected) {
+        cal->clearMeasurement(measurements[s.row()]);
+        model->measurementUpdated(measurements[s.row()]);
+    }
     UpdateCalibrationStatus();
 }
 
