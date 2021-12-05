@@ -85,6 +85,7 @@ public:
             bool showDataOnGraphs;
             bool showAllData;
         } markerBehavior;
+        double lineWidth;
     } Graphs;
     struct {
         bool enabled;
@@ -101,7 +102,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 38> descr = {{
+    const std::array<SettingDescription, 39> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -138,6 +139,7 @@ private:
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
         {&Graphs.markerBehavior.showDataOnGraphs, "Graphs.markerBehavior.ShowDataOnGraphs", true},
         {&Graphs.markerBehavior.showAllData, "Graphs.markerBehavior.ShowAllData", false},
+        {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
     }};

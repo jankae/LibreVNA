@@ -457,7 +457,7 @@ void TraceXYPlot::draw(QPainter &p)
             if(!t->isVisible()) {
                 continue;
             }
-            pen = QPen(t->color(), 1);
+            pen = QPen(t->color(), pref.Graphs.lineWidth);
             pen.setCosmetic(true);
             if(i == 1) {
                 pen.setStyle(Qt::DotLine);

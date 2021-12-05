@@ -186,7 +186,7 @@ void TraceSmithChart::draw(QPainter &p) {
             // trace marked invisible
             continue;
         }
-        pen = QPen(trace->color(), 1);
+        pen = QPen(trace->color(), pref.Graphs.lineWidth);
         pen.setCosmetic(true);
         p.setPen(pen);
         int nPoints = trace->size();
