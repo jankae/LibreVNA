@@ -44,7 +44,27 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Add</string>
+        <string>Add marker</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset theme="list-add" resource="../../icons.qrc">
+         <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="bAddAll">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Add markers to all traces</string>
        </property>
        <property name="text">
         <string/>
@@ -64,7 +84,7 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Delete</string>
+        <string>Delete marker</string>
        </property>
        <property name="text">
         <string/>
