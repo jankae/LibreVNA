@@ -74,6 +74,9 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
         ret.explanationWidget = new QWidget();
         auto ui = new Ui::TimeDomainGatingExplanationWidget;
         ui->setupUi(ret.explanationWidget);
+        connect(ret.explanationWidget, &QWidget::destroyed, [=](){
+            delete ui;
+        });
     }
         break;
     default:

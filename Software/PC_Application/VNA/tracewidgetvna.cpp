@@ -83,6 +83,9 @@ void TraceWidgetVNA::importDialog()
                             auto dialog = new QDialog();
                             auto ui = new Ui::s2pImportOptions;
                             ui->setupUi(dialog);
+                            connect(dialog, &QDialog::finished, [=](){
+                                delete ui;
+                            });
                             ui->applyCal->setEnabled(calAvailable);
                             ui->deembed->setEnabled(deembedAvailable);
                             bool applyCal = false;

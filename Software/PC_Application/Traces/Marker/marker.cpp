@@ -674,7 +674,7 @@ void Marker::updateContextmenu()
     auto typemenu = contextmenu.addMenu("Type");
     auto typegroup = new QActionGroup(&contextmenu);
     for(auto t : getSupportedTypes()) {
-        auto setTypeAction = new QAction(typeToString(t));
+        auto setTypeAction = new QAction(typeToString(t), typemenu);
         setTypeAction->setCheckable(true);
         if(t == type) {
             setTypeAction->setChecked(true);
@@ -689,7 +689,7 @@ void Marker::updateContextmenu()
     auto table = contextmenu.addMenu("Data Format in Table");
     auto tablegroup = new QActionGroup(&contextmenu);
     for(auto f : applicableFormats()) {
-        auto setFormatAction = new QAction(formatToString(f));
+        auto setFormatAction = new QAction(formatToString(f), table);
         setFormatAction->setCheckable(true);
         if(f == formatTable) {
             setFormatAction->setChecked(true);
@@ -703,7 +703,7 @@ void Marker::updateContextmenu()
 
     auto graph = contextmenu.addMenu("Show on Graph");
     for(auto f : applicableFormats()) {
-        auto setFormatAction = new QAction(formatToString(f));
+        auto setFormatAction = new QAction(formatToString(f), graph);
         setFormatAction->setCheckable(true);
         if(formatGraph.count(f)) {
             setFormatAction->setChecked(true);
@@ -753,7 +753,7 @@ void Marker::updateContextmenu()
     }
     if(group != nullptr) {
         // "remove from group" available
-        auto removeGroup = new QAction("Remove from linked group");
+        auto removeGroup = new QAction("Remove from linked group", &contextmenu);
         connect(removeGroup, &QAction::triggered, [=](){
             group->remove(this);
         });
@@ -765,7 +765,7 @@ void Marker::updateContextmenu()
     }
 
 
-    auto deleteAction = new QAction("Delete");
+    auto deleteAction = new QAction("Delete", &contextmenu);
     connect(deleteAction, &QAction::triggered, this, &Marker::deleteLater);
     contextmenu.addAction(deleteAction);
 }

@@ -126,6 +126,9 @@ void TwoThru::edit()
     auto dialog = new QDialog();
     ui = new Ui::TwoThruDialog();
     ui->setupUi(dialog);
+    connect(dialog, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->Z0->setUnit("Ω");
     ui->Z0->setPrecision(4);
     ui->Z0->setValue(Z0);

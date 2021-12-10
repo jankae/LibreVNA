@@ -52,6 +52,9 @@ void TDR::edit()
     auto d = new QDialog();
     auto ui = new Ui::TDRDialog;
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->windowBox->setLayout(new QVBoxLayout);
     ui->windowBox->layout()->addWidget(window.createEditor());
 
@@ -119,6 +122,9 @@ QWidget *TDR::createExplanationWidget()
     auto w = new QWidget();
     auto ui = new Ui::TDRExplanationWidget;
     ui->setupUi(w);
+    connect(w, &QWidget::destroyed, [=](){
+        delete ui;
+    });
     return w;
 }
 

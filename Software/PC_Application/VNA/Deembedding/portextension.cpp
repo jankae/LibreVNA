@@ -81,6 +81,9 @@ void PortExtension::edit()
     auto dialog = new QDialog();
     ui = new Ui::PortExtensionEditDialog();
     ui->setupUi(dialog);
+    connect(dialog, &QDialog::finished, [=](){
+        delete ui;
+    });
 
     // set initial values
     ui->P1Enabled->setChecked(port1.enabled);

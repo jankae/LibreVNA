@@ -53,6 +53,7 @@ VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
       SCPINode("VNA"),
       deembedding(traceModel),
+      deembedding_active(false),
       central(new TileWidget(traceModel))
 {
     averages = 1;
@@ -60,6 +61,7 @@ VNA::VNA(AppWindow *window)
     calMeasuring = false;
     calDialog.reset();
     calEdited = false;
+    settings.sweepType = SweepType::Frequency;
 
     // Create default traces
     auto tS11 = new Trace("S11", Qt::yellow);
@@ -551,6 +553,8 @@ VNA::VNA(AppWindow *window)
         SetPoints(pref.Startup.DefaultSweep.points);
         if(pref.Startup.DefaultSweep.type == "Power Sweep") {
             SetSweepType(SweepType::Power);
+        } else {
+            SetSweepType(SweepType::Frequency);
         }
     }
 

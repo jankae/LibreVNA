@@ -71,6 +71,9 @@ void MatchingNetwork::edit()
     auto dialog = new QDialog();
     auto ui = new Ui::MatchingNetworkDialog();
     ui->setupUi(dialog);
+    connect(dialog, &QDialog::finished, [=](){
+        delete ui;
+    });
     dialog->setModal(true);
 
     graph = new QWidget();
