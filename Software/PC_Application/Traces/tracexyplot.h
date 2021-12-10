@@ -26,6 +26,7 @@ public:
         Capacitance,
         Inductance,
         QualityFactor,
+        GroupDelay,
         // TDR options
         ImpulseReal,
         ImpulseMag,
@@ -33,7 +34,7 @@ public:
         Impedance,
         Last,
     };
-    static const std::set<YAxisType> YAxisTypes;
+
     enum class XAxisType {
         Frequency,
         Time,
@@ -80,6 +81,7 @@ private:
     YAxisType YAxisTypeFromName(QString name);
     XAxisMode AxisModeFromName(QString name);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
+    bool domainMatch(Trace *t);
     bool supported(Trace *t) override;
     bool supported(Trace *t, YAxisType type);
     QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);

@@ -4,6 +4,7 @@
 #include <complex>
 #include <math.h>
 #include <limits>
+#include <vector>
 
 #include <QColor>
 
@@ -55,6 +56,11 @@ namespace Util {
         auto brightness = q.redF() * 0.299 + q.greenF() * 0.587 + q.blueF() * 0.114;
         return brightness > 0.6 ? Qt::black : Qt::white;
     }
+
+    void unwrapPhase(std::vector<double> &phase);
+
+    // input values are Y coordinates, assumes evenly spaced linear X values from 0 to input.size() - 1
+    void linearRegression(const std::vector<double> &input, double &B_0, double &B_1);
 }
 
 #endif // UTILH_H

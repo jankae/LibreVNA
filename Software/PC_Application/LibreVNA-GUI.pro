@@ -218,6 +218,7 @@ SOURCES += \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
     Traces/xyplotaxisdialog.cpp \
+    Util/util.cpp \
     VNA/Deembedding/deembedding.cpp \
     VNA/Deembedding/deembeddingdialog.cpp \
     VNA/Deembedding/deembeddingoption.cpp \

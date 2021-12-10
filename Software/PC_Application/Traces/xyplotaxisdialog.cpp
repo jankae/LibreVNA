@@ -151,7 +151,8 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
 {
     auto type = (TraceXYPlot::XAxisType) XAxisIndex;
     auto supported = supportedYAxis(type);
-    for(auto t : TraceXYPlot::YAxisTypes) {
+    for(unsigned int i=0;i<(int) TraceXYPlot::YAxisType::Last;i++) {
+        auto t = (TraceXYPlot::YAxisType) i;
         auto enable = supported.count(t) > 0;
         auto index = (int) t;
         enableComboBoxItem(ui->Y1type, index, enable);
@@ -197,6 +198,7 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
         ret.insert(TraceXYPlot::YAxisType::Capacitance);
         ret.insert(TraceXYPlot::YAxisType::Inductance);
         ret.insert(TraceXYPlot::YAxisType::QualityFactor);
+        ret.insert(TraceXYPlot::YAxisType::GroupDelay);
         break;
     case TraceXYPlot::XAxisType::Time:
     case TraceXYPlot::XAxisType::Distance:
