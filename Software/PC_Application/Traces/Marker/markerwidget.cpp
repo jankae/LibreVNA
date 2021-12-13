@@ -5,6 +5,7 @@
 
 #include <QKeyEvent>
 #include <QMenu>
+#include <QPainter>
 
 MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
     QWidget(parent),
@@ -12,6 +13,16 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
     model(model)
 {
     ui->setupUi(this);
+
+    // some image magic to create a button with three "add" icons (not available as standard icon)
+    QImage image(44, 44, QImage::Format_ARGB32);
+    auto origImage = ui->bAddAll->icon().pixmap(22).toImage().convertToFormat(QImage::Format_ARGB32);
+    QPainter painter(&image);
+    painter.drawImage(0, 0, origImage);
+    painter.drawImage(origImage.width(), 0, origImage);
+    painter.drawImage(origImage.width()/2, origImage.height(), origImage);
+    ui->bAddAll->setIcon(QIcon(QPixmap::fromImage(image)));
+
     ui->treeView->setModel(&model);
     ui->treeView->setItemDelegateForColumn(MarkerModel::ColIndexTrace, new MarkerTraceDelegate);
     ui->treeView->setItemDelegateForColumn(MarkerModel::ColIndexType, new MarkerTypeDelegate);
@@ -47,7 +58,7 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
             }
             // multiple markers selected, execute group context menu
             QMenu menu;
-            auto createGroup = new QAction("Link selected");
+            auto createGroup = new QAction("Link selected", &menu);
             connect(createGroup, &QAction::triggered, [&](){
                 auto g = model.createMarkerGroup();
                 // assign markers to group
@@ -57,7 +68,7 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
             });
             menu.addAction(createGroup);
             if(anyInGroup) {
-                auto removeGroup = new QAction("Break Links");
+                auto removeGroup = new QAction("Break Links", &menu);
                 connect(removeGroup, &QAction::triggered, [&](){
                     // remove selected markers from  groups if they are already assigned to one
                     for(auto m : selected) {
@@ -123,6 +134,18 @@ void MarkerWidget::on_bAdd_clicked()
     model.addMarker(marker);
 }
 
+void MarkerWidget::on_bAddAll_clicked()
+{
+    // add a marker for every trace and link them
+    auto group = model.createMarkerGroup();
+    for(auto trace : model.getModel().getTraces()) {
+        auto m = model.createDefaultMarker();
+        m->assignTrace(trace);
+        group->add(m);
+        model.addMarker(m);
+    }
+}
+
 bool MarkerWidget::eventFilter(QObject *, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
@@ -152,4 +175,3 @@ void MarkerWidget::updatePersistentEditors()
         }
     }
 }
-

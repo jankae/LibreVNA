@@ -17,13 +17,15 @@ public:
     ~MarkerGroup();
 
     bool add(Marker *m);
-    bool remove(Marker *m);
 
     unsigned int getNumber() const;
     bool applicable(Marker *m);
 
 signals:
     void emptied(MarkerGroup*);
+
+public slots:
+    bool remove(Marker *m);
 
 private:
 

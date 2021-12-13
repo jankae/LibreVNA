@@ -58,6 +58,9 @@ void Math::TimeGate::edit()
     auto d = new QDialog();
     auto ui = new Ui::TimeGateDialog();
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->graph->setGate(this);
     ui->windowBox->setLayout(new QVBoxLayout);
     ui->windowBox->layout()->addWidget(window.createEditor());
@@ -113,6 +116,9 @@ QWidget *Math::TimeGate::createExplanationWidget()
     auto w = new QWidget();
     auto ui = new Ui::TimeGateExplanationWidget;
     ui->setupUi(w);
+    connect(w, &QWidget::destroyed, [=](){
+        delete ui;
+    });
     return w;
 }
 

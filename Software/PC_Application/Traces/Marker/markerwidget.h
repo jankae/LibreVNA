@@ -22,6 +22,8 @@ private slots:
     void on_bAdd_clicked();
     void updatePersistentEditors();
 
+    void on_bAddAll_clicked();
+
 private:
     bool eventFilter(QObject *obj, QEvent *event) override;
     Ui::MarkerWidget *ui;

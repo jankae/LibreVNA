@@ -17,22 +17,6 @@
 
 using namespace std;
 
-const set<TraceXYPlot::YAxisType> TraceXYPlot::YAxisTypes = {TraceXYPlot::YAxisType::Disabled,
-                                           TraceXYPlot::YAxisType::Magnitude,
-                                           TraceXYPlot::YAxisType::Phase,
-                                           TraceXYPlot::YAxisType::VSWR,
-                                           TraceXYPlot::YAxisType::Real,
-                                           TraceXYPlot::YAxisType::Imaginary,
-                                           TraceXYPlot::YAxisType::SeriesR,
-                                           TraceXYPlot::YAxisType::Reactance,
-                                           TraceXYPlot::YAxisType::Capacitance,
-                                           TraceXYPlot::YAxisType::Inductance,
-                                           TraceXYPlot::YAxisType::QualityFactor,
-                                           TraceXYPlot::YAxisType::ImpulseReal,
-                                           TraceXYPlot::YAxisType::ImpulseMag,
-                                           TraceXYPlot::YAxisType::Step,
-                                           TraceXYPlot::YAxisType::Impedance};
-
 TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     : TracePlot(model, parent)
 {
@@ -333,8 +317,11 @@ void TraceXYPlot::updateContextMenu()
 
 bool TraceXYPlot::dropSupported(Trace *t)
 {
-    Q_UNUSED(t)
-    // all kind of traces can be dropped, the graph will be reconfigured to support the dropped trace if required
+    if(domainMatch(t) && !supported(t)) {
+        // correct domain configured but Y axis do not match, prevent drop
+        return false;
+    }
+    // either directly compatible or domain change required
     return true;
 }
 
@@ -457,7 +444,7 @@ void TraceXYPlot::draw(QPainter &p)
             if(!t->isVisible()) {
                 continue;
             }
-            pen = QPen(t->color(), 1);
+            pen = QPen(t->color(), pref.Graphs.lineWidth);
             pen.setCosmetic(true);
             if(i == 1) {
                 pen.setStyle(Qt::DotLine);
@@ -705,6 +692,9 @@ void TraceXYPlot::updateAxisTicks()
             double max = std::numeric_limits<double>::lowest();
             double min = std::numeric_limits<double>::max();
             for(auto t : tracesAxis[i]) {
+                if(!t->isVisible()) {
+                    continue;
+                }
                 unsigned int samples = t->size();
                 for(unsigned int j=0;j<samples;j++) {
                     auto point = traceToCoordinate(t, j, YAxis[i].type);
@@ -740,10 +730,14 @@ void TraceXYPlot::updateAxisTicks()
                     min -= range * 0.05;
                     max += range * 0.05;
                 }
-                YAxis[i].rangeMin = min;
-                YAxis[i].rangeMax = max;
-                YAxis[i].rangeDiv = createAutomaticTicks(YAxis[i].ticks, min, max, 8);
+            } else {
+                // max/min still at default values, no valid samples are available for this axis, use default range
+                max = 1.0;
+                min = -1.0;
             }
+            YAxis[i].rangeMin = min;
+            YAxis[i].rangeMax = max;
+            YAxis[i].rangeDiv = createAutomaticTicks(YAxis[i].ticks, min, max, 8);
         }
     }
 }
@@ -816,12 +810,14 @@ QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
     case YAxisType::Capacitance: return "Capacitance";
     case YAxisType::Inductance: return "Inductance";
     case YAxisType::QualityFactor: return "Quality Factor";
+    case YAxisType::GroupDelay: return "Group delay";
     case YAxisType::ImpulseReal: return "Impulse Response (Real)";
     case YAxisType::ImpulseMag: return "Impulse Response (Magnitude)";
     case YAxisType::Step: return "Step Response";
     case YAxisType::Impedance: return "Impedance";
-    default: return "Unknown";
+    case YAxisType::Last: return "Unknown";
     }
+    return "Missing case";
 }
 
 void TraceXYPlot::enableTraceAxis(Trace *t, int axis, bool enabled)
@@ -854,27 +850,26 @@ void TraceXYPlot::enableTraceAxis(Trace *t, int axis, bool enabled)
     }
 }
 
-bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
+bool TraceXYPlot::domainMatch(Trace *t)
 {
     switch(XAxis.type) {
     case XAxisType::Frequency:
-        if(t->outputType() != Trace::DataType::Frequency) {
-            return false;
-        }
-        break;
+        return t->outputType() == Trace::DataType::Frequency;
     case XAxisType::Distance:
     case XAxisType::Time:
-        if(t->outputType() != Trace::DataType::Time) {
-            return false;
-        }
-        break;
+        return t->outputType() == Trace::DataType::Time;
     case XAxisType::Power:
-        if(t->outputType() != Trace::DataType::Power) {
-            return false;
-        }
-        break;
-    default:
-        break;
+        return t->outputType() == Trace::DataType::Power;
+    case XAxisType::Last:
+        return false;
+    }
+    return false;
+}
+
+bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
+{
+    if(!domainMatch(t)) {
+        return false;
     }
 
     switch(type) {
@@ -887,6 +882,11 @@ bool TraceXYPlot::supported(Trace *t, TraceXYPlot::YAxisType type)
     case YAxisType::Inductance:
     case YAxisType::QualityFactor:
         if(!t->isReflection()) {
+            return false;
+        }
+        break;
+    case YAxisType::GroupDelay:
+        if(t->isReflection()) {
             return false;
         }
         break;
@@ -938,6 +938,38 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
         break;
     case YAxisType::QualityFactor:
         ret.setY(Util::SparamToQualityFactor(data.y));
+        break;
+    case YAxisType::GroupDelay: {
+        constexpr int requiredSamples = 5;
+        if(t->size() < requiredSamples) {
+            // unable to calculate
+            ret.setY(0.0);
+            break;
+        }
+        // needs at least some samples before/after current sample for calculating the derivative.
+        // For samples too far at either end of the trace, return group delay of "inner" trace sample instead
+        if(sample < requiredSamples / 2) {
+            return traceToCoordinate(t, requiredSamples / 2, type);
+        } else if(sample >= t->size() - requiredSamples / 2) {
+            return traceToCoordinate(t, t->size() - requiredSamples / 2 - 1, type);
+        } else {
+            // got enough samples at either end to calculate derivative.
+            // acquire phases of the required samples
+            std::vector<double> phases;
+            phases.reserve(requiredSamples);
+            for(unsigned int index = sample - requiredSamples / 2;index <= sample + requiredSamples / 2;index++) {
+                phases.push_back(arg(t->sample(index).y));
+            }
+            // make sure there are no phase jumps
+            Util::unwrapPhase(phases);
+            // calculate linearRegression to get derivative
+            double B_0, B_1;
+            Util::linearRegression(phases, B_0, B_1);
+            // B_1 now contains the derived phase vs. the sample. Scale by frequency to get group delay
+            double freq_step = t->sample(sample).x - t->sample(sample - 1).x;
+            ret.setY(-B_1 / (2.0*M_PI * freq_step));
+        }
+    }
         break;
     case YAxisType::ImpulseReal:
         ret.setY(real(data.y));
@@ -1096,6 +1128,7 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
     case TraceXYPlot::YAxisType::ImpulseMag: return "db";
     case TraceXYPlot::YAxisType::Step: return "";
     case TraceXYPlot::YAxisType::Impedance: return "Ohm";
+    case TraceXYPlot::YAxisType::GroupDelay: return "s";
     default: return "";
     }
 }

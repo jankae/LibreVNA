@@ -218,6 +218,7 @@ SOURCES += \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
     Traces/xyplotaxisdialog.cpp \
+    Util/util.cpp \
     VNA/Deembedding/deembedding.cpp \
     VNA/Deembedding/deembeddingdialog.cpp \
     VNA/Deembedding/deembeddingoption.cpp \
@@ -298,10 +299,11 @@ FORMS += \
 DISTFILES +=
 
 RESOURCES += \
-    icons.qrc
+    icons.qrc \
+    resources/librevna.qrc
 
 CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
-DEFINES += FW_MAJOR=1 FW_MINOR=2 FW_PATCH=0 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
+DEFINES += FW_MAJOR=1 FW_MINOR=2 FW_PATCH=1 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
 DEFINES -= _UNICODE UNICODE

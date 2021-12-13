@@ -78,6 +78,8 @@ AppWindow::AppWindow(QWidget *parent)
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 
+    this->setWindowIcon(QIcon(":/app/logo.png"));
+
     parser.setApplicationDescription(qlibrevnaApp->applicationName());
     parser.addHelpOption();
     parser.addVersionOption();
@@ -202,6 +204,14 @@ AppWindow::AppWindow(QWidget *parent)
              vna->updateGraphColors();
         }
 
+        // averaging mode may have changed, update for all relevant modes
+        if(p.Acquisition.useMedianAveraging) {
+            spectrumAnalyzer->setAveragingMode(Averaging::Mode::Median);
+            vna->setAveragingMode(Averaging::Mode::Median);
+        } else {
+            spectrumAnalyzer->setAveragingMode(Averaging::Mode::Mean);
+            vna->setAveragingMode(Averaging::Mode::Mean);
+        }
     });
 
     connect(ui->actionAbout, &QAction::triggered, [=](){

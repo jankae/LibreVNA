@@ -165,13 +165,12 @@ void TracePlot::paintEvent(QPaintEvent *event)
             continue;
         }
 
+        // Trace name
         auto textArea = QRect(x, areaTextTop, width() - x, marginTop);
-
         QFont font = p.font();
         font.setPixelSize(12);
         p.setFont(font);
         p.setPen(t.first->color());
-
         auto space = " ";
         auto label = space + t.first->name() + space;
         QRectF usedLabelArea = p.boundingRect(textArea, 0, label);
@@ -185,9 +184,6 @@ void TracePlot::paintEvent(QPaintEvent *event)
         x += usedLabelArea.width()+labelMarginRight;
 
         auto tmarkers = t.first->getMarkers();
-
-        font.setPixelSize(12);
-        p.setFont(font);
         for(auto m : tmarkers) {
             if(!xCoordinateVisible(m->getPosition())) {
                 // marker not visible with current plot settings
@@ -199,9 +195,9 @@ void TracePlot::paintEvent(QPaintEvent *event)
             }
             hasMarkerData = true;
 
+            // Rounded box
             auto space = "  ";
             auto textArea = QRect(width() - marginRight - marginMarkerData, y, width() - marginRight, y + 100);
-            auto description = m->getSuffix() + space + m->readablePosition();
             auto label = space + QString::number(m->getNumber()) + space;
             QRectF textAreaConsumed = p.boundingRect(textArea, 0, label);
             QPainterPath pathM;
@@ -209,10 +205,14 @@ void TracePlot::paintEvent(QPaintEvent *event)
             p.fillPath(pathM, t.first->color());
             p.drawPath(pathM);
 
+            // Over box
             p.setPen(Util::getFontColorFromBackground(t.first->color()));
             p.drawText(textArea, 0, label);
+
+            // Non-rounded description
+            auto description = m->getSuffix() + space + m->readablePosition();
             p.setPen(t.first->color());
-            p.drawText(textAreaConsumed.x()+textAreaConsumed.width(), textAreaConsumed.y(), textArea.width(), textArea.height(), 0, description);
+            p.drawText(width() - marginRight - marginMarkerData + textAreaConsumed.width() + 5, textAreaConsumed.y(), width() - marginRight, textArea.height(), 0, description);
             y += textAreaConsumed.height();
 
             for(auto f : m->getGraphDisplayFormats()) {

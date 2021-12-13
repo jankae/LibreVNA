@@ -384,3 +384,57 @@ QString Touchstone::getFilename() const
 {
     return filename;
 }
+
+nlohmann::json Touchstone::toJSON()
+{
+    nlohmann::json j;
+    j["ports"] = m_ports;
+    j["filename"] = filename.toStdString();
+    if(m_datapoints.size() > 0) {
+        nlohmann::json json_points;
+        for(auto d : m_datapoints) {
+            nlohmann::json point;
+            point["frequency"] = d.frequency;
+            nlohmann::json sparams;
+            for(auto s : d.S) {
+                nlohmann::json sparam;
+                sparam["real"] = s.real();
+                sparam["imag"] = s.imag();
+                sparams.push_back(sparam);
+            }
+            point["Sparams"] = sparams;
+            json_points.push_back(point);
+        }
+        j["datapoints"] = json_points;
+    }
+    return j;
+}
+
+void Touchstone::fromJSON(nlohmann::json j)
+{
+    m_datapoints.clear();
+    filename = QString::fromStdString(j.value("filename", ""));
+    m_ports = j.value("ports", 0);
+    if(!m_ports || !j.contains("datapoints")) {
+        return;
+    }
+    auto json_points = j["datapoints"];
+    for(auto point : json_points) {
+        Datapoint d;
+        if(!point.contains("frequency") || !point.contains("Sparams")) {
+            // missing data, abort here
+            qWarning() << "Touchstone data point does not contain frequency or S parameters";
+            break;
+        }
+        d.frequency = point["frequency"];
+        if(point["Sparams"].size() != m_ports * m_ports) {
+            // invalid number of Sparams, abort here
+            qWarning() << "Invalid number of S parameters, got" << point["Sparams"].size() << "expected" << m_ports*m_ports;
+            break;
+        }
+        for(auto Sparam : point["Sparams"]) {
+            d.S.push_back(complex<double>(Sparam.value("real", 0.0), Sparam.value("imag", 0.0)));
+        }
+        m_datapoints.push_back(d);
+    }
+}

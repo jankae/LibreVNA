@@ -1,5 +1,31 @@
 # Changelog
 
+## v1.2.1
+
+Mostly bugfixes along with the occasional new feature.
+
+- Calibration:
+  - File format changed to json
+  - Multiple measurements can be taken/deleted at the same time
+  - Calibration kit allows separate male/female standards
+  - configurable Z0 for short/open
+- SCPI commands:
+  - load/save calibration files
+  - export to touchstone file format directly
+  - additional command for reading trace data
+  - fix typo in documentation
+- UI improvements:
+  - Additional Y-axis options: Reactance/Real/Imaginary
+  - Graphs look a bit nicer
+  - Configurable line width for graphs
+  - finally added an application logo
+- General bugfixes, among others:
+  - PLL divider calculation fixed for certain frequencies
+  - Improved USB buffer handling
+  - Better error handling when opening invalid files
+  - Various bugs when adding/deleting markers
+  - graph autoscaling with invisible traces
+
 ## v1.2.0
 
 - Additional SCPI commands

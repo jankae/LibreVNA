@@ -29,6 +29,9 @@ void MedianFilter::edit()
     auto d = new QDialog();
     auto ui = new Ui::MedianFilterDialog();
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->kernelSize->setValue(kernelSize);
     ui->sortingMethod->setCurrentIndex((int) order);
 
@@ -52,6 +55,9 @@ QWidget *MedianFilter::createExplanationWidget()
     auto w = new QWidget();
     auto ui = new Ui::MedianFilterExplanationWidget;
     ui->setupUi(w);
+    connect(w, &QWidget::destroyed, [=](){
+        delete ui;
+    });
     return w;
 }
 

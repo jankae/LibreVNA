@@ -265,6 +265,13 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
 
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
+
+    if(pref.Acquisition.useMedianAveraging) {
+        average.setMode(Averaging::Mode::Median);
+    } else {
+        average.setMode(Averaging::Mode::Mean);
+    }
+
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
@@ -315,7 +322,7 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     tracking["enabled"] = settings.trackingGenerator ? true : false;
     tracking["port"] = settings.trackingGeneratorPort ? 2 : 1;
     tracking["offset"] = settings.trackingGeneratorOffset;
-    tracking["power"] = settings.trackingPower;
+    tracking["power"] = (double) settings.trackingPower / 100.0; // convert to dBm
     sweep["trackingGenerator"] = tracking;
 
     if(normalize.active) {
@@ -413,6 +420,11 @@ using namespace std;
 
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
+    if(d.pointNum >= settings.pointNum) {
+        qWarning() << "Ignoring point with too large point number (" << d.pointNum << ")";
+        return;
+    }
+
     d = average.process(d);
 
     if(normalize.measuring) {
@@ -451,6 +463,11 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
+    static unsigned int lastPoint = 0;
+    if(d.pointNum > 0 && d.pointNum != lastPoint + 1) {
+        qWarning() << "Got point" << d.pointNum << "but last received point was" << lastPoint << "("<<(d.pointNum-lastPoint-1)<<"missed points)";
+    }
+    lastPoint = d.pointNum;
 }
 
 void SpectrumAnalyzer::SettingsChanged()
@@ -1063,6 +1080,11 @@ void SpectrumAnalyzer::StoreSweepSettings()
 void SpectrumAnalyzer::updateGraphColors()
 {
     emit graphColorsChanged();
+}
+
+void SpectrumAnalyzer::setAveragingMode(Averaging::Mode mode)
+{
+    average.setMode(mode);
 }
 
 QString SpectrumAnalyzer::WindowToString(SpectrumAnalyzer::Window w)

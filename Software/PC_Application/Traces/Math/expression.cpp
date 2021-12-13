@@ -37,6 +37,9 @@ void Math::Expression::edit()
     auto d = new QDialog();
     auto ui = new Ui::ExpressionDialog;
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->expEdit->setText(exp);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
         exp = ui->expEdit->text();
@@ -57,6 +60,9 @@ QWidget *Math::Expression::createExplanationWidget()
     auto w = new QWidget();
     auto ui = new Ui::ExpressionExplanationWidget;
     ui->setupUi(w);
+    connect(w, &QWidget::destroyed, [=](){
+        delete ui;
+    });
     return w;
 }
 

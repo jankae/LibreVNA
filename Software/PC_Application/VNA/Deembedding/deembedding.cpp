@@ -34,6 +34,9 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
     auto ui = new Ui_DeembeddingMeasurementDialog;
     measurementUI = ui;
     ui->setupUi(measurementDialog);
+    connect(measurementDialog, &QDialog::finished, [=](){
+        delete ui;
+    });
 
     // add the trace selector
     set<unsigned int> skip;
@@ -106,7 +109,8 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
 
 Deembedding::Deembedding(TraceModel &tm)
     : tm(tm),
-      measuring(false)
+      measuring(false),
+      sweepPoints(0)
 {
 
 }

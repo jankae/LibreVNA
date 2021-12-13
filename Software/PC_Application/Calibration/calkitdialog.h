@@ -20,7 +20,7 @@ public:
     explicit CalkitDialog(Calkit &c, QWidget *parent = nullptr);
     ~CalkitDialog();
 
-private:
+private:  
     void parseEntries();
     void updateEntries();
     Ui::CalkitDialog *ui;

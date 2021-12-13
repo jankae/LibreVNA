@@ -169,6 +169,9 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         auto d = new QDialog();
         auto ui = new Ui::NewTraceMathDialog();
         ui->setupUi(d);
+        connect(d, &QDialog::finished, [=](){
+            delete ui;
+        });
         for(int i = 0; i < (int) TraceMath::Type::Last;i++) {
             auto info = TraceMath::getInfo(static_cast<TraceMath::Type>(i));
             ui->list->addItem(info.name);

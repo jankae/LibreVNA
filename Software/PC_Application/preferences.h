@@ -66,6 +66,7 @@ public:
         bool harmonicMixing;
         bool useDFTinSAmode;
         double RBWLimitForDFT;
+        bool useMedianAveraging;
     } Acquisition;
     struct {
         struct {
@@ -84,6 +85,7 @@ public:
             bool showDataOnGraphs;
             bool showAllData;
         } markerBehavior;
+        double lineWidth;
     } Graphs;
     struct {
         bool enabled;
@@ -100,7 +102,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 37> descr = {{
+    const std::array<SettingDescription, 39> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -128,6 +130,7 @@ private:
         {&Acquisition.harmonicMixing, "Acquisition.harmonicMixing", false},
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
+        {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
         {&Graphs.Color.Ticks.Background.enabled, "Graphs.Color.Ticks.Background.enabled", true},
@@ -136,6 +139,7 @@ private:
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
         {&Graphs.markerBehavior.showDataOnGraphs, "Graphs.markerBehavior.ShowDataOnGraphs", true},
         {&Graphs.markerBehavior.showAllData, "Graphs.markerBehavior.ShowAllData", false},
+        {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
     }};

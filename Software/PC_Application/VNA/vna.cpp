@@ -53,6 +53,7 @@ VNA::VNA(AppWindow *window)
     : Mode(window, "Vector Network Analyzer"),
       SCPINode("VNA"),
       deembedding(traceModel),
+      deembedding_active(false),
       central(new TileWidget(traceModel))
 {
     averages = 1;
@@ -60,6 +61,7 @@ VNA::VNA(AppWindow *window)
     calMeasuring = false;
     calDialog.reset();
     calEdited = false;
+    settings.sweepType = SweepType::Frequency;
 
     // Create default traces
     auto tS11 = new Trace("S11", Qt::yellow);
@@ -530,6 +532,12 @@ VNA::VNA(AppWindow *window)
     // Set initial sweep settings
     auto pref = Preferences::getInstance();
 
+    if(pref.Acquisition.useMedianAveraging) {
+        average.setMode(Averaging::Mode::Median);
+    } else {
+        average.setMode(Averaging::Mode::Mean);
+    }
+
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
@@ -545,6 +553,8 @@ VNA::VNA(AppWindow *window)
         SetPoints(pref.Startup.DefaultSweep.points);
         if(pref.Startup.DefaultSweep.type == "Power Sweep") {
             SetSweepType(SweepType::Power);
+        } else {
+            SetSweepType(SweepType::Frequency);
         }
     }
 
@@ -760,6 +770,11 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
+    if(d.pointNum >= settings.npoints) {
+        qWarning() << "Ignoring point with too large point number (" << d.pointNum << ")";
+        return;
+    }
+
     d = average.process(d);
     if(calMeasuring) {
         if(average.currentSweep() == averages) {
@@ -1459,6 +1474,11 @@ void VNA::EnableDeembedding(bool enable)
 void VNA::updateGraphColors()
 {
     emit graphColorsChanged();
+}
+
+void VNA::setAveragingMode(Averaging::Mode mode)
+{
+    average.setMode(mode);
 }
 
 QString VNA::SweepTypeToString(VNA::SweepType sw)

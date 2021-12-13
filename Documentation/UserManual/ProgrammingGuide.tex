@@ -241,11 +241,11 @@ This section contains general device commands, available regardless of the curre
 \subsubsection{DEVice:MODE}
 \event{Switches the device to the specified mode}{DEVice:MODE <mode>}{<mode>:\\ \hspace{1cm} VNA: set to vector analyzer\\ \hspace{1cm} GEN: set to signal generator\\ \hspace{1cm} SA: set to spectrum analyzer}
 \begin{example}
-:MODE VNA
+:DEV:MODE VNA
 \end{example}
 \query{Queries the currently active mode}{DEVice:MODE?}{None}{<mode>:\\ \hspace{1cm} VNA: set to vector analyzer\\ \hspace{1cm} GEN: set to signal generator\\ \hspace{1cm} SA: set to spectrum analyzer}
 \begin{example}
-:MODE?
+:DEV:MODE?
 VNA
 \end{example}
 

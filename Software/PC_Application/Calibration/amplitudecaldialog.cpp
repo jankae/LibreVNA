@@ -289,6 +289,9 @@ void AmplitudeCalDialog::AddPointDialog()
     auto d = new QDialog();
     auto ui = new Ui::AddAmplitudePointsDialog();
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->frequency->setUnit("Hz");
     ui->frequency->setPrefixes(" kMG");
     ui->startFreq->setUnit("Hz");
@@ -356,6 +359,9 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
     automatic.dialog = new QDialog(this);
     auto ui = new Ui::AutomaticAmplitudeDialog();
     ui->setupUi(automatic.dialog);
+    connect(automatic.dialog, &QDialog::finished, [=](){
+        delete ui;
+    });
     automatic.progress = ui->progress;
     ui->explanation->setText(info);
     ui->status->setText("Gathering information about "+otherCal+" Calibration...");

@@ -134,6 +134,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
+        p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
         p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
         p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
         p->Graphs.Color.Ticks.Background.enabled = ui->GraphsColorTicksBackgroundEnabled->isChecked();
@@ -142,6 +143,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
         p->Graphs.markerBehavior.showDataOnGraphs = ui->GraphsShowMarkerData->isChecked();
         p->Graphs.markerBehavior.showAllData = ui->GraphsShowAllMarkerData->isChecked();
+        p->Graphs.lineWidth = ui->GraphsLineWidth->value();
         p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
         p->SCPIServer.port = ui->SCPIServerPort->value();
         accept();
@@ -199,6 +201,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
+    ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
 
     ui->GraphsColorBackground->setColor(p->Graphs.Color.background);
     ui->GraphsColorAxis->setColor(p->Graphs.Color.axis);
@@ -208,6 +211,8 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsDomainChangeBehavior->setCurrentIndex((int) p->Graphs.domainChangeBehavior);
     ui->GraphsShowMarkerData->setChecked(p->Graphs.markerBehavior.showDataOnGraphs);
     ui->GraphsShowAllMarkerData->setChecked(p->Graphs.markerBehavior.showAllData);
+    ui->GraphsLineWidth->setValue(p->Graphs.lineWidth);
+
     ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
     ui->SCPIServerPort->setValue(p->SCPIServer.port);
 

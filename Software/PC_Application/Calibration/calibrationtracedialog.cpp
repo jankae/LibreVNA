@@ -21,16 +21,91 @@ CalibrationTraceDialog::CalibrationTraceDialog(Calibration *cal, double f_min, d
     model = new MeasurementModel(cal, measurements);
     ui->tableView->setModel(model);
     ui->tableView->setColumnWidth(0, 100);
-    ui->tableView->setColumnWidth(1, 350);
-    ui->tableView->setColumnWidth(2, 320);
-    ui->tableView->setColumnWidth(3, 160);
+    ui->tableView->setColumnWidth(1, 80);
+    ui->tableView->setColumnWidth(2, 350);
+    ui->tableView->setColumnWidth(3, 320);
+    ui->tableView->setColumnWidth(4, 160);
     UpdateCalibrationStatus();
+
+    auto updateThroughStandardUI = [=](){
+        if(cal->getPortStandard(1) == cal->getPortStandard(2)) {
+            // same gender on both ports, can't use zero length through
+            ui->throughCalkit->click();
+            ui->throughZero->setEnabled(false);
+            ui->throughCalkit->setEnabled(false);
+        } else {
+            // user may select option for through
+            ui->throughZero->setEnabled(true);
+            ui->throughCalkit->setEnabled(true);
+        }
+        model->genderUpdated();
+    };
+
+    connect(ui->port1Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
+        if(ui->port1Male->isChecked()) {
+            cal->setPortStandard(1, Calibration::PortStandard::Male);
+        } else {
+            cal->setPortStandard(1, Calibration::PortStandard::Female);
+        }
+        updateThroughStandardUI();
+        UpdateCalibrationStatus();
+    });
+
+    connect(ui->port2Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
+        if(ui->port2Male->isChecked()) {
+            cal->setPortStandard(2, Calibration::PortStandard::Male);
+        } else {
+            cal->setPortStandard(2, Calibration::PortStandard::Female);
+        }
+        updateThroughStandardUI();
+        UpdateCalibrationStatus();
+    });
+
+    connect(ui->throughGroup, qOverload<int>(&QButtonGroup::buttonClicked), [=](){
+        if(ui->throughZero->isChecked()) {
+            cal->setThroughZeroLength(true);
+        } else {
+            cal->setThroughZeroLength(false);
+        }
+        UpdateCalibrationStatus();
+    });
+
+    // hide selector if calkit does not have separate male/female standards
+    if(!cal->getCalibrationKit().hasSeparateMaleFemaleStandards()) {
+        ui->port1Standards->hide();
+        ui->port2Standards->hide();
+        ui->throughStandard->hide();
+        ui->tableView->hideColumn((int) MeasurementModel::ColIndex::Gender);
+        // default selection is male
+        ui->port1Male->click();
+        ui->port2Male->click();
+        ui->throughCalkit->click();
+    } else {
+        // separate standards defined
+        if(cal->getPortStandard(1) == Calibration::PortStandard::Male) {
+            ui->port1Male->setChecked(true);
+        } else {
+            ui->port1Female->setChecked(true);
+        }
+        if(cal->getPortStandard(2) == Calibration::PortStandard::Male) {
+            ui->port2Male->setChecked(true);
+        } else {
+            ui->port2Female->setChecked(true);
+        }
+        if(cal->getThroughZeroLength()) {
+            ui->throughZero->setChecked(true);
+        } else {
+            ui->throughCalkit->setChecked(true);
+        }
+        updateThroughStandardUI();
+    }
 
     // Check calibration kit span
     if(type != Calibration::Type::None) {
         auto kit = cal->getCalibrationKit();
         auto isTRL = type == Calibration::Type::TRL;
-        if(kit.minFreq(isTRL) > f_min || kit.maxFreq(isTRL) < f_max) {
+        if(isTRL && (kit.minFreqTRL() > f_min || kit.maxFreqTRL() < f_max)) {
+            // TODO check SOLT frequency range depending on selected male/female kit
             InformationBox::ShowMessage("Warning", "The calibration kit does not completely cover the currently selected span. "
                                         "Applying a calibration will not be possible for any measurements taken with these settings.");
         }
@@ -70,9 +145,11 @@ void CalibrationTraceDialog::UpdateCalibrationStatus()
 
 void CalibrationTraceDialog::on_bDelete_clicked()
 {
-    auto measurement = measurements[ui->tableView->currentIndex().row()];
-    cal->clearMeasurement(measurement);
-    model->measurementUpdated(measurement);
+    auto selected = ui->tableView->selectionModel()->selectedRows();
+    for(auto s : selected) {
+        cal->clearMeasurement(measurements[s.row()]);
+        model->measurementUpdated(measurements[s.row()]);
+    }
     UpdateCalibrationStatus();
 }
 
