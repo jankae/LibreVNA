@@ -43,13 +43,13 @@ bool SCPI::paramToDouble(QStringList params, int index, double &dest)
     return okay;
 }
 
-bool SCPI::paramToULong(QStringList params, int index, unsigned long &dest)
+bool SCPI::paramToULongLong(QStringList params, int index, unsigned long long &dest)
 {
     if(index >= params.size()) {
         return false;
     }
     bool okay;
-    dest = params[index].toULong(&okay);
+    dest = params[index].toULongLong(&okay);
     return okay;
 }
 

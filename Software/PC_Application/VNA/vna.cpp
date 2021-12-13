@@ -1142,8 +1142,8 @@ void VNA::SetupSCPI()
     auto scpi_freq = new SCPINode("FREQuency");
     SCPINode::add(scpi_freq);
     scpi_freq->add(new SCPICommand("SPAN", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetSpan(newval);
@@ -1153,8 +1153,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.Freq.stop - settings.Freq.start);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetStartFreq(newval);
@@ -1164,8 +1164,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.Freq.start);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetCenterFreq(newval);
@@ -1175,8 +1175,8 @@ void VNA::SetupSCPI()
         return QString::number((settings.Freq.start + settings.Freq.stop)/2);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetStopFreq(newval);
@@ -1217,8 +1217,8 @@ void VNA::SetupSCPI()
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
     scpi_acq->add(new SCPICommand("IFBW", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetIFBandwidth(newval);
@@ -1228,8 +1228,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.bandwidth);
     }));
     scpi_acq->add(new SCPICommand("POINTS", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetPoints(newval);
@@ -1239,8 +1239,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.npoints);
     }));
     scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetAveraging(newval);
@@ -1269,8 +1269,8 @@ void VNA::SetupSCPI()
         return QString::number(settings.Freq.excitation_power);
     }));
     scpi_stim->add(new SCPICommand("FREQuency", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
             return "ERROR";
         } else {
             SetPowerSweepFrequency(newval);
