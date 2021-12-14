@@ -101,7 +101,7 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
         case 2: format = Touchstone::Format::RealImaginary; break;
         }
 
-        t.toFile(filename.toStdString(), unit, format);
+        t.toFile(filename, unit, format);
         delete this;
     }
 }

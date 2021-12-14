@@ -55,6 +55,9 @@ CSV CSV::fromFile(QString filename, char sep)
 void CSV::toFile(QString filename, char sep)
 {
     ofstream file;
+    if(!filename.endsWith(".csv")) {
+        filename.append(".csv");
+    }
     file.open(filename.toStdString());
     file << setprecision(10);
     unsigned maxlen = 0;

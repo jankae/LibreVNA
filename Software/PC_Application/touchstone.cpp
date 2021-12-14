@@ -37,22 +37,22 @@ void Touchstone::AddDatapoint(Touchstone::Datapoint p)
     }
 }
 
-void Touchstone::toFile(string filename, Scale unit, Format format)
+void Touchstone::toFile(QString filename, Scale unit, Format format)
 {
-    // strip any potential file name extension and apply snp convention
-    if(filename.find_last_of('.') != string::npos) {
-        filename.erase(filename.find_last_of('.'));
+    // add correct file extension if not already present
+    QString extension = ".s"+QString::number(m_ports)+"p";
+    if(!filename.endsWith(extension)) {
+        filename.append(extension);
     }
-    filename.append(".s" + to_string(m_ports) + "p");
 
     // create file
     ofstream file;
-    file.open(filename);
+    file.open(filename.toStdString());
 
     file << toString(unit, format).rdbuf();
 
     file.close();
-    this->filename = QString::fromStdString(filename);
+    this->filename = filename;
 }
 
 stringstream Touchstone::toString(Touchstone::Scale unit, Touchstone::Format format)
