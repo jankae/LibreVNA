@@ -839,6 +839,8 @@ void Marker::constrainPosition()
             } else if(position < parentTrace->minX()) {
                 position = parentTrace->minX();
             }
+            // set position to closest trace index
+            position = parentTrace->sample(parentTrace->index(position)).x;
         }
         traceDataChanged();
     }
