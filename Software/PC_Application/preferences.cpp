@@ -135,6 +135,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
         p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
+        p->Graphs.showUnits = ui->GraphsShowUnit->isChecked();
         p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
         p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
         p->Graphs.Color.Ticks.Background.enabled = ui->GraphsColorTicksBackgroundEnabled->isChecked();
@@ -203,6 +204,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
     ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
 
+    ui->GraphsShowUnit->setChecked(p->Graphs.showUnits);
     ui->GraphsColorBackground->setColor(p->Graphs.Color.background);
     ui->GraphsColorAxis->setColor(p->Graphs.Color.axis);
     ui->GraphsColorTicksDivisions->setColor(p->Graphs.Color.Ticks.divisions);

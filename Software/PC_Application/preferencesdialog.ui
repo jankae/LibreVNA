@@ -687,6 +687,13 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
+            <widget class="QCheckBox" name="GraphsShowUnit">
+             <property name="text">
+              <string>Show unit on graph axes</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QGroupBox" name="groupBox_5">
              <property name="title">
               <string>Colors</string>

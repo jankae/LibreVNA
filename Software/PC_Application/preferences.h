@@ -69,6 +69,7 @@ public:
         bool useMedianAveraging;
     } Acquisition;
     struct {
+        bool showUnits;
         struct {
             QColor background;
             QColor axis;
@@ -102,7 +103,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 39> descr = {{
+    const std::array<SettingDescription, 40> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -131,6 +132,7 @@ private:
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
+        {&Graphs.showUnits, "Graphs.showUnits", true},
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
         {&Graphs.Color.Ticks.Background.enabled, "Graphs.Color.Ticks.Background.enabled", true},

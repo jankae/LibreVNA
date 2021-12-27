@@ -402,7 +402,11 @@ void TraceXYPlot::draw(QPainter &p)
                 auto tickStart = i == 0 ? plotAreaLeft : plotAreaLeft + plotAreaWidth;
                 auto tickLen = i == 0 ? -2 : 2;
                 p.drawLine(tickStart, yCoord, tickStart + tickLen, yCoord);
-                auto tickValue = Unit::ToString(YAxis[i].ticks[j], "", "fpnum kMG", significantDigits);
+                QString unit = "";
+                if(pref.Graphs.showUnits) {
+                    unit = AxisUnit(YAxis[i].type);
+                }
+                auto tickValue = Unit::ToString(YAxis[i].ticks[j], unit, "fpnum kMG", significantDigits);
                 if(i == 0) {
                     p.drawText(QRectF(0, yCoord - AxisLabelSize/2 - 2, tickStart + 2 * tickLen, AxisLabelSize), Qt::AlignRight, tickValue);
                 } else {
@@ -519,12 +523,16 @@ void TraceXYPlot::draw(QPainter &p)
         bool displayFullFreq = significantDigits <= 5;
         constexpr int displayLastDigits = 4;
         QString prefixes = "fpnum kMG";
+        QString unit = "";
+        if(pref.Graphs.showUnits) {
+            unit = AxisUnit(XAxis.type);
+        }
         QString commonPrefix = QString();
         if(!displayFullFreq) {
-            auto fullFreq = Unit::ToString(XAxis.ticks.front(), "", prefixes, significantDigits);
+            auto fullFreq = Unit::ToString(XAxis.ticks.front(), unit, prefixes, significantDigits);
             commonPrefix = fullFreq.at(fullFreq.size() - 1);
             auto front = fullFreq;
-            front.truncate(fullFreq.size() - displayLastDigits);
+            front.truncate(fullFreq.size() - displayLastDigits - unit.length());
             auto back = fullFreq;
             back.remove(0, front.size());
             back.append("..");
@@ -537,7 +545,7 @@ void TraceXYPlot::draw(QPainter &p)
 
         for(auto t : XAxis.ticks) {
             auto xCoord = Util::Scale<double>(t, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth);
-            auto tickValue = Unit::ToString(t, "", prefixes, significantDigits);
+            auto tickValue = Unit::ToString(t, unit, prefixes, significantDigits);
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             if(displayFullFreq) {
                 p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue);
@@ -548,7 +556,7 @@ void TraceXYPlot::draw(QPainter &p)
                     tickValue = Unit::ToString(t, "", commonPrefix, significantDigits + 1);
                 }
 
-                tickValue.remove(0, tickValue.size() - displayLastDigits);
+                tickValue.remove(0, tickValue.size() - displayLastDigits - unit.length());
                 QRect bounding;
                 p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue, &bounding);
                 p.setPen(QPen(QColor("orange")));
@@ -1121,11 +1129,11 @@ QString TraceXYPlot::mouseText(QPoint pos)
 QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
 {
     switch(type) {
-    case TraceXYPlot::YAxisType::Magnitude: return "db";
+    case TraceXYPlot::YAxisType::Magnitude: return "dB";
     case TraceXYPlot::YAxisType::Phase: return "°";
     case TraceXYPlot::YAxisType::VSWR: return "";
     case TraceXYPlot::YAxisType::ImpulseReal: return "";
-    case TraceXYPlot::YAxisType::ImpulseMag: return "db";
+    case TraceXYPlot::YAxisType::ImpulseMag: return "dB";
     case TraceXYPlot::YAxisType::Step: return "";
     case TraceXYPlot::YAxisType::Impedance: return "Ohm";
     case TraceXYPlot::YAxisType::GroupDelay: return "s";
