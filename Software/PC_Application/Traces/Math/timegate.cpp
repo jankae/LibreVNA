@@ -346,13 +346,35 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     p.setBackground(QBrush(pref.Graphs.Color.background));
     p.fillRect(0, 0, width(), height(), QBrush(pref.Graphs.Color.background));
 
+    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+        // no data yet, nothing to plot
+        return;
+    }
+
     // plot trace
     auto pen = QPen(Qt::green, 1);
     pen.setCosmetic(true);
     pen.setStyle(Qt::SolidLine);
     p.setPen(pen);
-    for(unsigned int i=1;i<input.size();i++) {
-        auto last = input[i-1];
+
+    auto minX = input.front().x;
+    auto maxX = input.back().x;
+
+    int plotLeft = 0;
+    int plotRight = size().width();
+    int plotTop = 0;
+    int plotBottom = size().height();
+
+    QPoint p1, p2;
+
+    // limit amount of displayed points to keep GUI snappy
+    auto increment = input.size() / 500;
+    if(!increment) {
+        increment = 1;
+    }
+
+    for(unsigned int i=increment;i<input.size();i+=increment) {
+        auto last = input[i-increment];
         auto now = input[i];
 
         auto y_last = Util::SparamTodB(last.y);
@@ -363,8 +385,12 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
         }
 
         // scale to plot coordinates
-        auto p1 = plotValueToPixel(last.x, y_last);
-        auto p2 = plotValueToPixel(now.x, y_now);
+        p1.setX(Util::Scale<double>(last.x, minX, maxX, plotLeft, plotRight));
+        p1.setY(Util::Scale<double>(y_last, -120, 20, plotBottom, plotTop));
+        p2.setX(Util::Scale<double>(now.x, minX, maxX, plotLeft, plotRight));
+        p2.setY(Util::Scale<double>(y_now, -120, 20, plotBottom, plotTop));
+//        auto p1 = plotValueToPixel(last.x, y_last);
+//        auto p2 = plotValueToPixel(now.x, y_now);
         // draw line
         p.drawLine(p1, p2);
     }
@@ -372,11 +398,11 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     auto filter = gate->rFilter();
     pen = QPen(Qt::red, 1);
     p.setPen(pen);
-    for(unsigned int i=1;i<filter.size();i++) {
-        auto x_last = input[i-1].x;
+    for(unsigned int i=increment;i<filter.size();i+=increment) {
+        auto x_last = input[i-increment].x;
         auto x_now = input[i].x;
 
-        auto f_last = Util::SparamTodB(filter[i-1]);
+        auto f_last = Util::SparamTodB(filter[i-increment]);
         auto f_now = Util::SparamTodB(filter[i]);
 
         if(std::isnan(f_last) || std::isnan(f_now) || std::isinf(f_last) || std::isinf(f_now)) {
@@ -384,8 +410,12 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
         }
 
         // scale to plot coordinates
-        auto p1 = plotValueToPixel(x_last, f_last);
-        auto p2 = plotValueToPixel(x_now, f_now);
+        p1.setX(Util::Scale<double>(x_last, minX, maxX, plotLeft, plotRight));
+        p1.setY(Util::Scale<double>(f_last, -120, 20, plotBottom, plotTop));
+        p2.setX(Util::Scale<double>(x_now, minX, maxX, plotLeft, plotRight));
+        p2.setY(Util::Scale<double>(f_now, -120, 20, plotBottom, plotTop));
+//        auto p1 = plotValueToPixel(x_last, f_last);
+//        auto p2 = plotValueToPixel(x_now, f_now);
 
         // draw line
         p.drawLine(p1, p2);

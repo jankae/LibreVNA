@@ -19,7 +19,20 @@ TDR::TDR()
     stepResponse = true;
     mode = Mode::Lowpass;
 
+    destructing = false;
+    thread = new TDRThread(*this);
+    thread->start(TDRThread::Priority::LowestPriority);
+
     connect(&window, &WindowFunction::changed, this, &TDR::updateTDR);
+}
+
+TDR::~TDR()
+{
+    // tell thread to exit
+    destructing = true;
+    semphr.release();
+    thread->wait();
+    delete thread;
 }
 
 TraceMath::DataType TDR::outputType(TraceMath::DataType inputType)
@@ -190,85 +203,8 @@ void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
             // not the end, do nothing
             return;
         }
-        vector<complex<double>> frequencyDomain;
-        auto stepSize = (input->rData().back().x - input->rData().front().x) / (input->rData().size() - 1);
-        if(mode == Mode::Lowpass) {
-            if(stepResponse) {
-                auto steps = input->rData().size();
-                auto firstStep = input->rData().front().x;
-                // frequency points need to be evenly spaced all the way to DC
-                if(firstStep == 0) {
-                    // zero as first step would result in infinite number of points, skip and start with second
-                    firstStep = input->rData()[1].x;
-                    steps--;
-                }
-                if(firstStep * steps != input->rData().back().x) {
-                    // data is not available with correct frequency spacing, calculate required steps
-                    steps = input->rData().back().x / firstStep;
-                    stepSize = firstStep;
-                }
-                frequencyDomain.resize(2 * steps + 1);
-                // copy frequencies, use the flipped conjugate for negative part
-                for(unsigned int i = 1;i<=steps;i++) {
-                    auto S = input->getInterpolatedSample(stepSize * i).y;
-                    frequencyDomain[steps - i] = conj(S);
-                    frequencyDomain[steps + i] = S;
-                }
-                if(automaticDC) {
-                    // use simple extrapolation from lowest two points to extract DC value
-                    auto abs_DC = 2.0 * abs(frequencyDomain[steps + 1]) - abs(frequencyDomain[steps + 2]);
-                    auto phase_DC = 2.0 * arg(frequencyDomain[steps + 1]) - arg(frequencyDomain[steps + 2]);
-                    frequencyDomain[steps] = polar(abs_DC, phase_DC);
-                } else {
-                    frequencyDomain[steps] = manualDC;
-                }
-            } else {
-                auto steps = input->rData().size();
-                unsigned int offset = 0;
-                if(input->rData().front().x == 0) {
-                    // DC measurement is inaccurate, skip
-                    steps--;
-                    offset++;
-                }
-                // no step response required, can use frequency values as they are. No extra extrapolated DC value here -> 2 values less than with step response
-                frequencyDomain.resize(2 * steps - 1);
-                frequencyDomain[steps - 1] = input->rData()[offset].y;
-                for(unsigned int i = 1;i<steps;i++) {
-                    auto S = input->rData()[i + offset].y;
-                    frequencyDomain[steps - i - 1] = conj(S);
-                    frequencyDomain[steps + i - 1] = S;
-                }
-            }
-        } else {
-            // bandpass mode
-            // Can use input data directly, no need to extend with complex conjugate
-            frequencyDomain.resize(input->rData().size());
-            for(unsigned int i=0;i<input->rData().size();i++) {
-                frequencyDomain[i] = input->rData()[i].y;
-            }
-        }
-
-        window.apply(frequencyDomain);
-        Fft::shift(frequencyDomain, true);
-
-        auto fft_bins = frequencyDomain.size();
-        const double fs = 1.0 / (stepSize * fft_bins);
-
-        Fft::transform(frequencyDomain, true);
-
-        data.clear();
-        data.resize(fft_bins);
-
-        for(unsigned int i = 0;i<fft_bins;i++) {
-            data[i].x = fs * i;
-            data[i].y = frequencyDomain[i] / (double) fft_bins;
-        }
-        if(stepResponse && mode == Mode::Lowpass) {
-            updateStepResponse(true);
-        } else {
-            updateStepResponse(false);
-        }
-        emit outputSamplesChanged(0, data.size());
+        // trigger calculation in thread
+        semphr.release();
         success();
     } else {
         // not enough input data
@@ -294,4 +230,106 @@ const WindowFunction& TDR::getWindow() const
 TDR::Mode TDR::getMode() const
 {
     return mode;
+}
+
+TDRThread::TDRThread(TDR &tdr)
+    : tdr(tdr)
+{
+
+}
+
+void TDRThread::run()
+{
+    qDebug() << "TDR thread starting";
+    while(1) {
+        tdr.semphr.acquire();
+        // clear possible additional semaphores
+        tdr.semphr.tryAcquire(tdr.semphr.available());
+        if(tdr.destructing) {
+            // TDR object about to be deleted, exit thread
+            qDebug() << "TDR thread exiting";
+            return;
+        }
+        qDebug() << "TDR thread calculating";
+        // perform calculation
+        vector<complex<double>> frequencyDomain;
+        auto stepSize = (tdr.input->rData().back().x - tdr.input->rData().front().x) / (tdr.input->rData().size() - 1);
+        if(tdr.mode == TDR::Mode::Lowpass) {
+            if(tdr.stepResponse) {
+                auto steps = tdr.input->rData().size();
+                auto firstStep = tdr.input->rData().front().x;
+                // frequency points need to be evenly spaced all the way to DC
+                if(firstStep == 0) {
+                    // zero as first step would result in infinite number of points, skip and start with second
+                    firstStep = tdr.input->rData()[1].x;
+                    steps--;
+                }
+                if(firstStep * steps != tdr.input->rData().back().x) {
+                    // data is not available with correct frequency spacing, calculate required steps
+                    steps = tdr.input->rData().back().x / firstStep;
+                    stepSize = firstStep;
+                }
+                frequencyDomain.resize(2 * steps + 1);
+                // copy frequencies, use the flipped conjugate for negative part
+                for(unsigned int i = 1;i<=steps;i++) {
+                    auto S = tdr.input->getInterpolatedSample(stepSize * i).y;
+                    frequencyDomain[steps - i] = conj(S);
+                    frequencyDomain[steps + i] = S;
+                }
+                if(tdr.automaticDC) {
+                    // use simple extrapolation from lowest two points to extract DC value
+                    auto abs_DC = 2.0 * abs(frequencyDomain[steps + 1]) - abs(frequencyDomain[steps + 2]);
+                    auto phase_DC = 2.0 * arg(frequencyDomain[steps + 1]) - arg(frequencyDomain[steps + 2]);
+                    frequencyDomain[steps] = polar(abs_DC, phase_DC);
+                } else {
+                    frequencyDomain[steps] = tdr.manualDC;
+                }
+            } else {
+                auto steps = tdr.input->rData().size();
+                unsigned int offset = 0;
+                if(tdr.input->rData().front().x == 0) {
+                    // DC measurement is inaccurate, skip
+                    steps--;
+                    offset++;
+                }
+                // no step response required, can use frequency values as they are. No extra extrapolated DC value here -> 2 values less than with step response
+                frequencyDomain.resize(2 * steps - 1);
+                frequencyDomain[steps - 1] = tdr.input->rData()[offset].y;
+                for(unsigned int i = 1;i<steps;i++) {
+                    auto S = tdr.input->rData()[i + offset].y;
+                    frequencyDomain[steps - i - 1] = conj(S);
+                    frequencyDomain[steps + i - 1] = S;
+                }
+            }
+        } else {
+            // bandpass mode
+            // Can use input data directly, no need to extend with complex conjugate
+            frequencyDomain.resize(tdr.input->rData().size());
+            for(unsigned int i=0;i<tdr.input->rData().size();i++) {
+                frequencyDomain[i] = tdr.input->rData()[i].y;
+            }
+        }
+
+        tdr.window.apply(frequencyDomain);
+        Fft::shift(frequencyDomain, true);
+
+        auto fft_bins = frequencyDomain.size();
+        const double fs = 1.0 / (stepSize * fft_bins);
+
+        Fft::transform(frequencyDomain, true);
+
+        tdr.data.clear();
+        tdr.data.resize(fft_bins);
+
+        for(unsigned int i = 0;i<fft_bins;i++) {
+            tdr.data[i].x = fs * i;
+            tdr.data[i].y = frequencyDomain[i] / (double) fft_bins;
+        }
+        if(tdr.stepResponse && tdr.mode == TDR::Mode::Lowpass) {
+            tdr.updateStepResponse(true);
+        } else {
+            tdr.updateStepResponse(false);
+        }
+        emit tdr.outputSamplesChanged(0, tdr.data.size());
+    }
 }

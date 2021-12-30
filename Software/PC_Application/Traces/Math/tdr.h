@@ -4,12 +4,31 @@
 #include "tracemath.h"
 #include "windowfunction.h"
 
+#include <QThread>
+#include <QSemaphore>
+
 namespace Math {
+
+class TDR;
+
+class TDRThread : public QThread
+{
+    Q_OBJECT
+public:
+    TDRThread(TDR &tdr);
+    ~TDRThread(){};
+private:
+    void run() override;
+    TDR &tdr;
+};
 
 class TDR : public TraceMath
 {
+    friend class TDRThread;
+    Q_OBJECT
 public:
     TDR();
+    ~TDR();
 
     DataType outputType(DataType inputType) override;
     QString description() override;
@@ -39,6 +58,9 @@ private:
     bool stepResponse;
     bool automaticDC;
     std::complex<double> manualDC;
+    TDRThread *thread;
+    bool destructing;
+    QSemaphore semphr;
 };
 
 }
