@@ -17,6 +17,8 @@ public:
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+    void wheelEvent(QWheelEvent *event) override;
 public slots:
     void axisSetupDialog();
 
@@ -25,6 +27,18 @@ protected:
     static constexpr double screenUsage = 0.9;
     static constexpr double smithCoordMax = 4096;
 
+    class Arc
+    {
+    public:
+        Arc(QPointF center, double radius, double startAngle, double spanAngle);
+        void constrainToCircle(QPointF center, double radius);
+
+        QPointF center;
+        double radius;
+        double startAngle, spanAngle;
+    };
+
+    QPoint dataToPixel(std::complex<double> d);
     QPoint dataToPixel(Trace::Data d);
     std::complex<double> pixelToData(QPoint p);
     QPoint markerToPixel(Marker *m) override;
@@ -39,6 +53,8 @@ protected:
     virtual void traceDropped(Trace *t, QPoint position) override;
     QString mouseText(QPoint pos) override;
     bool limitToSpan;
+    bool limitToEdge;
+    double edgeReflection; // magnitude of reflection coefficient at the edge of the smith chart (zoom factor)
     QTransform transform;
 };
 

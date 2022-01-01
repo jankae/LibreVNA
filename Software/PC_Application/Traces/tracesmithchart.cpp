@@ -17,6 +17,7 @@ TraceSmithChart::TraceSmithChart(TraceModel &model, QWidget *parent)
     : TracePlot(model, parent)
 {
     limitToSpan = true;
+    edgeReflection = 1.0;
     initializeTraceInfo();
 }
 
@@ -24,6 +25,8 @@ nlohmann::json TraceSmithChart::toJSON()
 {
     nlohmann::json j;
     j["limit_to_span"] = limitToSpan;
+    j["limit_to_edge"] = limitToEdge;
+    j["edge_reflection"] = edgeReflection;
     nlohmann::json jtraces;
     for(auto t : traces) {
         if(t.second) {
@@ -37,6 +40,8 @@ nlohmann::json TraceSmithChart::toJSON()
 void TraceSmithChart::fromJSON(nlohmann::json j)
 {
     limitToSpan = j.value("limit_to_span", true);
+    limitToEdge = j.value("limit_to_edge", false);
+    edgeReflection = j.value("edge_reflection", 1.0);
     for(unsigned int hash : j["traces"]) {
         // attempt to find the traces with this hash
         bool found = false;
@@ -53,21 +58,57 @@ void TraceSmithChart::fromJSON(nlohmann::json j)
     }
 }
 
+void TraceSmithChart::wheelEvent(QWheelEvent *event)
+{
+    // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
+    auto increment = event->angleDelta().y() / 120.0;
+    // round toward bigger step in case of special higher resolution mousewheel
+    int steps = increment > 0 ? ceil(increment) : floor(increment);
+
+    constexpr double zoomfactor = 1.1;
+    auto zoom = pow(zoomfactor, steps);
+    edgeReflection /= zoom;
+    triggerReplot();
+}
+
 void TraceSmithChart::axisSetupDialog()
 {
     auto dialog = new QDialog();
     auto ui = new Ui::SmithChartDialog();
     ui->setupUi(dialog);
     if(limitToSpan) {
-        ui->displayMode->setCurrentIndex(1);
+        ui->displayModeFreq->setCurrentIndex(1);
     } else {
-        ui->displayMode->setCurrentIndex(0);
+        ui->displayModeFreq->setCurrentIndex(0);
     }
+    if(limitToEdge) {
+        ui->displayModeImp->setCurrentIndex(1);
+    } else {
+        ui->displayModeImp->setCurrentIndex(0);
+    }
+    ui->zoomReflection->setPrecision(3);
+    ui->zoomFactor->setPrecision(3);
+    ui->zoomReflection->setValue(edgeReflection);
+    ui->zoomFactor->setValue(1.0/edgeReflection);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
-       limitToSpan = ui->displayMode->currentIndex() == 1;
+       limitToSpan = ui->displayModeFreq->currentIndex() == 1;
+       limitToEdge = ui->displayModeImp->currentIndex() == 1;
        triggerReplot();
     });
+    connect(ui->zoomFactor, &SIUnitEdit::valueChanged, [=](){
+        edgeReflection = 1.0 / ui->zoomFactor->value();
+        ui->zoomReflection->setValueQuiet(edgeReflection);
+    });
+    connect(ui->zoomReflection, &SIUnitEdit::valueChanged, [=](){
+        edgeReflection = ui->zoomReflection->value();
+        ui->zoomFactor->setValueQuiet(1.0 / edgeReflection);
+    });
     dialog->show();
+}
+
+QPoint TraceSmithChart::dataToPixel(std::complex<double> d)
+{
+    return transform.map(QPoint(d.real() * smithCoordMax * (1.0 / edgeReflection), -d.imag() * smithCoordMax * (1.0 / edgeReflection)));
 }
 
 QPoint TraceSmithChart::dataToPixel(Trace::Data d)
@@ -75,13 +116,13 @@ QPoint TraceSmithChart::dataToPixel(Trace::Data d)
     if(d.x < sweep_fmin || d.x > sweep_fmax) {
         return QPoint();
     }
-    return transform.map(QPoint(d.y.real() * smithCoordMax, -d.y.imag() * smithCoordMax));
+    return dataToPixel(d.y);
 }
 
 std::complex<double> TraceSmithChart::pixelToData(QPoint p)
 {
     auto data = transform.inverted().map(QPointF(p));
-    return complex<double>(data.x() / smithCoordMax, -data.y() / smithCoordMax);
+    return complex<double>(data.x() / smithCoordMax * edgeReflection, -data.y() / smithCoordMax * edgeReflection);
 }
 
 QPoint TraceSmithChart::markerToPixel(Marker *m)
@@ -90,7 +131,7 @@ QPoint TraceSmithChart::markerToPixel(Marker *m)
 //    if(!m->isTimeDomain()) {
         if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
             auto d = m->getData();
-            ret = transform.map(QPoint(d.real() * smithCoordMax, -d.imag() * smithCoordMax));
+            ret = dataToPixel(d);
         }
 //    }
     return ret;
@@ -138,7 +179,7 @@ bool TraceSmithChart::xCoordinateVisible(double x)
 void TraceSmithChart::draw(QPainter &p) {
     auto pref = Preferences::getInstance();
 
-    // translate coordinate system so that the smith chart sits in the origin has a size of 1
+    // translate coordinate system so that the smith chart sits in the origin and has a size of 1
     auto w = p.window();
     p.save();
     p.translate(w.width()/2, w.height()/2);
@@ -146,34 +187,40 @@ void TraceSmithChart::draw(QPainter &p) {
     p.scale(scale, scale);
 
     transform = p.transform();
+    p.restore();
+
+    auto drawArc = [&](Arc a) {
+        a.constrainToCircle(QPointF(0,0), edgeReflection);
+        auto topleft = dataToPixel(complex<double>(a.center.x() - a.radius, a.center.y() - a.radius));
+        auto bottomright = dataToPixel(complex<double>(a.center.x() + a.radius, a.center.y() + a.radius));
+        a.startAngle *= 5760 / (2*M_PI);
+        a.spanAngle *= 5760 / (2*M_PI);
+        p.drawArc(QRect(topleft, bottomright), a.startAngle, a.spanAngle);
+    };
 
     // Outer circle
     auto pen = QPen(pref.Graphs.Color.axis);
     pen.setCosmetic(true);
     p.setPen(pen);
-    QRectF rectangle(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
-    p.drawArc(rectangle, 0, 5760);
+    drawArc(Arc(QPointF(0, 0), edgeReflection, 0, 2*M_PI));
 
     constexpr int Circles = 6;
     pen = QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine);
     pen.setCosmetic(true);
     p.setPen(pen);
-    for(int i=1;i<Circles;i++) {
-        rectangle.adjust(2.0*smithCoordMax/Circles, smithCoordMax/Circles, 0, -smithCoordMax/Circles);
-        p.drawArc(rectangle, 0, 5760);
+    for(int i=1;i<Circles * 2;i++) {
+        auto radius = (double) i / Circles;
+        drawArc(Arc(QPointF(1.0 - radius, 0.0), radius, 0, 2*M_PI));
+        drawArc(Arc(QPointF(1.0 + radius, 0.0), radius, 0, 2*M_PI));
     }
 
-    p.drawLine(-smithCoordMax, 0, smithCoordMax, 0);
+      p.drawLine(dataToPixel(complex<double>(edgeReflection,0)),dataToPixel(complex<double>(-edgeReflection,0)));
     constexpr std::array<double, 5> impedanceLines = {10, 25, 50, 100, 250};
     for(auto z : impedanceLines) {
         z /= ReferenceImpedance;
-        auto radius = smithCoordMax/z;
-        double span = M_PI - 2 * atan(radius/smithCoordMax);
-        span *= 5760 / (2 * M_PI);
-        QRectF rectangle(smithCoordMax - radius, -2 * radius, 2 * radius, 2 * radius);
-        p.drawArc(rectangle, 4320 - span, span);
-        rectangle = QRectF(smithCoordMax - radius, 0, 2 * radius, 2 * radius);
-        p.drawArc(rectangle, 1440, span);
+        auto radius = 1.0/z;
+        drawArc(Arc(QPointF(1.0, radius), radius, 0, 2*M_PI));
+        drawArc(Arc(QPointF(1.0, -radius), radius, 0, 2*M_PI));
     }
 
     for(auto t : traces) {
@@ -199,11 +246,15 @@ void TraceSmithChart::draw(QPainter &p) {
             if(isnan(now.y.real())) {
                 break;
             }
+            if (limitToEdge && (abs(last.y) > edgeReflection || abs(now.y) > edgeReflection)) {
+                // outside of visible area
+                continue;
+            }
             // scale to size of smith diagram
-            last.y *= smithCoordMax;
-            now.y *= smithCoordMax;
+            auto p1 = dataToPixel(last);
+            auto p2 = dataToPixel(now);
             // draw line
-            p.drawLine(std::real(last.y), -std::imag(last.y), std::real(now.y), -std::imag(now.y));
+            p.drawLine(p1, p2);
         }
         if(trace->size() > 0) {
             // only draw markers if the trace has at least one point
@@ -220,19 +271,22 @@ void TraceSmithChart::draw(QPainter &p) {
                     continue;
                 }
                 auto coords = m->getData();
-                coords *= smithCoordMax;
+                if (limitToEdge && abs(coords) > edgeReflection) {
+                    // outside of visible area
+                    continue;
+                }
+                auto point = dataToPixel(coords);
                 auto symbol = m->getSymbol();
-                symbol = symbol.scaled(symbol.width()/scale, symbol.height()/scale);
-                p.drawPixmap(coords.real() - symbol.width()/2, -coords.imag() - symbol.height(), symbol);
+                p.drawPixmap(point.x() - symbol.width()/2, point.y() - symbol.height(), symbol);
             }
         }
     }
     if(dropPending) {
+        // TODO adjust coords due to shifted restore
         p.setOpacity(0.5);
         p.setBrush(Qt::white);
         p.setPen(Qt::white);
         p.drawEllipse(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
-        p.restore();
         auto font = p.font();
         font.setPixelSize(20);
         p.setFont(font);
@@ -241,7 +295,6 @@ void TraceSmithChart::draw(QPainter &p) {
         auto text = "Drop here to add\n" + dropTrace->name() + "\nto Smith chart";
         p.drawText(p.window(), Qt::AlignCenter, text);
     } else {
-        p.restore();
     }
 }
 
@@ -257,8 +310,8 @@ void TraceSmithChart::traceDropped(Trace *t, QPoint position)
 QString TraceSmithChart::mouseText(QPoint pos)
 {
     auto data = pixelToData(pos);
-    if(abs(data) <= 1.0) {
-        data = 50.0 * (1-.0 + data) / (1.0 - data);
+    if(abs(data) <= edgeReflection) {
+        data = 50.0 * (1.0 + data) / (1.0 - data);
         auto ret = Unit::ToString(data.real(), "", " ", 3);
         if(data.imag() >= 0) {
             ret += "+";
@@ -349,5 +402,79 @@ bool TraceSmithChart::dropSupported(Trace *t)
         return true;
     default:
         return false;
+    }
+}
+
+TraceSmithChart::Arc::Arc(QPointF center, double radius, double startAngle, double spanAngle)
+    : center(center),
+      radius(radius),
+      startAngle(startAngle),
+      spanAngle(spanAngle)
+{
+
+}
+
+void TraceSmithChart::Arc::constrainToCircle(QPointF center, double radius)
+{
+    // check if arc/circle intersect
+    auto centerDiff = this->center - center;
+    auto centerDistSquared = centerDiff.x() * centerDiff.x() + centerDiff.y() * centerDiff.y();
+    if (centerDistSquared >= (radius + this->radius) * (radius + this->radius)) {
+        // arc completely outside of constraining circle
+        spanAngle = 0.0;
+        return;
+    } else if (centerDistSquared <= (radius - this->radius) * (radius - this->radius)) {
+        if (radius >= this->radius) {
+            // arc completely in constraining circle, do nothing
+            return;
+        } else {
+            // arc completely outside of circle
+            spanAngle = 0.0;
+            return;
+        }
+    } else {
+        // there are intersections between the arc and the circle. Calculate points according to https://stackoverflow.com/questions/3349125/circle-circle-intersection-points
+        auto distance = sqrt(centerDistSquared);
+        auto a = (this->radius*this->radius-radius*radius+distance*distance) / (2*distance);
+        auto h = sqrt(this->radius*this->radius - a*a);
+        auto intersectMiddle = this->center + a*(center - this->center) / distance;
+        auto rotatedCenterDiff = center - this->center;
+        swap(rotatedCenterDiff.rx(), rotatedCenterDiff.ry());
+        rotatedCenterDiff.setY(-rotatedCenterDiff.y());
+        auto intersect1 = intersectMiddle + h * rotatedCenterDiff / distance;
+        auto intersect2 = intersectMiddle - h * rotatedCenterDiff / distance;
+
+        // got intersection points, convert into angles from arc center
+        auto wrapAngle = [](double angle) -> double {
+            double ret = fmod(angle, 2*M_PI);
+            if(ret < 0) {
+                ret += 2*M_PI;
+            }
+            return ret;
+        };
+
+        auto angle1 = wrapAngle(atan2((intersect1 - this->center).y(), (intersect1 - this->center).x()));
+        auto angle2 = wrapAngle(atan2((intersect2 - this->center).y(), (intersect2 - this->center).x()));
+
+        auto angleDiff = wrapAngle(angle2 - angle1);
+        if ((angleDiff >= M_PI) ^ (a > 0.0)) {
+            // allowed angles go from intersect1 to intersect2
+            if(startAngle < angle1) {
+                startAngle = angle1;
+            }
+            auto maxSpan = wrapAngle(angle2 - startAngle);
+            if(spanAngle > maxSpan) {
+                spanAngle = maxSpan;
+            }
+        } else {
+            // allowed angles go from intersect2 to intersect1
+            if(startAngle < angle2) {
+                startAngle = angle2;
+            }
+            auto maxSpan = wrapAngle(angle1 - startAngle);
+            if(spanAngle > maxSpan) {
+                spanAngle = maxSpan;
+            }
+        }
     }
 }
