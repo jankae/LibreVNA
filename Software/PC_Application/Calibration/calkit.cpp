@@ -193,12 +193,12 @@ Calkit Calkit::fromFile(QString filename)
     return c;
 }
 
-void Calkit::edit(std::function<void (void)> done)
+void Calkit::edit(std::function<void (void)> updateCal)
 {
     auto dialog = new CalkitDialog(*this);
-    if(done) {
-        QObject::connect(dialog, &QDialog::accepted, [=](){
-            done();
+    if(updateCal) {
+        QObject::connect(dialog, &CalkitDialog::settingsChanged, [=](){
+            updateCal();
         });
     }
     dialog->show();

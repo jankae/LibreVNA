@@ -20,6 +20,8 @@ public:
     explicit CalkitDialog(Calkit &c, QWidget *parent = nullptr);
     ~CalkitDialog();
 
+signals:
+    void settingsChanged();
 private:  
     void parseEntries();
     void updateEntries();

@@ -1310,7 +1310,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::Save</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::Save</set>
      </property>
      <property name="centerButtons">
       <bool>false</bool>
@@ -1456,13 +1456,13 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="OpenType"/>
+  <buttongroup name="ThroughType"/>
   <buttongroup name="LoadType"/>
-  <buttongroup name="ShortType_f"/>
-  <buttongroup name="TRL_Rtype"/>
   <buttongroup name="LoadType_f"/>
   <buttongroup name="OpenType_f"/>
   <buttongroup name="ShortType"/>
-  <buttongroup name="ThroughType"/>
+  <buttongroup name="OpenType"/>
+  <buttongroup name="TRL_Rtype"/>
+  <buttongroup name="ShortType_f"/>
  </buttongroups>
 </ui>

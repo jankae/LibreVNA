@@ -40,7 +40,7 @@ public:
 
     void toFile(QString filename);
     static Calkit fromFile(QString filename);
-    void edit(std::function<void(void)> done = nullptr);
+    void edit(std::function<void(void)> updateCal = nullptr);
     bool hasSeparateMaleFemaleStandards();
     SOLT toSOLT(double frequency, bool male_standards = true);
     TRL toTRL(double frequency);

@@ -73,6 +73,8 @@ QVariant MeasurementModel::data(const QModelIndex &index, int role) const
         case ColIndex::Date:
             return info.timestamp.toString("dd.MM.yyyy hh:mm:ss");
             break;
+        case ColIndex::Last:
+            return "";
         }
     } else if(role == Qt::SizeHintRole) {
         switch((ColIndex) index.column()) {
