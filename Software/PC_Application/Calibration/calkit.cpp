@@ -253,7 +253,7 @@ class Calkit::SOLT Calkit::toSOLT(double frequency, bool male_standards)
         auto imp_L = complex<double>(0, frequency * 2 * M_PI * Load.Lseries);
         imp_load += imp_L;
         ref.Load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
-        ref.Load = addTransmissionLine(ref.Load, Load.Z0, Load.delay*1e-12, 0, frequency);
+        ref.Load = addTransmissionLine(ref.Load, 50.0, Load.delay*1e-12, 0, frequency);
     }
 
     if(Open.useMeasurements) {
