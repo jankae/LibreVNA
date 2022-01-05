@@ -175,11 +175,13 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, [this]() {
         parseEntries();
         editKit = ownKit;
+        editKit.clearTouchstoneCache();
         emit settingsChanged();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, [this]() {
         parseEntries();
         editKit = ownKit;
+        editKit.clearTouchstoneCache();
         emit settingsChanged();
         accept();
     });
