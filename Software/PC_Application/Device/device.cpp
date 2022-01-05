@@ -171,7 +171,10 @@ Device::Device(QString serial)
 
     if(!m_handle) {
         QString message =  "No device found";
-        InformationBox::ShowError("Error opening device", message);
+        if(!serial.isEmpty()) {
+            // only show error message if specific device was requested
+            InformationBox::ShowError("Error opening device", message);
+        }
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
         return;
@@ -356,8 +359,7 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
                 message.append(libusb_strerror((libusb_error) ret));
                 message.append("\" On Linux this is most likely caused by a missing udev rule. "
                                "On Windows this most likely means that you are already connected to "
-                               "this device (is another instance of the application already runnning? "
-                               "If that is not the case, you can try installing the WinUSB driver using Zadig (https://zadig.akeo.ie/)");
+                               "this device (is another instance of the application already runnning?)");
                 qWarning() << message;
                 InformationBox::ShowError("Error opening device", message);
             }

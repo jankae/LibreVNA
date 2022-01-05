@@ -242,7 +242,8 @@ AppWindow::AppWindow(QWidget *parent)
     qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
 
     // List available devices
-    if(UpdateDeviceList() && Preferences::getInstance().Startup.ConnectToFirstDevice) {
+    UpdateDeviceList();
+    if(Preferences::getInstance().Startup.ConnectToFirstDevice) {
         // at least one device available
         ConnectToDevice();
     }
