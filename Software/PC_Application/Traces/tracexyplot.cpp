@@ -662,8 +662,13 @@ void TraceXYPlot::updateAxisTicks()
     };
 
     auto createLogarithmicTicks = [](vector<double>& ticks, double start, double stop, int minDivisions) {
-        Q_ASSERT(stop > start);
-        Q_ASSERT(start > 0);
+        // enforce usable log settings
+        if(start <= 0) {
+            start = 1.0;
+        }
+        if(stop <= start) {
+            stop = start + 1.0;
+        }
         ticks.clear();
 
         auto decades = log10(stop) - log10(start);
