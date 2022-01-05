@@ -298,6 +298,12 @@ VNA::VNA(AppWindow *window)
     connect(bZoomOut, &QPushButton::clicked, this, &VNA::SpanZoomOut);
     frequencySweepActions.push_back(tb_sweep->addWidget(bZoomOut));
 
+    auto cbLogSweep = new  QCheckBox("Log");
+    cbLogSweep->setToolTip("Logarithmic sweep");
+    connect(cbLogSweep, &QCheckBox::toggled, this, &VNA::SetLogSweep);
+    connect(this, &VNA::logSweepChanged, cbLogSweep, &QCheckBox::setChecked);
+    frequencySweepActions.push_back(tb_sweep->addWidget(cbLogSweep));
+
     // power sweep widgets
     auto sbPowerLow = new QDoubleSpinBox();
     width = QFontMetrics(sbPowerLow->font()).width("-30.00dBm") + 20;
@@ -700,6 +706,7 @@ nlohmann::json VNA::toJSON()
     freq["start"] = settings.Freq.start;
     freq["stop"] = settings.Freq.stop;
     freq["power"] = settings.Freq.excitation_power;
+    freq["log"] = settings.Freq.logSweep;
     sweep["frequency"] = freq;
     nlohmann::json power;
     power["start"] = settings.Power.start;
@@ -750,6 +757,7 @@ void VNA::fromJSON(nlohmann::json j)
             SetStartFreq(freq.value("start", settings.Freq.start));
             SetStopFreq(freq.value("stop", settings.Freq.stop));
             SetSourceLevel(freq.value("power", settings.Freq.excitation_power));
+            SetLogSweep(freq.value("log", settings.Freq.logSweep));
         }
         if(sweep.contains("power")) {
             auto power = sweep["power"];
@@ -850,6 +858,7 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
         s.if_bandwidth = settings.bandwidth;
         s.cdbm_excitation_start = settings.Freq.excitation_power * 100;
         s.cdbm_excitation_stop = settings.Freq.excitation_power * 100;
+        s.logSweep = settings.Freq.logSweep;
     } else if(settings.sweepType == SweepType::Power) {
         s.fixedPowerSetting = 0;
         s.f_start = settings.Power.frequency;
@@ -858,6 +867,7 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
         s.if_bandwidth = settings.bandwidth;
         s.cdbm_excitation_start = settings.Power.start * 100;
         s.cdbm_excitation_stop = settings.Power.stop * 100;
+        s.logSweep = false;
     }
     if(window->getDevice() && Mode::getActiveMode() == this) {
         if(s.excitePort1 == 0 && s.excitePort2 == 0) {
@@ -978,6 +988,16 @@ void VNA::SpanZoomOut()
     settings.Freq.stop = center + old_span;
     ConstrainAndUpdateFrequencies();
 }
+
+void VNA::SetLogSweep(bool log)
+{
+    if(settings.Freq.logSweep != log) {
+        settings.Freq.logSweep = log;
+        emit logSweepChanged(log);
+        SettingsChanged();
+    }
+}
+
 
 void VNA::SetSourceLevel(double level)
 {
@@ -1500,3 +1520,4 @@ VNA::SweepType VNA::SweepTypeFromString(QString s)
     // not found
     return SweepType::Last;
 }
+

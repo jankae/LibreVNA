@@ -46,6 +46,7 @@ public:
             double start;
             double stop;
             double excitation_power;
+            bool logSweep;
         } Freq;
         struct {
             double start;
@@ -70,6 +71,8 @@ private slots:
     void SetFullSpan();
     void SpanZoomIn();
     void SpanZoomOut();
+
+    void SetLogSweep(bool log);
     // Acquisition control
     void SetSourceLevel(double level);
     // Power sweep settings
@@ -146,6 +149,7 @@ signals:
     void stopFreqChanged(double freq);
     void centerFreqChanged(double freq);
     void spanChanged(double span);
+    void logSweepChanged(bool log);
 
     void sourceLevelChanged(double level);
     void pointsChanged(unsigned int points);

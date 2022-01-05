@@ -13,6 +13,7 @@
 #include "task.h"
 #include "Util.hpp"
 #include "usb.h"
+#include <cmath>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"VNA"
@@ -20,6 +21,7 @@
 
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
+static float span_log10;
 static bool excitingPort1;
 static Protocol::Datapoint data;
 static bool active = false;
@@ -51,6 +53,14 @@ static constexpr uint32_t reservedUSBbuffer = maxPointsBetweenHalts * (sizeof(Pr
 
 using namespace HWHAL;
 
+static uint64_t getPointFrequency(uint16_t pointNum) {
+	if(!settings.logSweep) {
+		return settings.f_start + (settings.f_stop - settings.f_start) * pointNum / (settings.points - 1);
+	} else {
+		return settings.f_start * powf(10.0, pointNum * span_log10 / (settings.points - 1));
+	}
+}
+
 bool VNA::Setup(Protocol::SweepSettings s) {
 	VNA::Stop();
 	vTaskDelay(5);
@@ -62,11 +72,14 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		return false;
 	}
 	settings = s;
+	span_log10 = log10((double) settings.f_stop / settings.f_start);
 	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
-	uint16_t points = settings.points <= FPGA::MaxPoints ? settings.points : FPGA::MaxPoints;
+	if(settings.points > FPGA::MaxPoints) {
+		settings.points = FPGA::MaxPoints;
+	}
 	// Configure sweep
-	FPGA::SetNumberOfPoints(points);
+	FPGA::SetNumberOfPoints(settings.points);
 	uint32_t samplesPerPoint = (HW::ADCSamplerate / s.if_bandwidth);
 	// round up to next multiple of 16 (16 samples are spread across 5 IF2 periods)
 	if(samplesPerPoint%16) {
@@ -120,10 +133,10 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	uint16_t pointsWithoutHalt = 0;
 
 	// Transfer PLL configuration to FPGA
-	for (uint16_t i = 0; i < points; i++) {
+	for (uint16_t i = 0; i < settings.points; i++) {
 		bool harmonic_mixing = false;
-		uint64_t freq = s.f_start + (s.f_stop - s.f_start) * i / (points - 1);
-		int16_t power = s.cdbm_excitation_start + (s.cdbm_excitation_stop - s.cdbm_excitation_start) * i / (points - 1);
+		uint64_t freq = getPointFrequency(i);
+		int16_t power = s.cdbm_excitation_start + (s.cdbm_excitation_stop - s.cdbm_excitation_start) * i / (settings.points - 1);
 		freq = Cal::FrequencyCorrectionToDevice(freq);
 
 		if(freq > 6000000000ULL) {
@@ -286,7 +299,7 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	auto port1 = port1_raw / ref;
 	auto port2 = port2_raw / ref;
 	data.pointNum = pointCnt;
-	data.frequency = settings.f_start + (settings.f_stop - settings.f_start) * pointCnt / (settings.points - 1);
+	data.frequency = getPointFrequency(pointCnt);
 	data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
 	if(excitingPort1) {
 		data.real_S11 = port1.real();
@@ -352,9 +365,7 @@ void VNA::SweepHalted() {
 		// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
 		Delay::us(1300);
 	}
-	uint64_t frequency = settings.f_start
-			+ (settings.f_stop - settings.f_start) * pointCnt
-					/ (settings.points - 1);
+	uint64_t frequency = getPointFrequency(pointCnt);
 	int16_t power = settings.cdbm_excitation_start
 			+ (settings.cdbm_excitation_stop - settings.cdbm_excitation_start)
 					* pointCnt / (settings.points - 1);

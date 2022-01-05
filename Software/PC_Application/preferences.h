@@ -35,6 +35,7 @@ public:
             QString type;
             double f_start;
             double f_stop;
+            bool logSweep;
             double f_excitation;
 
             double dbm_start;
@@ -103,12 +104,13 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 40> descr = {{
+    const std::array<SettingDescription, 41> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
         {&Startup.DefaultSweep.f_start, "Startup.DefaultSweep.start", 1000000.0},
         {&Startup.DefaultSweep.f_stop, "Startup.DefaultSweep.stop", 6000000000.0},
+        {&Startup.DefaultSweep.logSweep, "Startup.DefaultSweep.logSweep", false},
         {&Startup.DefaultSweep.f_excitation, "Startup.DefaultSweep.excitation", -10.00},
         {&Startup.DefaultSweep.dbm_start, "Startup.DefaultSweep.dbm_start", -30.00},
         {&Startup.DefaultSweep.dbm_stop, "Startup.DefaultSweep.dbm_stop", -10.0},
