@@ -21,7 +21,7 @@
 
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
-static float span_log10;
+static double logMultiplier, logFrequency;
 static bool excitingPort1;
 static Protocol::Datapoint data;
 static bool active = false;
@@ -57,7 +57,18 @@ static uint64_t getPointFrequency(uint16_t pointNum) {
 	if(!settings.logSweep) {
 		return settings.f_start + (settings.f_stop - settings.f_start) * pointNum / (settings.points - 1);
 	} else {
-		return settings.f_start * powf(10.0, pointNum * span_log10 / (settings.points - 1));
+		static uint16_t lastPointNum = 0;
+		if (pointNum == 0) {
+			logFrequency = settings.f_start;
+		} else if(pointNum == lastPointNum) {
+			// nothing to do
+		} else if(pointNum == lastPointNum + 1) {
+			logFrequency *= logMultiplier;
+		} else {
+			logFrequency = settings.f_start * pow(10.0, pointNum * log10((double)settings.f_stop / settings.f_start) / (settings.points - 1));
+		}
+		lastPointNum = pointNum;
+		return logFrequency;
 	}
 }
 
@@ -71,13 +82,14 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		active = false;
 		return false;
 	}
-	settings = s;
-	span_log10 = log10((double) settings.f_stop / settings.f_start);
 	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	if(settings.points > FPGA::MaxPoints) {
 		settings.points = FPGA::MaxPoints;
 	}
+	settings = s;
+	// calculate factor between adjacent points for log sweep for faster calculation when sweeping
+	logMultiplier = pow((double) settings.f_stop / settings.f_start, 1.0 / (settings.points-1));
 	// Configure sweep
 	FPGA::SetNumberOfPoints(settings.points);
 	uint32_t samplesPerPoint = (HW::ADCSamplerate / s.if_bandwidth);
