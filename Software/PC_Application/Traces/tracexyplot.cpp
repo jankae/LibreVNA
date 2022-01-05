@@ -44,7 +44,7 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     setYAxis(1, YAxisType::Phase, false, false, -180, 180, 30);
     // enable autoscaling and set for full span (no information about actual span available yet)
     updateSpan(0, 6000000000);
-    setXAxis(XAxisType::Frequency, XAxisMode::UseSpan, 0, 6000000000, 600000000);
+    setXAxis(XAxisType::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 600000000);
     initializeTraceInfo();
 }
 
@@ -76,10 +76,11 @@ void TraceXYPlot::setYAxis(int axis, TraceXYPlot::YAxisType type, bool log, bool
     replot();
 }
 
-void TraceXYPlot::setXAxis(XAxisType type, XAxisMode mode, double min, double max, double div)
+void TraceXYPlot::setXAxis(XAxisType type, XAxisMode mode, bool log, double min, double max, double div)
 {
     XAxis.type = type;
     XAxis.mode = mode;
+    XAxis.log = log;
     XAxis.rangeMin = min;
     XAxis.rangeMax = max;
     XAxis.rangeDiv = div;
@@ -165,7 +166,8 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
     auto xmin = jX.value("min", 0.0);
     auto xmax = jX.value("max", 6000000000.0);
     auto xdiv = jX.value("div", 600000000.0);
-    setXAxis(xtype, xmode, xmin, xmax, xdiv);
+    auto xlog = jX.value("log", false);
+    setXAxis(xtype, xmode, xlog, xmin, xmax, xdiv);
     nlohmann::json jY[2] = {j["YPrimary"], j["YSecondary"]};
     for(unsigned int i=0;i<2;i++) {
         YAxisType ytype;
@@ -220,17 +222,17 @@ bool TraceXYPlot::configureForTrace(Trace *t)
 {
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
-        setXAxis(XAxisType::Frequency, XAxisMode::FitTraces, 0, 1, 0.1);
+        setXAxis(XAxisType::Frequency, XAxisMode::FitTraces, false, 0, 1, 0.1);
         setYAxis(0, YAxisType::Magnitude, false, true, 0, 1, 1.0);
         setYAxis(1, YAxisType::Phase, false, true, 0, 1, 1.0);
         break;
     case Trace::DataType::Time:
-        setXAxis(XAxisType::Time, XAxisMode::FitTraces, 0, 1, 0.1);
+        setXAxis(XAxisType::Time, XAxisMode::FitTraces, false, 0, 1, 0.1);
         setYAxis(0, YAxisType::ImpulseMag, false, true, 0, 1, 1.0);
         setYAxis(1, YAxisType::Disabled, false, true, 0, 1, 1.0);
         break;
     case Trace::DataType::Power:
-        setXAxis(XAxisType::Power, XAxisMode::FitTraces, 0, 1, 0.1);
+        setXAxis(XAxisType::Power, XAxisMode::FitTraces, false, 0, 1, 0.1);
         setYAxis(0, YAxisType::Magnitude, false, true, 0, 1, 1.0);
         setYAxis(1, YAxisType::Phase, false, true, 0, 1, 1.0);
         break;
@@ -506,21 +508,24 @@ void TraceXYPlot::draw(QPainter &p)
 
     if(XAxis.ticks.size() >= 1) {
         // draw X ticks
-        // this only works for evenly distributed ticks:
-        auto max = qMax(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
-        auto minLabel = qMin(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
-        double step;
-        if(XAxis.ticks.size() >= 2) {
-            step = abs(XAxis.ticks[0] - XAxis.ticks[1]);
+        int significantDigits;
+        bool displayFullFreq;
+        if(XAxis.log) {
+            significantDigits = 5;
+            displayFullFreq = true;
         } else {
-            // only one tick, set arbitrary number of digits
-            step = max / 1000;
+            // this only works for evenly distributed ticks:
+            auto max = qMax(abs(XAxis.ticks.front()), abs(XAxis.ticks.back()));
+            double step;
+            if(XAxis.ticks.size() >= 2) {
+                step = abs(XAxis.ticks[0] - XAxis.ticks[1]);
+            } else {
+                // only one tick, set arbitrary number of digits
+                step = max / 1000;
+            }
+            significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
+            displayFullFreq = significantDigits <= 5;
         }
-        if(minLabel > 0 && minLabel < step) {
-            step = minLabel;
-        }
-        int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
-        bool displayFullFreq = significantDigits <= 5;
         constexpr int displayLastDigits = 4;
         QString prefixes = "fpnum kMG";
         QString unit = "";
@@ -543,12 +548,25 @@ void TraceXYPlot::draw(QPainter &p)
             p.drawText(QRect(bounding.x() + bounding.width(), plotAreaBottom + AxisLabelSize + 5, w.width(), AxisLabelSize), 0, back);
         }
 
+        int lastTickLabelEnd = 0;
         for(auto t : XAxis.ticks) {
-            auto xCoord = Util::Scale<double>(t, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth);
+            auto xCoord = Util::Scale<double>(t, XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth, XAxis.log);
+            p.setPen(QPen(pref.Graphs.Color.axis, 1));
+            p.drawLine(xCoord, plotAreaBottom, xCoord, plotAreaBottom + 2);
+            if(xCoord != plotAreaLeft && xCoord != plotAreaLeft + plotAreaWidth) {
+                p.setPen(QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine));
+                p.drawLine(xCoord, plotAreaTop, xCoord, plotAreaBottom);
+            }
+            if(xCoord - 40 <= lastTickLabelEnd) {
+                // would overlap previous tick label, skip
+                continue;
+            }
             auto tickValue = Unit::ToString(t, unit, prefixes, significantDigits);
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             if(displayFullFreq) {
-                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue);
+                QRect bounding;
+                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue, &bounding);
+                lastTickLabelEnd = bounding.x() + bounding.width();
             } else {
                 // check if the same prefix was used as in the fullFreq string
                 if(tickValue.at(tickValue.size() - 1) != commonPrefix) {
@@ -559,14 +577,9 @@ void TraceXYPlot::draw(QPainter &p)
                 tickValue.remove(0, tickValue.size() - displayLastDigits - unit.length());
                 QRect bounding;
                 p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue, &bounding);
+                lastTickLabelEnd = bounding.x() + bounding.width();
                 p.setPen(QPen(QColor("orange")));
-                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, AxisLabelSize), Qt::AlignRight, "..");
-                p.setPen(QPen(pref.Graphs.Color.axis, 1));
-            }
-            p.drawLine(xCoord, plotAreaBottom, xCoord, plotAreaBottom + 2);
-            if(xCoord != plotAreaLeft && xCoord != plotAreaLeft + plotAreaWidth) {
-                p.setPen(QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine));
-                p.drawLine(xCoord, plotAreaTop, xCoord, plotAreaBottom);
+                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, AxisLabelSize), Qt::AlignRight, "..", &bounding);
             }
         }
     }
@@ -648,8 +661,48 @@ void TraceXYPlot::updateAxisTicks()
         return div_step;
     };
 
+    auto createLogarithmicTicks = [](vector<double>& ticks, double start, double stop, int minDivisions) {
+        Q_ASSERT(stop > start);
+        Q_ASSERT(start > 0);
+        ticks.clear();
+
+        auto decades = log10(stop) - log10(start);
+        double max_div_decade = minDivisions / decades;
+        int zeros = floor(log10(max_div_decade));
+        double decimals_shift = pow(10, zeros);
+        max_div_decade /= decimals_shift;
+        if(max_div_decade < 2) {
+            max_div_decade = 2;
+        } else if(max_div_decade < 5) {
+            max_div_decade = 5;
+        } else {
+            max_div_decade = 10;
+        }
+        auto step = pow(10, floor(log10(start))+1) / (max_div_decade * decimals_shift);
+        // round min up to next multiple of div_step
+        auto div = ceil(start / step) * step;
+        if(floor(log10(div)) != floor(log10(start))) {
+            // first div is already at the next decade
+            step *= 10;
+        }
+        do {
+            ticks.push_back(div);
+            if(ticks.size() > 1 && div != step && floor(log10(div)) != floor(log10(div - step))) {
+                // reached a new decade with this switch
+                step *= 10;
+                div = step;
+            } else {
+                div += step;
+            }
+        } while(div <= stop);
+    };
+
     if(XAxis.mode == XAxisMode::Manual) {
-        createEvenlySpacedTicks(XAxis.ticks, XAxis.rangeMin, XAxis.rangeMax, XAxis.rangeDiv);
+        if(XAxis.log) {
+            createLogarithmicTicks(XAxis.ticks, XAxis.rangeMin, XAxis.rangeMax, 20);
+        } else {
+            createEvenlySpacedTicks(XAxis.ticks, XAxis.rangeMin, XAxis.rangeMax, XAxis.rangeDiv);
+        }
     } else {
         XAxis.ticks.clear();
         // automatic mode, figure out limits
@@ -688,7 +741,11 @@ void TraceXYPlot::updateAxisTicks()
             // found min/max values
             XAxis.rangeMin = min;
             XAxis.rangeMax = max;
-            XAxis.rangeDiv = createAutomaticTicks(XAxis.ticks, min, max, 8);
+            if(XAxis.log) {
+                createLogarithmicTicks(XAxis.ticks, XAxis.rangeMin, XAxis.rangeMax, 20);
+            } else {
+                XAxis.rangeDiv = createAutomaticTicks(XAxis.ticks, min, max, 8);
+            }
         }
     }
 
@@ -1006,7 +1063,7 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
 QPoint TraceXYPlot::plotValueToPixel(QPointF plotValue, int Yaxis)
 {
     QPoint p;
-    p.setX(Util::Scale<double>(plotValue.x(), XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth));
+    p.setX(Util::Scale<double>(plotValue.x(), XAxis.rangeMin, XAxis.rangeMax, plotAreaLeft, plotAreaLeft + plotAreaWidth, XAxis.log));
     p.setY(Util::Scale<double>(plotValue.y(), YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax, plotAreaBottom, plotAreaTop));
     return p;
 }
@@ -1014,7 +1071,7 @@ QPoint TraceXYPlot::plotValueToPixel(QPointF plotValue, int Yaxis)
 QPointF TraceXYPlot::pixelToPlotValue(QPoint pixel, int Yaxis)
 {
     QPointF p;
-    p.setX(Util::Scale<double>(pixel.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth, XAxis.rangeMin, XAxis.rangeMax));
+    p.setX(Util::Scale<double>(pixel.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth, XAxis.rangeMin, XAxis.rangeMax, false, XAxis.log));
     p.setY(Util::Scale<double>(pixel.y(), plotAreaBottom, plotAreaTop, YAxis[Yaxis].rangeMin, YAxis[Yaxis].rangeMax));
     return p;
 }

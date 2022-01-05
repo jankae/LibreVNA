@@ -71,7 +71,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     connect(ui->Xauto, &QCheckBox::toggled, [this](bool checked) {
        ui->Xmin->setEnabled(!checked);
        ui->Xmax->setEnabled(!checked);
-       ui->Xdivs->setEnabled(!checked);
+       ui->Xdivs->setEnabled(!checked && ui->Xlinear->isChecked());
        ui->Xautomode->setEnabled(checked);
     });
 
@@ -82,6 +82,9 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
 
     XAxisTypeChanged((int) plot->XAxis.type);
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
+    connect(ui->Xlog, &QCheckBox::toggled, [=](bool checked){
+        ui->Xdivs->setEnabled(!checked && !ui->Xauto->isChecked());
+    });
 
     // Fill initial values
     ui->Y1type->setCurrentIndex((int) plot->YAxis[0].type);
@@ -106,6 +109,11 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y2max->setValueQuiet(plot->YAxis[1].rangeMax);
     ui->Y2divs->setValueQuiet(plot->YAxis[1].rangeDiv);
 
+    if(plot->XAxis.log) {
+        ui->Xlog->setChecked(true);
+    } else {
+        ui->Xlinear->setChecked(true);
+    }
     ui->Xauto->setChecked(plot->XAxis.mode != TraceXYPlot::XAxisMode::Manual);
     if(plot->XAxis.mode == TraceXYPlot::XAxisMode::UseSpan) {
         ui->Xautomode->setCurrentIndex(0);
@@ -137,7 +145,7 @@ void XYplotAxisDialog::on_buttonBox_accepted()
     } else {
         mode = TraceXYPlot::XAxisMode::Manual;
     }
-    plot->setXAxis((TraceXYPlot::XAxisType) ui->XType->currentIndex(), mode, ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
+    plot->setXAxis((TraceXYPlot::XAxisType) ui->XType->currentIndex(), mode, ui->Xlog->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
 }
 
 static void enableComboBoxItem(QComboBox *cb, int itemNum, bool enable) {
@@ -168,12 +176,18 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
 
     if(type == TraceXYPlot::XAxisType::Frequency) {
         enableComboBoxItem(ui->Xautomode, 0, true);
+        ui->Xlog->setEnabled(true);
     } else {
         // auto mode using span not supported in time mode
         if(ui->Xautomode->currentIndex() == 0) {
             ui->Xautomode->setCurrentIndex(1);
-            enableComboBoxItem(ui->Xautomode, 0, false);
         }
+        enableComboBoxItem(ui->Xautomode, 0, false);
+        // log option only available for frequency axis
+        if(ui->Xlog->isChecked()) {
+            ui->Xlinear->setChecked(true);
+        }
+        ui->Xlog->setEnabled(false);
     }
 
     QString unit = TraceXYPlot::AxisUnit(type);

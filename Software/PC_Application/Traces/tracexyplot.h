@@ -50,7 +50,7 @@ public:
     };
 
     void setYAxis(int axis, YAxisType type, bool log, bool autorange, double min, double max, double div);
-    void setXAxis(XAxisType type, XAxisMode mode, double min, double max, double div);
+    void setXAxis(XAxisType type, XAxisMode mode, bool log, double min, double max, double div);
     void enableTrace(Trace *t, bool enabled) override;
     void updateSpan(double min, double max) override;
     void replot() override;
