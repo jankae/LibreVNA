@@ -550,6 +550,7 @@ VNA::VNA(AppWindow *window)
     } else {
         settings.Freq.start = pref.Startup.DefaultSweep.f_start;
         settings.Freq.stop = pref.Startup.DefaultSweep.f_stop;
+        SetLogSweep(pref.Startup.DefaultSweep.logSweep);
         SetSourceLevel(pref.Startup.DefaultSweep.f_excitation);
         ConstrainAndUpdateFrequencies();
         SetStartPower(pref.Startup.DefaultSweep.dbm_start);
@@ -1427,6 +1428,7 @@ void VNA::LoadSweepSettings()
     settings.Freq.start = s.value("SweepFreqStart", pref.Startup.DefaultSweep.f_start).toULongLong();
     settings.Freq.stop = s.value("SweepFreqStop", pref.Startup.DefaultSweep.f_stop).toULongLong();
     SetSourceLevel(s.value("SweepFreqLevel", pref.Startup.DefaultSweep.f_excitation).toDouble());
+    SetLogSweep(s.value("SweepFreqLog", pref.Startup.DefaultSweep.logSweep).toBool());
     // power sweep settings
     SetStartPower(s.value("SweepPowerStart", pref.Startup.DefaultSweep.dbm_start).toDouble());
     SetStopPower(s.value("SweepPowerStop", pref.Startup.DefaultSweep.dbm_stop).toDouble());
@@ -1450,6 +1452,7 @@ void VNA::StoreSweepSettings()
     s.setValue("SweepFreqStart", static_cast<unsigned long long>(settings.Freq.start));
     s.setValue("SweepFreqStop", static_cast<unsigned long long>(settings.Freq.stop));
     s.setValue("SweepFreqLevel", settings.Freq.excitation_power);
+    s.setValue("SweepFreqLog", settings.Freq.logSweep);
     s.setValue("SweepPowerStart", settings.Power.start);
     s.setValue("SweepPowerStop", settings.Power.stop);
     s.setValue("SweepPowerFreq", static_cast<unsigned long long>(settings.Power.frequency));
