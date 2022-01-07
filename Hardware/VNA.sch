@@ -5487,8 +5487,8 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <part name="J3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="BU-1420701851" device=""/>
 <part name="GND141" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
 <part name="GND142" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="GND" device=""/>
-<part name="R48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PAT0816-C-3DB-T5" device=""/>
-<part name="R47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PAT0816-C-3DB-T5" device=""/>
+<part name="R48" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PAT0816-C-3DB-T5" device="" value="DNP"/>
+<part name="R47" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="PAT0816-C-3DB-T5" device="" value="DNP"/>
 <part name="L12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="L13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
 <part name="L15" library="VNA" library_urn="urn:adsk.eagle:library:22367181" deviceset="FERRITE" device="" package3d_urn="urn:adsk.eagle:package:22367274/3" value="Ferrite"/>
@@ -6186,7 +6186,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <junction x="317.5" y="142.24"/>
 </segment>
 </net>
-<net name="N$163" class="0">
+<net name="+6V" class="0">
 <segment>
 <pinref part="IC4" gate="G$1" pin="VIN"/>
 <wire x1="276.86" y1="142.24" x2="274.32" y2="142.24" width="0.1524" layer="91"/>
@@ -6253,6 +6253,7 @@ Created 2016-06-07, Hans Locher&lt;br&gt;
 <wire x1="213.36" y1="170.18" x2="210.82" y2="170.18" width="0.1524" layer="91"/>
 <wire x1="210.82" y1="170.18" x2="210.82" y2="175.26" width="0.1524" layer="91"/>
 <junction x="210.82" y="175.26"/>
+<label x="236.22" y="175.26" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$164" class="0">
@@ -16824,55 +16825,18 @@ slave configuration</text>
 </sheet>
 </sheets>
 <errors>
-<approved hash="104,6,152.4,71.12,IC3,V+,+5V/1,,,"/>
-<approved hash="104,6,152.4,50.8,IC3,V-,GND,,,"/>
-<approved hash="104,8,114.3,83.82,IC11,V+,+5V/3,,,"/>
-<approved hash="104,8,114.3,63.5,IC11,V-,GND,,,"/>
-<approved hash="104,7,152.4,71.12,IC7,V+,+5V/2,,,"/>
-<approved hash="104,7,152.4,50.8,IC7,V-,GND,,,"/>
-<approved hash="104,3,27.94,187.96,IC15,VIN,+5V/4,,,"/>
-<approved hash="104,3,48.26,187.96,IC15,VOUT,N$129,,,"/>
-<approved hash="104,3,27.94,210.82,IC17,VIN,+5V/4,,,"/>
-<approved hash="104,3,48.26,210.82,IC17,VOUT,N$128,,,"/>
 <approved hash="104,5,96.52,187.96,IC20,VIN,+5V/4,,,"/>
 <approved hash="104,5,116.84,187.96,IC20,VOUT,N$143,,,"/>
-<approved hash="104,5,96.52,210.82,IC21,VIN,+5V/4,,,"/>
-<approved hash="104,5,116.84,210.82,IC21,VOUT,N$142,,,"/>
-<approved hash="104,9,106.68,220.98,U4,VCC,+3V3,,,"/>
-<approved hash="104,6,276.86,101.6,IC34,VIN,+5V/1,,,"/>
-<approved hash="104,6,297.18,101.6,IC34,VOUT,N$203,,,"/>
-<approved hash="104,7,276.86,101.6,IC35,VIN,+5V/2,,,"/>
-<approved hash="104,7,297.18,101.6,IC35,VOUT,N$204,,,"/>
-<approved hash="104,8,228.6,114.3,IC36,VIN,+5V/3,,,"/>
-<approved hash="104,8,248.92,114.3,IC36,VOUT,N$205,,,"/>
 <approved hash="110,2,198.12,144.78,N$97,LO1_REF,,,,"/>
 <approved hash="110,2,198.12,144.78,N$97,LO1_REF,,,,"/>
 <approved hash="110,2,198.12,142.24,N$160,LO1_REF,,,,"/>
 <approved hash="110,2,198.12,142.24,N$160,LO1_REF,,,,"/>
-<approved hash="110,3,53.34,99.06,SOURCE_CE,N$116,,,,"/>
-<approved hash="110,3,53.34,99.06,SOURCE_CE,N$116,,,,"/>
-<approved hash="110,3,289.56,167.64,N$201,N$202,,,,"/>
-<approved hash="110,3,289.56,167.64,N$201,N$202,,,,"/>
-<approved hash="110,4,360.68,93.98,PORT2SWITCH,GND,,,,"/>
-<approved hash="110,4,360.68,93.98,PORT2SWITCH,GND,,,,"/>
 <approved hash="110,5,121.92,99.06,LO1_CE,N$139,,,,"/>
 <approved hash="110,5,121.92,99.06,LO1_CE,N$139,,,,"/>
 <approved hash="110,7,340.36,180.34,N$23,N$223,,,,"/>
 <approved hash="110,7,340.36,180.34,N$23,N$223,,,,"/>
 <approved hash="110,9,256.54,71.12,N$189,N$186,,,,"/>
 <approved hash="110,9,256.54,71.12,N$189,N$186,,,,"/>
-<approved hash="110,10,83.82,132.08,N$245,+3V3,,,,"/>
-<approved hash="110,10,83.82,132.08,N$245,+3V3,,,,"/>
-<approved hash="113,6,193.571,130.071,FRAME1,,,,,"/>
-<approved hash="113,8,193.571,130.071,FRAME3,,,,,"/>
-<approved hash="113,7,193.571,130.071,FRAME2,,,,,"/>
-<approved hash="113,2,193.571,130.071,FRAME4,,,,,"/>
-<approved hash="113,3,193.571,130.071,FRAME5,,,,,"/>
-<approved hash="113,5,193.571,130.071,FRAME6,,,,,"/>
-<approved hash="113,4,193.571,130.071,FRAME7,,,,,"/>
-<approved hash="113,1,193.571,130.071,FRAME8,,,,,"/>
-<approved hash="113,9,193.571,130.071,FRAME10,,,,,"/>
-<approved hash="113,10,193.571,130.071,FRAME9,,,,,"/>
 </errors>
 </schematic>
 </drawing>
