@@ -80,8 +80,8 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         ui->SCPIServerEnabled->setEnabled(false);
     }
 
-    connect(ui->GraphsShowMarkerData, &QCheckBox::toggled, [=](bool enabled) {
-         ui->GraphsShowAllMarkerData->setEnabled(enabled);
+    connect(ui->MarkerShowMarkerData, &QCheckBox::toggled, [=](bool enabled) {
+         ui->MarkerShowAllMarkerData->setEnabled(enabled);
     });
 
     // Page selection
@@ -128,6 +128,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Startup.SA.window = ui->StartupSAWindow->currentIndex();
         p->Startup.SA.detector = ui->StartupSADetector->currentIndex();
         p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
+
         p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
         p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
         p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
@@ -135,6 +136,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
         p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
+
         p->Graphs.showUnits = ui->GraphsShowUnit->isChecked();
         p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
         p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
@@ -142,9 +144,12 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Graphs.Color.Ticks.Background.background = ui->GraphsColorTicksBackground->getColor();
         p->Graphs.Color.Ticks.divisions = ui->GraphsColorTicksDivisions->getColor();
         p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
-        p->Graphs.markerBehavior.showDataOnGraphs = ui->GraphsShowMarkerData->isChecked();
-        p->Graphs.markerBehavior.showAllData = ui->GraphsShowAllMarkerData->isChecked();
         p->Graphs.lineWidth = ui->GraphsLineWidth->value();
+
+        p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
+        p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();
+        p->Marker.interpolatePoints = ui->MarkerInterpolate->currentIndex() == 1;
+
         p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
         p->SCPIServer.port = ui->SCPIServerPort->value();
         accept();
@@ -211,9 +216,11 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsColorTicksBackgroundEnabled->setChecked(p->Graphs.Color.Ticks.Background.enabled);
     ui->GraphsColorTicksBackground->setColor(p->Graphs.Color.Ticks.Background.background);
     ui->GraphsDomainChangeBehavior->setCurrentIndex((int) p->Graphs.domainChangeBehavior);
-    ui->GraphsShowMarkerData->setChecked(p->Graphs.markerBehavior.showDataOnGraphs);
-    ui->GraphsShowAllMarkerData->setChecked(p->Graphs.markerBehavior.showAllData);
     ui->GraphsLineWidth->setValue(p->Graphs.lineWidth);
+
+    ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
+    ui->MarkerShowAllMarkerData->setChecked(p->Marker.defaultBehavior.showAllData);
+    ui->MarkerInterpolate->setCurrentIndex(p->Marker.interpolatePoints ? 1 : 0);
 
     ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
     ui->SCPIServerPort->setValue(p->SCPIServer.port);

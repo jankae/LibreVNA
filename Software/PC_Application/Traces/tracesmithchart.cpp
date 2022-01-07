@@ -5,6 +5,7 @@
 #include "ui_smithchartdialog.h"
 #include "unit.h"
 #include "QFileDialog"
+#include "Util/util.h"
 
 #include <QPainter>
 #include <array>
@@ -141,6 +142,7 @@ double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel, double *distan
 {
     double closestDistance = numeric_limits<double>::max();
     double closestXpos = 0;
+    unsigned int closestIndex = 0;
     auto samples = t->size();
     for(unsigned int i=0;i<samples;i++) {
         auto data = t->sample(i);
@@ -154,6 +156,28 @@ double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel, double *distan
         if(distance < closestDistance) {
             closestDistance = distance;
             closestXpos = t->sample(i).x;
+            closestIndex = i;
+        }
+    }
+    closestDistance = sqrt(closestDistance);
+    if(closestIndex > 0) {
+        auto l1 = dataToPixel(t->sample(closestIndex-1));
+        auto l2 = dataToPixel(t->sample(closestIndex));
+        double ratio;
+        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
+        if(distance < closestDistance) {
+            closestDistance = distance;
+            closestXpos = t->sample(closestIndex-1).x + (t->sample(closestIndex).x - t->sample(closestIndex-1).x) * ratio;
+        }
+    }
+    if(closestIndex < t->size() - 1) {
+        auto l1 = dataToPixel(t->sample(closestIndex));
+        auto l2 = dataToPixel(t->sample(closestIndex+1));
+        double ratio;
+        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
+        if(distance < closestDistance) {
+            closestDistance = distance;
+            closestXpos = t->sample(closestIndex).x + (t->sample(closestIndex+1).x - t->sample(closestIndex).x) * ratio;
         }
     }
     if(distance) {

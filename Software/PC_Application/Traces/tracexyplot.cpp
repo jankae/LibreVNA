@@ -491,7 +491,17 @@ void TraceXYPlot::draw(QPainter &p)
                         continue;
                     }
                     auto t = m->getTrace();
-                    QPointF markerPoint = traceToCoordinate(t, t->index(xPosition), YAxis[i].type);
+                    auto index = t->index(xPosition);
+                    QPointF markerPoint;
+                    if(xPosition < t->sample(index).x && index > 0) {
+                        // marker is not located exactly at this point, interpolate display location
+                        QPointF l0 = traceToCoordinate(t, index - 1, YAxis[i].type);
+                        QPointF l1 = traceToCoordinate(t, index, YAxis[i].type);
+                        auto t0 = (xPosition - t->sample(index - 1).x) / (t->sample(index).x - t->sample(index - 1).x);
+                        markerPoint = l0 + (l1 - l0) * t0;
+                    } else {
+                        markerPoint = traceToCoordinate(t, t->index(xPosition), YAxis[i].type);
+                    }
                     auto point = plotValueToPixel(markerPoint, i);
                     if(!plotRect.contains(point)) {
                         // out of screen
@@ -1096,6 +1106,7 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
     }
     double closestDistance = numeric_limits<double>::max();
     double closestXpos = 0;
+    unsigned int closestIndex = 0;
     auto samples = t->size();
     for(unsigned int i=0;i<samples;i++) {
         auto point = traceToCoordinate(t, i, YAxis[0].type);
@@ -1108,6 +1119,28 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
         if(distance < closestDistance) {
             closestDistance = distance;
             closestXpos = point.x();
+            closestIndex = i;
+        }
+    }
+    closestDistance = sqrt(closestDistance);
+    if(closestIndex > 0) {
+        auto l1 = plotValueToPixel(traceToCoordinate(t, closestIndex - 1, YAxis[0].type), 0);
+        auto l2 = plotValueToPixel(traceToCoordinate(t, closestIndex, YAxis[0].type), 0);
+        double ratio;
+        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
+        if(distance < closestDistance) {
+            closestDistance = distance;
+            closestXpos = t->sample(closestIndex-1).x + (t->sample(closestIndex).x - t->sample(closestIndex-1).x) * ratio;
+        }
+    }
+    if(closestIndex < t->size() - 1) {
+        auto l1 = plotValueToPixel(traceToCoordinate(t, closestIndex, YAxis[0].type), 0);
+        auto l2 = plotValueToPixel(traceToCoordinate(t, closestIndex + 1, YAxis[0].type), 0);
+        double ratio;
+        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
+        if(distance < closestDistance) {
+            closestDistance = distance;
+            closestXpos = t->sample(closestIndex).x + (t->sample(closestIndex+1).x - t->sample(closestIndex).x) * ratio;
         }
     }
     if(XAxis.type == XAxisType::Distance) {

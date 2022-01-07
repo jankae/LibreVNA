@@ -85,8 +85,8 @@ void Marker::assignTrace(Trace *t)
         // Marker was just created and this is the first assignment to a trace.
         // Use display format on graph from preferences
         auto p = Preferences::getInstance();
-        if(p.Graphs.markerBehavior.showDataOnGraphs) {
-            if(p.Graphs.markerBehavior.showAllData) {
+        if(p.Marker.defaultBehavior.showDataOnGraphs) {
+            if(p.Marker.defaultBehavior.showAllData) {
                 for(auto f : applicableFormats()) {
                     formatGraph.insert(f);
                 }
@@ -598,7 +598,7 @@ void Marker::traceDataChanged()
             newdata = numeric_limits<complex<double>>::quiet_NaN();
         } else {
             // some data of the parent trace changed, check if marker data also changed
-            newdata = parentTrace->sample(parentTrace->index(position)).y;
+            newdata = parentTrace->interpolatedSample(position).y;
         }
     }
     if (newdata != data) {
@@ -839,8 +839,10 @@ void Marker::constrainPosition()
             } else if(position < parentTrace->minX()) {
                 position = parentTrace->minX();
             }
-            // set position to closest trace index
-            position = parentTrace->sample(parentTrace->index(position)).x;
+            if(!Preferences::getInstance().Marker.interpolatePoints) {
+                // marker interpolation disabled, set position to closest trace index
+                position = parentTrace->sample(parentTrace->index(position)).x;
+            }
         }
         traceDataChanged();
     }

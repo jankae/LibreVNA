@@ -83,12 +83,16 @@ public:
             } Ticks;
         } Color;
         GraphDomainChangeBehavior domainChangeBehavior;
+
+        double lineWidth;
+    } Graphs;
+    struct {
         struct {
             bool showDataOnGraphs;
             bool showAllData;
-        } markerBehavior;
-        double lineWidth;
-    } Graphs;
+        } defaultBehavior;
+        bool interpolatePoints;
+    } Marker;
     struct {
         bool enabled;
         int port;
@@ -104,7 +108,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 41> descr = {{
+    const std::array<SettingDescription, 42> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -141,9 +145,10 @@ private:
         {&Graphs.Color.Ticks.Background.background, "Graphs.Color.Ticks.Background.background", QColor(20, 20, 20)},
         {&Graphs.Color.Ticks.divisions, "Graphs.Color.Ticks.divisions", QColor(Qt::gray)},
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
-        {&Graphs.markerBehavior.showDataOnGraphs, "Graphs.markerBehavior.ShowDataOnGraphs", true},
-        {&Graphs.markerBehavior.showAllData, "Graphs.markerBehavior.ShowAllData", false},
         {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
+        {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
+        {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
+        {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
     }};

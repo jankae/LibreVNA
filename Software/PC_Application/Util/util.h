@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <QColor>
+#include <QPoint>
 
 namespace Util {
     template<typename T> T Scale(T value, T from_low, T from_high, T to_low, T to_high, bool log_from = false, bool log_to = false) {
@@ -69,6 +70,8 @@ namespace Util {
 
     // input values are Y coordinates, assumes evenly spaced linear X values from 0 to input.size() - 1
     void linearRegression(const std::vector<double> &input, double &B_0, double &B_1);
+
+    double distanceToLine(QPointF point, QPointF l1, QPointF l2, QPointF *closestLinePoint = nullptr, double *pointRatio = nullptr);
 }
 
 #endif // UTILH_H
