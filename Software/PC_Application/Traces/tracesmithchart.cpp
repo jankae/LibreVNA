@@ -11,6 +11,7 @@
 #include <array>
 #include <math.h>
 #include <QDebug>
+#include <QColorDialog>
 
 using namespace std;
 
@@ -35,6 +36,11 @@ nlohmann::json TraceSmithChart::toJSON()
         }
     }
     j["traces"] = jtraces;
+    nlohmann::json jlines;
+    for(auto line : constantLines) {
+        jlines.push_back(line.toJSON());
+    }
+    j["constantLines"] = jlines;
     return j;
 }
 
@@ -55,6 +61,13 @@ void TraceSmithChart::fromJSON(nlohmann::json j)
         }
         if(!found) {
             qWarning() << "Unable to find trace with hash" << hash;
+        }
+    }
+    if(j.contains("constantLines")) {
+        for(auto jline : j["constantLines"]) {
+            SmithChartConstantLine line;
+            line.fromJSON(jline);
+            constantLines.push_back(line);
         }
     }
 }
@@ -91,6 +104,12 @@ void TraceSmithChart::axisSetupDialog()
     ui->zoomFactor->setPrecision(3);
     ui->zoomReflection->setValue(edgeReflection);
     ui->zoomFactor->setValue(1.0/edgeReflection);
+
+    auto model = new SmithChartContantLineModel(*this);
+    ui->lineTable->setModel(model);
+    ui->lineTable->setItemDelegateForColumn(SmithChartContantLineModel::ColIndexType, new SmithChartTypeDelegate);
+    ui->lineTable->setItemDelegateForColumn(SmithChartContantLineModel::ColIndexParam, new SmithChartParamDelegate);
+
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
        limitToSpan = ui->displayModeFreq->currentIndex() == 1;
        limitToEdge = ui->displayModeImp->currentIndex() == 1;
@@ -104,6 +123,48 @@ void TraceSmithChart::axisSetupDialog()
         edgeReflection = ui->zoomReflection->value();
         ui->zoomFactor->setValueQuiet(1.0 / edgeReflection);
     });
+    connect(ui->lineTable, &QTableView::clicked, [=](const QModelIndex &index){
+        if(index.column() == SmithChartContantLineModel::ColIndexColor) {
+            auto line = &constantLines[index.row()];
+            auto newColor = QColorDialog::getColor(line->getColor(), parentWidget(), "Select color", QColorDialog::DontUseNativeDialog);
+            if(newColor.isValid()) {
+                line->setColor(newColor);
+                emit model->dataChanged(index, index);
+                triggerReplot();
+            }
+        }
+    });
+
+    auto updatePersistentEditors = [=](){
+        for(unsigned int i=0;i<constantLines.size();i++) {
+            ui->lineTable->openPersistentEditor(model->index(i, SmithChartContantLineModel::ColIndexType));
+        }
+    };
+
+    connect(ui->addLine, &QPushButton::clicked, [=](){
+        model->beginResetModel();
+        constantLines.push_back(SmithChartConstantLine());
+        model->endResetModel();
+        updatePersistentEditors();
+    });
+    connect(ui->removeLine, &QPushButton::clicked, [=](){
+        auto selected = ui->lineTable->selectionModel()->selectedRows();
+        // get indices of lines to delete
+        std::vector<int> toDelete;
+        for(auto s : selected) {
+            toDelete.push_back(s.row());
+        }
+        // delete starting with highest index (this makes sure that indices are not messed up after deleting an element
+        std::sort(toDelete.begin(), toDelete.end());
+        model->beginResetModel();
+        for (auto i = toDelete.rbegin(); i != toDelete.rend(); i++) {
+            constantLines.erase(constantLines.begin() + *i);
+        }
+        model->endResetModel();
+        updatePersistentEditors();
+    });
+
+    updatePersistentEditors();
     dialog->show();
 }
 
@@ -213,7 +274,7 @@ void TraceSmithChart::draw(QPainter &p) {
     transform = p.transform();
     p.restore();
 
-    auto drawArc = [&](Arc a) {
+    auto drawArc = [&](SmithChartArc a) {
         a.constrainToCircle(QPointF(0,0), edgeReflection);
         auto topleft = dataToPixel(complex<double>(a.center.x() - a.radius, a.center.y() - a.radius));
         auto bottomright = dataToPixel(complex<double>(a.center.x() + a.radius, a.center.y() + a.radius));
@@ -226,7 +287,7 @@ void TraceSmithChart::draw(QPainter &p) {
     auto pen = QPen(pref.Graphs.Color.axis);
     pen.setCosmetic(true);
     p.setPen(pen);
-    drawArc(Arc(QPointF(0, 0), edgeReflection, 0, 2*M_PI));
+    drawArc(SmithChartArc(QPointF(0, 0), edgeReflection, 0, 2*M_PI));
 
     constexpr int Circles = 6;
     pen = QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine);
@@ -234,8 +295,8 @@ void TraceSmithChart::draw(QPainter &p) {
     p.setPen(pen);
     for(int i=1;i<Circles * 2;i++) {
         auto radius = (double) i / Circles;
-        drawArc(Arc(QPointF(1.0 - radius, 0.0), radius, 0, 2*M_PI));
-        drawArc(Arc(QPointF(1.0 + radius, 0.0), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0 - radius, 0.0), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0 + radius, 0.0), radius, 0, 2*M_PI));
     }
 
       p.drawLine(dataToPixel(complex<double>(edgeReflection,0)),dataToPixel(complex<double>(-edgeReflection,0)));
@@ -243,8 +304,18 @@ void TraceSmithChart::draw(QPainter &p) {
     for(auto z : impedanceLines) {
         z /= ReferenceImpedance;
         auto radius = 1.0/z;
-        drawArc(Arc(QPointF(1.0, radius), radius, 0, 2*M_PI));
-        drawArc(Arc(QPointF(1.0, -radius), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0, radius), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0, -radius), radius, 0, 2*M_PI));
+    }
+
+    // draw custom constant parameter lines
+    for(auto line : constantLines) {
+        pen = QPen(line.getColor(), pref.Graphs.lineWidth);
+        pen.setCosmetic(true);
+        p.setPen(pen);
+        for(auto arc : line.getArcs()) {
+            drawArc(arc);
+        }
     }
 
     for(auto t : traces) {
@@ -429,7 +500,7 @@ bool TraceSmithChart::dropSupported(Trace *t)
     }
 }
 
-TraceSmithChart::Arc::Arc(QPointF center, double radius, double startAngle, double spanAngle)
+SmithChartArc::SmithChartArc(QPointF center, double radius, double startAngle, double spanAngle)
     : center(center),
       radius(radius),
       startAngle(startAngle),
@@ -438,7 +509,7 @@ TraceSmithChart::Arc::Arc(QPointF center, double radius, double startAngle, doub
 
 }
 
-void TraceSmithChart::Arc::constrainToCircle(QPointF center, double radius)
+void SmithChartArc::constrainToCircle(QPointF center, double radius)
 {
     // check if arc/circle intersect
     auto centerDiff = this->center - center;
@@ -500,5 +571,269 @@ void TraceSmithChart::Arc::constrainToCircle(QPointF center, double radius)
                 spanAngle = maxSpan;
             }
         }
+    }
+}
+
+SmithChartConstantLine::SmithChartConstantLine()
+{
+    type = Type::VSWR;
+    param = 10.0;
+    color = Qt::darkRed;
+}
+
+std::vector<SmithChartArc> SmithChartConstantLine::getArcs()
+{
+    std::vector<SmithChartArc> arcs;
+    switch(type) {
+    case Type::VSWR:
+        arcs.push_back(SmithChartArc(QPointF(0.0, 0.0), (param - 1.0) / (param + 1.0)));
+        break;
+    case Type::Resistance: {
+        auto circleLeft = (param / 50.0 - 1.0) / (param / 50.0 + 1.0);
+        arcs.push_back(SmithChartArc(QPointF((circleLeft + 1.0) / 2, 0.0), (1.0 - circleLeft) / 2.0));
+    }
+        break;
+    case Type::Reactance: {
+        auto radius = 1.0/(param / 50.0);
+        if(radius > 0) {
+            arcs.push_back(SmithChartArc(QPointF(1.0, radius), radius));
+        } else {
+            arcs.push_back(SmithChartArc(QPointF(1.0, radius), -radius));
+        }
+    }
+        break;
+    case Type::Q: {
+        auto center = 1.0 / param;
+        auto radius = sqrt(center*center + 1.0);
+        arcs.push_back(SmithChartArc(QPointF(0.0, center), radius));
+        arcs.push_back(SmithChartArc(QPointF(0.0, -center), radius));
+    }
+        break;
+    case Type::Last:
+        break;
+    }
+    return arcs;
+}
+
+QColor SmithChartConstantLine::getColor() const
+{
+    return color;
+}
+
+void SmithChartConstantLine::fromJSON(nlohmann::json j)
+{
+    type = TypeFromString(QString::fromStdString(j.value("type", "VSWR")));
+    if(type == Type::Last) {
+        type = Type::VSWR;
+    }
+    param = j.value("param", 1.0);
+    color = QColor(QString::fromStdString(j.value("color", "red")));
+}
+
+nlohmann::json SmithChartConstantLine::toJSON()
+{
+    nlohmann::json j;
+    j["type"] = TypeToString(type).toStdString();
+    j["param"] = param;
+    j["color"] = color.name().toStdString();
+    return j;
+}
+
+QString SmithChartConstantLine::getParamUnit()
+{
+    switch(type) {
+    case Type::VSWR: return "";
+    case Type::Resistance: return "Ω";
+    case Type::Reactance: return "Ωj";
+    case Type::Q: return "";
+    case Type::Last: break;
+    }
+    return "";
+}
+
+QString SmithChartConstantLine::TypeToString(SmithChartConstantLine::Type type)
+{
+    switch(type) {
+    case Type::VSWR: return "VSWR";
+    case Type::Resistance: return "Resistance";
+    case Type::Reactance: return "Reactance";
+    case Type::Q: return "Q";
+    case Type::Last:break;
+    }
+    // should never get here
+    return "Invalid";
+}
+
+SmithChartConstantLine::Type SmithChartConstantLine::TypeFromString(QString s)
+{
+    for(unsigned int i=0;i<(unsigned int)Type::Last;i++) {
+        if(TypeToString((Type) i) == s) {
+            return (Type) i;
+        }
+    }
+    return Type::Last;
+}
+
+void SmithChartConstantLine::setColor(const QColor &value)
+{
+    color = value;
+}
+
+double SmithChartConstantLine::getParam() const
+{
+    return param;
+}
+
+void SmithChartConstantLine::setParam(double value)
+{
+    param = value;
+}
+
+void SmithChartConstantLine::setType(const Type &value)
+{
+    type = value;
+}
+
+SmithChartConstantLine::Type SmithChartConstantLine::getType() const
+{
+    return type;
+}
+
+static constexpr int rowHeight = 21;
+
+QSize SmithChartParamDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const
+{
+    return QSize(0, rowHeight);
+}
+
+QWidget *SmithChartParamDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
+{
+    auto line = static_cast<const SmithChartContantLineModel*>(index.model())->lineFromIndex(index);
+    auto editor = new SIUnitEdit(line->getParamUnit(), "pnum kMG", 6);
+    editor->setValue(line->getParam());
+    editor->setMaximumHeight(rowHeight);
+    editor->setParent(parent);
+    connect(editor, &SIUnitEdit::valueUpdated, this, &SmithChartParamDelegate::commitData);
+    return editor;
+}
+
+void SmithChartParamDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    auto line = ((SmithChartContantLineModel*)model)->lineFromIndex(index);
+    auto si = (SIUnitEdit*) editor;
+    line->setParam(si->value());
+}
+
+QSize SmithChartTypeDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const
+{
+    return QSize(0, rowHeight);
+}
+
+QWidget *SmithChartTypeDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
+{
+    auto line = static_cast<const SmithChartContantLineModel*>(index.model())->lineFromIndex(index);
+    auto editor = new QComboBox();
+    for(unsigned int i=0;i<(unsigned int)SmithChartConstantLine::Type::Last;i++) {
+        editor->addItem(SmithChartConstantLine::TypeToString((SmithChartConstantLine::Type) i));
+    }
+    editor->setCurrentIndex((int) line->getType());
+    connect(editor, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) {
+        emit const_cast<SmithChartTypeDelegate*>(this)->commitData(editor);
+    });
+    editor->setMaximumHeight(rowHeight);
+    editor->setParent(parent);
+    return editor;
+}
+
+void SmithChartTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    auto line = ((SmithChartContantLineModel*)model)->lineFromIndex(index);
+    auto *cb = (QComboBox*) editor;
+    line->setType((SmithChartConstantLine::Type) cb->currentIndex());
+    // parameter unit may have changed, update model
+    auto paramIndex = model->index(index.row(), SmithChartContantLineModel::ColIndexParam);
+    emit model->dataChanged(paramIndex, paramIndex);
+}
+
+SmithChartContantLineModel::SmithChartContantLineModel(TraceSmithChart &chart, QObject *parent)
+    : chart(chart)
+{
+    Q_UNUSED(parent);
+}
+
+int SmithChartContantLineModel::rowCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent);
+    return chart.constantLines.size();
+}
+
+int SmithChartContantLineModel::columnCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent);
+    return ColIndexLast;
+}
+
+QVariant SmithChartContantLineModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
+
+    if ((unsigned int) index.row() >= chart.constantLines.size())
+        return QVariant();
+
+    auto line = chart.constantLines[index.row()];
+    switch(index.column()) {
+    case ColIndexColor:
+        if (role == Qt::BackgroundColorRole) {
+            return line.getColor();
+        }
+        break;
+    case ColIndexType:
+        if (role == Qt::DisplayRole) {
+            return SmithChartConstantLine::TypeToString(line.getType());
+        }
+        break;
+    case ColIndexParam:
+        if (role == Qt::DisplayRole) {
+            return Unit::ToString(line.getParam(), line.getParamUnit(), "pnum kMG", 6);
+        }
+        break;
+    default:
+        break;
+    }
+    return QVariant();
+}
+
+QVariant SmithChartContantLineModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    Q_UNUSED(orientation);
+    if(role == Qt::DisplayRole) {
+        switch(section) {
+        case ColIndexColor: return "Color";
+        case ColIndexType: return "Type";
+        case ColIndexParam: return "Parameter";
+        }
+    }
+    return QVariant();
+}
+
+Qt::ItemFlags SmithChartContantLineModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    switch(index.column()) {
+    case ColIndexType:
+    case ColIndexParam:
+        flags |= Qt::ItemIsEditable;
+        break;
+    }
+    return flags;
+}
+
+SmithChartConstantLine* SmithChartContantLineModel::lineFromIndex(const QModelIndex &index) const
+{
+    if(index.isValid() && index.row() < (int) chart.constantLines.size()) {
+        return &chart.constantLines[index.row()];
+    } else {
+        return nullptr;
     }
 }
