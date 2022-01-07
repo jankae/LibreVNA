@@ -59,6 +59,7 @@ VNA::VNA(AppWindow *window)
     averages = 1;
     calValid = false;
     calMeasuring = false;
+    calWaitFirst = false;
     calDialog.reset();
     calEdited = false;
     settings.sweepType = SweepType::Frequency;
