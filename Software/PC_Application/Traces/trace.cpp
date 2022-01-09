@@ -36,6 +36,13 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
         dataType = domain;
         emit outputTypeChanged(dataType);
     });
+    connect(this, &Trace::outputSamplesChanged, [=](unsigned int begin, unsigned int end){
+        Q_UNUSED(end);
+        // some samples changed, delete unwrapped phases from here until the end
+        if(unwrappedPhase.size() > begin) {
+            unwrappedPhase.resize(begin);
+        }
+    });
 }
 
 Trace::~Trace()
@@ -917,6 +924,27 @@ Trace::Data Trace::sample(unsigned int index, bool getStepResponse) const
         data.y = lastMath->getStepResponse(index);
     }
     return data;
+}
+
+double Trace::getUnwrappedPhase(unsigned int index)
+{
+    if(index >= size()) {
+        return 0.0;
+    } else if(index >= unwrappedPhase.size()) {
+        // unwrapped phase not available for this entry, calculate
+        // copy wrapped phases first
+        unsigned int start_index = unwrappedPhase.size();
+        unwrappedPhase.resize(index + 1);
+        for(unsigned int i=start_index;i<=index;i++) {
+            unwrappedPhase[i] = arg(lastMath->getSample(i).y);
+        }
+        // unwrap the updated part
+        if(start_index > 0) {
+            start_index--;
+        }
+        Util::unwrapPhase(unwrappedPhase, start_index);
+    }
+    return unwrappedPhase[index];
 }
 
 Trace::Data Trace::interpolatedSample(double x)

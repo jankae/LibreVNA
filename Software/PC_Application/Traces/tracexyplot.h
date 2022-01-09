@@ -17,6 +17,7 @@ public:
         // S parameter options
         Magnitude,
         Phase,
+        UnwrappedPhase,
         VSWR,
         Real,
         Imaginary,

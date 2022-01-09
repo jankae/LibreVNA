@@ -81,6 +81,7 @@ public:
     };
 
     Data sample(unsigned int index, bool getStepResponse = false) const;
+    double getUnwrappedPhase(unsigned int index);
     // returns a (possibly interpolated sample) at a specified frequency/time/power
     Data interpolatedSample(double x);
     QString getFilename() const;
@@ -186,6 +187,7 @@ private:
 
     std::vector<MathInfo> mathOps;
     TraceMath *lastMath;
+    std::vector<double> unwrappedPhase;
     void updateLastMath(std::vector<MathInfo>::reverse_iterator start);
 };
 

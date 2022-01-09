@@ -66,7 +66,7 @@ namespace Util {
         return brightness > 0.6 ? Qt::black : Qt::white;
     }
 
-    void unwrapPhase(std::vector<double> &phase);
+    void unwrapPhase(std::vector<double> &phase, unsigned int start_index = 0);
 
     // input values are Y coordinates, assumes evenly spaced linear X values from 0 to input.size() - 1
     void linearRegression(const std::vector<double> &input, double &B_0, double &B_1);

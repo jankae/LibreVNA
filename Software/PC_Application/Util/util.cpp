@@ -2,12 +2,17 @@
 
 #include <QVector2D>
 
-void Util::unwrapPhase(std::vector<double> &phase)
+void Util::unwrapPhase(std::vector<double> &phase, unsigned int start_index)
 {
-    for (unsigned int i = 1; i < phase.size(); i++) {
-        double d = phase[i] - phase[i-1];
-        d = d > M_PI ? d - 2 * M_PI : (d < -M_PI ? d + 2 * M_PI : d);
-        phase[i] = phase[i-1] + d;
+    for (unsigned int i = start_index + 1; i < phase.size(); i++) {
+        int d = trunc(phase[i] - phase[i-1]) / M_PI;
+        if(d > 0) {
+            // there is larger than a 180° shift between this and the previous phase
+            phase[i] -= 2*M_PI*(int)((d+1)/2);
+        } else if(d < 0) {
+            // there is larger than a -180° shift between this and the previous phase
+            phase[i] -= 2*M_PI*(int)((d-1)/2);
+        }
     }
 }
 
