@@ -169,7 +169,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         auto d = new QDialog();
         auto ui = new Ui::NewTraceMathDialog();
         ui->setupUi(d);
-        connect(d, &QDialog::finished, [=](){
+        connect(d, &QDialog::rejected, [=](){
             delete ui;
         });
         for(int i = 0; i < (int) TraceMath::Type::Last;i++) {
@@ -184,8 +184,9 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         connect(ui->list, &QListWidget::currentRowChanged, ui->stack, &QStackedWidget::setCurrentIndex);
 
         connect(ui->list, &QListWidget::doubleClicked, ui->buttonBox, &QDialogButtonBox::accepted);
-        connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
+        connect(d, &QDialog::accepted, [=](){
             auto type = static_cast<TraceMath::Type>(ui->list->currentRow());
+            delete ui;
             auto newMath = TraceMath::createMath(type);
             model->addOperations(newMath);
             if(newMath.size() == 1) {

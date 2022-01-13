@@ -237,15 +237,6 @@ void Math::TimeGate::updateFilter()
     auto maxX = input->rData().back().x;
     auto minX = input->rData().front().x;
 
-//    auto c1 = center - span / 2;
-//    auto c2 = center + span / 2;
-
-//    if(c1 < minX) {
-//        c1 = minX;
-//    }
-//    if(c2 > maxX) {
-//        c2 = maxX;
-//    }
     auto wc1 = Util::Scale<double>(center - span / 2, minX, maxX, 0, 1);
     auto wc2 = Util::Scale<double>(center + span / 2, minX, maxX, 0, 1);
 
@@ -270,7 +261,7 @@ void Math::TimeGate::updateFilter()
     Fft::shift(buf, true);
     Fft::transform(buf, false);
 
-    filter.resize(buf.size());
+    filter.resize(buf.size() / 2);
     for(unsigned int i=0;i<buf.size() / 2;i++) {
         filter[i] = abs(buf[i]);
     }
@@ -389,8 +380,6 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
         p1.setY(Util::Scale<double>(y_last, -120, 20, plotBottom, plotTop));
         p2.setX(Util::Scale<double>(now.x, minX, maxX, plotLeft, plotRight));
         p2.setY(Util::Scale<double>(y_now, -120, 20, plotBottom, plotTop));
-//        auto p1 = plotValueToPixel(last.x, y_last);
-//        auto p2 = plotValueToPixel(now.x, y_now);
         // draw line
         p.drawLine(p1, p2);
     }
@@ -398,7 +387,7 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     auto filter = gate->rFilter();
     pen = QPen(Qt::red, 1);
     p.setPen(pen);
-    for(unsigned int i=increment;i<filter.size();i+=increment) {
+    for(unsigned int i=increment;i<filter.size() && i<input.size();i+=increment) {
         auto x_last = input[i-increment].x;
         auto x_now = input[i].x;
 
@@ -414,9 +403,6 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
         p1.setY(Util::Scale<double>(f_last, -120, 20, plotBottom, plotTop));
         p2.setX(Util::Scale<double>(x_now, minX, maxX, plotLeft, plotRight));
         p2.setY(Util::Scale<double>(f_now, -120, 20, plotBottom, plotTop));
-//        auto p1 = plotValueToPixel(x_last, f_last);
-//        auto p2 = plotValueToPixel(x_now, f_now);
-
         // draw line
         p.drawLine(p1, p2);
     }
