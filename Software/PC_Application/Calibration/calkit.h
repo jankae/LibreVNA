@@ -73,7 +73,7 @@ private:
         };
         Short short_m, short_f;
         using Load = struct {
-            double Z0, delay, Cparallel, Lseries;
+            double resistance, Z0, delay, Cparallel, Lseries;
             QString file;
             bool useMeasurements;
             int Sparam;
@@ -110,7 +110,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<JSONDescription, 71> json_descr = {{
+    const std::array<JSONDescription, 73> json_descr = {{
         {&manufacturer, "Manufacturer", ""},
         {&serialnumber, "Serialnumber", ""},
         {&description, "Description", ""},
@@ -157,6 +157,7 @@ private:
         {&SOLT.short_f.file, "SOLT/Short/Measurements/File_Female", ""},
         {&SOLT.short_f.Sparam, "SOLT/Short/Measurements/Port_Female", 0},
 
+        {&SOLT.load_m.resistance, "SOLT/Load/Param/Resistance", 50.0},
         {&SOLT.load_m.Z0, "SOLT/Load/Param/Z0", 50.0},
         {&SOLT.load_m.delay, "SOLT/Load/Param/Delay", 0.0},
         {&SOLT.load_m.Cparallel, "SOLT/Load/Param/C", 0.0},
@@ -164,6 +165,7 @@ private:
         {&SOLT.load_m.useMeasurements, "SOLT/Load/Measurements/Use", false},
         {&SOLT.load_m.file, "SOLT/Load/Measurements/File", ""},
         {&SOLT.load_m.Sparam, "SOLT/Load/Measurements/Port", 0},
+        {&SOLT.load_f.resistance, "SOLT/Load/Param/Resistance_Female", 50.0},
         {&SOLT.load_f.Z0, "SOLT/Load/Param/Z0_Female", 50.0},
         {&SOLT.load_f.delay, "SOLT/Load/Param/Delay_Female", 0.0},
         {&SOLT.load_f.Cparallel, "SOLT/Load/Param/C_Female", 0.0},

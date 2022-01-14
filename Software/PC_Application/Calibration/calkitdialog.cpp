@@ -42,6 +42,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
 
     ui->short_Z0->setUnit("Ω");
     ui->open_Z0->setUnit("Ω");
+    ui->load_resistance->setUnit("Ω");
     ui->load_Z0->setUnit("Ω");
     ui->load_parC->setUnit("F");
     ui->load_parC->setPrefixes("fpnum ");
@@ -64,6 +65,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
 
     ui->short_Z0_f->setUnit("Ω");
     ui->open_Z0_f->setUnit("Ω");
+    ui->load_resistance_f->setUnit("Ω");
     ui->load_Z0_f->setUnit("Ω");
     ui->load_parC_f->setUnit("F");
     ui->load_parC_f->setPrefixes("fpnum ");
@@ -247,6 +249,7 @@ void CalkitDialog::parseEntries()
     ownKit.SOLT.short_m.L2 = ui->short_L2->value();
     ownKit.SOLT.short_m.L3 = ui->short_L3->value();
 
+    ownKit.SOLT.load_m.resistance = ui->load_resistance->value();
     ownKit.SOLT.load_m.Z0 = ui->load_Z0->value();
     ownKit.SOLT.load_m.delay = ui->load_delay->value();
     ownKit.SOLT.load_m.Cparallel = ui->load_parC->value();
@@ -268,6 +271,7 @@ void CalkitDialog::parseEntries()
     ownKit.SOLT.short_f.L2 = ui->short_L2_f->value();
     ownKit.SOLT.short_f.L3 = ui->short_L3_f->value();
 
+    ownKit.SOLT.load_f.resistance = ui->load_resistance_f->value();
     ownKit.SOLT.load_f.Z0 = ui->load_Z0_f->value();
     ownKit.SOLT.load_f.delay = ui->load_delay_f->value();
     ownKit.SOLT.load_f.Cparallel = ui->load_parC_f->value();
@@ -332,6 +336,7 @@ void CalkitDialog::updateEntries()
     ui->short_L2->setValueQuiet(ownKit.SOLT.short_m.L2);
     ui->short_L3->setValueQuiet(ownKit.SOLT.short_m.L3);
 
+    ui->load_resistance->setValueQuiet(ownKit.SOLT.load_m.resistance);
     ui->load_Z0->setValueQuiet(ownKit.SOLT.load_m.Z0);
     ui->load_delay->setValueQuiet(ownKit.SOLT.load_m.delay);
     ui->load_parC->setValueQuiet(ownKit.SOLT.load_m.Cparallel);
@@ -353,6 +358,7 @@ void CalkitDialog::updateEntries()
     ui->short_L2_f->setValueQuiet(ownKit.SOLT.short_f.L2);
     ui->short_L3_f->setValueQuiet(ownKit.SOLT.short_f.L3);
 
+    ui->load_resistance_f->setValueQuiet(ownKit.SOLT.load_f.resistance);
     ui->load_Z0_f->setValueQuiet(ownKit.SOLT.load_f.Z0);
     ui->load_delay_f->setValueQuiet(ownKit.SOLT.load_f.delay);
     ui->load_parC_f->setValueQuiet(ownKit.SOLT.load_f.Cparallel);

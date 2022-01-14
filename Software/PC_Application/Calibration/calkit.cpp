@@ -90,6 +90,11 @@ Calkit Calkit::fromFile(QString filename)
         throw runtime_error("JSON parsing error: " + string(e.what()));
     }
     if(j.contains("SOLT")) {
+        // older file versions specify Z0 for resistance. If resistance entry is missing,
+        // set it to Z0 later
+        bool loadResistanceMissing_m = false;
+        bool loadResistanceMissing_f = false;
+
         qDebug() << "JSON format detected";
         // calkit file uses json format, parse
         for(auto e : c.json_descr) {
@@ -108,6 +113,11 @@ Calkit Calkit::fromFile(QString filename)
             if(!entry_exists) {
                 // missing entry in json file, nothing to do (default values already set in constructor)
                 qWarning() << "Entry" << e.name << "not present in file, assuming default value";
+                if(e.name == "SOLT/Load/Param/Resistance") {
+                    loadResistanceMissing_m = true;
+                } else if(e.name == "SOLT/Load/Param/Resistance_Female") {
+                    loadResistanceMissing_f = true;
+                }
                 continue;
             }
             // json library does not now about QVariant, handle used cases
@@ -125,6 +135,15 @@ Calkit Calkit::fromFile(QString filename)
             default:
                 throw runtime_error("Unimplemented metatype");
             }
+        }
+        // adjust Z0/resistance in case of older calkit file version
+        if(loadResistanceMissing_f) {
+            c.SOLT.load_f.resistance = c.SOLT.load_f.Z0;
+            c.SOLT.load_f.Z0 = 50.0;
+        }
+        if(loadResistanceMissing_m) {
+            c.SOLT.load_m.resistance = c.SOLT.load_m.Z0;
+            c.SOLT.load_m.Z0 = 50.0;
         }
     } else {
         qDebug() << "Legacy format detected";
@@ -149,7 +168,7 @@ Calkit Calkit::fromFile(QString filename)
         c.SOLT.short_m.L1 = readLine(file).toDouble();
         c.SOLT.short_m.L2 = readLine(file).toDouble();
         c.SOLT.short_m.L3 = readLine(file).toDouble();
-        c.SOLT.load_m.Z0 = readLine(file).toDouble();
+        c.SOLT.load_m.resistance = readLine(file).toDouble();
         c.SOLT.Through.Z0 = readLine(file).toDouble();
         c.SOLT.Through.delay = readLine(file).toDouble();
         c.SOLT.Through.loss = readLine(file).toDouble();
@@ -243,7 +262,7 @@ class Calkit::SOLT Calkit::toSOLT(double frequency, bool male_standards)
     if(Load.useMeasurements) {
         ref.Load = ts_load->interpolate(frequency).S[0];
     } else {
-        auto imp_load = complex<double>(Load.Z0, 0);
+        auto imp_load = complex<double>(Load.resistance, 0);
         // Add parallel capacitor to impedance
         if(Load.Cparallel > 0) {
             auto imp_C = complex<double>(0, -1.0 / (frequency * 2 * M_PI * Load.Cparallel));
@@ -253,7 +272,7 @@ class Calkit::SOLT Calkit::toSOLT(double frequency, bool male_standards)
         auto imp_L = complex<double>(0, frequency * 2 * M_PI * Load.Lseries);
         imp_load += imp_L;
         ref.Load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
-        ref.Load = addTransmissionLine(ref.Load, 50.0, Load.delay*1e-12, 0, frequency);
+        ref.Load = addTransmissionLine(ref.Load, Load.Z0, Load.delay*1e-12, 0, frequency);
     }
 
     if(Open.useMeasurements) {
