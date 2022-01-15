@@ -2,6 +2,7 @@
 #define PREFERENCESDIALOG_H
 
 #include "Util/qpointervariant.h"
+#include "savable.h"
 
 #include <QDialog>
 #include <QVariant>
@@ -16,7 +17,7 @@ enum GraphDomainChangeBehavior {
 Q_DECLARE_METATYPE(GraphDomainChangeBehavior);
 
 
-class Preferences {
+class Preferences : public Savable {
 public:
     static Preferences& getInstance() {
         return instance;
@@ -104,16 +105,16 @@ public:
     } SCPIServer;
 
     bool TCPoverride; // in case of manual port specification via command line
+
+    void fromJSON(nlohmann::json j) override;
+    nlohmann::json toJSON() override;
+
 private:
     Preferences() :
      TCPoverride(false) {};
     static Preferences instance;
-    using SettingDescription = struct {
-        QPointerVariant var;
-        QString name;
-        QVariant def;
-    };
-    const std::array<SettingDescription, 45> descr = {{
+
+    const std::vector<Savable::SettingDescription> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -176,6 +177,7 @@ public:
 
 private:
     void setInitialGUIState();
+    void updateFromGUI();
     Ui::PreferencesDialog *ui;
     Preferences *p;
 };

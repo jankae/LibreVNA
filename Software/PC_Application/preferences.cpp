@@ -6,8 +6,12 @@
 #include <QSettings>
 #include <QPushButton>
 #include <QMessageBox>
-#include <map>
 #include <QDebug>
+#include <QFileDialog>
+
+#include <map>
+#include <fstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -128,54 +132,33 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, [=](){
         // apply GUI state to settings
-        p->Startup.ConnectToFirstDevice = ui->StartupAutoconnect->isChecked();
-        p->Startup.RememberSweepSettings = ui->StartupSweepLastUsed->isChecked();
-        p->Startup.DefaultSweep.type = ui->StartupSweepType->currentText();
-        p->Startup.DefaultSweep.f_start = ui->StartupSweepStart->value();
-        p->Startup.DefaultSweep.f_stop = ui->StartupSweepStop->value();
-        p->Startup.DefaultSweep.f_excitation = ui->StartupSweepLevel->value();
-        p->Startup.DefaultSweep.dbm_start = ui->StartupSweepPowerStart->value();
-        p->Startup.DefaultSweep.dbm_stop = ui->StartupSweepPowerStop->value();
-        p->Startup.DefaultSweep.dbm_freq = ui->StartupSweepPowerFrequency->value();
-        p->Startup.DefaultSweep.bandwidth = ui->StartupSweepBandwidth->value();
-        p->Startup.DefaultSweep.points = ui->StartupSweepPoints->value();
-        p->Startup.DefaultSweep.averaging = ui->StartupSweepAveraging->value();
-        p->Startup.Generator.frequency = ui->StartupGeneratorFrequency->value();
-        p->Startup.Generator.level = ui->StartupGeneratorLevel->value();
-        p->Startup.SA.start = ui->StartupSAStart->value();
-        p->Startup.SA.stop = ui->StartupSAStop->value();
-        p->Startup.SA.RBW = ui->StartupSARBW->value();
-        p->Startup.SA.window = ui->StartupSAWindow->currentIndex();
-        p->Startup.SA.detector = ui->StartupSADetector->currentIndex();
-        p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
-
-        p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
-        p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
-        p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
-        p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
-        p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
-        p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
-        p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
-        p->Acquisition.IF1 = ui->AcquisitionIF1->value();
-        p->Acquisition.ADCprescaler = ui->AcquisitionADCpresc->value();
-        p->Acquisition.DFTPhaseInc = ui->AcquisitionADCphaseInc->value();
-
-        p->Graphs.showUnits = ui->GraphsShowUnit->isChecked();
-        p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
-        p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
-        p->Graphs.Color.Ticks.Background.enabled = ui->GraphsColorTicksBackgroundEnabled->isChecked();
-        p->Graphs.Color.Ticks.Background.background = ui->GraphsColorTicksBackground->getColor();
-        p->Graphs.Color.Ticks.divisions = ui->GraphsColorTicksDivisions->getColor();
-        p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
-        p->Graphs.lineWidth = ui->GraphsLineWidth->value();
-
-        p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
-        p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();
-        p->Marker.interpolatePoints = ui->MarkerInterpolate->currentIndex() == 1;
-
-        p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
-        p->SCPIServer.port = ui->SCPIServerPort->value();
+        updateFromGUI();
         accept();
+    });
+    connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
+        auto filename = QFileDialog::getSaveFileName(this, "Save preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.length() > 0) {
+           if(!filename.toLower().endsWith(".vnapref")) {
+               filename.append(".vnapref");
+           }
+           ofstream file;
+           file.open(filename.toStdString());
+           updateFromGUI();
+           file << setw(1) << p->toJSON();
+           file.close();
+        }
+    });
+    connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
+        auto filename = QFileDialog::getOpenFileName(this, "Load preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.length() > 0) {
+           ifstream file;
+           file.open(filename.toStdString());
+           nlohmann::json j;
+           file >> j;
+           file.close();
+           p->fromJSON(j);
+           setInitialGUIState();
+        }
     });
 
     setInitialGUIState();
@@ -259,6 +242,57 @@ void PreferencesDialog::setInitialGUIState()
     }
 }
 
+void PreferencesDialog::updateFromGUI()
+{
+    p->Startup.ConnectToFirstDevice = ui->StartupAutoconnect->isChecked();
+    p->Startup.RememberSweepSettings = ui->StartupSweepLastUsed->isChecked();
+    p->Startup.DefaultSweep.type = ui->StartupSweepType->currentText();
+    p->Startup.DefaultSweep.f_start = ui->StartupSweepStart->value();
+    p->Startup.DefaultSweep.f_stop = ui->StartupSweepStop->value();
+    p->Startup.DefaultSweep.f_excitation = ui->StartupSweepLevel->value();
+    p->Startup.DefaultSweep.dbm_start = ui->StartupSweepPowerStart->value();
+    p->Startup.DefaultSweep.dbm_stop = ui->StartupSweepPowerStop->value();
+    p->Startup.DefaultSweep.dbm_freq = ui->StartupSweepPowerFrequency->value();
+    p->Startup.DefaultSweep.bandwidth = ui->StartupSweepBandwidth->value();
+    p->Startup.DefaultSweep.points = ui->StartupSweepPoints->value();
+    p->Startup.DefaultSweep.averaging = ui->StartupSweepAveraging->value();
+    p->Startup.Generator.frequency = ui->StartupGeneratorFrequency->value();
+    p->Startup.Generator.level = ui->StartupGeneratorLevel->value();
+    p->Startup.SA.start = ui->StartupSAStart->value();
+    p->Startup.SA.stop = ui->StartupSAStop->value();
+    p->Startup.SA.RBW = ui->StartupSARBW->value();
+    p->Startup.SA.window = ui->StartupSAWindow->currentIndex();
+    p->Startup.SA.detector = ui->StartupSADetector->currentIndex();
+    p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
+
+    p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
+    p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
+    p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
+    p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
+    p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
+    p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
+    p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
+    p->Acquisition.IF1 = ui->AcquisitionIF1->value();
+    p->Acquisition.ADCprescaler = ui->AcquisitionADCpresc->value();
+    p->Acquisition.DFTPhaseInc = ui->AcquisitionADCphaseInc->value();
+
+    p->Graphs.showUnits = ui->GraphsShowUnit->isChecked();
+    p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
+    p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();
+    p->Graphs.Color.Ticks.Background.enabled = ui->GraphsColorTicksBackgroundEnabled->isChecked();
+    p->Graphs.Color.Ticks.Background.background = ui->GraphsColorTicksBackground->getColor();
+    p->Graphs.Color.Ticks.divisions = ui->GraphsColorTicksDivisions->getColor();
+    p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
+    p->Graphs.lineWidth = ui->GraphsLineWidth->value();
+
+    p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
+    p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();
+    p->Marker.interpolatePoints = ui->MarkerInterpolate->currentIndex() == 1;
+
+    p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
+    p->SCPIServer.port = ui->SCPIServerPort->value();
+}
+
 void Preferences::load()
 {
     QSettings settings;
@@ -295,4 +329,14 @@ void Preferences::setDefault()
     for(auto d : descr) {
         d.var.setValue(d.def);
     }
+}
+
+void Preferences::fromJSON(nlohmann::json j)
+{
+    parseJSON(j, descr);
+}
+
+nlohmann::json Preferences::toJSON()
+{
+    return createJSON(descr);
 }

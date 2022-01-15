@@ -25,7 +25,7 @@ Calkit::Calkit()
 {
 
     // set default values
-    for(auto e : json_descr) {
+    for(auto e : descr) {
         e.var.setValue(e.def);
     }
 }
@@ -40,24 +40,7 @@ void Calkit::toFile(QString filename)
 
     TransformPathsToRelative(filename);
 
-    json j;
-    for(auto e : json_descr) {
-        auto list = e.name.split("/");
-        auto *json_entry = &j;
-        while(list.size() > 0) {
-            json_entry = &(*json_entry)[list.takeFirst().toStdString()];
-        }
-        // json library does not now about QVariant, handle used cases
-        auto val = e.var.value();
-        switch(static_cast<QMetaType::Type>(val.type())) {
-        case QMetaType::Double: *json_entry = val.toDouble(); break;
-        case QMetaType::Int: *json_entry = val.toInt(); break;
-        case QMetaType::Bool: *json_entry = val.toBool(); break;
-        case QMetaType::QString: *json_entry = val.toString().toStdString(); break;
-        default:
-            throw runtime_error("Unimplemented metatype");
-        }
-    }
+    json j = Savable::createJSON(descr);
     ofstream file;
     file.open(filename.toStdString());
     file << setw(4) << j << endl;
@@ -90,58 +73,19 @@ Calkit Calkit::fromFile(QString filename)
         throw runtime_error("JSON parsing error: " + string(e.what()));
     }
     if(j.contains("SOLT")) {
-        // older file versions specify Z0 for resistance. If resistance entry is missing,
-        // set it to Z0 later
-        bool loadResistanceMissing_m = false;
-        bool loadResistanceMissing_f = false;
+        // older file versions specify Z0 for resistance. Set resistance to Nan to detect missing values later
+        c.SOLT.load_m.resistance = std::numeric_limits<double>::quiet_NaN();
+        c.SOLT.load_f.resistance = std::numeric_limits<double>::quiet_NaN();
 
         qDebug() << "JSON format detected";
         // calkit file uses json format, parse
-        for(auto e : c.json_descr) {
-            auto list = e.name.split("/");
-            auto *json_entry = &j;
-            bool entry_exists = true;
-            while(list.size() > 0) {
-                auto key = list.takeFirst().toStdString();
-                if((*json_entry).contains(key)) {
-                    json_entry = &(*json_entry)[key];
-                } else {
-                    entry_exists = false;
-                    break;
-                }
-            }
-            if(!entry_exists) {
-                // missing entry in json file, nothing to do (default values already set in constructor)
-                qWarning() << "Entry" << e.name << "not present in file, assuming default value";
-                if(e.name == "SOLT/Load/Param/Resistance") {
-                    loadResistanceMissing_m = true;
-                } else if(e.name == "SOLT/Load/Param/Resistance_Female") {
-                    loadResistanceMissing_f = true;
-                }
-                continue;
-            }
-            // json library does not now about QVariant, handle used cases
-            auto val = e.var.value();
-            switch(static_cast<QMetaType::Type>(val.type())) {
-            case QMetaType::Double: e.var.setValue((*json_entry).get<double>()); break;
-            case QMetaType::Int: e.var.setValue((*json_entry).get<int>()); break;
-            case QMetaType::Bool: e.var.setValue((*json_entry).get<bool>()); break;
-            case QMetaType::QString: {
-                auto s = QString::fromStdString((*json_entry).get<string>());
-                e.var.setValue(s);
-            }
-
-                break;
-            default:
-                throw runtime_error("Unimplemented metatype");
-            }
-        }
-        // adjust Z0/resistance in case of older calkit file version
-        if(loadResistanceMissing_f) {
+        Savable::parseJSON(j, c.descr);
+        // adjust Z0/resistance in case of older calkit file version with missing resistance entries
+        if(isnan(c.SOLT.load_f.resistance)) {
             c.SOLT.load_f.resistance = c.SOLT.load_f.Z0;
             c.SOLT.load_f.Z0 = 50.0;
         }
-        if(loadResistanceMissing_m) {
+        if(isnan(c.SOLT.load_m.resistance)) {
             c.SOLT.load_m.resistance = c.SOLT.load_m.Z0;
             c.SOLT.load_m.Z0 = 50.0;
         }
