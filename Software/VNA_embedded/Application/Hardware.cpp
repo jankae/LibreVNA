@@ -21,6 +21,12 @@ static bool unlevel = false;
 static Protocol::ReferenceSettings ref;
 static uint32_t lastISR;
 
+static uint32_t IF1 = HW::DefaultIF1;
+static uint32_t IF2 = HW::DefaultIF2;
+static uint32_t ADCsamplerate = HW::DefaultADCSamplerate;
+static uint8_t ADCprescaler = HW::DefaultADCprescaler;
+static uint16_t DFTphaseInc = HW::DefaultDFTphaseInc;
+
 using namespace HWHAL;
 
 static void HaltedCallback() {
@@ -133,9 +139,9 @@ bool HW::Init() {
 	}
 
 	// Set default ADC samplerate
-	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, ADCprescaler);
 	// Set phase increment according to
-	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, DFTphaseInc);
 
 	Exti::SetCallback(FPGA_INTR_GPIO_Port, FPGA_INTR_Pin, Exti::EdgeType::Rising, Exti::Pull::Down, FPGA_Interrupt);
 
@@ -385,3 +391,33 @@ void HW::Ref::update() {
 		}
 	}
 }
+
+void HW::setAcquisitionFrequencies(Protocol::AcquisitionFrequencySettings s) {
+	IF1 = s.IF1;
+	ADCprescaler = s.ADCprescaler;
+	DFTphaseInc = s.DFTphaseInc;
+	float ADCrate = (float) FPGA::Clockrate / ADCprescaler;
+	IF2 = ADCrate * DFTphaseInc / 4096;
+	ADCsamplerate = ADCrate;
+}
+
+uint32_t HW::getIF1() {
+	return IF1;
+}
+
+uint32_t HW::getIF2() {
+	return IF2;
+}
+
+uint32_t HW::getADCRate() {
+	return ADCsamplerate;
+}
+
+uint8_t HW::getADCPrescaler() {
+	return ADCprescaler;
+}
+
+uint16_t HW::getDFTPhaseInc() {
+	return DFTphaseInc;
+}
+

@@ -44,8 +44,8 @@ static uint16_t IFTableIndexCnt = 0;
 static constexpr float alternativeSamplerate = 914285.7143f;
 static constexpr uint8_t alternativePrescaler = 102400000UL / alternativeSamplerate;
 static_assert(alternativePrescaler * alternativeSamplerate == 102400000UL, "alternative ADCSamplerate can not be reached exactly");
-static constexpr uint16_t alternativePhaseInc = 4096 * HW::IF2 / alternativeSamplerate;
-static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::IF2, "DFT can not be computed for 2.IF when using alternative samplerate");
+static constexpr uint16_t alternativePhaseInc = 4096 * HW::DefaultIF2 / alternativeSamplerate;
+static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::DefaultIF2, "DFT can not be computed for 2.IF when using alternative samplerate");
 
 // Constants for USB buffer overflow prevention
 static constexpr uint16_t maxPointsBetweenHalts = 40;
@@ -84,6 +84,8 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	}
 	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
 	if(settings.points > FPGA::MaxPoints) {
 		settings.points = FPGA::MaxPoints;
 	}
@@ -92,12 +94,12 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	logMultiplier = pow((double) settings.f_stop / settings.f_start, 1.0 / (settings.points-1));
 	// Configure sweep
 	FPGA::SetNumberOfPoints(settings.points);
-	uint32_t samplesPerPoint = (HW::ADCSamplerate / s.if_bandwidth);
+	uint32_t samplesPerPoint = (HW::getADCRate() / s.if_bandwidth);
 	// round up to next multiple of 16 (16 samples are spread across 5 IF2 periods)
 	if(samplesPerPoint%16) {
 		samplesPerPoint += 16 - samplesPerPoint%16;
 	}
-	actualBandwidth = HW::ADCSamplerate / samplesPerPoint;
+	actualBandwidth = HW::getADCRate() / samplesPerPoint;
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
@@ -129,7 +131,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 
 	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
-	uint32_t last_LO2 = HW::IF1 - HW::IF2;
+	uint32_t last_LO2 = HW::getIF1() - HW::getIF2();
 	Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
@@ -180,7 +182,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			// additional halt before first highband point to enable highband source
 			needs_halt = true;
 		}
-		uint64_t LOFreq = freq + HW::IF1;
+		uint64_t LOFreq = freq + HW::getIF1();
 		if(harmonic_mixing) {
 			LOFreq /= LOHarmonic;
 		}
@@ -191,7 +193,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		}
 		uint32_t actualFirstIF = actualLO1 - actualSourceFreq;
 		uint32_t actualFinalIF = actualFirstIF - last_LO2;
-		uint32_t IFdeviation = abs(actualFinalIF - HW::IF2);
+		uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
 		bool needs_LO2_shift = false;
 		if(IFdeviation > actualBandwidth / 2) {
 			needs_LO2_shift = true;
@@ -204,7 +206,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 				if(IFTableIndexCnt < IFTableNumEntries - 1) {
 					// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
 					// the correct clock settings
-					last_LO2 = actualFirstIF - HW::IF2;
+					last_LO2 = actualFirstIF - HW::getIF2();
 					LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency (1.LO: %lu%06luHz, 1.IF: %lu%06luHz)",
 							last_LO2, i, (uint32_t ) (freq / 1000000),
 							(uint32_t ) (freq % 1000000), (uint32_t ) (actualLO1 / 1000000),
@@ -212,7 +214,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 							(uint32_t ) (actualFirstIF % 1000000));
 				} else {
 					// last entry in IF table, revert LO2 to default
-					last_LO2 = HW::IF1 - HW::IF2;
+					last_LO2 = HW::getIF1() - HW::getIF2();
 				}
 				Si5351.SetCLK(SiChannel::RefLO2, last_LO2,
 						Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
@@ -259,10 +261,10 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		last_lowband = lowband;
 	}
 	// revert clk configuration to previous value (might have been changed in sweep calculation)
-	Si5351.SetCLK(SiChannel::RefLO2, HW::IF1 - HW::IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::RefLO2, HW::getIF1() - HW::getIF2(), Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
 	// Enable mixers/amplifier/PLLs
-	FPGA::SetWindow(FPGA::Window::None);
+	FPGA::SetWindow(FPGA::Window::Kaiser);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 	FPGA::Enable(FPGA::Periphery::RefMixer);
@@ -399,14 +401,17 @@ void VNA::SweepHalted() {
 			Delay::us(1300);
 		}
 
-		// At low frequencies the 1.LO feedtrough mixes with the 2.LO in the second mixer.
+		// At low frequencies the 1.LO feedthrough mixes with the 2.LO in the second mixer.
 		// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
 		// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
-		uint32_t LO_mixing = (HW::IF1 + frequency) - (HW::IF1 - HW::IF2);
-		if(abs(Util::Alias(LO_mixing, HW::ADCSamplerate) - HW::IF2) <= actualBandwidth * 2) {
+
+		uint32_t LO_mixing = (HW::getIF1() + frequency) - (HW::getIF1() - HW::getIF2());
+		if(abs(Util::Alias(LO_mixing, HW::getADCRate()) - HW::getIF2()) <= actualBandwidth * 2) {
 			// the image is in or near the IF bandwidth and would cause a peak
-			// Use a slightly different ADC samplerate
-			adcShiftRequired = true;
+			// Use a slightly different ADC sample rate if possible
+			if(HW::getIF2() == HW::DefaultIF2) {
+				adcShiftRequired = true;
+			}
 		}
 	} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
 		// first sweep point in highband is also halted, disable lowband source
@@ -420,8 +425,8 @@ void VNA::SweepHalted() {
 		adcShifted = true;
 	} else if(adcShifted) {
 		// reset to default value
-		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
-		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
+		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
 		adcShifted = false;
 	}
 

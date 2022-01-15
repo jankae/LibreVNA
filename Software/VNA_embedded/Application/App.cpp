@@ -222,6 +222,21 @@ inline void App_Process() {
 					Cal::setFrequencyCal(recv_packet.frequencyCorrection.ppm);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
+				case Protocol::PacketType::RequestAcquisitionFrequencySettings:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					{
+						Protocol::PacketInfo send;
+						send.type = Protocol::PacketType::AcquisitionFrequencySettings;
+						send.acquisitionFrequencySettings.IF1 = HW::getIF1();
+						send.acquisitionFrequencySettings.ADCprescaler = HW::getADCPrescaler();
+						send.acquisitionFrequencySettings.DFTphaseInc = HW::getDFTPhaseInc();
+						Communication::Send(send);
+					}
+					break;
+				case Protocol::PacketType::AcquisitionFrequencySettings:
+					HW::setAcquisitionFrequencies(recv_packet.acquisitionFrequencySettings);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
 				default:
 					// this packet type is not supported
 					Communication::SendWithoutPayload(Protocol::PacketType::Nack);

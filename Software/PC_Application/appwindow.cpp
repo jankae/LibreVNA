@@ -212,6 +212,11 @@ AppWindow::AppWindow(QWidget *parent)
             spectrumAnalyzer->setAveragingMode(Averaging::Mode::Mean);
             vna->setAveragingMode(Averaging::Mode::Mean);
         }
+
+        // acquisition frequencies may have changed, update
+        UpdateAcquisitionFrequencies();
+
+        active->initializeDevice();
     });
 
     connect(ui->actionAbout, &QAction::triggered, [=](){
@@ -306,6 +311,7 @@ bool AppWindow::ConnectToDevice(QString serial)
         ui->actionReceiver_Calibration->setEnabled(true);
         ui->actionFrequency_Calibration->setEnabled(true);
 
+        UpdateAcquisitionFrequencies();
         Mode::getActiveMode()->initializeDevice();
         UpdateReference();
 
@@ -863,6 +869,20 @@ void AppWindow::UpdateReference()
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::Reference;
     p.reference = s;
+    device->SendPacket(p);
+}
+
+void AppWindow::UpdateAcquisitionFrequencies()
+{
+    if(!device) {
+        return;
+    }
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::AcquisitionFrequencySettings;
+    auto pref = Preferences::getInstance();
+    p.acquisitionFrequencySettings.IF1 = pref.Acquisition.IF1;
+    p.acquisitionFrequencySettings.ADCprescaler = pref.Acquisition.ADCprescaler;
+    p.acquisitionFrequencySettings.DFTphaseInc = pref.Acquisition.DFTPhaseInc;
     device->SendPacket(p);
 }
 

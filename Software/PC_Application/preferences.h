@@ -68,6 +68,11 @@ public:
         bool useDFTinSAmode;
         double RBWLimitForDFT;
         bool useMedianAveraging;
+
+        // advanced, hardware specific settings
+        double IF1;
+        int ADCprescaler;
+        int DFTPhaseInc;
     } Acquisition;
     struct {
         bool showUnits;
@@ -108,7 +113,7 @@ private:
         QString name;
         QVariant def;
     };
-    const std::array<SettingDescription, 42> descr = {{
+    const std::array<SettingDescription, 45> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
@@ -138,6 +143,9 @@ private:
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
+        {&Acquisition.IF1, "Acquisition.IF1", 62000000},
+        {&Acquisition.ADCprescaler, "Acquisition.ADCprescaler", 128},
+        {&Acquisition.DFTPhaseInc, "Acquisition.DFTPhaseInc", 1280},
         {&Graphs.showUnits, "Graphs.showUnits", true},
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},

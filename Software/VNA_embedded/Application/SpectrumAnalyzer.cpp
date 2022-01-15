@@ -49,8 +49,8 @@ static void StartNextSample() {
 			port2Measurement[i] = std::numeric_limits<float>::max();
 		}
 		// Use default LO frequencies
-		LO1freq = freq + HW::IF1;
-		LO2freq = HW::IF1 - HW::IF2;
+		LO1freq = freq + HW::getIF1();
+		LO2freq = HW::getIF1() - HW::getIF2();
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 112);
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
 		negativeDFT = true;
@@ -88,17 +88,17 @@ static void StartNextSample() {
 		}
 		break;
 	case 1:
-		LO2freq = HW::IF1 - HW::IF2;
+		LO2freq = HW::getIF1() - HW::getIF2();
 		negativeDFT = false;
 		// Shift first LO to other side
 		// depending on the measurement frequency this is not possible or additive mixing has to be used
-		if(freq >= HW::IF1 + HW::LO1_minFreq) {
+		if(freq >= HW::getIF1() + HW::LO1_minFreq) {
 			// frequency is high enough to shift 1.LO below measurement frequency
-			LO1freq = freq - HW::IF1;
+			LO1freq = freq - HW::getIF1();
 			break;
-		} else if(freq <= HW::IF1 - HW::LO1_minFreq) {
+		} else if(freq <= HW::getIF1() - HW::LO1_minFreq) {
 			// frequency is low enough to add 1.LO to measurement frequency
-			LO1freq = HW::IF1 - freq;
+			LO1freq = HW::getIF1() - freq;
 			break;
 		}
 		// unable to reach required frequency with 1.LO, skip this signal ID step
@@ -106,22 +106,22 @@ static void StartNextSample() {
 		/* no break */
 	case 2:
 		// Shift second LOs to other side
-		LO1freq = freq + HW::IF1;
-		LO2freq = HW::IF1 + HW::IF2;
+		LO1freq = freq + HW::getIF1();
+		LO2freq = HW::getIF1() + HW::getIF2();
 		negativeDFT = false;
 		break;
 	case 3:
 		// Shift both LO to other side
-		LO2freq = HW::IF1 + HW::IF2;
+		LO2freq = HW::getIF1() + HW::getIF2();
 		negativeDFT = true;
 		// depending on the measurement frequency this is not possible or additive mixing has to be used
-		if(freq >= HW::IF1 + HW::LO1_minFreq) {
+		if(freq >= HW::getIF1() + HW::LO1_minFreq) {
 			// frequency is high enough to shift 1.LO below measurement frequency
-			LO1freq = freq - HW::IF1;
+			LO1freq = freq - HW::getIF1();
 			break;
-		} else if(freq <= HW::IF1 - HW::LO1_minFreq) {
+		} else if(freq <= HW::getIF1() - HW::LO1_minFreq) {
 			// frequency is low enough to add 1.LO to measurement frequency
-			LO1freq = HW::IF1 - freq;
+			LO1freq = HW::getIF1() - freq;
 			break;
 		}
 		// unable to reach required frequency with 1.LO, skip this signal ID step
@@ -130,8 +130,8 @@ static void StartNextSample() {
 	default:
 		// Use default frequencies with different ADC samplerate to remove images in final IF
 		negativeDFT = true;
-		LO1freq = freq + HW::IF1;
-		LO2freq = HW::IF1 - HW::IF2;
+		LO1freq = freq + HW::getIF1();
+		LO2freq = HW::getIF1() - HW::getIF2();
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, signalIDprescalers[signalIDstep-4]);
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, (uint16_t) signalIDprescalers[signalIDstep-4] * 10);
 	}
@@ -147,7 +147,7 @@ static void StartNextSample() {
 	}
 	if (s.UseDFT) {
 		uint32_t spacing = (s.f_stop - s.f_start) / (points - 1);
-		uint32_t start = HW::IF2;
+		uint32_t start = HW::getIF2();
 		if(negativeDFT) {
 			// needs to look below the start frequency, shift start
 			start -= spacing * (DFTpoints - 1);
@@ -172,13 +172,15 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	s = settings;
 	HW::SetMode(HW::Mode::SA);
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
 	// in almost all cases a full sweep requires more points than the FPGA can handle at a time
 	// individually start each point and do the sweep in the uC
 	FPGA::SetNumberOfPoints(1);
 	// calculate required samples per measurement for requested RBW
 	// see https://www.tek.com/blog/window-functions-spectrum-analyzers for window factors
 	constexpr float window_factors[4] = {0.89f, 2.23f, 1.44f, 3.77f};
-	sampleNum = HW::ADCSamplerate * window_factors[s.WindowType] / s.RBW;
+	sampleNum = HW::getADCRate() * window_factors[s.WindowType] / s.RBW;
 	// round up to next multiple of 16
 	if(sampleNum%16) {
 		sampleNum += 16 - sampleNum%16;
@@ -186,7 +188,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	if(sampleNum >= HW::MaxSamples) {
 		sampleNum = HW::MaxSamples;
 	}
-	actualRBW = HW::ADCSamplerate * window_factors[s.WindowType] / sampleNum;
+	actualRBW = HW::getADCRate() * window_factors[s.WindowType] / sampleNum;
 	FPGA::SetSamplesPerPoint(sampleNum);
 	// calculate amount of required points
 	points = 2 * (s.f_stop - s.f_start) / actualRBW;

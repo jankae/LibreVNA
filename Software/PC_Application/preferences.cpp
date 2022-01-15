@@ -73,6 +73,26 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     connect(ui->AcquisitionUseDFT, &QCheckBox::toggled, [=](bool enabled) {
        ui->AcquisitionDFTlimitRBW->setEnabled(enabled);
     });
+    ui->AcquisitionIF1->setUnit("Hz");
+    ui->AcquisitionIF1->setPrefixes(" kM");
+    ui->AcquisitionIF1->setPrecision(6);
+    ui->AcquisitionADCRate->setUnit("Hz");
+    ui->AcquisitionADCRate->setPrefixes(" kM");
+    ui->AcquisitionADCRate->setPrecision(6);
+    ui->AcquisitionIF2->setUnit("Hz");
+    ui->AcquisitionIF2->setPrefixes(" kM");
+    ui->AcquisitionIF2->setPrecision(6);
+    auto updateADCRate = [=]() {
+        // update ADC rate, see FPGA protocol for calculation
+        ui->AcquisitionADCRate->setValue(102400000.0 / ui->AcquisitionADCpresc->value());
+    };
+    auto updateIF2 = [=]() {
+        auto ADCrate = ui->AcquisitionADCRate->value();
+        ui->AcquisitionIF2->setValue(ADCrate * ui->AcquisitionADCphaseInc->value() / 4096);
+    };
+    connect(ui->AcquisitionADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateADCRate);
+    connect(ui->AcquisitionADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
+    connect(ui->AcquisitionADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
 
     // General page
     if(p->TCPoverride) {
@@ -136,6 +156,9 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
         p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
         p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
+        p->Acquisition.IF1 = ui->AcquisitionIF1->value();
+        p->Acquisition.ADCprescaler = ui->AcquisitionADCpresc->value();
+        p->Acquisition.DFTPhaseInc = ui->AcquisitionADCphaseInc->value();
 
         p->Graphs.showUnits = ui->GraphsShowUnit->isChecked();
         p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
@@ -156,6 +179,8 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     });
 
     setInitialGUIState();
+    updateADCRate();
+    updateIF2();
 
     connect(ui->AcquisitionUseHarmonic, &QCheckBox::toggled, [=](bool enabled) {
        if(enabled) {
@@ -208,6 +233,9 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
     ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
+    ui->AcquisitionIF1->setValue(p->Acquisition.IF1);
+    ui->AcquisitionADCpresc->setValue(p->Acquisition.ADCprescaler);
+    ui->AcquisitionADCphaseInc->setValue(p->Acquisition.DFTPhaseInc);
 
     ui->GraphsShowUnit->setChecked(p->Graphs.showUnits);
     ui->GraphsColorBackground->setColor(p->Graphs.Color.background);

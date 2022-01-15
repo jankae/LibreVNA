@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 8;
+static constexpr uint16_t Version = 9;
 
 #pragma pack(push, 1)
 
@@ -160,6 +160,12 @@ using FrequencyCorrection = struct _frequencycorrection {
 	float ppm;
 };
 
+using AcquisitionFrequencySettings = struct _acquisitionfrequencysettigns {
+	uint32_t IF1;
+	uint8_t ADCprescaler;
+	uint16_t DFTphaseInc;
+};
+
 enum class PacketType : uint8_t {
 	None = 0,
 	Datapoint = 1,
@@ -184,6 +190,8 @@ enum class PacketType : uint8_t {
 	SetIdle = 20,
 	RequestFrequencyCorrection = 21,
 	FrequencyCorrection = 22,
+	RequestAcquisitionFrequencySettings = 23,
+	AcquisitionFrequencySettings = 24,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -201,6 +209,7 @@ using PacketInfo = struct _packetinfo {
         SpectrumAnalyzerResult spectrumResult;
         AmplitudeCorrectionPoint amplitudePoint;
         FrequencyCorrection frequencyCorrection;
+        AcquisitionFrequencySettings acquisitionFrequencySettings;
 	};
 };
 

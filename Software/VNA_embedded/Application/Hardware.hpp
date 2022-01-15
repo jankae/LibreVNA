@@ -35,19 +35,19 @@ static constexpr uint32_t ExtRefOut2Frequency = 10000000;
 static constexpr uint32_t SI5351CPLLAlignedFrequency = 832000000;
 static constexpr uint32_t SI5351CPLLConstantFrequency = 800000000;
 static constexpr uint32_t FPGAClkInFrequency = 16000000;
-static constexpr uint32_t ADCSamplerate = 800000;
-static constexpr uint32_t IF1 = 62000000;
-static constexpr uint32_t IF2 = 250000;
+static constexpr uint32_t DefaultADCSamplerate = 800000;
+static constexpr uint32_t DefaultIF1 = 62000000;
+static constexpr uint32_t DefaultIF2 = 250000;
 static constexpr uint32_t LO1_minFreq = 25000000;
 static constexpr uint32_t MaxSamples = 130944;
 static constexpr uint32_t MinSamples = 16;
 static constexpr uint32_t PLLRef = 104000000;
 static constexpr uint32_t BandSwitchFrequency = 25000000;
 
-static constexpr uint8_t ADCprescaler = FPGA::Clockrate / ADCSamplerate;
-static_assert(ADCprescaler * ADCSamplerate == FPGA::Clockrate, "ADCSamplerate can not be reached exactly");
-static constexpr uint16_t DFTphaseInc = 4096 * IF2 / ADCSamplerate;
-static_assert(DFTphaseInc * ADCSamplerate == 4096 * IF2, "DFT can not be computed for 2.IF");
+static constexpr uint8_t DefaultADCprescaler = FPGA::Clockrate / DefaultADCSamplerate;
+static_assert(DefaultADCprescaler * DefaultADCSamplerate == FPGA::Clockrate, "ADCSamplerate can not be reached exactly");
+static constexpr uint16_t DefaultDFTphaseInc = 4096 * DefaultIF2 / DefaultADCSamplerate;
+static_assert(DefaultDFTphaseInc * DefaultADCSamplerate == 4096 * DefaultIF2, "DFT can not be computed for 2.IF");
 
 static constexpr uint16_t _fpga_div = SI5351CPLLConstantFrequency / FPGAClkInFrequency;
 static_assert(_fpga_div * FPGAClkInFrequency == SI5351CPLLConstantFrequency && _fpga_div >= 6 && _fpga_div <= 254 && (_fpga_div & 0x01) == 0, "Unable to generate FPGA clock input frequency");
@@ -83,13 +83,13 @@ static constexpr Protocol::DeviceInfo Info = {
 		.temp_MCU = 0,
 		.limits_minFreq = 0,
 		.limits_maxFreq = 6000000000,
-		.limits_minIFBW = ADCSamplerate / MaxSamples,
-		.limits_maxIFBW = ADCSamplerate / MinSamples,
+		.limits_minIFBW = DefaultADCSamplerate / MaxSamples,
+		.limits_maxIFBW = DefaultADCSamplerate / MinSamples,
 		.limits_maxPoints = FPGA::MaxPoints,
 		.limits_cdbm_min = -4000,
 		.limits_cdbm_max = 0,
-		.limits_minRBW = (uint32_t) (ADCSamplerate * 2.23f / MaxSamples),
-		.limits_maxRBW = (uint32_t) (ADCSamplerate * 2.23f / MinSamples),
+		.limits_minRBW = (uint32_t) (DefaultADCSamplerate * 2.23f / MaxSamples),
+		.limits_maxRBW = (uint32_t) (DefaultADCSamplerate * 2.23f / MinSamples),
 		.limits_maxAmplitudePoints = Cal::maxPoints,
 		.limits_maxFreqHarmonic = 18000000000,
 };
@@ -128,5 +128,13 @@ namespace Ref {
 	void set(Protocol::ReferenceSettings s);
 	void update();
 }
+
+// Acquisition frequency settings
+void setAcquisitionFrequencies(Protocol::AcquisitionFrequencySettings s);
+uint32_t getIF1();
+uint32_t getIF2();
+uint32_t getADCRate();
+uint8_t getADCPrescaler();
+uint16_t getDFTPhaseInc();
 
 }

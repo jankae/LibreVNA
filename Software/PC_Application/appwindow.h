@@ -54,6 +54,7 @@ private slots:
     int UpdateDeviceList();
     void StartManualControl();
     void UpdateReference();
+    void UpdateAcquisitionFrequencies();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
     void SourceCalibrationDialog();
