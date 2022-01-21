@@ -103,6 +103,9 @@ private:
     // Status bar widgets
     QLabel lConnectionStatus;
     QLabel lDeviceInfo;
+
+    QLabel lModeInfo;
+    QLabel lSetupName;
     // Error flag labels
     QLabel lADCOverload;
     QLabel lUnlevel;

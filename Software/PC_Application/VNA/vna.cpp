@@ -127,6 +127,7 @@ VNA::VNA(AppWindow *window)
     connect(saveCal, &QAction::triggered, [=](){
         if(cal.saveToFile()) {
             calEdited = false;
+            UpdateStatusbar();
         }
     });
 
@@ -431,6 +432,8 @@ VNA::VNA(AppWindow *window)
     };
 
     // Calibration connections
+    connect(this, &VNA::CalibrationApplied, this, &VNA::UpdateStatusbar);
+    connect(this, &VNA::CalibrationDisabled, this, &VNA::UpdateStatusbar);
     connect(cbEnableCal, &QCheckBox::stateChanged, calToolbarLambda);
     connect(cbType, qOverload<int>(&QComboBox::currentIndexChanged), calToolbarLambda);
     connect(this, &VNA::CalibrationDisabled, [=](){
@@ -1525,3 +1528,17 @@ VNA::SweepType VNA::SweepTypeFromString(QString s)
     return SweepType::Last;
 }
 
+
+void VNA::UpdateStatusbar()
+{
+    if(calValid) {
+        QFileInfo fi(cal.getCurrentCalibrationFile());
+        auto filename = fi.fileName();
+        if(filename.isEmpty()) {
+            filename = "Unsaved";
+        }
+        setStatusbarMessage("Calibration: "+filename);
+    } else {
+        setStatusbarMessage("Calibration: -");
+    }
+}

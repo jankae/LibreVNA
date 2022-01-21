@@ -13,6 +13,7 @@
 
 class Mode : public QObject, public Savable
 {
+    Q_OBJECT
 public:
     Mode(AppWindow *window, QString name);
 
@@ -26,8 +27,10 @@ public:
     virtual void deviceDisconnected(){};
 
     virtual void saveSreenshot();
-
+signals:
+    void statusbarMessage(QString msg);
 protected:
+    void setStatusbarMessage(QString msg);
     // call once the derived class is fully initialized
     void finalize(QWidget *centralWidget);
     AppWindow *window;
@@ -40,6 +43,7 @@ private:
     static QWidget *cornerWidget;
     static QButtonGroup *modeButtonGroup;
     const QString name;
+    QString statusbarMsg;
     QWidget *central;
 };
 

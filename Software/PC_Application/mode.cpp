@@ -101,6 +101,8 @@ void Mode::activate()
     if(window->getDevice()) {
         initializeDevice();
     }
+
+    emit statusbarMessage(statusbarMsg);
 }
 
 void Mode::deactivate()
@@ -171,6 +173,14 @@ void Mode::finalize(QWidget *centralWidget)
     }
     for(auto a : actions) {
         a->setVisible(false);
+    }
+}
+
+void Mode::setStatusbarMessage(QString msg)
+{
+    statusbarMsg = msg;
+    if(this == activeMode) {
+        emit statusbarMessage(msg);
     }
 }
 

@@ -107,6 +107,7 @@ private:
     void UpdateCalWidget();
 private slots:
     void EnableDeembedding(bool enable);
+    void UpdateStatusbar();
 private:
     Settings settings;
     unsigned int averages;

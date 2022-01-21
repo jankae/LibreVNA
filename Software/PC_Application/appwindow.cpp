@@ -151,6 +151,8 @@ AppWindow::AppWindow(QWidget *parent)
         file.open(filename.toStdString());
         file << setw(4) << SaveSetup() << endl;
         file.close();
+        QFileInfo fi(filename);
+        lSetupName.setText("Setup: "+fi.fileName());
     });
     connect(ui->actionLoad_setup, &QAction::triggered, [=](){
         auto filename = QFileDialog::getOpenFileName(nullptr, "Load setup data", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog);
@@ -173,10 +175,19 @@ AppWindow::AppWindow(QWidget *parent)
         }
         file.close();
         LoadSetup(j);
+        QFileInfo fi(filename);
+        lSetupName.setText("Setup: "+fi.fileName());
     });
     connect(ui->actionSave_image, &QAction::triggered, [=](){
         Mode::getActiveMode()->saveSreenshot();
     });
+
+    auto setModeStatusbar = [=](QString msg) {
+        lModeInfo.setText(msg);
+    };
+    connect(vna, &Mode::statusbarMessage, setModeStatusbar);
+    connect(generator, &Mode::statusbarMessage, setModeStatusbar);
+    connect(spectrumAnalyzer, &Mode::statusbarMessage, setModeStatusbar);
 
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
@@ -988,6 +999,16 @@ void AppWindow::SetupStatusBar()
     ui->statusbar->addWidget(&lDeviceInfo);
     ui->statusbar->addWidget(new QLabel, 1);
 
+    ui->statusbar->addWidget(&lSetupName);
+    lSetupName.setText("Setup: -");
+    auto div2 = new QFrame;
+    div2->setFrameShape(QFrame::VLine);
+    ui->statusbar->addWidget(div2);
+    ui->statusbar->addWidget(&lModeInfo);
+    auto div3 = new QFrame;
+    div3->setFrameShape(QFrame::VLine);
+    ui->statusbar->addWidget(div3);
+
     lADCOverload.setStyleSheet("color : red");
     lADCOverload.setText("ADC overload");
     lADCOverload.setVisible(false);
@@ -1027,5 +1048,6 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
         // invalid status
         break;
     }
+
 
 }
