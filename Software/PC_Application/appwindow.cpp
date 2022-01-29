@@ -227,7 +227,9 @@ AppWindow::AppWindow(QWidget *parent)
         // acquisition frequencies may have changed, update
         UpdateAcquisitionFrequencies();
 
-        active->initializeDevice();
+        if(device) {
+            active->initializeDevice();
+        }
     });
 
     connect(ui->actionAbout, &QAction::triggered, [=](){
