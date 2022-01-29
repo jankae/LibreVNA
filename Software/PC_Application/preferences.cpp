@@ -50,9 +50,21 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     // Startup page
     connect(ui->StartupSweepLastUsed, &QPushButton::clicked, [=](){
        setDefaultSettingsEnabled(false);
+       ui->StartupSetupFile->setEnabled(false);
+       ui->StartupBrowse->setEnabled(false);
     });
     connect(ui->StartupSweepDefault, &QPushButton::clicked, [=](){
        setDefaultSettingsEnabled(true);
+       ui->StartupSetupFile->setEnabled(false);
+       ui->StartupBrowse->setEnabled(false);
+    });
+    connect(ui->StartupUseSetupFile, &QPushButton::clicked, [=](){
+       setDefaultSettingsEnabled(false);
+       ui->StartupSetupFile->setEnabled(true);
+       ui->StartupBrowse->setEnabled(true);
+    });
+    connect(ui->StartupBrowse, &QPushButton::clicked, [=](){
+       ui->StartupSetupFile->setText(QFileDialog::getOpenFileName(nullptr, "Select startup setup file", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog));
     });
     ui->StartupSweepStart->setUnit("Hz");
     ui->StartupSweepStart->setPrefixes(" kMG");
@@ -186,9 +198,12 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupAutoconnect->setChecked(p->Startup.ConnectToFirstDevice);
     if(p->Startup.RememberSweepSettings) {
         ui->StartupSweepLastUsed->click();
+    } if(p->Startup.UseSetupFile) {
+        ui->StartupUseSetupFile->click();
     } else {
         ui->StartupSweepDefault->click();
     }
+    ui->StartupSetupFile->setText(p->Startup.SetupFile);
     ui->StartupSweepType->setCurrentText(p->Startup.DefaultSweep.type);
     ui->StartupSweepStart->setValueQuiet(p->Startup.DefaultSweep.f_start);
     ui->StartupSweepStop->setValueQuiet(p->Startup.DefaultSweep.f_stop);
@@ -246,6 +261,8 @@ void PreferencesDialog::updateFromGUI()
 {
     p->Startup.ConnectToFirstDevice = ui->StartupAutoconnect->isChecked();
     p->Startup.RememberSweepSettings = ui->StartupSweepLastUsed->isChecked();
+    p->Startup.UseSetupFile = ui->StartupUseSetupFile->isChecked();
+    p->Startup.SetupFile = ui->StartupSetupFile->text();
     p->Startup.DefaultSweep.type = ui->StartupSweepType->currentText();
     p->Startup.DefaultSweep.f_start = ui->StartupSweepStart->value();
     p->Startup.DefaultSweep.f_stop = ui->StartupSweepStop->value();

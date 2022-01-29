@@ -61,6 +61,7 @@ private slots:
     void ReceiverCalibrationDialog();
     void FrequencyCalibrationDialog();
     nlohmann::json SaveSetup();
+    void LoadSetup(QString filename);
     void LoadSetup(nlohmann::json j);
 private:
 

@@ -160,23 +160,7 @@ AppWindow::AppWindow(QWidget *parent)
             // aborted selection
             return;
         }
-        ifstream file;
-        file.open(filename.toStdString());
-        if(!file.is_open()) {
-            qWarning() << "Unable to open file:" << filename;
-            return;
-        }
-        nlohmann::json j;
-        try {
-            file >> j;
-        } catch (exception &e) {
-            InformationBox::ShowError("Error", "Failed to parse the setup file (" + QString(e.what()) + ")");
-            qWarning() << "Parsing of setup file failed: " << e.what();
-        }
-        file.close();
-        LoadSetup(j);
-        QFileInfo fi(filename);
-        lSetupName.setText("Setup: "+fi.fileName());
+        LoadSetup(filename);
     });
     connect(ui->actionSave_image, &QAction::triggered, [=](){
         Mode::getActiveMode()->saveSreenshot();
@@ -261,7 +245,8 @@ AppWindow::AppWindow(QWidget *parent)
 
     // List available devices
     UpdateDeviceList();
-    if(Preferences::getInstance().Startup.ConnectToFirstDevice) {
+    auto pref = Preferences::getInstance();
+    if(pref.Startup.ConnectToFirstDevice) {
         // at least one device available
         ConnectToDevice();
     }
@@ -271,6 +256,9 @@ AppWindow::AppWindow(QWidget *parent)
         show();
     } else {
         InformationBox::setGUI(false);
+    }
+    if(pref.Startup.UseSetupFile) {
+        LoadSetup(pref.Startup.SetupFile);
     }
 }
 
@@ -946,6 +934,27 @@ nlohmann::json AppWindow::SaveSetup()
     j["Generator"] = generator->toJSON();
     j["SpectrumAnalyzer"] = spectrumAnalyzer->toJSON();
     return j;
+}
+
+void AppWindow::LoadSetup(QString filename)
+{
+    ifstream file;
+    file.open(filename.toStdString());
+    if(!file.is_open()) {
+        qWarning() << "Unable to open file:" << filename;
+        return;
+    }
+    nlohmann::json j;
+    try {
+        file >> j;
+    } catch (exception &e) {
+        InformationBox::ShowError("Error", "Failed to parse the setup file (" + QString(e.what()) + ")");
+        qWarning() << "Parsing of setup file failed: " << e.what();
+    }
+    file.close();
+    LoadSetup(j);
+    QFileInfo fi(filename);
+    lSetupName.setText("Setup: "+fi.fileName());
 }
 
 void AppWindow::LoadSetup(nlohmann::json j)

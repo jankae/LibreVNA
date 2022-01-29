@@ -32,6 +32,8 @@ public:
     struct {
         bool ConnectToFirstDevice;
         bool RememberSweepSettings;
+        bool UseSetupFile;
+        QString SetupFile;
         struct {
             QString type;
             double f_start;
@@ -117,6 +119,8 @@ private:
     const std::vector<Savable::SettingDescription> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
+        {&Startup.UseSetupFile, "Startup.UseSetupFile", false},
+        {&Startup.SetupFile, "Startup.SetupFile", ""},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
         {&Startup.DefaultSweep.f_start, "Startup.DefaultSweep.start", 1000000.0},
         {&Startup.DefaultSweep.f_stop, "Startup.DefaultSweep.stop", 6000000000.0},

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>919</width>
-    <height>876</height>
+    <width>957</width>
+    <height>891</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -83,7 +83,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -112,7 +112,7 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                 <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0">
                   <item>
                    <widget class="QRadioButton" name="StartupSweepLastUsed">
                     <property name="text">
@@ -131,6 +131,38 @@
                     <attribute name="buttonGroup">
                      <string notr="true">StartupSweepGroup</string>
                     </attribute>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="StartupUseSetupFile">
+                    <property name="text">
+                     <string>Use setup file:</string>
+                    </property>
+                    <attribute name="buttonGroup">
+                     <string notr="true">StartupSweepGroup</string>
+                    </attribute>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="StartupSetupFile"/>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="StartupBrowse">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>20</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>...</string>
+                    </property>
                    </widget>
                   </item>
                   <item>
