@@ -29,6 +29,8 @@ public:
 
     static std::set<TracePlot *> getPlots();
 
+    TraceModel &getModel() const;
+
 public slots:
     void updateGraphColors();
 

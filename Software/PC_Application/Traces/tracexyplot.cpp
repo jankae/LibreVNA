@@ -342,7 +342,7 @@ void TraceXYPlot::draw(QPainter &p)
 {
     auto pref = Preferences::getInstance();
 
-    constexpr int yAxisSpace = 50;
+    constexpr int yAxisSpace = 55;
     constexpr int yAxisDisabledSpace = 10;
     constexpr int xAxisSpace = 30;
     auto w = p.window();
@@ -1227,18 +1227,27 @@ QString TraceXYPlot::mouseText(QPoint pos)
 
 QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
 {
-    switch(type) {
-    case TraceXYPlot::YAxisType::Magnitude: return "dB";
-    case TraceXYPlot::YAxisType::Phase: return "°";
-    case TraceXYPlot::YAxisType::UnwrappedPhase: return "°";
-    case TraceXYPlot::YAxisType::VSWR: return "";
-    case TraceXYPlot::YAxisType::ImpulseReal: return "";
-    case TraceXYPlot::YAxisType::ImpulseMag: return "dB";
-    case TraceXYPlot::YAxisType::Step: return "";
-    case TraceXYPlot::YAxisType::Impedance: return "Ohm";
-    case TraceXYPlot::YAxisType::GroupDelay: return "s";
-    default: return "";
+    auto source = model.getSource();
+    if(source == TraceModel::DataSource::VNA) {
+        switch(type) {
+        case TraceXYPlot::YAxisType::Magnitude: return "dB";
+        case TraceXYPlot::YAxisType::Phase: return "°";
+        case TraceXYPlot::YAxisType::UnwrappedPhase: return "°";
+        case TraceXYPlot::YAxisType::VSWR: return "";
+        case TraceXYPlot::YAxisType::ImpulseReal: return "";
+        case TraceXYPlot::YAxisType::ImpulseMag: return "dB";
+        case TraceXYPlot::YAxisType::Step: return "";
+        case TraceXYPlot::YAxisType::Impedance: return "Ohm";
+        case TraceXYPlot::YAxisType::GroupDelay: return "s";
+        default: return "";
+        }
+    } else if(source == TraceModel::DataSource::SA) {
+        switch(type) {
+        case TraceXYPlot::YAxisType::Magnitude: return "dBm";
+        default: return "";
+        }
     }
+    return "";
 }
 
 QString TraceXYPlot::AxisUnit(TraceXYPlot::XAxisType type)

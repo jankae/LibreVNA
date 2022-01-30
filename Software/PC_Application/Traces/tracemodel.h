@@ -25,6 +25,12 @@ public:
         ColIndexLast,
     };
 
+    enum class DataSource {
+        VNA,
+        SA,
+        Unknown,
+    };
+
     void addTrace(Trace *t);
     void removeTrace(unsigned int index);
     Trace *trace(unsigned int index);
@@ -46,6 +52,9 @@ public:
     MarkerModel *getMarkerModel() const;
     void setMarkerModel(MarkerModel *value);
 
+    DataSource getSource() const;
+    void setSource(const DataSource &value);
+
 signals:
     void SpanChanged(double fmin, double fmax);
     void traceAdded(Trace *t);
@@ -59,6 +68,7 @@ public slots:
     void addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings);
 
 private:
+    DataSource source;
     std::vector<Trace*> traces;
     MarkerModel *markerModel;
 };

@@ -64,6 +64,8 @@ VNA::VNA(AppWindow *window)
     calEdited = false;
     settings.sweepType = SweepType::Frequency;
 
+    traceModel.setSource(TraceModel::DataSource::VNA);
+
     // Create default traces
     auto tS11 = new Trace("S11", Qt::yellow);
     tS11->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::S11);

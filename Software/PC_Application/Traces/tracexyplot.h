@@ -78,9 +78,9 @@ private:
     static QString AxisTypeToName(YAxisType type);
     static QString AxisTypeToName(XAxisType type);
     static QString AxisModeToName(XAxisMode mode);
-    XAxisType XAxisTypeFromName(QString name);
-    YAxisType YAxisTypeFromName(QString name);
-    XAxisMode AxisModeFromName(QString name);
+    static XAxisType XAxisTypeFromName(QString name);
+    static YAxisType YAxisTypeFromName(QString name);
+    static XAxisMode AxisModeFromName(QString name);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
     bool domainMatch(Trace *t);
     bool supported(Trace *t) override;
@@ -94,7 +94,7 @@ private:
     void traceDropped(Trace *t, QPoint position) override;
     QString mouseText(QPoint pos) override;
 
-    static QString AxisUnit(YAxisType type);
+    QString AxisUnit(YAxisType type);
     static QString AxisUnit(XAxisType type);
 
     std::set<Trace*> tracesAxis[2];

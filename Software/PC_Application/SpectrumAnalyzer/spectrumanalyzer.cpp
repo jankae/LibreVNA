@@ -57,6 +57,8 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     normalize.points = 0;
     normalize.dialog.reset();
 
+    traceModel.setSource(TraceModel::DataSource::SA);
+
     // Create default traces
     auto tPort1 = new Trace("Port1", Qt::yellow);
     tPort1->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::Port1);

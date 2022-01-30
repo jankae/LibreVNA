@@ -9,6 +9,7 @@ TraceModel::TraceModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
     traces.clear();
+    source = DataSource::Unknown;
 }
 
 TraceModel::~TraceModel()
@@ -208,6 +209,7 @@ void TraceModel::clearLiveData()
 
 void TraceModel::addVNAData(const Protocol::Datapoint &d, TraceMath::DataType datatype)
 {
+    source = DataSource::VNA;
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
             Trace::Data td;
@@ -238,6 +240,7 @@ void TraceModel::addVNAData(const Protocol::Datapoint &d, TraceMath::DataType da
 
 void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings)
 {
+    source = DataSource::SA;
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
             Trace::Data td;
@@ -252,6 +255,16 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
             t->addData(td, settings);
         }
     }
+}
+
+TraceModel::DataSource TraceModel::getSource() const
+{
+    return source;
+}
+
+void TraceModel::setSource(const DataSource &value)
+{
+    source = value;
 }
 
 MarkerModel *TraceModel::getMarkerModel() const

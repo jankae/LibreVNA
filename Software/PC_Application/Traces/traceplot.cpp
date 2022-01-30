@@ -466,6 +466,11 @@ void TracePlot::markerRemoved(Marker *m)
     triggerReplot();
 }
 
+TraceModel &TracePlot::getModel() const
+{
+    return model;
+}
+
 void TracePlot::updateGraphColors()
 {
     replot();

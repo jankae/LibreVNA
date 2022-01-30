@@ -23,6 +23,7 @@ private slots:
 
 private:
     std::set<TraceXYPlot::YAxisType> supportedYAxis(TraceXYPlot::XAxisType type);
+    bool isSupported(TraceXYPlot::XAxisType type);
     Ui::XYplotAxisDialog *ui;
     TraceXYPlot *plot;
 };
