@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>957</width>
-    <height>891</height>
+    <width>936</width>
+    <height>951</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -112,7 +112,7 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0">
+                 <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0">
                   <item>
                    <widget class="QRadioButton" name="StartupSweepLastUsed">
                     <property name="text">
@@ -136,33 +136,11 @@
                   <item>
                    <widget class="QRadioButton" name="StartupUseSetupFile">
                     <property name="text">
-                     <string>Use setup file:</string>
+                     <string>Setup file</string>
                     </property>
                     <attribute name="buttonGroup">
                      <string notr="true">StartupSweepGroup</string>
                     </attribute>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="StartupSetupFile"/>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="StartupBrowse">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>20</width>
-                      <height>16777215</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>...</string>
-                    </property>
                    </widget>
                   </item>
                   <item>
@@ -183,388 +161,503 @@
                </layout>
               </item>
               <item>
-               <widget class="QGroupBox" name="groupBox_2">
-                <property name="title">
-                 <string>Vector Network Analyzer</string>
+               <widget class="QStackedWidget" name="StartupStack">
+                <property name="currentIndex">
+                 <number>2</number>
                 </property>
-                <layout class="QVBoxLayout" name="verticalLayout">
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_9">
-                   <item>
-                    <widget class="QLabel" name="label_24">
-                     <property name="text">
-                      <string>Type:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QComboBox" name="StartupSweepType">
-                     <item>
+                <widget class="QWidget" name="StartupPageLastUsed">
+                 <layout class="QVBoxLayout" name="verticalLayout_18">
+                  <item>
+                   <widget class="QLabel" name="label_36">
+                    <property name="text">
+                     <string>The last used sweep settings (e.g. span, bandwidth,...) will be remembered. The graphs, traces and markers will not be remembered and the default configuration for them is used on startup.</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_7">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="StartupPageSetupFile">
+                 <layout class="QVBoxLayout" name="verticalLayout_17">
+                  <item>
+                   <widget class="QLabel" name="label_38">
+                    <property name="text">
+                     <string>All settings (sweep settings as well as graphs, markers and traces) will be taken from the specified file. If the autosave option is checked, the current state of the GUI is stored in this file during shutdown as well.</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_11">
+                    <item>
+                     <widget class="QLabel" name="label_35">
                       <property name="text">
-                       <string>Frequency Sweep</string>
+                       <string>File location:</string>
                       </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="StartupSetupFile"/>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="StartupBrowse">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>20</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>...</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="StartupAutosaveSetupFile">
+                    <property name="text">
+                     <string>Autosave to this file on shutdown</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>545</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="StartupPageDefaultValues">
+                 <layout class="QVBoxLayout" name="verticalLayout_16">
+                  <item>
+                   <widget class="QLabel" name="label_37">
+                    <property name="text">
+                     <string>These default values for the sweep settings will be used. The graphs, traces and markers will not be remembered and the default configuration for them is used on startup.</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QGroupBox" name="groupBox_2">
+                    <property name="title">
+                     <string>Vector Network Analyzer</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout">
+                     <item>
+                      <layout class="QHBoxLayout" name="horizontalLayout_9">
+                       <item>
+                        <widget class="QLabel" name="label_24">
+                         <property name="text">
+                          <string>Type:</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QComboBox" name="StartupSweepType">
+                         <item>
+                          <property name="text">
+                           <string>Frequency Sweep</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>Power Sweep</string>
+                          </property>
+                         </item>
+                        </widget>
+                       </item>
+                      </layout>
                      </item>
                      <item>
-                      <property name="text">
-                       <string>Power Sweep</string>
-                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_8">
+                       <item>
+                        <widget class="QGroupBox" name="groupBox_10">
+                         <property name="title">
+                          <string>Frequency Sweep:</string>
+                         </property>
+                         <layout class="QFormLayout" name="formLayout_6">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_2">
+                            <property name="text">
+                             <string>Start:</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="SIUnitEdit" name="StartupSweepStart"/>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_3">
+                            <property name="text">
+                             <string>Stop:</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="SIUnitEdit" name="StartupSweepStop"/>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_4">
+                            <property name="text">
+                             <string>Simulus level:</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QDoubleSpinBox" name="StartupSweepLevel">
+                            <property name="suffix">
+                             <string>dbm</string>
+                            </property>
+                            <property name="minimum">
+                             <double>-42.000000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>0.000000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.250000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QGroupBox" name="groupBox_11">
+                         <property name="title">
+                          <string>Power Sweep:</string>
+                         </property>
+                         <layout class="QFormLayout" name="formLayout_7">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_21">
+                            <property name="text">
+                             <string>Start:</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QDoubleSpinBox" name="StartupSweepPowerStart">
+                            <property name="suffix">
+                             <string>dbm</string>
+                            </property>
+                            <property name="minimum">
+                             <double>-42.000000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>0.000000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.250000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_22">
+                            <property name="text">
+                             <string>Stop:</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QDoubleSpinBox" name="StartupSweepPowerStop">
+                            <property name="suffix">
+                             <string>dbm</string>
+                            </property>
+                            <property name="minimum">
+                             <double>-42.000000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>0.000000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.250000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_23">
+                            <property name="text">
+                             <string>Frequency:</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="SIUnitEdit" name="StartupSweepPowerFrequency"/>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
+                      </layout>
                      </item>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_8">
-                   <item>
-                    <widget class="QGroupBox" name="groupBox_10">
-                     <property name="title">
-                      <string>Frequency Sweep:</string>
-                     </property>
-                     <layout class="QFormLayout" name="formLayout_6">
-                      <item row="0" column="0">
-                       <widget class="QLabel" name="label_2">
+                     <item>
+                      <layout class="QFormLayout" name="formLayout_8">
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_5">
+                         <property name="text">
+                          <string>Points:</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="0" column="1">
+                        <widget class="QSpinBox" name="StartupSweepPoints">
+                         <property name="minimum">
+                          <number>1</number>
+                         </property>
+                         <property name="maximum">
+                          <number>4501</number>
+                         </property>
+                         <property name="value">
+                          <number>501</number>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <widget class="QLabel" name="label_6">
+                         <property name="text">
+                          <string>IF bandwitdh:</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="SIUnitEdit" name="StartupSweepBandwidth"/>
+                       </item>
+                       <item row="2" column="0">
+                        <widget class="QLabel" name="label_18">
+                         <property name="text">
+                          <string>Averaging:</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="1">
+                        <widget class="QSpinBox" name="StartupSweepAveraging">
+                         <property name="minimum">
+                          <number>1</number>
+                         </property>
+                         <property name="maximum">
+                          <number>99</number>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QGroupBox" name="groupBox_3">
+                    <property name="title">
+                     <string>Signal Generator</string>
+                    </property>
+                    <layout class="QFormLayout" name="formLayout_2">
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_7">
+                       <property name="text">
+                        <string>Frequency:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="SIUnitEdit" name="StartupGeneratorFrequency"/>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_8">
+                       <property name="text">
+                        <string>Output level:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QDoubleSpinBox" name="StartupGeneratorLevel">
+                       <property name="suffix">
+                        <string>dbm</string>
+                       </property>
+                       <property name="minimum">
+                        <double>-42.000000000000000</double>
+                       </property>
+                       <property name="maximum">
+                        <double>0.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.250000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QGroupBox" name="groupBox_4">
+                    <property name="title">
+                     <string>Spectrum Analyzer</string>
+                    </property>
+                    <layout class="QFormLayout" name="formLayout_3">
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_9">
+                       <property name="text">
+                        <string>Start:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="SIUnitEdit" name="StartupSAStart"/>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_10">
+                       <property name="text">
+                        <string>Stop:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="SIUnitEdit" name="StartupSAStop"/>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_11">
+                       <property name="text">
+                        <string>RBW:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="SIUnitEdit" name="StartupSARBW"/>
+                     </item>
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="label_12">
+                       <property name="text">
+                        <string>Window:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="1">
+                      <widget class="QComboBox" name="StartupSAWindow">
+                       <item>
                         <property name="text">
-                         <string>Start:</string>
+                         <string>None</string>
                         </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1">
-                       <widget class="SIUnitEdit" name="StartupSweepStart"/>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLabel" name="label_3">
+                       </item>
+                       <item>
                         <property name="text">
-                         <string>Stop:</string>
+                         <string>Kaiser</string>
                         </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="SIUnitEdit" name="StartupSweepStop"/>
-                      </item>
-                      <item row="2" column="0">
-                       <widget class="QLabel" name="label_4">
+                       </item>
+                       <item>
                         <property name="text">
-                         <string>Simulus level:</string>
+                         <string>Hann</string>
                         </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="1">
-                       <widget class="QDoubleSpinBox" name="StartupSweepLevel">
-                        <property name="suffix">
-                         <string>dbm</string>
-                        </property>
-                        <property name="minimum">
-                         <double>-42.000000000000000</double>
-                        </property>
-                        <property name="maximum">
-                         <double>0.000000000000000</double>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.250000000000000</double>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QGroupBox" name="groupBox_11">
-                     <property name="title">
-                      <string>Power Sweep:</string>
-                     </property>
-                     <layout class="QFormLayout" name="formLayout_7">
-                      <item row="0" column="0">
-                       <widget class="QLabel" name="label_21">
+                       </item>
+                       <item>
                         <property name="text">
-                         <string>Start:</string>
+                         <string>Flat Top</string>
                         </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1">
-                       <widget class="QDoubleSpinBox" name="StartupSweepPowerStart">
-                        <property name="suffix">
-                         <string>dbm</string>
-                        </property>
-                        <property name="minimum">
-                         <double>-42.000000000000000</double>
-                        </property>
-                        <property name="maximum">
-                         <double>0.000000000000000</double>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.250000000000000</double>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLabel" name="label_22">
+                       </item>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_13">
+                       <property name="text">
+                        <string>Detector:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QComboBox" name="StartupSADetector">
+                       <item>
                         <property name="text">
-                         <string>Stop:</string>
+                         <string>+Peak</string>
                         </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QDoubleSpinBox" name="StartupSweepPowerStop">
-                        <property name="suffix">
-                         <string>dbm</string>
-                        </property>
-                        <property name="minimum">
-                         <double>-42.000000000000000</double>
-                        </property>
-                        <property name="maximum">
-                         <double>0.000000000000000</double>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.250000000000000</double>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="0">
-                       <widget class="QLabel" name="label_23">
+                       </item>
+                       <item>
                         <property name="text">
-                         <string>Frequency:</string>
+                         <string>-Peak</string>
                         </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="1">
-                       <widget class="SIUnitEdit" name="StartupSweepPowerFrequency"/>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QFormLayout" name="formLayout_8">
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_5">
-                     <property name="text">
-                      <string>Points:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QSpinBox" name="StartupSweepPoints">
-                     <property name="minimum">
-                      <number>1</number>
-                     </property>
-                     <property name="maximum">
-                      <number>4501</number>
-                     </property>
-                     <property name="value">
-                      <number>501</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_6">
-                     <property name="text">
-                      <string>IF bandwitdh:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="SIUnitEdit" name="StartupSweepBandwidth"/>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_18">
-                     <property name="text">
-                      <string>Averaging:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QSpinBox" name="StartupSweepAveraging">
-                     <property name="minimum">
-                      <number>1</number>
-                     </property>
-                     <property name="maximum">
-                      <number>99</number>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_3">
-                <property name="title">
-                 <string>Signal Generator</string>
-                </property>
-                <layout class="QFormLayout" name="formLayout_2">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_7">
-                   <property name="text">
-                    <string>Frequency:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="SIUnitEdit" name="StartupGeneratorFrequency"/>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_8">
-                   <property name="text">
-                    <string>Output level:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QDoubleSpinBox" name="StartupGeneratorLevel">
-                   <property name="suffix">
-                    <string>dbm</string>
-                   </property>
-                   <property name="minimum">
-                    <double>-42.000000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>0.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.250000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_4">
-                <property name="title">
-                 <string>Spectrum Analyzer</string>
-                </property>
-                <layout class="QFormLayout" name="formLayout_3">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_9">
-                   <property name="text">
-                    <string>Start:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="SIUnitEdit" name="StartupSAStart"/>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_10">
-                   <property name="text">
-                    <string>Stop:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="SIUnitEdit" name="StartupSAStop"/>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_11">
-                   <property name="text">
-                    <string>RBW:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="SIUnitEdit" name="StartupSARBW"/>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_12">
-                   <property name="text">
-                    <string>Window:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QComboBox" name="StartupSAWindow">
-                   <item>
-                    <property name="text">
-                     <string>None</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Kaiser</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Hann</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Flat Top</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_13">
-                   <property name="text">
-                    <string>Detector:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QComboBox" name="StartupSADetector">
-                   <item>
-                    <property name="text">
-                     <string>+Peak</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>-Peak</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Sample</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Normal</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Average</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="6" column="0">
-                  <widget class="QLabel" name="label_14">
-                   <property name="text">
-                    <string>Signal Identification:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="1">
-                  <widget class="QCheckBox" name="StartupSASignalID">
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label_19">
-                   <property name="text">
-                    <string>Averaging:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="1">
-                  <widget class="QSpinBox" name="StartupSAAveraging">
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="maximum">
-                    <number>99</number>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>Sample</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>Normal</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>Average</string>
+                        </property>
+                       </item>
+                      </widget>
+                     </item>
+                     <item row="6" column="0">
+                      <widget class="QLabel" name="label_14">
+                       <property name="text">
+                        <string>Signal Identification:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="1">
+                      <widget class="QCheckBox" name="StartupSASignalID">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="0">
+                      <widget class="QLabel" name="label_19">
+                       <property name="text">
+                        <string>Averaging:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="1">
+                      <widget class="QSpinBox" name="StartupSAAveraging">
+                       <property name="minimum">
+                        <number>1</number>
+                       </property>
+                       <property name="maximum">
+                        <number>99</number>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                </widget>
               </item>
              </layout>

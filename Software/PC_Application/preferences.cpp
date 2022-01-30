@@ -52,16 +52,19 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
        setDefaultSettingsEnabled(false);
        ui->StartupSetupFile->setEnabled(false);
        ui->StartupBrowse->setEnabled(false);
+       ui->StartupStack->setCurrentWidget(ui->StartupPageLastUsed);
     });
     connect(ui->StartupSweepDefault, &QPushButton::clicked, [=](){
        setDefaultSettingsEnabled(true);
        ui->StartupSetupFile->setEnabled(false);
        ui->StartupBrowse->setEnabled(false);
+       ui->StartupStack->setCurrentWidget(ui->StartupPageDefaultValues);
     });
     connect(ui->StartupUseSetupFile, &QPushButton::clicked, [=](){
        setDefaultSettingsEnabled(false);
        ui->StartupSetupFile->setEnabled(true);
        ui->StartupBrowse->setEnabled(true);
+       ui->StartupStack->setCurrentWidget(ui->StartupPageSetupFile);
     });
     connect(ui->StartupBrowse, &QPushButton::clicked, [=](){
        ui->StartupSetupFile->setText(QFileDialog::getOpenFileName(nullptr, "Select startup setup file", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog));
@@ -203,6 +206,7 @@ void PreferencesDialog::setInitialGUIState()
     } else {
         ui->StartupSweepDefault->click();
     }
+    ui->StartupAutosaveSetupFile->setChecked(p->Startup.AutosaveSetupFile);
     ui->StartupSetupFile->setText(p->Startup.SetupFile);
     ui->StartupSweepType->setCurrentText(p->Startup.DefaultSweep.type);
     ui->StartupSweepStart->setValueQuiet(p->Startup.DefaultSweep.f_start);
@@ -263,6 +267,7 @@ void PreferencesDialog::updateFromGUI()
     p->Startup.RememberSweepSettings = ui->StartupSweepLastUsed->isChecked();
     p->Startup.UseSetupFile = ui->StartupUseSetupFile->isChecked();
     p->Startup.SetupFile = ui->StartupSetupFile->text();
+    p->Startup.AutosaveSetupFile = ui->StartupAutosaveSetupFile->isChecked();
     p->Startup.DefaultSweep.type = ui->StartupSweepType->currentText();
     p->Startup.DefaultSweep.f_start = ui->StartupSweepStart->value();
     p->Startup.DefaultSweep.f_stop = ui->StartupSweepStop->value();

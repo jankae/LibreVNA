@@ -144,15 +144,7 @@ AppWindow::AppWindow(QWidget *parent)
             // aborted selection
             return;
         }
-        if(!filename.endsWith(".setup")) {
-            filename.append(".setup");
-        }
-        ofstream file;
-        file.open(filename.toStdString());
-        file << setw(4) << SaveSetup() << endl;
-        file.close();
-        QFileInfo fi(filename);
-        lSetupName.setText("Setup: "+fi.fileName());
+        SaveSetup(filename);
     });
     connect(ui->actionLoad_setup, &QAction::triggered, [=](){
         auto filename = QFileDialog::getOpenFileName(nullptr, "Load setup data", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog);
@@ -243,9 +235,12 @@ AppWindow::AppWindow(QWidget *parent)
     qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumAnalyzerResult");
     qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
 
+    auto pref = Preferences::getInstance();
+    if(pref.Startup.UseSetupFile) {
+        LoadSetup(pref.Startup.SetupFile);
+    }
     // List available devices
     UpdateDeviceList();
-    auto pref = Preferences::getInstance();
     if(pref.Startup.ConnectToFirstDevice) {
         // at least one device available
         ConnectToDevice();
@@ -257,9 +252,6 @@ AppWindow::AppWindow(QWidget *parent)
     } else {
         InformationBox::setGUI(false);
     }
-    if(pref.Startup.UseSetupFile) {
-        LoadSetup(pref.Startup.SetupFile);
-    }
 }
 
 AppWindow::~AppWindow()
@@ -270,6 +262,10 @@ AppWindow::~AppWindow()
 
 void AppWindow::closeEvent(QCloseEvent *event)
 {
+    auto pref = Preferences::getInstance();
+    if(pref.Startup.UseSetupFile && pref.Startup.AutosaveSetupFile) {
+        SaveSetup(pref.Startup.SetupFile);
+    }
     vna->shutdown();
     generator->shutdown();
     spectrumAnalyzer->shutdown();
@@ -280,7 +276,7 @@ void AppWindow::closeEvent(QCloseEvent *event)
     if(Mode::getActiveMode()) {
         Mode::getActiveMode()->deactivate();
     }
-    Preferences::getInstance().store();
+    pref.store();
     QMainWindow::closeEvent(event);
 }
 
@@ -924,6 +920,19 @@ void AppWindow::FrequencyCalibrationDialog()
 {
     auto d = new FrequencyCalDialog(device);
     d->exec();
+}
+
+void AppWindow::SaveSetup(QString filename)
+{
+    if(!filename.endsWith(".setup")) {
+        filename.append(".setup");
+    }
+    ofstream file;
+    file.open(filename.toStdString());
+    file << setw(4) << SaveSetup() << endl;
+    file.close();
+    QFileInfo fi(filename);
+    lSetupName.setText("Setup: "+fi.fileName());
 }
 
 nlohmann::json AppWindow::SaveSetup()

@@ -33,6 +33,7 @@ public:
         bool ConnectToFirstDevice;
         bool RememberSweepSettings;
         bool UseSetupFile;
+        bool AutosaveSetupFile;
         QString SetupFile;
         struct {
             QString type;
@@ -121,6 +122,7 @@ private:
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
         {&Startup.UseSetupFile, "Startup.UseSetupFile", false},
         {&Startup.SetupFile, "Startup.SetupFile", ""},
+        {&Startup.AutosaveSetupFile, "Startup.AutosaveSetupFile", false},
         {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
         {&Startup.DefaultSweep.f_start, "Startup.DefaultSweep.start", 1000000.0},
         {&Startup.DefaultSweep.f_stop, "Startup.DefaultSweep.stop", 6000000000.0},
