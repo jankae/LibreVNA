@@ -96,6 +96,14 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Xmax->setPrefixes("pnum kMG");
     ui->Xdivs->setPrefixes("pnum kMG");
 
+    ui->Y1min->setPrefixes("pnum kMG");
+    ui->Y1max->setPrefixes("pnum kMG");
+    ui->Y1divs->setPrefixes("pnum kMG");
+
+    ui->Y2min->setPrefixes("pnum kMG");
+    ui->Y2max->setPrefixes("pnum kMG");
+    ui->Y2divs->setPrefixes("pnum kMG");
+
     XAxisTypeChanged((int) plot->XAxis.type);
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
     connect(ui->Xlog, &QCheckBox::toggled, [=](bool checked){

@@ -1239,7 +1239,16 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
         case TraceXYPlot::YAxisType::Step: return "";
         case TraceXYPlot::YAxisType::Impedance: return "Ohm";
         case TraceXYPlot::YAxisType::GroupDelay: return "s";
-        default: return "";
+        case TraceXYPlot::YAxisType::Disabled:
+        case TraceXYPlot::YAxisType::Real:
+        case TraceXYPlot::YAxisType::Imaginary:
+        case TraceXYPlot::YAxisType::QualityFactor:
+            return "";
+        case TraceXYPlot::YAxisType::SeriesR: return "Ω";
+        case TraceXYPlot::YAxisType::Reactance: return "Ω";
+        case TraceXYPlot::YAxisType::Capacitance: return "F";
+        case TraceXYPlot::YAxisType::Inductance: return "H";
+        case TraceXYPlot::YAxisType::Last: return "";
         }
     } else if(source == TraceModel::DataSource::SA) {
         switch(type) {
