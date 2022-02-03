@@ -365,7 +365,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
         if(sweep.contains("frequency")) {
             auto freq = sweep["frequency"];
             SetStartFreq(freq.value("start", settings.f_start));
-            SetStartFreq(freq.value("start", settings.f_start));
+            SetStopFreq(freq.value("stop", settings.f_start));
         }
         if(sweep.contains("acquisition")) {
             auto acq = sweep["acquisition"];
