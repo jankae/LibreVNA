@@ -405,10 +405,12 @@ void TraceXYPlot::draw(QPainter &p)
                 auto tickLen = i == 0 ? -2 : 2;
                 p.drawLine(tickStart, yCoord, tickStart + tickLen, yCoord);
                 QString unit = "";
+                QString prefix = " ";
                 if(pref.Graphs.showUnits) {
                     unit = AxisUnit(YAxis[i].type);
+                    prefix = AxisPrefixes(YAxis[i].type);
                 }
-                auto tickValue = Unit::ToString(YAxis[i].ticks[j], unit, "fpnum kMG", significantDigits);
+                auto tickValue = Unit::ToString(YAxis[i].ticks[j], unit, prefix, significantDigits);
                 if(i == 0) {
                     p.drawText(QRectF(0, yCoord - AxisLabelSize/2 - 2, tickStart + 2 * tickLen, AxisLabelSize), Qt::AlignRight, tickValue);
                 } else {
@@ -1218,7 +1220,7 @@ QString TraceXYPlot::mouseText(QPoint pos)
                 auto max = qMax(abs(YAxis[i].rangeMax), abs(YAxis[i].rangeMin));
                 auto step = abs(YAxis[i].rangeMax - YAxis[i].rangeMin) / 1000.0;
                 significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
-                ret += Unit::ToString(coords[i].y(), AxisUnit(YAxis[i].type), "fpnum kMG", significantDigits) + "\n";
+                ret += Unit::ToString(coords[i].y(), AxisUnit(YAxis[i].type), AxisPrefixes(YAxis[i].type), significantDigits) + "\n";
             }
         }
     }
@@ -1257,6 +1259,39 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
         }
     }
     return "";
+}
+
+QString TraceXYPlot::AxisPrefixes(TraceXYPlot::YAxisType type)
+{
+    auto source = model.getSource();
+    if(source == TraceModel::DataSource::VNA) {
+        switch(type) {
+        case TraceXYPlot::YAxisType::Magnitude: return " ";
+        case TraceXYPlot::YAxisType::Phase: return " ";
+        case TraceXYPlot::YAxisType::UnwrappedPhase: return " ";
+        case TraceXYPlot::YAxisType::VSWR: return " ";
+        case TraceXYPlot::YAxisType::ImpulseReal: return "pnum kMG";
+        case TraceXYPlot::YAxisType::ImpulseMag: return " ";
+        case TraceXYPlot::YAxisType::Step: return "pnum kMG";
+        case TraceXYPlot::YAxisType::Impedance: return "m kM";
+        case TraceXYPlot::YAxisType::GroupDelay: return "pnum ";
+        case TraceXYPlot::YAxisType::Disabled: return " ";
+        case TraceXYPlot::YAxisType::Real: return "pnum ";
+        case TraceXYPlot::YAxisType::Imaginary: return "pnum ";
+        case TraceXYPlot::YAxisType::QualityFactor: return " ";
+        case TraceXYPlot::YAxisType::SeriesR: return "m kM";
+        case TraceXYPlot::YAxisType::Reactance: return "m kM";
+        case TraceXYPlot::YAxisType::Capacitance: return "pnum ";
+        case TraceXYPlot::YAxisType::Inductance: return "pnum ";
+        case TraceXYPlot::YAxisType::Last: return " ";
+        }
+    } else if(source == TraceModel::DataSource::SA) {
+        switch(type) {
+        case TraceXYPlot::YAxisType::Magnitude: return " ";
+        default: return " ";
+        }
+    }
+    return " ";
 }
 
 QString TraceXYPlot::AxisUnit(TraceXYPlot::XAxisType type)

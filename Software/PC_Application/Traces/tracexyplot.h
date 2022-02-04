@@ -95,6 +95,7 @@ private:
     QString mouseText(QPoint pos) override;
 
     QString AxisUnit(YAxisType type);
+    QString AxisPrefixes(YAxisType type);
     static QString AxisUnit(XAxisType type);
 
     std::set<Trace*> tracesAxis[2];

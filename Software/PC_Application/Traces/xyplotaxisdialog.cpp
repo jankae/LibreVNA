@@ -53,9 +53,13 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Y1divs->setEnabled(index != 0 && !autoRange);
        auto type = (TraceXYPlot::YAxisType) index;
        QString unit = plot->AxisUnit(type);
+       QString prefixes = plot->AxisPrefixes(type);
        ui->Y1min->setUnit(unit);
+       ui->Y1min->setPrefixes(prefixes);
        ui->Y1max->setUnit(unit);
+       ui->Y1max->setPrefixes(prefixes);
        ui->Y1divs->setUnit(unit);
+       ui->Y1divs->setPrefixes(prefixes);
     });
     connect(ui->Y1auto, &QCheckBox::toggled, [this](bool checked) {
        ui->Y1min->setEnabled(!checked);
@@ -73,9 +77,13 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Y2divs->setEnabled(index != 0 && !autoRange);
        auto type = (TraceXYPlot::YAxisType) index;
        QString unit = plot->AxisUnit(type);
+       QString prefixes = plot->AxisPrefixes(type);
        ui->Y2min->setUnit(unit);
+       ui->Y2min->setPrefixes(prefixes);
        ui->Y2max->setUnit(unit);
+       ui->Y2max->setPrefixes(prefixes);
        ui->Y2divs->setUnit(unit);
+       ui->Y2divs->setPrefixes(prefixes);
     });
 
     connect(ui->Y2auto, &QCheckBox::toggled, [this](bool checked) {
