@@ -942,6 +942,10 @@ nlohmann::json AppWindow::SaveSetup()
     j["VNA"] = vna->toJSON();
     j["Generator"] = generator->toJSON();
     j["SpectrumAnalyzer"] = spectrumAnalyzer->toJSON();
+    nlohmann::json ref;
+    ref["Mode"] = toolbars.reference.type->currentText().toStdString();
+    ref["Output"] = toolbars.reference.outFreq->currentText().toStdString();
+    j["Reference"] = ref;
     return j;
 }
 
@@ -970,9 +974,19 @@ void AppWindow::LoadSetup(nlohmann::json j)
 {
 //    auto d = new JSONPickerDialog(j);
 //    d->exec();
-    vna->fromJSON(j["VNA"]);
-    generator->fromJSON(j["Generator"]);
-    spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
+    if(j.contains("Reference")) {
+        toolbars.reference.type->setCurrentText(QString::fromStdString(j["Reference"].value("Mode", "Int")));
+        toolbars.reference.outFreq->setCurrentText(QString::fromStdString(j["Reference"].value("Output", "Off")));
+    }
+    if(j.contains("VNA")) {
+        vna->fromJSON(j["VNA"]);
+    }
+    if(j.contains("Generator")) {
+        generator->fromJSON(j["Generator"]);
+    }
+    if(j.contains("SpectrumAnalyzer")) {
+        spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
+    }
 
     // activate the correct mode
     QString modeName = QString::fromStdString(j.value("activeMode", ""));
