@@ -297,9 +297,7 @@ bool AppWindow::ConnectToDevice(QString serial)
         UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
         connect(device, &Device::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &Device::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
-        connect(device, &Device::DeviceInfoUpdated, [this]() {
-            UpdateStatusBar(AppWindow::DeviceStatusBar::Updated);
-        });
+        connect(device, &Device::DeviceInfoUpdated, this, &AppWindow::DeviceInfoUpdated);
         connect(device, &Device::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
         ui->actionManual_Control->setEnabled(true);
@@ -902,6 +900,11 @@ void AppWindow::DeviceNeedsUpdate(int reported, int expected)
     if (ret) {
         StartFirmwareUpdateDialog();
     }
+}
+
+void AppWindow::DeviceInfoUpdated()
+{
+    UpdateStatusBar(DeviceStatusBar::Updated);
 }
 
 void AppWindow::SourceCalibrationDialog()

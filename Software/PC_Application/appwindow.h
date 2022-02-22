@@ -57,6 +57,7 @@ private slots:
     void UpdateAcquisitionFrequencies();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
+    void DeviceInfoUpdated();
     void SourceCalibrationDialog();
     void ReceiverCalibrationDialog();
     void FrequencyCalibrationDialog();
