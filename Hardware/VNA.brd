@@ -8,7 +8,7 @@
 </settings>
 <grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="10" display="yes" altdistance="0.05" altunitdist="mm" altunit="mm"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="no" active="yes"/>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="10" fill="1" visible="yes" active="yes"/>
 <layer number="3" name="Route3" color="13" fill="1" visible="yes" active="yes"/>
 <layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
@@ -7818,7 +7818,7 @@ design rules under a new name.</description>
 <via x="51.8" y="4.2" extent="1-16" drill="0.25"/>
 <via x="52.8" y="4.2" extent="1-16" drill="0.25"/>
 <via x="53.8" y="4.2" extent="1-16" drill="0.25"/>
-<via x="56.4" y="5.3" extent="1-16" drill="0.25"/>
+<via x="56.5" y="5.4" extent="1-16" drill="0.25"/>
 <via x="57.1" y="5.8" extent="1-16" drill="0.25"/>
 <via x="24.7" y="6.4" extent="1-16" drill="0.25"/>
 <via x="25.5" y="6.5" extent="1-16" drill="0.25"/>
@@ -7890,8 +7890,8 @@ design rules under a new name.</description>
 <via x="63.1" y="5" extent="1-16" drill="0.25"/>
 <via x="65.2" y="5.9" extent="1-16" drill="0.25"/>
 <via x="66" y="5.6" extent="1-16" drill="0.25"/>
-<via x="66.8" y="5.2" extent="1-16" drill="0.25"/>
-<via x="67.6" y="4.8" extent="1-16" drill="0.25"/>
+<via x="66.9" y="5.1" extent="1-16" drill="0.25"/>
+<via x="67.8" y="4.6" extent="1-16" drill="0.25"/>
 <via x="71.1" y="4.2" extent="1-16" drill="0.25"/>
 <via x="72.1" y="4.2" extent="1-16" drill="0.25"/>
 <via x="73.1" y="4.2" extent="1-16" drill="0.25"/>
@@ -8893,6 +8893,31 @@ design rules under a new name.</description>
 <vertex x="127.1" y="-5.5"/>
 <vertex x="-2" y="-5.5"/>
 </polygon>
+<via x="14" y="5.8" extent="1-16" drill="0.25"/>
+<via x="15" y="5.8" extent="1-16" drill="0.25"/>
+<via x="15.8" y="5.8" extent="1-16" drill="0.25"/>
+<via x="16.5" y="6.4" extent="1-16" drill="0.25"/>
+<via x="17.5" y="6.4" extent="1-16" drill="0.25"/>
+<via x="18.5" y="6.4" extent="1-16" drill="0.25"/>
+<via x="55.9" y="5" extent="1-16" drill="0.25"/>
+<via x="56.7" y="4.5" extent="1-16" drill="0.25"/>
+<via x="57.4" y="4.1" extent="1-16" drill="0.25"/>
+<via x="58.3" y="3.9" extent="1-16" drill="0.25"/>
+<via x="60.4" y="3.7" extent="1-16" drill="0.25"/>
+<via x="66" y="3.8" extent="1-16" drill="0.25"/>
+<via x="67" y="4.1" extent="1-16" drill="0.25"/>
+<via x="70.3" y="4.1" extent="1-16" drill="0.25"/>
+<via x="69.5" y="3.7" extent="1-16" drill="0.25"/>
+<via x="68.7" y="3.2" extent="1-16" drill="0.25"/>
+<via x="67.8" y="2.7" extent="1-16" drill="0.25"/>
+<via x="66" y="2.2" extent="1-16" drill="0.25"/>
+<via x="64" y="2.2" extent="1-16" drill="0.25"/>
+<via x="62" y="2.2" extent="1-16" drill="0.25"/>
+<via x="60" y="2.2" extent="1-16" drill="0.25"/>
+<via x="57.7" y="2.4" extent="1-16" drill="0.25"/>
+<via x="56.2" y="2.9" extent="1-16" drill="0.25"/>
+<via x="55.4" y="3.5" extent="1-16" drill="0.25"/>
+<via x="54.6" y="4" extent="1-16" drill="0.25"/>
 </signal>
 <signal name="SOURCE_REF">
 <contactref element="C51" pad="1"/>
