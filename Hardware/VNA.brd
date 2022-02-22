@@ -8,7 +8,7 @@
 </settings>
 <grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="10" display="yes" altdistance="0.05" altunitdist="mm" altunit="mm"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="1" name="Top" color="4" fill="1" visible="no" active="yes"/>
 <layer number="2" name="Route2" color="10" fill="1" visible="yes" active="yes"/>
 <layer number="3" name="Route3" color="13" fill="1" visible="yes" active="yes"/>
 <layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
@@ -8805,7 +8805,7 @@ design rules under a new name.</description>
 <vertex x="33.7" y="5"/>
 <vertex x="33.7" y="7.2"/>
 </polygon>
-<polygon width="0" layer="16">
+<polygon width="0" layer="16" thermals="no">
 <vertex x="-1.6" y="8.4"/>
 <vertex x="33.7" y="8.4"/>
 <vertex x="33.7" y="6.9"/>
