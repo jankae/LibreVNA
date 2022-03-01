@@ -117,13 +117,7 @@ VNA::VNA(AppWindow *window)
     saveCal->setEnabled(false);
 
     connect(calLoad, &QAction::triggered, [=](){
-        cal.openFromFile();
-        if(cal.getType() == Calibration::Type::None) {
-            DisableCalibration();
-        } else {
-            ApplyCalibration(cal.getType());
-        }
-        calEdited = false;
+        LoadCalibration("");
     });
 
     connect(saveCal, &QAction::triggered, [=](){
@@ -1542,5 +1536,18 @@ void VNA::UpdateStatusbar()
         setStatusbarMessage("Calibration: "+filename);
     } else {
         setStatusbarMessage("Calibration: -");
+    }
+}
+
+bool VNA::LoadCalibration(QString filename)
+{
+    cal.openFromFile(filename);
+    calEdited = false;
+    if(cal.getType() == Calibration::Type::None) {
+        DisableCalibration();
+        return false;
+    } else {
+        ApplyCalibration(cal.getType());
+        return true;
     }
 }

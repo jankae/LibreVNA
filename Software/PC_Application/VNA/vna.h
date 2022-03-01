@@ -59,6 +59,9 @@ public:
         bool excitingPort2;
     };
 
+public slots:
+    bool LoadCalibration(QString filename);
+
 private slots:
     void NewDatapoint(Protocol::Datapoint d);
     void StartImpedanceMatching();

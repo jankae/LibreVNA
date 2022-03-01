@@ -86,6 +86,8 @@ AppWindow::AppWindow(QWidget *parent)
     parser.addOption(QCommandLineOption({"p","port"}, "Specify port to listen for SCPI commands", "port"));
     parser.addOption(QCommandLineOption({"d","device"}, "Only allow connections to the specified device", "device"));
     parser.addOption(QCommandLineOption("no-gui", "Disables the graphical interface"));
+    parser.addOption(QCommandLineOption("cal", "Calibration file to load on startup", "cal"));
+    parser.addOption(QCommandLineOption("setup", "Setup file to load on startup", "setup"));
 
     parser.process(QCoreApplication::arguments());
 
@@ -244,6 +246,12 @@ AppWindow::AppWindow(QWidget *parent)
     if(pref.Startup.ConnectToFirstDevice) {
         // at least one device available
         ConnectToDevice();
+    }
+    if(parser.isSet("setup")) {
+        LoadSetup(parser.value("setup"));
+    }
+    if(parser.isSet("cal")) {
+        vna->LoadCalibration(parser.value("cal"));
     }
     if(!parser.isSet("no-gui")) {
         InformationBox::setGUI(true);
