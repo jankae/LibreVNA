@@ -80,6 +80,13 @@ Calkit Calkit::fromFile(QString filename)
         qDebug() << "JSON format detected";
         // calkit file uses json format, parse
         Savable::parseJSON(j, c.descr);
+        auto jSOLT = j["SOLT"];
+        if (!jSOLT.contains("loadModelCFirst")) {
+            // older version which did not allow the user to choose the load model. CFirst seems to be the more
+            // used standard so it is the default for newer calkits. However, old calkits used LFirst so we need
+            // to keep that to not mess with older calkit files
+            c.SOLT.loadModelCFirst = false;
+        }
         // adjust Z0/resistance in case of older calkit file version with missing resistance entries
         if(isnan(c.SOLT.load_f.resistance)) {
             c.SOLT.load_f.resistance = c.SOLT.load_f.Z0;
@@ -207,14 +214,20 @@ class Calkit::SOLT Calkit::toSOLT(double frequency, bool male_standards)
         ref.Load = ts_load->interpolate(frequency).S[0];
     } else {
         auto imp_load = complex<double>(Load.resistance, 0);
+        if (SOLT.loadModelCFirst) {
+            // C is the first parameter starting from the VNA port. But the load is modeled here starting from
+            // the other end, so we need to start with the inductor
+            imp_load += complex<double>(0, frequency * 2 * M_PI * Load.Lseries);
+        }
         // Add parallel capacitor to impedance
         if(Load.Cparallel > 0) {
             auto imp_C = complex<double>(0, -1.0 / (frequency * 2 * M_PI * Load.Cparallel));
             imp_load = (imp_load * imp_C) / (imp_load + imp_C);
         }
-        // add series inductor to impedance
-        auto imp_L = complex<double>(0, frequency * 2 * M_PI * Load.Lseries);
-        imp_load += imp_L;
+        if (!SOLT.loadModelCFirst) {
+            // inductor not added yet, do so now
+            imp_load += complex<double>(0, frequency * 2 * M_PI * Load.Lseries);
+        }
         ref.Load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
         ref.Load = addTransmissionLine(ref.Load, Load.Z0, Load.delay*1e-12, 0, frequency);
     }

@@ -249,6 +249,7 @@ void CalkitDialog::parseEntries()
     ownKit.SOLT.short_m.L2 = ui->short_L2->value();
     ownKit.SOLT.short_m.L3 = ui->short_L3->value();
 
+    ownKit.SOLT.loadModelCFirst = ui->load_C_first->isChecked();
     ownKit.SOLT.load_m.resistance = ui->load_resistance->value();
     ownKit.SOLT.load_m.Z0 = ui->load_Z0->value();
     ownKit.SOLT.load_m.delay = ui->load_delay->value();
@@ -336,6 +337,8 @@ void CalkitDialog::updateEntries()
     ui->short_L2->setValueQuiet(ownKit.SOLT.short_m.L2);
     ui->short_L3->setValueQuiet(ownKit.SOLT.short_m.L3);
 
+    ui->load_C_first->setChecked(ownKit.SOLT.loadModelCFirst);
+    ui->load_L_first->setChecked(!ownKit.SOLT.loadModelCFirst);
     ui->load_resistance->setValueQuiet(ownKit.SOLT.load_m.resistance);
     ui->load_Z0->setValueQuiet(ownKit.SOLT.load_m.Z0);
     ui->load_delay->setValueQuiet(ownKit.SOLT.load_m.delay);

@@ -79,6 +79,7 @@ private:
             int Sparam;
         };
         Load load_m, load_f;
+        bool loadModelCFirst;
         struct {
             double Z0, delay, loss;
             QString file;
@@ -152,6 +153,7 @@ private:
         {&SOLT.short_f.file, "SOLT.Short.Measurements.File_Female", ""},
         {&SOLT.short_f.Sparam, "SOLT.Short.Measurements.Port_Female", 0},
 
+        {&SOLT.loadModelCFirst, "SOLT.loadModelCFirst", true},
         {&SOLT.load_m.resistance, "SOLT.Load.Param.Resistance", 50.0},
         {&SOLT.load_m.Z0, "SOLT.Load.Param.Z0", 50.0},
         {&SOLT.load_m.delay, "SOLT.Load.Param.Delay", 0.0},
