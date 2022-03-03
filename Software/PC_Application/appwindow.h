@@ -46,6 +46,8 @@ public:
     const QString& getAppVersion() const;
     const QString& getAppGitHash() const;
 
+    static bool showGUI();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:

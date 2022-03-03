@@ -2,6 +2,7 @@
 
 #include "ui_portextensioneditdialog.h"
 #include "Util/util.h"
+#include "appwindow.h"
 
 #include <QCheckBox>
 #include <cmath>
@@ -202,7 +203,9 @@ void PortExtension::edit()
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
-    dialog->show();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
 }
 
 void PortExtension::measurementCompleted(std::vector<Protocol::Datapoint> m)

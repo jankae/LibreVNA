@@ -3,6 +3,7 @@
 #include "ui_medianfilterdialog.h"
 #include "ui_medianexplanationwidget.h"
 #include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
 
 using namespace Math;
 using namespace std;
@@ -47,7 +48,9 @@ void MedianFilter::edit()
     connect(ui->sortingMethod, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
         order = (Order) index;
     });
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 QWidget *MedianFilter::createExplanationWidget()

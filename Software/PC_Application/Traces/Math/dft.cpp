@@ -5,6 +5,7 @@
 #include "unit.h"
 #include "ui_dftdialog.h"
 #include "ui_dftexplanationwidget.h"
+#include "appwindow.h"
 
 #include <QDebug>
 
@@ -86,7 +87,9 @@ void Math::DFT::edit()
     });
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, d, &QDialog::accept);
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 QWidget *Math::DFT::createExplanationWidget()

@@ -18,20 +18,7 @@ void sig_handler(int s) {
 }
 
 int main(int argc, char *argv[]) {
-    // Hack: set platform to offscreen if no-gui option specified, this prevents any dialogs from showing up
-    char *argv_ext[argc+2];
-    for(int i=0;i<argc;i++) {
-        argv_ext[i] = argv[i];
-    }
-    for (int i = 1; i < argc; ++i) {
-        if (!qstrcmp(argv[i], "--no-gui")) {
-            argv_ext[argc] = const_cast<char*>("-platform");
-            argv_ext[argc+1] = const_cast<char*>("offscreen");
-            argc+=2;
-            break;
-        }
-    }
-    app = new QApplication(argc, argv_ext);
+    app = new QApplication(argc, argv);
     QCoreApplication::setOrganizationName("LibreVNA");
     QCoreApplication::setApplicationName("LibreVNA-GUI");
     window = new AppWindow;

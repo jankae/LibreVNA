@@ -3,6 +3,7 @@
 #include "ui_expressiondialog.h"
 #include "Traces/trace.h"
 #include "ui_expressionexplanationwidget.h"
+#include "appwindow.h"
 
 #include <QWidget>
 #include <QDebug>
@@ -52,7 +53,9 @@ void Math::Expression::edit()
     default: break;
     }
 
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 QWidget *Math::Expression::createExplanationWidget()

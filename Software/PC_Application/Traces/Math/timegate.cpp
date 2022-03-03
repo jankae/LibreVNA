@@ -7,6 +7,7 @@
 #include "Traces/fftcomplex.h"
 #include "Util/util.h"
 #include "unit.h"
+#include "appwindow.h"
 
 #include <QWidget>
 #include <QDialog>
@@ -108,7 +109,9 @@ void Math::TimeGate::edit()
 
     updateFilter();
 
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 QWidget *Math::TimeGate::createExplanationWidget()

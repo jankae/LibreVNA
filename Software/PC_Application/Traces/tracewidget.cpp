@@ -7,6 +7,7 @@
 #include "trace.h"
 #include "unit.h"
 #include "Util/util.h"
+#include "appwindow.h"
 
 #include <QKeyEvent>
 #include <QFileDialog>
@@ -113,7 +114,9 @@ void TraceWidget::on_edit_clicked()
 {
     if(ui->view->currentIndex().isValid()) {
         auto edit = new TraceEditDialog(*model.trace(ui->view->currentIndex().row()));
-        edit->show();
+        if(AppWindow::showGUI()) {
+            edit->show();
+        }
     }
 }
 
@@ -121,7 +124,9 @@ void TraceWidget::on_view_doubleClicked(const QModelIndex &index)
 {
     if(index.column() == TraceModel::ColIndexName) {
         auto edit = new TraceEditDialog(*model.trace(index.row()));
-        edit->show();
+        if(AppWindow::showGUI()) {
+            edit->show();
+        }
     }
 }
 

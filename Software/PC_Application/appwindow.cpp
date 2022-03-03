@@ -64,6 +64,8 @@ static const QString APP_VERSION = QString::number(FW_MAJOR) + "." +
                                    QString::number(FW_PATCH);
 static const QString APP_GIT_HASH = QString(GITHASH);
 
+static bool noGUIset = false;
+
 AppWindow::AppWindow(QWidget *parent)
     : QMainWindow(parent)
     , deviceActionGroup(new QActionGroup(this))
@@ -247,6 +249,7 @@ AppWindow::AppWindow(QWidget *parent)
         // at least one device available
         ConnectToDevice();
     }
+
     if(parser.isSet("setup")) {
         LoadSetup(parser.value("setup"));
     }
@@ -259,6 +262,7 @@ AppWindow::AppWindow(QWidget *parent)
         show();
     } else {
         InformationBox::setGUI(false);
+        noGUIset = true;
     }
 }
 
@@ -842,7 +846,9 @@ void AppWindow::StartManualControl()
             Mode::getActiveMode()->initializeDevice();
         }
     });
-    manual->show();
+    if(AppWindow::showGUI()) {
+        manual->show();
+    }
 }
 
 void AppWindow::UpdateReference()
@@ -895,7 +901,9 @@ void AppWindow::StartFirmwareUpdateDialog()
         auto fw_update = new FirmwareUpdateDialog(device);
         connect(fw_update, &FirmwareUpdateDialog::DeviceRebooting, this, &AppWindow::DisconnectDevice);
         connect(fw_update, &FirmwareUpdateDialog::DeviceRebooted, this, &AppWindow::ConnectToDevice);
-        fw_update->exec();
+        if(AppWindow::showGUI()) {
+            fw_update->exec();
+        }
     }
 }
 
@@ -918,19 +926,25 @@ void AppWindow::DeviceInfoUpdated()
 void AppWindow::SourceCalibrationDialog()
 {
     auto d = new SourceCalDialog(device);
-    d->exec();
+    if(AppWindow::showGUI()) {
+        d->exec();
+    }
 }
 
 void AppWindow::ReceiverCalibrationDialog()
 {
     auto d = new ReceiverCalDialog(device);
-    d->exec();
+    if(AppWindow::showGUI()) {
+        d->exec();
+    }
 }
 
 void AppWindow::FrequencyCalibrationDialog()
 {
     auto d = new FrequencyCalDialog(device);
-    d->exec();
+    if(AppWindow::showGUI()) {
+        d->exec();
+    }
 }
 
 void AppWindow::SaveSetup(QString filename)
@@ -1033,6 +1047,11 @@ const QString& AppWindow::getAppVersion() const
 const QString& AppWindow::getAppGitHash() const
 {
     return appGitHash;
+}
+
+bool AppWindow::showGUI()
+{
+    return !noGUIset;
 }
 
 void AppWindow::SetupStatusBar()

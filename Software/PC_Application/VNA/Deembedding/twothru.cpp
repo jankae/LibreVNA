@@ -4,6 +4,7 @@
 #include "ui_twothrudialog.h"
 #include "Traces/fftcomplex.h"
 #include "unit.h"
+#include "appwindow.h"
 
 #include <QDebug>
 
@@ -172,7 +173,9 @@ void TwoThru::edit()
 
     updateGUI();
 
-    dialog->show();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
 }
 
 nlohmann::json TwoThru::toJSON()

@@ -3,6 +3,7 @@
 #include "calkitdialog.h"
 #include "json.hpp"
 #include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
 
 #include <fstream>
 #include <iomanip>
@@ -171,7 +172,9 @@ void Calkit::edit(std::function<void (void)> updateCal)
             updateCal();
         });
     }
-    dialog->show();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
 }
 
 bool Calkit::hasSeparateMaleFemaleStandards()

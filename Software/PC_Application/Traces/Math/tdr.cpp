@@ -4,6 +4,7 @@
 #include "ui_tdrdialog.h"
 #include "ui_tdrexplanationwidget.h"
 #include "Util/util.h"
+#include "appwindow.h"
 
 #include <QVBoxLayout>
 #include <QLabel>
@@ -127,7 +128,9 @@ void TDR::edit()
     });
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, d, &QDialog::accept);
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 QWidget *TDR::createExplanationWidget()

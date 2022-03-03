@@ -2,6 +2,7 @@
 
 #include "Util/app_common.h"
 #include "ui_aboutdialog.h"
+#include "appwindow.h"
 
 About About::instance;
 
@@ -30,5 +31,7 @@ AboutDialog::~AboutDialog()
 void About::about()
 {
     auto dialog = new AboutDialog();
-    dialog->exec();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
 }

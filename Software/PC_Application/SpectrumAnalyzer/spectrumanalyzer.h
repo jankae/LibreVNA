@@ -53,7 +53,6 @@ private:
 
 private slots:
     void NewDatapoint(Protocol::SpectrumAnalyzerResult d);
-    void StartImpedanceMatching();
     // Sweep control
     void SetStartFreq(double freq);
     void SetStopFreq(double freq);

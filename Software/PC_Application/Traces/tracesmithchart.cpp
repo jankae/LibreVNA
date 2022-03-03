@@ -6,6 +6,7 @@
 #include "unit.h"
 #include "QFileDialog"
 #include "Util/util.h"
+#include "appwindow.h"
 
 #include <QPainter>
 #include <array>
@@ -165,7 +166,9 @@ void TraceSmithChart::axisSetupDialog()
     });
 
     updatePersistentEditors();
-    dialog->show();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
 }
 
 QPoint TraceSmithChart::dataToPixel(std::complex<double> d)

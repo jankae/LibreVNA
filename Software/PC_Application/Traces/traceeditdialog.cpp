@@ -3,6 +3,7 @@
 #include "ui_traceeditdialog.h"
 #include "ui_newtracemathdialog.h"
 #include "Math/tdr.h"
+#include "appwindow.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
@@ -222,7 +223,9 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         ui->list->setCurrentRow(0);
         ui->stack->setCurrentIndex(0);
 
-        d->show();
+        if(AppWindow::showGUI()) {
+            d->show();
+        }
     });
     connect(ui->bDelete, &QPushButton::clicked, [=](){
         model->deleteRow(ui->view->currentIndex().row());

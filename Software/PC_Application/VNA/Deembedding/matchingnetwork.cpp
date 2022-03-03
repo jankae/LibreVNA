@@ -3,6 +3,7 @@
 #include "ui_matchingnetworkdialog.h"
 #include "unit.h"
 #include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
 
 #include <QDialog>
 #include <QHBoxLayout>
@@ -126,7 +127,9 @@ void MatchingNetwork::edit()
 
     layout->addStretch(1);
 
-    dialog->show();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
     if(addNetwork) {
         ui->bAddNetwork->setChecked(true);
     } else {

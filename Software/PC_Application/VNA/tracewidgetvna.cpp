@@ -6,6 +6,7 @@
 #include "ui_tracewidget.h"
 #include "ui_s2pImportOptions.h"
 #include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
 
 #include <QFileDialog>
 #include <QMenu>
@@ -35,12 +36,16 @@ TraceWidgetVNA::TraceWidgetVNA(TraceModel &model, Calibration &cal, Deembedding 
             }
             e->setTrace(i%2, i/2, traces[i]);
         }
-        e->show();
+        if(AppWindow::showGUI()) {
+            e->show();
+        }
     });
 
     connect(exportCSV, &QAction::triggered, [&]() {
         auto e = new TraceCSVExport(model);
-        e->show();
+        if(AppWindow::showGUI()) {
+            e->show();
+        }
     });
 }
 
@@ -70,7 +75,9 @@ void TraceWidgetVNA::importDialog()
             prefix.truncate(prefix.indexOf('.'));
             prefix.append("_");
             auto i = new TraceImportDialog(model, traces, prefix);
-            i->show();
+            if(AppWindow::showGUI()) {
+                i->show();
+            }
             if(filename.endsWith(".s2p")) {
                 // potential candidate to process via calibration/de-embedding
                 connect(i, &TraceImportDialog::importFinsished, [=](const std::vector<Trace*> &traces) {
@@ -96,7 +103,9 @@ void TraceWidgetVNA::importDialog()
                             connect(ui->deembed, &QCheckBox::toggled, [&](bool checked) {
                                 applyDeembed = checked;
                             });
-                            dialog->exec();
+                            if(AppWindow::showGUI()) {
+                                dialog->exec();
+                            }
                             if(applyCal) {
                                 cal.correctTraces(*traces[0], *traces[1], *traces[2], *traces[3]);
                             }

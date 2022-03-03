@@ -7,6 +7,7 @@
 #include "Util/util.h"
 #include "unit.h"
 #include "preferences.h"
+#include "appwindow.h"
 
 #include <QGridLayout>
 #include <cmath>
@@ -215,7 +216,9 @@ bool TraceXYPlot::isTDRtype(TraceXYPlot::YAxisType type)
 void TraceXYPlot::axisSetupDialog()
 {
     auto setup = new XYplotAxisDialog(this);
-    setup->show();
+    if(AppWindow::showGUI()) {
+        setup->show();
+    }
 }
 
 bool TraceXYPlot::configureForTrace(Trace *t)

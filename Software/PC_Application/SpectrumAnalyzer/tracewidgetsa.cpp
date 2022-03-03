@@ -3,6 +3,7 @@
 #include "Traces/tracecsvexport.h"
 #include "Traces/traceimportdialog.h"
 #include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
 
 #include <QFileDialog>
 
@@ -15,7 +16,9 @@ TraceWidgetSA::TraceWidgetSA(TraceModel &model, QWidget *parent)
 void TraceWidgetSA::exportDialog()
 {
     auto csv = new TraceCSVExport(model);
-    csv->show();
+    if(AppWindow::showGUI()) {
+        csv->show();
+    }
 }
 
 void TraceWidgetSA::importDialog()
@@ -38,7 +41,9 @@ void TraceWidgetSA::importDialog()
             prefix.truncate(prefix.indexOf('.'));
             prefix.append("_");
             auto i = new TraceImportDialog(model, traces, prefix);
-            i->show();
+            if(AppWindow::showGUI()) {
+                i->show();
+            }
         } catch(const std::exception e) {
             InformationBox::ShowError("Failed to import file", QString("Attempt to import file ended with error: \"") + e.what()+"\"");
         }

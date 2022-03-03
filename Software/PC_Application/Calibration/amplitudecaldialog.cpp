@@ -341,7 +341,9 @@ void AmplitudeCalDialog::AddPointDialog()
 
     dev->SendCommandWithoutPayload(requestCommand());
 
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 void AmplitudeCalDialog::AutomaticMeasurementDialog()
@@ -415,7 +417,9 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
         SetupNextAutomaticPoint(automatic.isSourceCal);
     });
 
-    automatic.dialog->show();
+    if(AppWindow::showGUI()) {
+        automatic.dialog->show();
+    }
 }
 
 void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res)

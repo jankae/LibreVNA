@@ -151,13 +151,17 @@ VNA::VNA(AppWindow *window)
     calImportTerms->setEnabled(false);
     connect(calImportTerms, &QAction::triggered, [=](){
         auto import = new TraceImportDialog(traceModel, cal.getErrorTermTraces());
-        import->show();
+        if(AppWindow::showGUI()) {
+            import->show();
+        }
     });
     auto calImportMeas = calMenu->addAction("Import measurements as traces");
     calImportMeas->setEnabled(false);
     connect(calImportMeas, &QAction::triggered, [=](){
         auto import = new TraceImportDialog(traceModel, cal.getMeasurementTraces());
-        import->show();
+        if(AppWindow::showGUI()) {
+            import->show();
+        }
     });
 
     calMenu->addSeparator();
@@ -165,7 +169,9 @@ VNA::VNA(AppWindow *window)
     calApplyToTraces->setEnabled(false);
     connect(calApplyToTraces, &QAction::triggered, [=]() {
         auto manualCalibration = new ManualCalibrationDialog(traceModel, &cal);
-        manualCalibration->show();
+        if(AppWindow::showGUI()) {
+            manualCalibration->show();
+        }
     });
 
 //    portExtension.setCalkit(&cal.getCalibrationKit());
@@ -186,7 +192,9 @@ VNA::VNA(AppWindow *window)
     manualDeembed->setEnabled(false);
     connect(manualDeembed, &QAction::triggered, [=]() {
         auto manualDeembedding = new ManualDeembeddingDialog(traceModel, &deembedding);
-        manualDeembedding->show();
+        if(AppWindow::showGUI()) {
+            manualDeembedding->show();
+        }
     });
 
     connect(&deembedding, &Deembedding::optionAdded, [=](){
@@ -893,7 +901,9 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
 void VNA::StartImpedanceMatching()
 {
     auto dialog = new ImpedanceMatchDialog(*markerModel);
-    dialog->show();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
 }
 
 
@@ -1477,7 +1487,9 @@ void VNA::StartCalibrationDialog(Calibration::Type type)
        DisableCalibration(true);
        InformationBox::ShowMessageBlocking("Calibration disabled", "The currently active calibration is no longer supported by the available measurements and was disabled.");
     });
-    traceDialog->show();
+    if(AppWindow::showGUI()) {
+        traceDialog->show();
+    }
 }
 
 void VNA::UpdateCalWidget()

@@ -534,12 +534,6 @@ void SpectrumAnalyzer::SettingsChanged()
     emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
 }
 
-void SpectrumAnalyzer::StartImpedanceMatching()
-{
-    auto dialog = new ImpedanceMatchDialog(*markerModel);
-    dialog->show();
-}
-
 void SpectrumAnalyzer::SetStartFreq(double freq)
 {
     settings.f_start = freq;

@@ -2,6 +2,7 @@
 
 #include "ui_preferencesdialog.h"
 #include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -343,7 +344,9 @@ void Preferences::store()
 void Preferences::edit()
 {
     auto dialog = new PreferencesDialog(this);
-    dialog->exec();
+    if(AppWindow::showGUI()) {
+        dialog->exec();
+    }
 }
 
 void Preferences::setDefault()
