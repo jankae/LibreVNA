@@ -83,7 +83,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -735,6 +735,13 @@
              <widget class="QCheckBox" name="AcquisitionUseHarmonic">
               <property name="text">
                <string>Use harmonic mixing</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="AcquisitionAllowSegmentedSweep">
+              <property name="text">
+               <string>Allow segmented sweep (increases maximum number of points)</string>
               </property>
              </widget>
             </item>

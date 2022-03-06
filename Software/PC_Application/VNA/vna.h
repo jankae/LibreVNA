@@ -40,7 +40,8 @@ public:
     static QString SweepTypeToString(SweepType sw);
     static SweepType SweepTypeFromString(QString s);
 
-    using Settings = struct {
+    class Settings {
+    public:
         SweepType sweepType;
         struct {
             double start;
@@ -57,6 +58,9 @@ public:
         double bandwidth;
         bool excitingPort1;
         bool excitingPort2;
+        // if the number of points is higher than supported by the hardware, the sweep has to be segmented into multiple parts
+        int segments;
+        int activeSegment;
     };
 
 public slots:
@@ -101,7 +105,7 @@ private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
     void SetupSCPI();
     void UpdateAverageCount();
-    void SettingsChanged(std::function<void (Device::TransmissionResult)> cb = nullptr);
+    void SettingsChanged(bool resetTraces = true, std::function<void (Device::TransmissionResult)> cb = nullptr);
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();

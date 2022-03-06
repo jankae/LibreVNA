@@ -20,6 +20,7 @@
 #include "CustomWidgets/informationbox.h"
 #include "Deembedding/manualdeembeddingdialog.h"
 #include "Calibration/manualcalibrationdialog.h"
+#include "Util/util.h"
 
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -365,8 +366,8 @@ VNA::VNA(AppWindow *window)
     frequencySweepActions.push_back(tb_acq->addWidget(dbm));
 
     auto points = new QSpinBox();
-    points->setFixedWidth(55);
-    points->setRange(1, 9999);
+    points->setFixedWidth(65);
+    points->setRange(1, UINT16_MAX);
     points->setSingleStep(100);
     points->setToolTip("Points/sweep");
     points->setKeyboardTracking(false);
@@ -787,6 +788,19 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
+    bool needsSegmentUpdate = false;
+    if (settings.segments > 1) {
+        // using multiple segments, adjust pointNum
+        auto pointsPerSegment = ceil((double) settings.npoints / settings.segments);
+        if (d.pointNum == pointsPerSegment - 1) {
+            needsSegmentUpdate = true;
+        }
+        d.pointNum += pointsPerSegment * settings.activeSegment;
+        if(d.pointNum == settings.npoints - 1) {
+            needsSegmentUpdate = true;
+        }
+    }
+
     if(d.pointNum >= settings.npoints) {
         qWarning() << "Ignoring point with too large point number (" << d.pointNum << ")";
         return;
@@ -838,6 +852,15 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
         qWarning() << "Got point" << d.pointNum << "but last received point was" << lastPoint << "("<<(d.pointNum-lastPoint-1)<<"missed points)";
     }
     lastPoint = d.pointNum;
+
+    if (needsSegmentUpdate) {
+        if( settings.activeSegment < settings.segments - 1) {
+            settings.activeSegment++;
+        } else {
+            settings.activeSegment = 0;
+        }
+        SettingsChanged(false);
+    }
 }
 
 void VNA::UpdateAverageCount()
@@ -845,7 +868,7 @@ void VNA::UpdateAverageCount()
     lAverages->setText(QString::number(average.getLevel()) + "/");
 }
 
-void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
+void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::TransmissionResult)> cb)
 {
     // assemble VNA protocol settings
     Protocol::SweepSettings s;
@@ -859,20 +882,40 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
     }
     settings.excitingPort1 = s.excitePort1;
     settings.excitingPort2 = s.excitePort2;
+
+    double start = settings.sweepType == SweepType::Frequency ? settings.Freq.start : settings.Power.start;
+    double stop = settings.sweepType == SweepType::Frequency ? settings.Freq.stop : settings.Power.stop;
+    int npoints = settings.npoints;
+    emit traceModel.SpanChanged(start, stop);
+    if (settings.segments > 1) {
+        // more than one segment, adjust start/stop
+        npoints = ceil((double) settings.npoints / settings.segments);
+        int segmentStartPoint = npoints * settings.activeSegment;
+        int segmentStopPoint = segmentStartPoint + npoints - 1;
+        if(segmentStopPoint >= settings.npoints) {
+            segmentStopPoint = settings.npoints - 1;
+            npoints = settings.npoints - segmentStartPoint;
+        }
+        auto seg_start = Util::Scale<double>(segmentStartPoint, 0, settings.npoints - 1, start, stop);
+        auto seg_stop = Util::Scale<double>(segmentStopPoint, 0, settings.npoints - 1, start, stop);
+        start = seg_start;
+        stop = seg_stop;
+    }
+
     if(settings.sweepType == SweepType::Frequency) {
         s.fixedPowerSetting = Preferences::getInstance().Acquisition.adjustPowerLevel ? 0 : 1;
-        s.f_start = settings.Freq.start;
-        s.f_stop = settings.Freq.stop;
-        s.points = settings.npoints;
+        s.f_start = start;
+        s.f_stop = stop;
+        s.points = npoints;
         s.if_bandwidth = settings.bandwidth;
         s.cdbm_excitation_start = settings.Freq.excitation_power * 100;
         s.cdbm_excitation_stop = settings.Freq.excitation_power * 100;
         s.logSweep = settings.Freq.logSweep;
     } else if(settings.sweepType == SweepType::Power) {
         s.fixedPowerSetting = 0;
-        s.f_start = settings.Power.frequency;
-        s.f_stop = settings.Power.frequency;
-        s.points = settings.npoints;
+        s.f_start = start;
+        s.f_stop = stop;
+        s.points = npoints;
         s.if_bandwidth = settings.bandwidth;
         s.cdbm_excitation_start = settings.Power.start * 100;
         s.cdbm_excitation_stop = settings.Power.stop * 100;
@@ -880,22 +923,23 @@ void VNA::SettingsChanged(std::function<void (Device::TransmissionResult)> cb)
     }
     if(window->getDevice() && Mode::getActiveMode() == this) {
         if(s.excitePort1 == 0 && s.excitePort2 == 0) {
-            // no signal at either port, just set the device to idel
+            // no signal at either port, just set the device to idle
             window->getDevice()->SetIdle();
         } else {
             window->getDevice()->Configure(s, [=](Device::TransmissionResult res){
                 // device received command, reset traces now
-                average.reset(s.points);
-                traceModel.clearLiveData();
-                UpdateAverageCount();
-                UpdateCalWidget();
+                if (resetTraces) {
+                    average.reset(s.points);
+                    traceModel.clearLiveData();
+                    UpdateAverageCount();
+                    UpdateCalWidget();
+                }
                 if(cb) {
                     cb(res);
                 }
             });
         }
     }
-    emit traceModel.SpanChanged(s.f_start, s.f_stop);
 }
 
 void VNA::StartImpedanceMatching()
@@ -1045,10 +1089,20 @@ void VNA::SetPowerSweepFrequency(double freq)
 
 void VNA::SetPoints(unsigned int points)
 {
-    if(points > Device::Info().limits_maxPoints) {
-        points = Device::Info().limits_maxPoints;
+    auto maxPoints = Preferences::getInstance().Acquisition.allowSegmentedSweep ? UINT16_MAX : Device::Info().limits_maxPoints;
+    if(points > maxPoints) {
+        points = maxPoints;
     } else if (points < 2) {
         points = 2;
+    }
+    if (points > Device::Info().limits_maxPoints) {
+        // needs segmented sweep
+        settings.segments = ceil((double) points / Device::Info().limits_maxPoints);
+        settings.activeSegment = 0;
+    } else {
+        // can fit all points into one segment
+        settings.segments = 1;
+        settings.activeSegment = 0;
     }
     emit pointsChanged(points);
     settings.npoints = points;
@@ -1161,7 +1215,7 @@ void VNA::StartCalibrationMeasurements(std::set<Calibration::Measurement> m)
         cal.clearMeasurements(calMeasurements);
     });
     // Trigger sweep to start from beginning
-    SettingsChanged([=](Device::TransmissionResult){
+    SettingsChanged(true, [=](Device::TransmissionResult){
         // enable calibration measurement only in transmission callback (prevents accidental sampling of data which was still being processed)
         calMeasuring = true;
     });

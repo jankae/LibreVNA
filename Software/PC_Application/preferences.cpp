@@ -233,6 +233,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
     ui->AcquisitionAdjustPowerLevel->setChecked(p->Acquisition.adjustPowerLevel);
     ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
+    ui->AcquisitionAllowSegmentedSweep->setChecked(p->Acquisition.allowSegmentedSweep);
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
     ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
@@ -292,6 +293,7 @@ void PreferencesDialog::updateFromGUI()
     p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
     p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
     p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
+    p->Acquisition.allowSegmentedSweep = ui->AcquisitionAllowSegmentedSweep->isChecked();
     p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
     p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
     p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;

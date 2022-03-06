@@ -69,6 +69,7 @@ public:
         bool suppressPeaks;
         bool adjustPowerLevel;
         bool harmonicMixing;
+        bool allowSegmentedSweep;
         bool useDFTinSAmode;
         double RBWLimitForDFT;
         bool useMedianAveraging;
@@ -147,6 +148,7 @@ private:
         {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
         {&Acquisition.adjustPowerLevel, "Acquisition.adjustPowerLevel", false},
         {&Acquisition.harmonicMixing, "Acquisition.harmonicMixing", false},
+        {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", false},
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
