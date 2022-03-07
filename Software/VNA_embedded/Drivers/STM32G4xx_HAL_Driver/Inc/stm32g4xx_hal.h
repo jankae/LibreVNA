@@ -7,13 +7,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2018 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -461,7 +460,7 @@ extern "C" {
                                             ((__CONFIG__) == SYSCFG_BREAK_SRAMPARITY)    || \
                                             ((__CONFIG__) == SYSCFG_BREAK_LOCKUP))
 
-#if (CCMSRAM_SIZE == 0x00008000UL)
+#if (CCMSRAM_SIZE == 0x00008000UL) || (CCMSRAM_SIZE == 0x00004000UL)
 #define IS_SYSCFG_CCMSRAMWRP_PAGE(__PAGE__)  ((__PAGE__) > 0U)
 #elif (CCMSRAM_SIZE == 0x00002800UL)
 #define IS_SYSCFG_CCMSRAMWRP_PAGE(__PAGE__)  (((__PAGE__) > 0U) && ((__PAGE__) <= 0x000003FFU))
@@ -623,4 +622,3 @@ void HAL_SYSCFG_CCMSRAM_WriteProtectionEnable(uint32_t Page);
 
 #endif /* STM32G4xx_HAL_H */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,6 +1,6 @@
 /*
- * FreeRTOS Kernel V10.0.1
- * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.3.1
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -260,7 +260,7 @@ CRCB_t *pxCRCB;
 				( void ) uxListRemove( &( pxCRCB->xGenericListItem ) );
 
 				/* Is the co-routine waiting on an event also? */
-				if( pxCRCB->xEventListItem.pvContainer )
+				if( pxCRCB->xEventListItem.pxContainer )
 				{
 					( void ) uxListRemove( &( pxCRCB->xEventListItem ) );
 				}

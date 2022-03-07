@@ -255,6 +255,11 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			attenuator = amplitude.attenuator;
 		}
 
+		// needs halt before first point to allow PLLs to settle
+		if (i == 0) {
+			needs_halt = true;
+		}
+
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
 				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us20,
 				FPGA::Samples::SPPRegister, needs_halt);
@@ -417,6 +422,10 @@ void VNA::SweepHalted() {
 		// first sweep point in highband is also halted, disable lowband source
 		Si5351.Disable(SiChannel::LowbandSource);
 		FPGA::Enable(FPGA::Periphery::SourceRF);
+	}
+
+	if (pointCnt == 0) {
+		HAL_Delay(2);
 	}
 
 	if(adcShiftRequired) {

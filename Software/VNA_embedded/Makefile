@@ -58,7 +58,7 @@ CXX_SOURCES := $(foreach sdir,$(SOURCES_DIR),$(wildcard $(sdir)/*.cpp))
 
 # ASM sources
 ASM_SOURCES =  \
-startup/startup_stm32g431xx.s
+Startup/startup_stm32g431cbux.s
 
 
 ######################################
@@ -156,11 +156,11 @@ CXXFLAGS += -MMD -MP
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32G431CBUx_FLASH.ld
+LDSCRIPT = STM32G431CBUX_FLASH.ld
 
 # libraries
-LIBS = -lm -l:USBPDCORE_PD3_FULL_CM4_wc32.a
-LIBDIR = -LMiddlewares/ST/STM32_USBPD_Library/Core/lib
+LIBS = -lm #-l:USBPDCORE_PD3_FULL_CM4_wc32.a
+#LIBDIR = -LMiddlewares/ST/STM32_USBPD_Library/Core/lib
 LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs $(LIBDIR) -T$(LDSCRIPT) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map -Wl,--gc-sections -fno-exceptions -fno-rtti
 
 # default action: build all
