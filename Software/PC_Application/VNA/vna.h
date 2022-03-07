@@ -125,6 +125,7 @@ private:
 
     // Calibration
     Calibration cal;
+    bool changingSettings;
     bool calValid;
     bool calEdited;
     std::set<Calibration::Measurement> calMeasurements;

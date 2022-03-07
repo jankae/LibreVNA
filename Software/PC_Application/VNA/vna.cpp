@@ -63,6 +63,7 @@ VNA::VNA(AppWindow *window)
     calWaitFirst = false;
     calDialog.reset();
     calEdited = false;
+    changingSettings = false;
     settings.sweepType = SweepType::Frequency;
 
     traceModel.setSource(TraceModel::DataSource::VNA);
@@ -788,6 +789,11 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
+    if(changingSettings) {
+        // already setting new sweep settings, ignore incoming points from old settings
+        return;
+    }
+
     bool needsSegmentUpdate = false;
     if (settings.segments > 1) {
         // using multiple segments, adjust pointNum
@@ -854,6 +860,7 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     lastPoint = d.pointNum;
 
     if (needsSegmentUpdate) {
+        changingSettings = true;
         if( settings.activeSegment < settings.segments - 1) {
             settings.activeSegment++;
         } else {
@@ -870,6 +877,10 @@ void VNA::UpdateAverageCount()
 
 void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::TransmissionResult)> cb)
 {
+    if (resetTraces) {
+        settings.activeSegment = 0;
+    }
+    changingSettings = true;
     // assemble VNA protocol settings
     Protocol::SweepSettings s;
     s.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
@@ -925,6 +936,7 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::Transmis
         if(s.excitePort1 == 0 && s.excitePort2 == 0) {
             // no signal at either port, just set the device to idle
             window->getDevice()->SetIdle();
+            changingSettings = false;
         } else {
             window->getDevice()->Configure(s, [=](Device::TransmissionResult res){
                 // device received command, reset traces now
@@ -937,6 +949,7 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::Transmis
                 if(cb) {
                     cb(res);
                 }
+                changingSettings = false;
             });
         }
     }
