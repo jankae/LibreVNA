@@ -941,7 +941,7 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::Transmis
             window->getDevice()->Configure(s, [=](Device::TransmissionResult res){
                 // device received command, reset traces now
                 if (resetTraces) {
-                    average.reset(s.points);
+                    average.reset(settings.npoints);
                     traceModel.clearLiveData();
                     UpdateAverageCount();
                     UpdateCalWidget();
