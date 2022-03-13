@@ -230,6 +230,7 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
         case TraceXYPlot::XAxisType::Frequency:
         case TraceXYPlot::XAxisType::Power:
             ret.insert(TraceXYPlot::YAxisType::Magnitude);
+            ret.insert(TraceXYPlot::YAxisType::MagnitudeLinear);
             ret.insert(TraceXYPlot::YAxisType::Phase);
             ret.insert(TraceXYPlot::YAxisType::UnwrappedPhase);
             ret.insert(TraceXYPlot::YAxisType::VSWR);

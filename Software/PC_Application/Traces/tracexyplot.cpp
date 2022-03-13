@@ -886,6 +886,7 @@ QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
     switch(type) {
     case YAxisType::Disabled: return "Disabled";
     case YAxisType::Magnitude: return "Magnitude";
+    case YAxisType::MagnitudeLinear: return "Magnitude (linear)";
     case YAxisType::Phase: return "Phase";
     case YAxisType::UnwrappedPhase: return "Unwrapped Phase";
     case YAxisType::VSWR: return "VSWR";
@@ -997,6 +998,9 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
     switch(type) {
     case YAxisType::Magnitude:
         ret.setY(Util::SparamTodB(data.y));
+        break;
+    case YAxisType::MagnitudeLinear:
+        ret.setY(abs(data.y));
         break;
     case YAxisType::Phase:
         ret.setY(Util::SparamToDegree(data.y));
@@ -1236,6 +1240,7 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
     if(source == TraceModel::DataSource::VNA) {
         switch(type) {
         case TraceXYPlot::YAxisType::Magnitude: return "dB";
+        case TraceXYPlot::YAxisType::MagnitudeLinear: return "";
         case TraceXYPlot::YAxisType::Phase: return "°";
         case TraceXYPlot::YAxisType::UnwrappedPhase: return "°";
         case TraceXYPlot::YAxisType::VSWR: return "";
@@ -1270,6 +1275,7 @@ QString TraceXYPlot::AxisPrefixes(TraceXYPlot::YAxisType type)
     if(source == TraceModel::DataSource::VNA) {
         switch(type) {
         case TraceXYPlot::YAxisType::Magnitude: return " ";
+        case TraceXYPlot::YAxisType::MagnitudeLinear: return "num ";
         case TraceXYPlot::YAxisType::Phase: return " ";
         case TraceXYPlot::YAxisType::UnwrappedPhase: return " ";
         case TraceXYPlot::YAxisType::VSWR: return " ";

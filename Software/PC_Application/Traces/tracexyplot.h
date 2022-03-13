@@ -16,6 +16,7 @@ public:
         Disabled,
         // S parameter options
         Magnitude,
+        MagnitudeLinear,
         Phase,
         UnwrappedPhase,
         VSWR,
