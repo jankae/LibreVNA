@@ -98,6 +98,7 @@ HEADERS += \
     Traces/traceplot.h \
     Traces/tracesmithchart.h \
     Traces/tracetouchstoneexport.h \
+    Traces/tracewaterfall.h \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
     Traces/xyplotaxisdialog.h \
@@ -215,6 +216,7 @@ SOURCES += \
     Traces/traceplot.cpp \
     Traces/tracesmithchart.cpp \
     Traces/tracetouchstoneexport.cpp \
+    Traces/tracewaterfall.cpp \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
     Traces/xyplotaxisdialog.cpp \

@@ -17,6 +17,7 @@ public:
     enum class Type {
         SmithChart,
         XYPlot,
+        Waterfall,
     };
 
     TracePlot(TraceModel &model, QWidget *parent = nullptr);
@@ -71,11 +72,11 @@ protected:
     void createMarkerAtPosition(QPoint p);
 
     // handle trace drops
-    virtual bool dropSupported(Trace *t) = 0;
+    virtual bool dropSupported(Trace *t);
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
-    virtual void traceDropped(Trace *t, QPoint position){  Q_UNUSED(t) Q_UNUSED(position)};
+    virtual void traceDropped(Trace *t, QPoint position);
     virtual QString mouseText(QPoint pos) {Q_UNUSED(pos) return QString();};
 
 protected slots:

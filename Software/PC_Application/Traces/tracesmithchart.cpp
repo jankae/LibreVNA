@@ -396,15 +396,6 @@ void TraceSmithChart::draw(QPainter &p) {
     }
 }
 
-void TraceSmithChart::traceDropped(Trace *t, QPoint position)
-{
-    Q_UNUSED(t)
-    Q_UNUSED(position);
-    if(supported(t)) {
-        enableTrace(t, true);
-    }
-}
-
 QString TraceSmithChart::mouseText(QPoint pos)
 {
     auto data = pixelToData(pos);
@@ -485,11 +476,6 @@ void TraceSmithChart::updateContextMenu()
 }
 
 bool TraceSmithChart::supported(Trace *t)
-{
-    return dropSupported(t);
-}
-
-bool TraceSmithChart::dropSupported(Trace *t)
 {
     if(!t->isReflection()) {
         return false;

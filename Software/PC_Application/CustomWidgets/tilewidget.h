@@ -40,6 +40,8 @@ private slots:
     void on_plotDoubleClicked();
     void traceDeleted(TracePlot *t);
 
+    void on_bWaterfall_clicked();
+
 private:
     TileWidget(TraceModel &model, TileWidget &parent);
     void split();

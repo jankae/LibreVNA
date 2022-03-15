@@ -356,6 +356,11 @@ void TracePlot::createMarkerAtPosition(QPoint p)
     markerModel->addMarker(marker);
 }
 
+bool TracePlot::dropSupported(Trace *t)
+{
+    return supported(t);
+}
+
 void TracePlot::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasFormat("trace/pointer")) {
@@ -389,6 +394,15 @@ void TracePlot::dragLeaveEvent(QDragLeaveEvent *event)
     dropPending = false;
     dropTrace = nullptr;
     replot();
+}
+
+void TracePlot::traceDropped(Trace *t, QPoint position)
+{
+    Q_UNUSED(t)
+    Q_UNUSED(position);
+    if(supported(t)) {
+        enableTrace(t, true);
+    }
 }
 
 std::set<TracePlot *> TracePlot::getPlots()

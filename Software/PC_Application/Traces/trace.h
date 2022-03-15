@@ -155,7 +155,7 @@ signals:
     void typeChanged(Trace *t);
     void deleted(Trace *t);
     void visibilityChanged(Trace *t);
-    void dataChanged();
+    void dataChanged(unsigned int begin, unsigned int end);
     void nameChanged();
     void pauseChanged();
     void colorChanged(Trace *t);

@@ -3,6 +3,7 @@
 #include "ui_tilewidget.h"
 #include "Traces/tracexyplot.h"
 #include "Traces/tracesmithchart.h"
+#include "Traces/tracewaterfall.h"
 
 #include <QDebug>
 
@@ -67,6 +68,9 @@ nlohmann::json TileWidget::toJSON()
         case TracePlot::Type::XYPlot:
             plotname = "XY-plot";
             break;
+        case TracePlot::Type::Waterfall:
+            plotname = "Waterfall";
+            break;
         }
         j["plot"] = plotname;
         j["plotsettings"] = content->toJSON();
@@ -93,8 +97,10 @@ void TileWidget::fromJSON(nlohmann::json j)
         auto plotname = j["plot"];
         if(plotname == "smithchart") {
             content = new TraceSmithChart(model);
-        } else {
+        } else if (plotname == "XY-plot"){
             content = new TraceXYPlot(model);
+        } else {
+            content = new TraceWaterfall(model);
         }
         setContent(content);
         content->fromJSON(j["plotsettings"]);
@@ -264,3 +270,9 @@ void TileWidget::traceDeleted(TracePlot *)
     hasContent = false;
     content = nullptr;
 }
+
+void TileWidget::on_bWaterfall_clicked()
+{
+    setContent(new TraceWaterfall(model));
+}
+
