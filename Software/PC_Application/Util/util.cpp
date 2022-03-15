@@ -65,3 +65,10 @@ double Util::distanceToLine(QPointF point, QPointF l1, QPointF l2, QPointF *clos
 std::complex<double> Util::SparamToImpedance(std::complex<double> d) {
     return Preferences::getInstance().Acquisition.refImp * (1.0 + d) / (1.0 - d);
 }
+
+double Util::dBmTodBuV(double dBm)
+{
+    double uVpower = 0.000001*0.000001/Preferences::getInstance().Acquisition.refImp;
+    double dBdiff = 10*log10(uVpower*1000);
+    return dBm - dBdiff;
+}

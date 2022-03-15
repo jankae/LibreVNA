@@ -31,6 +31,7 @@ namespace Util {
     static inline double SparamTodB(std::complex<double> d) {
         return SparamTodB(abs(d));
     }
+    double dBmTodBuV(double dBm);
     static inline double SparamToDegree(std::complex<double> d) {
         return (arg(d) * 180.0 / M_PI);
     }

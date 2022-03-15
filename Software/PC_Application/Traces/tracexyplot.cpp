@@ -885,7 +885,8 @@ QString TraceXYPlot::AxisTypeToName(TraceXYPlot::YAxisType type)
 {
     switch(type) {
     case YAxisType::Disabled: return "Disabled";
-    case YAxisType::Magnitude: return "Magnitude";
+    case YAxisType::Magnitude: return "Magnitude (dB/dBm)";
+    case YAxisType::MagnitudedBuV: return "Magnitude (dBuV)";
     case YAxisType::MagnitudeLinear: return "Magnitude (linear)";
     case YAxisType::Phase: return "Phase";
     case YAxisType::UnwrappedPhase: return "Unwrapped Phase";
@@ -998,6 +999,9 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, TraceXYPlo
     switch(type) {
     case YAxisType::Magnitude:
         ret.setY(Util::SparamTodB(data.y));
+        break;
+    case YAxisType::MagnitudedBuV:
+        ret.setY(Util::dBmTodBuV(Util::SparamTodB(data.y)));
         break;
     case YAxisType::MagnitudeLinear:
         ret.setY(abs(data.y));
@@ -1263,6 +1267,7 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
     } else if(source == TraceModel::DataSource::SA) {
         switch(type) {
         case TraceXYPlot::YAxisType::Magnitude: return "dBm";
+        case TraceXYPlot::YAxisType::MagnitudedBuV: return "dBuV";
         default: return "";
         }
     }
@@ -1297,6 +1302,7 @@ QString TraceXYPlot::AxisPrefixes(TraceXYPlot::YAxisType type)
     } else if(source == TraceModel::DataSource::SA) {
         switch(type) {
         case TraceXYPlot::YAxisType::Magnitude: return " ";
+        case TraceXYPlot::YAxisType::MagnitudedBuV: return " ";
         default: return " ";
         }
     }

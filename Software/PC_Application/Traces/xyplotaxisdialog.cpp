@@ -257,6 +257,7 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
         switch(type) {
         case TraceXYPlot::XAxisType::Frequency:
             ret.insert(TraceXYPlot::YAxisType::Magnitude);
+            ret.insert(TraceXYPlot::YAxisType::MagnitudedBuV);
             break;
         default:
             break;
