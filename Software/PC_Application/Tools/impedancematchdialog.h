@@ -22,7 +22,7 @@ private slots:
     void calculateMatch();
 
 private:
-    static constexpr double Z0 = 50.0;
+    double Z0;
     Ui::ImpedanceMatchDialog *ui;
 };
 

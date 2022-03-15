@@ -115,7 +115,6 @@ public slots:
     void axisSetupDialog();
 
 protected:
-    static constexpr double ReferenceImpedance = 50.0;
     static constexpr double screenUsage = 0.9;
     static constexpr double smithCoordMax = 4096;
 

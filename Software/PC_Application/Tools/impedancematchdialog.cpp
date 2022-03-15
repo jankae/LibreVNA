@@ -3,16 +3,17 @@
 #include "ui_impedancematchdialog.h"
 #include "Tools/eseries.h"
 #include "Util/util.h"
+#include "preferences.h"
 
 using namespace std;
-
-constexpr double ImpedanceMatchDialog::Z0;
 
 ImpedanceMatchDialog::ImpedanceMatchDialog(MarkerModel &model, Marker *marker, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ImpedanceMatchDialog)
 {
     ui->setupUi(this);
+
+    Z0 = Preferences::getInstance().Acquisition.refImp;
 
     // set SI units and prefixes
     ui->zReal->setUnit("Ohm");

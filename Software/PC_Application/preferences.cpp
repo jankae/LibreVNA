@@ -88,6 +88,9 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->StartupSARBW->setPrefixes(" k");
 
     // Acquisition page
+    ui->AcquisitionReferenceImpedance->setUnit("Ω");
+    ui->AcquisitionReferenceImpedance->setPrefixes(" ");
+    ui->AcquisitionReferenceImpedance->setPrecision(3);
     ui->AcquisitionDFTlimitRBW->setUnit("Hz");
     ui->AcquisitionDFTlimitRBW->setPrefixes(" k");
     connect(ui->AcquisitionUseDFT, &QCheckBox::toggled, [=](bool enabled) {
@@ -234,6 +237,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionAdjustPowerLevel->setChecked(p->Acquisition.adjustPowerLevel);
     ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
     ui->AcquisitionAllowSegmentedSweep->setChecked(p->Acquisition.allowSegmentedSweep);
+    ui->AcquisitionReferenceImpedance->setValue(p->Acquisition.refImp);
     ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
     ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
     ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
@@ -294,6 +298,7 @@ void PreferencesDialog::updateFromGUI()
     p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
     p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
     p->Acquisition.allowSegmentedSweep = ui->AcquisitionAllowSegmentedSweep->isChecked();
+    p->Acquisition.refImp = ui->AcquisitionReferenceImpedance->value();
     p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
     p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
     p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;

@@ -12,7 +12,7 @@ using namespace std;
 
 TwoThru::TwoThru()
 {
-    Z0 = 50.0;
+    Z0 = Preferences::getInstance().Acquisition.refImp;
 }
 
 void TwoThru::transformDatapoint(Protocol::Datapoint &p)

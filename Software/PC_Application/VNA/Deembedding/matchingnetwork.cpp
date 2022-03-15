@@ -32,7 +32,7 @@ void MatchingNetwork::transformDatapoint(Protocol::Datapoint &p)
                     complex<double>(p.real_S12, p.imag_S12),
                     complex<double>(p.real_S21, p.imag_S21),
                     complex<double>(p.real_S22, p.imag_S22));
-    auto measurement = ABCDparam(S, 50.0);
+    auto measurement = ABCDparam(S, Preferences::getInstance().Acquisition.refImp);
     if(matching.count(p.frequency) == 0) {
         // this point is not calculated yet
         MatchingPoint m;
@@ -56,7 +56,7 @@ void MatchingNetwork::transformDatapoint(Protocol::Datapoint &p)
     // at this point the map contains the matching network effect
     auto m = matching[p.frequency];
     auto corrected = m.p1 * measurement * m.p2;
-    S = Sparam(corrected, 50.0);
+    S = Sparam(corrected, Preferences::getInstance().Acquisition.refImp);
     p.real_S11 = real(S.m11);
     p.imag_S11 = imag(S.m11);
     p.real_S12 = real(S.m12);
@@ -541,7 +541,7 @@ ABCDparam MatchingComponent::parameters(double freq)
         } else {
             auto d = touchstone->interpolate(freq);
             auto S = Sparam(d.S[0], d.S[1], d.S[2], d.S[3]);
-            return ABCDparam(S, 50.0);
+            return ABCDparam(S, Preferences::getInstance().Acquisition.refImp);
         }
     default:
         return ABCDparam(1.0, 0.0, 0.0, 1.0);

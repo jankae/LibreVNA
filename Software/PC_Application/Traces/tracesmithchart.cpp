@@ -305,7 +305,7 @@ void TraceSmithChart::draw(QPainter &p) {
       p.drawLine(dataToPixel(complex<double>(edgeReflection,0)),dataToPixel(complex<double>(-edgeReflection,0)));
     constexpr std::array<double, 5> impedanceLines = {10, 25, 50, 100, 250};
     for(auto z : impedanceLines) {
-        z /= ReferenceImpedance;
+        z /= Preferences::getInstance().Acquisition.refImp;
         auto radius = 1.0/z;
         drawArc(SmithChartArc(QPointF(1.0, radius), radius, 0, 2*M_PI));
         drawArc(SmithChartArc(QPointF(1.0, -radius), radius, 0, 2*M_PI));
@@ -409,7 +409,7 @@ QString TraceSmithChart::mouseText(QPoint pos)
 {
     auto data = pixelToData(pos);
     if(abs(data) <= edgeReflection) {
-        data = 50.0 * (1.0 + data) / (1.0 - data);
+        data = Preferences::getInstance().Acquisition.refImp * (1.0 + data) / (1.0 - data);
         auto ret = Unit::ToString(data.real(), "", " ", 3);
         if(data.imag() >= 0) {
             ret += "+";
@@ -586,18 +586,19 @@ SmithChartConstantLine::SmithChartConstantLine()
 
 std::vector<SmithChartArc> SmithChartConstantLine::getArcs()
 {
+    double Z0 = Preferences::getInstance().Acquisition.refImp;
     std::vector<SmithChartArc> arcs;
     switch(type) {
     case Type::VSWR:
         arcs.push_back(SmithChartArc(QPointF(0.0, 0.0), (param - 1.0) / (param + 1.0)));
         break;
     case Type::Resistance: {
-        auto circleLeft = (param / 50.0 - 1.0) / (param / 50.0 + 1.0);
+        auto circleLeft = (param / Z0 - 1.0) / (param / Z0 + 1.0);
         arcs.push_back(SmithChartArc(QPointF((circleLeft + 1.0) / 2, 0.0), (1.0 - circleLeft) / 2.0));
     }
         break;
     case Type::Reactance: {
-        auto radius = 1.0/(param / 50.0);
+        auto radius = 1.0/(param / Z0);
         if(radius > 0) {
             arcs.push_back(SmithChartArc(QPointF(1.0, radius), radius));
         } else {

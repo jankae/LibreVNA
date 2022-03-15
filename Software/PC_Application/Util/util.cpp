@@ -1,5 +1,7 @@
 #include "util.h"
 
+#include "preferences.h"
+
 #include <QVector2D>
 
 void Util::unwrapPhase(std::vector<double> &phase, unsigned int start_index)
@@ -58,4 +60,8 @@ double Util::distanceToLine(QPointF point, QPointF l1, QPointF l2, QPointF *clos
         *pointRatio = t0;
     }
     return orthVect.length();
+}
+
+std::complex<double> Util::SparamToImpedance(std::complex<double> d) {
+    return Preferences::getInstance().Acquisition.refImp * (1.0 + d) / (1.0 - d);
 }

@@ -1247,7 +1247,7 @@ QString TraceXYPlot::AxisUnit(TraceXYPlot::YAxisType type)
         case TraceXYPlot::YAxisType::ImpulseReal: return "";
         case TraceXYPlot::YAxisType::ImpulseMag: return "dB";
         case TraceXYPlot::YAxisType::Step: return "";
-        case TraceXYPlot::YAxisType::Impedance: return "Ohm";
+        case TraceXYPlot::YAxisType::Impedance: return "Ω";
         case TraceXYPlot::YAxisType::GroupDelay: return "s";
         case TraceXYPlot::YAxisType::Disabled:
         case TraceXYPlot::YAxisType::Real:
