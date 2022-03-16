@@ -39,6 +39,10 @@ WaterfallAxisDialog::WaterfallAxisDialog(TraceWaterfall *plot) :
         }
     }
 
+    for(unsigned int i=0;i<(int) TraceWaterfall::Alignment::Last;i++) {
+        ui->Xalignment->addItem(TraceWaterfall::AlignmentToString((TraceWaterfall::Alignment) i));
+    }
+
     // Setup GUI connections
     connect(ui->Wtype, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
        //ui->Y1log->setEnabled(index != 0);
@@ -95,6 +99,7 @@ WaterfallAxisDialog::WaterfallAxisDialog(TraceWaterfall *plot) :
     } else {
         ui->Xlinear->setChecked(true);
     }
+    ui->Xalignment->setCurrentIndex((int) plot->align);
 }
 
 WaterfallAxisDialog::~WaterfallAxisDialog()
@@ -119,6 +124,7 @@ void WaterfallAxisDialog::on_buttonBox_accepted()
     } else {
         plot->keepDataBeyondPlotSize = true;
     }
+    plot->align = (TraceWaterfall::Alignment) ui->Xalignment->currentIndex();
 }
 
 void WaterfallAxisDialog::XAxisTypeChanged(int XAxisIndex)
@@ -158,7 +164,6 @@ std::set<YAxis::Type> WaterfallAxisDialog::supportedYAxis(XAxis::Type type)
             ret.insert(YAxis::Type::Magnitude);
             ret.insert(YAxis::Type::MagnitudeLinear);
             ret.insert(YAxis::Type::Phase);
-            ret.insert(YAxis::Type::UnwrappedPhase);
             ret.insert(YAxis::Type::VSWR);
             ret.insert(YAxis::Type::Real);
             ret.insert(YAxis::Type::Imaginary);
@@ -167,7 +172,6 @@ std::set<YAxis::Type> WaterfallAxisDialog::supportedYAxis(XAxis::Type type)
             ret.insert(YAxis::Type::Capacitance);
             ret.insert(YAxis::Type::Inductance);
             ret.insert(YAxis::Type::QualityFactor);
-            ret.insert(YAxis::Type::GroupDelay);
             break;
         case XAxis::Type::Time:
         case XAxis::Type::Distance:

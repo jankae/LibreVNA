@@ -5,6 +5,7 @@
 #include "Util/util.h"
 #include "waterfallaxisdialog.h"
 #include "appwindow.h"
+#include "tracexyplot.h"
 
 #include <QFileDialog>
 #include <QPainter>
@@ -14,6 +15,7 @@ using namespace std;
 TraceWaterfall::TraceWaterfall(TraceModel &model, QWidget *parent)
     : TracePlot(model, parent),
       dir(Direction::TopToBottom),
+      align(Alignment::PrimaryOnly),
       trace(nullptr),
       pixelsPerLine(1),
       keepDataBeyondPlotSize(false),
@@ -63,6 +65,10 @@ void TraceWaterfall::fromJSON(nlohmann::json j)
     } else {
         dir = Direction::BottomToTop;
     }
+    align = AlignmentFromString(QString::fromStdString(j.value("alignment", "")));
+    if(align == Alignment::Last) {
+        align = Alignment::PrimaryOnly;
+    }
 
     for(unsigned int hash : j["traces"]) {
         // attempt to find the traces with this hash
@@ -87,6 +93,7 @@ nlohmann::json TraceWaterfall::toJSON()
     j["direction"] = dir == Direction::TopToBottom ? "TopToBottom" : "BottomToTop";
     j["keepDataBeyondPlot"] = keepDataBeyondPlotSize;
     j["maxLines"] = maxDataSweeps;
+    j["alignment"] = AlignmentToString(align).toStdString();
     nlohmann::json jtraces;
     for(auto t : traces) {
         if(t.second) {
@@ -202,26 +209,40 @@ void TraceWaterfall::draw(QPainter &p)
 {
     auto pref = Preferences::getInstance();
 
-    constexpr int yAxisLegendSpace = 25;
-    constexpr int yAxisDisabledSpace = 10;
+//    constexpr int yAxisLegendSpace = 25;
+//    constexpr int yAxisDisabledSpace = 10;
     constexpr int xAxisSpace = 30;
+    constexpr int topMargin = 10;
     auto w = p.window();
     auto pen = QPen(pref.Graphs.Color.axis, 0);
     pen.setCosmetic(true);
     p.setPen(pen);
-    plotAreaLeft = yAxisDisabledSpace;
-    plotAreaWidth = w.width() - 3 * yAxisDisabledSpace - yAxisLegendSpace;
-    plotAreaTop = 10;
-    plotAreaBottom = w.height() - xAxisSpace;
+//    plotAreaLeft = yAxisDisabledSpace;
+//    plotAreaWidth = w.width() - 3 * yAxisDisabledSpace - yAxisLegendSpace;
+
+    auto leftMargin = TraceXYPlot::sideMargin(align == Alignment::PrimaryOnly || align == Alignment::BothAxes);
+    auto rightMargin = TraceXYPlot::sideMargin(align == Alignment::SecondaryOnly || align == Alignment::BothAxes);
+    auto plotRect = QRect(leftMargin, topMargin, w.width() - leftMargin - rightMargin, w.height()-topMargin-xAxisSpace);
+
+    plotAreaTop = plotRect.y();
+    plotAreaLeft = plotRect.x();
+    plotAreaWidth = plotRect.width();
+    plotAreaBottom = plotRect.y()+plotRect.height();
 
     // draw Y legend
-    auto plotRect = QRect(w.width() - yAxisDisabledSpace - yAxisLegendSpace, plotAreaTop, yAxisLegendSpace, plotAreaBottom-plotAreaTop);
-    p.drawRect(plotRect);
+    QRect legendRect;
+    constexpr int legendMargin = 10;
+    if(leftMargin < rightMargin) {
+        legendRect = QRect(QPoint(plotRect.x()+plotRect.width()+legendMargin, plotAreaTop), QPoint(width() - legendMargin, plotAreaBottom));
+    } else {
+        legendRect = QRect(QPoint(legendMargin, plotAreaTop), QPoint(leftMargin - legendMargin, plotAreaBottom));
+    }
+    p.drawRect(legendRect);
     for(int i=plotAreaTop + 1;i<plotAreaBottom;i++) {
         auto color = getColor(Util::Scale<double>(i, plotAreaTop, plotAreaBottom, 1.0, 0.0));
         p.setPen(QColor(color));
         pen.setCosmetic(true);
-        p.drawLine(w.width() - yAxisDisabledSpace - yAxisLegendSpace + 1, i, w.width() - yAxisDisabledSpace - 1, i);
+        p.drawLine(legendRect.x()+1, i, legendRect.x()+legendRect.width()-1, i);
     }
     QString unit = "";
     if(pref.Graphs.showUnits) {
@@ -231,17 +252,17 @@ void TraceWaterfall::draw(QPainter &p)
     QString labelMax = Unit::ToString(yAxis.getRangeMax(), unit, yAxis.Prefixes(), 4);
     p.setPen(QPen(pref.Graphs.Color.axis, 1));
     p.save();
-    p.translate(w.width() - yAxisDisabledSpace - yAxisLegendSpace, w.height());
+    p.translate(legendRect.x(), w.height());
     p.rotate(-90);
-    p.drawText(QRect(xAxisSpace + 10, 0, plotAreaBottom - plotAreaTop - 20, yAxisLegendSpace), Qt::AlignRight | Qt::AlignVCenter, labelMax);
-    p.drawText(QRect(xAxisSpace + 10, 0, plotAreaBottom - plotAreaTop - 20, yAxisLegendSpace), Qt::AlignLeft | Qt::AlignVCenter, labelMin);
+    p.drawText(QRect(xAxisSpace + 10, 0, plotAreaBottom - plotAreaTop - 20, legendRect.width()), Qt::AlignRight | Qt::AlignVCenter, labelMax);
+    p.drawText(QRect(xAxisSpace + 10, 0, plotAreaBottom - plotAreaTop - 20, legendRect.width()), Qt::AlignLeft | Qt::AlignVCenter, labelMin);
+    p.drawText(QRect(xAxisSpace + 10, 0, plotAreaBottom - plotAreaTop - 20, legendRect.width()), Qt::AlignHCenter | Qt::AlignVCenter, yAxis.TypeToName());
     p.restore();
 
 
     pen = QPen(pref.Graphs.Color.axis, 0);
     pen.setCosmetic(true);
     p.setPen(pen);
-    plotRect = QRect(plotAreaLeft, plotAreaTop, plotAreaWidth + 1, plotAreaBottom-plotAreaTop);
     p.drawRect(plotRect);
 
     // draw axis types
@@ -556,4 +577,25 @@ QColor TraceWaterfall::getColor(double scale)
     } else {
         return Qt::black;
     }
+}
+
+QString TraceWaterfall::AlignmentToString(Alignment a)
+{
+    switch(a) {
+    case Alignment::PrimaryOnly: return "Primary Y axis only";
+    case Alignment::SecondaryOnly: return "Secondary Y axis only";
+    case Alignment::BothAxes: return "Both Y axes";
+    case Alignment::Last:
+    default: return "Invalid";
+    }
+}
+
+TraceWaterfall::Alignment TraceWaterfall::AlignmentFromString(QString s)
+{
+    for(unsigned int i=0;i<(int) Alignment::Last;i++) {
+        if(s == AlignmentToString((Alignment) i)) {
+            return (Alignment) i;
+        }
+    }
+    return Alignment::Last;
 }

@@ -189,6 +189,15 @@ bool TraceXYPlot::isTDRtype(YAxis::Type type)
     }
 }
 
+int TraceXYPlot::sideMargin(bool YAxisEnabled)
+{
+    if(YAxisEnabled) {
+        return yAxisSpace;
+    } else {
+        return yAxisDisabledSpace;
+    }
+}
+
 void TraceXYPlot::axisSetupDialog()
 {
     auto setup = new XYplotAxisDialog(this);
@@ -321,9 +330,6 @@ void TraceXYPlot::draw(QPainter &p)
 {
     auto pref = Preferences::getInstance();
 
-    constexpr int yAxisSpace = 55;
-    constexpr int yAxisDisabledSpace = 10;
-    constexpr int xAxisSpace = 30;
     auto w = p.window();
     auto pen = QPen(pref.Graphs.Color.axis, 0);
     pen.setCosmetic(true);

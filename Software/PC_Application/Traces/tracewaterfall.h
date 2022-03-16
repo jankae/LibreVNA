@@ -54,7 +54,19 @@ private:
         BottomToTop,
     };
 
+    // match alignment of XYplot with either one or both Y axes enabled
+    enum class Alignment {
+        PrimaryOnly = 0,
+        SecondaryOnly = 1,
+        BothAxes = 2,
+        Last,
+    };
+
+    static QString AlignmentToString(Alignment a);
+    static Alignment AlignmentFromString(QString s);
+
     Direction dir;
+    Alignment align;
 
     Trace *trace;
 
