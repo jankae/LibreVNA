@@ -24,18 +24,18 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y1type->setMaxVisibleItems(20);
     ui->Y2type->setMaxVisibleItems(20);
 
-    for(int i=0;i<(int) TraceXYPlot::YAxisType::Last;i++) {
-        ui->Y1type->addItem(TraceXYPlot::AxisTypeToName((TraceXYPlot::YAxisType) i));
-        ui->Y2type->addItem(TraceXYPlot::AxisTypeToName((TraceXYPlot::YAxisType) i));
+    for(int i=0;i<(int) YAxis::Type::Last;i++) {
+        ui->Y1type->addItem(YAxis::TypeToName((YAxis::Type) i));
+        ui->Y2type->addItem(YAxis::TypeToName((YAxis::Type) i));
     }
 
-    for(int i=0;i<(int) TraceXYPlot::XAxisType::Last;i++) {
-        ui->XType->addItem(TraceXYPlot::AxisTypeToName((TraceXYPlot::XAxisType) i));
+    for(int i=0;i<(int) XAxis::Type::Last;i++) {
+        ui->XType->addItem(XAxis::TypeToName((XAxis::Type) i));
     }
 
     if(plot->getModel().getSource() == TraceModel::DataSource::SA) {
         for(int i=0;i<ui->XType->count();i++) {
-            auto xtype = TraceXYPlot::XAxisTypeFromName(ui->XType->itemText(i));
+            auto xtype = XAxis::TypeFromName(ui->XType->itemText(i));
             if(!isSupported(xtype)) {
                 enableComboBoxItem(ui->XType, i, false);
             }
@@ -51,9 +51,9 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Y1min->setEnabled(index != 0 && !autoRange);
        ui->Y1max->setEnabled(index != 0 && !autoRange);
        ui->Y1divs->setEnabled(index != 0 && !autoRange);
-       auto type = (TraceXYPlot::YAxisType) index;
-       QString unit = plot->AxisUnit(type);
-       QString prefixes = plot->AxisPrefixes(type);
+       auto type = (YAxis::Type) index;
+       QString unit = YAxis::Unit(type);
+       QString prefixes = YAxis::Prefixes(type);
        ui->Y1min->setUnit(unit);
        ui->Y1min->setPrefixes(prefixes);
        ui->Y1max->setUnit(unit);
@@ -75,9 +75,9 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Y2min->setEnabled(index != 0 && !autoRange);
        ui->Y2max->setEnabled(index != 0 && !autoRange);
        ui->Y2divs->setEnabled(index != 0 && !autoRange);
-       auto type = (TraceXYPlot::YAxisType) index;
-       QString unit = plot->AxisUnit(type);
-       QString prefixes = plot->AxisPrefixes(type);
+       auto type = (YAxis::Type) index;
+       QString unit = YAxis::Unit(type);
+       QString prefixes = YAxis::Prefixes(type);
        ui->Y2min->setUnit(unit);
        ui->Y2min->setPrefixes(prefixes);
        ui->Y2max->setUnit(unit);
@@ -99,7 +99,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Xautomode->setEnabled(checked);
     });
 
-    ui->XType->setCurrentIndex((int) plot->XAxis.type);
+    ui->XType->setCurrentIndex((int) plot->XAxis.getType());
     ui->Xmin->setPrefixes("pnum kMG");
     ui->Xmax->setPrefixes("pnum kMG");
     ui->Xdivs->setPrefixes("pnum kMG");
@@ -112,49 +112,49 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y2max->setPrefixes("pnum kMG");
     ui->Y2divs->setPrefixes("pnum kMG");
 
-    XAxisTypeChanged((int) plot->XAxis.type);
+    XAxisTypeChanged((int) plot->XAxis.getType());
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
     connect(ui->Xlog, &QCheckBox::toggled, [=](bool checked){
         ui->Xdivs->setEnabled(!checked && !ui->Xauto->isChecked());
     });
 
     // Fill initial values
-    ui->Y1type->setCurrentIndex((int) plot->YAxis[0].type);
-    if(plot->YAxis[0].log) {
+    ui->Y1type->setCurrentIndex((int) plot->YAxis[0].getType());
+    if(plot->YAxis[0].getLog()) {
         ui->Y1log->setChecked(true);
     } else {
         ui->Y1linear->setChecked(true);
     }
-    ui->Y1auto->setChecked(plot->YAxis[0].autorange);
-    ui->Y1min->setValueQuiet(plot->YAxis[0].rangeMin);
-    ui->Y1max->setValueQuiet(plot->YAxis[0].rangeMax);
-    ui->Y1divs->setValueQuiet(plot->YAxis[0].rangeDiv);
+    ui->Y1auto->setChecked(plot->YAxis[0].getAutorange());
+    ui->Y1min->setValueQuiet(plot->YAxis[0].getRangeMin());
+    ui->Y1max->setValueQuiet(plot->YAxis[0].getRangeMax());
+    ui->Y1divs->setValueQuiet(plot->YAxis[0].getRangeDiv());
 
-    ui->Y2type->setCurrentIndex((int) plot->YAxis[1].type);
-    if(plot->YAxis[1].log) {
+    ui->Y2type->setCurrentIndex((int) plot->YAxis[1].getType());
+    if(plot->YAxis[1].getLog()) {
         ui->Y2log->setChecked(true);
     } else {
         ui->Y2linear->setChecked(true);
     }
-    ui->Y2auto->setChecked(plot->YAxis[1].autorange);
-    ui->Y2min->setValueQuiet(plot->YAxis[1].rangeMin);
-    ui->Y2max->setValueQuiet(plot->YAxis[1].rangeMax);
-    ui->Y2divs->setValueQuiet(plot->YAxis[1].rangeDiv);
+    ui->Y2auto->setChecked(plot->YAxis[1].getAutorange());
+    ui->Y2min->setValueQuiet(plot->YAxis[1].getRangeMin());
+    ui->Y2max->setValueQuiet(plot->YAxis[1].getRangeMax());
+    ui->Y2divs->setValueQuiet(plot->YAxis[1].getRangeDiv());
 
-    if(plot->XAxis.log) {
+    if(plot->XAxis.getLog()) {
         ui->Xlog->setChecked(true);
     } else {
         ui->Xlinear->setChecked(true);
     }
-    ui->Xauto->setChecked(plot->XAxis.mode != TraceXYPlot::XAxisMode::Manual);
-    if(plot->XAxis.mode == TraceXYPlot::XAxisMode::UseSpan) {
+    ui->Xauto->setChecked(plot->xAxisMode != TraceXYPlot::XAxisMode::Manual);
+    if(plot->xAxisMode == TraceXYPlot::XAxisMode::UseSpan) {
         ui->Xautomode->setCurrentIndex(0);
     } else {
         ui->Xautomode->setCurrentIndex(1);
     }
-    ui->Xmin->setValueQuiet(plot->XAxis.rangeMin);
-    ui->Xmax->setValueQuiet(plot->XAxis.rangeMax);
-    ui->Xdivs->setValueQuiet(plot->XAxis.rangeDiv);
+    ui->Xmin->setValueQuiet(plot->XAxis.getRangeMin());
+    ui->Xmax->setValueQuiet(plot->XAxis.getRangeMax());
+    ui->Xdivs->setValueQuiet(plot->XAxis.getRangeDiv());
 }
 
 XYplotAxisDialog::~XYplotAxisDialog()
@@ -165,8 +165,8 @@ XYplotAxisDialog::~XYplotAxisDialog()
 void XYplotAxisDialog::on_buttonBox_accepted()
 {
     // set plot values to the ones selected in the dialog
-    plot->setYAxis(0, (TraceXYPlot::YAxisType) ui->Y1type->currentIndex(), ui->Y1log->isChecked(), ui->Y1auto->isChecked(), ui->Y1min->value(), ui->Y1max->value(), ui->Y1divs->value());
-    plot->setYAxis(1, (TraceXYPlot::YAxisType) ui->Y2type->currentIndex(), ui->Y2log->isChecked(), ui->Y2auto->isChecked(), ui->Y2min->value(), ui->Y2max->value(), ui->Y2divs->value());
+    plot->setYAxis(0, (YAxis::Type) ui->Y1type->currentIndex(), ui->Y1log->isChecked(), ui->Y1auto->isChecked(), ui->Y1min->value(), ui->Y1max->value(), ui->Y1divs->value());
+    plot->setYAxis(1, (YAxis::Type) ui->Y2type->currentIndex(), ui->Y2log->isChecked(), ui->Y2auto->isChecked(), ui->Y2min->value(), ui->Y2max->value(), ui->Y2divs->value());
     TraceXYPlot::XAxisMode mode;
     if(ui->Xauto->isChecked()) {
         if(ui->Xautomode->currentIndex() == 0) {
@@ -177,29 +177,29 @@ void XYplotAxisDialog::on_buttonBox_accepted()
     } else {
         mode = TraceXYPlot::XAxisMode::Manual;
     }
-    plot->setXAxis((TraceXYPlot::XAxisType) ui->XType->currentIndex(), mode, ui->Xlog->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
+    plot->setXAxis((XAxis::Type) ui->XType->currentIndex(), mode, ui->Xlog->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
 }
 
 void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
 {
-    auto type = (TraceXYPlot::XAxisType) XAxisIndex;
+    auto type = (XAxis::Type) XAxisIndex;
     auto supported = supportedYAxis(type);
-    for(unsigned int i=0;i<(int) TraceXYPlot::YAxisType::Last;i++) {
-        auto t = (TraceXYPlot::YAxisType) i;
+    for(unsigned int i=0;i<(int) YAxis::Type::Last;i++) {
+        auto t = (YAxis::Type) i;
         auto enable = supported.count(t) > 0;
         auto index = (int) t;
         enableComboBoxItem(ui->Y1type, index, enable);
         enableComboBoxItem(ui->Y2type, index, enable);
     }
     // Disable Yaxis if previously selected type is not supported
-    if(!supported.count((TraceXYPlot::YAxisType)ui->Y1type->currentIndex())) {
+    if(!supported.count((YAxis::Type)ui->Y1type->currentIndex())) {
         ui->Y1type->setCurrentIndex(0);
     }
-    if(!supported.count((TraceXYPlot::YAxisType)ui->Y2type->currentIndex())) {
+    if(!supported.count((YAxis::Type)ui->Y2type->currentIndex())) {
         ui->Y2type->setCurrentIndex(0);
     }
 
-    if(type == TraceXYPlot::XAxisType::Frequency) {
+    if(type == XAxis::Type::Frequency) {
         enableComboBoxItem(ui->Xautomode, 0, true);
         ui->Xlog->setEnabled(true);
     } else {
@@ -215,49 +215,49 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
         ui->Xlog->setEnabled(false);
     }
 
-    QString unit = TraceXYPlot::AxisUnit(type);
+    QString unit = XAxis::Unit(type);
     ui->Xmin->setUnit(unit);
     ui->Xmax->setUnit(unit);
     ui->Xdivs->setUnit(unit);
 }
 
-std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::XAxisType type)
+std::set<YAxis::Type> XYplotAxisDialog::supportedYAxis(XAxis::Type type)
 {
-    set<TraceXYPlot::YAxisType> ret = {TraceXYPlot::YAxisType::Disabled};
+    set<YAxis::Type> ret = {YAxis::Type::Disabled};
     auto source = plot->getModel().getSource();
     if(source == TraceModel::DataSource::VNA) {
         switch(type) {
-        case TraceXYPlot::XAxisType::Frequency:
-        case TraceXYPlot::XAxisType::Power:
-            ret.insert(TraceXYPlot::YAxisType::Magnitude);
-            ret.insert(TraceXYPlot::YAxisType::MagnitudeLinear);
-            ret.insert(TraceXYPlot::YAxisType::Phase);
-            ret.insert(TraceXYPlot::YAxisType::UnwrappedPhase);
-            ret.insert(TraceXYPlot::YAxisType::VSWR);
-            ret.insert(TraceXYPlot::YAxisType::Real);
-            ret.insert(TraceXYPlot::YAxisType::Imaginary);
-            ret.insert(TraceXYPlot::YAxisType::SeriesR);
-            ret.insert(TraceXYPlot::YAxisType::Reactance);
-            ret.insert(TraceXYPlot::YAxisType::Capacitance);
-            ret.insert(TraceXYPlot::YAxisType::Inductance);
-            ret.insert(TraceXYPlot::YAxisType::QualityFactor);
-            ret.insert(TraceXYPlot::YAxisType::GroupDelay);
+        case XAxis::Type::Frequency:
+        case XAxis::Type::Power:
+            ret.insert(YAxis::Type::Magnitude);
+            ret.insert(YAxis::Type::MagnitudeLinear);
+            ret.insert(YAxis::Type::Phase);
+            ret.insert(YAxis::Type::UnwrappedPhase);
+            ret.insert(YAxis::Type::VSWR);
+            ret.insert(YAxis::Type::Real);
+            ret.insert(YAxis::Type::Imaginary);
+            ret.insert(YAxis::Type::SeriesR);
+            ret.insert(YAxis::Type::Reactance);
+            ret.insert(YAxis::Type::Capacitance);
+            ret.insert(YAxis::Type::Inductance);
+            ret.insert(YAxis::Type::QualityFactor);
+            ret.insert(YAxis::Type::GroupDelay);
             break;
-        case TraceXYPlot::XAxisType::Time:
-        case TraceXYPlot::XAxisType::Distance:
-            ret.insert(TraceXYPlot::YAxisType::ImpulseReal);
-            ret.insert(TraceXYPlot::YAxisType::ImpulseMag);
-            ret.insert(TraceXYPlot::YAxisType::Step);
-            ret.insert(TraceXYPlot::YAxisType::Impedance);
+        case XAxis::Type::Time:
+        case XAxis::Type::Distance:
+            ret.insert(YAxis::Type::ImpulseReal);
+            ret.insert(YAxis::Type::ImpulseMag);
+            ret.insert(YAxis::Type::Step);
+            ret.insert(YAxis::Type::Impedance);
             break;
         default:
             break;
         }
     } else if(source == TraceModel::DataSource::SA) {
         switch(type) {
-        case TraceXYPlot::XAxisType::Frequency:
-            ret.insert(TraceXYPlot::YAxisType::Magnitude);
-            ret.insert(TraceXYPlot::YAxisType::MagnitudedBuV);
+        case XAxis::Type::Frequency:
+            ret.insert(YAxis::Type::Magnitude);
+            ret.insert(YAxis::Type::MagnitudedBuV);
             break;
         default:
             break;
@@ -266,14 +266,14 @@ std::set<TraceXYPlot::YAxisType> XYplotAxisDialog::supportedYAxis(TraceXYPlot::X
     return ret;
 }
 
-bool XYplotAxisDialog::isSupported(TraceXYPlot::XAxisType type)
+bool XYplotAxisDialog::isSupported(XAxis::Type type)
 {
     auto source = plot->getModel().getSource();
     if(source == TraceModel::DataSource::VNA) {
         // all X axis types are supported
         return true;
     } else if(source == TraceModel::DataSource::SA) {
-        if (type == TraceXYPlot::XAxisType::Frequency) {
+        if (type == XAxis::Type::Frequency) {
             return true;
         } else {
             return false;

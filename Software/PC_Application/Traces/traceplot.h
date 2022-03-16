@@ -86,7 +86,7 @@ protected slots:
     void checkIfStillSupported(Trace *t);
     virtual void markerAdded(Marker *m);
     virtual void markerRemoved(Marker *m);
-    virtual bool xCoordinateVisible(double x) = 0;
+    virtual bool markerVisible(double x) = 0;
 protected:
     static constexpr unsigned int marginTop = 20;
     static constexpr unsigned int marginBottom = 0;

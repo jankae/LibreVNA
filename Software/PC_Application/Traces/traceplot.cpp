@@ -185,7 +185,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
 
         auto tmarkers = t.first->getMarkers();
         for(auto m : tmarkers) {
-            if(!xCoordinateVisible(m->getPosition())) {
+            if(!markerVisible(m->getPosition())) {
                 // marker not visible with current plot settings
                 continue;
             }

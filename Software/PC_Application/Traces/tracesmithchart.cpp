@@ -250,7 +250,7 @@ double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel, double *distan
     return closestXpos;
 }
 
-bool TraceSmithChart::xCoordinateVisible(double x)
+bool TraceSmithChart::markerVisible(double x)
 {
     if(limitToSpan) {
         if(x >= sweep_fmin && x <= sweep_fmax) {

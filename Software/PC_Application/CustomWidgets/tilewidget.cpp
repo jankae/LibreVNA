@@ -39,6 +39,7 @@ void TileWidget::clear()
 {
     if(hasContent) {
         delete content;
+        content = nullptr;
         hasContent = false;
     }
     if(isSplit) {
@@ -99,11 +100,13 @@ void TileWidget::fromJSON(nlohmann::json j)
             content = new TraceSmithChart(model);
         } else if (plotname == "XY-plot"){
             content = new TraceXYPlot(model);
-        } else {
+        } else if (plotname == "Waterfall"){
             content = new TraceWaterfall(model);
         }
-        setContent(content);
-        content->fromJSON(j["plotsettings"]);
+        if(content) {
+            setContent(content);
+            content->fromJSON(j["plotsettings"]);
+        }
     }
 }
 

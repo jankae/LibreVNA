@@ -123,7 +123,7 @@ protected:
     std::complex<double> pixelToData(QPoint p);
     QPoint markerToPixel(Marker *m) override;
     double nearestTracePoint(Trace *t, QPoint pixel, double *distance = nullptr) override;
-    virtual bool xCoordinateVisible(double x);
+    virtual bool markerVisible(double x);
 
     //void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu() override;

@@ -91,6 +91,7 @@ HEADERS += \
     Traces/fftcomplex.h \
     Traces/sparamtraceselector.h \
     Traces/trace.h \
+    Traces/traceaxis.h \
     Traces/tracecsvexport.h \
     Traces/traceeditdialog.h \
     Traces/traceimportdialog.h \
@@ -101,6 +102,7 @@ HEADERS += \
     Traces/tracewaterfall.h \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
+    Traces/waterfallaxisdialog.h \
     Traces/xyplotaxisdialog.h \
     Util/qpointervariant.h \
     Util/util.h \
@@ -209,6 +211,7 @@ SOURCES += \
     Traces/fftcomplex.cpp \
     Traces/sparamtraceselector.cpp \
     Traces/trace.cpp \
+    Traces/traceaxis.cpp \
     Traces/tracecsvexport.cpp \
     Traces/traceeditdialog.cpp \
     Traces/traceimportdialog.cpp \
@@ -219,6 +222,7 @@ SOURCES += \
     Traces/tracewaterfall.cpp \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
+    Traces/waterfallaxisdialog.cpp \
     Traces/xyplotaxisdialog.cpp \
     Util/util.cpp \
     VNA/Deembedding/deembedding.cpp \
@@ -286,6 +290,7 @@ FORMS += \
     Traces/traceimportdialog.ui \
     Traces/tracetouchstoneexport.ui \
     Traces/tracewidget.ui \
+    Traces/waterfallaxisdialog.ui \
     Traces/xyplotaxisdialog.ui \
     VNA/Deembedding/deembeddingdialog.ui \
     VNA/Deembedding/manualdeembeddingdialog.ui \

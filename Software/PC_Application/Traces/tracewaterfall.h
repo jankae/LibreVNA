@@ -3,37 +3,24 @@
 
 #include "traceplot.h"
 
+#include "traceaxis.h"
+
+#include <deque>
+
 class TraceWaterfall : public TracePlot
 {
+    friend class WaterfallAxisDialog;
     Q_OBJECT
 public:
     TraceWaterfall(TraceModel &model, QWidget *parent = 0);;
 
     virtual void enableTrace(Trace *t, bool enabled) override;
 
-    void updateSpan(double min, double max) override;
     void replot() override;
     virtual Type getType() override { return Type::Waterfall;};
 
     void fromJSON(nlohmann::json j) override;
     nlohmann::json toJSON() override;
-
-    enum class XAxisType {
-        Frequency,
-        Time,
-        Distance,
-        Power,
-        Last,
-    };
-    enum class XAxisMode {
-        UseSpan,
-        FitTraces,
-        Manual,
-        Last,
-    };
-
-    void setXAxis(XAxisType type, XAxisMode mode, bool log, double min, double max, double div);
-
 
 public slots:
     void axisSetupDialog();
@@ -43,6 +30,7 @@ protected:
     virtual bool configureForTrace(Trace *t) override;
     virtual void updateContextMenu() override;
     virtual void draw(QPainter& p) override;
+    bool domainMatch(Trace *t);
     virtual bool supported(Trace *t) override;
 
     virtual QPoint markerToPixel(Marker *m) override { Q_UNUSED(m) return QPoint(0,0);};
@@ -51,34 +39,33 @@ protected:
     virtual QString mouseText(QPoint pos) override;
 
 protected slots:
-    virtual bool xCoordinateVisible(double x) override;
+    virtual bool markerVisible(double x) override;
+    void traceDataChanged(unsigned int begin, unsigned int end);
 private slots:
-    void updateAxisTicks();
+    void updateYAxis();
 private:
     static constexpr int AxisLabelSize = 10;
-    static QString AxisTypeToName(XAxisType type);
-    static QString AxisModeToName(XAxisMode mode);
-    static XAxisType XAxisTypeFromName(QString name);
-    static XAxisMode AxisModeFromName(QString name);
 
-    static QString AxisUnit(XAxisType type);
+    // color scale, input value from 0.0 to 1.0
+    QColor getColor(double scale);
 
-    class XAxis {
-    public:
-        XAxisType type;
-        XAxisMode mode;
-        bool log;
-        double rangeMin;
-        double rangeMax;
-        double rangeDiv;
-        std::vector<double> ticks;
+    enum class Direction {
+        TopToBottom,
+        BottomToTop,
     };
 
-    XAxis XAxis;
+    Direction dir;
 
-    std::vector<std::vector<Trace::Data>> data;
+    Trace *trace;
+
+    XAxis XAxis;
+    YAxis YAxis;
+
+    std::deque<std::vector<Trace::Data>> data;
     unsigned int pixelsPerLine;
     int plotAreaLeft, plotAreaWidth, plotAreaBottom, plotAreaTop;
+    bool keepDataBeyondPlotSize;
+    unsigned int maxDataSweeps;
 };
 
 #endif // TRACEWATERFALL_H

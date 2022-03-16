@@ -70,8 +70,8 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
     auto traceXY = new TraceXYPlot(traceModel);
     traceXY->enableTrace(tPort1, true);
     traceXY->enableTrace(tPort2, true);
-    traceXY->setYAxis(0, TraceXYPlot::YAxisType::Magnitude, false, false, -120,0,10);
-    traceXY->setYAxis(1, TraceXYPlot::YAxisType::Disabled, false, true, 0,0,1);
+    traceXY->setYAxis(0, YAxis::Type::Magnitude, false, false, -120,0,10);
+    traceXY->setYAxis(1, YAxis::Type::Disabled, false, true, 0,0,1);
 
     connect(this, &SpectrumAnalyzer::graphColorsChanged, [=](){
         for (auto p : TracePlot::getPlots()) {

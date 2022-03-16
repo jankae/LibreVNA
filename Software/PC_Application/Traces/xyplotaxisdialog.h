@@ -22,8 +22,8 @@ private slots:
     void XAxisTypeChanged(int XAxisIndex);
 
 private:
-    std::set<TraceXYPlot::YAxisType> supportedYAxis(TraceXYPlot::XAxisType type);
-    bool isSupported(TraceXYPlot::XAxisType type);
+    std::set<YAxis::Type> supportedYAxis(XAxis::Type type);
+    bool isSupported(XAxis::Type type);
     Ui::XYplotAxisDialog *ui;
     TraceXYPlot *plot;
 };
