@@ -63,24 +63,24 @@ WaterfallAxisDialog::WaterfallAxisDialog(TraceWaterfall *plot) :
        ui->WmaxSweeps->setEnabled(index == 1);
     });
 
-    ui->XType->setCurrentIndex((int) plot->XAxis.getType());
+    ui->XType->setCurrentIndex((int) plot->xAxis.getType());
 
     ui->Wmin->setPrefixes("pnum kMG");
     ui->Wmax->setPrefixes("pnum kMG");
 
-    XAxisTypeChanged((int) plot->XAxis.getType());
+    XAxisTypeChanged((int) plot->xAxis.getType());
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &WaterfallAxisDialog::XAxisTypeChanged);
 
     // Fill initial values
-    ui->Wtype->setCurrentIndex((int) plot->YAxis.getType());
-    if(plot->YAxis.getLog()) {
+    ui->Wtype->setCurrentIndex((int) plot->yAxis.getType());
+    if(plot->yAxis.getLog()) {
         ui->Wlog->setChecked(true);
     } else {
         ui->Wlinear->setChecked(true);
     }
-    ui->Wauto->setChecked(plot->YAxis.getAutorange());
-    ui->Wmin->setValueQuiet(plot->YAxis.getRangeMin());
-    ui->Wmax->setValueQuiet(plot->YAxis.getRangeMax());
+    ui->Wauto->setChecked(plot->yAxis.getAutorange());
+    ui->Wmin->setValueQuiet(plot->yAxis.getRangeMin());
+    ui->Wmax->setValueQuiet(plot->yAxis.getRangeMax());
     if(plot->dir == TraceWaterfall::Direction::TopToBottom) {
         ui->Wdir->setCurrentIndex(0);
     } else {
@@ -90,7 +90,7 @@ WaterfallAxisDialog::WaterfallAxisDialog(TraceWaterfall *plot) :
     ui->Wmode->setCurrentIndex(plot->keepDataBeyondPlotSize ? 1 : 0);
     ui->WmaxSweeps->setValue(plot->maxDataSweeps);
 
-    if(plot->XAxis.getLog()) {
+    if(plot->xAxis.getLog()) {
         ui->Xlog->setChecked(true);
     } else {
         ui->Xlinear->setChecked(true);
@@ -105,8 +105,8 @@ WaterfallAxisDialog::~WaterfallAxisDialog()
 void WaterfallAxisDialog::on_buttonBox_accepted()
 {
     // set plot values to the ones selected in the dialog
-    plot->XAxis.set(plot->XAxis.getType(), ui->Xlog->isChecked(), true, plot->XAxis.getRangeMin(), plot->XAxis.getRangeMax(), 0);
-    plot->YAxis.set((YAxis::Type) ui->Wtype->currentIndex(), ui->Wlog->isChecked(), ui->Wauto->isChecked(), ui->Wmin->value(), ui->Wmax->value(), 2);
+    plot->xAxis.set(plot->xAxis.getType(), ui->Xlog->isChecked(), true, plot->xAxis.getRangeMin(), plot->xAxis.getRangeMax(), 0);
+    plot->yAxis.set((YAxis::Type) ui->Wtype->currentIndex(), ui->Wlog->isChecked(), ui->Wauto->isChecked(), ui->Wmin->value(), ui->Wmax->value(), 2);
     if(ui->Wdir->currentIndex() == 0) {
         plot->dir = TraceWaterfall::Direction::TopToBottom;
     } else {

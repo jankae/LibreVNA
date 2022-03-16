@@ -58,8 +58,8 @@ private:
 
     Trace *trace;
 
-    XAxis XAxis;
-    YAxis YAxis;
+    XAxis xAxis;
+    YAxis yAxis;
 
     std::deque<std::vector<Trace::Data>> data;
     unsigned int pixelsPerLine;

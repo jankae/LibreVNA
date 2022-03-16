@@ -19,8 +19,8 @@ TraceWaterfall::TraceWaterfall(TraceModel &model, QWidget *parent)
       keepDataBeyondPlotSize(false),
       maxDataSweeps(500)
 {
-    XAxis.set(XAxis::Type::Frequency, false, true, 0, 6000000000, 500000000);
-    YAxis.set(YAxis::Type::Magnitude, false, true, -1, 1, 1);
+    xAxis.set(XAxis::Type::Frequency, false, true, 0, 6000000000, 500000000);
+    yAxis.set(YAxis::Type::Magnitude, false, true, -1, 1, 1);
     initializeTraceInfo();
 }
 
@@ -115,16 +115,16 @@ bool TraceWaterfall::configureForTrace(Trace *t)
 {
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
-        XAxis.set(XAxis::Type::Frequency, false, true, 0, 1, 0.1);
-        YAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
+        xAxis.set(XAxis::Type::Frequency, false, true, 0, 1, 0.1);
+        yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
         break;
     case Trace::DataType::Time:
-        XAxis.set(XAxis::Type::Time, false, true, 0, 1, 0.1);
-        YAxis.set(YAxis::Type::ImpulseMag, false, true, 0, 1, 1.0);
+        xAxis.set(XAxis::Type::Time, false, true, 0, 1, 0.1);
+        yAxis.set(YAxis::Type::ImpulseMag, false, true, 0, 1, 1.0);
         break;
     case Trace::DataType::Power:
-        XAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
-        YAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
+        xAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
+        yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
         break;
     case Trace::DataType::Invalid:
         // unable to add
@@ -136,7 +136,7 @@ bool TraceWaterfall::configureForTrace(Trace *t)
 
 bool TraceWaterfall::domainMatch(Trace *t)
 {
-    switch(XAxis.getType()) {
+    switch(xAxis.getType()) {
     case XAxis::Type::Frequency:
         return t->outputType() == Trace::DataType::Frequency;
     case XAxis::Type::Distance:
@@ -225,10 +225,10 @@ void TraceWaterfall::draw(QPainter &p)
     }
     QString unit = "";
     if(pref.Graphs.showUnits) {
-        unit = YAxis.Unit();
+        unit = yAxis.Unit();
     }
-    QString labelMin = Unit::ToString(YAxis.getRangeMin(), unit, YAxis.Prefixes(), 4);
-    QString labelMax = Unit::ToString(YAxis.getRangeMax(), unit, YAxis.Prefixes(), 4);
+    QString labelMin = Unit::ToString(yAxis.getRangeMin(), unit, yAxis.Prefixes(), 4);
+    QString labelMax = Unit::ToString(yAxis.getRangeMax(), unit, yAxis.Prefixes(), 4);
     p.setPen(QPen(pref.Graphs.Color.axis, 1));
     p.save();
     p.translate(w.width() - yAxisDisabledSpace - yAxisLegendSpace, w.height());
@@ -248,21 +248,21 @@ void TraceWaterfall::draw(QPainter &p)
     auto font = p.font();
     font.setPixelSize(AxisLabelSize);
     p.setFont(font);
-    p.drawText(QRect(0, w.height()-AxisLabelSize*1.5, w.width(), AxisLabelSize*1.5), Qt::AlignHCenter, XAxis.TypeToName());
+    p.drawText(QRect(0, w.height()-AxisLabelSize*1.5, w.width(), AxisLabelSize*1.5), Qt::AlignHCenter, xAxis.TypeToName());
 
-    if(XAxis.getTicks().size() >= 1) {
+    if(xAxis.getTicks().size() >= 1) {
         // draw X ticks
         int significantDigits;
         bool displayFullFreq;
-        if(XAxis.getLog()) {
+        if(xAxis.getLog()) {
             significantDigits = 5;
             displayFullFreq = true;
         } else {
             // this only works for evenly distributed ticks:
-            auto max = qMax(abs(XAxis.getTicks().front()), abs(XAxis.getTicks().back()));
+            auto max = qMax(abs(xAxis.getTicks().front()), abs(xAxis.getTicks().back()));
             double step;
-            if(XAxis.getTicks().size() >= 2) {
-                step = abs(XAxis.getTicks()[0] - XAxis.getTicks()[1]);
+            if(xAxis.getTicks().size() >= 2) {
+                step = abs(xAxis.getTicks()[0] - xAxis.getTicks()[1]);
             } else {
                 // only one tick, set arbitrary number of digits
                 step = max / 1000;
@@ -274,11 +274,11 @@ void TraceWaterfall::draw(QPainter &p)
         QString prefixes = "fpnum kMG";
         QString unit = "";
         if(pref.Graphs.showUnits) {
-            unit = XAxis.Unit();
+            unit = xAxis.Unit();
         }
         QString commonPrefix = QString();
         if(!displayFullFreq) {
-            auto fullFreq = Unit::ToString(XAxis.getTicks().front(), unit, prefixes, significantDigits);
+            auto fullFreq = Unit::ToString(xAxis.getTicks().front(), unit, prefixes, significantDigits);
             commonPrefix = fullFreq.at(fullFreq.size() - 1);
             auto front = fullFreq;
             front.truncate(fullFreq.size() - displayLastDigits - unit.length());
@@ -293,8 +293,8 @@ void TraceWaterfall::draw(QPainter &p)
         }
 
         int lastTickLabelEnd = 0;
-        for(auto t : XAxis.getTicks()) {
-            auto xCoord = XAxis.transform(t, plotAreaLeft, plotAreaLeft + plotAreaWidth);
+        for(auto t : xAxis.getTicks()) {
+            auto xCoord = xAxis.transform(t, plotAreaLeft, plotAreaLeft + plotAreaWidth);
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             p.drawLine(xCoord, plotAreaBottom, xCoord, plotAreaBottom + 2);
             if(xCoord != plotAreaLeft && xCoord != plotAreaLeft + plotAreaWidth) {
@@ -344,29 +344,29 @@ void TraceWaterfall::draw(QPainter &p)
         for(i=data.size() - 1;i>=0;i--) {
             auto sweep = data[i];
             for(unsigned int s=0;s<sweep.size();s++) {
-                auto x = XAxis.sampleToCoordinate(sweep[s], trace);
+                auto x = xAxis.sampleToCoordinate(sweep[s], trace);
                 double x_start;
                 double x_stop;
-                if(x < XAxis.getRangeMin() || x > XAxis.getRangeMax()) {
+                if(x < xAxis.getRangeMin() || x > xAxis.getRangeMax()) {
                     // out of range, skip
                     continue;
                 }
                 if(s == 0) {
                     x_start = x;
                 } else {
-                    auto prev_x = XAxis.sampleToCoordinate(sweep[s-1], trace);
+                    auto prev_x = xAxis.sampleToCoordinate(sweep[s-1], trace);
                     x_start = (prev_x + x) / 2.0;
                 }
-                x_start = XAxis.transform(x_start, plotAreaLeft, plotAreaLeft + plotAreaWidth);
+                x_start = xAxis.transform(x_start, plotAreaLeft, plotAreaLeft + plotAreaWidth);
                 if(s == sweep.size() - 1) {
                     x_stop = x;
                 } else {
-                    auto next_x = XAxis.sampleToCoordinate(sweep[s+1], trace);
+                    auto next_x = xAxis.sampleToCoordinate(sweep[s+1], trace);
                     x_stop = (next_x + x) / 2.0;
                 }
-                x_stop = XAxis.transform(x_stop, plotAreaLeft, plotAreaLeft + plotAreaWidth);
-                auto y = YAxis.sampleToCoordinate(sweep[s]);
-                auto color = getColor(YAxis.transform(y, 0.0, 1.0));
+                x_stop = xAxis.transform(x_stop, plotAreaLeft, plotAreaLeft + plotAreaWidth);
+                auto y = yAxis.sampleToCoordinate(sweep[s]);
+                auto color = getColor(yAxis.transform(y, 0.0, 1.0));
                 auto rect = QRect(round(x_start), ytop, round(x_stop - x_start) + 1, ybottom - ytop + 1);
                 p.fillRect(rect, QBrush(color));
             }
@@ -420,7 +420,7 @@ bool TraceWaterfall::supported(Trace *t)
         return false;
     }
 
-    switch(YAxis.getType()) {
+    switch(yAxis.getType()) {
     case YAxis::Type::Disabled:
         return false;
     case YAxis::Type::VSWR:
@@ -458,9 +458,9 @@ QString TraceWaterfall::mouseText(QPoint pos)
 {
     QString ret;
     if(QRect(plotAreaLeft, 0, plotAreaWidth + 1, plotAreaBottom).contains(pos)) {
-        double x = XAxis.inverseTransform(pos.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth);
-        int significantDigits = floor(log10(abs(XAxis.getRangeMax()))) - floor(log10((abs(XAxis.getRangeMax() - XAxis.getRangeMin())) / 1000.0)) + 1;
-        ret += Unit::ToString(x, XAxis.Unit(), "fpnum kMG", significantDigits) + "\n";
+        double x = xAxis.inverseTransform(pos.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth);
+        int significantDigits = floor(log10(abs(xAxis.getRangeMax()))) - floor(log10((abs(xAxis.getRangeMax() - xAxis.getRangeMin())) / 1000.0)) + 1;
+        ret += Unit::ToString(x, xAxis.Unit(), "fpnum kMG", significantDigits) + "\n";
     }
     return ret;
 }
@@ -474,13 +474,13 @@ bool TraceWaterfall::markerVisible(double x)
 
 void TraceWaterfall::traceDataChanged(unsigned int begin, unsigned int end)
 {
-    if(XAxis.getAutorange()) {
+    if(xAxis.getAutorange()) {
         double min_x = trace->sample(0).x;
         double max_x = trace->sample(trace->size() - 1).x;
-        if(min_x != XAxis.getRangeMin() || max_x != XAxis.getRangeMax()) {
+        if(min_x != xAxis.getRangeMin() || max_x != xAxis.getRangeMax()) {
             resetWaterfall();
             // adjust axis
-            XAxis.set(XAxis.getType(), XAxis.getLog(), true, min_x, max_x, 0);
+            xAxis.set(xAxis.getType(), xAxis.getLog(), true, min_x, max_x, 0);
         }
     }
     bool YAxisUpdateRequired = false;
@@ -498,12 +498,12 @@ void TraceWaterfall::traceDataChanged(unsigned int begin, unsigned int end)
     }
     // grab trace data
     data.back().resize(trace->size());
-    double min = YAxis.getRangeMin();
-    double max = YAxis.getRangeMax();
+    double min = yAxis.getRangeMin();
+    double max = yAxis.getRangeMax();
     for(unsigned int i=begin;i<end;i++) {
         data.back()[i] = trace->sample(i);
-        if(YAxis.getAutorange() && !YAxisUpdateRequired) {
-            double val = YAxis.sampleToCoordinate(trace->sample(i));
+        if(yAxis.getAutorange() && !YAxisUpdateRequired) {
+            double val = yAxis.sampleToCoordinate(trace->sample(i));
             if(val < min) {
                 min = val;
             }
@@ -512,9 +512,9 @@ void TraceWaterfall::traceDataChanged(unsigned int begin, unsigned int end)
             }
         }
     }
-    if(YAxis.getAutorange() && !YAxisUpdateRequired && (min != YAxis.getRangeMin() || max != YAxis.getRangeMax())) {
+    if(yAxis.getAutorange() && !YAxisUpdateRequired && (min != yAxis.getRangeMin() || max != yAxis.getRangeMax())) {
         // axis scaling needs update due to new trace data
-        YAxis.set(YAxis.getType(), YAxis.getLog(), true, min, max, 0);
+        yAxis.set(yAxis.getType(), yAxis.getLog(), true, min, max, 0);
     } else if(YAxisUpdateRequired) {
         updateYAxis();
     }
@@ -522,12 +522,12 @@ void TraceWaterfall::traceDataChanged(unsigned int begin, unsigned int end)
 
 void TraceWaterfall::updateYAxis()
 {
-    if(YAxis.getAutorange()) {
+    if(yAxis.getAutorange()) {
         double min = std::numeric_limits<double>::max();
         double max = std::numeric_limits<double>::lowest();
         for(auto sweep : data) {
             for(unsigned int i=0;i<sweep.size();i++) {
-                double val = YAxis.sampleToCoordinate(sweep[i]);
+                double val = yAxis.sampleToCoordinate(sweep[i]);
                 if(isnan(val) || isinf(val)) {
                     continue;
                 }
@@ -540,7 +540,7 @@ void TraceWaterfall::updateYAxis()
             }
         }
         if(max > min) {
-            YAxis.set(YAxis.getType(), YAxis.getLog(), true, min, max, 0);
+            yAxis.set(yAxis.getType(), yAxis.getLog(), true, min, max, 0);
         }
     }
 }

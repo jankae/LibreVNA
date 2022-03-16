@@ -62,8 +62,8 @@ private:
 
     std::set<Trace*> tracesAxis[2];
 
-    YAxis YAxis[2];
-    XAxis XAxis;
+    YAxis yAxis[2];
+    XAxis xAxis;
     XAxisMode xAxisMode;
 
     int plotAreaLeft, plotAreaWidth, plotAreaBottom, plotAreaTop;

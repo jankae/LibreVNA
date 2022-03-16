@@ -99,7 +99,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
        ui->Xautomode->setEnabled(checked);
     });
 
-    ui->XType->setCurrentIndex((int) plot->XAxis.getType());
+    ui->XType->setCurrentIndex((int) plot->xAxis.getType());
     ui->Xmin->setPrefixes("pnum kMG");
     ui->Xmax->setPrefixes("pnum kMG");
     ui->Xdivs->setPrefixes("pnum kMG");
@@ -112,36 +112,36 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y2max->setPrefixes("pnum kMG");
     ui->Y2divs->setPrefixes("pnum kMG");
 
-    XAxisTypeChanged((int) plot->XAxis.getType());
+    XAxisTypeChanged((int) plot->xAxis.getType());
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
     connect(ui->Xlog, &QCheckBox::toggled, [=](bool checked){
         ui->Xdivs->setEnabled(!checked && !ui->Xauto->isChecked());
     });
 
     // Fill initial values
-    ui->Y1type->setCurrentIndex((int) plot->YAxis[0].getType());
-    if(plot->YAxis[0].getLog()) {
+    ui->Y1type->setCurrentIndex((int) plot->yAxis[0].getType());
+    if(plot->yAxis[0].getLog()) {
         ui->Y1log->setChecked(true);
     } else {
         ui->Y1linear->setChecked(true);
     }
-    ui->Y1auto->setChecked(plot->YAxis[0].getAutorange());
-    ui->Y1min->setValueQuiet(plot->YAxis[0].getRangeMin());
-    ui->Y1max->setValueQuiet(plot->YAxis[0].getRangeMax());
-    ui->Y1divs->setValueQuiet(plot->YAxis[0].getRangeDiv());
+    ui->Y1auto->setChecked(plot->yAxis[0].getAutorange());
+    ui->Y1min->setValueQuiet(plot->yAxis[0].getRangeMin());
+    ui->Y1max->setValueQuiet(plot->yAxis[0].getRangeMax());
+    ui->Y1divs->setValueQuiet(plot->yAxis[0].getRangeDiv());
 
-    ui->Y2type->setCurrentIndex((int) plot->YAxis[1].getType());
-    if(plot->YAxis[1].getLog()) {
+    ui->Y2type->setCurrentIndex((int) plot->yAxis[1].getType());
+    if(plot->yAxis[1].getLog()) {
         ui->Y2log->setChecked(true);
     } else {
         ui->Y2linear->setChecked(true);
     }
-    ui->Y2auto->setChecked(plot->YAxis[1].getAutorange());
-    ui->Y2min->setValueQuiet(plot->YAxis[1].getRangeMin());
-    ui->Y2max->setValueQuiet(plot->YAxis[1].getRangeMax());
-    ui->Y2divs->setValueQuiet(plot->YAxis[1].getRangeDiv());
+    ui->Y2auto->setChecked(plot->yAxis[1].getAutorange());
+    ui->Y2min->setValueQuiet(plot->yAxis[1].getRangeMin());
+    ui->Y2max->setValueQuiet(plot->yAxis[1].getRangeMax());
+    ui->Y2divs->setValueQuiet(plot->yAxis[1].getRangeDiv());
 
-    if(plot->XAxis.getLog()) {
+    if(plot->xAxis.getLog()) {
         ui->Xlog->setChecked(true);
     } else {
         ui->Xlinear->setChecked(true);
@@ -152,9 +152,9 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     } else {
         ui->Xautomode->setCurrentIndex(1);
     }
-    ui->Xmin->setValueQuiet(plot->XAxis.getRangeMin());
-    ui->Xmax->setValueQuiet(plot->XAxis.getRangeMax());
-    ui->Xdivs->setValueQuiet(plot->XAxis.getRangeDiv());
+    ui->Xmin->setValueQuiet(plot->xAxis.getRangeMin());
+    ui->Xmax->setValueQuiet(plot->xAxis.getRangeMax());
+    ui->Xdivs->setValueQuiet(plot->xAxis.getRangeDiv());
 }
 
 XYplotAxisDialog::~XYplotAxisDialog()
