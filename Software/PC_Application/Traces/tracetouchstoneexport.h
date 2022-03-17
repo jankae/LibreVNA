@@ -34,6 +34,7 @@ private:
     unsigned int ports;
     unsigned int points;
     double lowerFreq, upperFreq;
+    double referenceImpedance;
     bool freqsSet;
 };
 

@@ -73,7 +73,6 @@ public:
         bool useDFTinSAmode;
         double RBWLimitForDFT;
         bool useMedianAveraging;
-        double refImp; // reference impedance
 
         // advanced, hardware specific settings
         double IF1;
@@ -153,7 +152,6 @@ private:
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
-        {&Acquisition.refImp, "Acquisition.referenceImpedance", 50.0},
         {&Acquisition.IF1, "Acquisition.IF1", 62000000},
         {&Acquisition.ADCprescaler, "Acquisition.ADCprescaler", 128},
         {&Acquisition.DFTPhaseInc, "Acquisition.DFTPhaseInc", 1280},

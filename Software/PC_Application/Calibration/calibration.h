@@ -45,8 +45,8 @@ public:
     void clearMeasurements();
     void clearMeasurements(std::set<Measurement> types);
     void clearMeasurement(Measurement type);
-    void addMeasurement(Measurement type, Protocol::Datapoint &d);
-    void addMeasurements(std::set<Measurement> types, Protocol::Datapoint &d);
+    void addMeasurement(Measurement type, VNAData &d);
+    void addMeasurements(std::set<Measurement> types, VNAData &d);
 
     enum class Type {
         Port1SOL,
@@ -63,7 +63,7 @@ public:
     bool constructErrorTerms(Type type);
     void resetErrorTerms();
 
-    void correctMeasurement(Protocol::Datapoint &d);
+    void correctMeasurement(VNAData &d);
     void correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
 
     enum class InterpolationType {
@@ -93,7 +93,6 @@ public:
     const std::vector<Measurement> Measurements(Type type = Type::None, bool optional_included = true);
     MeasurementInfo getMeasurementInfo(Measurement m);
 
-    friend std::ostream& operator<<(std::ostream& os, const Calibration& c);
     friend std::istream& operator >> (std::istream &in, Calibration& c);
     int nPoints() {
         return points.size();
@@ -142,7 +141,7 @@ private:
         // Reverse error terms
         std::complex<double> re33, re11, re23e32, re23e01, re22, re03, rex;
     };
-    Point getCalibrationPoint(Protocol::Datapoint &d);
+    Point getCalibrationPoint(VNAData &d);
     /*
      * Constructs directivity, match and tracking correction factors from measurements of three distinct impedances
      * Normally, an open, short and load are used (with ideal reflection coefficients of 1, -1 and 0 respectively).
@@ -174,7 +173,7 @@ private:
     class MeasurementData {
     public:
         QDateTime timestamp;
-        std::vector<Protocol::Datapoint> datapoints;
+        std::vector<VNAData> datapoints;
     };
     Type type;
 

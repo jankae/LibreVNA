@@ -2,6 +2,7 @@
 #define AVERAGING_H
 
 #include "Device/device.h"
+#include "VNA/vnadata.h"
 
 #include <array>
 #include <deque>
@@ -18,7 +19,7 @@ public:
     Averaging();
     void reset(unsigned int points);
     void setAverages(unsigned int a);
-    Protocol::Datapoint process(Protocol::Datapoint d);
+    VNAData process(VNAData d);
     Protocol::SpectrumAnalyzerResult process(Protocol::SpectrumAnalyzerResult d);
     // Returns the number of averaged sweeps. Value is incremented whenever the last point of the sweep is added.
     // Returned values are in range 0 to averages

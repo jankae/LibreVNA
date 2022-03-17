@@ -7,6 +7,7 @@
 #include "QFileDialog"
 #include "Util/util.h"
 #include "appwindow.h"
+#include "CustomWidgets/informationbox.h"
 
 #include <QPainter>
 #include <array>
@@ -22,6 +23,7 @@ TraceSmithChart::TraceSmithChart(TraceModel &model, QWidget *parent)
     limitToSpan = true;
     limitToEdge = true;
     edgeReflection = 1.0;
+    Z0 = 50.0;
     initializeTraceInfo();
 }
 
@@ -31,6 +33,7 @@ nlohmann::json TraceSmithChart::toJSON()
     j["limit_to_span"] = limitToSpan;
     j["limit_to_edge"] = limitToEdge;
     j["edge_reflection"] = edgeReflection;
+    j["Z0"] = Z0;
     nlohmann::json jtraces;
     for(auto t : traces) {
         if(t.second) {
@@ -51,6 +54,7 @@ void TraceSmithChart::fromJSON(nlohmann::json j)
     limitToSpan = j.value("limit_to_span", true);
     limitToEdge = j.value("limit_to_edge", false);
     edgeReflection = j.value("edge_reflection", 1.0);
+    Z0 = j.value("Z0", 50.0);
     for(unsigned int hash : j["traces"]) {
         // attempt to find the traces with this hash
         bool found = false;
@@ -107,6 +111,10 @@ void TraceSmithChart::axisSetupDialog()
     ui->zoomReflection->setValue(edgeReflection);
     ui->zoomFactor->setValue(1.0/edgeReflection);
 
+    ui->impedance->setUnit("Ω");
+    ui->impedance->setPrecision(3);
+    ui->impedance->setValue(Z0);
+
     auto model = new SmithChartContantLineModel(*this);
     ui->lineTable->setModel(model);
     ui->lineTable->setItemDelegateForColumn(SmithChartContantLineModel::ColIndexType, new SmithChartTypeDelegate);
@@ -124,6 +132,15 @@ void TraceSmithChart::axisSetupDialog()
     connect(ui->zoomReflection, &SIUnitEdit::valueChanged, [=](){
         edgeReflection = ui->zoomReflection->value();
         ui->zoomFactor->setValueQuiet(1.0 / edgeReflection);
+    });
+    connect(ui->impedance, &SIUnitEdit::valueChanged, [=](){
+        Z0 = ui->impedance->value();
+        for(auto t : traces) {
+            if(t.second) {
+                checkIfStillSupported(t.first);
+            }
+        }
+        ui->impedance->setValueQuiet(Z0);
     });
     connect(ui->lineTable, &QTableView::clicked, [=](const QModelIndex &index){
         if(index.column() == SmithChartContantLineModel::ColIndexColor) {
@@ -182,8 +199,7 @@ QPoint TraceSmithChart::dataToPixel(Trace::Data d)
     if(d.x < sweep_fmin || d.x > sweep_fmax) {
         return QPoint();
     }
-    return dataToPixel(d.y);
-}
+    return dataToPixel(d.y);}
 
 std::complex<double> TraceSmithChart::pixelToData(QPoint p)
 {
@@ -265,6 +281,20 @@ bool TraceSmithChart::markerVisible(double x)
     }
 }
 
+bool TraceSmithChart::configureForTrace(Trace *t)
+{
+    if(dropSupported(t)) {
+        Z0 = t->getReferenceImpedance();
+        for(auto t : traces) {
+            if(t.second && t.first->getReferenceImpedance() != Z0) {
+                enableTrace(t.first, false);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 void TraceSmithChart::draw(QPainter &p) {
     auto pref = Preferences::getInstance();
 
@@ -306,7 +336,7 @@ void TraceSmithChart::draw(QPainter &p) {
       p.drawLine(dataToPixel(complex<double>(edgeReflection,0)),dataToPixel(complex<double>(-edgeReflection,0)));
     constexpr std::array<double, 5> impedanceLines = {10, 25, 50, 100, 250};
     for(auto z : impedanceLines) {
-        z /= Preferences::getInstance().Acquisition.refImp;
+        z /= Z0;
         auto radius = 1.0/z;
         drawArc(SmithChartArc(QPointF(1.0, radius), radius, 0, 2*M_PI));
         drawArc(SmithChartArc(QPointF(1.0, -radius), radius, 0, 2*M_PI));
@@ -317,7 +347,7 @@ void TraceSmithChart::draw(QPainter &p) {
         pen = QPen(line.getColor(), pref.Graphs.lineWidth);
         pen.setCosmetic(true);
         p.setPen(pen);
-        for(auto arc : line.getArcs()) {
+        for(auto arc : line.getArcs(Z0)) {
             drawArc(arc);
         }
     }
@@ -397,11 +427,40 @@ void TraceSmithChart::draw(QPainter &p) {
     }
 }
 
+void TraceSmithChart::traceDropped(Trace *t, QPoint position)
+{
+    if(!supported(t) && dropSupported(t)) {
+        // needs to switch to a different domain for the graph
+        if(!InformationBox::AskQuestion("Reference impedance change", "You dropped a trace that is not supported with the currently selected reference impedance."
+                                    " Do you want to remove all traces and change the graph to the correct reference imppedance?", true, "ReferenceImpedanceChangeRequest")) {
+            // user declined to change domain, to not add change impedance
+            return;
+        }
+        // attempt to configure for this trace
+        configureForTrace(t);
+    }
+    TracePlot::traceDropped(t, position);
+}
+
+bool TraceSmithChart::dropSupported(Trace *t)
+{
+    if(!t->isReflection()) {
+        return false;
+    }
+    switch(t->outputType()) {
+    case Trace::DataType::Frequency:
+    case Trace::DataType::Power:
+        return true;
+    default:
+        return false;
+    }
+}
+
 QString TraceSmithChart::mouseText(QPoint pos)
 {
     auto data = pixelToData(pos);
     if(abs(data) <= edgeReflection) {
-        data = Preferences::getInstance().Acquisition.refImp * (1.0 + data) / (1.0 - data);
+        data = Z0 * (1.0 + data) / (1.0 - data);
         auto ret = Unit::ToString(data.real(), "", " ", 3);
         if(data.imag() >= 0) {
             ret += "+";
@@ -478,16 +537,10 @@ void TraceSmithChart::updateContextMenu()
 
 bool TraceSmithChart::supported(Trace *t)
 {
-    if(!t->isReflection()) {
+    if(t->getReferenceImpedance() != Z0) {
         return false;
     }
-    switch(t->outputType()) {
-    case Trace::DataType::Frequency:
-    case Trace::DataType::Power:
-        return true;
-    default:
-        return false;
-    }
+    return dropSupported(t);
 }
 
 SmithChartArc::SmithChartArc(QPointF center, double radius, double startAngle, double spanAngle)
@@ -571,9 +624,8 @@ SmithChartConstantLine::SmithChartConstantLine()
     color = Qt::darkRed;
 }
 
-std::vector<SmithChartArc> SmithChartConstantLine::getArcs()
+std::vector<SmithChartArc> SmithChartConstantLine::getArcs(double Z0)
 {
-    double Z0 = Preferences::getInstance().Acquisition.refImp;
     std::vector<SmithChartArc> arcs;
     switch(type) {
     case Type::VSWR:

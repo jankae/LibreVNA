@@ -109,11 +109,11 @@ double YAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
     case YAxis::Type::Imaginary:
         return data.y.imag();
     case YAxis::Type::SeriesR:
-        return Util::SparamToResistance(data.y);
+        return Util::SparamToResistance(data.y, t->getReferenceImpedance());
     case YAxis::Type::Reactance:
-        return Util::SparamToImpedance(data.y).imag();
+        return Util::SparamToImpedance(data.y, t->getReferenceImpedance()).imag();
     case YAxis::Type::Capacitance:
-        return Util::SparamToCapacitance(data.y, data.x);
+        return Util::SparamToCapacitance(data.y, data.x, t->getReferenceImpedance());
     case YAxis::Type::Inductance:
         return Util::SparamToInductance(data.y, data.x);
     case YAxis::Type::QualityFactor:
@@ -164,7 +164,7 @@ double YAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
         }
         double step = t->sample(sample, true).y.real();
         if(abs(step) < 1.0) {
-            return Util::SparamToImpedance(step).real();
+            return Util::SparamToImpedance(step, t->getReferenceImpedance()).real();
         }
     }
         break;

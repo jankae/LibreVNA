@@ -460,6 +460,12 @@ void TracePlot::checkIfStillSupported(Trace *t)
             if(!configureForTrace(t)) {
                 enableTrace(t, false);
             }
+            // remove non-supported traces after graph has been adjusted
+            for(auto t : activeTraces()) {
+                if(!supported(t)) {
+                    enableTrace(t, false);
+                }
+            }
             break;
         }
 

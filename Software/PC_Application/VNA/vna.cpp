@@ -21,6 +21,7 @@
 #include "Deembedding/manualdeembeddingdialog.h"
 #include "Calibration/manualcalibrationdialog.h"
 #include "Util/util.h"
+#include "Tools/parameters.h"
 
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -812,28 +813,30 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
         return;
     }
 
-    d = average.process(d);
+    auto vd = VNAData(d);
+
+    vd = average.process(vd);
     if(calMeasuring) {
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for calibration
-            if(!calWaitFirst || d.pointNum == 0) {
+            if(!calWaitFirst || vd.pointNum == 0) {
                 calWaitFirst = false;
-                cal.addMeasurements(calMeasurements, d);
-                if(d.pointNum == settings.npoints - 1) {
+                cal.addMeasurements(calMeasurements, vd);
+                if(vd.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
                     emit CalibrationMeasurementsComplete(calMeasurements);
                 }
             }
         }
-        int percentage = (((average.currentSweep() - 1) * 100) + (d.pointNum + 1) * 100 / settings.npoints) / averages;
+        int percentage = (((average.currentSweep() - 1) * 100) + (vd.pointNum + 1) * 100 / settings.npoints) / averages;
         calDialog.setValue(percentage);
     }
     if(calValid) {
-        cal.correctMeasurement(d);
+        cal.correctMeasurement(vd);
     }
 
     if(deembedding_active) {
-        deembedding.Deembed(d);
+        deembedding.Deembed(vd);
     }
 
     TraceMath::DataType type;
@@ -847,17 +850,17 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
         break;
     }
 
-    traceModel.addVNAData(d, type);
+    traceModel.addVNAData(vd, type);
     emit dataChanged();
-    if(d.pointNum == settings.npoints - 1) {
+    if(vd.pointNum == settings.npoints - 1) {
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
     static unsigned int lastPoint = 0;
-    if(d.pointNum > 0 && d.pointNum != lastPoint + 1) {
-        qWarning() << "Got point" << d.pointNum << "but last received point was" << lastPoint << "("<<(d.pointNum-lastPoint-1)<<"missed points)";
+    if(vd.pointNum > 0 && vd.pointNum != lastPoint + 1) {
+        qWarning() << "Got point" << vd.pointNum << "but last received point was" << lastPoint << "("<<(vd.pointNum-lastPoint-1)<<"missed points)";
     }
-    lastPoint = d.pointNum;
+    lastPoint = vd.pointNum;
 
     if (needsSegmentUpdate) {
         changingSettings = true;

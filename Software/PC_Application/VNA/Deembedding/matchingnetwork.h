@@ -64,9 +64,9 @@ public:
 
     // DeembeddingOption interface
 public:
-    void transformDatapoint(Protocol::Datapoint &p) override;
+    void transformDatapoint(VNAData &p) override;
     void edit() override;
-    Type getType() override {return Type::MatchingNetwork;};
+    Type getType() override {return Type::MatchingNetwork;}
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;
 private:

@@ -22,12 +22,12 @@ void Averaging::setAverages(unsigned int a)
     reset(avg.size());
 }
 
-Protocol::Datapoint Averaging::process(Protocol::Datapoint d)
+VNAData Averaging::process(VNAData d)
 {
-    auto S11 = complex<double>(d.real_S11, d.imag_S11);
-    auto S12 = complex<double>(d.real_S12, d.imag_S12);
-    auto S21 = complex<double>(d.real_S21, d.imag_S21);
-    auto S22 = complex<double>(d.real_S22, d.imag_S22);
+    auto S11 = d.S.m11;
+    auto S12 = d.S.m12;
+    auto S21 = d.S.m21;
+    auto S22 = d.S.m22;
 
     if (d.pointNum == avg.size()) {
         // add moving average entry
@@ -99,14 +99,7 @@ Protocol::Datapoint Averaging::process(Protocol::Datapoint d)
         }
     }
 
-    d.real_S11 = S11.real();
-    d.imag_S11 = S11.imag();
-    d.real_S12 = S12.real();
-    d.imag_S12 = S12.imag();
-    d.real_S21 = S21.real();
-    d.imag_S21 = S21.imag();
-    d.real_S22 = S22.real();
-    d.imag_S22 = S22.imag();
+    d.S = Sparam(S11, S12, S21, S22);
 
     return d;
 }

@@ -68,6 +68,7 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
     if(filename.length() > 0) {
         auto ports = ui->sbPorts->value();
         auto t = Touchstone(ports);
+        t.setReferenceImpedance(referenceImpedance);
         // add trace points to touchstone
         for(unsigned int s=0;s<points;s++) {
             Touchstone::Datapoint tData;
@@ -165,6 +166,7 @@ void TraceTouchstoneExport::selectionChanged(QComboBox *w)
         // the first trace has been selected, extract frequency info
         Trace *t = qvariant_cast<Trace*>(w->itemData(w->currentIndex()));
         points = t->size();
+        referenceImpedance = t->getReferenceImpedance();
         ui->points->setText(QString::number(points));
         if(points > 0) {
             lowerFreq = t->minX();
@@ -179,7 +181,7 @@ void TraceTouchstoneExport::selectionChanged(QComboBox *w)
             for(auto c : v1) {
                 for(int i=1;i<c->count();i++) {
                     Trace *t = qvariant_cast<Trace*>(c->itemData(i));
-                    if(t->size() != points || (points > 0 && (t->minX() != lowerFreq || t->maxX() != upperFreq))) {
+                    if(t->getReferenceImpedance() != referenceImpedance || t->size() != points || (points > 0 && (t->minX() != lowerFreq || t->maxX() != upperFreq))) {
                         // this trace is not available anymore
                         c->removeItem(i);
                         // decrement to check the next index in the next loop iteration

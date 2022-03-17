@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>856</width>
-    <height>259</height>
+    <width>881</width>
+    <height>334</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,11 +16,11 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
@@ -67,6 +67,25 @@
               <string>Limit to visible area</string>
              </property>
             </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Reference Impedance</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="1">
+           <widget class="SIUnitEdit" name="impedance"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Impedance:</string>
+            </property>
            </widget>
           </item>
          </layout>

@@ -29,15 +29,9 @@ PortExtension::PortExtension()
     kit = nullptr;
 }
 
-void PortExtension::transformDatapoint(Protocol::Datapoint &d)
+void PortExtension::transformDatapoint(VNAData &d)
 {
     if(port1.enabled || port2.enabled) {
-        // Convert measurements to complex variables
-        auto S11 = complex<double>(d.real_S11, d.imag_S11);
-        auto S21 = complex<double>(d.real_S21, d.imag_S21);
-        auto S22 = complex<double>(d.real_S22, d.imag_S22);
-        auto S12 = complex<double>(d.real_S12, d.imag_S12);
-
         if(port1.enabled) {
             auto phase = -2 * M_PI * port1.delay * d.frequency;
             auto db_attennuation = port1.DCloss;
@@ -47,9 +41,9 @@ void PortExtension::transformDatapoint(Protocol::Datapoint &d)
             // convert from db to factor
             auto att = pow(10.0, -db_attennuation / 20.0);
             auto correction = polar<double>(att, phase);
-            S11 /= correction * correction;
-            S21 /= correction;
-            S12 /= correction;
+            d.S.m11 /= correction * correction;
+            d.S.m21 /= correction;
+            d.S.m12 /= correction;
         }
         if(port2.enabled) {
             auto phase = -2 * M_PI * port2.delay * d.frequency;
@@ -60,18 +54,10 @@ void PortExtension::transformDatapoint(Protocol::Datapoint &d)
             // convert from db to factor
             auto att = pow(10.0, -db_attennuation / 20.0);
             auto correction = polar<double>(att, phase);
-            S22 /= correction * correction;
-            S21 /= correction;
-            S12 /= correction;
+            d.S.m22 /= correction * correction;
+            d.S.m21 /= correction;
+            d.S.m12 /= correction;
         }
-        d.real_S11 = S11.real();
-        d.imag_S11 = S11.imag();
-        d.real_S12 = S12.real();
-        d.imag_S12 = S12.imag();
-        d.real_S21 = S21.real();
-        d.imag_S21 = S21.imag();
-        d.real_S22 = S22.real();
-        d.imag_S22 = S22.imag();
     }
 }
 
@@ -208,7 +194,7 @@ void PortExtension::edit()
     }
 }
 
-void PortExtension::measurementCompleted(std::vector<Protocol::Datapoint> m)
+void PortExtension::measurementCompleted(std::vector<VNAData> m)
 {
     if(m.size() > 0) {
         double last_phase = 0.0;
@@ -219,9 +205,9 @@ void PortExtension::measurementCompleted(std::vector<Protocol::Datapoint> m)
             // grab correct measurement
             complex<double> reflection;
             if(isPort1) {
-                reflection = complex<double>(p.real_S11, p.imag_S11);
+                reflection = p.S.m11;
             } else {
-                reflection = complex<double>(p.real_S22, p.imag_S22);
+                reflection = p.S.m22;
             }
             // remove calkit if specified
             if(!isIdeal) {

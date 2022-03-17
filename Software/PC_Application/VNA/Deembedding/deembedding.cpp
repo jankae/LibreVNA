@@ -120,7 +120,7 @@ Deembedding::Deembedding(TraceModel &tm)
 
 }
 
-void Deembedding::Deembed(Protocol::Datapoint &d)
+void Deembedding::Deembed(VNAData &d)
 {
     // figure out the point in one sweep based on the incomig pointNums
     static unsigned lastPointNum;

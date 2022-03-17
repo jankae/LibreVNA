@@ -18,14 +18,14 @@ class PortExtension : public DeembeddingOption
     Q_OBJECT
 public:
     PortExtension();
-    void transformDatapoint(Protocol::Datapoint& d) override;
+    void transformDatapoint(VNAData& d) override;
     void setCalkit(Calkit *kit);
     Type getType() override {return Type::PortExtension;}
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;
 public slots:
     void edit() override;
-    void measurementCompleted(std::vector<Protocol::Datapoint> m) override;
+    void measurementCompleted(std::vector<VNAData> m) override;
 
 private:
     void startMeasurement();

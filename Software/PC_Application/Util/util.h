@@ -45,16 +45,16 @@ namespace Util {
     static inline double SparamToVSWR(std::complex<double> d) {
         return SparamToVSWR(abs(d));
     }
-    std::complex<double> SparamToImpedance(std::complex<double> d);
+    std::complex<double> SparamToImpedance(std::complex<double> d, std::complex<double> Z0 = 50.0);
     // all these conversions assume series connection of real and imag part
-    static inline double SparamToResistance(std::complex<double> d) {
-        return SparamToImpedance(d).real();
+    static inline double SparamToResistance(std::complex<double> d, std::complex<double> Z0 = 50.0) {
+        return SparamToImpedance(d, Z0).real();
     }
-    static inline double SparamToCapacitance(std::complex<double> d, double freq) {
-        return -1.0 / (SparamToImpedance(d).imag() * 2.0 * M_PI * freq);
+    static inline double SparamToCapacitance(std::complex<double> d, double freq, std::complex<double> Z0 = 50.0) {
+        return -1.0 / (SparamToImpedance(d, Z0).imag() * 2.0 * M_PI * freq);
     }
-    static inline double SparamToInductance(std::complex<double> d, double freq) {
-        return SparamToImpedance(d).imag() / (2.0 * M_PI * freq);
+    static inline double SparamToInductance(std::complex<double> d, double freq, std::complex<double> Z0 = 50.0) {
+        return SparamToImpedance(d, Z0).imag() / (2.0 * M_PI * freq);
     }
     static inline double SparamToQualityFactor(std::complex<double> d) {
         return abs(d.imag()) / d.real();

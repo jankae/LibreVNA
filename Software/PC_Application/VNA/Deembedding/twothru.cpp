@@ -12,19 +12,14 @@ using namespace std;
 
 TwoThru::TwoThru()
 {
-    Z0 = Preferences::getInstance().Acquisition.refImp;
+    Z0 = 50.0;
 }
 
-void TwoThru::transformDatapoint(Protocol::Datapoint &p)
+void TwoThru::transformDatapoint(VNAData &p)
 {
     // correct measurement
     if(points.size() > 0) {
-        auto S11 = complex<double>(p.real_S11, p.imag_S11);
-        auto S12 = complex<double>(p.real_S12, p.imag_S12);
-        auto S21 = complex<double>(p.real_S21, p.imag_S21);
-        auto S22 = complex<double>(p.real_S22, p.imag_S22);
-        Sparam S(S11, S12, S21, S22);
-        Tparam meas(S);
+        Tparam meas(p.S);
 
         Tparam inv1, inv2;
         if(p.frequency < points.front().freq) {
@@ -54,15 +49,7 @@ void TwoThru::transformDatapoint(Protocol::Datapoint &p)
         // perform correction
         Tparam corrected = inv1*meas*inv2;
         // transform back into S parameters
-        S = Sparam(corrected);
-        p.real_S11 = real(S.m11);
-        p.imag_S11 = imag(S.m11);
-        p.real_S12 = real(S.m12);
-        p.imag_S12 = imag(S.m12);
-        p.real_S21 = real(S.m21);
-        p.imag_S21 = imag(S.m21);
-        p.real_S22 = real(S.m22);
-        p.imag_S22 = imag(S.m22);
+        p.S = Sparam(corrected);
     }
 }
 
@@ -112,7 +99,7 @@ void TwoThru::updateGUI()
     }
 }
 
-void TwoThru::measurementCompleted(std::vector<Protocol::Datapoint> m)
+void TwoThru::measurementCompleted(std::vector<VNAData> m)
 {
     if (measuring2xthru) {
         measurements2xthru = m;
@@ -223,7 +210,7 @@ void TwoThru::fromJSON(nlohmann::json j)
     }
 }
 
-std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::Datapoint> data_2xthru)
+std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> data_2xthru)
 {
     // calculate error boxes, see https://www.freelists.org/post/si-list/IEEE-P370-Opensource-Deembedding-MATLAB-functions
     // create vectors of S parameters
@@ -242,10 +229,10 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
             // ignore possible DC point
             continue;
         }
-        S11.push_back(complex<double>(m.real_S11, m.imag_S11));
-        S12.push_back(complex<double>(m.real_S12, m.imag_S12));
-        S21.push_back(complex<double>(m.real_S21, m.imag_S21));
-        S22.push_back(complex<double>(m.real_S22, m.imag_S22));
+        S11.push_back(m.S.m11);
+        S12.push_back(m.S.m12);
+        S21.push_back(m.S.m21);
+        S22.push_back(m.S.m22);
         f.push_back(m.frequency);
     }
     auto n = f.size();
@@ -403,7 +390,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
     return ret;
 }
 
-std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::Datapoint> data_2xthru, std::vector<Protocol::Datapoint> data_fix_dut_fix, double z0)
+std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> data_2xthru, std::vector<VNAData> data_fix_dut_fix, double z0)
 {
     vector<Point> ret;
 
@@ -427,19 +414,13 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
     vector<Sparam> p;
     vector<double> f;
     for(auto d : data_2xthru) {
-        p.push_back(Sparam(complex<double>(d.real_S11, d.imag_S11),
-                           complex<double>(d.real_S12, d.imag_S12),
-                           complex<double>(d.real_S21, d.imag_S21),
-                           complex<double>(d.real_S22, d.imag_S22)));
+        p.push_back(d.S);
         f.push_back(d.frequency);
     }
     auto data_2xthru_Sparam = p;
     vector<Sparam> data_fix_dut_fix_Sparam;
     for(auto d : data_fix_dut_fix) {
-        data_fix_dut_fix_Sparam.push_back(Sparam(complex<double>(d.real_S11, d.imag_S11),
-                           complex<double>(d.real_S12, d.imag_S12),
-                           complex<double>(d.real_S21, d.imag_S21),
-                           complex<double>(d.real_S22, d.imag_S22)));
+        data_fix_dut_fix_Sparam.push_back(d.S);
     }
 
     // grabbing S21
@@ -682,9 +663,9 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<Protocol::D
     return ret;
 }
 
-std::vector<Protocol::Datapoint> TwoThru::interpolateEvenFrequencySteps(std::vector<Protocol::Datapoint> input)
+std::vector<VNAData> TwoThru::interpolateEvenFrequencySteps(std::vector<VNAData> input)
 {
-    vector<Protocol::Datapoint> ret;
+    vector<VNAData> ret;
     if(input.size() > 1) {
         int size = input.size();
         double freqStep = 0.0;
@@ -706,8 +687,8 @@ std::vector<Protocol::Datapoint> TwoThru::interpolateEvenFrequencySteps(std::vec
             // needs to interpolate
             double freq = freqStep;
             while(freq <= input.back().frequency) {
-                Protocol::Datapoint interp;
-                auto it = lower_bound(input.begin(), input.end(), freq, [](const Protocol::Datapoint &lhs, const double f) -> bool {
+                VNAData interp;
+                auto it = lower_bound(input.begin(), input.end(), freq, [](const VNAData &lhs, const double f) -> bool {
                     return lhs.frequency < f;
                 });
                 if(it->frequency == freq) {
@@ -718,15 +699,14 @@ std::vector<Protocol::Datapoint> TwoThru::interpolateEvenFrequencySteps(std::vec
                     it--;
                     auto low = *it;
                     double alpha = (freq - low.frequency) / (high.frequency - low.frequency);
-                    interp.real_S11 = low.real_S11 * (1.0 - alpha) + high.real_S11 * alpha;
-                    interp.imag_S11 = low.imag_S11 * (1.0 - alpha) + high.imag_S11 * alpha;
-                    interp.real_S12 = low.real_S12 * (1.0 - alpha) + high.real_S12 * alpha;
-                    interp.imag_S12 = low.imag_S12 * (1.0 - alpha) + high.imag_S12 * alpha;
-                    interp.real_S21 = low.real_S21 * (1.0 - alpha) + high.real_S21 * alpha;
-                    interp.imag_S21 = low.imag_S21 * (1.0 - alpha) + high.imag_S21 * alpha;
-                    interp.real_S22 = low.real_S22 * (1.0 - alpha) + high.real_S22 * alpha;
-                    interp.imag_S22 = low.imag_S22 * (1.0 - alpha) + high.imag_S22 * alpha;
+                    interp.S.m11 = low.S.m11 * (1.0 - alpha) + high.S.m11 * alpha;
+                    interp.S.m12 = low.S.m12 * (1.0 - alpha) + high.S.m12 * alpha;
+                    interp.S.m21 = low.S.m21 * (1.0 - alpha) + high.S.m21 * alpha;
+                    interp.S.m22 = low.S.m22 * (1.0 - alpha) + high.S.m22 * alpha;
+                    interp.cdbm = low.cdbm * (1.0 - alpha) + high.cdbm * alpha;
+                    interp.reference_impedance = low.reference_impedance * (1.0 - alpha) + high.reference_impedance * alpha;
                 }
+                interp.pointNum = it->pointNum;
                 interp.frequency = freq;
                 ret.push_back(interp);
                 freq += freqStep;

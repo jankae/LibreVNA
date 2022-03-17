@@ -19,7 +19,7 @@ public:
     Deembedding(TraceModel &tm);
     ~Deembedding(){};
 
-    void Deembed(Protocol::Datapoint &d);
+    void Deembed(VNAData &d);
     void Deembed(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
 
     void removeOption(unsigned int index);
@@ -42,7 +42,7 @@ private:
     TraceModel &tm;
 
     bool measuring;
-    std::vector<Protocol::Datapoint> measurements;
+    std::vector<VNAData> measurements;
     QDialog *measurementDialog;
     Ui_DeembeddingMeasurementDialog *measurementUI;
 

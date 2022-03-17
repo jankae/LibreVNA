@@ -275,7 +275,7 @@ QString Marker::readableData(Format f)
                 return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
             case Format::Impedance: {
                 auto step = parentTrace->sample(parentTrace->index(position), true).y.real();
-                auto impedance = Util::SparamToImpedance(step).real();
+                auto impedance = Util::SparamToImpedance(step, trace()->getReferenceImpedance()).real();
                 return Unit::ToString(impedance, "Ω", "m kM", 3);
             }
                 break;
@@ -294,8 +294,8 @@ QString Marker::readableData(Format f)
             case Format::Impedance: {
                 auto step = parentTrace->sample(parentTrace->index(position), true).y.real();
                 auto stepDelta = delta->parentTrace->sample(delta->parentTrace->index(delta->position), true).y.real();
-                auto impedance = Util::SparamToImpedance(step).real();
-                auto impedanceDelta = Util::SparamToImpedance(stepDelta).real();
+                auto impedance = Util::SparamToImpedance(step, trace()->getReferenceImpedance()).real();
+                auto impedanceDelta = Util::SparamToImpedance(stepDelta, trace()->getReferenceImpedance()).real();
                 return "Δ:"+Unit::ToString(impedance - impedanceDelta, "Ω", "m kM", 3);
             }
                 break;
@@ -330,13 +330,13 @@ QString Marker::readableData(Format f)
             }
             case Format::RealImag: return "Δ:"+Unit::ToString(data.real() - delta->data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag() - delta->data.imag(), "", " ", 5)+"j";
             case Format::Impedance: {
-                auto impedance = Util::SparamToImpedance(data);
-                auto delta_impedance = Util::SparamToImpedance(delta->data);
+                auto impedance = Util::SparamToImpedance(data, trace()->getReferenceImpedance());
+                auto delta_impedance = Util::SparamToImpedance(delta->data, trace()->getReferenceImpedance());
                 return "Δ:"+Unit::ToString(impedance.real() - delta_impedance.real(), "Ω", "m k", 5) + "+"+Unit::ToString(impedance.imag() - delta_impedance.imag(), "Ω", "m k", 5)+"j";
             }
-            case Format::SeriesR: return "Δ:"+Unit::ToString(Util::SparamToResistance(data) - Util::SparamToResistance(delta->data), "Ω", "m kM", 4);
-            case Format::Capacitance: return "Δ:"+Unit::ToString(Util::SparamToCapacitance(data, position) - Util::SparamToCapacitance(delta->data, delta->position), "F", "pnum ", 4);
-            case Format::Inductance: return "Δ:"+Unit::ToString(Util::SparamToInductance(data, position) - Util::SparamToInductance(delta->data, delta->position), "H", "pnum ", 4);
+            case Format::SeriesR: return "Δ:"+Unit::ToString(Util::SparamToResistance(data, trace()->getReferenceImpedance()) - Util::SparamToResistance(delta->data, trace()->getReferenceImpedance()), "Ω", "m kM", 4);
+            case Format::Capacitance: return "Δ:"+Unit::ToString(Util::SparamToCapacitance(data, position, trace()->getReferenceImpedance()) - Util::SparamToCapacitance(delta->data, delta->position, trace()->getReferenceImpedance()), "F", "pnum ", 4);
+            case Format::Inductance: return "Δ:"+Unit::ToString(Util::SparamToInductance(data, position, trace()->getReferenceImpedance()) - Util::SparamToInductance(delta->data, delta->position, trace()->getReferenceImpedance()), "H", "pnum ", 4);
             case Format::QualityFactor: return "ΔQ:" + Unit::ToString(Util::SparamToQualityFactor(data) - Util::SparamToQualityFactor(delta->data), "", " ", 3);
             case Format::Noise: return "Δ:"+Unit::ToString(parentTrace->getNoise(position) - delta->parentTrace->getNoise(delta->position), "dbm/Hz", " ", 3);
             default: return "Invalid";
@@ -355,9 +355,9 @@ QString Marker::readableData(Format f)
                     return "VSWR: NaN";
                 }
                 break;
-            case Format::SeriesR: return Unit::ToString(Util::SparamToResistance(data), "Ω", "m kM", 4);
-            case Format::Capacitance: return Unit::ToString(Util::SparamToCapacitance(data, position), "F", "pnum ", 4);
-            case Format::Inductance: return Unit::ToString(Util::SparamToInductance(data, position), "H", "pnum ", 4);
+            case Format::SeriesR: return Unit::ToString(Util::SparamToResistance(data, trace()->getReferenceImpedance()), "Ω", "m kM", 4);
+            case Format::Capacitance: return Unit::ToString(Util::SparamToCapacitance(data, position, trace()->getReferenceImpedance()), "F", "pnum ", 4);
+            case Format::Inductance: return Unit::ToString(Util::SparamToInductance(data, position, trace()->getReferenceImpedance()), "H", "pnum ", 4);
             case Format::QualityFactor: return "Q:" + Unit::ToString(Util::SparamToQualityFactor(data), "", " ", 3);
             case Format::Noise: return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
             case Format::TOI: {
@@ -396,7 +396,7 @@ QString Marker::readableData(Format f)
             }
                 break;
             case Format::Impedance: {
-                auto impedance = Util::SparamToImpedance(data);
+                auto impedance = Util::SparamToImpedance(data, trace()->getReferenceImpedance());
                 return Unit::ToString(impedance.real(), "Ω", "m k", 5) + "+"+Unit::ToString(impedance.imag(), "Ω", "m k", 5)+"j";
             }
             case Format::CenterBandwidth:
