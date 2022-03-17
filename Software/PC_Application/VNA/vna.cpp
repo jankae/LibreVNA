@@ -757,7 +757,7 @@ void VNA::fromJSON(nlohmann::json j)
         EnableDeembedding(false);
     }
 
-    // sweep configuration has to go last sog graphs can catch events from changed sweep
+    // sweep configuration has to go last so graphs can catch events from changed sweep
     if(j.contains("sweep")) {
         auto sweep = j["sweep"];
         // restore sweep settings, keep current value as default in case of missing entry
@@ -882,7 +882,7 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::Transmis
     }
     changingSettings = true;
     // assemble VNA protocol settings
-    Protocol::SweepSettings s;
+    Protocol::SweepSettings s = {};
     s.suppressPeaks = Preferences::getInstance().Acquisition.suppressPeaks ? 1 : 0;
     if(Preferences::getInstance().Acquisition.alwaysExciteBothPorts) {
         s.excitePort1 = 1;
@@ -1102,7 +1102,7 @@ void VNA::SetPowerSweepFrequency(double freq)
 
 void VNA::SetPoints(unsigned int points)
 {
-    auto maxPoints = Preferences::getInstance().Acquisition.allowSegmentedSweep ? UINT16_MAX : Device::Info().limits_maxPoints;
+    unsigned int maxPoints = Preferences::getInstance().Acquisition.allowSegmentedSweep ? UINT16_MAX : Device::Info().limits_maxPoints;
     if(points > maxPoints) {
         points = maxPoints;
     } else if (points < 2) {
@@ -1176,7 +1176,7 @@ void VNA::ApplyCalibration(Calibration::Type type)
             } else {
                 DisableCalibration(true);
             }
-        } catch (runtime_error e) {
+        } catch (runtime_error &e) {
             InformationBox::ShowError("Calibration failure", e.what());
             DisableCalibration(true);
         }
@@ -1196,8 +1196,7 @@ void VNA::ApplyCalibration(Calibration::Type type)
 
 void VNA::StartCalibrationMeasurements(std::set<Calibration::Measurement> m)
 {
-    auto device = window->getDevice();
-    if(!device) {
+    if(!window->getDevice()) {
         return;
     }
     // Stop sweep

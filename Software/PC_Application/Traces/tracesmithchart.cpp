@@ -20,6 +20,7 @@ TraceSmithChart::TraceSmithChart(TraceModel &model, QWidget *parent)
     : TracePlot(model, parent)
 {
     limitToSpan = true;
+    limitToEdge = true;
     edgeReflection = 1.0;
     initializeTraceInfo();
 }

@@ -21,6 +21,11 @@ TraceWaterfall::TraceWaterfall(TraceModel &model, QWidget *parent)
       keepDataBeyondPlotSize(false),
       maxDataSweeps(500)
 {
+    plotAreaTop = 0;
+    plotAreaLeft = 0;
+    plotAreaWidth = 0;
+    plotAreaBottom = 0;
+
     xAxis.set(XAxis::Type::Frequency, false, true, 0, 6000000000, 500000000);
     yAxis.set(YAxis::Type::Magnitude, false, true, -1, 1, 1);
     initializeTraceInfo();
@@ -478,7 +483,7 @@ double TraceWaterfall::nearestTracePoint(Trace *t, QPoint pixel, double *distanc
 QString TraceWaterfall::mouseText(QPoint pos)
 {
     QString ret;
-    if(QRect(plotAreaLeft, 0, plotAreaWidth + 1, plotAreaBottom).contains(pos)) {
+    if(QRect(plotAreaLeft, plotAreaTop, plotAreaWidth + 1, plotAreaBottom).contains(pos)) {
         double x = xAxis.inverseTransform(pos.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth);
         int significantDigits = floor(log10(abs(xAxis.getRangeMax()))) - floor(log10((abs(xAxis.getRangeMax() - xAxis.getRangeMin())) / 1000.0)) + 1;
         ret += Unit::ToString(x, xAxis.Unit(), "fpnum kMG", significantDigits) + "\n";

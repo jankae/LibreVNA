@@ -81,6 +81,11 @@ static void createLogarithmicTicks(vector<double>& ticks, double start, double s
     } while(div <= stop);
 }
 
+YAxis::YAxis()
+{
+    type = Type::Magnitude;
+}
+
 double YAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample)
 {
     switch(type) {
@@ -246,7 +251,7 @@ QString YAxis::Unit(Type type, TraceModel::DataSource source)
         case Type::Reactance: return "Ω";
         case Type::Capacitance: return "F";
         case Type::Inductance: return "H";
-        case Type::Last: return "";
+        default: return "";
         }
     } else if(source == TraceModel::DataSource::SA) {
         switch(type) {
@@ -280,7 +285,7 @@ QString YAxis::Prefixes(Type type, TraceModel::DataSource source)
         case Type::Reactance: return "m kM";
         case Type::Capacitance: return "pnum ";
         case Type::Inductance: return "pnum ";
-        case Type::Last: return " ";
+        default: return " ";
         }
     } else if(source == TraceModel::DataSource::SA) {
         switch(type) {
@@ -358,8 +363,14 @@ bool Axis::getLog() const
     return log;
 }
 
+XAxis::XAxis()
+{
+    type = Type::Frequency;
+}
+
 double XAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample)
 {
+    Q_UNUSED(sample)
     switch(type) {
     case Type::Distance:
         if(!t) {
@@ -428,6 +439,16 @@ QString XAxis::Unit()
 XAxis::Type XAxis::getType() const
 {
     return type;
+}
+
+Axis::Axis()
+{
+    log = false;
+    autorange = true;
+    rangeMin = -1.0;
+    rangeMax = 1.0;
+    rangeDiv = 1.0;
+    ticks.clear();
 }
 
 double Axis::transform(double value, double to_low, double to_high)

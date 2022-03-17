@@ -790,7 +790,7 @@ bool Calibration::openFromFile(QString filename)
     qDebug() << "Associated calibration kit expected in" << calkit_file;
     try {
         kit = Calkit::fromFile(calkit_file);
-    } catch (runtime_error e) {
+    } catch (runtime_error &e) {
         InformationBox::ShowError("Missing calibration kit", "The calibration kit file associated with the selected calibration could not be parsed. The calibration might not be accurate. (" + QString(e.what()) + ")");
         qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
     }
@@ -809,7 +809,7 @@ bool Calibration::openFromFile(QString filename)
         nlohmann::json j;
         file >> j;
         fromJSON(j);
-    } catch(exception e) {
+    } catch(exception &e) {
         // json parsing failed, probably using a legacy file format
         try {
             file.clear();
@@ -818,7 +818,7 @@ bool Calibration::openFromFile(QString filename)
             InformationBox::ShowMessage("Loading calibration file", "The file \"" + filename + "\" is stored in a deprecated"
                          " calibration format. Future versions of this application might not support"
                          " it anymore. Please save the calibration to update to the new format");
-        } catch(exception e) {
+        } catch(exception &e) {
             InformationBox::ShowError("File parsing error", e.what());
             qWarning() << "Calibration file parsing failed: " << e.what();
             return false;

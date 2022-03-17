@@ -267,7 +267,7 @@ void ImpedanceMatchDialog::calculateMatch()
                 ui->Image->setPixmap(QPixmap(":/icons/pCsC_small.png"));
             }
         }
-    } catch (exception e){
+    } catch (exception &e){
         // something went wrong, probably caused by (intermediate) invalid input, such as f=0Hz
         ui->lValue->setValue(nan(""));
         ui->cValue->setValue(nan(""));

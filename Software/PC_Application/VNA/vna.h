@@ -42,6 +42,12 @@ public:
 
     class Settings {
     public:
+        Settings()
+            : sweepType(SweepType::Frequency)
+            , Freq({.start=1000000, .stop=6000000000, .excitation_power=-10, .logSweep=false})
+            , Power({.start=-40, .stop=-10, .frequency=1000000000})
+            , npoints(501), bandwidth(1000), excitingPort1(true), excitingPort2(true)
+            , segments(1), activeSegment(0){}
         SweepType sweepType;
         struct {
             double start;

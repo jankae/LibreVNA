@@ -195,7 +195,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
         if(filename.length() > 0) {
             try {
                 ownKit = Calkit::fromFile(filename);
-            } catch (runtime_error e) {
+            } catch (runtime_error &e) {
                 InformationBox::ShowError("Error", "The calibration kit file could not be parsed (" + QString(e.what()) + ")");
                 qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
             }
