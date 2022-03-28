@@ -188,7 +188,7 @@ QString YAxis::TypeToName(Type type)
 {
     switch(type) {
     case Type::Disabled: return "Disabled";
-    case Type::Magnitude: return "Magnitude (dB/dBm)";
+    case Type::Magnitude: return "Magnitude";
     case Type::MagnitudedBuV: return "Magnitude (dBuV)";
     case Type::MagnitudeLinear: return "Magnitude (linear)";
     case Type::Phase: return "Phase";

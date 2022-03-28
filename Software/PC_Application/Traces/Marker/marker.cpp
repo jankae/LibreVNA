@@ -109,6 +109,8 @@ QString Marker::formatToString(Marker::Format f)
 {
     switch(f) {
     case Format::dB: return "dB";
+    case Format::dBm: return "dBm";
+    case Format::dBuV: return "dBuV";
     case Format::dBAngle: return "dB + angle";
     case Format::RealImag: return "real + imag";
     case Format::Impedance: return "Impedance";
@@ -179,9 +181,14 @@ std::vector<Marker::Format> Marker::applicableFormats()
         case Type::Maximum:
         case Type::Minimum:
         case Type::PeakTable:
-            ret.push_back(Format::dB);
-            ret.push_back(Format::dBAngle);
-            ret.push_back(Format::RealImag);
+            if(Trace::isSAParamater(parentTrace->liveParameter())) {
+                ret.push_back(Format::dBm);
+                ret.push_back(Format::dBuV);
+            } else {
+                ret.push_back(Format::dB);
+                ret.push_back(Format::dBAngle);
+                ret.push_back(Format::RealImag);
+            }
             if(parentTrace) {
                 if(parentTrace->isReflection()) {
                     ret.push_back(Format::Impedance);
@@ -315,6 +322,9 @@ QString Marker::readableData(Format f)
             }
             switch(f) {
             case Format::dB: return "Δ:"+Unit::ToString(Util::SparamTodB(data) - Util::SparamTodB(delta->data), "dB", " ", 4);
+            case Format::dBm: return "Δ:"+Unit::ToString(Util::SparamTodB(data) - Util::SparamTodB(delta->data), "dBm", " ", 4);
+            case Format::dBuV:
+                return "Δ:"+Unit::ToString(Util::dBmTodBuV(Util::SparamTodB(data)) - Util::dBmTodBuV(Util::SparamTodB(delta->data)), "dBuV", " ", 4);
             case Format::dBAngle: {
                 QString ret = "Δ:"+Unit::ToString(Util::SparamTodB(data) - Util::SparamTodB(delta->data), "dB", " ", 4) + "/";
                 auto phase = arg(data)*180/M_PI;
@@ -346,6 +356,9 @@ QString Marker::readableData(Format f)
         default:
             switch(f) {
             case Format::dB: return Unit::ToString(Util::SparamTodB(data), "dB", " ", 4);
+            case Format::dBm: return Unit::ToString(Util::SparamTodB(data), "dBm", " ", 4);
+            case Format::dBuV:
+                return Unit::ToString(Util::dBmTodBuV(Util::SparamTodB(data)), "dBuV", " ", 4);
             case Format::dBAngle: return Unit::ToString(Util::SparamTodB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 4);
             case Format::RealImag: return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
             case Format::VSWR:

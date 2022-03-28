@@ -24,6 +24,8 @@ public:
 
     enum class Format {
         dB,
+        dBm,
+        dBuV,
         dBAngle,
         RealImag,
         Impedance,

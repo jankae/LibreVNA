@@ -125,6 +125,7 @@ void WaterfallAxisDialog::on_buttonBox_accepted()
         plot->keepDataBeyondPlotSize = true;
     }
     plot->align = (TraceWaterfall::Alignment) ui->Xalignment->currentIndex();
+    plot->updateYAxis();
 }
 
 void WaterfallAxisDialog::XAxisTypeChanged(int XAxisIndex)
