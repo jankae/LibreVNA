@@ -5,6 +5,9 @@
 #include "csv.h"
 #include "Device/device.h"
 #include "Math/tracemath.h"
+#include "Tools/parameters.h"
+#include "tracemodel.h"
+#include "VNA/vnadata.h"
 
 #include <QObject>
 #include <complex>
@@ -41,15 +44,14 @@ public:
         Invalid,
     };
 
-
     void clear();
-    void addData(const Data& d, DataType domain);
+    void addData(const Data& d, DataType domain, double reference_impedance = 50.0);
     void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
-    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<Protocol::Datapoint> &data);
+    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data);
     void fromLivedata(LivedataType type, LiveParameter param);
     QString name() { return _name; };
     QColor color() { return _color; };
@@ -134,7 +136,7 @@ public:
 
     // Assembles datapoints as received from the VNA from four S parameter traces. Requires that all traces are in the frequency domain,
     // have the same number of samples and their samples must be at the same frequencies across all traces
-    static std::vector<Protocol::Datapoint> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
+    static std::vector<VNAData> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
 
     static LiveParameter ParameterFromString(QString s);
     static QString ParameterToString(LiveParameter p);
@@ -143,6 +145,8 @@ public:
 
     static LivedataType TypeFromString(QString s);
     static QString TypeToString(LivedataType t);
+
+    double getReferenceImpedance() const;
 
 public slots:
     void setVisible(bool visible);
@@ -174,6 +178,7 @@ private:
     bool paused;
     bool createdFromFile;
     bool calibration;
+    double reference_impedance;
     DataType domain;
     QString filename;
     unsigned int fileParameter;

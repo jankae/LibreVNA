@@ -16,6 +16,7 @@ using namespace std;
 Touchstone::Touchstone(unsigned int ports)
 {
     this->m_ports = ports;
+    referenceImpedance = 50.0;
     m_datapoints.clear();
 }
 
@@ -74,8 +75,8 @@ stringstream Touchstone::toString(Touchstone::Scale unit, Touchstone::Format for
         case Format::RealImaginary: s << "RI "; break;
         case Format::MagnitudeAngle: s << "MA "; break;
     }
-    // reference impedance is always 50 ohm
-    s << "R 50\n";
+    // reference impedance
+    s << "R " << referenceImpedance << "\n";
 
     auto printParameter = [format](ostream &out, complex<double> &c) {
         switch (format) {
@@ -192,10 +193,8 @@ Touchstone Touchstone::fromFile(string filename)
             for(;iss>>s;) {
                 if(last_R) {
                     last_R = false;
-                    // check reference impedance
-                    if (stoi(s, nullptr, 10) != 50) {
-                        throw runtime_error("Invalid reference impedance, only 50Ohm is supported");
-                    }
+                    // read reference impedance
+                    ret.referenceImpedance = stod(s, nullptr);
                     break;
                 }
                 if (!s.compare("HZ")) {
@@ -437,4 +436,14 @@ void Touchstone::fromJSON(nlohmann::json j)
         }
         m_datapoints.push_back(d);
     }
+}
+
+double Touchstone::getReferenceImpedance() const
+{
+    return referenceImpedance;
+}
+
+void Touchstone::setReferenceImpedance(double value)
+{
+    referenceImpedance = value;
 }

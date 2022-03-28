@@ -110,12 +110,14 @@ HEADERS += \
     VNA/Deembedding/deembedding.h \
     VNA/Deembedding/deembeddingdialog.h \
     VNA/Deembedding/deembeddingoption.h \
+    VNA/Deembedding/impedancerenormalization.h \
     VNA/Deembedding/manualdeembeddingdialog.h \
     VNA/Deembedding/matchingnetwork.h \
     VNA/Deembedding/portextension.h \
     VNA/Deembedding/twothru.h \
     VNA/tracewidgetvna.h \
     VNA/vna.h \
+    VNA/vnadata.h \
     about.h \
     appwindow.h \
     averaging.h \
@@ -228,6 +230,7 @@ SOURCES += \
     VNA/Deembedding/deembedding.cpp \
     VNA/Deembedding/deembeddingdialog.cpp \
     VNA/Deembedding/deembeddingoption.cpp \
+    VNA/Deembedding/impedancerenormalization.cpp \
     VNA/Deembedding/manualdeembeddingdialog.cpp \
     VNA/Deembedding/matchingnetwork.cpp \
     VNA/Deembedding/portextension.cpp \
@@ -293,6 +296,7 @@ FORMS += \
     Traces/waterfallaxisdialog.ui \
     Traces/xyplotaxisdialog.ui \
     VNA/Deembedding/deembeddingdialog.ui \
+    VNA/Deembedding/impedancenormalizationdialog.ui \
     VNA/Deembedding/manualdeembeddingdialog.ui \
     VNA/Deembedding/matchingnetworkdialog.ui \
     VNA/Deembedding/measurementdialog.ui \

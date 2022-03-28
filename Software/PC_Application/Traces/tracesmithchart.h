@@ -33,7 +33,7 @@ public:
     };
 
     SmithChartConstantLine();
-    std::vector<SmithChartArc> getArcs();
+    std::vector<SmithChartArc> getArcs(double Z0);
     QColor getColor() const;
     void setColor(const QColor &value);
 
@@ -126,13 +126,17 @@ protected:
     virtual bool markerVisible(double x);
 
     //void paintEvent(QPaintEvent *event) override;
+    virtual bool configureForTrace(Trace *t);
     virtual void updateContextMenu() override;
     bool supported(Trace *t) override;
     virtual void draw(QPainter& painter) override;
+    virtual void traceDropped(Trace *t, QPoint position) override;
+    virtual bool dropSupported(Trace *t) override;
     QString mouseText(QPoint pos) override;
     bool limitToSpan;
     bool limitToEdge;
     double edgeReflection; // magnitude of reflection coefficient at the edge of the smith chart (zoom factor)
+    double Z0;
     QTransform transform;
     std::vector<SmithChartConstantLine> constantLines;
 };

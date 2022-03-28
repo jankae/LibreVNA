@@ -745,24 +745,6 @@
               </property>
              </widget>
             </item>
-            <item>
-             <layout class="QFormLayout" name="formLayout_11">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_39">
-                <property name="text">
-                 <string>Reference impedance:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="SIUnitEdit" name="AcquisitionReferenceImpedance">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency of the first IF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
            </layout>
           </widget>
          </item>

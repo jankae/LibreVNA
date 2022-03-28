@@ -51,8 +51,12 @@ public:
     virtual nlohmann::json toJSON();
     virtual void fromJSON(nlohmann::json j);
 
+    double getReferenceImpedance() const;
+    void setReferenceImpedance(double value);
+
 private:
     unsigned int m_ports;
+    double referenceImpedance;
     std::vector<Datapoint> m_datapoints;
     QString filename;
 };

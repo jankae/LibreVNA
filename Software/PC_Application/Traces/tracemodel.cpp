@@ -207,7 +207,7 @@ void TraceModel::clearLiveData()
     }
 }
 
-void TraceModel::addVNAData(const Protocol::Datapoint &d, TraceMath::DataType datatype)
+void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
 {
     source = DataSource::VNA;
     for(auto t : traces) {
@@ -225,15 +225,15 @@ void TraceModel::addVNAData(const Protocol::Datapoint &d, TraceMath::DataType da
                 return;
             }
             switch(t->liveParameter()) {
-            case Trace::LiveParameter::S11: td.y = complex<double>(d.real_S11, d.imag_S11); break;
-            case Trace::LiveParameter::S12: td.y = complex<double>(d.real_S12, d.imag_S12); break;
-            case Trace::LiveParameter::S21: td.y = complex<double>(d.real_S21, d.imag_S21); break;
-            case Trace::LiveParameter::S22: td.y = complex<double>(d.real_S22, d.imag_S22); break;
+            case Trace::LiveParameter::S11: td.y = d.S.m11; break;
+            case Trace::LiveParameter::S12: td.y = d.S.m12; break;
+            case Trace::LiveParameter::S21: td.y = d.S.m21; break;
+            case Trace::LiveParameter::S22: td.y = d.S.m22; break;
             default:
                 // not a VNA trace, skip
                 continue;
             }
-            t->addData(td, datatype);
+            t->addData(td, datatype, d.reference_impedance);
         }
     }
 }

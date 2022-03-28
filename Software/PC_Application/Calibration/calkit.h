@@ -13,6 +13,7 @@ class Calkit
     friend class CalkitDialog;
 public:
     Calkit();
+    Calkit(const Calkit&) = default;
     Calkit& operator=(const Calkit& other)
     {
         this->manufacturer = other.manufacturer;

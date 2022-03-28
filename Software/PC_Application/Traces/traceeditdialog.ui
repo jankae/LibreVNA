@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1038</width>
-    <height>365</height>
+    <width>931</width>
+    <height>392</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
@@ -108,6 +108,24 @@
            <attribute name="buttonGroup">
             <string notr="true">GSource</string>
            </attribute>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Reference impedance:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="SIUnitEdit" name="impedance">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
         </layout>

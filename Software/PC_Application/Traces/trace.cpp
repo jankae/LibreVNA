@@ -19,6 +19,7 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       _liveParam(live),
       vFactor(0.66),
       reflection(true),
+      reference_impedance(50.0),
       visible(true),
       paused(false),
       createdFromFile(false),
@@ -61,7 +62,7 @@ void Trace::clear() {
     emit outputSamplesChanged(0, 0);
 }
 
-void Trace::addData(const Trace::Data& d, DataType domain) {
+void Trace::addData(const Trace::Data& d, DataType domain, double reference_impedance) {
     if(this->domain != domain) {
         clear();
         this->domain = domain;
@@ -99,6 +100,10 @@ void Trace::addData(const Trace::Data& d, DataType domain) {
     } else {
         // insert at this position
         data.insert(lower, d);
+    }
+    if(this->reference_impedance != reference_impedance) {
+        this->reference_impedance = reference_impedance;
+        emit typeChanged(this);
     }
     success();
     emit outputSamplesChanged(index, index + 1);
@@ -154,6 +159,7 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
         reflection = false;
     }
     createdFromFile = true;
+    reference_impedance = t.getReferenceImpedance();
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
 }
@@ -233,7 +239,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     return traceName;
 }
 
-void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<Protocol::Datapoint> &data)
+void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data)
 {
     S11.clear();
     S12.clear();
@@ -242,13 +248,13 @@ void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, c
     for(auto d : data) {
         Trace::Data td;
         td.x = d.frequency;
-        td.y = complex<double>(d.real_S11, d.imag_S11);
+        td.y = d.S.m11;
         S11.addData(td, DataType::Frequency);
-        td.y = complex<double>(d.real_S12, d.imag_S12);
+        td.y = d.S.m12;
         S12.addData(td, DataType::Frequency);
-        td.y = complex<double>(d.real_S21, d.imag_S21);
+        td.y = d.S.m21;
         S21.addData(td, DataType::Frequency);
-        td.y = complex<double>(d.real_S22, d.imag_S22);
+        td.y = d.S.m22;
         S22.addData(td, DataType::Frequency);
     }
 }
@@ -285,6 +291,11 @@ void Trace::removeMarker(Marker *m)
     disconnect(m, &Marker::dataFormatChanged, this, &Trace::markerFormatChanged);
     markers.erase(m);
     emit markerRemoved(m);
+}
+
+double Trace::getReferenceImpedance() const
+{
+    return reference_impedance;
 }
 
 const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
@@ -474,12 +485,13 @@ std::vector<Trace *> Trace::createFromCSV(CSV &csv)
     return traces;
 }
 
-std::vector<Protocol::Datapoint> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
+std::vector<VNAData> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
 {
-    vector<Protocol::Datapoint> ret;
+    vector<VNAData> ret;
 
     // Sanity check traces
     unsigned int samples = S11.size();
+    auto impedance = S11.getReferenceImpedance();
     vector<const Trace*> traces;
     traces.push_back(&S11);
     traces.push_back(&S12);
@@ -489,6 +501,10 @@ std::vector<Protocol::Datapoint> Trace::assembleDatapoints(const Trace &S11, con
     for(const auto t : traces) {
         if(t->size() != samples) {
             qWarning() << "Selected traces do not have the same size";
+            return ret;
+        }
+        if(t->getReferenceImpedance() != impedance) {
+            qWarning() << "Selected traces do not have the same reference impedance";
             return ret;
         }
         if(t->outputType() != Trace::DataType::Frequency) {

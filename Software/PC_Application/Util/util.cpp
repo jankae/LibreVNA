@@ -62,13 +62,13 @@ double Util::distanceToLine(QPointF point, QPointF l1, QPointF l2, QPointF *clos
     return orthVect.length();
 }
 
-std::complex<double> Util::SparamToImpedance(std::complex<double> d) {
-    return Preferences::getInstance().Acquisition.refImp * (1.0 + d) / (1.0 - d);
+std::complex<double> Util::SparamToImpedance(std::complex<double> d, std::complex<double> Z0) {
+    return Z0 * (1.0 + d) / (1.0 - d);
 }
 
 double Util::dBmTodBuV(double dBm)
 {
-    double uVpower = 0.000001*0.000001/Preferences::getInstance().Acquisition.refImp;
+    double uVpower = 0.000001*0.000001/50.0;
     double dBdiff = 10*log10(uVpower*1000);
     return dBm - dBdiff;
 }

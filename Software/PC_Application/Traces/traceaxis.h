@@ -8,6 +8,7 @@
 
 class Axis {
 public:
+    Axis();
     virtual double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) = 0;
     double transform(double value, double to_low, double to_high);
     double inverseTransform(double value, double to_low, double to_high);
@@ -55,6 +56,7 @@ public:
         Impedance,
         Last,
     };
+    YAxis();
     double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) override;
     void set(Type type, bool log, bool autorange, double min, double max, double div);
     static QString TypeToName(Type type);
@@ -80,6 +82,7 @@ public:
         Power,
         Last,
     };
+    XAxis();
     double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) override;
     void set(Type type, bool log, bool autorange, double min, double max, double div);
     static QString TypeToName(Type type);

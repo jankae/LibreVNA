@@ -44,7 +44,7 @@ void TraceWidgetSA::importDialog()
             if(AppWindow::showGUI()) {
                 i->show();
             }
-        } catch(const std::exception e) {
+        } catch(const std::exception &e) {
             InformationBox::ShowError("Failed to import file", QString("Attempt to import file ended with error: \"") + e.what()+"\"");
         }
     }

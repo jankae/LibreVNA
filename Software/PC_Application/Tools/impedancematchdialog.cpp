@@ -13,7 +13,7 @@ ImpedanceMatchDialog::ImpedanceMatchDialog(MarkerModel &model, Marker *marker, Q
 {
     ui->setupUi(this);
 
-    Z0 = Preferences::getInstance().Acquisition.refImp;
+    Z0 = 50.0;
 
     // set SI units and prefixes
     ui->zReal->setUnit("Ohm");
@@ -70,10 +70,13 @@ void ImpedanceMatchDialog::on_cSource_currentIndexChanged(int index)
         auto m = qvariant_cast<Marker*>(ui->cSource->itemData(index));
         ui->rbSeries->setChecked(true);
         auto data = m->getData();
+        Z0 = m->getTrace()->getReferenceImpedance();
         auto reflection = Z0 * (1.0 + data) / (1.0 - data);
         ui->zReal->setValue(reflection.real());
         ui->zImag->setValue(reflection.imag());
         ui->zFreq->setValue(m->getPosition());
+    } else {
+        Z0 = 50.0;
     }
 }
 
@@ -267,7 +270,7 @@ void ImpedanceMatchDialog::calculateMatch()
                 ui->Image->setPixmap(QPixmap(":/icons/pCsC_small.png"));
             }
         }
-    } catch (exception e){
+    } catch (exception &e){
         // something went wrong, probably caused by (intermediate) invalid input, such as f=0Hz
         ui->lValue->setValue(nan(""));
         ui->cValue->setValue(nan(""));

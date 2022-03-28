@@ -22,6 +22,9 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->name->setText(t.name());
     ui->color->setColor(trace.color());
     ui->vFactor->setValue(t.velocityFactor());
+    ui->impedance->setUnit("Ω");
+    ui->impedance->setPrecision(3);
+    ui->impedance->setValue(t.getReferenceImpedance());
 
     connect(ui->bLive, &QPushButton::clicked, [=](bool live) {
         if(live) {
