@@ -69,8 +69,7 @@ void Manual::Setup(Protocol::ManualControl m) {
 	FPGA::Enable(FPGA::Periphery::Port1Mixer, m.Port1EN);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer, m.Port2EN);
 	FPGA::Enable(FPGA::Periphery::RefMixer, m.RefEN);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1, m.PortSwitch == 0);
-	FPGA::Enable(FPGA::Periphery::ExcitePort2, m.PortSwitch == 1);
+	FPGA::SetupSweep(0, m.PortSwitch == 1, m.PortSwitch == 0);
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 
 	// Enable new data and sweep halt interrupt

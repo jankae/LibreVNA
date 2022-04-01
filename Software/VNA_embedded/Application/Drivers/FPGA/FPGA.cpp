@@ -130,6 +130,17 @@ void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
 	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
 
+void FPGA::SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool individual_halt) {
+	uint16_t value = 0x0000;
+	value |= (uint16_t) (stages & 0x07) << 13;
+	if(individual_halt) {
+		value |= 0x1000;
+	}
+	value |= (port1_stage & 0x07) << 3;
+	value |= (port2_stage & 0x07) << 0;
+	WriteRegister(Reg::SweepSetup, value);
+}
+
 void FPGA::Enable(Periphery p, bool enable) {
 	if (enable) {
 		SysCtrlReg |= (uint16_t) p;
@@ -282,7 +293,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	result.RefI = assembleSampleResultValue(&raw[8]);
 	result.RefQ = assembleSampleResultValue(&raw[2]);
 	result.pointNum = (uint16_t)(raw[38]&0x1F) << 8 | raw[39];
-	result.activePort = raw[38] & 0x80 ? 1 : 0;
+	result.stageNum = (raw[38] & 0xE0) >> 5;
 	High(CS);
 	busy_reading = false;
 	if ((status & 0x0004) && callback) {

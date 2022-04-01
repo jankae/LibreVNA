@@ -124,7 +124,6 @@ architecture Behavioral of top is
 		PLL_LOCKED : IN std_logic; 
 		CONFIG_ADDRESS : OUT std_logic_vector(12 downto 0);
 		START_SAMPLING : OUT std_logic;
-		PORT_SELECT : OUT std_logic;
 		BAND_SELECT : out STD_LOGIC;
 		SOURCE_REG_4 : OUT std_logic_vector(31 downto 0);
 		SOURCE_REG_3 : OUT std_logic_vector(31 downto 0);
@@ -139,8 +138,13 @@ architecture Behavioral of top is
 		SWEEP_RESUME : in STD_LOGIC;
 		ATTENUATOR : OUT std_logic_vector(6 downto 0);
 		SOURCE_FILTER : OUT std_logic_vector(1 downto 0);
-		EXCITE_PORT1 : in STD_LOGIC;
-		EXCITE_PORT2 : in STD_LOGIC;
+		STAGES : in STD_LOGIC_VECTOR (2 downto 0);
+		INDIVIDUAL_HALT : in STD_LOGIC;
+		PORT1_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
+		PORT2_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
+
+		PORT1_ACTIVE : out STD_LOGIC;
+		PORT2_ACTIVE : out STD_LOGIC;
 		RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0);
 		DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
 		);
@@ -243,8 +247,10 @@ architecture Behavioral of top is
 		SWEEP_WRITE : OUT std_logic_vector(0 to 0);
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
 		NSAMPLES : OUT std_logic_vector(12 downto 0);
-		EXCITE_PORT1 : out STD_LOGIC;
-		EXCITE_PORT2 : out STD_LOGIC;
+	   STAGES : out STD_LOGIC_VECTOR (2 downto 0);
+	   INDIVIDUAL_HALT : out STD_LOGIC;
+	   PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
+	   PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 		PORT1_EN : out STD_LOGIC;
 		PORT2_EN : out STD_LOGIC;
 		REF_EN : out STD_LOGIC;
@@ -360,10 +366,14 @@ architecture Behavioral of top is
 	
 	-- Sweep signals
 	signal sweep_points : std_logic_vector(12 downto 0);
+	signal sweep_stages : STD_LOGIC_VECTOR (2 downto 0);
+	signal sweep_individual_halt : STD_LOGIC;
+	signal sweep_port1_stage : STD_LOGIC_VECTOR (2 downto 0);
+	signal sweep_port2_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_config_data : std_logic_vector(95 downto 0);
 	signal sweep_config_address : std_logic_vector(12 downto 0);
 	signal source_filter : std_logic_vector(1 downto 0);
-	signal sweep_port_select : std_logic;
+	signal sweep_band : std_logic;
 	
 	signal sweep_config_write_address : std_logic_vector(12 downto 0);
 	signal sweep_config_write_data : std_logic_vector(95 downto 0);
@@ -375,8 +385,6 @@ architecture Behavioral of top is
 	
 	signal sweep_excite_port1 : std_logic;
 	signal sweep_excite_port2 : std_logic;
-	
-	signal sweep_band : std_logic;
 	
 	-- Configuration signals
 	signal settling_time : std_logic_vector(15 downto 0);
@@ -428,10 +436,10 @@ begin
 	LEDS(2) <= SOURCE_LD;
 	LEDS(3) <= LO1_LD;
 	-- Sweep and active port
-	PORT_SELECT2 <= not sweep_port_select and portswitch_en;
-	PORT2_SELECT <= not sweep_port_select and portswitch_en;
-	PORT_SELECT1 <= sweep_port_select and portswitch_en;
-	PORT1_SELECT <= sweep_port_select and portswitch_en;
+	PORT_SELECT2 <= sweep_excite_port2 and portswitch_en;
+	PORT2_SELECT <= sweep_excite_port2 and portswitch_en;
+	PORT_SELECT1 <= sweep_excite_port1 and portswitch_en;
+	PORT1_SELECT <= sweep_excite_port1 and portswitch_en;
 	BAND_SELECT_HIGH <= not sweep_band;
 	BAND_SELECT_LOW <= sweep_band;
 	PORT1_MIX2_EN <= port1mix_en;
@@ -440,8 +448,8 @@ begin
 	PORT2_MIX1_EN <= not port2mix_en;
 	REF_MIX2_EN <= refmix_en;
 	REF_MIX1_EN <= not refmix_en;
-	LEDS(4) <= not (not sweep_reset and not sweep_port_select and portswitch_en);
-	LEDS(5) <= not (not sweep_reset and sweep_port_select and portswitch_en);
+	LEDS(4) <= not (not sweep_reset and sweep_excite_port2 and portswitch_en);
+	LEDS(5) <= not (not sweep_reset and sweep_excite_port1 and portswitch_en);
 	-- Uncommitted LEDs
 	LEDS(7 downto 6) <= user_leds(1 downto 0);	
 	--LEDS(7) <= '0';
@@ -649,7 +657,6 @@ begin
 		SAMPLING_BUSY => sampling_busy,
 		SAMPLING_DONE => sampling_done,
 		START_SAMPLING => sampling_start,
-		PORT_SELECT => sweep_port_select,
 		BAND_SELECT => sweep_band,
 		MAX2871_DEF_4 => def_reg_4,
 		MAX2871_DEF_3 => def_reg_3,
@@ -670,8 +677,13 @@ begin
 		SWEEP_RESUME => sweep_resume,
 		ATTENUATOR => ATTENUATION,
 		SOURCE_FILTER => source_filter,
-		EXCITE_PORT1 => sweep_excite_port1,
-		EXCITE_PORT2 => sweep_excite_port2,
+		STAGES => sweep_stages,
+		INDIVIDUAL_HALT => sweep_individual_halt,
+		PORT1_STAGE => sweep_port1_stage,
+		PORT2_STAGE => sweep_port2_stage,
+
+		PORT1_ACTIVE => sweep_excite_port1,
+		PORT2_ACTIVE => sweep_excite_port2,
 		DEBUG_STATUS => debug,
 		RESULT_INDEX => sampling_result(303 downto 288)
 	);
@@ -740,8 +752,10 @@ begin
 		RESET_MINMAX => adc_reset_minmax,
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
-		EXCITE_PORT1 => sweep_excite_port1,
-		EXCITE_PORT2 => sweep_excite_port2,
+		STAGES => sweep_stages,
+		INDIVIDUAL_HALT => sweep_individual_halt,
+		PORT1_STAGE => sweep_port1_stage,
+		PORT2_STAGE => sweep_port2_stage,
 		DFT_BIN1_PHASEINC => dft_bin1_phaseinc,
 		DFT_DIFFBIN_PHASEINC => dft_diffbin_phaseinc,
 		DFT_RESULT_READY => dft_ready,

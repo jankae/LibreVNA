@@ -17,6 +17,7 @@ enum class Reg {
 	SystemControl = 0x03,
 	ADCPrescaler = 0x04,
 	PhaseIncrement = 0x05,
+	SweepSetup = 0x06,
 	MAX2871Def0LSB = 0x08,
 	MAX2871Def0MSB = 0x09,
 	MAX2871Def1LSB = 0x0A,
@@ -33,8 +34,8 @@ using SamplingResult = struct _samplingresult {
 	int64_t P1I, P1Q;
 	int64_t P2I, P2Q;
 	int64_t RefI, RefQ;
-	uint16_t pointNum :15;
-	uint16_t activePort :1;
+	uint16_t pointNum :13;
+	uint16_t stageNum :3;
 };
 
 using DFTResult = struct _dftresult {
@@ -59,8 +60,7 @@ enum class Periphery {
 	DebugLED = 0x0080,
 	SourceChip = 0x0010,
 	LO1Chip = 0x0008,
-	ExcitePort2 = 0x0004,
-	ExcitePort1 = 0x0002,
+
 	PortSwitch = 0x0001,
 };
 
@@ -113,6 +113,7 @@ bool Init(HaltedCallback cb = nullptr);
 void WriteRegister(FPGA::Reg reg, uint16_t value);
 void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
+void SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool individual_halt = false);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
 bool IsEnabled(Periphery p);

@@ -209,8 +209,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::SetWindow((FPGA::Window) s.WindowType);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.trackingGeneratorPort == 0);
-	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.trackingGeneratorPort == 1);
+	FPGA::SetupSweep(0, s.trackingGeneratorPort == 1, s.trackingGeneratorPort == 0);
 	FPGA::Enable(FPGA::Periphery::PortSwitch, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Amplifier, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);

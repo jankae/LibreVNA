@@ -343,9 +343,10 @@ The register contains the number of points per sweep negative one, e.g. set to 1
 \rwbits{9}{2}{Window[1:0]}
 \rwbits{11}{1}{SCEN}
 \rwbits{12}{1}{LCEN}
-\rwbits{13}{1}{EXP2}
-\rwbits{14}{1}{EXP1}
-\rwbits{15}{1}{PSEN}
+\robits{13}{3}{reserved}
+%\rwbits{13}{1}{EXP2}
+%\rwbits{14}{1}{EXP1}
+%\rwbits{15}{1}{PSEN}
 \end{tikzpicture}
 \end{center}
 \begin{itemize}
@@ -371,8 +372,8 @@ Setting & Window type\\
 \end{center}
 \item \textbf{SCEN:}{Source chip enable}
 \item \textbf{LCEN:}{LO chip enable}
-\item \textbf{EXP1:}{Excite Port1 during sweep}
-\item \textbf{EXP2:}{Excite Port2 during sweep}
+%\item \textbf{EXP1:}{Excite Port1 during sweep}
+%\item \textbf{EXP2:}{Excite Port2 during sweep}
 \item \textbf{PSEN:}{Port switch enable}
 \end{itemize}
 
@@ -405,6 +406,27 @@ The minimum value for this register is 112, which results in a samplerate of rou
 For a given ADC samplerate $SR_{ADC}$ and final IF frequency $f_{IF2}$ set this value to
 $$ PhaseInc = \frac{4096 * f_{IF2}}{SR_{ADC}} $$
 For the the default IF frequency of $f_{IF2} = \SI{250}{\kilo\hertz}$ this evaluates to 10*Presc (see ADC prescaler register).
+\end{itemize}
+
+\subsection{Sweep setup: 0x06}
+Each point in the sweep is done in stages. Each stage consists of (optionally) routing the source signal to one of the ports and sampling of all ADCs. A "new data" interrupt is triggered after each stage.
+\label{reg:sweepsetup}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{3}{Stages}
+\rwbits{3}{1}{IH}
+\robits{4}{6}{reserved}
+\rwbits{10}{3}{Port 1 stage}
+\rwbits{13}{3}{Port 2 stage}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{Stages} Number of stages per point - 1. Normally the number of stages is equal to the number of ports but it can also be less (e.g. if only S11 is measured).
+\item \textbf{IH:} Individual halt: Sets the behavior of the "halt sweep" bit (see section~\ref{sweepconfig}). If 1, the sampling is halted before each stage. If 0, the sampling is only halted before the point and all stages are executed without additional halts inbetween.
+\item \textbf{Port 1 stage} Number of stage during which the source signal is routed to port 1. Must not have the same value as Port 2 stage.
+\item \textbf{Port 2 stage} Number of stage during which the source signal is routed to port 2. Must not have the same value as Port 1 stage.
+
 \end{itemize}
 
 \subsection{MAX2871 Default Values Registers: 0x08-0x0F}
@@ -574,12 +596,11 @@ Setting & Selected Power\\
 
 \section{Sampling Result}
 \label{result}
-Each point in the sweep generates two sampling results. The first one contains the measurement when the source was routed to Port 1, the second sampling result was taken when the source was routed to Port 2. 
+Each point in the sweep generates a sampling results for each stage (see section~\ref{reg:sweepsetup}).
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{304-\bit}
-\rwbits{0}{1}{SRC}
-\robits{1}{2}{reserved}
+\rwbits{0}{3}{STAGE[2:0]}
 \rwbits{3}{13}{POINT\_NUMBER[12:0]}
 \end{tikzpicture}
 \begin{tikzpicture}

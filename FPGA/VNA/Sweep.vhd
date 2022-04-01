@@ -40,7 +40,6 @@ entity Sweep is
            SAMPLING_BUSY : in STD_LOGIC;
 			  SAMPLING_DONE : in  STD_LOGIC;
 			  START_SAMPLING : out STD_LOGIC;
-			  PORT_SELECT : out STD_LOGIC;
 			  BAND_SELECT : out STD_LOGIC;
 			  -- fixed part of source/LO registers
            MAX2871_DEF_4 : in  STD_LOGIC_VECTOR (31 downto 0);
@@ -67,8 +66,13 @@ entity Sweep is
 			  
 			  --SETTLING_TIME : in STD_LOGIC_VECTOR (15 downto 0);
 			  
-			  EXCITE_PORT1 : in STD_LOGIC;
-			  EXCITE_PORT2 : in STD_LOGIC;
+			  STAGES : in STD_LOGIC_VECTOR (2 downto 0);
+			  INDIVIDUAL_HALT : in STD_LOGIC;
+			  PORT1_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
+			  PORT2_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
+			  
+			  PORT1_ACTIVE : out STD_LOGIC;
+			  PORT2_ACTIVE : out STD_LOGIC;
 			  
 			  -- Debug signals
 			  DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0);
@@ -78,10 +82,11 @@ end Sweep;
 
 architecture Behavioral of Sweep is
 	signal point_cnt : unsigned(12 downto 0);
-	type Point_states is (TriggerSetup, SettingUp, SettlingPort1, ExcitingPort1, SettlingPort2, ExcitingPort2, NextPoint, Done);
+	type Point_states is (TriggerSetup, SettingUp, Settling, Exciting, NextPoint, Done);
 	signal state : Point_states;
 	signal settling_cnt : unsigned(15 downto 0);
 	signal settling_time : unsigned(15 downto 0);
+	signal stage_cnt : unsigned (2 downto 0);
 	signal config_reg : std_logic_vector(95 downto 0);
 begin
 	
@@ -121,10 +126,8 @@ begin
 	
 	DEBUG_STATUS(10 downto 8) <= "000" when state = TriggerSetup else
 											"001" when state = SettingUp else
-											"010" when state = SettlingPort1 else
-											"011" when state = ExcitingPort1 else
-											"100" when state = SettlingPort2 else
-											"101" when state = ExcitingPort2 else
+											"010" when state = Settling else
+											"011" when state = Exciting else
 											"110" when state = Done else
 											"111";
 	DEBUG_STATUS(7) <= PLL_RELOAD_DONE;
@@ -139,15 +142,19 @@ begin
 		if rising_edge(CLK) then
 			if RESET = '1' then
 				point_cnt <= (others => '0');
+				stage_cnt <= (others => '0');
 				state <= TriggerSetup;
 				START_SAMPLING <= '0';
 				RELOAD_PLL_REGS <= '0';
 				SWEEP_HALTED <= '0';
 				RESULT_INDEX <= (others => '1');
+				PORT1_ACTIVE <= '0';
+				PORT2_ACTIVE <= '0';
 			else
 				case state is
 					when TriggerSetup =>
 						RELOAD_PLL_REGS <= '1';
+						stage_cnt <= (others => '0');
 						if PLL_RELOAD_DONE = '0' then
 							state <= SettingUp;
 						end if;
@@ -166,60 +173,52 @@ begin
 							-- check if halted sweep is resumed
 							if config_reg(95) = '0' or SWEEP_RESUME = '1' then
 								SWEEP_HALTED <= '0';
-								if EXCITE_PORT1 = '1' then
-									state <= SettlingPort1;
-								else
-									state <= SettlingPort2;
-								end if;
+   							state <= Settling;
 							end if;
 						end if;
-					when SettlingPort1 =>
-						PORT_SELECT <= '1';
+					when Settling =>
+						if std_logic_vector(stage_cnt) = PORT1_STAGE then
+							PORT1_ACTIVE <= '1';
+						else
+							PORT1_ACTIVE <= '0';
+						end if;
+						if std_logic_vector(stage_cnt) = PORT2_STAGE then
+							PORT2_ACTIVE <= '1';
+						else
+							PORT2_ACTIVE <= '0';
+						end if;
 						-- wait for settling time to elapse
 						if settling_cnt > 0 then
 							settling_cnt <= settling_cnt - 1;
 						else
 							START_SAMPLING <= '1';
 							if SAMPLING_BUSY = '1' then
-								state <= ExcitingPort1;
+								state <= Exciting;
 							end if;
 						end if;
-					when ExcitingPort1 =>
+					when Exciting =>
 						-- wait for sampling to finish
 						START_SAMPLING <= '0';
 						if SAMPLING_BUSY = '0' then
-							RESULT_INDEX <= "000" & std_logic_vector(point_cnt);
-							if EXCITE_PORT2 = '1' then
-								state <= SettlingPort2;
+							RESULT_INDEX <= std_logic_vector(stage_cnt) & std_logic_vector(point_cnt);
+							if stage_cnt < unsigned(STAGES) then
+								stage_cnt <= stage_cnt + 1;
+								if INDIVIDUAL_HALT = '1' then
+									-- wait for HALT SWEEP bit again if set
+									state <= SettingUp;
+								else
+									-- no need to halt again, can go directly to settling
+									state <= Settling;
+								end if;
 							else
 								state <= NextPoint;
 							end if;
 							settling_cnt <= settling_time;
 						end if;
-					when SettlingPort2 =>
-						PORT_SELECT <= '0';
-						-- wait for settling time to elapse
-						if settling_cnt > 0 then
-							settling_cnt <= settling_cnt - 1;
-						else
-							START_SAMPLING <= '1';
-							if SAMPLING_BUSY = '1' then
-								state <= ExcitingPort2;
-							end if;
-						end if;
-					when ExcitingPort2 =>
-						-- wait for sampling to finish
-						START_SAMPLING <= '0';
-						RESULT_INDEX <= "100" & std_logic_vector(point_cnt);
-						if SAMPLING_BUSY = '0' then
-							state <= NextPoint;
-						end if;
 					when NextPoint =>
 						if point_cnt < unsigned(NPOINTS) then
 							point_cnt <= point_cnt + 1;
 							state <= TriggerSetup;
-							-- initial port depends on whether port 1 is exited
-							PORT_SELECT <= EXCITE_PORT1;
 						else 
 							point_cnt <= (others => '0');
 							state <= Done;
