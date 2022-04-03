@@ -134,9 +134,9 @@ AppWindow::AppWindow(QWidget *parent)
     // Create GUI modes
     central = new QStackedWidget;
     setCentralWidget(central);
-    vna = new VNA(this);
-    generator = new Generator(this);
-    spectrumAnalyzer = new SpectrumAnalyzer(this);
+    auto vna = new VNA(this);
+    auto generator = new Generator(this);
+    auto spectrumAnalyzer = new SpectrumAnalyzer(this);
 
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
@@ -278,9 +278,9 @@ void AppWindow::closeEvent(QCloseEvent *event)
     if(pref.Startup.UseSetupFile && pref.Startup.AutosaveSetupFile) {
         SaveSetup(pref.Startup.SetupFile);
     }
-    vna->shutdown();
-    generator->shutdown();
-    spectrumAnalyzer->shutdown();
+    for(auto m : Mode::getModes()) {
+        m->shutdown();
+    }
     delete device;
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
@@ -475,27 +475,32 @@ void AppWindow::SetupSCPI()
         if (params.size() != 1) {
             return "ERROR";
         }
+        Mode *mode = nullptr;
         if (params[0] == "VNA") {
-            vna->activate();
+            mode = Mode::findFirstOfType(Mode::Type::VNA);
         } else if(params[0] == "GEN") {
-            generator->activate();
+            mode = Mode::findFirstOfType(Mode::Type::SG);
         } else if(params[0] == "SA") {
-            spectrumAnalyzer->activate();
+            mode = Mode::findFirstOfType(Mode::Type::SA);
         } else {
             return "INVALID MDOE";
         }
-        return "";
-    }, [=](QStringList) -> QString {
-        auto active = Mode::getActiveMode();
-        if(active == vna) {
-            return "VNA";
-        } else if(active == generator) {
-            return "GEN";
-        } else if(active == spectrumAnalyzer) {
-            return "SA";
+        if(mode) {
+            mode->activate();
+            return "";
         } else {
             return "ERROR";
         }
+    }, [=](QStringList) -> QString {
+        auto active = Mode::getActiveMode();
+        if(active) {
+            switch(active->getType()) {
+            case Mode::Type::VNA: return "VNA";
+            case Mode::Type::SG: return "SG";
+            case Mode::Type::SA: return "SA";
+            }
+        }
+        return "ERROR";
     }));
     auto scpi_status = new SCPINode("STAtus");
     scpi_dev->add(scpi_status);
@@ -552,10 +557,6 @@ void AppWindow::SetupSCPI()
     scpi_limits->add(new SCPICommand("MAXHARMonicfrequency", nullptr, [=](QStringList){
         return QString::number(Device::Info(getDevice()).limits_maxFreqHarmonic);
     }));
-
-    scpi.add(vna);
-    scpi.add(generator);
-    scpi.add(spectrumAnalyzer);
 
     auto scpi_manual = new SCPINode("MANual");
     scpi_manual->add(new SCPICommand("STArt",[=](QStringList) -> QString {
@@ -798,6 +799,11 @@ void AppWindow::StopTCPServer()
     server = nullptr;
 }
 
+SCPI* AppWindow::getSCPI()
+{
+    return &scpi;
+}
+
 int AppWindow::UpdateDeviceList()
 {
     deviceActionGroup->setExclusive(true);
@@ -963,10 +969,18 @@ void AppWindow::SaveSetup(QString filename)
 nlohmann::json AppWindow::SaveSetup()
 {
     nlohmann::json j;
-    j["activeMode"] = Mode::getActiveMode()->getName().toStdString();
-    j["VNA"] = vna->toJSON();
-    j["Generator"] = generator->toJSON();
-    j["SpectrumAnalyzer"] = spectrumAnalyzer->toJSON();
+    nlohmann::json jm;
+    for(auto m : Mode::getModes()) {
+        nlohmann::json jmode;
+        jmode["type"] = Mode::TypeToName(m->getType()).toStdString();
+        jmode["name"] = m->getName().toStdString();
+        jmode["settings"] = m->toJSON();
+        jm.push_back(jmode);
+    }
+    j["Modes"] = jm;
+    if(Mode::getActiveMode()) {
+        j["activeMode"] = Mode::getActiveMode()->getName().toStdString();
+    }
     nlohmann::json ref;
     ref["Mode"] = toolbars.reference.type->currentText().toStdString();
     ref["Output"] = toolbars.reference.outFreq->currentText().toStdString();
@@ -1003,20 +1017,36 @@ void AppWindow::LoadSetup(nlohmann::json j)
         toolbars.reference.type->setCurrentText(QString::fromStdString(j["Reference"].value("Mode", "Int")));
         toolbars.reference.outFreq->setCurrentText(QString::fromStdString(j["Reference"].value("Output", "Off")));
     }
+    while(Mode::getModes().size() > 0) {
+        delete Mode::getModes()[0];
+    }
+
+    // old style VNA/Generator/Spectrum Analyzer settings
     if(j.contains("VNA")) {
+        auto vna = new VNA(this);
         vna->fromJSON(j["VNA"]);
     }
     if(j.contains("Generator")) {
+        auto generator = new Generator(this);
         generator->fromJSON(j["Generator"]);
     }
     if(j.contains("SpectrumAnalyzer")) {
+        auto spectrumAnalyzer = new SpectrumAnalyzer(this);
         spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
+    }
+    if(j.contains("Modes")) {
+        for(auto jm : j["Modes"]) {
+            auto type = Mode::TypeFromName(QString::fromStdString(jm.value("type", "Invalid")));
+            if(type != Mode::Type::Last && jm.contains("settings")) {
+                auto m = Mode::createNew(this, QString::fromStdString(jm.value("name", "")), type);
+                m->fromJSON(jm["settings"]);
+            }
+        }
     }
 
     // activate the correct mode
     QString modeName = QString::fromStdString(j.value("activeMode", ""));
-    std::vector<Mode*> modes = {vna, generator, spectrumAnalyzer};
-    for(auto m : modes) {
+    for(auto m : Mode::getModes()) {
         if(m->getName() == modeName) {
             m->activate();
             break;
@@ -1112,6 +1142,4 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
         // invalid status
         break;
     }
-
-
 }

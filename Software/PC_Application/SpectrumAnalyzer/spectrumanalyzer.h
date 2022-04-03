@@ -12,14 +12,16 @@
 #include <QComboBox>
 #include <QCheckBox>
 
-class SpectrumAnalyzer : public Mode, public SCPINode
+class SpectrumAnalyzer : public Mode
 {
     Q_OBJECT
 public:
-    SpectrumAnalyzer(AppWindow *window);
+    SpectrumAnalyzer(AppWindow *window, QString name = "Spectrum Analyzer");
 
     void deactivate() override;
     void initializeDevice() override;
+
+    virtual Type getType() override { return Type::SA;}
 
     // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
     virtual nlohmann::json toJSON() override;

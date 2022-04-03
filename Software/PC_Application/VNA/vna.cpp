@@ -51,9 +51,8 @@
 #include <QErrorMessage>
 #include <QDebug>
 
-VNA::VNA(AppWindow *window)
-    : Mode(window, "Vector Network Analyzer"),
-      SCPINode("VNA"),
+VNA::VNA(AppWindow *window, QString name)
+    : Mode(window, name, "VNA"),
       deembedding(traceModel),
       deembedding_active(false),
       central(new TileWidget(traceModel))
@@ -790,6 +789,11 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
+    if(Mode::getActiveMode() != this) {
+        // ignore
+        return;
+    }
+
     if(changingSettings) {
         // already setting new sweep settings, ignore incoming points from old settings
         return;

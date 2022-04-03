@@ -45,9 +45,8 @@
 #include <fstream>
 #include <QDateTime>
 
-SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window)
-    : Mode(window, "Spectrum Analyzer"),
-      SCPINode("SA"),
+SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
+    : Mode(window, name, "SA"),
       central(new TileWidget(traceModel, window))
 {
     averages = 1;
@@ -422,6 +421,10 @@ using namespace std;
 
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
+    if(Mode::getActiveMode() != this) {
+        return;
+    }
+
     if(d.pointNum >= settings.pointNum) {
         qWarning() << "Ignoring point with too large point number (" << d.pointNum << ")";
         return;

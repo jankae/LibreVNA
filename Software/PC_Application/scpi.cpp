@@ -106,6 +106,17 @@ bool SCPINode::add(SCPINode *node)
     return true;
 }
 
+bool SCPINode::remove(SCPINode *node)
+{
+    auto it = std::find(subnodes.begin(), subnodes.end(), node);
+    if(it != subnodes.end()) {
+        subnodes.erase(it);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool SCPINode::add(SCPICommand *cmd)
 {
     if(nameCollision(cmd->name())) {

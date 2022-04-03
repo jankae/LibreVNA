@@ -48,6 +48,8 @@ public:
 
     static bool showGUI();
 
+    SCPI* getSCPI();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
@@ -99,11 +101,6 @@ private:
     QActionGroup *deviceActionGroup;
 
     ManualControlDialog *manual;
-
-    // Modes
-    VNA *vna;
-    Generator *generator;
-    SpectrumAnalyzer *spectrumAnalyzer;
 
     // Status bar widgets
     QLabel lConnectionStatus;

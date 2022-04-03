@@ -2,9 +2,8 @@
 
 #include <QSettings>
 
-Generator::Generator(AppWindow *window)
-    : Mode(window, "Signal Generator")
-    , SCPINode("GENerator")
+Generator::Generator(AppWindow *window, QString name)
+    : Mode(window, name, "GENerator")
 {
     central = new SignalgeneratorWidget(window->getDevice(), window);
 

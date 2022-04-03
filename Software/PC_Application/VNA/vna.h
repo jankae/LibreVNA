@@ -13,16 +13,18 @@
 #include <QWidget>
 #include <functional>
 
-class VNA : public Mode, public SCPINode
+class VNA : public Mode
 {
     Q_OBJECT
 public:   
-    VNA(AppWindow *window);
+    VNA(AppWindow *window, QString name = "Vector Network Analyzer");
 
     void deactivate() override;
     void initializeDevice() override;
     void deviceDisconnected() override;
     void shutdown() override;
+
+    virtual Type getType() override { return Type::VNA;}
 
     // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
     virtual nlohmann::json toJSON() override;
