@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 9;
+static constexpr uint16_t Version = 10;
 
 #pragma pack(push, 1)
 
@@ -50,17 +50,8 @@ using DeviceInfo = struct _deviceInfo {
     uint8_t FW_major;
     uint8_t FW_minor;
     uint8_t FW_patch;
+    uint8_t hardware_version;
     char HW_Revision;
-    uint8_t extRefAvailable:1;
-    uint8_t extRefInUse:1;
-    uint8_t FPGA_configured:1;
-    uint8_t source_locked:1;
-    uint8_t LO1_locked:1;
-    uint8_t ADC_overload:1;
-    uint8_t unlevel:1;
-	uint8_t temp_source;
-	uint8_t temp_LO1;
-	uint8_t temp_MCU;
 	uint64_t limits_minFreq;
 	uint64_t limits_maxFreq;
 	uint32_t limits_minIFBW;
@@ -74,7 +65,21 @@ using DeviceInfo = struct _deviceInfo {
     uint64_t limits_maxFreqHarmonic;
 };
 
-using ManualStatus = struct _manualstatus {
+using DeviceStatusV1 = struct _deviceStatusV1 {
+    uint8_t extRefAvailable:1;
+    uint8_t extRefInUse:1;
+    uint8_t FPGA_configured:1;
+    uint8_t source_locked:1;
+    uint8_t LO1_locked:1;
+    uint8_t ADC_overload:1;
+    uint8_t unlevel:1;
+	uint8_t temp_source;
+	uint8_t temp_LO1;
+	uint8_t temp_MCU;
+};
+
+
+using ManualStatusV1 = struct _manualstatusV1 {
         int16_t port1min, port1max;
         int16_t port2min, port2max;
         int16_t refmin, refmax;
@@ -87,7 +92,7 @@ using ManualStatus = struct _manualstatus {
         uint8_t LO_locked :1;
 };
 
-using ManualControl = struct _manualControl {
+using ManualControlV1 = struct _manualControlV1 {
     // Highband Source
     uint8_t SourceHighCE :1;
     uint8_t SourceHighRFEN :1;
@@ -170,8 +175,8 @@ enum class PacketType : uint8_t {
 	None = 0,
 	Datapoint = 1,
 	SweepSettings = 2,
-    Status = 3,
-    ManualControl = 4,
+    ManualStatusV1 = 3,
+    ManualControlV1 = 4,
     DeviceInfo = 5,
     FirmwarePacket = 6,
     Ack = 7,
@@ -192,6 +197,8 @@ enum class PacketType : uint8_t {
 	FrequencyCorrection = 22,
 	RequestAcquisitionFrequencySettings = 23,
 	AcquisitionFrequencySettings = 24,
+	DeviceStatusV1 = 25,
+	RequestDeviceStatus = 26,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -201,10 +208,11 @@ using PacketInfo = struct _packetinfo {
 		SweepSettings settings;
 		ReferenceSettings reference;
 		GeneratorSettings generator;
+		DeviceStatusV1 statusV1;
         DeviceInfo info;
-        ManualControl manual;
+        ManualControlV1 manual;
         FirmwarePacket firmware;
-        ManualStatus status;
+        ManualStatusV1 manualStatusV1;
         SpectrumAnalyzerSettings spectrumSettings;
         SpectrumAnalyzerResult spectrumResult;
         AmplitudeCorrectionPoint amplitudePoint;

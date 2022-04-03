@@ -15,7 +15,7 @@ class SignalgeneratorWidget : public QWidget, public Savable
     Q_OBJECT
 
 public:
-    explicit SignalgeneratorWidget(QWidget *parent = nullptr);
+    explicit SignalgeneratorWidget(Device*&dev, QWidget *parent = nullptr);
     ~SignalgeneratorWidget();
 
     Protocol::GeneratorSettings getDeviceStatus();
@@ -36,6 +36,7 @@ protected:
 private:
     Ui::SignalgeneratorWidget *ui;
     int m_timerId;
+    Device*&dev;
 };
 
 #endif // SIGNALGENERATOR_H

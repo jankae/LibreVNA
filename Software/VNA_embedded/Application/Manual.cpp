@@ -6,11 +6,11 @@
 
 static bool active = false;
 static uint32_t samples;
-static Protocol::ManualStatus status;
+static Protocol::ManualStatusV1 status;
 
 using namespace HWHAL;
 
-void Manual::Setup(Protocol::ManualControl m) {
+void Manual::Setup(Protocol::ManualControlV1 m) {
 	HW::SetMode(HW::Mode::Manual);
 	samples = m.Samples;
 	FPGA::AbortSweep();
@@ -99,38 +99,38 @@ void Manual::Work() {
 		return;
 	}
 	Protocol::PacketInfo p;
-	p.type = Protocol::PacketType::Status;
-	p.status = status;
+	p.type = Protocol::PacketType::ManualStatusV1;
+	p.manualStatusV1 = status;
 	uint16_t isr_flags = FPGA::GetStatus();
 	if (!(isr_flags & 0x0002)) {
-		p.status.source_locked = 1;
+		p.manualStatusV1.source_locked = 1;
 	} else {
-		p.status.source_locked = 0;
+		p.manualStatusV1.source_locked = 0;
 	}
 	if (!(isr_flags & 0x0001)) {
-		p.status.LO_locked = 1;
+		p.manualStatusV1.LO_locked = 1;
 	} else {
-		p.status.LO_locked = 0;
+		p.manualStatusV1.LO_locked = 0;
 	}
 	auto limits = FPGA::GetADCLimits();
 	FPGA::ResetADCLimits();
-	p.status.port1min = limits.P1min;
-	p.status.port1max = limits.P1max;
-	p.status.port2min = limits.P2min;
-	p.status.port2max = limits.P2max;
-	p.status.refmin = limits.Rmin;
-	p.status.refmax = limits.Rmax;
-	HW::GetTemps(&p.status.temp_source, &p.status.temp_LO);
+	p.manualStatusV1.port1min = limits.P1min;
+	p.manualStatusV1.port1max = limits.P1max;
+	p.manualStatusV1.port2min = limits.P2min;
+	p.manualStatusV1.port2max = limits.P2max;
+	p.manualStatusV1.refmin = limits.Rmin;
+	p.manualStatusV1.refmax = limits.Rmax;
+	HW::GetTemps(&p.manualStatusV1.temp_source, &p.manualStatusV1.temp_LO);
 	Communication::Send(p);
 	HW::Ref::update();
 	Protocol::PacketInfo packet;
-	packet.type = Protocol::PacketType::DeviceInfo;
+	packet.type = Protocol::PacketType::DeviceStatusV1;
 	// Enable PLL chips for temperature reading
 	bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
 	bool LOEn = FPGA::IsEnabled(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::SourceChip);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
-	HW::fillDeviceInfo(&packet.info, true);
+	HW::getDeviceStatus(&packet.statusV1, true);
 	// restore PLL state
 	FPGA::Enable(FPGA::Periphery::SourceChip, srcEn);
 	FPGA::Enable(FPGA::Periphery::LO1Chip, LOEn);

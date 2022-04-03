@@ -11,7 +11,7 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 			HW::SetIdle();
 			return;
 	}
-	Protocol::ManualControl m;
+	Protocol::ManualControlV1 m;
 	// LOs not required
 	m.LO1CE = 0;
 	m.LO1Frequency = 1000000000;

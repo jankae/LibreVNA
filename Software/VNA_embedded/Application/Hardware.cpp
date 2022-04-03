@@ -299,9 +299,7 @@ void HW::SetOutputUnlevel(bool unlev) {
 	unlevel = unlev;
 }
 
-void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
-	// copy constant default values
-	memcpy(info, &HW::Info, sizeof(HW::Info));
+void HW::getDeviceStatus(Protocol::DeviceStatusV1 *status, bool updateEvenWhenBusy) {
 	if(activeMode == Mode::Idle || updateEvenWhenBusy) {
 		// updating values from FPGA allowed
 
@@ -318,21 +316,21 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 		if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
 				|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
 				|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
-			info->ADC_overload = true;
+			status->ADC_overload = true;
 		} else {
-			info->ADC_overload = false;
+			status->ADC_overload = false;
 		}
-		auto status = FPGA::GetStatus();
-		info->LO1_locked = (status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
-		info->source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
-		info->extRefAvailable = Ref::available();
-		info->extRefInUse = extRefInUse;
-		info->unlevel = unlevel;
-		info->temp_LO1 = tempLO;
-		info->temp_source = tempSource;
+		auto FPGA_status = FPGA::GetStatus();
+		status->LO1_locked = (FPGA_status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
+		status->source_locked = (FPGA_status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
+		status->extRefAvailable = Ref::available();
+		status->extRefInUse = extRefInUse;
+		status->unlevel = unlevel;
+		status->temp_LO1 = tempLO;
+		status->temp_source = tempSource;
 		FPGA::ResetADCLimits();
 	}
-	info->temp_MCU = STM::getTemperature();
+	status->temp_MCU = STM::getTemperature();
 }
 
 bool HW::Ref::available() {

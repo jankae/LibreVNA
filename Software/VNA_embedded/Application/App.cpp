@@ -117,7 +117,7 @@ inline void App_Process() {
 					sweepActive = VNA::Setup(recv_packet.settings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-				case Protocol::PacketType::ManualControl:
+				case Protocol::PacketType::ManualControlV1:
 					sweepActive = false;
 					last_measure_packet = recv_packet;
 					Manual::Setup(recv_packet.manual);
@@ -145,12 +145,21 @@ inline void App_Process() {
 					SA::Setup(recv_packet.spectrumSettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-				case Protocol::PacketType::RequestDeviceInfo:
+				case Protocol::PacketType::RequestDeviceInfo: {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					Protocol::PacketInfo p;
 					p.type = Protocol::PacketType::DeviceInfo;
-					HW::fillDeviceInfo(&p.info);
+					p.info = HW::Info;
 					Communication::Send(p);
+				}
+					break;
+				case Protocol::PacketType::RequestDeviceStatus: {
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					Protocol::PacketInfo p;
+					p.type = Protocol::PacketType::DeviceStatusV1;
+					HW::getDeviceStatus(&p.statusV1);
+					Communication::Send(p);
+				}
 					break;
 				case Protocol::PacketType::SetIdle:
 					HW::SetMode(HW::Mode::Idle);

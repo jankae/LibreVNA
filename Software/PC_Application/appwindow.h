@@ -41,7 +41,7 @@ public:
 
     Ui::MainWindow *getUi() const;
     QStackedWidget *getCentral() const;
-    Device *getDevice() const;
+    Device*&getDevice();
 
     const QString& getAppVersion() const;
     const QString& getAppGitHash() const;
@@ -59,7 +59,7 @@ private slots:
     void UpdateAcquisitionFrequencies();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
-    void DeviceInfoUpdated();
+    void DeviceStatusUpdated();
     void SourceCalibrationDialog();
     void ReceiverCalibrationDialog();
     void FrequencyCalibrationDialog();

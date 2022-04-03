@@ -555,14 +555,14 @@ void SpectrumAnalyzer::SetStopFreq(double freq)
 void SpectrumAnalyzer::SetCenterFreq(double freq)
 {
     auto old_span = settings.f_stop - settings.f_start;
-    if (freq - old_span / 2 <= Device::Info().limits_minFreq) {
+    if (freq - old_span / 2 <= Device::Info(window->getDevice()).limits_minFreq) {
         // would shift start frequency below minimum
         settings.f_start = 0;
         settings.f_stop = 2 * freq;
-    } else if(freq + old_span / 2 >= Device::Info().limits_maxFreq) {
+    } else if(freq + old_span / 2 >= Device::Info(window->getDevice()).limits_maxFreq) {
         // would shift stop frequency above maximum
-        settings.f_start = 2 * freq - Device::Info().limits_maxFreq;
-        settings.f_stop = Device::Info().limits_maxFreq;
+        settings.f_start = 2 * freq - Device::Info(window->getDevice()).limits_maxFreq;
+        settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
     } else {
         settings.f_start = freq - old_span / 2;
         settings.f_stop = freq + old_span / 2;
@@ -573,14 +573,14 @@ void SpectrumAnalyzer::SetCenterFreq(double freq)
 void SpectrumAnalyzer::SetSpan(double span)
 {
     auto old_center = (settings.f_start + settings.f_stop) / 2;
-    if(old_center < Device::Info().limits_minFreq + span / 2) {
+    if(old_center < Device::Info(window->getDevice()).limits_minFreq + span / 2) {
         // would shift start frequency below minimum
-        settings.f_start = Device::Info().limits_minFreq;
-        settings.f_stop = Device::Info().limits_minFreq + span;
-    } else if(old_center > Device::Info().limits_maxFreq - span / 2) {
+        settings.f_start = Device::Info(window->getDevice()).limits_minFreq;
+        settings.f_stop = Device::Info(window->getDevice()).limits_minFreq + span;
+    } else if(old_center > Device::Info(window->getDevice()).limits_maxFreq - span / 2) {
         // would shift stop frequency above maximum
-        settings.f_start = Device::Info().limits_maxFreq - span;
-        settings.f_stop = Device::Info().limits_maxFreq;
+        settings.f_start = Device::Info(window->getDevice()).limits_maxFreq - span;
+        settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
     } else {
         settings.f_start = old_center - span / 2;
          settings.f_stop = settings.f_start + span;
@@ -590,8 +590,8 @@ void SpectrumAnalyzer::SetSpan(double span)
 
 void SpectrumAnalyzer::SetFullSpan()
 {
-    settings.f_start = Device::Info().limits_minFreq;
-    settings.f_stop = Device::Info().limits_maxFreq;
+    settings.f_start = Device::Info(window->getDevice()).limits_minFreq;
+    settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -619,10 +619,10 @@ void SpectrumAnalyzer::SpanZoomOut()
 
 void SpectrumAnalyzer::SetRBW(double bandwidth)
 {
-    if(bandwidth > Device::Info().limits_maxRBW) {
-        bandwidth = Device::Info().limits_maxRBW;
-    } else if(bandwidth < Device::Info().limits_minRBW) {
-        bandwidth = Device::Info().limits_minRBW;
+    if(bandwidth > Device::Info(window->getDevice()).limits_maxRBW) {
+        bandwidth = Device::Info(window->getDevice()).limits_maxRBW;
+    } else if(bandwidth < Device::Info(window->getDevice()).limits_minRBW) {
+        bandwidth = Device::Info(window->getDevice()).limits_minRBW;
     }
     settings.RBW = bandwidth;
     emit RBWChanged(settings.RBW);
@@ -690,10 +690,10 @@ void SpectrumAnalyzer::SetTGPort(int port)
 
 void SpectrumAnalyzer::SetTGLevel(double level)
 {
-    if(level > Device::Info().limits_cdbm_max / 100.0) {
-        level = Device::Info().limits_cdbm_max / 100.0;
-    } else if(level < Device::Info().limits_cdbm_min / 100.0) {
-        level = Device::Info().limits_cdbm_min / 100.0;
+    if(level > Device::Info(window->getDevice()).limits_cdbm_max / 100.0) {
+        level = Device::Info(window->getDevice()).limits_cdbm_max / 100.0;
+    } else if(level < Device::Info(window->getDevice()).limits_cdbm_min / 100.0) {
+        level = Device::Info(window->getDevice()).limits_cdbm_min / 100.0;
     }
     emit TGLevelChanged(level);
     settings.trackingPower = level * 100;
@@ -1015,24 +1015,24 @@ void SpectrumAnalyzer::UpdateAverageCount()
 
 void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 {
-    if(settings.f_stop > Device::Info().limits_maxFreq) {
-        settings.f_stop = Device::Info().limits_maxFreq;
+    if(settings.f_stop > Device::Info(window->getDevice()).limits_maxFreq) {
+        settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
     }
     if(settings.f_start > settings.f_stop) {
         settings.f_start = settings.f_stop;
     }
-    if(settings.f_start < Device::Info().limits_minFreq) {
-        settings.f_start = Device::Info().limits_minFreq;
+    if(settings.f_start < Device::Info(window->getDevice()).limits_minFreq) {
+        settings.f_start = Device::Info(window->getDevice()).limits_minFreq;
     }
 
     bool trackingOffset_limited = false;
-    if(settings.f_stop + settings.trackingGeneratorOffset > Device::Info().limits_maxFreq) {
+    if(settings.f_stop + settings.trackingGeneratorOffset > Device::Info(window->getDevice()).limits_maxFreq) {
         trackingOffset_limited = true;
-        settings.trackingGeneratorOffset = Device::Info().limits_maxFreq - settings.f_stop;
+        settings.trackingGeneratorOffset = Device::Info(window->getDevice()).limits_maxFreq - settings.f_stop;
     }
-    if((long) settings.f_start + settings.trackingGeneratorOffset < (long) Device::Info().limits_minFreq) {
+    if((long) settings.f_start + settings.trackingGeneratorOffset < (long) Device::Info(window->getDevice()).limits_minFreq) {
         trackingOffset_limited = true;
-        settings.trackingGeneratorOffset = Device::Info().limits_minFreq - settings.f_start;
+        settings.trackingGeneratorOffset = Device::Info(window->getDevice()).limits_minFreq - settings.f_start;
     }
     if(trackingOffset_limited) {
         InformationBox::ShowMessage("Warning", "The selected tracking generator offset is not reachable for all frequencies with the current span. "

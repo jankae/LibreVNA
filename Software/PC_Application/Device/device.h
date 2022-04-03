@@ -13,7 +13,7 @@
 #include <QTimer>
 
 Q_DECLARE_METATYPE(Protocol::Datapoint);
-Q_DECLARE_METATYPE(Protocol::ManualStatus);
+Q_DECLARE_METATYPE(Protocol::ManualStatusV1);
 Q_DECLARE_METATYPE(Protocol::SpectrumAnalyzerResult);
 Q_DECLARE_METATYPE(Protocol::AmplitudeCorrectionPoint);
 
@@ -61,23 +61,27 @@ public:
     bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500);
     bool Configure(Protocol::SweepSettings settings, std::function<void(TransmissionResult)> cb = nullptr);
     bool Configure(Protocol::SpectrumAnalyzerSettings settings);
-    bool SetManual(Protocol::ManualControl manual);
+    bool SetManual(Protocol::ManualControlV1 manual);
     bool SetIdle();
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
     bool SendCommandWithoutPayload(Protocol::PacketType type);
     QString serial() const;
-    static const Protocol::DeviceInfo& Info();
+    const Protocol::DeviceInfo& Info();
+    static const Protocol::DeviceInfo& Info(Device *dev);
+    Protocol::DeviceStatusV1& StatusV1();
+    static const Protocol::DeviceStatusV1& StatusV1(Device *dev);
     QString getLastDeviceInfoString();
 
     // Returns serial numbers of all connected devices
     static std::set<QString> GetDevices();
 signals:
     void DatapointReceived(Protocol::Datapoint);
-    void ManualStatusReceived(Protocol::ManualStatus);
+    void ManualStatusReceived(Protocol::ManualStatusV1);
     void SpectrumResultReceived(Protocol::SpectrumAnalyzerResult);
     void AmplitudeCorrectionPointReceived(Protocol::AmplitudeCorrectionPoint);
     void FrequencyCorrectionReceived(float ppm);
     void DeviceInfoUpdated();
+    void DeviceStatusUpdated();
     void ConnectionLost();
     void AckReceived();
     void NackReceived();
@@ -122,8 +126,11 @@ private:
     QString m_serial;
     bool m_connected;
     std::thread *m_receiveThread;
-    static Protocol::DeviceInfo lastInfo;
-    bool lastInfoValid;
+    Protocol::DeviceInfo info;
+    bool infoValid;
+    union {
+        Protocol::DeviceStatusV1 v1;
+    } status;
 };
 
 #endif // DEVICE_H

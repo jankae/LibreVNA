@@ -6,7 +6,7 @@ Generator::Generator(AppWindow *window)
     : Mode(window, "Signal Generator")
     , SCPINode("GENerator")
 {
-    central = new SignalgeneratorWidget(window);
+    central = new SignalgeneratorWidget(window->getDevice(), window);
 
     auto pref = Preferences::getInstance();
 

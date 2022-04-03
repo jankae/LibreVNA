@@ -367,8 +367,8 @@ void VNA::Work() {
 	HW::Ref::update();
 	// Compile info packet
 	Protocol::PacketInfo packet;
-	packet.type = Protocol::PacketType::DeviceInfo;
-	HW::fillDeviceInfo(&packet.info, true);
+	packet.type = Protocol::PacketType::DeviceStatusV1;
+	HW::getDeviceStatus(&packet.statusV1, true);
 	Communication::Send(packet);
 	// do not reset unlevel flag here, as it is calculated only once at the setup of the sweep
 	// Start next sweep

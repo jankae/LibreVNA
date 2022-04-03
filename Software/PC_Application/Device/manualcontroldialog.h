@@ -103,7 +103,7 @@ public:
     double getRefPhase();
 
 public slots:
-    void NewStatus(Protocol::ManualStatus status);
+    void NewStatus(Protocol::ManualStatusV1 status);
 
 private:
     void UpdateDevice();

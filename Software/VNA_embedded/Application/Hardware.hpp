@@ -70,17 +70,8 @@ static constexpr Protocol::DeviceInfo Info = {
 		.FW_major = FW_MAJOR,
 		.FW_minor = FW_MINOR,
 		.FW_patch = FW_PATCH,
+		.hardware_version = 1,
 		.HW_Revision = HW_REVISION,
-	    .extRefAvailable = 0,
-	    .extRefInUse = 0,
-	    .FPGA_configured = 0,
-	    .source_locked = 0,
-	    .LO1_locked = 0,
-	    .ADC_overload = 0,
-		.unlevel = 0,
-		.temp_source = 0,
-		.temp_LO1 = 0,
-		.temp_MCU = 0,
 		.limits_minFreq = 0,
 		.limits_maxFreq = 6000000000,
 		.limits_minIFBW = DefaultADCSamplerate / MaxSamples,
@@ -120,7 +111,7 @@ using AmplitudeSettings = struct _amplitudeSettings {
 AmplitudeSettings GetAmplitudeSettings(int16_t cdbm, uint64_t freq = 0, bool applyCorrections = false, bool port2 = false);
 
 bool GetTemps(uint8_t *source, uint8_t *lo);
-void fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy = false);
+void getDeviceStatus(Protocol::DeviceStatusV1 *status, bool updateEvenWhenBusy = false);
 namespace Ref {
 	bool available();
 	bool usingExternal();

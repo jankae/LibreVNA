@@ -235,7 +235,7 @@ AppWindow::AppWindow(QWidget *parent)
     vna->activate();
 
     qRegisterMetaType<Protocol::Datapoint>("Datapoint");
-    qRegisterMetaType<Protocol::ManualStatus>("Manual");
+    qRegisterMetaType<Protocol::ManualStatusV1>("ManualV1");
     qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumAnalyzerResult");
     qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
 
@@ -309,7 +309,7 @@ bool AppWindow::ConnectToDevice(QString serial)
         UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
         connect(device, &Device::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &Device::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
-        connect(device, &Device::DeviceInfoUpdated, this, &AppWindow::DeviceInfoUpdated);
+        connect(device, &Device::DeviceStatusUpdated, this, &AppWindow::DeviceStatusUpdated);
         connect(device, &Device::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
         ui->actionManual_Control->setEnabled(true);
@@ -465,7 +465,7 @@ void AppWindow::SetupSCPI()
         }
         return "";
     }, [=](QStringList) -> QString {
-        switch(Device::Info().extRefInUse) {
+        switch(Device::StatusV1(getDevice()).extRefInUse) {
         case 0: return "INT";
         case 1: return "EXT";
         default: return "ERROR";
@@ -500,57 +500,57 @@ void AppWindow::SetupSCPI()
     auto scpi_status = new SCPINode("STAtus");
     scpi_dev->add(scpi_status);
     scpi_status->add(new SCPICommand("UNLOcked", nullptr, [=](QStringList){
-        bool locked = Device::Info().source_locked && Device::Info().LO1_locked;
+        bool locked = Device::StatusV1(getDevice()).source_locked && Device::StatusV1(getDevice()).LO1_locked;
         return locked ? "FALSE" : "TRUE";
     }));
     scpi_status->add(new SCPICommand("ADCOVERload", nullptr, [=](QStringList){
-        return Device::Info().ADC_overload ? "TRUE" : "FALSE";
+        return Device::StatusV1(getDevice()).ADC_overload ? "TRUE" : "FALSE";
     }));
     scpi_status->add(new SCPICommand("UNLEVel", nullptr, [=](QStringList){
-        return Device::Info().unlevel ? "TRUE" : "FALSE";
+        return Device::StatusV1(getDevice()).unlevel ? "TRUE" : "FALSE";
     }));
     auto scpi_info = new SCPINode("INFo");
     scpi_dev->add(scpi_info);
     scpi_info->add(new SCPICommand("FWREVision", nullptr, [=](QStringList){
-        return QString::number(Device::Info().FW_major)+"."+QString::number(Device::Info().FW_minor)+"."+QString::number(Device::Info().FW_patch);
+        return QString::number(Device::Info(getDevice()).FW_major)+"."+QString::number(Device::Info(getDevice()).FW_minor)+"."+QString::number(Device::Info(getDevice()).FW_patch);
     }));
     scpi_info->add(new SCPICommand("HWREVision", nullptr, [=](QStringList){
-        return QString(Device::Info().HW_Revision);
+        return QString(Device::Info(getDevice()).HW_Revision);
     }));
     scpi_info->add(new SCPICommand("TEMPeratures", nullptr, [=](QStringList){
-        return QString::number(Device::Info().temp_source)+"/"+QString::number(Device::Info().temp_LO1)+"/"+QString::number(Device::Info().temp_MCU);
+        return QString::number(Device::StatusV1(getDevice()).temp_source)+"/"+QString::number(Device::StatusV1(getDevice()).temp_LO1)+"/"+QString::number(Device::StatusV1(getDevice()).temp_MCU);
     }));
     auto scpi_limits = new SCPINode("LIMits");
     scpi_info->add(scpi_limits);
     scpi_limits->add(new SCPICommand("MINFrequency", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_minFreq);
+        return QString::number(Device::Info(getDevice()).limits_minFreq);
     }));
     scpi_limits->add(new SCPICommand("MAXFrequency", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_maxFreq);
+        return QString::number(Device::Info(getDevice()).limits_maxFreq);
     }));
     scpi_limits->add(new SCPICommand("MINIFBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_minIFBW);
+        return QString::number(Device::Info(getDevice()).limits_minIFBW);
     }));
     scpi_limits->add(new SCPICommand("MAXIFBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_maxIFBW);
+        return QString::number(Device::Info(getDevice()).limits_maxIFBW);
     }));
     scpi_limits->add(new SCPICommand("MAXPoints", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_maxPoints);
+        return QString::number(Device::Info(getDevice()).limits_maxPoints);
     }));
     scpi_limits->add(new SCPICommand("MINPOWer", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_cdbm_min / 100.0);
+        return QString::number(Device::Info(getDevice()).limits_cdbm_min / 100.0);
     }));
     scpi_limits->add(new SCPICommand("MAXPOWer", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_cdbm_max / 100.0);
+        return QString::number(Device::Info(getDevice()).limits_cdbm_max / 100.0);
     }));
     scpi_limits->add(new SCPICommand("MINRBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_minRBW);
+        return QString::number(Device::Info(getDevice()).limits_minRBW);
     }));
     scpi_limits->add(new SCPICommand("MAXRBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_maxRBW);
+        return QString::number(Device::Info(getDevice()).limits_maxRBW);
     }));
     scpi_limits->add(new SCPICommand("MAXHARMonicfrequency", nullptr, [=](QStringList){
-        return QString::number(Device::Info().limits_maxFreqHarmonic);
+        return QString::number(Device::Info(getDevice()).limits_maxFreqHarmonic);
     }));
 
     scpi.add(vna);
@@ -918,7 +918,7 @@ void AppWindow::DeviceNeedsUpdate(int reported, int expected)
     }
 }
 
-void AppWindow::DeviceInfoUpdated()
+void AppWindow::DeviceStatusUpdated()
 {
     UpdateStatusBar(DeviceStatusBar::Updated);
 }
@@ -1024,7 +1024,7 @@ void AppWindow::LoadSetup(nlohmann::json j)
     }
 }
 
-Device *AppWindow::getDevice() const
+Device *&AppWindow::getDevice()
 {
     return device;
 }
@@ -1104,9 +1104,9 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
         break;
     case DeviceStatusBar::Updated:
         lDeviceInfo.setText(device->getLastDeviceInfoString());
-        lADCOverload.setVisible(device->Info().ADC_overload);
-        lUnlevel.setVisible(device->Info().unlevel);
-        lUnlock.setVisible(!device->Info().LO1_locked || !device->Info().source_locked);
+        lADCOverload.setVisible(device->StatusV1().ADC_overload);
+        lUnlevel.setVisible(device->StatusV1().unlevel);
+        lUnlock.setVisible(!device->StatusV1().LO1_locked || !device->StatusV1().source_locked);
         break;
     default:
         // invalid status
