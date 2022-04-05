@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.2
+
+Mostly bugfixes along with the occasional new feature.
+
+- Additional graph features:
+  - Group delay option
+  - (Optionally) show units on all axes
+  
+- General bugfixes, among others:
+  - Fixed valgrind issues (mostly uninitialized variables)
+  - Prevent overflow in SCPI commands
+
 ## v1.2.1
 
 Mostly bugfixes along with the occasional new feature.

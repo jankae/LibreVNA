@@ -119,6 +119,7 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .FW_major = 0,
     .FW_minor = 0,
     .FW_patch = 0,
+    .hardware_version = 1,
     .HW_Revision = '0',
     .limits_minFreq = 0,
     .limits_maxFreq = 6000000000,
