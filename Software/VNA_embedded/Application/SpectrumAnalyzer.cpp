@@ -209,8 +209,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::SetWindow((FPGA::Window) s.WindowType);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.trackingGeneratorPort == 0);
-	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.trackingGeneratorPort == 1);
+	FPGA::SetupSweep(0, s.trackingGeneratorPort == 1, s.trackingGeneratorPort == 0);
 	FPGA::Enable(FPGA::Periphery::PortSwitch, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Amplifier, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
@@ -386,8 +385,8 @@ void SA::Work() {
 			// send device info every nth point
 			FPGA::Enable(FPGA::Periphery::SourceChip); // needs to enable the chip to get a valid temperature reading
 			Protocol::PacketInfo packet;
-			packet.type = Protocol::PacketType::DeviceInfo;
-			HW::fillDeviceInfo(&packet.info, true);
+			packet.type = Protocol::PacketType::DeviceStatusV1;
+			HW::getDeviceStatus(&packet.statusV1, true);
 			FPGA::Disable(FPGA::Periphery::SourceChip);
 			Communication::Send(packet);
 		}

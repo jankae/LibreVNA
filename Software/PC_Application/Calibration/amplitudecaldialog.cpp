@@ -253,7 +253,7 @@ void AmplitudeCalDialog::RemoveAllPoints()
 
 bool AmplitudeCalDialog::AddPoint(AmplitudeCalDialog::CorrectionPoint &p)
 {
-    if (points.size() >= Device::Info().limits_maxAmplitudePoints) {
+    if (points.size() >= Device::Info(dev).limits_maxAmplitudePoints) {
         // already at limit
         return false;
     }
@@ -299,8 +299,8 @@ void AmplitudeCalDialog::AddPointDialog()
     ui->stopFreq->setUnit("Hz");
     ui->stopFreq->setPrefixes(" kMG");
     ui->frequency->setValue(1000000000.0);
-    ui->startFreq->setValue(Device::Info().limits_minFreq);
-    ui->stopFreq->setValue(Device::Info().limits_maxFreq);
+    ui->startFreq->setValue(Device::Info(dev).limits_minFreq);
+    ui->stopFreq->setValue(Device::Info(dev).limits_maxFreq);
     connect(ui->singlePoint, &QRadioButton::toggled, [=](bool single) {
         ui->stopFreq->setEnabled(!single);
         ui->startFreq->setEnabled(!single);

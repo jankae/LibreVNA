@@ -3,30 +3,50 @@
 
 #include "appwindow.h"
 #include "savable.h"
+#include "scpi.h"
 
 #include <QString>
 #include <QWidget>
 #include <QButtonGroup>
 #include <QToolBar>
+#include <QTabBar>
 #include <QDockWidget>
 #include <set>
 
-class Mode : public QObject, public Savable
+class Mode : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
 public:
-    Mode(AppWindow *window, QString name);
+    enum class Type {
+        VNA,
+        SG,
+        SA,
+        Last,
+    };
+
+    Mode(AppWindow *window, QString name, QString SCPIname);
+    ~Mode();
 
     virtual void activate(); // derived classes must call Mode::activate before doing anything
     virtual void deactivate(); // derived classes must call Mode::deactivate before returning
     virtual void shutdown(){}; // called when the application is about to exit
     QString getName() const;
+    void setName(const QString &value);
     static Mode *getActiveMode();
+    static QString TypeToName(Type t);
+    static Type TypeFromName(QString s);
+    virtual Type getType() = 0;
 
     virtual void initializeDevice() = 0;
     virtual void deviceDisconnected(){};
 
     virtual void saveSreenshot();
+
+    static Mode *createNew(AppWindow *window, QString name, Type t);
+    static bool nameAllowed(QString name);
+    static std::vector<Mode *> getModes();
+    static Mode* findFirstOfType(Type t);
+
 signals:
     void statusbarMessage(QString msg);
 protected:
@@ -39,10 +59,13 @@ protected:
     std::set<QDockWidget*> docks;
 
 private:
+    int findTabIndex();
+    static std::vector<Mode*> modes;
     static Mode *activeMode;
+    static QTabBar *tabbar;
     static QWidget *cornerWidget;
-    static QButtonGroup *modeButtonGroup;
-    const QString name;
+//    static QButtonGroup *modeButtonGroup;
+    QString name;
     QString statusbarMsg;
     QWidget *central;
 };

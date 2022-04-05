@@ -580,7 +580,7 @@ double ManualControlDialog::getRefPhase()
     return ui->refphase->text().toDouble();
 }
 
-void ManualControlDialog::NewStatus(Protocol::ManualStatus status)
+void ManualControlDialog::NewStatus(Protocol::ManualStatusV1 status)
 {
     // ADC values
     ui->port1min->setText(QString::number(status.port1min));
@@ -616,7 +616,7 @@ void ManualControlDialog::NewStatus(Protocol::ManualStatus status)
 
 void ManualControlDialog::UpdateDevice()
 {
-    Protocol::ManualControl m;
+    Protocol::ManualControlV1 m;
     // Source highband
     m.SourceHighCE = ui->SourceCE->isChecked();
     m.SourceHighRFEN = ui->SourceRFEN->isChecked();

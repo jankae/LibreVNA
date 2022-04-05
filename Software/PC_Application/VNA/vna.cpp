@@ -51,9 +51,8 @@
 #include <QErrorMessage>
 #include <QDebug>
 
-VNA::VNA(AppWindow *window)
-    : Mode(window, "Vector Network Analyzer"),
-      SCPINode("VNA"),
+VNA::VNA(AppWindow *window, QString name)
+    : Mode(window, name, "VNA"),
       deembedding(traceModel),
       deembedding_active(false),
       central(new TileWidget(traceModel))
@@ -790,6 +789,11 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
+    if(Mode::getActiveMode() != this) {
+        // ignore
+        return;
+    }
+
     if(changingSettings) {
         // already setting new sweep settings, ignore incoming points from old settings
         return;
@@ -997,14 +1001,14 @@ void VNA::SetStopFreq(double freq)
 void VNA::SetCenterFreq(double freq)
 {
     auto old_span = settings.Freq.stop - settings.Freq.start;
-    if (freq - old_span / 2 <= Device::Info().limits_minFreq) {
+    if (freq - old_span / 2 <= Device::Info(window->getDevice()).limits_minFreq) {
         // would shift start frequency below minimum
         settings.Freq.start = 0;
         settings.Freq.stop = 2 * freq;
-    } else if(freq + old_span / 2 >= Device::Info().limits_maxFreq) {
+    } else if(freq + old_span / 2 >= Device::Info(window->getDevice()).limits_maxFreq) {
         // would shift stop frequency above maximum
-        settings.Freq.start = 2 * freq - Device::Info().limits_maxFreq;
-        settings.Freq.stop = Device::Info().limits_maxFreq;
+        settings.Freq.start = 2 * freq - Device::Info(window->getDevice()).limits_maxFreq;
+        settings.Freq.stop = Device::Info(window->getDevice()).limits_maxFreq;
     } else {
         settings.Freq.start = freq - old_span / 2;
         settings.Freq.stop = freq + old_span / 2;
@@ -1014,12 +1018,12 @@ void VNA::SetCenterFreq(double freq)
 
 void VNA::SetSpan(double span)
 {
-    auto maxFreq = Preferences::getInstance().Acquisition.harmonicMixing ? Device::Info().limits_maxFreqHarmonic : Device::Info().limits_maxFreq;
+    auto maxFreq = Preferences::getInstance().Acquisition.harmonicMixing ? Device::Info(window->getDevice()).limits_maxFreqHarmonic : Device::Info(window->getDevice()).limits_maxFreq;
     auto old_center = (settings.Freq.start + settings.Freq.stop) / 2;
-    if(old_center < Device::Info().limits_minFreq + span / 2) {
+    if(old_center < Device::Info(window->getDevice()).limits_minFreq + span / 2) {
         // would shift start frequency below minimum
-        settings.Freq.start = Device::Info().limits_minFreq;
-        settings.Freq.stop = Device::Info().limits_minFreq + span;
+        settings.Freq.start = Device::Info(window->getDevice()).limits_minFreq;
+        settings.Freq.stop = Device::Info(window->getDevice()).limits_minFreq + span;
     } else if(old_center > maxFreq - span / 2) {
         // would shift stop frequency above maximum
         settings.Freq.start = maxFreq - span;
@@ -1033,8 +1037,8 @@ void VNA::SetSpan(double span)
 
 void VNA::SetFullSpan()
 {
-    settings.Freq.start = Device::Info().limits_minFreq;
-    settings.Freq.stop = Device::Info().limits_maxFreq;
+    settings.Freq.start = Device::Info(window->getDevice()).limits_minFreq;
+    settings.Freq.stop = Device::Info(window->getDevice()).limits_maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -1072,10 +1076,10 @@ void VNA::SetLogSweep(bool log)
 
 void VNA::SetSourceLevel(double level)
 {
-    if(level > Device::Info().limits_cdbm_max / 100.0) {
-        level = Device::Info().limits_cdbm_max / 100.0;
-    } else if(level < Device::Info().limits_cdbm_min / 100.0) {
-        level = Device::Info().limits_cdbm_min / 100.0;
+    if(level > Device::Info(window->getDevice()).limits_cdbm_max / 100.0) {
+        level = Device::Info(window->getDevice()).limits_cdbm_max / 100.0;
+    } else if(level < Device::Info(window->getDevice()).limits_cdbm_min / 100.0) {
+        level = Device::Info(window->getDevice()).limits_cdbm_min / 100.0;
     }
     emit sourceLevelChanged(level);
     settings.Freq.excitation_power = level;
@@ -1105,15 +1109,15 @@ void VNA::SetPowerSweepFrequency(double freq)
 
 void VNA::SetPoints(unsigned int points)
 {
-    unsigned int maxPoints = Preferences::getInstance().Acquisition.allowSegmentedSweep ? UINT16_MAX : Device::Info().limits_maxPoints;
+    unsigned int maxPoints = Preferences::getInstance().Acquisition.allowSegmentedSweep ? UINT16_MAX : Device::Info(window->getDevice()).limits_maxPoints;
     if(points > maxPoints) {
         points = maxPoints;
     } else if (points < 2) {
         points = 2;
     }
-    if (points > Device::Info().limits_maxPoints) {
+    if (points > Device::Info(window->getDevice()).limits_maxPoints) {
         // needs segmented sweep
-        settings.segments = ceil((double) points / Device::Info().limits_maxPoints);
+        settings.segments = ceil((double) points / Device::Info(window->getDevice()).limits_maxPoints);
         settings.activeSegment = 0;
     } else {
         // can fit all points into one segment
@@ -1127,10 +1131,10 @@ void VNA::SetPoints(unsigned int points)
 
 void VNA::SetIFBandwidth(double bandwidth)
 {
-    if(bandwidth > Device::Info().limits_maxIFBW) {
-        bandwidth = Device::Info().limits_maxIFBW;
-    } else if(bandwidth < Device::Info().limits_minIFBW) {
-        bandwidth = Device::Info().limits_minIFBW;
+    if(bandwidth > Device::Info(window->getDevice()).limits_maxIFBW) {
+        bandwidth = Device::Info(window->getDevice()).limits_maxIFBW;
+    } else if(bandwidth < Device::Info(window->getDevice()).limits_minIFBW) {
+        bandwidth = Device::Info(window->getDevice()).limits_minIFBW;
     }
     settings.bandwidth = bandwidth;
     emit IFBandwidthChanged(settings.bandwidth);
@@ -1478,9 +1482,9 @@ void VNA::ConstrainAndUpdateFrequencies()
     auto pref = Preferences::getInstance();
     double maxFreq;
     if(pref.Acquisition.harmonicMixing) {
-        maxFreq = Device::Info().limits_maxFreqHarmonic;
+        maxFreq = Device::Info(window->getDevice()).limits_maxFreqHarmonic;
     } else {
-        maxFreq = Device::Info().limits_maxFreq;
+        maxFreq = Device::Info(window->getDevice()).limits_maxFreq;
     }
     if(settings.Freq.stop > maxFreq) {
         settings.Freq.stop = maxFreq;
@@ -1488,8 +1492,8 @@ void VNA::ConstrainAndUpdateFrequencies()
     if(settings.Freq.start > settings.Freq.stop) {
         settings.Freq.start = settings.Freq.stop;
     }
-    if(settings.Freq.start < Device::Info().limits_minFreq) {
-        settings.Freq.start = Device::Info().limits_minFreq;
+    if(settings.Freq.start < Device::Info(window->getDevice()).limits_minFreq) {
+        settings.Freq.start = Device::Info(window->getDevice()).limits_minFreq;
     }
     emit startFreqChanged(settings.Freq.start);
     emit stopFreqChanged(settings.Freq.stop);

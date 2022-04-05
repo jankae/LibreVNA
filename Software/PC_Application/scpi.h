@@ -31,6 +31,7 @@ public:
         name(name){}
 
     bool add(SCPINode *node);
+    bool remove(SCPINode *node);
     bool add(SCPICommand *cmd);
 
 private:

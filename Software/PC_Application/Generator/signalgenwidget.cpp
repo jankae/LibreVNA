@@ -2,9 +2,10 @@
 
 #include "ui_signalgenwidget.h"
 
-SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
+SignalgeneratorWidget::SignalgeneratorWidget(Device *&dev, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SignalgeneratorWidget)
+    ui(new Ui::SignalgeneratorWidget),
+    dev(dev)
 {
     ui->setupUi(this);
     ui->frequency->setUnit("Hz");
@@ -31,16 +32,16 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     ui->steps->setPrecision(0);
 
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
-       if(newval < Device::Info().limits_minFreq) {
-           newval = Device::Info().limits_minFreq;
-       } else if (newval > Device::Info().limits_maxFreq) {
-           newval = Device::Info().limits_maxFreq;
+       if(newval < Device::Info(dev).limits_minFreq) {
+           newval = Device::Info(dev).limits_minFreq;
+       } else if (newval > Device::Info(dev).limits_maxFreq) {
+           newval = Device::Info(dev).limits_maxFreq;
        }
        ui->frequency->setValueQuiet(newval);
        if (newval < ui->span->value()/2)
            ui->span->setValueQuiet(newval/2);
-       if (newval + ui->span->value()/2 > Device::Info().limits_maxFreq)
-           ui->span->setValueQuiet((Device::Info().limits_maxFreq - newval)*2);
+       if (newval + ui->span->value()/2 > Device::Info(dev).limits_maxFreq)
+           ui->span->setValueQuiet((Device::Info(dev).limits_maxFreq - newval)*2);
        newval = ui->frequency->value() - ui->span->value()/2;
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -49,8 +50,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     connect(ui->span, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > Device::Info().limits_maxFreq - Device::Info().limits_minFreq) {
-           newval = Device::Info().limits_maxFreq - Device::Info().limits_minFreq;
+       } else if (newval > Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq) {
+           newval = Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq;
        }
        ui->span->setValueQuiet(newval);
 
@@ -59,8 +60,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
            ui->frequency->setValueQuiet(ui->span->value()/2);
        }
        newF = ui->frequency->value() + ui->span->value()/2;
-       if (newF  > Device::Info().limits_maxFreq) {
-           ui->frequency->setValueQuiet(Device::Info().limits_maxFreq - ui->span->value()/2);
+       if (newF  > Device::Info(dev).limits_maxFreq) {
+           ui->frequency->setValueQuiet(Device::Info(dev).limits_maxFreq - ui->span->value()/2);
        }
 
        newval = ui->frequency->value() - ui->span->value()/2;
@@ -71,8 +72,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     connect(ui->current, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > Device::Info().limits_maxFreq - Device::Info().limits_minFreq) {
-           newval = Device::Info().limits_maxFreq - Device::Info().limits_minFreq;
+       } else if (newval > Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq) {
+           newval = Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq;
        }
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();

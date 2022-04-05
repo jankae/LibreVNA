@@ -120,16 +120,6 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .FW_minor = 0,
     .FW_patch = 0,
     .HW_Revision = '0',
-    .extRefAvailable = 0,
-    .extRefInUse = 0,
-    .FPGA_configured = 0,
-    .source_locked = 0,
-    .LO1_locked = 0,
-    .ADC_overload = 0,
-    .unlevel = 0,
-    .temp_source = 0,
-    .temp_LO1 = 0,
-    .temp_MCU = 0,
     .limits_minFreq = 0,
     .limits_maxFreq = 6000000000,
     .limits_minIFBW = 10,
@@ -143,14 +133,25 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .limits_maxFreqHarmonic = 18000000000,
 };
 
-Protocol::DeviceInfo Device::lastInfo = defaultInfo;
+static constexpr Protocol::DeviceStatusV1 defaultStatusV1 = {
+    .extRefAvailable = 0,
+    .extRefInUse = 0,
+    .FPGA_configured = 0,
+    .source_locked = 0,
+    .LO1_locked = 0,
+    .ADC_overload = 0,
+    .unlevel = 0,
+    .temp_source = 0,
+    .temp_LO1 = 0,
+    .temp_MCU = 0,
+};
 
 Device::Device(QString serial)
 {
-    lastInfo = defaultInfo;
+    info = defaultInfo;
 
     m_handle = nullptr;
-    lastInfoValid = false;
+    infoValid = false;
     libusb_init(&m_context);
 #if LIBUSB_API_VERSION >= 0x01000106
     libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
@@ -261,10 +262,10 @@ bool Device::Configure(Protocol::SpectrumAnalyzerSettings settings)
     return SendPacket(p);
 }
 
-bool Device::SetManual(Protocol::ManualControl manual)
+bool Device::SetManual(Protocol::ManualControlV1 manual)
 {
     Protocol::PacketInfo p;
-    p.type = Protocol::PacketType::ManualControl;
+    p.type = Protocol::PacketType::ManualControlV1;
     p.manual = manual;
     return SendPacket(p);
 }
@@ -393,25 +394,48 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
 
 const Protocol::DeviceInfo &Device::Info()
 {
-    return lastInfo;
+    return info;
+}
+
+const Protocol::DeviceInfo &Device::Info(Device *dev)
+{
+    if(dev) {
+        return dev->Info();
+    } else {
+        return defaultInfo;
+    }
+}
+
+Protocol::DeviceStatusV1 &Device::StatusV1()
+{
+    return status.v1;
+}
+
+const Protocol::DeviceStatusV1 &Device::StatusV1(Device *dev)
+{
+    if(dev) {
+        return dev->StatusV1();
+    } else {
+        return defaultStatusV1;
+    }
 }
 
 QString Device::getLastDeviceInfoString()
 {
     QString ret;
-    if(!lastInfoValid) {
+    if(!infoValid) {
         ret.append("No device information available yet");
     } else {
         ret.append("HW Rev.");
-        ret.append(lastInfo.HW_Revision);
-        ret.append(" FW "+QString::number(lastInfo.FW_major)+"."+QString::number(lastInfo.FW_minor)+"."+QString::number(lastInfo.FW_patch));
-        ret.append(" Temps: "+QString::number(lastInfo.temp_source)+"°C/"+QString::number(lastInfo.temp_LO1)+"°C/"+QString::number(lastInfo.temp_MCU)+"°C");
+        ret.append(info.HW_Revision);
+        ret.append(" FW "+QString::number(info.FW_major)+"."+QString::number(info.FW_minor)+"."+QString::number(info.FW_patch));
+        ret.append(" Temps: "+QString::number(status.v1.temp_source)+"°C/"+QString::number(status.v1.temp_LO1)+"°C/"+QString::number(status.v1.temp_MCU)+"°C");
         ret.append(" Reference:");
-        if(lastInfo.extRefInUse) {
+        if(status.v1.extRefInUse) {
             ret.append("External");
         } else {
             ret.append("Internal");
-            if(lastInfo.extRefAvailable) {
+            if(status.v1.extRefAvailable) {
                 ret.append(" (External available)");
             }
         }
@@ -431,8 +455,8 @@ void Device::ReceivedData()
         case Protocol::PacketType::Datapoint:
             emit DatapointReceived(packet.datapoint);
             break;
-        case Protocol::PacketType::Status:
-            emit ManualStatusReceived(packet.status);
+        case Protocol::PacketType::ManualStatusV1:
+            emit ManualStatusReceived(packet.manualStatusV1);
             break;
         case Protocol::PacketType::SpectrumAnalyzerResult:
             emit SpectrumResultReceived(packet.spectrumResult);
@@ -443,14 +467,18 @@ void Device::ReceivedData()
             break;
         case Protocol::PacketType::DeviceInfo:
             if(packet.info.ProtocolVersion != Protocol::Version) {
-                if(!lastInfoValid) {
+                if(!infoValid) {
                 emit NeedsFirmwareUpdate(packet.info.ProtocolVersion, Protocol::Version);
                 }
             } else {
-                lastInfo = packet.info;
+                info = packet.info;
             }
-            lastInfoValid = true;
+            infoValid = true;
             emit DeviceInfoUpdated();
+            break;
+        case Protocol::PacketType::DeviceStatusV1:
+            status.v1 = packet.statusV1;
+            emit DeviceStatusUpdated();
             break;
         case Protocol::PacketType::Ack:
             emit AckReceived();

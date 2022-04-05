@@ -21,8 +21,9 @@
 
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
+static uint8_t stageCnt;
+static uint8_t stages;
 static double logMultiplier, logFrequency;
-static bool excitingPort1;
 static Protocol::Datapoint data;
 static bool active = false;
 static Si5351C::DriveStrength fixedPowerLowband;
@@ -278,12 +279,22 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::Enable(FPGA::Periphery::SourceRF);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.excitePort1);
-	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.excitePort2);
+	if(s.excitePort1 && s.excitePort2) {
+		// two stages, port 1 first, followed by port 2
+		FPGA::SetupSweep(1, 0, 1);
+		stages = 2;
+	} else if(s.excitePort1) {
+		// one stage, port 1 only
+		FPGA::SetupSweep(0, 0, 1);
+		stages = 1;
+	} else {
+		// one stage, port 2 only
+		FPGA::SetupSweep(0, 1, 0);
+		stages = 1;
+	}
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 	pointCnt = 0;
-	// starting port depends on whether port 1 is active in sweep
-	excitingPort1 = s.excitePort1;
+	stageCnt = 0;
 	IFTableIndexCnt = 0;
 	adcShifted = false;
 	active = true;
@@ -306,8 +317,8 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	if(!active) {
 		return false;
 	}
-	if(result.pointNum != pointCnt || !result.activePort != excitingPort1) {
-		LOG_WARN("Indicated point does not match (%u != %u, %d != %d)", result.pointNum, pointCnt, result.activePort, !excitingPort1);
+	if(result.pointNum != pointCnt || result.stageNum != stageCnt) {
+		LOG_WARN("Indicated point does not match (%u != %u, %d != %d)", result.pointNum, pointCnt, result.stageNum, stageCnt);
 		FPGA::AbortSweep();
 		return false;
 	}
@@ -320,29 +331,24 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	data.pointNum = pointCnt;
 	data.frequency = getPointFrequency(pointCnt);
 	data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
-	if(excitingPort1) {
+	if(stageCnt == 0 && settings.excitePort1) {
+		// stimulus is present at port 1
 		data.real_S11 = port1.real();
 		data.imag_S11 = port1.imag();
 		data.real_S21 = port2.real();
 		data.imag_S21 = port2.imag();
 	} else {
+		// stimulus is present at port 2
 		data.real_S12 = port1.real();
 		data.imag_S12 = port1.imag();
 		data.real_S22 = port2.real();
 		data.imag_S22 = port2.imag();
 	}
-	// figure out whether this sweep point is complete and which port gets excited next
-	bool pointComplete = false;
-	if(settings.excitePort1 == 1 && settings.excitePort2 == 1) {
-		// point is complete when port 2 was active
-		pointComplete = !excitingPort1;
-		// next measurement will be from other port
-		excitingPort1 = !excitingPort1;
-	} else {
-		// only one port active, point is complete after every measurement
-		pointComplete = true;
-	}
-	if(pointComplete) {
+	// figure out whether this sweep point is complete
+	stageCnt++;
+	if(stageCnt == stages) {
+		// point is complete
+		stageCnt = 0;
 		STM::DispatchToInterrupt(PassOnData);
 		pointCnt++;
 		if (pointCnt >= settings.points) {
@@ -361,8 +367,8 @@ void VNA::Work() {
 	HW::Ref::update();
 	// Compile info packet
 	Protocol::PacketInfo packet;
-	packet.type = Protocol::PacketType::DeviceInfo;
-	HW::fillDeviceInfo(&packet.info, true);
+	packet.type = Protocol::PacketType::DeviceStatusV1;
+	HW::getDeviceStatus(&packet.statusV1, true);
 	Communication::Send(packet);
 	// do not reset unlevel flag here, as it is calculated only once at the setup of the sweep
 	// Start next sweep
