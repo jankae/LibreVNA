@@ -1007,7 +1007,15 @@ istream& operator >>(istream &in, Calibration &c)
                 in >> points;
                 qDebug() << "Found measurement" << Calibration::MeasurementToString(m) << ", containing" << points << "points";
                 for(unsigned int i=0;i<points;i++) {
-                    Protocol::Datapoint p;
+                    struct p {
+                        float real_S11, imag_S11;
+                        float real_S21, imag_S21;
+                        float real_S12, imag_S12;
+                        float real_S22, imag_S22;
+                        uint64_t frequency;
+                        int16_t cdbm;
+                        uint16_t pointNum;
+                    };
                     in >> p.pointNum >> p.frequency;
                     in >> p.imag_S11 >> p.real_S11 >> p.imag_S21 >> p.real_S21 >> p.imag_S12 >> p.real_S12 >> p.imag_S22 >> p.real_S22;
                     c.measurements[m].datapoints.push_back(VNAData(p));

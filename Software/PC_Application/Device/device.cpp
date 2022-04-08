@@ -454,7 +454,9 @@ void Device::ReceivedData()
         dataBuffer->removeBytes(handled_len);
         switch(packet.type) {
         case Protocol::PacketType::Datapoint:
-            emit DatapointReceived(packet.datapoint);
+            emit DatapointReceived(*packet.datapoint);
+            // packet decoding created datapoint on heap, need to free it now
+            delete packet.datapoint;
             break;
         case Protocol::PacketType::ManualStatusV1:
             emit ManualStatusReceived(packet.manualStatusV1);

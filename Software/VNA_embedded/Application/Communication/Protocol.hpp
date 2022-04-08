@@ -6,17 +6,30 @@ namespace Protocol {
 
 static constexpr uint16_t Version = 10;
 
-#pragma pack(push, 1)
+class Datapoint {
+public:
+	Datapoint(float *buf);
+	Datapoint(uint8_t maxPorts, uint8_t maxStages);
+	Datapoint(uint8_t *buf, uint16_t buflen);
+	Datapoint(const Datapoint& d);
+	~Datapoint();
 
-using Datapoint = struct _datapoint {
-	float real_S11, imag_S11;
-	float real_S21, imag_S21;
-	float real_S12, imag_S12;
-	float real_S22, imag_S22;
-	uint64_t frequency;
-    int16_t cdbm;
+	bool encode(uint8_t *buf, uint8_t maxlen);
+
+	void clear();
+	void addData(float real, float imag);
+	uint16_t requiredBufferSpace();
+
+	uint64_t freq;
+	int16_t cdbm;
 	uint16_t pointNum;
+
+private:
+	uint8_t numComplexValues;
+	float *raw_values;
 };
+
+#pragma pack(push, 1)
 
 using SweepSettings = struct _sweepSettings {
 	uint64_t f_start;
@@ -204,7 +217,7 @@ enum class PacketType : uint8_t {
 using PacketInfo = struct _packetinfo {
 	PacketType type;
 	union {
-		Datapoint datapoint;
+		Datapoint *datapoint;
 		SweepSettings settings;
 		ReferenceSettings reference;
 		GeneratorSettings generator;

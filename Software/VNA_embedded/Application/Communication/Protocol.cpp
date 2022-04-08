@@ -60,15 +60,19 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 	}
 
 	/* The complete frame has been received, check checksum */
-	auto type = (PacketType) data[3];
+	info->type = (PacketType) data[3];
 	uint32_t crc = *(uint32_t*) &data[length - 4];
-	if(type != PacketType::Datapoint) {
+	if(info->type != PacketType::Datapoint) {
 		uint32_t compare = CRC32(0, data, length - 4);
 		if(crc != compare) {
 			// CRC mismatch, remove header
 			data += 1;
 			info->type = PacketType::None;
 			return data - buf;
+		} else {
+			// Valid packet, copy packet type and payload
+			memcpy(info, &data[3], length - 7);
+			return data - buf + length;
 		}
 	} else {
 		// Datapoint has the CRC set to zero
@@ -76,18 +80,18 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 			data += 1;
 			info->type = PacketType::None;
 			return data - buf;
+		} else {
+			// valid data point, construct from buffer
+			info->datapoint = new Datapoint(&data[4], length - 8);
+			return data - buf + length;
 		}
 	}
-
-	// Valid packet, copy packet type and payload
-	memcpy(info, &data[3], length - 7);
-	return data - buf + length;
 }
 
 uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_t destsize) {
    int16_t payload_size = 0;
 	switch (packet.type) {
-	case PacketType::Datapoint: payload_size = sizeof(packet.datapoint); break;
+	case PacketType::Datapoint: payload_size = packet.datapoint->requiredBufferSpace(); break;
 	case PacketType::SweepSettings: payload_size = sizeof(packet.settings); break;
 	case PacketType::Reference:	payload_size = sizeof(packet.reference); break;
     case PacketType::DeviceInfo: payload_size = sizeof(packet.info); break;
@@ -125,17 +129,87 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
 	dest[0] = header;
 	uint16_t overall_size = payload_size + 8;
 	memcpy(&dest[1], &overall_size, 2);
-	memcpy(&dest[3], &packet, payload_size + 1); // one additional byte for the packet type
-	// Calculate checksum
 	uint32_t crc = 0x00000000;
 	if(packet.type == PacketType::Datapoint) {
 		// CRC calculation takes about 18us which is the bulk of the time required to encode and transmit a datapoint.
 		// Skip CRC for data points to optimize throughput
 		crc = 0x00000000;
+		dest[3] = (uint8_t) packet.type;
+		packet.datapoint->encode(&dest[4], payload_size);
 	} else {
+		memcpy(&dest[3], &packet, payload_size + 1); // one additional byte for the packet type
+		// Calculate checksum
 		crc = CRC32(0, dest, overall_size - 4);
 	}
 	memcpy(&dest[overall_size - 4], &crc, 4);
 	return overall_size;
 }
 
+Protocol::Datapoint::Datapoint(float *buf) {
+	pointNum = 0;
+	numComplexValues = 0;
+	raw_values = buf;
+}
+
+Protocol::Datapoint::Datapoint(uint8_t maxPorts, uint8_t maxStages) {
+	Datapoint(new float[maxPorts*2*maxStages*2]); // up to two receivers per port and stage with a real and imag value each
+}
+
+Protocol::Datapoint::Datapoint(uint8_t *buf, uint16_t buflen) {
+	memcpy(&freq, buf, 2);
+	buf += 8;
+	memcpy(&cdbm, buf, 2);
+	buf += 2;
+	memcpy(&pointNum, buf, 2);
+	buf += 2;
+	numComplexValues = *buf;
+	buf++;
+	raw_values = new float[numComplexValues * 8];
+	memcpy(raw_values, buf, numComplexValues * 8);
+}
+
+Protocol::Datapoint::Datapoint(const Datapoint &d) {
+	pointNum = d.pointNum;
+	freq = d.freq;
+	cdbm = d.cdbm;
+	numComplexValues = d.numComplexValues;
+	raw_values = new float[numComplexValues];
+	memcpy(raw_values, d.raw_values, 8 * numComplexValues);
+}
+
+Protocol::Datapoint::~Datapoint() {
+	delete raw_values;
+}
+
+bool Protocol::Datapoint::encode(uint8_t *buf, uint8_t maxlen) {
+	if(requiredBufferSpace() > maxlen) {
+		return false;
+	}
+	memcpy(buf, &freq, 8);
+	buf += 8;
+	memcpy(buf, &cdbm, 2);
+	buf += 2;
+	memcpy(buf, &pointNum, 2);
+	buf += 2;
+	*buf = numComplexValues;
+	buf++;
+	memcpy(buf, raw_values, numComplexValues * 8);
+	return true;
+}
+
+void Protocol::Datapoint::clear() {
+	numComplexValues = 0;
+}
+
+void Protocol::Datapoint::addData(float real, float imag) {
+	raw_values[numComplexValues++] = real;
+	raw_values[numComplexValues++] = imag;
+}
+
+uint16_t Protocol::Datapoint::requiredBufferSpace() {
+	return 8	/* uint64_t freq */
+		+ 2		/* int16_t cdbm */
+		+ 2		/* uint16_t pointNum */
+		+ 1		/* numComplexValues */
+		+ 8 * numComplexValues; /* memory of complex values */
+}

@@ -24,7 +24,9 @@ static uint16_t pointCnt;
 static uint8_t stageCnt;
 static uint8_t stages;
 static double logMultiplier, logFrequency;
-static Protocol::Datapoint data;
+
+static float dataBuffer[2*2*8*2];
+static Protocol::Datapoint data = Protocol::Datapoint(dataBuffer);
 static bool active = false;
 static Si5351C::DriveStrength fixedPowerLowband;
 static bool adcShifted;
@@ -309,7 +311,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 static void PassOnData() {
 	Protocol::PacketInfo info;
 	info.type = Protocol::PacketType::Datapoint;
-	info.datapoint = data;
+	info.datapoint = &data;
 	Communication::Send(info);
 }
 
@@ -322,28 +324,17 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 		FPGA::AbortSweep();
 		return false;
 	}
-	// normal sweep mode
-	auto port1_raw = std::complex<float>(result.P1I, result.P1Q);
-	auto port2_raw = std::complex<float>(result.P2I, result.P2Q);
-	auto ref = std::complex<float>(result.RefI, result.RefQ);
-	auto port1 = port1_raw / ref;
-	auto port2 = port2_raw / ref;
-	data.pointNum = pointCnt;
-	data.frequency = getPointFrequency(pointCnt);
-	data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
-	if(stageCnt == 0 && settings.excitePort1) {
-		// stimulus is present at port 1
-		data.real_S11 = port1.real();
-		data.imag_S11 = port1.imag();
-		data.real_S21 = port2.real();
-		data.imag_S21 = port2.imag();
-	} else {
-		// stimulus is present at port 2
-		data.real_S12 = port1.real();
-		data.imag_S12 = port1.imag();
-		data.real_S22 = port2.real();
-		data.imag_S22 = port2.imag();
+	if(stageCnt == 0) {
+		data.clear();
+		data.pointNum = pointCnt;
+		data.freq = getPointFrequency(pointCnt);
+		data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
 	}
+	data.addData(result.P1I, result.P1Q);
+	data.addData(result.RefI, result.RefQ);
+	data.addData(result.P2I, result.P2Q);
+	data.addData(result.RefI, result.RefQ);
+
 	// figure out whether this sweep point is complete
 	stageCnt++;
 	if(stageCnt == stages) {

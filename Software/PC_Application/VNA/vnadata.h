@@ -13,7 +13,7 @@ public:
                     std::complex<double>(d.real_S12, d.imag_S12),
                     std::complex<double>(d.real_S21, d.imag_S21),
                     std::complex<double>(d.real_S22, d.imag_S22));
-        frequency = d.frequency;
+        frequency = d.freq;
         cdbm = d.cdbm;
         pointNum = d.pointNum;
         reference_impedance = 50.0;
