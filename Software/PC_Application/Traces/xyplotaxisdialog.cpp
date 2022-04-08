@@ -1,6 +1,7 @@
 #include "xyplotaxisdialog.h"
 
 #include "ui_xyplotaxisdialog.h"
+#include "traceaxis.h"
 
 #include <QStandardItemModel>
 
@@ -223,61 +224,10 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
 
 std::set<YAxis::Type> XYplotAxisDialog::supportedYAxis(XAxis::Type type)
 {
-    set<YAxis::Type> ret = {YAxis::Type::Disabled};
-    auto source = plot->getModel().getSource();
-    if(source == TraceModel::DataSource::VNA) {
-        switch(type) {
-        case XAxis::Type::Frequency:
-        case XAxis::Type::Power:
-            ret.insert(YAxis::Type::Magnitude);
-            ret.insert(YAxis::Type::MagnitudeLinear);
-            ret.insert(YAxis::Type::Phase);
-            ret.insert(YAxis::Type::UnwrappedPhase);
-            ret.insert(YAxis::Type::VSWR);
-            ret.insert(YAxis::Type::Real);
-            ret.insert(YAxis::Type::Imaginary);
-            ret.insert(YAxis::Type::SeriesR);
-            ret.insert(YAxis::Type::Reactance);
-            ret.insert(YAxis::Type::Capacitance);
-            ret.insert(YAxis::Type::Inductance);
-            ret.insert(YAxis::Type::QualityFactor);
-            ret.insert(YAxis::Type::GroupDelay);
-            break;
-        case XAxis::Type::Time:
-        case XAxis::Type::Distance:
-            ret.insert(YAxis::Type::ImpulseReal);
-            ret.insert(YAxis::Type::ImpulseMag);
-            ret.insert(YAxis::Type::Step);
-            ret.insert(YAxis::Type::Impedance);
-            break;
-        default:
-            break;
-        }
-    } else if(source == TraceModel::DataSource::SA) {
-        switch(type) {
-        case XAxis::Type::Frequency:
-            ret.insert(YAxis::Type::Magnitude);
-            ret.insert(YAxis::Type::MagnitudedBuV);
-            break;
-        default:
-            break;
-        }
-    }
-    return ret;
+    return YAxis::getSupported(type, plot->getModel().getSource());
 }
 
 bool XYplotAxisDialog::isSupported(XAxis::Type type)
 {
-    auto source = plot->getModel().getSource();
-    if(source == TraceModel::DataSource::VNA) {
-        // all X axis types are supported
-        return true;
-    } else if(source == TraceModel::DataSource::SA) {
-        if (type == XAxis::Type::Frequency) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    return false;
+    return XAxis::isSupported(type, plot->getModel().getSource());
 }

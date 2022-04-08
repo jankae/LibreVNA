@@ -72,3 +72,10 @@ double Util::dBmTodBuV(double dBm)
     double dBdiff = 10*log10(uVpower*1000);
     return dBm - dBdiff;
 }
+
+double Util::dBuVTodBm(double dBuV)
+{
+    double uVpower = 0.000001*0.000001/50.0;
+    double dBdiff = 10*log10(uVpower*1000);
+    return dBuV + dBdiff;
+}

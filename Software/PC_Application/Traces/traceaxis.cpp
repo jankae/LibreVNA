@@ -317,6 +317,95 @@ YAxis::Type YAxis::getType() const
     return type;
 }
 
+std::set<YAxis::Type> YAxis::getSupported(XAxis::Type type, TraceModel::DataSource source)
+{
+    std::set<YAxis::Type> ret = {YAxis::Type::Disabled};
+    if(source == TraceModel::DataSource::VNA) {
+        switch(type) {
+        case XAxis::Type::Frequency:
+        case XAxis::Type::Power:
+            ret.insert(YAxis::Type::Magnitude);
+            ret.insert(YAxis::Type::MagnitudeLinear);
+            ret.insert(YAxis::Type::Phase);
+            ret.insert(YAxis::Type::UnwrappedPhase);
+            ret.insert(YAxis::Type::VSWR);
+            ret.insert(YAxis::Type::Real);
+            ret.insert(YAxis::Type::Imaginary);
+            ret.insert(YAxis::Type::SeriesR);
+            ret.insert(YAxis::Type::Reactance);
+            ret.insert(YAxis::Type::Capacitance);
+            ret.insert(YAxis::Type::Inductance);
+            ret.insert(YAxis::Type::QualityFactor);
+            ret.insert(YAxis::Type::GroupDelay);
+            break;
+        case XAxis::Type::Time:
+        case XAxis::Type::Distance:
+            ret.insert(YAxis::Type::ImpulseReal);
+            ret.insert(YAxis::Type::ImpulseMag);
+            ret.insert(YAxis::Type::Step);
+            ret.insert(YAxis::Type::Impedance);
+            break;
+        default:
+            break;
+        }
+    } else if(source == TraceModel::DataSource::SA) {
+        switch(type) {
+        case XAxis::Type::Frequency:
+            ret.insert(YAxis::Type::Magnitude);
+            ret.insert(YAxis::Type::MagnitudedBuV);
+            break;
+        default:
+            break;
+        }
+    }
+    return ret;
+}
+
+std::complex<double> YAxis::reconstructValueFromYAxisType(std::map<YAxis::Type, double> yaxistypes)
+{
+    std::complex<double> ret = std::numeric_limits<std::complex<double>>::quiet_NaN();
+    if(yaxistypes.count(Type::Real)) {
+        ret.real(yaxistypes[Type::Real]);
+        if(yaxistypes.count(Type::Imaginary)) {
+            ret.imag(yaxistypes[Type::Imaginary]);
+        } else {
+            ret.imag(0.0);
+        }
+    } else if(yaxistypes.count(Type::Magnitude) || yaxistypes.count(Type::MagnitudedBuV) || yaxistypes.count(Type::MagnitudeLinear)) {
+        double maglin, phase;
+        if(yaxistypes.count(Type::MagnitudeLinear)) {
+            maglin = yaxistypes[Type::MagnitudeLinear];
+        } else if(yaxistypes.count(Type::Magnitude)) {
+            maglin = Util::dBToMagnitude(yaxistypes[Type::Magnitude]);
+        } else {
+            auto dBm = Util::dBuVTodBm(yaxistypes[Type::MagnitudedBuV]);
+            maglin = Util::dBToMagnitude(dBm);
+        }
+        if(yaxistypes.count(Type::Phase)) {
+            phase = yaxistypes[Type::Phase];
+        } else {
+            phase = 0.0;
+        }
+        ret = polar<double>(maglin, phase / 180.0 * M_PI);
+    }
+    return ret;
+}
+
+bool XAxis::isSupported(XAxis::Type type, TraceModel::DataSource source)
+{
+    if(source == TraceModel::DataSource::VNA) {
+        // all X axis types are supported
+        return true;
+    } else if(source == TraceModel::DataSource::SA) {
+        if (type == XAxis::Type::Frequency) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return false;
+}
+
 void Axis::updateTicks()
 {
     if(log) {

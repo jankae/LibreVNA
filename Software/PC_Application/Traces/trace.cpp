@@ -3,6 +3,7 @@
 #include "fftcomplex.h"
 #include "Util/util.h"
 #include "Marker/marker.h"
+#include "traceaxis.h"
 
 #include <math.h>
 #include <QDebug>
@@ -167,54 +168,48 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
 QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
 {
     // find correct column
-    unsigned int traceNum = 0;
-    vector<double> real;
-    vector<double> imag;
+    int traceNum = -1;
     unsigned int i=1;
-    QString traceName;
+    QString lastTraceName = "";
     bool hasImagValues;
+    std::map<YAxis::Type, int> columnMapping;
     for(;i<csv.columns();i++) {
-        traceName = QString();
-        hasImagValues = false;
-        // check column names
-        if(i < csv.columns() - 1) {
-            // not the last column, check if this and next header implies real/imag values
-            auto name_real = csv.getHeader(i);
-            auto name_imag = csv.getHeader(i + 1);
-            if(name_real.endsWith("_real") && name_imag.endsWith("_imag")) {
-                // check if headers have the same beginning
-                name_real.chop(5);
-                name_imag.chop(5);
-                if(name_real == name_imag) {
-                    hasImagValues = true;
-                    traceName = name_real;
-                }
-            }
+        auto header = csv.getHeader(i);
+        auto splitIndex = header.lastIndexOf("_");
+        if(splitIndex == -1) {
+            // no "_", not following naming format of CSV export, skip
+            continue;
         }
-        if(!hasImagValues) {
-            traceName = csv.getHeader(i);
+        auto traceName = header.left(splitIndex);
+        auto yaxistype = header.right(header.size() - splitIndex - 1);
+        if(traceName != lastTraceName) {
+            traceNum++;
+            if(traceNum > parameter) {
+                // got all columns for the trace we are interested in
+                break;
+            }
+            lastTraceName = traceName;
         }
         if(traceNum == parameter) {
-            // this is the desired trace
-            break;
-        } else {
-            traceNum++;
-        }
-        if(hasImagValues) {
-            // next column already used by this trace, skip
-            i++;
+            // this is the trace we are looking for, get axistype and add to mapping
+
+            // handle legacy column naming, translate to new naming
+            if(yaxistype == "real") {
+                yaxistype = YAxis::TypeToName(YAxis::Type::Real);
+            } else if(yaxistype == "imag") {
+                yaxistype = YAxis::TypeToName(YAxis::Type::Imaginary);
+            }
+
+            columnMapping[YAxis::TypeFromName(yaxistype)] = i;
         }
     }
-    if(i >= csv.columns()) {
+    if(traceNum < parameter) {
         throw runtime_error("Not enough traces in CSV file");
     }
-    real = csv.getColumn(i);
-    if(hasImagValues) {
-        imag = csv.getColumn(i + 1);
-    } else {
-        imag.resize(real.size());
-        fill(imag.begin(), imag.end(), 0.0);
+    if(columnMapping.size() == 0) {
+        throw runtime_error("No data for trace in CSV file");
     }
+
     clear();
     fileParameter = parameter;
     filename = csv.getFilename();
@@ -227,16 +222,20 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
         domain = DataType::Frequency;
     }
     for(unsigned int i=0;i<xColumn.size();i++) {
+        std::map<YAxis::Type, double> data;
+        for(auto map : columnMapping) {
+            data[map.first] = csv.getColumn(map.second)[i];
+        }
         Data d;
         d.x = xColumn[i];
-        d.y = complex<double>(real[i], imag[i]);
+        d.y = YAxis::reconstructValueFromYAxisType(data);
         addData(d, domain);
     }
     reflection = false;
     createdFromFile = true;
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
-    return traceName;
+    return lastTraceName;
 }
 
 void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data)

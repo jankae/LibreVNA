@@ -29,6 +29,32 @@ protected:
     std::vector<double> ticks;
 };
 
+class XAxis : public Axis {
+public:
+    enum class Type {
+        Frequency,
+        Time,
+        Distance,
+        Power,
+        Last,
+    };
+    XAxis();
+    double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) override;
+    void set(Type type, bool log, bool autorange, double min, double max, double div);
+    static QString TypeToName(Type type);
+    static Type TypeFromName(QString name);
+    static QString Unit(Type type);
+    QString TypeToName();
+    QString Unit();
+
+    Type getType() const;
+
+    static bool isSupported(XAxis::Type type, TraceModel::DataSource source);
+
+private:
+    Type type;
+};
+
 class YAxis : public Axis {
 public:
     enum class Type {
@@ -58,6 +84,7 @@ public:
     };
     YAxis();
     double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) override;
+
     void set(Type type, bool log, bool autorange, double min, double max, double div);
     static QString TypeToName(Type type);
     static Type TypeFromName(QString name);
@@ -69,29 +96,8 @@ public:
 
     Type getType() const;
 
-private:
-    Type type;
-};
-
-class XAxis : public Axis {
-public:
-    enum class Type {
-        Frequency,
-        Time,
-        Distance,
-        Power,
-        Last,
-    };
-    XAxis();
-    double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) override;
-    void set(Type type, bool log, bool autorange, double min, double max, double div);
-    static QString TypeToName(Type type);
-    static Type TypeFromName(QString name);
-    static QString Unit(Type type);
-    QString TypeToName();
-    QString Unit();
-
-    Type getType() const;
+    static std::set<YAxis::Type> getSupported(XAxis::Type type, TraceModel::DataSource source);
+    static std::complex<double> reconstructValueFromYAxisType(std::map<Type, double> yaxistypes);
 
 private:
     Type type;

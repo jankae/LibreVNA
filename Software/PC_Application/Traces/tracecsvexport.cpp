@@ -3,6 +3,8 @@
 #include "ui_tracecsvexport.h"
 #include "csv.h"
 
+#include "traceaxis.h"
+
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QFileDialog>
@@ -19,11 +21,46 @@ TraceCSVExport::TraceCSVExport(TraceModel &traceModel, QWidget *parent) :
     ui->listView->setModel(&model);
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     connect(&model, &TraceCSVModel::selectionChanged, ui->buttonBox->button(QDialogButtonBox::Ok), &QPushButton::setEnabled);
+    connect(&model, &TraceCSVModel::selectionChanged, [&](){
+        auto traces = model.tracesToExport();
+        if(traces.size() == 0) {
+            ui->listColumns->clear();
+        } else if(ui->listColumns->count() == 0) {
+            // first trace has bee selected, fill column selection
+            auto t = traces.front();
+            auto domain = t->outputType();
+            auto Xaxis = XAxis::Type::Last;
+            switch(domain) {
+            case Trace::DataType::Frequency: Xaxis = XAxis::Type::Frequency; break;
+            case Trace::DataType::Power: Xaxis = XAxis::Type::Power; break;
+            case Trace::DataType::Time: Xaxis = XAxis::Type::Time; break;
+            }
+            if(Xaxis == XAxis::Type::Last) {
+                // invalid axis selection
+                return;
+            }
+            for(auto ytype : YAxis::getSupported(Xaxis, traceModel.getSource())) {
+                if(ytype != YAxis::Type::Disabled) {
+                    auto item = new QListWidgetItem(YAxis::TypeToName(ytype), ui->listColumns);
+                    item->setCheckState(Qt::Unchecked);
+                }
+            }
+            // first fill of selection, nothing selected yet, disable OK button
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        }
+    });
+    connect(ui->listColumns, &QListWidget::itemChanged, this, &TraceCSVExport::columnSelectionChanged);
 }
 
 TraceCSVExport::~TraceCSVExport()
 {
     delete ui;
+}
+
+void TraceCSVExport::columnSelectionChanged()
+{
+    auto types = getSelectedYAxisTypes();
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(types.size() > 0);
 }
 
 void TraceCSVExport::on_buttonBox_accepted()
@@ -52,27 +89,33 @@ void TraceCSVExport::on_buttonBox_accepted()
     }
     csv.addColumn(Xname, X);
     // add the trace data
-    for(auto t : traces) {
-        vector<double> real;
-        vector<double> imag;
-        auto samples = t->numSamples();
-        for(unsigned int i=0;i<samples;i++) {
-            real.push_back(t->sample(i).y.real());
-            imag.push_back(t->sample(i).y.imag());
-        }
-        // check if this is a real or complex trace
-        bool allZeros = std::all_of(imag.begin(), imag.end(), [](double i) { return i==0.0; });
-        if(allZeros) {
-            // only real values, one column is enough
-            csv.addColumn(t->name(), real);
-        } else {
-            // complex values, need two columns
-            csv.addColumn(t->name()+"_real", real);
-            csv.addColumn(t->name()+"_imag", imag);
+    for(auto trace : traces) {
+        for(auto ytype : getSelectedYAxisTypes()) {
+            auto axis = YAxis();
+            axis.set(ytype, false, false, 0, 1, 1);
+            auto samples = trace->numSamples();
+            vector<double> values;
+            for(unsigned int i=0;i<samples;i++) {
+                values.push_back(axis.sampleToCoordinate(trace->sample(i), trace, i));
+            }
+            csv.addColumn(trace->name()+"_"+axis.TypeToName(), values);
         }
     }
 
     csv.toFile(filename);
+}
+
+std::vector<YAxis::Type> TraceCSVExport::getSelectedYAxisTypes()
+{
+    std::vector<YAxis::Type> ret;
+    for(unsigned int i=0;i<ui->listColumns->count();i++) {
+        auto item = ui->listColumns->item(i);
+        if(item->checkState() == Qt::Checked) {
+            auto type = YAxis::TypeFromName(item->text());
+            ret.push_back(type);
+        }
+    }
+    return ret;
 }
 
 TraceCSVModel::TraceCSVModel(std::vector<Trace *> traces, QObject *parent)
