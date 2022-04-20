@@ -83,7 +83,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -946,6 +946,85 @@
             </widget>
            </item>
            <item>
+            <widget class="QGroupBox" name="groupBox_16">
+             <property name="title">
+              <string>Size</string>
+             </property>
+             <layout class="QFormLayout" name="formLayout_11">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_27">
+                <property name="text">
+                 <string>Line Width:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="GraphsLineWidth">
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_39">
+                <property name="text">
+                 <string>Font (axes):</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="GraphsFontSizeAxis">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QSpinBox" name="GraphsFontSizeTraceNames">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QSpinBox" name="GraphsFontSizeMarkerData">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QSpinBox" name="GraphsFontSizeCursorOverlay">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_40">
+                <property name="text">
+                 <string>Font (trace names):</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_41">
+                <property name="text">
+                 <string>Font (marker data):</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_42">
+                <property name="text">
+                 <string>Font (cursor overlay):</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <widget class="QGroupBox" name="groupBox_5">
              <property name="title">
               <string>Colors</string>
@@ -979,7 +1058,7 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0" colspan="2">
+              <item row="2" column="0" colspan="2">
                <widget class="QGroupBox" name="groupBox_13">
                 <property name="title">
                  <string>Ticks</string>
@@ -1026,20 +1105,6 @@
                   </widget>
                  </item>
                 </layout>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_27">
-                <property name="text">
-                 <string>Line Width:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QDoubleSpinBox" name="GraphsLineWidth">
-                <property name="singleStep">
-                 <double>0.100000000000000</double>
-                </property>
                </widget>
               </item>
              </layout>

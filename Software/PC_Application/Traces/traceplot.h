@@ -88,12 +88,9 @@ protected slots:
     virtual void markerRemoved(Marker *m);
     virtual bool markerVisible(double x) = 0;
 protected:
-    static constexpr unsigned int marginTop = 20;
     static constexpr unsigned int marginBottom = 0;
     static constexpr unsigned int marginLeft = 0;
     static constexpr unsigned int marginRight = 0;
-
-    static constexpr unsigned int marginMarkerData = 150;
 
     double sweep_fmin, sweep_fmax;
     TraceModel &model;
@@ -108,6 +105,7 @@ protected:
 
     QLabel *cursorLabel;
 
+    unsigned int marginTop;
 };
 
 #endif // TRACEPLOT_H

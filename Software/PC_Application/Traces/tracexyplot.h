@@ -46,10 +46,7 @@ protected:
 private slots:
     void updateAxisTicks();
 private:
-    static constexpr int AxisLabelSize = 10;
-    static constexpr int yAxisSpace = 55;
     static constexpr int yAxisDisabledSpace = 10;
-    static constexpr int xAxisSpace = 30;
     static QString AxisModeToName(XAxisMode mode);
     static XAxisMode AxisModeFromName(QString name);
     void enableTraceAxis(Trace *t, int axis, bool enabled);

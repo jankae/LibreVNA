@@ -249,6 +249,10 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsColorTicksBackground->setColor(p->Graphs.Color.Ticks.Background.background);
     ui->GraphsDomainChangeBehavior->setCurrentIndex((int) p->Graphs.domainChangeBehavior);
     ui->GraphsLineWidth->setValue(p->Graphs.lineWidth);
+    ui->GraphsFontSizeAxis->setValue(p->Graphs.fontSizeAxis);
+    ui->GraphsFontSizeCursorOverlay->setValue(p->Graphs.fontSizeCursorOverlay);
+    ui->GraphsFontSizeMarkerData->setValue(p->Graphs.fontSizeMarkerData);
+    ui->GraphsFontSizeTraceNames->setValue(p->Graphs.fontSizeTraceNames);
 
     ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
     ui->MarkerShowAllMarkerData->setChecked(p->Marker.defaultBehavior.showAllData);
@@ -309,6 +313,10 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.Color.Ticks.divisions = ui->GraphsColorTicksDivisions->getColor();
     p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
     p->Graphs.lineWidth = ui->GraphsLineWidth->value();
+    p->Graphs.fontSizeAxis = ui->GraphsFontSizeAxis->value();
+    p->Graphs.fontSizeCursorOverlay = ui->GraphsFontSizeCursorOverlay->value();
+    p->Graphs.fontSizeMarkerData = ui->GraphsFontSizeMarkerData->value();
+    p->Graphs.fontSizeTraceNames = ui->GraphsFontSizeTraceNames->value();
 
     p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
     p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();

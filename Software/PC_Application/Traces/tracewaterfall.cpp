@@ -214,16 +214,12 @@ void TraceWaterfall::draw(QPainter &p)
 {
     auto pref = Preferences::getInstance();
 
-//    constexpr int yAxisLegendSpace = 25;
-//    constexpr int yAxisDisabledSpace = 10;
-    constexpr int xAxisSpace = 30;
+    int xAxisSpace = pref.Graphs.fontSizeAxis * 3;
     constexpr int topMargin = 10;
     auto w = p.window();
     auto pen = QPen(pref.Graphs.Color.axis, 0);
     pen.setCosmetic(true);
     p.setPen(pen);
-//    plotAreaLeft = yAxisDisabledSpace;
-//    plotAreaWidth = w.width() - 3 * yAxisDisabledSpace - yAxisLegendSpace;
 
     auto leftMargin = TraceXYPlot::sideMargin(align == Alignment::PrimaryOnly || align == Alignment::BothAxes);
     auto rightMargin = TraceXYPlot::sideMargin(align == Alignment::SecondaryOnly || align == Alignment::BothAxes);
@@ -235,6 +231,9 @@ void TraceWaterfall::draw(QPainter &p)
     plotAreaBottom = plotRect.y()+plotRect.height();
 
     // draw Y legend
+    auto font = p.font();
+    font.setPixelSize(pref.Graphs.fontSizeAxis);
+    p.setFont(font);
     QRect legendRect;
     constexpr int legendMargin = 10;
     if(leftMargin < rightMargin) {
@@ -271,10 +270,7 @@ void TraceWaterfall::draw(QPainter &p)
     p.drawRect(plotRect);
 
     // draw axis types
-    auto font = p.font();
-    font.setPixelSize(AxisLabelSize);
-    p.setFont(font);
-    p.drawText(QRect(0, w.height()-AxisLabelSize*1.5, w.width(), AxisLabelSize*1.5), Qt::AlignHCenter, xAxis.TypeToName());
+    p.drawText(QRect(0, w.height()-pref.Graphs.fontSizeAxis*1.5, w.width(), pref.Graphs.fontSizeAxis*1.5), Qt::AlignHCenter, xAxis.TypeToName());
 
     if(xAxis.getTicks().size() >= 1) {
         // draw X ticks
@@ -313,9 +309,9 @@ void TraceWaterfall::draw(QPainter &p)
             back.append("..");
             p.setPen(QPen(QColor("orange")));
             QRect bounding;
-            p.drawText(QRect(2, plotAreaBottom + AxisLabelSize + 5, w.width(), AxisLabelSize), 0, front, &bounding);
+            p.drawText(QRect(2, plotAreaBottom + pref.Graphs.fontSizeAxis + 5, w.width(), pref.Graphs.fontSizeAxis), 0, front, &bounding);
             p.setPen(pref.Graphs.Color.axis);
-            p.drawText(QRect(bounding.x() + bounding.width(), plotAreaBottom + AxisLabelSize + 5, w.width(), AxisLabelSize), 0, back);
+            p.drawText(QRect(bounding.x() + bounding.width(), plotAreaBottom + pref.Graphs.fontSizeAxis + 5, w.width(), pref.Graphs.fontSizeAxis), 0, back);
         }
 
         int lastTickLabelEnd = 0;
@@ -335,7 +331,7 @@ void TraceWaterfall::draw(QPainter &p)
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             if(displayFullFreq) {
                 QRect bounding;
-                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue, &bounding);
+                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
                 lastTickLabelEnd = bounding.x() + bounding.width();
             } else {
                 // check if the same prefix was used as in the fullFreq string
@@ -346,10 +342,10 @@ void TraceWaterfall::draw(QPainter &p)
 
                 tickValue.remove(0, tickValue.size() - displayLastDigits - unit.length());
                 QRect bounding;
-                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, AxisLabelSize), Qt::AlignHCenter, tickValue, &bounding);
+                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
                 lastTickLabelEnd = bounding.x() + bounding.width();
                 p.setPen(QPen(QColor("orange")));
-                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, AxisLabelSize), Qt::AlignRight, "..", &bounding);
+                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, pref.Graphs.fontSizeAxis), Qt::AlignRight, "..", &bounding);
             }
         }
     }

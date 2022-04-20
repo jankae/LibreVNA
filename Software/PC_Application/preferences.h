@@ -95,6 +95,10 @@ public:
         GraphDomainChangeBehavior domainChangeBehavior;
 
         double lineWidth;
+        int fontSizeAxis;
+        int fontSizeMarkerData;
+        int fontSizeTraceNames;
+        int fontSizeCursorOverlay;
     } Graphs;
     struct {
         struct {
@@ -163,6 +167,10 @@ private:
         {&Graphs.Color.Ticks.divisions, "Graphs.Color.Ticks.divisions", QColor(Qt::gray)},
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
         {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
+        {&Graphs.fontSizeAxis, "Graphs.fontSizeAxis", 10},
+        {&Graphs.fontSizeCursorOverlay, "Graphs.fontSizeCursorOverlay", 12},
+        {&Graphs.fontSizeMarkerData, "Graphs.fontSizeMarkerData", 12},
+        {&Graphs.fontSizeTraceNames, "Graphs.fontSizeTraceNames", 12},
         {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
         {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},

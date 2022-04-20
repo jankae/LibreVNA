@@ -21,7 +21,8 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
       selectedMarker(nullptr),
       traceRemovalPending(false),
       dropPending(false),
-      dropTrace(nullptr)
+      dropTrace(nullptr),
+      marginTop(20)
 {
     contextmenu = new QMenu();
     markedForDeletion = false;
@@ -37,9 +38,6 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
 
     cursorLabel = new QLabel("Test", this);
     cursorLabel->setStyleSheet("color: white;");
-    auto font = cursorLabel->font();
-    font.setPixelSize(12);
-    cursorLabel->setFont(font);
     cursorLabel->hide();
     setMouseTracking(true);
     setAcceptDrops(true);
@@ -155,6 +153,8 @@ void TracePlot::paintEvent(QPaintEvent *event)
 
     // show names of active traces and marker data (if enabled)
     bool hasMarkerData = false;
+    auto marginMarkerData = pref.Graphs.fontSizeMarkerData * 12.5;
+    marginTop = pref.Graphs.fontSizeTraceNames + 8;
     int x = 1; // xcoordinate for the next trace name
     int y = marginTop; // ycoordinate for the next marker data
     auto areaTextTop = 5;
@@ -168,7 +168,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
         // Trace name
         auto textArea = QRect(x, areaTextTop, width() - x, marginTop);
         QFont font = p.font();
-        font.setPixelSize(12);
+        font.setPixelSize(pref.Graphs.fontSizeTraceNames);
         p.setFont(font);
         p.setPen(t.first->color());
         auto space = " ";
@@ -194,6 +194,9 @@ void TracePlot::paintEvent(QPaintEvent *event)
                 continue;
             }
             hasMarkerData = true;
+            QFont font = p.font();
+            font.setPixelSize(pref.Graphs.fontSizeMarkerData);
+            p.setFont(font);
 
             // Rounded box
             auto space = "  ";
@@ -269,6 +272,9 @@ void TracePlot::mouseMoveEvent(QMouseEvent *event)
             cursorLabel->setText(text);
             cursorLabel->adjustSize();
             cursorLabel->move(event->pos() + QPoint(15, 0));
+            auto font = cursorLabel->font();
+            font.setPixelSize(Preferences::getInstance().Graphs.fontSizeCursorOverlay);
+            cursorLabel->setFont(font);
             cursorLabel->show();
         } else {
             cursorLabel->hide();
