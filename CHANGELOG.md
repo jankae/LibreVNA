@@ -1,12 +1,22 @@
 # Changelog
 
-## v1.2.2
+## v1.3.0
 
-Mostly bugfixes along with the occasional new feature.
-
-- Additional graph features:
-  - Group delay option
-  - (Optionally) show units on all axes
+Some new software features along with a few bug fixes.
+  
+- New features:
+  - Allow multiple VNA/Signal generator/Spectrum analyzer tabs
+  - Software work-around to allow up to 65535 points per sweep
+  - Impedance renormalizetion (as de-embedding option)
+  - Waterfall plot
+  - CSV export options extended
+  - logarithmic sweeps (logarithmic frequency steps)
+  - Graph display improvements:
+    - (Optionally) show units on all axes
+    - Configurable font size  
+	- New Y axis options: dBuV, linear magnitude, unwrapped phase, group delay
+	- Zoom feature for smith chart
+  - User-selectable IF frequencies
   
 - General bugfixes, among others:
   - Fixed valgrind issues (mostly uninitialized variables)
