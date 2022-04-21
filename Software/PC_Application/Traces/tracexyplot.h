@@ -6,12 +6,60 @@
 
 #include <set>
 
+class XYPlotConstantLine : public QObject, public Savable
+{
+    Q_OBJECT
+public:
+    enum class Axis {
+        Primary,
+        Secondary,
+        Last,
+    };
+    enum class PassFail {
+        DontCare,
+        HighLimit,
+        LowLimit,
+        Last,
+    };
+
+    XYPlotConstantLine();
+    QColor getColor() const;
+    void setColor(const QColor &value);
+
+    void fromJSON(nlohmann::json j) override;
+    nlohmann::json toJSON() override;
+
+    bool pass(QPointF testPoint);
+
+    static QString AxisToString(Axis axis);
+    static Axis AxisFromString(QString s);
+
+    static QString PassFailToString(PassFail pf);
+    static PassFail PassFailFromString(QString s);
+
+    void editDialog(QString xUnit, QString yUnitPrimary, QString yUnitSecondary);
+    QString getDescription();
+    Axis getAxis() const;
+
+    const std::vector<QPointF> &getPoints() const;
+
+signals:
+    void editingFinished();
+private:
+    QString name;
+    QColor color;
+    Axis axis;
+    PassFail passFail;
+    std::vector<QPointF> points;
+};
+
 class TraceXYPlot : public TracePlot
 {
     friend class XYplotAxisDialog;
     Q_OBJECT
 public:
     TraceXYPlot(TraceModel &model, QWidget *parent = nullptr);
+    ~TraceXYPlot();
 
     enum class XAxisMode {
         UseSpan,
@@ -69,6 +117,8 @@ private:
     XAxisMode xAxisMode;
 
     int plotAreaLeft, plotAreaWidth, plotAreaBottom, plotAreaTop;
+
+    std::vector<XYPlotConstantLine*> constantLines;
 };
 
 #endif // TRACEXYPLOT_H

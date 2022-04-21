@@ -8,6 +8,7 @@
 #include "unit.h"
 #include "preferences.h"
 #include "appwindow.h"
+#include "ui_XYPlotConstantLineEditDialog.h"
 
 #include <QGridLayout>
 #include <cmath>
@@ -30,6 +31,13 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     updateSpan(0, 6000000000);
     setXAxis(XAxis::Type::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 600000000);
     initializeTraceInfo();
+}
+
+TraceXYPlot::~TraceXYPlot()
+{
+    for(auto l : constantLines) {
+        delete l;
+    }
 }
 
 void TraceXYPlot::setYAxis(int axis, YAxis::Type type, bool log, bool autorange, double min, double max, double div)
@@ -119,6 +127,11 @@ nlohmann::json TraceXYPlot::toJSON()
             j["YSecondary"] = jY;
         }
     }
+    nlohmann::json jlines;
+    for(auto l : constantLines) {
+        jlines.push_back(l->toJSON());
+    }
+    j["limitLines"] = jlines;
     return j;
 }
 
@@ -172,6 +185,13 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
             if(!found) {
                 qWarning() << "Unable to find trace with hash" << hash;
             }
+        }
+    }
+    if(j.contains("limitLines")) {
+        for(auto jline : j["limitLines"]) {
+            auto line = new XYPlotConstantLine;
+            line->fromJSON(jline);
+            constantLines.push_back(line);
         }
     }
 }
@@ -330,6 +350,8 @@ void TraceXYPlot::draw(QPainter &p)
 {
     auto pref = Preferences::getInstance();
 
+    bool limitPassing = true;
+
     auto w = p.window();
     auto pen = QPen(pref.Graphs.Color.axis, 0);
     pen.setCosmetic(true);
@@ -465,6 +487,19 @@ void TraceXYPlot::draw(QPainter &p)
                 }
                 // draw line
                 p.drawLine(p1, p2);
+
+                // checking limits
+                for(auto limit : constantLines) {
+                    if(i == 0 && limit->getAxis() != XYPlotConstantLine::Axis::Primary) {
+                        continue;
+                    }
+                    if(i == 1 && limit->getAxis() != XYPlotConstantLine::Axis::Secondary) {
+                        continue;
+                    }
+                    if(!limit->pass(now)) {
+                        limitPassing = false;
+                    }
+                }
             }
             if(i == 0 && nPoints > 0) {
                 // only draw markers on primary YAxis and if the trace has at least one point
@@ -500,6 +535,35 @@ void TraceXYPlot::draw(QPainter &p)
                     point += QPoint(-symbol.width()/2, -symbol.height());
                     p.drawPixmap(point, symbol);
                 }
+            }
+        }
+        // plot constant lines
+        for(auto line : constantLines) {
+            // skip lines on wrong axis
+            if(i == 0 && line->getAxis() != XYPlotConstantLine::Axis::Primary) {
+                continue;
+            }
+            if(i == 1 && line->getAxis() != XYPlotConstantLine::Axis::Secondary) {
+                continue;
+            }
+            pen = QPen(line->getColor(), pref.Graphs.lineWidth);
+            pen.setCosmetic(true);
+            if(i == 1) {
+                pen.setStyle(Qt::DotLine);
+            } else {
+                pen.setStyle(Qt::SolidLine);
+            }
+            p.setPen(pen);
+            for(unsigned int j=1;j<line->getPoints().size();j++) {
+                // scale to plot coordinates
+                auto p1 = plotValueToPixel(line->getPoints()[j-1], i);
+                auto p2 = plotValueToPixel(line->getPoints()[j], i);
+                if(!plotRect.contains(p1) && !plotRect.contains(p2)) {
+                    // completely out of frame
+                    continue;
+                }
+                // draw line
+                p.drawLine(p1, p2);
             }
         }
         p.setClipping(false);
@@ -582,6 +646,8 @@ void TraceXYPlot::draw(QPainter &p)
             }
         }
     }
+
+    // TODO check limitPassing
 
     if(dropPending) {
         p.setOpacity(0.5);
@@ -966,4 +1032,205 @@ QString TraceXYPlot::mouseText(QPoint pos)
         }
     }
     return ret;
+}
+
+XYPlotConstantLine::XYPlotConstantLine()
+    : name("Name"),
+      color(Qt::red),
+      axis(Axis::Primary),
+      passFail(PassFail::DontCare),
+      points()
+{
+
+}
+
+QColor XYPlotConstantLine::getColor() const
+{
+    return color;
+}
+
+void XYPlotConstantLine::setColor(const QColor &value)
+{
+    color = value;
+}
+
+void XYPlotConstantLine::fromJSON(nlohmann::json j)
+{
+    name = QString::fromStdString(j.value("name", "Name"));
+    color = QColor(QString::fromStdString(j.value("color", "red")));
+    axis = AxisFromString(QString::fromStdString(j.value("axis", AxisToString(Axis::Primary).toStdString())));
+    if(axis == Axis::Last) {
+        axis = Axis::Primary;
+    }
+    passFail = PassFailFromString(QString::fromStdString(j.value("passfail", PassFailToString(PassFail::DontCare).toStdString())));
+    if(passFail == PassFail::Last) {
+        passFail = PassFail::DontCare;
+    }
+    points.clear();
+    if(j.contains("points")) {
+        for(auto jp : j["points"]) {
+            QPointF p;
+            p.setX(jp.value("x", 0.0));
+            p.setY(jp.value("y", 0.0));
+            points.push_back(p);
+        }
+    }
+}
+
+nlohmann::json XYPlotConstantLine::toJSON()
+{
+    nlohmann::json j;
+    j["name"] = name.toStdString();
+    j["color"] = color.name().toStdString();
+    j["axis"] = AxisToString(axis).toStdString();
+    j["passfail"] = PassFailToString(passFail).toStdString();
+    nlohmann::json jpoints;
+    for(auto p : points) {
+        nlohmann::json jp;
+        jp["x"] = p.x();
+        jp["y"] = p.y();
+        jpoints.push_back(jp);
+    }
+    j["points"] = jpoints;
+    return j;
+}
+
+bool XYPlotConstantLine::pass(QPointF testPoint)
+{
+    if(passFail == PassFail::DontCare) {
+        // always passes
+        return true;
+    }
+    if(points.size() < 2) {
+        // no lines, always passes
+        return true;
+    }
+    if(testPoint.x() < points.front().x() || testPoint.x() > points.back().x()) {
+        // out of range, always passes
+        return true;
+    }
+    auto p = lower_bound(points.begin(), points.end(), testPoint.x(), [](QPointF p, double x) -> bool {
+        return p.x() < x;
+    });
+    double compareY = 0.0;
+    if(p->x() == testPoint.x()) {
+        // Exact match
+        compareY = p->y();
+    } else {
+        // need to interpolate
+        auto high = p;
+        p--;
+        auto low = p;
+        double alpha = (testPoint.x() - low->x()) / (high->x() - low->x());
+        compareY = low->y() * (1 - alpha) + high->y() * alpha;
+    }
+    if (compareY < testPoint.y() && passFail == PassFail::HighLimit) {
+        // high limit exceeded
+        return false;
+    }
+    if (compareY > testPoint.y() && passFail == PassFail::LowLimit) {
+        // low limit exceeded
+        return false;
+    }
+    return true;
+}
+
+QString XYPlotConstantLine::AxisToString(Axis axis)
+{
+    switch(axis) {
+    case Axis::Primary: return "Primary";
+    case Axis::Secondary: return "Secondary";
+    default: return "Invalid";
+    }
+}
+
+XYPlotConstantLine::Axis XYPlotConstantLine::AxisFromString(QString s)
+{
+    for(unsigned int i=0;i<(unsigned int)Axis::Last;i++) {
+        if(AxisToString((Axis) i) == s) {
+            return (Axis) i;
+        }
+    }
+    return Axis::Last;
+}
+
+QString XYPlotConstantLine::PassFailToString(PassFail pf)
+{
+    switch(pf) {
+    case PassFail::DontCare: return "Dont Care";
+    case PassFail::HighLimit: return "High limit";
+    case PassFail::LowLimit: return "Low limit";
+    default: return "Invalid";
+    }
+}
+
+XYPlotConstantLine::PassFail XYPlotConstantLine::PassFailFromString(QString s)
+{
+    for(unsigned int i=0;i<(unsigned int)PassFail::Last;i++) {
+        if(PassFailToString((PassFail) i) == s) {
+            return (PassFail) i;
+        }
+    }
+    return PassFail::Last;
+
+}
+
+void XYPlotConstantLine::editDialog(QString xUnit, QString yUnitPrimary, QString yUnitSecondary)
+{
+    auto d = new QDialog();
+    auto ui = new Ui_XYPlotConstantLineEditDialog;
+    ui->setupUi(d);
+
+    ui->name->setText(name);
+    ui->color->setColor(color);
+
+    for(unsigned int i=0;i<(unsigned int)Axis::Last;i++) {
+        ui->axis->addItem(AxisToString((Axis) i));
+    }
+    ui->axis->setCurrentIndex((int) axis);
+
+    for(unsigned int i=0;i<(unsigned int)PassFail::Last;i++) {
+        ui->passFail->addItem(PassFailToString((PassFail) i));
+    }
+    ui->passFail->setCurrentIndex((int) passFail);
+
+    connect(ui->name, &QLineEdit::textChanged, [=](){
+       name = ui->name->text();
+    });
+    connect(ui->color, &ColorPickerButton::colorChanged, [=](){
+       color = ui->color->getColor();
+    });
+    connect(ui->axis, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        axis = (Axis) ui->axis->currentIndex();
+        // TODO apply unit change
+    });
+    connect(ui->passFail, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        passFail = (PassFail) ui->passFail->currentIndex();
+    });
+
+    // TODO handle adding/removing of points
+
+    connect(d, &QDialog::finished, this, &XYPlotConstantLine::editingFinished);
+
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
+}
+
+QString XYPlotConstantLine::getDescription()
+{
+    QString ret;
+    ret += name;
+    ret += ", " + QString::number(points.size()) + " points, limit: "+PassFailToString(passFail);
+    return ret;
+}
+
+XYPlotConstantLine::Axis XYPlotConstantLine::getAxis() const
+{
+    return axis;
+}
+
+const std::vector<QPointF> &XYPlotConstantLine::getPoints() const
+{
+    return points;
 }

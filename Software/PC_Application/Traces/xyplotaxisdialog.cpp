@@ -156,6 +156,47 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Xmin->setValueQuiet(plot->xAxis.getRangeMin());
     ui->Xmax->setValueQuiet(plot->xAxis.getRangeMax());
     ui->Xdivs->setValueQuiet(plot->xAxis.getRangeDiv());
+
+    // Constant line list handling
+    auto editLine = [&](XYPlotConstantLine *line) {
+        line->editDialog(XAxis::Unit((XAxis::Type) ui->XType->currentIndex()),
+                        YAxis::Unit((YAxis::Type) ui->Y1type->currentIndex()),
+                        YAxis::Unit((YAxis::Type) ui->Y2type->currentIndex()));
+    };
+
+    for(auto l : plot->constantLines) {
+        ui->lineList->addItem(l->getDescription());
+    }
+    if(plot->constantLines.size() > 0) {
+        ui->removeLine->setEnabled(true);
+    }
+    connect(ui->addLine, &QPushButton::clicked, [=](){
+        auto line = new XYPlotConstantLine();
+        plot->constantLines.push_back(line);
+        auto item = new QListWidgetItem(line->getDescription());
+        ui->lineList->addItem(item);
+        ui->lineList->setCurrentItem(item);
+        ui->removeLine->setEnabled(true);
+        editLine(line);
+        connect(line, &XYPlotConstantLine::editingFinished, [=](){
+            item->setText(line->getDescription());
+        });
+    });
+    connect(ui->removeLine, &QPushButton::clicked, [=](){
+        auto index = ui->lineList->currentRow();
+        delete ui->lineList->takeItem(index);
+        delete plot->constantLines[index];
+        plot->constantLines.erase(plot->constantLines.begin() + index);
+        if(plot->constantLines.size() == 0) {
+            ui->removeLine->setEnabled(false);
+        }
+    });
+
+    connect(ui->lineList, &QListWidget::itemDoubleClicked, [=](QListWidgetItem *item){
+        ui->lineList->setCurrentItem(item);
+        editLine(plot->constantLines[ui->lineList->currentRow()]);
+    });
+
 }
 
 XYplotAxisDialog::~XYplotAxisDialog()

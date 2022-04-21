@@ -287,6 +287,7 @@ FORMS += \
     Traces/Math/timedomaingatingexplanationwidget.ui \
     Traces/Math/timegatedialog.ui \
     Traces/Math/timegateexplanationwidget.ui \
+    Traces/XYPlotConstantLineEditDialog.ui \
     Traces/smithchartdialog.ui \
     Traces/tracecsvexport.ui \
     Traces/traceeditdialog.ui \
