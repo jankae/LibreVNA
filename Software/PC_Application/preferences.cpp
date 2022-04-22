@@ -248,6 +248,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsColorTicksBackgroundEnabled->setChecked(p->Graphs.Color.Ticks.Background.enabled);
     ui->GraphsColorTicksBackground->setColor(p->Graphs.Color.Ticks.Background.background);
     ui->GraphsDomainChangeBehavior->setCurrentIndex((int) p->Graphs.domainChangeBehavior);
+    ui->GraphsLimitIndication->setCurrentIndex((int) p->Graphs.limitIndication);
     ui->GraphsLineWidth->setValue(p->Graphs.lineWidth);
     ui->GraphsFontSizeAxis->setValue(p->Graphs.fontSizeAxis);
     ui->GraphsFontSizeCursorOverlay->setValue(p->Graphs.fontSizeCursorOverlay);
@@ -312,6 +313,7 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.Color.Ticks.Background.background = ui->GraphsColorTicksBackground->getColor();
     p->Graphs.Color.Ticks.divisions = ui->GraphsColorTicksDivisions->getColor();
     p->Graphs.domainChangeBehavior = (GraphDomainChangeBehavior) ui->GraphsDomainChangeBehavior->currentIndex();
+    p->Graphs.limitIndication = (GraphLimitIndication) ui->GraphsLimitIndication->currentIndex();
     p->Graphs.lineWidth = ui->GraphsLineWidth->value();
     p->Graphs.fontSizeAxis = ui->GraphsFontSizeAxis->value();
     p->Graphs.fontSizeCursorOverlay = ui->GraphsFontSizeCursorOverlay->value();

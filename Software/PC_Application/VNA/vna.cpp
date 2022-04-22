@@ -1374,6 +1374,9 @@ void VNA::SetupSCPI()
     scpi_acq->add(new SCPICommand("FINished", nullptr, [=](QStringList) -> QString {
         return average.getLevel() == averages ? "TRUE" : "FALSE";
     }));
+    scpi_acq->add(new SCPICommand("LIMit", nullptr, [=](QStringList) -> QString {
+        return central->allLimitsPassing() ? "PASS" : "FAIL";
+    }));
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);
     scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {

@@ -32,6 +32,8 @@ public:
 
     TraceModel &getModel() const;
 
+    bool getLimitPassing() const;
+
 public slots:
     void updateGraphColors();
 
@@ -106,6 +108,8 @@ protected:
     QLabel *cursorLabel;
 
     unsigned int marginTop;
+
+    bool limitPassing;
 };
 
 #endif // TRACEPLOT_H

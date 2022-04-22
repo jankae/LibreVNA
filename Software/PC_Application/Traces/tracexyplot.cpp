@@ -350,7 +350,7 @@ void TraceXYPlot::draw(QPainter &p)
 {
     auto pref = Preferences::getInstance();
 
-    bool limitPassing = true;
+    limitPassing = true;
 
     auto w = p.window();
     auto pen = QPen(pref.Graphs.Color.axis, 0);
@@ -647,7 +647,42 @@ void TraceXYPlot::draw(QPainter &p)
         }
     }
 
-    // TODO check limitPassing
+    // only show limit indication if there are limit lines configured
+    if(constantLines.size() > 0) {
+        switch(pref.Graphs.limitIndication) {
+        case GraphLimitIndication::PassFailText: {
+            QString text;
+            if(limitPassing) {
+                p.setPen(Qt::green);
+                text = "PASS";
+            } else {
+                p.setPen(Qt::red);
+                text = "FAIL";
+            }
+            auto font = p.font();
+            font.setPixelSize(20);
+            p.setFont(font);
+            p.drawText(plotRect.x() + 2, plotRect.y() + 22, text);
+        }
+            break;
+        case GraphLimitIndication::Overlay:
+            if(!limitPassing) {
+                p.setOpacity(0.5);
+                p.setBrush(Qt::red);
+                p.setPen(Qt::red);
+                p.drawRect(plotRect);
+                auto font = p.font();
+                font.setPixelSize(20);
+                p.setFont(font);
+                p.setOpacity(1.0);
+                p.setPen(Qt::red);
+                p.drawText(plotRect, Qt::AlignCenter, "LIMIT FAIL");
+            }
+            break;
+        default:
+            break;
+        }
+    }
 
     if(dropPending) {
         p.setOpacity(0.5);
@@ -1200,17 +1235,71 @@ void XYPlotConstantLine::editDialog(QString xUnit, QString yUnitPrimary, QString
     connect(ui->color, &ColorPickerButton::colorChanged, [=](){
        color = ui->color->getColor();
     });
+    auto updatePointTable = [=](){
+        sort(points.begin(), points.end(), [](QPointF &a, QPointF &b) -> bool{
+            return a.x() < b.x();
+        });
+        ui->pointTable->blockSignals(true);
+        ui->pointTable->clear();
+        ui->pointTable->setHorizontalHeaderLabels({"#", "X", "Y"});
+        ui->pointTable->setColumnCount(3);
+        ui->pointTable->setRowCount(points.size());
+        QString yUnit = axis == Axis::Primary ? yUnitPrimary : yUnitSecondary;
+        for(unsigned int i=0;i<points.size();i++) {
+            auto numItem = new QTableWidgetItem(QString::number(i+1));
+            numItem->setFlags(numItem->flags() &= ~(Qt::ItemIsEditable | Qt::ItemIsSelectable));
+            auto xItem = new QTableWidgetItem(Unit::ToString(points[i].x(), xUnit, "pnum kMG", 6));
+            auto yItem = new QTableWidgetItem(Unit::ToString(points[i].y(), yUnit, "pnum kMG", 6));
+            ui->pointTable->setItem(i, 0, numItem);
+            ui->pointTable->setItem(i, 1, xItem);
+            ui->pointTable->setItem(i, 2, yItem);
+        }
+        ui->pointTable->blockSignals(false);
+    };
     connect(ui->axis, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         axis = (Axis) ui->axis->currentIndex();
-        // TODO apply unit change
+        updatePointTable();
     });
     connect(ui->passFail, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         passFail = (PassFail) ui->passFail->currentIndex();
     });
 
-    // TODO handle adding/removing of points
+    // handle adding/removing of points
+    connect(ui->pointTable, &QTableWidget::itemChanged, [=](QTableWidgetItem *item){
+        auto row = ui->pointTable->row(item);
+        auto column = ui->pointTable->column(item);
+        auto& point = points[row];
+        if(column == 1) {
+            // changed X coordinate
+            point.setX(Unit::FromString(item->text(), xUnit, "pnum kMG"));
+            // potentially reordered the points, update whole table
+            updatePointTable();
+        } else {
+            // change Y coordinate
+            QString yUnit = axis == Axis::Primary ? yUnitPrimary : yUnitSecondary;
+            point.setY(Unit::FromString(item->text(), yUnit, "pnum kMG"));
+            // point order only depends on X coordinate, no table update necessary, only update text of the changed item
+            ui->pointTable->blockSignals(true);
+            item->setText(Unit::ToString(point.y(), yUnit, "pnum kMG", 6));
+            ui->pointTable->blockSignals(false);
+        }
+    });
+
+    connect(ui->addPoint, &QPushButton::clicked, [=](){
+        points.push_back(QPointF());
+        updatePointTable();
+    });
+    connect(ui->removePoint, &QPushButton::clicked, [=](){
+        auto row = ui->pointTable->currentRow();
+        if(row >= 0 && row < (int) points.size()) {
+            points.erase(points.begin() + row);
+            updatePointTable();
+        }
+    });
 
     connect(d, &QDialog::finished, this, &XYPlotConstantLine::editingFinished);
+
+    updatePointTable();
 
     if(AppWindow::showGUI()) {
         d->show();
@@ -1221,7 +1310,8 @@ QString XYPlotConstantLine::getDescription()
 {
     QString ret;
     ret += name;
-    ret += ", " + QString::number(points.size()) + " points, limit: "+PassFailToString(passFail);
+    ret += ", " + AxisToString(axis) + " axis, ";
+    ret += QString::number(points.size()) + " points, limit: "+PassFailToString(passFail);
     return ret;
 }
 

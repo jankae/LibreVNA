@@ -165,7 +165,11 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     };
 
     for(auto l : plot->constantLines) {
-        ui->lineList->addItem(l->getDescription());
+        auto item = new QListWidgetItem(l->getDescription());
+        ui->lineList->addItem(item);
+        connect(l, &XYPlotConstantLine::editingFinished, [=](){
+            item->setText(l->getDescription());
+        });
     }
     if(plot->constantLines.size() > 0) {
         ui->removeLine->setEnabled(true);

@@ -77,9 +77,9 @@
         <property name="geometry">
          <rect>
           <x>0</x>
-          <y>0</y>
-          <width>654</width>
-          <height>884</height>
+          <y>-319</y>
+          <width>651</width>
+          <height>854</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -98,7 +98,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>3</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="Startup">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -1151,6 +1151,41 @@
                 </widget>
                </item>
                <item>
+                <widget class="QGroupBox" name="groupBox_17">
+                 <property name="title">
+                  <string>Limit checking</string>
+                 </property>
+                 <layout class="QFormLayout" name="formLayout_12">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_43">
+                    <property name="text">
+                     <string>Behavior:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="GraphsLimitIndication">
+                    <item>
+                     <property name="text">
+                      <string>Don't show any indication</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>PASS/FAIL text in graph corner</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Overlay over whole graph on FAIL</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
                 <spacer name="verticalSpacer_3">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -1361,14 +1396,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SIUnitEdit</class>
-   <extends>QLineEdit</extends>
-   <header>CustomWidgets/siunitedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>ColorPickerButton</class>
    <extends>QPushButton</extends>
    <header>CustomWidgets/colorpickerbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

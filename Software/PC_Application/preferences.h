@@ -16,6 +16,14 @@ enum GraphDomainChangeBehavior {
 
 Q_DECLARE_METATYPE(GraphDomainChangeBehavior);
 
+enum GraphLimitIndication {
+    DontShowAnything = 0,
+    PassFailText = 1,
+    Overlay = 2,
+};
+
+Q_DECLARE_METATYPE(GraphLimitIndication);
+
 
 class Preferences : public Savable {
 public:
@@ -93,6 +101,7 @@ public:
             } Ticks;
         } Color;
         GraphDomainChangeBehavior domainChangeBehavior;
+        GraphLimitIndication limitIndication;
 
         double lineWidth;
         int fontSizeAxis;
@@ -166,6 +175,7 @@ private:
         {&Graphs.Color.Ticks.Background.background, "Graphs.Color.Ticks.Background.background", QColor(20, 20, 20)},
         {&Graphs.Color.Ticks.divisions, "Graphs.Color.Ticks.divisions", QColor(Qt::gray)},
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
+        {&Graphs.limitIndication, "Graphs.limitIndication", GraphLimitIndication::PassFailText},
         {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
         {&Graphs.fontSizeAxis, "Graphs.fontSizeAxis", 10},
         {&Graphs.fontSizeCursorOverlay, "Graphs.fontSizeCursorOverlay", 12},

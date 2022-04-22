@@ -22,7 +22,8 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
       traceRemovalPending(false),
       dropPending(false),
       dropTrace(nullptr),
-      marginTop(20)
+      marginTop(20),
+      limitPassing(true)
 {
     contextmenu = new QMenu();
     markedForDeletion = false;
@@ -490,6 +491,11 @@ void TracePlot::markerRemoved(Marker *m)
     disconnect(m, &Marker::dataChanged, this, &TracePlot::triggerReplot);
     disconnect(m, &Marker::symbolChanged, this, &TracePlot::triggerReplot);
     triggerReplot();
+}
+
+bool TracePlot::getLimitPassing() const
+{
+    return limitPassing;
 }
 
 TraceModel &TracePlot::getModel() const

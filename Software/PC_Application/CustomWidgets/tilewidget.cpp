@@ -110,6 +110,18 @@ void TileWidget::fromJSON(nlohmann::json j)
     }
 }
 
+bool TileWidget::allLimitsPassing()
+{
+    if(isSplit) {
+        return child1->allLimitsPassing() && child2->allLimitsPassing();
+    } else if(hasContent) {
+        return content->getLimitPassing();
+    } else {
+        // empty tile always passes
+        return true;
+    }
+}
+
 void TileWidget::splitVertically()
 {
     if(isSplit) {

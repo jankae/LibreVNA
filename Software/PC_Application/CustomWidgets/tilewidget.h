@@ -28,6 +28,9 @@ public:
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+    // check potential trace limits on graphs, only returns true if all traces in all graphs are within limits
+    bool allLimitsPassing();
 public slots:
     void splitVertically();
     void splitHorizontally();
