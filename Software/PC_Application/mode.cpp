@@ -110,6 +110,13 @@ Mode::~Mode()
         modes[tabbar->currentIndex()]->activate();
     }
     window->getCentral()->removeWidget(central);
+    delete central;
+    for(auto d : docks) {
+        delete d;
+    }
+    for(auto t : toolbars) {
+        delete t;
+    }
 }
 
 void Mode::activate()
