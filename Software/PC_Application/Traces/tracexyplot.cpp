@@ -558,10 +558,6 @@ void TraceXYPlot::draw(QPainter &p)
                 // scale to plot coordinates
                 auto p1 = plotValueToPixel(line->getPoints()[j-1], i);
                 auto p2 = plotValueToPixel(line->getPoints()[j], i);
-                if(!plotRect.contains(p1) && !plotRect.contains(p2)) {
-                    // completely out of frame
-                    continue;
-                }
                 // draw line
                 p.drawLine(p1, p2);
             }
