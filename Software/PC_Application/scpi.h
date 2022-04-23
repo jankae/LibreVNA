@@ -16,8 +16,8 @@ public:
     QString execute(QStringList params);
     QString query(QStringList params);
     QString name() {return _name;}
-    bool queryable() { return fn_query != nullptr;};
-    bool executable() { return fn_cmd != nullptr;};
+    bool queryable() { return fn_query != nullptr;}
+    bool executable() { return fn_cmd != nullptr;}
 private:
     const QString _name;
     std::function<QString(QStringList)> fn_cmd;
@@ -28,7 +28,8 @@ class SCPINode {
     friend class SCPI;
 public:
     SCPINode(QString name) :
-        name(name){}
+        name(name), parent(nullptr){}
+    ~SCPINode();
 
     bool add(SCPINode *node);
     bool remove(SCPINode *node);
@@ -41,6 +42,7 @@ private:
     const QString name;
     std::vector<SCPINode*> subnodes;
     std::vector<SCPICommand*> commands;
+    SCPINode *parent;
 };
 
 class SCPI : public QObject, public SCPINode

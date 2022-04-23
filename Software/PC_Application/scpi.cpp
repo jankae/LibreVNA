@@ -96,6 +96,22 @@ void SCPI::input(QString line)
     }
 }
 
+SCPINode::~SCPINode()
+{
+    if(parent) {
+        parent->remove(this);
+    }
+    while(commands.size() > 0) {
+        delete commands.front();
+        commands.erase(commands.begin());
+    }
+    while(subnodes.size() > 0) {
+        auto node = subnodes.front();
+        remove(node);
+        delete node;
+    }
+}
+
 bool SCPINode::add(SCPINode *node)
 {
     if(nameCollision(node->name)) {
@@ -103,6 +119,7 @@ bool SCPINode::add(SCPINode *node)
         return false;
     }
     subnodes.push_back(node);
+    node->parent = this;
     return true;
 }
 
@@ -111,6 +128,7 @@ bool SCPINode::remove(SCPINode *node)
     auto it = std::find(subnodes.begin(), subnodes.end(), node);
     if(it != subnodes.end()) {
         subnodes.erase(it);
+        node->parent = nullptr;
         return true;
     } else {
         return false;

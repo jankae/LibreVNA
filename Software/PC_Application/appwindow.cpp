@@ -281,13 +281,13 @@ void AppWindow::closeEvent(QCloseEvent *event)
     for(auto m : Mode::getModes()) {
         m->shutdown();
     }
-    delete device;
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
     // deactivate currently used mode (stores mode state in settings)
     if(Mode::getActiveMode()) {
         Mode::getActiveMode()->deactivate();
     }
+    delete device;
     pref.store();
     QMainWindow::closeEvent(event);
 }

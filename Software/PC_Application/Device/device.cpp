@@ -150,6 +150,7 @@ static constexpr Protocol::DeviceStatusV1 defaultStatusV1 = {
 Device::Device(QString serial)
 {
     info = defaultInfo;
+    status = {};
 
     m_handle = nullptr;
     infoValid = false;
