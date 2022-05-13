@@ -1,15 +1,19 @@
 #include "appwindow.h"
 #include <QtWidgets/QApplication>
+#ifdef Q_OS_UNIX
 #include <signal.h>
+#endif
 
 static QApplication *app;
 static AppWindow *window;
 
-void sig_handler(int s) {
+#ifdef Q_OS_UNIX
+static void tryExitGracefully(int s) {
     Q_UNUSED(s)
     window->close();
     app->quit();
 }
+#endif
 
 int main(int argc, char *argv[]) {
     app = new QApplication(argc, argv);
@@ -18,7 +22,10 @@ int main(int argc, char *argv[]) {
     window = new AppWindow;
     QCoreApplication::setApplicationVersion(window->getAppVersion() + "-" +
                                             window->getAppGitHash().left(9));
-    signal(SIGINT, sig_handler);
+
+#ifdef Q_OS_UNIX
+    signal(SIGINT, tryExitGracefully);
+#endif
     auto rc = app->exec();
     return rc;
 }
