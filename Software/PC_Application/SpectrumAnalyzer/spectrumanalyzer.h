@@ -63,6 +63,7 @@ private slots:
     void SetFullSpan();
     void SpanZoomIn();
     void SpanZoomOut();
+    void SetSingleSweep(bool single);
     // Acquisition control
     void SetRBW(double bandwidth);
     void SetWindow(Window w);
@@ -88,7 +89,9 @@ private:
     void StoreSweepSettings();
 
     Protocol::SpectrumAnalyzerSettings  settings;
+    bool changingSettings;
     unsigned int averages;
+    bool singleSweep;
     TraceModel traceModel;
     TraceWidget *traceWidget;
     MarkerModel *markerModel;
@@ -122,6 +125,7 @@ signals:
     void stopFreqChanged(double freq);
     void centerFreqChanged(double freq);
     void spanChanged(double span);
+    void singleSweepChanged(bool single);
     void RBWChanged(double RBW);
     void TGStateChanged(bool enabled);
     void TGPortChanged(int port);

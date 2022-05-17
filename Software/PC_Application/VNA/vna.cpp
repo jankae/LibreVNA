@@ -1,4 +1,4 @@
-#include "vna.h"
+﻿#include "vna.h"
 
 #include "unit.h"
 #include "CustomWidgets/toggleswitch.h"
@@ -58,6 +58,7 @@ VNA::VNA(AppWindow *window, QString name)
       central(new TileWidget(traceModel))
 {
     averages = 1;
+    singleSweep = false;
     calValid = false;
     calMeasuring = false;
     calWaitFirst = false;
@@ -256,6 +257,13 @@ VNA::VNA(AppWindow *window, QString name)
     cbSweepType->addItem("Frequency");
     cbSweepType->addItem("Power");
     tb_sweep->addWidget(cbSweepType);
+
+    auto bSingle = new QPushButton("Single");
+    bSingle->setToolTip("Single sweep");
+    bSingle->setCheckable(true);
+    connect(bSingle, &QPushButton::toggled, this, &VNA::SetSingleSweep);
+    connect(this, &VNA::singleSweepChanged, bSingle, &QPushButton::setChecked);
+    tb_sweep->addWidget(bSingle);
 
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
     // calculate width required with expected string length
@@ -719,6 +727,7 @@ nlohmann::json VNA::toJSON()
     freq["power"] = settings.Freq.excitation_power;
     freq["log"] = settings.Freq.logSweep;
     sweep["frequency"] = freq;
+    sweep["single"] = singleSweep;
     nlohmann::json power;
     power["start"] = settings.Power.start;
     power["stop"] = settings.Power.stop;
@@ -782,6 +791,7 @@ void VNA::fromJSON(nlohmann::json j)
             type = SweepType::Frequency;
         }
         SetSweepType(type);
+        SetSingleSweep(sweep.value("single", singleSweep));
     }
 }
 
@@ -797,6 +807,14 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     if(changingSettings) {
         // already setting new sweep settings, ignore incoming points from old settings
         return;
+    }
+
+    if(singleSweep && average.getLevel() == averages) {
+        changingSettings = true;
+        // single sweep finished
+        window->getDevice()->SetIdle([=](Device::TransmissionResult){
+            changingSettings = false;
+        });
     }
 
     bool needsSegmentUpdate = false;
@@ -1377,6 +1395,17 @@ void VNA::SetupSCPI()
     scpi_acq->add(new SCPICommand("LIMit", nullptr, [=](QStringList) -> QString {
         return central->allLimitsPassing() ? "PASS" : "FAIL";
     }));
+    scpi_acq->add(new SCPICommand("SINGLE", [=](QStringList params) -> QString {
+        bool single;
+        if(!SCPI::paramToBool(params, 0, single)) {
+            return "ERROR";
+        } else {
+            SetSingleSweep(single);
+            return "";
+        }
+    }, [=](QStringList) -> QString {
+        return singleSweep ? "TRUE" : "FALSE";
+    }));
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);
     scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
@@ -1625,6 +1654,15 @@ void VNA::UpdateStatusbar()
     } else {
         setStatusbarMessage("Calibration: -");
     }
+}
+
+void VNA::SetSingleSweep(bool single)
+{
+    if(singleSweep != single) {
+        singleSweep = single;
+        emit singleSweepChanged(single);
+    }
+    SettingsChanged();
 }
 
 bool VNA::LoadCalibration(QString filename)

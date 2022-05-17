@@ -382,6 +382,16 @@ Example (assuming <averaging sweep> = 3):
 \subsubsection{VNA:ACQuisition:LIMit}
 \query{Queries the status of limits that maybe set up on any graph}{VNA:ACQuisition:LIMit?}{None}{PASS or FAIL}
 
+\subsubsection{VNA:ACQuisition:SINGLE}
+\event{Configures the VNA for single or continuous sweep}{VNA:ACQuisition:SINGLE}{TRUE or FALSE}
+\query{Queries whether the VNA is set up for single sweep}{VNA:ACQuisition:SINGLE?}{None}{TRUE or FALSE}
+
+If single sweep is enabled, the acquisition is stopped when the required number of averages have been reached. There are two ways to trigger a new sweep:
+\begin{itemize}
+\item Change any sweep setting (e.g. center frequency)
+\item Issue the command again (i.e. VNA:ACQ:SINGLE TRUE always triggers a new sweep)
+\end{itemize}
+
 \subsubsection{VNA:STIMulus:LVL}
 \event{Sets the output power of the stimulus signal when sweep type is frequency}{VNA:STIMulus:LVL}{<power>, in dBm}
 \query{Queries the currently selected output power}{VNA:STIMulus:LVL?}{None}{power in dBm}
@@ -607,6 +617,16 @@ Example (assuming <averaging sweep> = 3):
 
 \subsubsection{SA:ACQuisition:LIMit}
 \query{Queries the status of limits that maybe set up on any graph}{SA:ACQuisition:LIMit?}{None}{PASS or FAIL}
+
+\subsubsection{SA:ACQuisition:SINGLE}
+\event{Configures the spectrum analyzer for single or continuous sweep}{SA:ACQuisition:SINGLE}{TRUE or FALSE}
+\query{Queries whether the spectrum analyzer is set up for single sweep}{SA:ACQuisition:SINGLE?}{None}{TRUE or FALSE}
+
+If single sweep is enabled, the acquisition is stopped when the required number of averages have been reached. There are two ways to trigger a new sweep:
+\begin{itemize}
+\item Change any sweep setting (e.g. center frequency)
+\item Issue the command again (i.e. SA:ACQ:SINGLE TRUE always triggers a new sweep)
+\end{itemize}
 
 \subsubsection{SA:ACQuisition:SIGid}
 \event{Enables/disables signal identification}{SA:ACQuisition:SIGid}{<enabled>, option are TRUE, FALSE, 1 or 0}

@@ -60,11 +60,11 @@ public:
     ~Device();
     bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500);
     bool Configure(Protocol::SweepSettings settings, std::function<void(TransmissionResult)> cb = nullptr);
-    bool Configure(Protocol::SpectrumAnalyzerSettings settings);
+    bool Configure(Protocol::SpectrumAnalyzerSettings settings, std::function<void(TransmissionResult)> cb = nullptr);
     bool SetManual(Protocol::ManualControlV1 manual);
-    bool SetIdle();
+    bool SetIdle(std::function<void(TransmissionResult)> cb = nullptr);
     bool SendFirmwareChunk(Protocol::FirmwarePacket &fw);
-    bool SendCommandWithoutPayload(Protocol::PacketType type);
+    bool SendCommandWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb = nullptr);
     QString serial() const;
     const Protocol::DeviceInfo& Info();
     static const Protocol::DeviceInfo& Info(Device *dev);

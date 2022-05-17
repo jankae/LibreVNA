@@ -256,12 +256,12 @@ bool Device::Configure(Protocol::SweepSettings settings, std::function<void(Tran
     return SendPacket(p, cb);
 }
 
-bool Device::Configure(Protocol::SpectrumAnalyzerSettings settings)
+bool Device::Configure(Protocol::SpectrumAnalyzerSettings settings, std::function<void (Device::TransmissionResult)> cb)
 {
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
     p.spectrumSettings = settings;
-    return SendPacket(p);
+    return SendPacket(p, cb);
 }
 
 bool Device::SetManual(Protocol::ManualControlV1 manual)
@@ -272,9 +272,9 @@ bool Device::SetManual(Protocol::ManualControlV1 manual)
     return SendPacket(p);
 }
 
-bool Device::SetIdle()
+bool Device::SetIdle(std::function<void(TransmissionResult)> cb)
 {
-    return SendCommandWithoutPayload(Protocol::PacketType::SetIdle);
+    return SendCommandWithoutPayload(Protocol::PacketType::SetIdle, cb);
 }
 
 bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)
@@ -285,11 +285,11 @@ bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)
     return SendPacket(p);
 }
 
-bool Device::SendCommandWithoutPayload(Protocol::PacketType type)
+bool Device::SendCommandWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb)
 {
     Protocol::PacketInfo p;
     p.type = type;
-    return SendPacket(p);
+    return SendPacket(p, cb);
 }
 
 std::set<QString> Device::GetDevices()

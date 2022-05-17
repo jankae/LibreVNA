@@ -50,6 +50,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
       central(new TileWidget(traceModel, window))
 {
     averages = 1;
+    singleSweep = false;
     settings = {};
     normalize.active = false;
     normalize.measuring = false;
@@ -83,6 +84,14 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     // Create menu entries and connections
     // Sweep toolbar
     auto tb_sweep = new QToolBar("Sweep");
+
+    auto bSingle = new QPushButton("Single");
+    bSingle->setToolTip("Single sweep");
+    bSingle->setCheckable(true);
+    connect(bSingle, &QPushButton::toggled, this, &SpectrumAnalyzer::SetSingleSweep);
+    connect(this, &SpectrumAnalyzer::singleSweepChanged, bSingle, &QPushButton::setChecked);
+    tb_sweep->addWidget(bSingle);
+
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
     // calculate width required with expected string length
     auto width = QFontMetrics(eStart->font()).width("3.00000GHz") + 15;
@@ -313,6 +322,7 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     freq["start"] = settings.f_start;
     freq["stop"] = settings.f_stop;
     sweep["frequency"] = freq;
+    sweep["single"] = singleSweep;
     nlohmann::json acq;
     acq["RBW"] = settings.RBW;
     acq["window"] = WindowToString((Window) settings.WindowType).toStdString();
@@ -414,6 +424,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
                 EnableNormalization(false);
             }
         }
+        SetSingleSweep(sweep.value("single", singleSweep));
     }
 }
 
@@ -423,6 +434,19 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
     if(Mode::getActiveMode() != this) {
         return;
+    }
+
+    if(changingSettings) {
+        // already setting new sweep settings, ignore incoming points from old settings
+        return;
+    }
+
+    if(singleSweep && average.getLevel() == averages) {
+        changingSettings = true;
+        // single sweep finished
+        window->getDevice()->SetIdle([=](Device::TransmissionResult){
+            changingSettings = false;
+        });
     }
 
     if(d.pointNum >= settings.pointNum) {
@@ -477,6 +501,7 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 
 void SpectrumAnalyzer::SettingsChanged()
 {
+    changingSettings = true;
     if(settings.f_stop - settings.f_start >= 1000) {
         settings.pointNum = 1001;
     } else {
@@ -529,7 +554,10 @@ void SpectrumAnalyzer::SettingsChanged()
     }
 
     if(window->getDevice() && Mode::getActiveMode() == this) {
-        window->getDevice()->Configure(settings);
+        window->getDevice()->Configure(settings, [=](Device::TransmissionResult res){
+            // device received command
+            changingSettings = false;
+        });
     }
     average.reset(settings.pointNum);
     UpdateAverageCount();
@@ -618,6 +646,15 @@ void SpectrumAnalyzer::SpanZoomOut()
     }
     settings.f_stop = center + old_span;
     ConstrainAndUpdateFrequencies();
+}
+
+void SpectrumAnalyzer::SetSingleSweep(bool single)
+{
+    if(singleSweep != single) {
+        singleSweep = single;
+        emit singleSweepChanged(single);
+    }
+    SettingsChanged();
 }
 
 void SpectrumAnalyzer::SetRBW(double bandwidth)
@@ -922,6 +959,17 @@ void SpectrumAnalyzer::SetupSCPI()
         return "";
     }, [=](QStringList) -> QString {
         return settings.SignalID ? "TRUE" : "FALSE";
+    }));
+    scpi_acq->add(new SCPICommand("SINGLE", [=](QStringList params) -> QString {
+        bool single;
+        if(!SCPI::paramToBool(params, 0, single)) {
+            return "ERROR";
+        } else {
+            SetSingleSweep(single);
+            return "";
+        }
+    }, [=](QStringList) -> QString {
+        return singleSweep ? "TRUE" : "FALSE";
     }));
     auto scpi_tg = new SCPINode("TRACKing");
     SCPINode::add(scpi_tg);

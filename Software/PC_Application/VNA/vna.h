@@ -123,6 +123,7 @@ private:
 private slots:
     void EnableDeembedding(bool enable);
     void UpdateStatusbar();
+    void SetSingleSweep(bool single);
 private:
     Settings settings;
     unsigned int averages;
@@ -130,6 +131,7 @@ private:
     TraceWidget *traceWidget;
     MarkerModel *markerModel;
     Averaging average;
+    bool singleSweep;
 
     // Calibration
     Calibration cal;
@@ -167,6 +169,7 @@ signals:
     void centerFreqChanged(double freq);
     void spanChanged(double span);
     void logSweepChanged(bool log);
+    void singleSweepChanged(bool single);
 
     void sourceLevelChanged(double level);
     void pointsChanged(unsigned int points);
