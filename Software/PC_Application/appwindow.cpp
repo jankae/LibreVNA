@@ -234,11 +234,6 @@ AppWindow::AppWindow(QWidget *parent)
     // Set default mode
     vna->activate();
 
-    qRegisterMetaType<Protocol::Datapoint>("Datapoint");
-    qRegisterMetaType<Protocol::ManualStatusV1>("ManualV1");
-    qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumAnalyzerResult");
-    qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
-
     auto pref = Preferences::getInstance();
     if(pref.Startup.UseSetupFile) {
         LoadSetup(pref.Startup.SetupFile);
