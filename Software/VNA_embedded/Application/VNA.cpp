@@ -404,12 +404,18 @@ void VNA::SweepHalted() {
 		}
 
 		// need the Si5351 as Source
-		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B, driveStrength);
+		bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B, driveStrength);
+		static bool lowbandDisabled = false;
 		if (pointCnt == 0) {
-			// First point in sweep, enable CLK
-			Si5351.Enable(SiChannel::LowbandSource);
+			// First point in sweep, switch to correct source
 			FPGA::Disable(FPGA::Periphery::SourceRF);
+			lowbandDisabled = true;
+		}
+		if(lowbandDisabled && freqSuccess) {
+			// frequency is valid, can enable lowband source now
+			Si5351.Enable(SiChannel::LowbandSource);
 			Delay::us(1300);
+			lowbandDisabled = false;
 		}
 
 		// At low frequencies the 1.LO feedthrough mixes with the 2.LO in the second mixer.
