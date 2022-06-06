@@ -83,8 +83,9 @@ signals:
     void newPointCreated(CorrectionPoint& p);
 protected:
     static constexpr double excitationAmplitude = -20.0;
-    static constexpr int averages = 20;
-    static constexpr int automaticSettling = 10;
+    static constexpr int automaticSweepPoints = 31;
+    static constexpr int averages = 3;
+    static constexpr int automaticSettling = 1;
 
     bool ConfirmActionIfEdited();
     void UpdateSaveButton();
@@ -121,6 +122,7 @@ protected:
     struct MeasurementResult {
         double port1, port2;
     };
+    std::vector<MeasurementResult> sweepMeasurements;
     std::deque<MeasurementResult> measured;
     MeasurementResult averageMeasurement();
 };

@@ -424,13 +424,26 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
 
 void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res)
 {
-    if(res.pointNum == 1) {
-        // store result in center of sweep of 3 points
+    MeasurementResult m = {.port1 = Util::SparamTodB(res.port1), .port2 = Util::SparamTodB(res.port2)};
+    sweepMeasurements.push_back(m);
+    if(res.pointNum == automaticSweepPoints - 1) {
+        // sweep finished, find maximum for each port
+        double maxPort1 = std::numeric_limits<double>::lowest();
+        double maxPort2 = std::numeric_limits<double>::lowest();
+        for(auto s : sweepMeasurements) {
+            if(s.port1 > maxPort1) {
+                maxPort1 = s.port1;
+            }
+            if(s.port2 > maxPort2) {
+                maxPort2 = s.port2;
+            }
+        }
+        MeasurementResult max = {.port1 = maxPort1, .port2 = maxPort2};
         if(measured.size() >= averages) {
             measured.pop_front();
         }
-        MeasurementResult m = {.port1 = Util::SparamTodB(res.port1), .port2 = Util::SparamTodB(res.port2)};
-        measured.push_back(m);
+        measured.push_back(max);
+        sweepMeasurements.clear();
     }
 }
 
@@ -473,10 +486,12 @@ void AmplitudeCalDialog::SetupNextAutomaticPoint(bool isSourceCal)
     p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
     p.spectrumSettings.RBW = 10000;
     p.spectrumSettings.UseDFT = 0;
-    // setup 3 points centered around the measurement frequency (zero span not supported yet)
-    p.spectrumSettings.f_stop = point.frequency + 1.0;
-    p.spectrumSettings.f_start = point.frequency - 1.0;
-    p.spectrumSettings.pointNum = 3;
+    // setup points centered around the measurement frequency:
+    // use a span proportional to the center frequency (this makes sure to catch the peak of the excitation signal which
+    // might be slightly off due to PLL divider limtis). Also make sure to use at least a span of 2 Hz (zero span not supported yet)
+    p.spectrumSettings.f_stop = point.frequency * 1.00001 + 1.0;
+    p.spectrumSettings.f_start = point.frequency / 1.00001 - 1.0;
+    p.spectrumSettings.pointNum = automaticSweepPoints;
     p.spectrumSettings.Detector = 0;
     p.spectrumSettings.SignalID = 1;
     p.spectrumSettings.WindowType = 3;
@@ -509,12 +524,14 @@ void AmplitudeCalDialog::SetupNextAutomaticPoint(bool isSourceCal)
     }
     automatic.settlingCount = averages + automaticSettling;
     dev->SendPacket(p);
+    sweepMeasurements.clear();
+    sweepMeasurements.reserve(automaticSweepPoints);
 }
 
 void AmplitudeCalDialog::ReceivedAutomaticMeasurementResult(Protocol::SpectrumAnalyzerResult res)
 {
-    if(res.pointNum != 1) {
-        // ignore first and last point, only use the middle one
+    if(res.pointNum != automaticSweepPoints - 1) {
+        // ignore everything except end of sweep
         return;
     }
     if(automatic.settlingCount > 0) {
