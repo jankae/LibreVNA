@@ -1,5 +1,6 @@
 #include "appwindow.h"
 #include <QtWidgets/QApplication>
+#include "Device/device.h"
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #endif
@@ -22,6 +23,8 @@ int main(int argc, char *argv[]) {
     window = new AppWindow;
     QCoreApplication::setApplicationVersion(window->getAppVersion() + "-" +
                                             window->getAppGitHash().left(9));
+
+    Device::RegisterTypes();
 
 #ifdef Q_OS_UNIX
     signal(SIGINT, tryExitGracefully);

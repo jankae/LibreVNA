@@ -58,6 +58,8 @@ public:
     // connect to a VNA device. If serial is specified only connecting to this device, otherwise to the first one found
     Device(QString serial = QString());
     ~Device();
+
+    static void RegisterTypes();
     bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500);
     bool Configure(Protocol::SweepSettings settings, std::function<void(TransmissionResult)> cb = nullptr);
     bool Configure(Protocol::SpectrumAnalyzerSettings settings, std::function<void(TransmissionResult)> cb = nullptr);
