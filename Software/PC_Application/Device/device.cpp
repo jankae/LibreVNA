@@ -234,6 +234,14 @@ Device::~Device()
     }
 }
 
+void Device::RegisterTypes()
+{
+    qRegisterMetaType<Protocol::Datapoint>("Datapoint");
+    qRegisterMetaType<Protocol::ManualStatusV1>("ManualV1");
+    qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumAnalyzerResult");
+    qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
+}
+
 bool Device::SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb, unsigned int timeout)
 {
     Transmission t;
