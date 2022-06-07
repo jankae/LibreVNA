@@ -154,7 +154,7 @@ uint64_t Cal::FrequencyCorrectionToDevice(uint64_t freq) {
 	// The frequency calibration is only used when the internal reference is active.
 	// If an external reference is in use, it is assumed to already be at the correct frequency
 	if(!HW::Ref::usingExternal()) {
-		freq -= freq * cal.TCXO_PPM_correction * 1e-6f;
+		freq -= (int32_t) (freq * cal.TCXO_PPM_correction * 1e-6f);
 	}
 	return freq;
 }
