@@ -70,7 +70,9 @@ inline void App_Init() {
 			// Function will not return, the device will reboot with the new firmware instead
 //			Firmware::PerformUpdate(&flash, fw_info);
 		}
-		if(!FPGA::Configure(fw_info.FPGA_bitstream_address, fw_info.FPGA_bitstream_size)) {
+		// flash default FPGA image
+		auto fpga_info = Firmware::GetFPGAImageInfo(0);
+		if(!FPGA::Configure(fpga_info.start_address, fpga_info.size)) {
 			LOG_CRIT("FPGA configuration failed");
 			LED::Error(3);
 		}

@@ -11,6 +11,8 @@ constexpr uint8_t maxPoints = 64;
 constexpr uint32_t flash_address = Firmware::maxSize; // stored directly behind firmware in flash
 constexpr uint32_t flash_size = 8192; // reserve two sectors for now
 
+static_assert(Firmware::maxSize + flash_size < Flash::FlashSize);
+
 bool Load();
 bool Save();
 void SetDefault();

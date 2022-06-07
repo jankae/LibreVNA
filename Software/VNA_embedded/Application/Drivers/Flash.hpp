@@ -33,6 +33,8 @@ public:
 	static constexpr uint32_t Block32Size = 32768;
 	static constexpr uint32_t Block64Size = 65536;
 
+	static constexpr uint32_t FlashSize = 2097152;
+
 private:
 	void CS(bool high) {
 		if(high) {

@@ -8,21 +8,29 @@
 #define LOG_MODULE	"FW"
 #include "Log.h"
 
-#define FPGA_MAXSIZE	512000
-#define CPU_MAXSIZE		131072
+static Firmware::FPGAImageInfo fpga_image_infos[FPGA_MAX_IMAGES];
+static uint8_t num_fpga_images;
 
-using Header = struct {
-	char magic[4];
-	uint32_t FPGA_start;
-	uint32_t FPGA_size;
-	uint32_t CPU_start;
-	uint32_t CPU_size;
-	uint32_t crc;
-} __attribute__((packed));
+static uint32_t calcCRCoverFlashMemory(uint32_t start, uint32_t size) {
+	uint32_t crc = UINT32_MAX;
+	uint8_t buf[128];
+	uint32_t checked_size = 0;
+	while (checked_size < size) {
+		uint16_t read_size = sizeof(buf);
+		if (size - checked_size < read_size) {
+			read_size = size - checked_size;
+		}
+		HWHAL::flash.read(start + checked_size, read_size, buf);
+		crc = Protocol::CRC32(crc, buf, read_size);
+		checked_size += read_size;
+	}
+	return crc;
+}
 
 Firmware::Info Firmware::GetFlashContentInfo() {
 	Info ret;
 	memset(&ret, 0, sizeof(ret));
+	ret.num_FPGA_images = 1;
 	Header h;
 	HWHAL::flash.read(0, sizeof(h), &h);
 	// sanity check values
@@ -33,24 +41,13 @@ Firmware::Info Firmware::GetFlashContentInfo() {
 		return ret;
 	}
 	LOG_DEBUG("Checking FPGA bitstream...");
-	uint32_t crc = UINT32_MAX;
-	uint8_t buf[128];
-	uint32_t checked_size = 0;
-	while (checked_size < h.FPGA_size + h.CPU_size) {
-		uint16_t read_size = sizeof(buf);
-		if (h.FPGA_size + h.CPU_size - checked_size < read_size) {
-			read_size = h.FPGA_size + h.CPU_size - checked_size;
-		}
-		HWHAL::flash.read(h.FPGA_start + checked_size, read_size, buf);
-		crc = Protocol::CRC32(crc, buf, read_size);
-		checked_size += read_size;
-	}
-	if (crc != h.crc) {
+	if (calcCRCoverFlashMemory(h.FPGA_start, h.FPGA_size + h.CPU_size) != h.crc) {
 		LOG_ERR("CRC mismatch, invalid FPGA bitstream/CPU firmware");
 		return ret;
 	}
 	// Compare CPU firmware in external Flash to the one currently running in the MCU
-	checked_size = 0;
+	uint8_t buf[128];
+	uint32_t checked_size = 0;
 	while (checked_size < h.CPU_size) {
 		uint16_t read_size = sizeof(buf);
 		if (h.CPU_size - checked_size < read_size) {
@@ -65,10 +62,44 @@ Firmware::Info Firmware::GetFlashContentInfo() {
 		checked_size += read_size;
 	}
 	ret.valid = true;
-	ret.FPGA_bitstream_address = h.FPGA_start;
-	ret.FPGA_bitstream_size = h.FPGA_size;
+	fpga_image_infos[0].start_address = h.FPGA_start;
+	fpga_image_infos[0].size = h.FPGA_size;
 	ret.CPU_image_address = h.CPU_start;
 	ret.CPU_image_size = h.CPU_size;
+
+	// check if additional FPGA images are present
+	if(h.FPGA_start >= sizeof(Header) + sizeof(AdditionalFPGAImageHeader)
+			&& h.CPU_start >= sizeof(Header) + sizeof(AdditionalFPGAImageHeader)) {
+		// there is enough room before the images for the additional image header
+		AdditionalFPGAImageHeader ah;
+		HWHAL::flash.read(sizeof(Header), sizeof(ah), &ah);
+		uint8_t additionalImages = 0;
+		// sanity check values
+		if (memcmp(&ah.magic, "VNA", 3) == 0) {
+			additionalImages = ah.additionalImages;
+		}
+		const uint32_t FPGAHeaderStart = sizeof(Header) + sizeof(AdditionalFPGAImageHeader);
+		for(auto i=0;i<additionalImages;i++) {
+			FPGAImageHeader fh;
+			HWHAL::flash.read(FPGAHeaderStart + i*sizeof(fh), sizeof(fh), &fh);
+			// Sanity check values
+			if (fh.start >= UINT32_MAX || fh.size > FPGA_MAXSIZE) {
+				LOG_WARN("Ignoring additional FPGA image %d, implausible start/size", i);
+				continue;
+			}
+			// check CRC
+			if (calcCRCoverFlashMemory(fh.start, fh.size) != fh.crc) {
+				LOG_WARN("Ignoring additional FPGA image %d, CRC mismatch", i);
+				continue;
+			}
+			// add to available FPGA images
+			fpga_image_infos[ret.num_FPGA_images].start_address = fh.start;
+			fpga_image_infos[ret.num_FPGA_images].size = fh.size;
+			ret.num_FPGA_images++;
+		}
+	}
+	num_fpga_images = ret.num_FPGA_images;
+	LOG_INFO("FLASH evaluation finished, got %d FPGA images", ret.num_FPGA_images);
 
 	return ret;
 }
@@ -156,6 +187,15 @@ static void copy_flash(uint32_t size, SPI_TypeDef *spi) {
 
 	for (;;) {
 		__NOP();
+	}
+}
+
+Firmware::FPGAImageInfo Firmware::GetFPGAImageInfo(uint8_t image_num) {
+	if(image_num < num_fpga_images) {
+		return fpga_image_infos[image_num];
+	} else {
+		FPGAImageInfo ret = {};
+		return ret;
 	}
 }
 
