@@ -41,6 +41,7 @@ static void StartNextSample() {
 	freq = Cal::FrequencyCorrectionToDevice(freq);
 	uint64_t LO1freq;
 	uint32_t LO2freq;
+	bool LO1inverted = false;
 	switch(signalIDstep) {
 	case 0:
 		// reset minimum amplitudes in first signal ID step
@@ -95,6 +96,7 @@ static void StartNextSample() {
 		if(freq >= HW::getIF1() + HW::LO1_minFreq) {
 			// frequency is high enough to shift 1.LO below measurement frequency
 			LO1freq = freq - HW::getIF1();
+			LO1inverted = true;
 			break;
 		} else if(freq <= HW::getIF1() - HW::LO1_minFreq) {
 			// frequency is low enough to add 1.LO to measurement frequency
@@ -107,6 +109,7 @@ static void StartNextSample() {
 	case 2:
 		// Shift second LOs to other side
 		LO1freq = freq + HW::getIF1();
+		LO1inverted = false;
 		LO2freq = HW::getIF1() + HW::getIF2();
 		negativeDFT = false;
 		break;
@@ -118,6 +121,7 @@ static void StartNextSample() {
 		if(freq >= HW::getIF1() + HW::LO1_minFreq) {
 			// frequency is high enough to shift 1.LO below measurement frequency
 			LO1freq = freq - HW::getIF1();
+			LO1inverted = true;
 			break;
 		} else if(freq <= HW::getIF1() - HW::LO1_minFreq) {
 			// frequency is low enough to add 1.LO to measurement frequency
@@ -131,6 +135,7 @@ static void StartNextSample() {
 		// Use default frequencies with different ADC samplerate to remove images in final IF
 		negativeDFT = true;
 		LO1freq = freq + HW::getIF1();
+		LO1inverted = false;
 		LO2freq = HW::getIF1() - HW::getIF2();
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, signalIDprescalers[signalIDstep-4]);
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, (uint16_t) signalIDprescalers[signalIDstep-4] * 10);
@@ -138,9 +143,13 @@ static void StartNextSample() {
 	LO1.SetFrequency(LO1freq);
 	// LO1 is not able to reach all frequencies with the required precision, adjust LO2 to account for deviation
 	int32_t LO1deviation = (int64_t) LO1.GetActualFrequency() - LO1freq;
+	if(LO1inverted) {
+		LO1deviation = -LO1deviation;
+	}
 	LO2freq += LO1deviation;
+
 	// only adjust LO2 PLL if necessary (if the deviation is significantly less than the RBW it does not matter)
-	if((uint32_t) abs(LO2freq - lastLO2) > actualRBW / 2) {
+	if((uint32_t) abs(LO2freq - lastLO2) > actualRBW / 100) {
 		Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		lastLO2 = LO2freq;
@@ -298,6 +307,7 @@ void SA::Work() {
 	if(!active) {
 		return;
 	}
+
 	if(!s.SignalID || signalIDstep >= signalIDsteps - 1) {
 		// this measurement point is done, handle result according to detector
 		for(uint16_t i=0;i<DFTpoints;i++) {
