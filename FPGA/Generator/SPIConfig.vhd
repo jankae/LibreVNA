@@ -173,6 +173,7 @@ begin
 											spi_buf_in <= "1111000010100101";
 							when "100" => state <= WriteRegister;
 											selected_register <= to_integer(unsigned(spi_buf_out(4 downto 0)));
+							when "001" => state <= WriteModulationData;
 							when others => state <= FirstWord;
 						end case;
 					when WriteRegister =>

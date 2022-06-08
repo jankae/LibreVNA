@@ -185,6 +185,7 @@ architecture Behavioral of top is
 	PORT(
 		CLK : IN std_logic;
 		RESET : IN std_logic;
+		ACTIVE : in STD_LOGIC;
 		SAMPLE_FREQ_WORD : IN std_logic_vector(15 downto 0);
 		SAMPLE_DATA : IN std_logic_vector(7 downto 0);
 		SAMPLE_LATCH : IN std_logic;
@@ -273,6 +274,7 @@ architecture Behavioral of top is
 	-- modulation signals
 	signal mod_enable : std_logic;
 	signal mod_reset : std_logic;
+	signal mod_active : std_logic;
 	signal mod_sample_word : std_logic_vector(15 downto 0);
 	signal mod_sample_data : std_logic_vector(7 downto 0);
 	signal mod_sample_latch : std_logic;
@@ -368,13 +370,13 @@ begin
 		SYNC_IN => MCU_AUX2,
 		SYNC_OUT => aux2_sync
 	);
---	Sync_AUX3 : Synchronizer
---	GENERIC MAP(stages => 2)
---	PORT MAP(
---		CLK => clk_pll,
---		SYNC_IN => MCU_AUX3,
---		SYNC_OUT => aux3_sync
---	);
+	Sync_AUX3 : Synchronizer
+	GENERIC MAP(stages => 2)
+	PORT MAP(
+		CLK => clk_pll,
+		SYNC_IN => MCU_AUX3,
+		SYNC_OUT => aux3_sync
+	);
 --	Sync_LO_LD : Synchronizer
 --	GENERIC MAP(stages => 2)
 --	PORT MAP(
@@ -486,10 +488,12 @@ begin
 	);
 	
 	mod_reset <= not mod_enable;
+	mod_active <= not aux3_sync;
 	
 	Modulation: Modulator PORT MAP(
 		CLK => clk_pll,
 		RESET => mod_reset,
+		ACTIVE => mod_active,
 		SAMPLE_FREQ_WORD => mod_sample_word,
 		SAMPLE_DATA => mod_sample_data,
 		SAMPLE_LATCH => mod_sample_latch,

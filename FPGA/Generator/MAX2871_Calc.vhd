@@ -153,7 +153,7 @@ begin
 						DONE <= '0';
 						if unsigned(freq_buf) < unsigned(vco_min_buf) then
 							vco_div <= vco_div + 1;
-							freq_buf <= freq_buf(32 downto 1) & "0";
+							freq_buf <= freq_buf(31 downto 0) & "0";
 						else
 							state <= VCO;
 						end if;
@@ -161,7 +161,7 @@ begin
 					when VCO =>
 						approx_start <= '1';
 						DONE <= '0';
-						if unsigned(VCO_MAX_FREQ) < unsigned(freq_buf(15 downto 0)) then
+						if unsigned(VCO_MAX_FREQ) < unsigned(freq_buf(32 downto 17)) then
 							-- select next VCO
 							vco_cnt <= vco_cnt + 1;
 						else

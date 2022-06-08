@@ -34,6 +34,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity Modulator is
     Port ( CLK : in  STD_LOGIC;
            RESET : in  STD_LOGIC;
+			  ACTIVE : in STD_LOGIC;
 			  -- Determines sample rate
            SAMPLE_FREQ_WORD : in  STD_LOGIC_VECTOR (15 downto 0);
 			  -- Input data, latched when SAMPLE_LATCH goes high
@@ -114,7 +115,7 @@ architecture Behavioral of Modulator is
 	
 	signal sample : std_logic_vector(7 downto 0);
 	
-	signal clk_sample_cnt : unsigned(27 downto 0);
+	signal clk_sample_cnt : unsigned(26 downto 0);
 	
 	type AMdepthTable is array(0 to 127) of std_logic_vector(6 downto 0);
 	
@@ -194,7 +195,9 @@ begin
 					end if;
 					write_pos <= write_pos + 1;
 				end if;
-				clk_sample_cnt <= clk_sample_cnt + unsigned(SAMPLE_FREQ_WORD);
+				if ACTIVE = '1' then
+					clk_sample_cnt <= clk_sample_cnt + unsigned(SAMPLE_FREQ_WORD);
+				end if;
 				if clk_sample_cnt(26) = '1' then
 					-- take the next sample
 					clk_sample_cnt(26) <= '0';
