@@ -137,6 +137,7 @@ begin
 				interrupt_mask <= (others => '0');
 				INTERRUPT_ASSERTED <= '0';
 				last_NSS <= '1';
+				MOD_ENABLE <= '0';
 			else
 				interrupt_status <= "00000000000" & MOD_FIFO_THRESHOLD_CROSSED & MOD_FIFO_UNDERFLOW & MOD_FIFO_OVERFLOW & SOURCE_UNLOCKED & "0";
 				if (interrupt_status and interrupt_mask) = "0000000000000000" then

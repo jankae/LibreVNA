@@ -58,7 +58,7 @@ ARCHITECTURE behavior OF Test_PLL IS
    signal LOCKED : std_logic;
 
    -- Clock period definitions
-   constant CLK_IN1_period : time := 20 ns;
+   constant CLK_IN1_period : time := 62.5 ns;
  
 BEGIN
  
@@ -86,7 +86,7 @@ BEGIN
    begin		
       -- hold reset state for 100 ns.
 		RESET <= '1';
-      wait for 100 ns;	
+      wait for 1000 ns;	
 		RESET <= '0';
 
       wait for CLK_IN1_period*10;
