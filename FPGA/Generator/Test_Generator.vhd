@@ -380,11 +380,11 @@ BEGIN
 		SPI("1111000110000110");
 		MCU_NSS <= '1';
 
-		-- set AM depth, enable modulation
+		-- enable modulation
 		wait for CLK_period*10;
 		MCU_NSS <= '0';
 		SPI("1000000000000010");
-		SPI("0000000011111111");
+		SPI("0000000000000001");
 		MCU_NSS <= '1';
 		
 		-- set 20kHz modulation rate
@@ -394,46 +394,39 @@ BEGIN
 		SPI(std_logic_vector(to_unsigned(26214, 16)));
 		MCU_NSS <= '1';
 		
-		-- set center frequency
-		wait for CLK_period*10;
-		MCU_NSS <= '0';
-		SPI("1000000000000100");
-		SPI(center_freq(15 downto 0));
-		MCU_NSS <= '1';
-		wait for CLK_period*10;
-		MCU_NSS <= '0';
-		SPI("1000000000000101");
-		SPI(center_freq(31 downto 16));
-		MCU_NSS <= '1';
-		-- set deviation frequency
-		wait for CLK_period*10;
-		MCU_NSS <= '0';
-		SPI("1000000000000110");
-		SPI(deviation_freq(15 downto 0));
-		MCU_NSS <= '1';
-		wait for CLK_period*10;
-		MCU_NSS <= '0';
-		SPI("1000000000000111");
-		SPI(center_freq(32) & "00000" & center_freq(25 downto 16));
-		MCU_NSS <= '1';
-		
-		-- set minimum VCO frequency to 3GHz
-		wait for CLK_period*10;
-		MCU_NSS <= '0';
-		SPI("1000000000001000");
-		SPI(minimum_vco_freq(15 downto 0));
-		MCU_NSS <= '1';
-		wait for CLK_period*10;
-		MCU_NSS <= '0';
-		SPI("1000000000001001");
-		SPI(minimum_vco_freq(31 downto 16));
-		MCU_NSS <= '1';
-		
 		-- set FIFO threshold to 100
 		wait for CLK_period*10;
 		MCU_NSS <= '0';
-		SPI("1000000000001010");
+		SPI("1000000000000100");
 		SPI(std_logic_vector(to_unsigned(100, 16)));
+		MCU_NSS <= '1';
+		
+		-- setup modulation lookup-table
+		wait for CLK_period*10;
+		MCU_NSS <= '0';
+		SPI("0000000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		SPI("1111000011110000");
+		MCU_NSS <= '1';
+				wait for CLK_period*10;
+		MCU_NSS <= '0';
+		SPI("0000000001010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
+		SPI("0101010101010101");
 		MCU_NSS <= '1';
 		
 		wait for CLK_period*10;
@@ -442,7 +435,7 @@ BEGIN
 		for i in 0 to 63 loop
 			-- write sample FIFO
 			wait for CLK_period*10;
-			SPI(std_logic_vector(to_unsigned(i*4, 8)) & std_logic_vector(to_unsigned(i*4+2, 8)));
+			SPI("1111000001010101");
 		end loop;
 		MCU_NSS <= '0';
 		

@@ -135,22 +135,17 @@ architecture Behavioral of top is
 		MOD_FIFO_THRESHOLD_CROSSED : IN std_logic;          
 		MISO : OUT std_logic;
 		SOURCE_FILTER : OUT std_logic_vector(1 downto 0);
-		SOURCE_POWER : out STD_LOGIC_VECTOR(1 downto 0);
 		SOURCE_ATTENUATION : OUT std_logic_vector(6 downto 0);
 		SOURCE_BANDSELECT : OUT std_logic;
 		SOURCE_PORTSELECT : OUT std_logic;
-		SOURCE_VCO_INDEX : OUT std_logic_vector(5 downto 0);
-		SOURCE_VCO_MAXFREQ : OUT std_logic_vector(15 downto 0);
-		SOURCE_VCO_WRITE : OUT std_logic;
 		MOD_FIFO_DATA : OUT std_logic_vector(7 downto 0);
 		MOD_FIFO_WRITE : OUT std_logic;
 		MOD_FIFO_THRESHOLD : OUT std_logic_vector(10 downto 0);
+		MOD_LOOKUP_INDEX : out STD_LOGIC_VECTOR (7 downto 0);
+		MOD_LOOKUP_DATA : out STD_LOGIC_VECTOR (143 downto 0);
+		MOD_LOOKUP_WRITE : out STD_LOGIC;
 		MOD_ENABLE : OUT std_logic;
-		MOD_PHASE_INC : OUT std_logic_vector(15 downto 0);
-		MOD_CENTER_FREQ : OUT std_logic_vector(32 downto 0);
-		MOD_DEVIATION_FREQ : OUT std_logic_vector(25 downto 0);
-		MOD_AM_DEPTH : OUT std_logic_vector(6 downto 0);
-		MOD_VCO_MIN : out STD_LOGIC_VECTOR (31 downto 0);		
+		MOD_PHASE_INC : out STD_LOGIC_VECTOR (15 downto 0);
 		AMP_SHDN : OUT std_logic;
 		SOURCE_RF_EN : OUT std_logic;
 		SOURCE_CE_EN : OUT std_logic;
@@ -169,15 +164,15 @@ architecture Behavioral of top is
 		);
 	END COMPONENT;
 	
-	COMPONENT VCO_Mem
+	COMPONENT ModulationMemory
 	PORT (
 		clka : IN STD_LOGIC;
 		wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
-		addra : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
-		dina : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+		addra : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+		dina : IN STD_LOGIC_VECTOR(143 DOWNTO 0);
 		clkb : IN STD_LOGIC;
-		addrb : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
-		doutb : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+		addrb : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+		doutb : OUT STD_LOGIC_VECTOR(143 DOWNTO 0)
 	);
 	END COMPONENT;
 	
@@ -185,39 +180,16 @@ architecture Behavioral of top is
 	PORT(
 		CLK : IN std_logic;
 		RESET : IN std_logic;
-		ACTIVE : in STD_LOGIC;
+		ACTIVE : IN std_logic;
 		SAMPLE_FREQ_WORD : IN std_logic_vector(15 downto 0);
 		SAMPLE_DATA : IN std_logic_vector(7 downto 0);
 		SAMPLE_LATCH : IN std_logic;
-		THRESHOLD_LEVEL : IN std_logic_vector(10 downto 0);
-		FREQ_CENTER : IN std_logic_vector(32 downto 0);
-		FREQ_DEVIATION : IN std_logic_vector(25 downto 0);
-		MIN_ATTENUATION : IN std_logic_vector(6 downto 0);
-		AMPLITUDE_DEPTH : IN std_logic_vector(6 downto 0);          
+		THRESHOLD_LEVEL : IN std_logic_vector(10 downto 0);          
 		OVERFLOW : OUT std_logic;
 		UNDERFLOW : OUT std_logic;
 		THRESHOLD_CROSSED : OUT std_logic;
-		FREQUENCY : OUT std_logic_vector(32 downto 0);
-		ATTENUATOR : OUT std_logic_vector(6 downto 0);
+		OUTPUT_SAMPLE : OUT std_logic_vector(7 downto 0);
 		NEW_OUTPUT : OUT std_logic
-	);
-	END COMPONENT;
-	
-	COMPONENT MAX2871_Calc
-	PORT(
-		CLK : IN std_logic;
-		RESET : IN std_logic;
-		CALC : IN std_logic;
-		FREQ : IN std_logic_vector(32 downto 0);
-		VCO_MIN : IN std_logic_vector(31 downto 0);
-		POWER : IN std_logic_vector(1 downto 0);
-		VCO_MAX_FREQ : IN std_logic_vector(15 downto 0);          
-		DONE : OUT std_logic;
-		REG0 : OUT std_logic_vector(31 downto 0);
-		REG1 : OUT std_logic_vector(31 downto 0);
-		REG3 : OUT std_logic_vector(31 downto 0);
-		REG4 : OUT std_logic_vector(31 downto 0);
-		VCO_SELECT : OUT std_logic_vector(5 downto 0)
 	);
 	END COMPONENT;
 	
@@ -231,11 +203,11 @@ architecture Behavioral of top is
 	signal source_reg_3 : std_logic_vector(31 downto 0);
 	signal source_reg_1 : std_logic_vector(31 downto 0);
 	signal source_reg_0 : std_logic_vector(31 downto 0);
-	signal reload_plls : std_logic;
 	signal source_reloaded : std_logic;
+	signal source_reloaded_last : std_logic;
 	signal source_unlocked : std_logic;
+	signal source_reload : std_logic;
 	
-	signal source_power : std_logic_vector(1 downto 0);
 	signal source_filter : std_logic_vector(1 downto 0);
 	signal band_select : std_logic;
 	signal attenuator : std_logic_vector(6 downto 0);
@@ -264,13 +236,6 @@ architecture Behavioral of top is
 	signal source_ld_sync : std_logic;
 	signal nss_sync : std_logic;
 	
-	-- VCO table signals
-	signal vco_write_index : std_logic_vector(5 downto 0);
-	signal vco_read_index : std_logic_vector(5 downto 0);
-	signal vco_write : std_logic;
-	signal vco_write_data : std_logic_vector(15 downto 0);
-	signal vco_read_data : std_logic_vector(15 downto 0);
-	
 	-- modulation signals
 	signal mod_enable : std_logic;
 	signal mod_reset : std_logic;
@@ -279,19 +244,17 @@ architecture Behavioral of top is
 	signal mod_sample_data : std_logic_vector(7 downto 0);
 	signal mod_sample_latch : std_logic;
 	signal mod_threshold_level : std_logic_vector(10 downto 0);
-	signal mod_center : std_logic_vector(32 downto 0);
-	signal mod_deviation : std_logic_vector(25 downto 0);
-	signal mod_depth : std_logic_vector(6 downto 0);
-	signal mod_vco_min : std_logic_vector(31 downto 0);
 	signal mod_fifo_overflow : std_logic;
 	signal mod_fifo_underflow : std_logic;
 	signal mod_fifo_threshold_crossed : std_logic;
-	
-	signal mod_frequency : std_logic_vector(32 downto 0);
 	signal mod_attenuator : std_logic_vector(6 downto 0);
-	signal mod_new_output : std_logic;
 	
-	signal pll_calc_done : std_logic;
+	signal mod_lookup_write_data : std_logic_vector(143 downto 0);
+	signal mod_lookup_read_data : std_logic_vector(143 downto 0);
+	signal mod_lookup_write_index : std_logic_vector(7 downto 0);
+	signal mod_lookup_read_index : std_logic_vector(7 downto 0);
+	signal mod_lookup_write : std_logic;
+	signal mod_new_output : std_logic;
 	
 	signal intr : std_logic;
 begin
@@ -311,7 +274,7 @@ begin
 	BAND_SELECT_LOW <= band_select;
 	AMP_PWDN <= amp_shutdown;
 	
-	ATTENUATION <= attenuator when mod_reset = '1' else mod_attenuator;
+	ATTENUATION <= attenuator when (mod_reset = '1' or aux3_sync = '1') else mod_attenuator;
 	
 	-- unused signals, ADCs not used
 	PORT1_MIX2_EN <= '0';
@@ -408,7 +371,7 @@ begin
 		REG3 => source_reg_3,
 		REG1 => source_reg_1,
 		REG0 => source_reg_0,
-		RELOAD => mod_new_output,
+		RELOAD => source_reload,
 		CLK_OUT => fpga_source_SCK,
 		MOSI => fpga_source_MOSI,
 		LE => fpga_source_LE,
@@ -440,17 +403,6 @@ begin
 
 	source_unlocked <= not source_ld_sync;
 
-	VCOMap : VCO_Mem
-	PORT MAP (
-		clka => clk_pll,
-		wea(0) => vco_write,
-		addra => vco_write_index,
-		dina => vco_write_data,
-		clkb => clk_pll,
-		addrb => vco_read_index,
-		doutb => vco_read_data
-	);
-
 	SPI: SPICommands PORT MAP(
 		CLK => clk_pll,
 		RESET => int_reset,
@@ -459,26 +411,21 @@ begin
 		MISO => fpga_miso,
 		NSS => fpga_select,
 		SOURCE_FILTER => source_filter,
-		SOURCE_POWER => source_power,
 		SOURCE_ATTENUATION => attenuator,
 		SOURCE_BANDSELECT => band_select,
 		SOURCE_PORTSELECT => port_select,
 		SOURCE_UNLOCKED => source_unlocked,
-		SOURCE_VCO_INDEX => vco_write_index,
-		SOURCE_VCO_MAXFREQ => vco_write_data,
-		SOURCE_VCO_WRITE => vco_write,
 		MOD_FIFO_DATA => mod_sample_data,
 		MOD_FIFO_WRITE => mod_sample_latch,
 		MOD_FIFO_UNDERFLOW => mod_fifo_underflow,
 		MOD_FIFO_OVERFLOW => mod_fifo_overflow,
 		MOD_FIFO_THRESHOLD_CROSSED => mod_fifo_threshold_crossed,
 		MOD_FIFO_THRESHOLD => mod_threshold_level,
+		MOD_LOOKUP_INDEX => mod_lookup_write_index,
+		MOD_LOOKUP_DATA => mod_lookup_write_data,
+		MOD_LOOKUP_WRITE => mod_lookup_write,
 		MOD_ENABLE => mod_enable,
 		MOD_PHASE_INC => mod_sample_word,
-		MOD_CENTER_FREQ => mod_center,
-		MOD_DEVIATION_FREQ => mod_deviation,
-		MOD_AM_DEPTH => mod_depth,
-		MOD_VCO_MIN => mod_vco_min,
 		AMP_SHDN => amp_shutdown,
 		SOURCE_RF_EN => SOURCE_RF_EN,
 		SOURCE_CE_EN => SOURCE_CE,
@@ -489,6 +436,35 @@ begin
 	
 	mod_reset <= not mod_enable;
 	mod_active <= not aux3_sync;
+	
+	source_reg_0 <= mod_lookup_read_data(31 downto 0);
+	source_reg_1 <= mod_lookup_read_data(63 downto 32);
+	source_reg_3 <= mod_lookup_read_data(95 downto 64);
+	source_reg_4 <= mod_lookup_read_data(127 downto 96);
+	
+	process(clk_pll)
+	begin
+		if rising_edge(clk_pll) then
+			source_reload <= mod_new_output;
+			
+			source_reloaded_last <= source_reloaded;
+			if source_reloaded = '1' and source_reloaded_last = '0' then
+				-- source has been reloaded, update attenuator
+				mod_attenuator <= mod_lookup_read_data(134 downto 128);
+			end if;
+		end if;
+	end process;
+	
+	ModulationMem : ModulationMemory
+	PORT MAP (
+		clka => clk_pll,
+		wea(0) => mod_lookup_write,
+		addra => mod_lookup_write_index,
+		dina => mod_lookup_write_data,
+		clkb => clk_pll,
+		addrb => mod_lookup_read_index,
+		doutb => mod_lookup_read_data
+	);
 	
 	Modulation: Modulator PORT MAP(
 		CLK => clk_pll,
@@ -501,29 +477,8 @@ begin
 		UNDERFLOW => mod_fifo_underflow,
 		THRESHOLD_LEVEL => mod_threshold_level,
 		THRESHOLD_CROSSED => mod_fifo_threshold_crossed,
-		FREQ_CENTER => mod_center,
-		FREQ_DEVIATION => mod_deviation,
-		MIN_ATTENUATION => attenuator,
-		AMPLITUDE_DEPTH => mod_depth,
-		FREQUENCY => mod_frequency,
-		ATTENUATOR => mod_attenuator,
+		OUTPUT_SAMPLE => mod_lookup_read_index,
 		NEW_OUTPUT => mod_new_output
-	);
-
-	PLL_Calc: MAX2871_Calc PORT MAP(
-		CLK => clk_pll,
-		RESET => int_reset,
-		CALC => mod_new_output,
-		FREQ => mod_frequency,
-		VCO_MIN => mod_vco_min,
-		DONE => pll_calc_done,
-		REG0 => source_reg_0,
-		REG1 => source_reg_1,
-		REG3 => source_reg_3,
-		REG4 => source_reg_4,
-		POWER => source_power,
-		VCO_SELECT => vco_read_index,
-		VCO_MAX_FREQ => vco_read_data
 	);
 
 end Behavioral;

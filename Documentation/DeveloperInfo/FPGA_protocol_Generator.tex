@@ -121,28 +121,60 @@ Writing a register requires the transfer of two words: First the control word se
 \rwbits{0}{16}{Register Value}
 \end{tikzpicture}
 \end{center}
-\subsection{Writing the VCO lookup table}
-The MAX2871 contains 64 individual VCOs. The correct VCO has to be selected for each frequency. During modulation, the FPGA performs the VCO selection and needs to know the frequency limits for each VCO. It contains a lookup table with a 16-bit entry for each VCO. This table has to be filled before enabling the modulation, as each MAX2871 sample has slightly different VCO limits (see MAX2871 datasheet for algorithm to determine the limits).
-Updating a table entry is done by sending two SPI words:
+
+\subsection{Writing to the modulation lookup table}
+The source registers and the attenuator setting are taken from a lookup table while the modulation is active. There is one entry for every possible value of the sample (256 entries). All used entries must have been written to before the modulation is started.
+Initiate the write by sending the command word:
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
 \rwbits{0}{1}{0}
 \rwbits{1}{1}{0}
 \rwbits{2}{1}{0}
-\robits{3}{7}{reserved}
-\rwbits{10}{6}{VCO index}
+\robits{3}{5}{reserved}
+\rwbits{8}{8}{Table index}
+\end{tikzpicture}
+\end{center}
+While keeping NSS low, send the lookup table data after the control word. The data is only written to the table, when all 9 words have been received. The data is transmitted MSB first.
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{144-\bit}
+\robits{0}{9}{reserved}
+\rwbits{9}{7}{Attenuator}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{128-\bit}
+\rwbits{0}{16}{MAX2871 Register 4[31:16]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{112-\bit}
+\rwbits{0}{16}{MAX2871 Register 4[15:0]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{96-\bit}
+\rwbits{0}{16}{MAX2871 Register 3[31:16]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{80-\bit}
+\rwbits{0}{16}{MAX2871 Register 3[15:0]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{64-\bit}
+\rwbits{0}{16}{MAX2871 Register 1[31:16]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{48-\bit}
+\rwbits{0}{16}{MAX2871 Register 1[15:0]}
+\end{tikzpicture}
+\begin{tikzpicture}
+\bitrect{16}{32-\bit}
+\rwbits{0}{16}{MAX2871 Register 0[31:16]}
 \end{tikzpicture}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
-\rwbits{0}{16}{Maximum VCO frequency[15:0]}
+\rwbits{0}{16}{MAX2871 Register 0[15:0]}
 \end{tikzpicture}
 \end{center}
-The maximum VCO frequency is given in terms of the MAX2871 reference frequency. It is a Q10 fixed point integer.
-$$
-Maximum VCO frequency[15:0] = \frac{f_{max} * 1024}{f_{reference}}
-$$
-Example: With a reference frequency $f_{reference} = 104 MHz$ and a maximum usable frequency of the VCO of $f_{max} = 3718 MHz$, set the maximum VCO frequency value to 36608.
 
 \subsection{Modulation FIFO handling}
 \label{mod:fifo}
@@ -196,12 +228,13 @@ FIFO sample 1 is added to the FIFO first, followed by FIFO sample 2.
 \item \textbf{SUIE:} Source unlocked interrupt enable
 \end{itemize}
 
-\subsection{Source Control Register: 0x01}
+\subsection{Control Register: 0x01}
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
 \rwbits{0}{2}{SourceFilter}
-\rwbits{2}{2}{PWR}
+\robits{2}{1}{res}
+\rwbits{3}{1}{EN}
 \rwbits{4}{7}{Attenuation}
 \rwbits{11}{1}{BS}
 \rwbits{12}{1}{PS}
@@ -222,18 +255,8 @@ Setting & Selected Band\\
 11 & \SIrange{3500}{6000}{\mega\hertz}\\
 \end{tabular}
 \end{center}
-\item \textbf{PWR:} Power setting of source PLL. Will be written to register 4, bits [4:3] of the source PLL, controlling the output power of output A.
-\begin{center}
-\begin{tabular}{ c|c }
-Setting & Selected Power\\
- \hline
-00 & \SI{-4}{\dBm}\\
-01 & \SI{-1}{\dBm}\\
-10 & \SI{2}{\dBm}\\
-11 & \SI{5}{\dBm}\\
-\end{tabular}
-\end{center}
-\item \textbf{Attenuator:} Attenuation of source signal in \SI{0.25}{\decibel}.
+\item \textbf{EN: Enable modulation.} Set to 1 to enable the modulation. For the modulation to actually start, AUX3 also has to be pulled low. Set to 0 to disable the modulation (when changing settings or to clear the modulation FIFO).
+\item \textbf{Attenuator:} Attenuation of source signal in \SI{0.25}{\decibel} (when modulation is disabled).
 \item \textbf{BS: Band select.} Set to 0 for highband, set to 1 for lowband.
 \item \textbf{PS: Port select.} Set to 0 for Port 1, set to 1 for Port 2.
 \item \textbf{CE: Source chip enable.} 
@@ -241,14 +264,13 @@ Setting & Selected Power\\
 \item \textbf{ASHD: Amplifier disable.}
 \end{itemize}
 
-\subsection{Modulation control register: 0x02}
+\subsection{LED control register: 0x02}
 \begin{center}
 \begin{tikzpicture}
 \bitrect{16}{16-\bit}
 \rwbits{0}{3}{LEDS[2:0]}
-\robits{3}{5}{reserved}
-\rwbits{8}{7}{MOD\_AM\_DEPTH[6:0]}
-\rwbits{15}{1}{EN}
+\robits{3}{13}{reserved}
+
 \end{tikzpicture}
 \end{center}
 \begin{itemize}
@@ -262,8 +284,6 @@ LED num & Function\\
 2 & Ext. reference\\
 \end{tabular}
 \end{center}
-\item \textbf{MOD\_AM\_DEPTH:} Depth of amplitude modulation. Higher values of the modulation sample result in deeper modulation. This setting determines the maximum depth. 127 is equivalent to 100\% modulation.
-\item \textbf{EN: Enable modulation.} Set to 1 to enable the modulation. For the modulation to actually start, AUX3 also has to be pulled low. Set to 0 to disable the modulation (when changing settings or to clear the modulation FIFO).
 \end{itemize}
 
 \subsection{Modulation phase increment register: 0x03}
@@ -280,86 +300,7 @@ f_{sample} = \frac{102.4 MHz * MOD\_PHASE\_INC}{2^{27}}
 $$
 Example: set to 26214 for a sample rate of approximately 20 kHz.
 
-\subsection{Modulation center frequency LSB register: 0x04}
-\label{reg:mod:center:lsb}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{16}{MOD\_CENTER\_FREQ[15:0]}
-\end{tikzpicture}
-\end{center}
-\begin{itemize}
-\item \textbf{MOD\_CENTER\_FREQ[32:0]:} See also other registers for remaining bits (sections~\ref{reg:mod:center:msb} and \ref{reg:mod:dev:msb}). Sets the center frequency of the frequency modulation. It is given in terms of the MAX2871 reference frequency. It is a Q27 fixed point integer.
-$$
-MOD\_CENTER\_FREQ[32:0] = \frac{f_{center} * 2^{27}}{f_{reference}}
-$$
-\end{itemize}
-
-\subsection{Modulation center frequency MSB register: 0x05}
-\label{reg:mod:center:msb}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{16}{MOD\_CENTER\_FREQ[31:16]}
-\end{tikzpicture}
-\end{center}
-
-\subsection{Modulation deviation frequency LSB register: 0x06}
-\label{reg:mod:dev:lsb}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{16}{MOD\_DEVIATION\_FREQ[15:0]}
-\end{tikzpicture}
-\end{center}
-
-\begin{itemize}
-\item \textbf{MOD\_DEVIATION\_FREQ[25:0]:} See also other register for remaining bits (section~\ref{reg:mod:dev:msb}). Sets the maximum deviation from the center frequency during frequency modulation. It is given in terms of the MAX2871 reference frequency. It is a Q27 fixed point integer. As it only has 26 bits, the maximum deviation is half the reference frequency.
-$$
-MOD\_DEVIATION\_FREQ[25:0] = \frac{f_{max_deviation} * 2^{27}}{f_{reference}}
-$$
-\end{itemize}
-
-\subsection{Modulation deviation frequency MSB register: 0x07}
-\label{reg:mod:dev:msb}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{1}{CF32}
-\robits{1}{5}{reserved}
-\rwbits{6}{10}{MOD\_DEVIATION\_FREQ[25:16]}
-\end{tikzpicture}
-\end{center}
-\begin{itemize}
-\item \textbf{CF32:} Most significant bit of MOD\_CENTER\_FREQ.
-\end{itemize}
-
-\subsection{Minimum VCO frequency LSB register: 0x08}
-\label{reg:mod:minvco:lsb}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{16}{MOD\_VCO\_MIN[15:0]}
-\end{tikzpicture}
-\end{center}
-\begin{itemize}
-\item \textbf{MOD\_VCO\_MIN[31:0]:} See also other register for remaining bits (section~\ref{reg:mod:minvco:msb}). Sets the minimal allowed undivided VCO frequency. Used to determine the VCO divider when changing frequencies. It is given in terms of the MAX2871 reference frequency. It is a Q27 fixed point integer. Always set this for a minimal undivided VCO frequency of 3 GHz.
-$$
-MOD\_VCO\_MIN[31:0] = \frac{f_{min_vco} * 2^{27}}{f_{reference}}
-$$
-\end{itemize}
-For the default reference frequency of 104 MHz, set this value to 3871665231.
-
-\subsection{Minimum VCO frequency MSB register: 0x05}
-\label{reg:mod:minvco:msb}
-\begin{center}
-\begin{tikzpicture}
-\bitrect{16}{16-\bit}
-\rwbits{0}{16}{MOD\_VCO\_MIN[31:16]}
-\end{tikzpicture}
-\end{center}
-
-\subsection{Modulation FIFO threshold register: 0x0A}
+\subsection{Modulation FIFO threshold register: 0x04}
 \label{reg:mod:fifo:thresh}
 \begin{center}
 \begin{tikzpicture}
