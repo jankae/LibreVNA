@@ -1287,7 +1287,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.Freq.stop - settings.Freq.start);
+        return QString::number(settings.Freq.stop - settings.Freq.start, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -1298,7 +1298,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.Freq.start);
+        return QString::number(settings.Freq.start, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -1309,7 +1309,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number((settings.Freq.start + settings.Freq.stop)/2);
+        return QString::number((settings.Freq.start + settings.Freq.stop)/2, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -1320,7 +1320,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.Freq.stop);
+        return QString::number(settings.Freq.stop, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
@@ -1428,7 +1428,7 @@ void VNA::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.Power.frequency);
+        return QString::number(settings.Power.frequency, 'f', 0);
     }));
     SCPINode::add(traceWidget);
     auto scpi_cal = new SCPINode("CALibration");

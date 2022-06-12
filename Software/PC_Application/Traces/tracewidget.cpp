@@ -209,7 +209,7 @@ void TraceWidget::SetupSCPI()
         QString ret;
         for(unsigned int i=0;i<t->size();i++) {
             auto d = t->sample(i);
-            ret += "["+QString::number(d.x)+","+createStringFromData(t, d)+"],";
+            ret += "["+QString::number(d.x, 'f', 0)+","+createStringFromData(t, d)+"],";
         }
         ret.chop(1);
         return ret;
@@ -293,14 +293,14 @@ void TraceWidget::SetupSCPI()
         if(!t) {
            return "ERROR";
         }
-        return QString::number(t->maxX());
+        return QString::number(t->maxX(), 'f', 0);
     }));
     add(new SCPICommand("MINFrequency", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
            return "ERROR";
         }
-        return QString::number(t->minX());
+        return QString::number(t->minX(), 'f', 0);
     }));
     add(new SCPICommand("MAXAmplitude", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
@@ -308,7 +308,7 @@ void TraceWidget::SetupSCPI()
            return "ERROR";
         }
         auto d = t->interpolatedSample(t->findExtremum(true));
-        return QString::number(d.x)+","+createStringFromData(t, d);
+        return QString::number(d.x, 'f', 0)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("MINAmplitude", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
@@ -316,7 +316,7 @@ void TraceWidget::SetupSCPI()
            return "ERROR";
         }
         auto d = t->interpolatedSample(t->findExtremum(false));
-        return QString::number(d.x)+","+createStringFromData(t, d);
+        return QString::number(d.x, 'f', 0)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("NEW", [=](QStringList params) -> QString {
         if(params.size() != 1) {

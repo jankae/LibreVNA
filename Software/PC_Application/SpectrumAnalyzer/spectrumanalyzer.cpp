@@ -819,7 +819,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_stop - settings.f_start);
+        return QString::number(settings.f_stop - settings.f_start, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -830,7 +830,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_start);
+        return QString::number(settings.f_start, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -841,7 +841,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number((settings.f_start + settings.f_stop)/2);
+        return QString::number((settings.f_start + settings.f_stop)/2, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -852,7 +852,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return "";
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_stop);
+        return QString::number(settings.f_stop, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
