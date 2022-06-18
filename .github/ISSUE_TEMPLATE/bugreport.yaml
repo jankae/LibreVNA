@@ -1,0 +1,59 @@
+name: Bug report 
+description: Create a report to spot probably hidden bugs :)
+labels: ["bug :bug:"]
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      It's not an everyday experience when you found that there is a Vector Network Analyzer 
+      open hardware and source available for you to use it but also study it and improve it.
+      
+      **If you came here, we really appreciate your time in wanting to report a bug.**
+
+      Before actually start typing, please double check that there are not already existing 
+      issues related to this bug, including open and closed.
+
+- type: textarea
+  attributes:
+    label: LibreVNA Version
+    description: Go to LibreVNA app -> Help -> About menu and hit "To clipboard". Paste info in this field
+    placeholder: |
+      LibreVNA Version (64 bit): 1.3.0-d701ed64d
+      OS: Fedora Linux 36 (Workstation Edition)
+      CPU Arch: x86_64
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: Describe what are the procedures to actually make the bug appears
+    placeholder: |
+      - LibreVNA app is launched
+      - LibreVNA device is connected throughout app
+      - When using VNA mode...
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Expected behavior
+    description: What are the results you would expect it
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Extra information & Setup and Calibration files
+    description: Any information that you may find would be relevant and that doesn´t fit
+      in other fields
+  validations:
+            required: true
+
+- type: checkboxes
+  attributes:
+    label: Confirming that you haven´t forgot to include configuration files
+    options: 
+      - label: Setup file
+      - label: Calibration file

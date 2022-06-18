@@ -1,0 +1,46 @@
+name: Feature request
+description: Suggest new functionality
+labels: ["feature ::sparkles:"]
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      It's not an everyday experience when you found that there is a Vector Network Analyzer 
+      open hardware and source available for you to use it but also study it and improve it.
+      
+      **If you came here, we really appreciate your time in wanting to discuss how a new 
+      feature can be integrated.**
+
+      Before actually start typing, please double check that there are not already existing 
+      issues related to this bug, including open and closed.
+
+- type: textarea
+  attributes:
+    label: Summary
+    description: Describe what's the funcionality you aiming to suggest
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Paths to implement it
+    description: Describe in which way your suggestion can be achieved
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Extra information & Setup and Calibration files
+    description: Any information that you may find would be relevant and that doesn´t fit
+      in other fields
+  validations:
+            required: true
+
+- type: checkboxes
+  attributes:
+    label: Confirming that you haven´t forgot to include configuration files
+    options: 
+      - label: Setup file
+      - label: Calibration file
+
