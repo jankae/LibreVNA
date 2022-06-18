@@ -63,6 +63,7 @@ void TracePlot::enableTrace(Trace *t, bool enabled)
             connect(t, &Trace::markerAdded, this, &TracePlot::markerAdded);
             connect(t, &Trace::markerRemoved, this, &TracePlot::markerRemoved);
             connect(t, &Trace::typeChanged, this, &TracePlot::checkIfStillSupported);
+            connect(t, &Trace::colorChanged, this, &TracePlot::triggerReplot);
         } else {
             // disconnect from notifications
             disconnect(t, &Trace::dataChanged, this, &TracePlot::triggerReplot);
@@ -71,6 +72,7 @@ void TracePlot::enableTrace(Trace *t, bool enabled)
             disconnect(t, &Trace::markerAdded, this, &TracePlot::markerAdded);
             disconnect(t, &Trace::markerRemoved, this, &TracePlot::markerRemoved);
             disconnect(t, &Trace::typeChanged, this, &TracePlot::checkIfStillSupported);
+            disconnect(t, &Trace::colorChanged, this, &TracePlot::triggerReplot);
         }
         updateContextMenu();
         replot();
