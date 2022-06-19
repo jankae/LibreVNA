@@ -6,6 +6,7 @@
 #include "Exti.hpp"
 #include "VNA.hpp"
 #include "Manual.hpp"
+#include "delay.hpp"
 #include "SpectrumAnalyzer.hpp"
 #include <cstring>
 
@@ -19,7 +20,7 @@ HW::Mode activeMode;
 static bool unlevel = false;
 
 static Protocol::ReferenceSettings ref;
-static uint32_t lastISR;
+static uint64_t lastISR;
 
 static uint32_t IF1 = HW::DefaultIF1;
 static uint32_t IF2 = HW::DefaultIF2;
@@ -60,8 +61,8 @@ static void ReadComplete(const FPGA::SamplingResult &result) {
 }
 
 static void FPGA_Interrupt(void*) {
+	lastISR = Delay::get_us();
 	FPGA::InitiateSampleRead(ReadComplete);
-	lastISR = HAL_GetTick();
 }
 
 void HW::Work() {
@@ -209,7 +210,7 @@ void HW::SetMode(Mode mode) {
 	if(mode != Mode::Idle) {
 		// do a full initialization when switching directly between modes
 		HW::Init();
-		lastISR = HAL_GetTick();
+		lastISR = Delay::get_us();
 	}
 	SetIdle();
 	activeMode = mode;
@@ -287,8 +288,8 @@ HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool
 }
 
 bool HW::TimedOut() {
-	constexpr uint32_t timeout = 1000;
-	if(activeMode != Mode::Idle && HAL_GetTick() - lastISR > timeout) {
+	constexpr uint64_t timeout = 1000000;
+	if(activeMode != Mode::Idle && Delay::get_us() - lastISR > timeout) {
 		return true;
 	} else {
 		return false;
@@ -413,6 +414,10 @@ uint32_t HW::getADCRate() {
 
 uint8_t HW::getADCPrescaler() {
 	return ADCprescaler;
+}
+
+uint64_t HW::getLastISRTimestamp() {
+	return lastISR;
 }
 
 uint16_t HW::getDFTPhaseInc() {

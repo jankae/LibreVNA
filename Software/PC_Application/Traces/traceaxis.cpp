@@ -324,6 +324,7 @@ std::set<YAxis::Type> YAxis::getSupported(XAxis::Type type, TraceModel::DataSour
         switch(type) {
         case XAxis::Type::Frequency:
         case XAxis::Type::Power:
+        case XAxis::Type::TimeZeroSpan:
             ret.insert(YAxis::Type::Magnitude);
             ret.insert(YAxis::Type::MagnitudeLinear);
             ret.insert(YAxis::Type::Phase);
@@ -489,6 +490,7 @@ QString XAxis::TypeToName(Type type)
     case Type::Time: return "Time";
     case Type::Distance: return "Distance";
     case Type::Power: return "Power";
+    case Type::TimeZeroSpan: return "Time (Zero Span)";
     default: return "Unknown";
     }
 }
@@ -511,6 +513,7 @@ QString XAxis::Unit(Type type)
     case Type::Time: return "s";
     case Type::Distance: return "m";
     case Type::Power: return "dBm";
+    case Type::TimeZeroSpan: return "s";
     default: return "";
     }
 }

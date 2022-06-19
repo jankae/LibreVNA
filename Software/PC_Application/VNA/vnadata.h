@@ -14,11 +14,13 @@ public:
                     std::complex<double>(d.real_S21, d.imag_S21),
                     std::complex<double>(d.real_S22, d.imag_S22));
         frequency = d.frequency;
+        time = (double) d.us / 1000000.0;
         cdbm = d.cdbm;
         pointNum = d.pointNum;
         reference_impedance = 50.0;
     }
     double frequency;
+    double time;
     int cdbm;
     Sparam S;
     unsigned int pointNum;

@@ -212,6 +212,7 @@ void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
     source = DataSource::VNA;
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
+            int index = -1;
             Trace::Data td;
             switch(datatype) {
             case TraceMath::DataType::Frequency:
@@ -219,6 +220,10 @@ void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
                 break;
             case TraceMath::DataType::Power:
                 td.x = (double) d.cdbm / 100.0;
+                break;
+            case TraceMath::DataType::TimeZeroSpan:
+                td.x = d.time;
+                index = d.pointNum;
                 break;
             default:
                 // invalid type, can not add
@@ -233,7 +238,7 @@ void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
                 // not a VNA trace, skip
                 continue;
             }
-            t->addData(td, datatype, d.reference_impedance);
+            t->addData(td, datatype, d.reference_impedance, index);
         }
     }
 }

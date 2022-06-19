@@ -69,6 +69,8 @@ public:
         // if the number of points is higher than supported by the hardware, the sweep has to be segmented into multiple parts
         int segments;
         int activeSegment;
+        bool zerospan;
+        double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
     };
 
 public slots:
@@ -84,6 +86,7 @@ private slots:
     void SetCenterFreq(double freq);
     void SetSpan(double span);
     void SetFullSpan();
+    void SetZeroSpan();
     void SpanZoomIn();
     void SpanZoomOut();
 

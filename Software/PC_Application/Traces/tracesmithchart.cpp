@@ -196,9 +196,6 @@ QPoint TraceSmithChart::dataToPixel(std::complex<double> d)
 
 QPoint TraceSmithChart::dataToPixel(Trace::Data d)
 {
-    if(d.x < sweep_fmin || d.x > sweep_fmax) {
-        return QPoint();
-    }
     return dataToPixel(d.y);}
 
 std::complex<double> TraceSmithChart::pixelToData(QPoint p)
@@ -450,6 +447,7 @@ bool TraceSmithChart::dropSupported(Trace *t)
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
     case Trace::DataType::Power:
+    case Trace::DataType::TimeZeroSpan:
         return true;
     default:
         return false;

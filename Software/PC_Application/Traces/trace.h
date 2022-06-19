@@ -45,7 +45,7 @@ public:
     };
 
     void clear();
-    void addData(const Data& d, DataType domain, double reference_impedance = 50.0);
+    void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
     void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
     void setName(QString name);
     void setVelocityFactor(double v);

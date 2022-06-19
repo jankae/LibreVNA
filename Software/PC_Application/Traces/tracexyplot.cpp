@@ -244,6 +244,11 @@ bool TraceXYPlot::configureForTrace(Trace *t)
         setYAxis(0, YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
         setYAxis(1, YAxis::Type::Phase, false, true, 0, 1, 1.0);
         break;
+    case Trace::DataType::TimeZeroSpan:
+        setXAxis(XAxis::Type::TimeZeroSpan, XAxisMode::FitTraces, false, 0, 1, 0.1);
+        setYAxis(0, YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
+        setYAxis(1, YAxis::Type::Phase, false, true, 0, 1, 1.0);
+        break;
     case Trace::DataType::Invalid:
         // unable to add
         return false;
@@ -875,6 +880,8 @@ bool TraceXYPlot::domainMatch(Trace *t)
         return t->outputType() == Trace::DataType::Time;
     case XAxis::Type::Power:
         return t->outputType() == Trace::DataType::Power;
+    case XAxis::Type::TimeZeroSpan:
+        return t->outputType() == Trace::DataType::TimeZeroSpan;
     case XAxis::Type::Last:
         return false;
     }

@@ -61,6 +61,7 @@ public:
         Frequency,
         Time,
         Power,
+        TimeZeroSpan,
         Invalid,
     };
 

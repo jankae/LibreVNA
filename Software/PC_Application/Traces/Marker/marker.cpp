@@ -174,6 +174,39 @@ std::vector<Marker::Format> Marker::applicableFormats()
             break;
         }
         break;
+    case Trace::DataType::TimeZeroSpan:
+        switch(type) {
+        case Type::Manual:
+        case Type::Delta:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::PeakTable:
+            if(Trace::isSAParamater(parentTrace->liveParameter())) {
+                ret.push_back(Format::dBm);
+                ret.push_back(Format::dBuV);
+            } else {
+                ret.push_back(Format::dB);
+                ret.push_back(Format::dBAngle);
+                ret.push_back(Format::RealImag);
+            }
+            if(parentTrace) {
+                if(parentTrace->isReflection()) {
+                    ret.push_back(Format::Impedance);
+                    ret.push_back(Format::VSWR);
+                    ret.push_back(Format::SeriesR);
+                    ret.push_back(Format::Capacitance);
+                    ret.push_back(Format::Inductance);
+                    ret.push_back(Format::QualityFactor);
+                }
+                if(!isnan(parentTrace->getNoise(parentTrace->minX()))) {
+                    ret.push_back(Format::Noise);
+                }
+            }
+            break;
+        default:
+            break;
+        }
+        break;
     case Trace::DataType::Frequency:
         switch(type) {
         case Type::Manual:
@@ -313,6 +346,7 @@ QString Marker::readableData(Format f)
         break;
     case Trace::DataType::Frequency:
     case Trace::DataType::Power:
+    case Trace::DataType::TimeZeroSpan:
         switch(type) {
         case Type::PeakTable:
             return "Found " + QString::number(helperMarkers.size()) + " peaks";
@@ -461,6 +495,7 @@ QString Marker::readablePosition()
     }
     switch(getDomain()) {
     case Trace::DataType::Time:
+    case Trace::DataType::TimeZeroSpan:
         ret += Unit::ToString(pos, "s", "pnum ", 6);
         break;
     case Trace::DataType::Frequency:
@@ -483,6 +518,17 @@ QString Marker::readableSettings()
         case Type::Manual:
         case Type::Delta:
             return Unit::ToString(position, "s", "fpnum ", 4) + "/" + Unit::ToString(parentTrace->timeToDistance(position), "m", "um k", 4);
+        default:
+            return "Unhandled case";
+        }
+        break;
+    case Trace::DataType::TimeZeroSpan:
+        switch(type) {
+        case Type::Manual:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::Delta:
+            return Unit::ToString(position, "s", "fpnum ", 4);
         default:
             return "Unhandled case";
         }
@@ -535,6 +581,17 @@ QString Marker::tooltipSettings()
         case Type::Manual:
         case Type::Delta:
             return "Time/Distance";
+        default:
+            break;
+        }
+        break;
+    case Trace::DataType::TimeZeroSpan:
+        switch(type) {
+        case Type::Manual:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::Delta:
+            return "Time";
         default:
             break;
         }
@@ -828,6 +885,12 @@ std::set<Marker::Type> Marker::getSupportedTypes()
                 default: break;
                 }
             }
+            break;
+        case Trace::DataType::TimeZeroSpan:
+            supported.insert(Type::Manual);
+            supported.insert(Type::Maximum);
+            supported.insert(Type::Minimum);
+            supported.insert(Type::Delta);
             break;
         case Trace::DataType::Power:
             supported.insert(Type::Manual);
@@ -1285,6 +1348,19 @@ SIUnitEdit *Marker::getSettingsEditor()
             return nullptr;
         }
         break;
+    case Trace::DataType::TimeZeroSpan:
+        switch(type) {
+        case Type::Manual:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::Delta:
+            ret = new SIUnitEdit("", "fpnum k", 6);
+            ret->setValue(position);
+            break;
+        default:
+            return nullptr;
+        }
+        break;
     case Trace::DataType::Frequency:
         switch(type) {
         case Type::Manual:
@@ -1347,6 +1423,19 @@ void Marker::adjustSettings(double value)
                 setPosition(value);
             }
         }
+            break;
+        default:
+            break;
+        }
+        break;
+    case Trace::DataType::TimeZeroSpan:
+        switch(type) {
+        case Type::Manual:
+        case Type::Maximum:
+        case Type::Minimum:
+        case Type::Delta:
+            setPosition(value);
+            break;
         default:
             break;
         }

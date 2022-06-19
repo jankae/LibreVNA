@@ -97,6 +97,7 @@ void SetMode(Mode mode);
 void SetIdle();
 void Work();
 bool TimedOut();
+uint64_t getLastISRTimestamp();
 
 void SetOutputUnlevel(bool unlev);
 

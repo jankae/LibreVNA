@@ -30,6 +30,10 @@ static Si5351C::DriveStrength fixedPowerLowband;
 static bool adcShifted;
 static uint32_t actualBandwidth;
 
+static uint64_t firstPointTime;
+static bool firstPoint;
+static bool zerospan;
+
 static constexpr uint8_t sourceHarmonic = 5;
 static constexpr uint8_t LOHarmonic = 3;
 
@@ -139,6 +143,8 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	Si5351.ResetPLL(Si5351C::PLL::B);
 
 	IFTableIndexCnt = 0;
+
+	zerospan = (s.f_start == s.f_stop) && (s.cdbm_excitation_start == s.cdbm_excitation_stop);
 
 	bool last_lowband = false;
 
@@ -302,6 +308,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
 	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
 	// Start the sweep
+	firstPoint = true;
 	FPGA::StartSweep();
 	return true;
 }
@@ -329,8 +336,20 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	auto port1 = port1_raw / ref;
 	auto port2 = port2_raw / ref;
 	data.pointNum = pointCnt;
-	data.frequency = getPointFrequency(pointCnt);
-	data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
+	if(zerospan) {
+		uint64_t timestamp = HW::getLastISRTimestamp();
+		if(firstPoint) {
+			data.us = 0;
+			firstPointTime = timestamp;
+			firstPoint = false;
+		} else {
+			data.us = timestamp - firstPointTime;
+		}
+	} else {
+		// non-zero span, set frequency/power
+		data.frequency = getPointFrequency(pointCnt);
+		data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
+	}
 	if(stageCnt == 0 && settings.excitePort1) {
 		// stimulus is present at port 1
 		data.real_S11 = port1.real();

@@ -13,9 +13,18 @@ using Datapoint = struct _datapoint {
 	float real_S21, imag_S21;
 	float real_S12, imag_S12;
 	float real_S22, imag_S22;
-	uint64_t frequency;
-    int16_t cdbm;
-	uint16_t pointNum;
+	union {
+		struct {
+			// for non-zero span
+			uint64_t frequency;
+			int16_t cdbm;
+		};
+		struct {
+			// for zero span
+			uint64_t us; // time in us since first datapoint
+		};
+	};
+    uint16_t pointNum;
 };
 
 using SweepSettings = struct _sweepSettings {

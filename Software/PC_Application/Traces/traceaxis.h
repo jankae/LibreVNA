@@ -36,6 +36,7 @@ public:
         Time,
         Distance,
         Power,
+        TimeZeroSpan,
         Last,
     };
     XAxis();

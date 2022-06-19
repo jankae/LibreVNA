@@ -66,6 +66,7 @@ VNA::VNA(AppWindow *window, QString name)
     calEdited = false;
     changingSettings = false;
     settings.sweepType = SweepType::Frequency;
+    settings.zerospan = false;
 
     traceModel.setSource(TraceModel::DataSource::VNA);
 
@@ -303,6 +304,11 @@ VNA::VNA(AppWindow *window, QString name)
     bFull->setToolTip("Full span");
     connect(bFull, &QPushButton::clicked, this, &VNA::SetFullSpan);
     frequencySweepActions.push_back(tb_sweep->addWidget(bFull));
+
+    auto bZero = new QPushButton(QIcon::fromTheme("zoom-fit-best", QIcon(":/icons/zoom-fit.png")), "");
+    bZero->setToolTip("Zero span");
+    connect(bZero, &QPushButton::clicked, this, &VNA::SetZeroSpan);
+    frequencySweepActions.push_back(tb_sweep->addWidget(bZero));
 
     auto bZoomIn = new QPushButton(QIcon::fromTheme("zoom-in", QIcon(":/icons/zoom-in.png")), "");
     bZoomIn->setToolTip("Zoom in");
@@ -837,7 +843,9 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
 
     auto vd = VNAData(d);
 
-    vd = average.process(vd);
+    if(!settings.zerospan) {
+        vd = average.process(vd);
+    }
     if(calMeasuring) {
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for calibration
@@ -862,14 +870,26 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
     }
 
     TraceMath::DataType type;
-    switch(settings.sweepType) {
-    case SweepType::Last:
-    case SweepType::Frequency:
-        type = TraceMath::DataType::Frequency;
-        break;
-    case SweepType::Power:
-        type = TraceMath::DataType::Power;
-        break;
+    if(settings.zerospan) {
+        type = TraceMath::DataType::TimeZeroSpan;
+
+        // keep track of first point time
+        if(vd.pointNum == 0) {
+            settings.firstPointTime = vd.time;
+            vd.time = 0;
+        } else {
+            vd.time -= settings.firstPointTime;
+        }
+    } else {
+        switch(settings.sweepType) {
+        case SweepType::Last:
+        case SweepType::Frequency:
+            type = TraceMath::DataType::Frequency;
+            break;
+        case SweepType::Power:
+            type = TraceMath::DataType::Power;
+            break;
+        }
     }
 
     traceModel.addVNAData(vd, type);
@@ -949,12 +969,12 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::Transmis
         s.logSweep = settings.Freq.logSweep;
     } else if(settings.sweepType == SweepType::Power) {
         s.fixedPowerSetting = 0;
-        s.f_start = start;
-        s.f_stop = stop;
+        s.f_start = settings.Power.frequency;
+        s.f_stop = settings.Power.frequency;
         s.points = npoints;
         s.if_bandwidth = settings.bandwidth;
-        s.cdbm_excitation_start = settings.Power.start * 100;
-        s.cdbm_excitation_stop = settings.Power.stop * 100;
+        s.cdbm_excitation_start = start * 100;
+        s.cdbm_excitation_stop = stop * 100;
         s.logSweep = false;
     }
     if(window->getDevice() && Mode::getActiveMode() == this) {
@@ -1060,6 +1080,13 @@ void VNA::SetFullSpan()
     ConstrainAndUpdateFrequencies();
 }
 
+void VNA::SetZeroSpan()
+{
+    auto center = (settings.Freq.start + settings.Freq.stop) / 2;
+    SetStartFreq(center);
+    SetStopFreq(center);
+}
+
 void VNA::SpanZoomIn()
 {
     auto center = (settings.Freq.start + settings.Freq.stop) / 2;
@@ -1108,14 +1135,14 @@ void VNA::SetStartPower(double level)
 {
     settings.Power.start = level;
     emit startPowerChanged(level);
-    SettingsChanged();
+    ConstrainAndUpdateFrequencies();
 }
 
 void VNA::SetStopPower(double level)
 {
     settings.Power.stop = level;
     emit stopPowerChanged(level);
-    SettingsChanged();
+    ConstrainAndUpdateFrequencies();
 }
 
 void VNA::SetPowerSweepFrequency(double freq)
@@ -1327,6 +1354,11 @@ void VNA::SetupSCPI()
         SetFullSpan();
         return "";
     }, nullptr));
+    scpi_freq->add(new SCPICommand("ZERO", [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        SetZeroSpan();
+        return "";
+    }, nullptr));
     auto scpi_power = new SCPINode("POWer");
     SCPINode::add(scpi_power);
     scpi_power->add(new SCPICommand("START", [=](QStringList params) -> QString {
@@ -1527,6 +1559,8 @@ void VNA::ConstrainAndUpdateFrequencies()
     if(settings.Freq.start < Device::Info(window->getDevice()).limits_minFreq) {
         settings.Freq.start = Device::Info(window->getDevice()).limits_minFreq;
     }
+    settings.zerospan = (settings.sweepType == SweepType::Frequency && settings.Freq.start == settings.Freq.stop)
+            || (settings.sweepType == SweepType::Power && settings.Power.start == settings.Power.stop);
     emit startFreqChanged(settings.Freq.start);
     emit stopFreqChanged(settings.Freq.stop);
     emit spanChanged(settings.Freq.stop - settings.Freq.start);

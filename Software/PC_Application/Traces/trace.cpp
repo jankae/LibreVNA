@@ -63,44 +63,54 @@ void Trace::clear() {
     emit outputSamplesChanged(0, 0);
 }
 
-void Trace::addData(const Trace::Data& d, DataType domain, double reference_impedance) {
+void Trace::addData(const Trace::Data& d, DataType domain, double reference_impedance, int index) {
     if(this->domain != domain) {
         clear();
         this->domain = domain;
         emit typeChanged(this);
     }
-    // add or replace data in vector while keeping it sorted with increasing frequency
-    auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
-        return lhs.x < rhs.x;
-    });
-    // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
-    auto index = lower - data.begin();
-    if(lower == data.end()) {
-        // highest frequency yet, add to vector
-        data.push_back(d);
-    } else if(lower->x == d.x) {
-        switch(_liveType) {
-        case LivedataType::Overwrite:
-            // replace this data element
-            *lower = d;
-            break;
-        case LivedataType::MaxHold:
-            // replace this data element
-            if(abs(d.y) > abs(lower->y)) {
-                *lower = d;
-            }
-            break;
-        case LivedataType::MinHold:
-            // replace this data element
-            if(abs(d.y) < abs(lower->y)) {
-                *lower = d;
-            }
-            break;
-        default: break;
+    if(index >= 0) {
+        // index position specified
+        if(data.size() <= index) {
+            data.resize(index + 1);
         }
+        data[index] = d;
     } else {
-        // insert at this position
-        data.insert(lower, d);
+        // no index given, determine position by X-coordinate
+
+        // add or replace data in vector while keeping it sorted with increasing frequency
+        auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
+            return lhs.x < rhs.x;
+        });
+        // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
+        index = lower - data.begin();
+        if(lower == data.end()) {
+            // highest frequency yet, add to vector
+            data.push_back(d);
+        } else if(lower->x == d.x) {
+            switch(_liveType) {
+            case LivedataType::Overwrite:
+                // replace this data element
+                *lower = d;
+                break;
+            case LivedataType::MaxHold:
+                // replace this data element
+                if(abs(d.y) > abs(lower->y)) {
+                    *lower = d;
+                }
+                break;
+            case LivedataType::MinHold:
+                // replace this data element
+                if(abs(d.y) < abs(lower->y)) {
+                    *lower = d;
+                }
+                break;
+            default: break;
+            }
+        } else {
+            // insert at this position
+            data.insert(lower, d);
+        }
     }
     if(this->reference_impedance != reference_impedance) {
         this->reference_impedance = reference_impedance;

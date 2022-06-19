@@ -48,6 +48,7 @@ static void USBPacketReceived(const Protocol::PacketInfo &p) {
 
 inline void App_Init() {
 	STM::Init();
+	Delay::Init();
 	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 	handle = xTaskGetCurrentTaskHandle();
 	usb_init(communication_usb_input);
