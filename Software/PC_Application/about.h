@@ -27,6 +27,9 @@ public:
     explicit AboutDialog(QWidget *parent = nullptr);
     ~AboutDialog();
 
+private slots:
+    void on_appVersionClipboard_clicked();
+
 private:
     Ui::AboutDialog *ui;
 };

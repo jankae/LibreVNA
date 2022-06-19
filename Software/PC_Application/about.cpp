@@ -4,6 +4,8 @@
 #include "ui_aboutdialog.h"
 #include "appwindow.h"
 
+#include <QClipboard>
+
 About About::instance;
 
 AboutDialog::AboutDialog(QWidget *parent) :
@@ -12,6 +14,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("About " + qlibrevnaApp->applicationName());
+    ui->appVersionClipboard->setText("To Clipboard");
     ui->appName->setText(qlibrevnaApp->applicationName());
     ui->appVersion->setText(QString("Version: %1")
         .arg(qlibrevnaApp->applicationVersion()));
@@ -35,3 +38,15 @@ void About::about()
         dialog->show();
     }
 }
+
+void AboutDialog::on_appVersionClipboard_clicked()
+{
+    QApplication::clipboard()->setText(QString("LibreVNA Version (%1 bit): %2\n"
+                                               "OS: %3\n"
+                                               "CPU Arch: %4" )
+                                       .arg(QSysInfo::WordSize)
+                                       .arg(qlibrevnaApp->applicationVersion())
+                                       .arg(QSysInfo::prettyProductName())
+                                       .arg(QSysInfo::currentCpuArchitecture()));
+}
+
