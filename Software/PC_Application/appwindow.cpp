@@ -75,8 +75,6 @@ AppWindow::AppWindow(QWidget *parent)
     , appVersion(APP_VERSION)
     , appGitHash(APP_GIT_HASH)
 {
-    qSetMessagePattern("%{time process}: [%{type}] %{message}");
-
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 

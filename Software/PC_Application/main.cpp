@@ -17,6 +17,9 @@ static void tryExitGracefully(int s) {
 #endif
 
 int main(int argc, char *argv[]) {
+
+    qSetMessagePattern("%{time process}: [%{type}] %{message}");
+
     app = new QApplication(argc, argv);
     QCoreApplication::setOrganizationName("LibreVNA");
     QCoreApplication::setApplicationName("LibreVNA-GUI");
