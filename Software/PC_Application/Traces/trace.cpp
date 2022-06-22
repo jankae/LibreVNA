@@ -228,6 +228,8 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
         domain = DataType::Time;
     } else if(csv.getHeader(0).compare("power", Qt::CaseInsensitive) == 0) {
         domain = DataType::Power;
+    } else if(csv.getHeader(0).compare("time (zero span)", Qt::CaseInsensitive) == 0) {
+        domain = DataType::TimeZeroSpan;
     } else {
         domain = DataType::Frequency;
     }

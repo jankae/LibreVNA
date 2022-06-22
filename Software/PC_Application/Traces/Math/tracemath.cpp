@@ -146,6 +146,8 @@ QString TraceMath::dataTypeToString(TraceMath::DataType type)
         return "Power";
     case DataType::Time:
         return "Time";
+    case DataType::TimeZeroSpan:
+        return "Time (Zero Span)";
     default:
         return "Invalid";
     }

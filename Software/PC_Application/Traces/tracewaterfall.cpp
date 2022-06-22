@@ -49,6 +49,9 @@ void TraceWaterfall::enableTrace(Trace *t, bool enabled)
         trace = t;
         connect(t, &Trace::dataChanged, this, &TraceWaterfall::traceDataChanged);
     } else {
+        if(trace) {
+            disconnect(trace, &Trace::dataChanged, this, &TraceWaterfall::traceDataChanged);
+        }
         trace = nullptr;
     }
 
@@ -130,14 +133,18 @@ bool TraceWaterfall::configureForTrace(Trace *t)
         xAxis.set(XAxis::Type::Frequency, false, true, 0, 1, 0.1);
         yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
         break;
-    case Trace::DataType::Time:
-        xAxis.set(XAxis::Type::Time, false, true, 0, 1, 0.1);
-        yAxis.set(YAxis::Type::ImpulseMag, false, true, 0, 1, 1.0);
-        break;
+//    case Trace::DataType::Time:
+//        xAxis.set(XAxis::Type::Time, false, true, 0, 1, 0.1);
+//        yAxis.set(YAxis::Type::ImpulseMag, false, true, 0, 1, 1.0);
+//        break;
     case Trace::DataType::Power:
         xAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
         yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
         break;
+//    case Trace::DataType::TimeZeroSpan:
+//        xAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
+//        yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
+//        break;
     case Trace::DataType::Invalid:
         // unable to add
         return false;
@@ -156,6 +163,8 @@ bool TraceWaterfall::domainMatch(Trace *t)
         return t->outputType() == Trace::DataType::Time;
     case XAxis::Type::Power:
         return t->outputType() == Trace::DataType::Power;
+    case XAxis::Type::TimeZeroSpan:
+        return t->outputType() == Trace::DataType::TimeZeroSpan;
     case XAxis::Type::Last:
         return false;
     }

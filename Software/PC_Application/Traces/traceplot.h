@@ -47,11 +47,11 @@ protected:
     void initializeTraceInfo();
     std::vector<Trace*> activeTraces();
     // changes the graph settings to make it possible to display a specific trace. The trace is not aded yet
-    virtual bool configureForTrace(Trace *t) { Q_UNUSED(t) return false; }; // default implementation fails for all traces
+    virtual bool configureForTrace(Trace *t) { Q_UNUSED(t) return false; } // default implementation fails for all traces
     void contextMenuEvent(QContextMenuEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
-    virtual void updateContextMenu(){};
-    virtual void replot(){update();};
+    virtual void updateContextMenu(){}
+    virtual void replot(){update();}
     virtual void draw(QPainter& p) = 0;
     virtual bool supported(Trace *t) = 0;
     std::map<Trace*, bool> traces;
@@ -79,7 +79,7 @@ protected:
     void dropEvent(QDropEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     virtual void traceDropped(Trace *t, QPoint position);
-    virtual QString mouseText(QPoint pos) {Q_UNUSED(pos) return QString();};
+    virtual QString mouseText(QPoint pos) {Q_UNUSED(pos) return QString();}
 
 protected slots:
     void newTraceAvailable(Trace *t);

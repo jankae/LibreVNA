@@ -351,7 +351,10 @@ QVariant MathModel::data(const QModelIndex &index, int role) const
                 return "Frequency";
             case TraceMath::DataType::Power:
                 return "Power";
+            case TraceMath::DataType::TimeZeroSpan:
+                return "Time (Zero Span)";
             case TraceMath::DataType::Invalid:
+            default:
                 return "Invalid";
             }
         }

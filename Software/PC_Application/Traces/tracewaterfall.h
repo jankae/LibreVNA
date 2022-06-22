@@ -12,12 +12,12 @@ class TraceWaterfall : public TracePlot
     friend class WaterfallAxisDialog;
     Q_OBJECT
 public:
-    TraceWaterfall(TraceModel &model, QWidget *parent = 0);;
+    TraceWaterfall(TraceModel &model, QWidget *parent = 0);
 
     virtual void enableTrace(Trace *t, bool enabled) override;
 
     void replot() override;
-    virtual Type getType() override { return Type::Waterfall;};
+    virtual Type getType() override { return Type::Waterfall;}
 
     void fromJSON(nlohmann::json j) override;
     nlohmann::json toJSON() override;
@@ -33,7 +33,7 @@ protected:
     bool domainMatch(Trace *t);
     virtual bool supported(Trace *t) override;
 
-    virtual QPoint markerToPixel(Marker *m) override { Q_UNUSED(m) return QPoint(0,0);};
+    virtual QPoint markerToPixel(Marker *m) override { Q_UNUSED(m) return QPoint(0,0);}
     virtual double nearestTracePoint(Trace *t, QPoint pixel, double *distance = nullptr) override;
 
     virtual QString mouseText(QPoint pos) override;

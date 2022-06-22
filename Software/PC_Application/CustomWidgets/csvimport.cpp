@@ -96,6 +96,7 @@ void CSVImport::evaluateFile()
             ui->to->setUnit("Hz");
             break;
         case Trace::DataType::Time:
+        case Trace::DataType::TimeZeroSpan:
             ui->from->setUnit("s");
             ui->to->setUnit("s");
             break;

@@ -26,7 +26,7 @@ TraceCSVExport::TraceCSVExport(TraceModel &traceModel, QWidget *parent) :
         if(traces.size() == 0) {
             ui->listColumns->clear();
         } else if(ui->listColumns->count() == 0) {
-            // first trace has bee selected, fill column selection
+            // first trace has been selected, fill column selection
             auto t = traces.front();
             auto domain = t->outputType();
             auto Xaxis = XAxis::Type::Last;
@@ -34,6 +34,7 @@ TraceCSVExport::TraceCSVExport(TraceModel &traceModel, QWidget *parent) :
             case Trace::DataType::Frequency: Xaxis = XAxis::Type::Frequency; break;
             case Trace::DataType::Power: Xaxis = XAxis::Type::Power; break;
             case Trace::DataType::Time: Xaxis = XAxis::Type::Time; break;
+            case Trace::DataType::TimeZeroSpan: Xaxis = XAxis::Type::TimeZeroSpan; break;
             }
             if(Xaxis == XAxis::Type::Last) {
                 // invalid axis selection

@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 10;
+static constexpr uint16_t Version = 11;
 
 #pragma pack(push, 1)
 

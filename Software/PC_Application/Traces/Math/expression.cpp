@@ -50,6 +50,7 @@ void Math::Expression::edit()
     case DataType::Frequency: ui->stackedWidget->setCurrentIndex(0); break;
     case DataType::Time: ui->stackedWidget->setCurrentIndex(1); break;
     case DataType::Power: ui->stackedWidget->setCurrentIndex(2); break;
+    case DataType::TimeZeroSpan: ui->stackedWidget->setCurrentIndex(3); break;
     default: break;
     }
 
@@ -128,6 +129,9 @@ void Math::Expression::expressionChanged()
         break;
     case DataType::Power:
         parser->DefineVar("P", Variable(&P));
+        break;
+    case DataType::TimeZeroSpan:
+        parser->DefineVar("t", Variable(&t));
         break;
     default:
         break;

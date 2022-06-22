@@ -74,7 +74,7 @@ public:
     void updateSpan(double min, double max) override;
     void replot() override;
 
-    virtual Type getType() override { return Type::XYPlot;};
+    virtual Type getType() override { return Type::XYPlot;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
