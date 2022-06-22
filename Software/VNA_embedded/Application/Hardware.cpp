@@ -61,8 +61,8 @@ static void ReadComplete(const FPGA::SamplingResult &result) {
 }
 
 static void FPGA_Interrupt(void*) {
-	lastISR = Delay::get_us();
 	FPGA::InitiateSampleRead(ReadComplete);
+	lastISR = Delay::get_us();
 }
 
 void HW::Work() {

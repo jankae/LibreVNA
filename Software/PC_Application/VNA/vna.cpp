@@ -843,9 +843,8 @@ void VNA::NewDatapoint(Protocol::Datapoint d)
 
     auto vd = VNAData(d);
 
-    if(!settings.zerospan) {
-        vd = average.process(vd);
-    }
+    vd = average.process(vd);
+
     if(calMeasuring) {
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for calibration

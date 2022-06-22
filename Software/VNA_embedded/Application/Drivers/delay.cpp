@@ -9,7 +9,7 @@ void Delay::Init() {
 
 	// enable update interrupt
 	TIM1->DIER |= TIM_DIER_UIE;
-    HAL_NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
 
 	TIM1->CR1 |= TIM_CR1_CEN;
@@ -36,8 +36,8 @@ void Delay::ms(uint32_t t) {
 	}
 }
 void Delay::us(uint32_t t) {
-	uint64_t start = get_us();
-	while(start + t > get_us());
+	uint64_t start = TIM1->CNT;
+	while(TIM1->CNT - start < t);
 }
 
 extern "C" {
