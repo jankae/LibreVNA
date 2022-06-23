@@ -356,6 +356,27 @@ uint16_t FPGA::GetStatus() {
 	return (uint16_t) status[0] << 8 | status[1];
 }
 
+void FPGA::OverwriteHardware(uint8_t attenuation, LowpassFilter filter, bool lowband, bool port1_enabled, bool port2_enabled) {
+	uint16_t val = 0;
+	val |= 0x8000; // enable overwrite
+	val |= (attenuation & 0x7F) << 8;
+	val |= (int) filter << 6;
+	if (lowband) {
+		val |= 0x0020;
+	}
+	if (port1_enabled) {
+		val |= 0x0010;
+	}
+	if (port2_enabled) {
+		val |= 0x0008;
+	}
+	WriteRegister(Reg::HardwareOverwrite, val);
+}
+
+void FPGA::DisableHardwareOverwrite() {
+	WriteRegister(Reg::HardwareOverwrite, 0x0000);
+}
+
 FPGA::ADCLimits FPGA::GetADCLimits() {
 	uint16_t cmd = 0xE000;
 	SwitchBytes(cmd);

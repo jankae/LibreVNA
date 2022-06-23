@@ -72,6 +72,10 @@ entity SPICommands is
 			  SWEEP_HALTED : in STD_LOGIC;
 			  SWEEP_RESUME : out STD_LOGIC;
 			  
+			  -- hardware overwrite signals
+			  SPI_OVERWRITE_ENABLED : out STD_LOGIC;
+			  SPI_OVERWRITE_DATA : out STD_LOGIC_VECTOR(14 downto 0);
+			  
 			  -- DFT signals
 			  DFT_BIN1_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
            DFT_DIFFBIN_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
@@ -166,6 +170,9 @@ begin
 				INTERRUPT_ASSERTED <= '0';
 				latched_result <= (others => '0');
 				
+				SPI_OVERWRITE_ENABLED <= '0';
+				SPI_OVERWRITE_DATA <= (others => '0');
+				
 				DFT_BIN1_PHASEINC <= (others => '0');
 				DFT_DIFFBIN_PHASEINC <= (others => '0');
 				dft_next <= '0';
@@ -249,6 +256,8 @@ begin
 										INDIVIDUAL_HALT <= spi_buf_out(12);
 										PORT1_STAGE <= spi_buf_out(5 downto 3);
 										PORT2_STAGE <= spi_buf_out(2 downto 0);
+							when 7 => SPI_OVERWRITE_ENABLED <= spi_buf_out(15);
+										SPI_OVERWRITE_DATA <= spi_buf_out(14 downto 0);
 							when 8 => MAX2871_DEF_0(15 downto 0) <= spi_buf_out;
 							when 9 => MAX2871_DEF_0(31 downto 16) <= spi_buf_out;
 							when 10 => MAX2871_DEF_1(15 downto 0) <= spi_buf_out;

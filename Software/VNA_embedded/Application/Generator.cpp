@@ -2,73 +2,59 @@
 #include "Generator.hpp"
 #include "Manual.hpp"
 #include "Hardware.hpp"
+#include "HW_HAL.hpp"
 #include "max2871.hpp"
 #include "Si5351C.hpp"
 
-void Generator::Setup(Protocol::GeneratorSettings g) {
-	if(g.activePort == 0) {
-			// both ports disabled, no need to configure PLLs
-			HW::SetIdle();
-			return;
-	}
-	Protocol::ManualControlV1 m;
-	// LOs not required
-	m.LO1CE = 0;
-	m.LO1Frequency = 1000000000;
-	m.LO1RFEN = 0;
-	m.LO1RFEN = 0;
-	m.LO2EN = 0;
-	m.LO2Frequency = 60000000;
-	m.Port1EN = 0;
-	m.Port2EN = 0;
-	m.RefEN = 0;
-	m.Samples = 131072;
-	m.WindowType = (int) FPGA::Window::None;
+using namespace HWHAL;
 
-	switch(g.activePort) {
-	case 1:
-		m.AmplifierEN = 1;
-		m.PortSwitch = 0;
-		break;
-	case 2:
-		m.AmplifierEN = 1;
-		m.PortSwitch = 1;
-		break;
+void Generator::Setup(Protocol::GeneratorSettings g) {
+	HW::SetMode(HW::Mode::Generator);
+	if(g.activePort == 0) {
+		// both ports disabled, no need to configure PLLs
+		Si5351.Disable(SiChannel::LowbandSource);
+		FPGA::Disable(FPGA::Periphery::SourceChip);
+		FPGA::Disable(FPGA::Periphery::Amplifier);
+		FPGA::Disable(FPGA::Periphery::SourceRF);
+		FPGA::Disable(FPGA::Periphery::PortSwitch);
+		FPGA::DisableHardwareOverwrite();
+		return;
 	}
+
 	g.frequency = Cal::FrequencyCorrectionToDevice(g.frequency);
 	auto amplitude = HW::GetAmplitudeSettings(g.cdbm_level, g.frequency, g.applyAmplitudeCorrection, g.activePort == 2);
 	// Select correct source
+	bool bandSelect;
+	FPGA::LowpassFilter lp = FPGA::LowpassFilter::M947;
 	if(g.frequency < HW::BandSwitchFrequency) {
-		m.SourceLowEN = 1;
-		m.SourceLowFrequency = g.frequency;
-		m.SourceHighCE = 0;
-		m.SourceHighRFEN = 0;
-		m.SourceHighFrequency = HW::BandSwitchFrequency;
-		m.SourceHighLowpass = (int) FPGA::LowpassFilter::M947;
-		m.SourceHighPower = (int) MAX2871::Power::n4dbm;
-		m.SourceHighband = false;
-		m.SourceLowPower = (int) amplitude.lowBandPower;
+		bandSelect = true;
+		FPGA::Disable(FPGA::Periphery::SourceChip);
+		Si5351.SetCLK(SiChannel::LowbandSource, g.frequency, Si5351C::PLL::B,
+				amplitude.lowBandPower);
+		Si5351.Enable(SiChannel::LowbandSource);
 	} else {
-		m.SourceLowEN = 0;
-		m.SourceLowFrequency = HW::BandSwitchFrequency;
-		m.SourceHighCE = 1;
-		m.SourceHighRFEN = 1;
-		m.SourceHighFrequency = g.frequency;
+		bandSelect = false;
+		Si5351.Disable(SiChannel::LowbandSource);
+		FPGA::Enable(FPGA::Periphery::SourceChip);
+		FPGA::SetMode(FPGA::Mode::SourcePLL);
+		Source.SetPowerOutA(amplitude.highBandPower);
+		Source.SetFrequency(g.frequency);
+		Source.Update();
+		FPGA::SetMode(FPGA::Mode::FPGA);
 		if(g.frequency < 900000000UL) {
-			m.SourceHighLowpass = (int) FPGA::LowpassFilter::M947;
+			lp = FPGA::LowpassFilter::M947;
 		} else if(g.frequency < 1800000000UL) {
-			m.SourceHighLowpass = (int) FPGA::LowpassFilter::M1880;
+			lp = FPGA::LowpassFilter::M1880;
 		} else if(g.frequency < 3500000000UL) {
-			m.SourceHighLowpass = (int) FPGA::LowpassFilter::M3500;
+			lp = FPGA::LowpassFilter::M3500;
 		} else {
-			m.SourceHighLowpass = (int) FPGA::LowpassFilter::None;
+			lp = FPGA::LowpassFilter::None;
 		}
-		m.SourceHighband = true;
-		m.SourceHighPower = (int) amplitude.highBandPower;
-		m.SourceLowPower = (int) Si5351C::DriveStrength::mA2;
 	}
 
-	m.attenuator = amplitude.attenuator;
-	Manual::Setup(m);
+	FPGA::OverwriteHardware(amplitude.attenuator, lp, bandSelect, g.activePort == 1, g.activePort == 2);
 	HW::SetOutputUnlevel(amplitude.unlevel);
+	FPGA::Enable(FPGA::Periphery::Amplifier, true);
+	FPGA::Enable(FPGA::Periphery::SourceRF, true);
+	FPGA::Enable(FPGA::Periphery::PortSwitch, true);
 }

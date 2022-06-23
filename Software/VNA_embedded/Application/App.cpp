@@ -259,6 +259,7 @@ inline void App_Process() {
 			// insert the last received packet (restarts the timed out operation)
 			USBPacketReceived(last_measure_packet);
 		}
+		HW::updateDeviceStatus();
 	}
 }
 
