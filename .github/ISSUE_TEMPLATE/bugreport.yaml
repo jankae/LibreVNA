@@ -1,0 +1,57 @@
+name: Bug report 
+description: Create a report to spot probably hidden bugs :)
+labels: ["bug :bug:"]
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      **If you came here, we really appreciate your time in wanting to report a bug.**
+
+      Before actually start typing, please double check that there are not already existing 
+      issues related to this bug, including open and closed.
+
+- type: textarea
+  attributes:
+    label: LibreVNA Version
+    description: Go to LibreVNA app -> Help -> About menu and hit "To clipboard". Paste info in this field
+    placeholder: |
+      LibreVNA Version (64 bit): 1.3.0-d701ed64d
+      OS: Fedora Linux 36 (Workstation Edition)
+      CPU Arch: x86_64
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: Describe the procedures to actually make the bug appears
+    placeholder: |
+      - LibreVNA app is launched
+      - LibreVNA device is connected throughout app
+      - When using VNA mode...
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Expected behavior
+    description: What are the results you would expect
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Extra information & Setup and Calibration files
+    description: Any information that you may find would be relevant and that doesn´t fit
+      in other fields
+  validations:
+            required: true
+
+- type: checkboxes
+  attributes:
+    label: Confirming that you haven´t forgot to include configuration files (if applicable)
+    options: 
+      - label: Setup file
+      - label: Calibration file
+      - label: Touchstone file of measurements
