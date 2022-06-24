@@ -184,14 +184,9 @@ AppWindow::AppWindow(QWidget *parent)
                 StartTCPServer(p.SCPIServer.port);
             }
         }
-        auto active = Mode::getActiveMode();
 
-        if(active == spectrumAnalyzer) {
-            spectrumAnalyzer->updateGraphColors();
-        }
-        else if (active == vna) {
-             vna->updateGraphColors();
-        }
+        auto active = Mode::getActiveMode();
+        active->updateGraphColors();
 
         // averaging mode may have changed, update for all relevant modes
         if(p.Acquisition.useMedianAveraging) {

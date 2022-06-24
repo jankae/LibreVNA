@@ -134,7 +134,6 @@ signals:
     void NormalizationLevelChanged(double level);
 
     void averagingChanged(unsigned int averages);
-    void graphColorsChanged();
 };
 
 #endif // VNA_H
