@@ -110,7 +110,6 @@ private slots:
 
 signals:
     void CalibrationMeasurementsComplete(std::set<Calibration::Measurement> m);
-    void graphColorsChanged();
 
 private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }

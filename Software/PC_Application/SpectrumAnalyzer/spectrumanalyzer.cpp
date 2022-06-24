@@ -73,12 +73,6 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     traceXY->setYAxis(0, YAxis::Type::Magnitude, false, false, -120,0,10);
     traceXY->setYAxis(1, YAxis::Type::Disabled, false, true, 0,0,1);
 
-    connect(this, &SpectrumAnalyzer::graphColorsChanged, [=](){
-        for (auto p : TracePlot::getPlots()) {
-            p->updateGraphColors();
-        }
-    });
-
     central->setPlot(traceXY);
 
     // Create menu entries and connections
@@ -1125,11 +1119,6 @@ void SpectrumAnalyzer::StoreSweepSettings()
     s.setValue("SADetector", settings.Detector);
     s.setValue("SAAveraging", averages);
     s.setValue("SASignalID", static_cast<bool>(settings.SignalID));
-}
-
-void SpectrumAnalyzer::updateGraphColors()
-{
-    emit graphColorsChanged();
 }
 
 void SpectrumAnalyzer::setAveragingMode(Averaging::Mode mode)

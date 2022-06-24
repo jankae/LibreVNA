@@ -338,3 +338,11 @@ void Mode::setName(const QString &value)
     tabbar->setTabText(findTabIndex(), name);
 }
 
+void Mode::updateGraphColors()
+{
+    if ((getType() ==  Type::SA) || getType() ==  Type::VNA) {
+        for (auto p : TracePlot::getPlots()) {
+            p->updateGraphColors();
+        }
+    }
+}

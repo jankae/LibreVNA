@@ -32,6 +32,7 @@ public:
     virtual void shutdown(){}; // called when the application is about to exit
     QString getName() const;
     void setName(const QString &value);
+    void updateGraphColors();
     static Mode *getActiveMode();
     static QString TypeToName(Type t);
     static Type TypeFromName(QString s);

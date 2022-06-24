@@ -95,12 +95,6 @@ VNA::VNA(AppWindow *window, QString name)
     auto traceXY2 = new TraceXYPlot(traceModel);
     traceXY2->enableTrace(tS21, true);
 
-    connect(this, &VNA::graphColorsChanged, [=](){
-        for (auto p : TracePlot::getPlots()) {
-            p->updateGraphColors();
-        }
-    });
-
     connect(&traceModel, &TraceModel::requiredExcitation, this, &VNA::ExcitationRequired);
 
     central->splitVertically();
@@ -1642,11 +1636,6 @@ void VNA::EnableDeembedding(bool enable)
     enableDeembeddingAction->blockSignals(true);
     enableDeembeddingAction->setChecked(enable);
     enableDeembeddingAction->blockSignals(false);
-}
-
-void VNA::updateGraphColors()
-{
-    emit graphColorsChanged();
 }
 
 void VNA::setAveragingMode(Averaging::Mode mode)
