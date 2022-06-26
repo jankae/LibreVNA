@@ -299,11 +299,6 @@ VNA::VNA(AppWindow *window, QString name)
     connect(bFull, &QPushButton::clicked, this, &VNA::SetFullSpan);
     frequencySweepActions.push_back(tb_sweep->addWidget(bFull));
 
-    auto bZero = new QPushButton(QIcon::fromTheme("zoom-fit-best", QIcon(":/icons/zoom-fit.png")), "");
-    bZero->setToolTip("Zero span");
-    connect(bZero, &QPushButton::clicked, this, &VNA::SetZeroSpan);
-    frequencySweepActions.push_back(tb_sweep->addWidget(bZero));
-
     auto bZoomIn = new QPushButton(QIcon::fromTheme("zoom-in", QIcon(":/icons/zoom-in.png")), "");
     bZoomIn->setToolTip("Zoom in");
     connect(bZoomIn, &QPushButton::clicked, this, &VNA::SpanZoomIn);
@@ -313,6 +308,13 @@ VNA::VNA(AppWindow *window, QString name)
     bZoomOut->setToolTip("Zoom out");
     connect(bZoomOut, &QPushButton::clicked, this, &VNA::SpanZoomOut);
     frequencySweepActions.push_back(tb_sweep->addWidget(bZoomOut));
+
+    auto bZero = new QPushButton("0");
+    bZero->setToolTip("Zero span");
+    bZero->setMaximumWidth(28);
+    bZero->setMaximumHeight(24);
+    connect(bZero, &QPushButton::clicked, this, &VNA::SetZeroSpan);
+    frequencySweepActions.push_back(tb_sweep->addWidget(bZero));
 
     auto cbLogSweep = new  QCheckBox("Log");
     cbLogSweep->setToolTip("Logarithmic sweep");
