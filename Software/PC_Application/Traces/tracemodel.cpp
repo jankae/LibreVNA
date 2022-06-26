@@ -248,8 +248,15 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
     source = DataSource::SA;
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
+            int index = -1;
             Trace::Data td;
-            td.x = d.frequency;
+            if(settings.f_start == settings.f_stop) {
+                // in zerospan mode, insert data by index
+                index = d.pointNum;
+                td.x = (double) d.us / 1000000.0;
+            } else {
+                td.x = d.frequency;
+            }
             switch(t->liveParameter()) {
             case Trace::LiveParameter::Port1: td.y = complex<double>(d.port1, 0); break;
             case Trace::LiveParameter::Port2: td.y = complex<double>(d.port2, 0); break;
@@ -257,7 +264,7 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
                 // not a SA trace, skip
                 continue;
             }
-            t->addData(td, settings);
+            t->addData(td, settings, index);
         }
     }
 }

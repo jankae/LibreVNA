@@ -46,15 +46,15 @@ public:
 
     void clear();
     void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
-    void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
+    void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s, int index = -1);
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
     static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data);
     void fromLivedata(LivedataType type, LiveParameter param);
-    QString name() { return _name; };
-    QColor color() { return _color; };
+    QString name() { return _name; }
+    QColor color() { return _color; }
     bool isVisible();
     void pause();
     void resume();
@@ -65,7 +65,7 @@ public:
     bool isReflection();
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
-    TraceMath::DataType outputType() const { return lastMath->getDataType(); };
+    TraceMath::DataType outputType() const { return lastMath->getDataType(); }
     unsigned int size() const;
     double minX();
     double maxX();
@@ -123,7 +123,7 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
-    Type getType() override {return Type::Last;}; // can return invalid type, this will never be called
+    Type getType() override {return Type::Last;} // can return invalid type, this will never be called
 
     // Traces are referenced by pointers throughout this project (e.g. when added to a graph)
     // When saving the current graph configuration, the pointer is not useful. Instead a trace

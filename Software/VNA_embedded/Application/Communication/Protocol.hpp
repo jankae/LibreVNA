@@ -152,7 +152,16 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
 	float port1;
 	float port2;
-	uint64_t frequency;
+	union {
+		struct {
+			// for non-zero span
+			uint64_t frequency;
+		};
+		struct {
+			// for zero span
+			uint64_t us; // time in us since first datapoint
+		};
+	};
 	uint16_t pointNum;
 };
 

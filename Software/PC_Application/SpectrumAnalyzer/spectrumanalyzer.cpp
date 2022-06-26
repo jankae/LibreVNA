@@ -135,6 +135,13 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     connect(bZoomOut, &QPushButton::clicked, this, &SpectrumAnalyzer::SpanZoomOut);
     tb_sweep->addWidget(bZoomOut);
 
+    auto bZero = new QPushButton("0");
+    bZero->setToolTip("Zero span");
+    bZero->setMaximumWidth(28);
+    bZero->setMaximumHeight(24);
+    connect(bZero, &QPushButton::clicked, this, &SpectrumAnalyzer::SetZeroSpan);
+    tb_sweep->addWidget(bZero);
+
     window->addToolBar(tb_sweep);
     toolbars.insert(tb_sweep);
 
@@ -450,6 +457,16 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 
     d = average.process(d);
 
+    if(settings.f_start == settings.f_stop) {
+        // keep track of first point time
+        if(d.pointNum == 0) {
+            firstPointTime = d.us;
+            d.us = 0;
+        } else {
+            d.us -= firstPointTime;
+        }
+    }
+
     if(normalize.measuring) {
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for normalization
@@ -464,7 +481,7 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
                     normalize.f_stop = settings.f_stop;
                     normalize.points = settings.pointNum;
                     EnableNormalization(true);
-                    qDebug() << "Normalization measuremen complete";
+                    qDebug() << "Normalization measurement complete";
                 }
             }
         }
@@ -496,7 +513,7 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 void SpectrumAnalyzer::SettingsChanged()
 {
     changingSettings = true;
-    if(settings.f_stop - settings.f_start >= 1000) {
+    if(settings.f_stop - settings.f_start >= 1000 || settings.f_stop - settings.f_start <= 0) {
         settings.pointNum = 1001;
     } else {
         settings.pointNum = settings.f_stop - settings.f_start + 1;
@@ -505,10 +522,16 @@ void SpectrumAnalyzer::SettingsChanged()
     settings.applySourceCorrection = 1;
 
     auto pref = Preferences::getInstance();
-    if(!settings.trackingGenerator && pref.Acquisition.useDFTinSAmode && settings.RBW <= pref.Acquisition.RBWLimitForDFT) {
-        // Enable DFT if below RBW threshold and TG is not enabled
-        settings.UseDFT = 1;
+    if(settings.f_stop > settings.f_start) {
+        // non-zerospan, check usability of DFT
+        if(!settings.trackingGenerator && pref.Acquisition.useDFTinSAmode && settings.RBW <= pref.Acquisition.RBWLimitForDFT) {
+            // Enable DFT if below RBW threshold and TG is not enabled
+            settings.UseDFT = 1;
+        } else {
+            settings.UseDFT = 0;
+        }
     } else {
+        // zerospan, DFT not usable
         settings.UseDFT = 0;
     }
 
@@ -618,6 +641,13 @@ void SpectrumAnalyzer::SetFullSpan()
     settings.f_start = Device::Info(window->getDevice()).limits_minFreq;
     settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
     ConstrainAndUpdateFrequencies();
+}
+
+void SpectrumAnalyzer::SetZeroSpan()
+{
+    auto center = (settings.f_start + settings.f_stop) / 2;
+    SetStartFreq(center);
+    SetStopFreq(center);
 }
 
 void SpectrumAnalyzer::SpanZoomIn()
@@ -851,6 +881,11 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         SetFullSpan();
+        return "";
+    }, nullptr));
+    scpi_freq->add(new SCPICommand("ZERO", [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        SetZeroSpan();
         return "";
     }, nullptr));
     auto scpi_acq = new SCPINode("ACQuisition");
