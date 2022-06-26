@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - embedded_firmware_ci
   pull_request:
     branches:
       - master
@@ -152,7 +153,7 @@ jobs:
           path: Software/PC_Application/LibreVNA-GUI.zip
           
   Embedded_Firmware:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
 
