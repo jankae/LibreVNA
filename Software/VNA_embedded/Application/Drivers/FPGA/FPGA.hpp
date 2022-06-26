@@ -132,7 +132,7 @@ void StartDFT();
 DFTResult ReadDFTResult();
 ADCLimits GetADCLimits();
 void ResetADCLimits();
-void ResumeHaltedSweep();
+bool ResumeHaltedSweep();
 uint16_t GetStatus();
 
 void OverwriteHardware(uint8_t attenuation, LowpassFilter filter, bool lowband, bool port1_enabled, bool port2_enabled);
