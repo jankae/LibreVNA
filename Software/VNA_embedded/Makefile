@@ -20,7 +20,7 @@ TARGET = VNA_embedded
 # building variables
 ######################################
 # debug build?
-DEBUG = 0
+DEBUG = 1
 # optimization
 OPT = -O2
 
@@ -102,6 +102,7 @@ C_DEFS =  \
 -DFW_MAJOR=1 \
 -DFW_MINOR=3 \
 -DFW_PATCH=0 \
+-DDEBUG \
 -DUSE_FULL_LL_DRIVER \
 -DHW_REVISION="'B'" \
 -D__weak="__attribute__((weak))" \
@@ -141,8 +142,8 @@ endif
 # compile gcc flags
 ASFLAGS = $(MCU) -g
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fmessage-length=0 -ffunction-sections -fdata-sections -c --specs=nano.specs
-CXXFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fmessage-length=0 -ffunction-sections -fdata-sections -c -fno-exceptions -fno-rtti --specs=nano.specs -fno-use-cxa-atexit
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -ffunction-sections -fdata-sections -c --specs=nano.specs -fstack-usage
+CXXFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fmessage-length=0 -ffunction-sections -fdata-sections -c -fno-exceptions -fno-rtti --specs=nano.specs -fno-use-cxa-atexit -fstack-usage
 
 
 
