@@ -35,8 +35,8 @@ void Delay::ms(uint32_t t) {
 		us(1000);
 	}
 }
-void Delay::us(uint32_t t) {
-	uint64_t start = TIM1->CNT;
+void Delay::us(uint16_t t) {
+	uint16_t start = TIM1->CNT;
 	while(TIM1->CNT - start < t);
 }
 
