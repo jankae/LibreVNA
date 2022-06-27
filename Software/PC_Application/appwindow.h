@@ -50,6 +50,9 @@ public:
 
     SCPI* getSCPI();
 
+public slots:
+    void setModeStatus(QString msg);
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:

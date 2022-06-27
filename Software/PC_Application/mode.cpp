@@ -88,6 +88,7 @@ Mode::Mode(AppWindow *window, QString name, QString SCPIname)
             delete modes[index];
         });
     }
+    connect(this, &Mode::statusbarMessage, window, &AppWindow::setModeStatus);
     modes.push_back(this);
     tabbar->blockSignals(true);
     tabbar->insertTab(tabbar->count(), name);

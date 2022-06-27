@@ -253,13 +253,6 @@ AppWindow::AppWindow(QWidget *parent)
         Mode::getActiveMode()->saveSreenshot();
     });
 
-    auto setModeStatusbar = [=](QString msg) {
-        lModeInfo.setText(msg);
-    };
-    connect(vna, &Mode::statusbarMessage, setModeStatusbar);
-    connect(generator, &Mode::statusbarMessage, setModeStatusbar);
-    connect(spectrumAnalyzer, &Mode::statusbarMessage, setModeStatusbar);
-
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
     connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
@@ -891,6 +884,11 @@ void AppWindow::StopTCPServer()
 SCPI* AppWindow::getSCPI()
 {
     return &scpi;
+}
+
+void AppWindow::setModeStatus(QString msg)
+{
+    lModeInfo.setText(msg);
 }
 
 int AppWindow::UpdateDeviceList()
