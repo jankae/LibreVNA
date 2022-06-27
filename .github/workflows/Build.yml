@@ -49,7 +49,7 @@ jobs:
           path: Software/PC_Application/LibreVNA-GUI
           
   PC_Application_Windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v1
       - uses: msys2/setup-msys2@v2
