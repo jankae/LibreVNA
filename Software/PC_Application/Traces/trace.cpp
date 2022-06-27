@@ -120,11 +120,16 @@ void Trace::addData(const Trace::Data& d, DataType domain, double reference_impe
     emit outputSamplesChanged(index, index + 1);
 }
 
-void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettings &s)
+void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettings &s, int index)
 {
     settings.SA = s;
     settings.valid = true;
-    addData(d, DataType::Frequency);
+    auto domain = DataType::Frequency;
+    if (s.f_start == s.f_stop) {
+        // in zerospan mode
+        domain = DataType::TimeZeroSpan;
+    }
+    addData(d, domain, 50.0, index);
 }
 
 void Trace::setName(QString name) {

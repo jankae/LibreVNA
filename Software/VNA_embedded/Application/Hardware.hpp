@@ -88,6 +88,7 @@ static constexpr Protocol::DeviceInfo Info = {
 enum class Mode {
 	Idle,
 	Manual,
+	Generator,
 	VNA,
 	SA,
 };
@@ -100,6 +101,8 @@ bool TimedOut();
 uint64_t getLastISRTimestamp();
 
 void SetOutputUnlevel(bool unlev);
+
+void updateDeviceStatus();
 
 using AmplitudeSettings = struct _amplitudeSettings {
 	uint8_t attenuator;

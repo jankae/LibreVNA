@@ -36,6 +36,10 @@ static uint8_t attenuator;
 static int64_t trackingFreq;
 static bool trackingLowband;
 
+static uint64_t firstPointTime;
+static bool firstPoint;
+static bool zerospan;
+
 static void StartNextSample() {
 	uint64_t freq = s.f_start + (s.f_stop - s.f_start) * pointCnt / (points - 1);
 	freq = Cal::FrequencyCorrectionToDevice(freq);
@@ -205,6 +209,8 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	points += s.pointNum - points % s.pointNum;
 	binSize = points / s.pointNum;
 	LOG_DEBUG("%u displayed points, resulting in %lu points and bins of size %u", s.pointNum, points, binSize);
+
+	zerospan = (s.f_start == s.f_stop);
 	// set initial state
 	pointCnt = 0;
 	// enable the required hardware resources
@@ -256,6 +262,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	}
 
 	lastLO2 = 0;
+	firstPoint = true;
 	active = true;
 	StartNextSample();
 }
@@ -375,7 +382,19 @@ void SA::Work() {
 				// Send result to application
 				p.type = Protocol::PacketType::SpectrumAnalyzerResult;
 				// measurements are already up to date, fill remaining fields
-				p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
+				if(zerospan) {
+					uint64_t timestamp = HW::getLastISRTimestamp();
+					if(firstPoint) {
+						p.spectrumResult.us = 0;
+						firstPointTime = timestamp;
+						firstPoint = false;
+					} else {
+						p.spectrumResult.us = timestamp - firstPointTime;
+					}
+				} else {
+					// non-zero span, set frequency
+					p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
+				}
 				// scale approximately (constant determined empirically)
 				p.spectrumResult.port1 /= 253000000.0;
 				p.spectrumResult.port2 /= 253000000.0;

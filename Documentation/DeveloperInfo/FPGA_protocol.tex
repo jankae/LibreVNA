@@ -343,10 +343,10 @@ The register contains the number of points per sweep negative one, e.g. set to 1
 \rwbits{9}{2}{Window[1:0]}
 \rwbits{11}{1}{SCEN}
 \rwbits{12}{1}{LCEN}
-\robits{13}{3}{reserved}
+\robits{13}{2}{reserved}
 %\rwbits{13}{1}{EXP2}
 %\rwbits{14}{1}{EXP1}
-%\rwbits{15}{1}{PSEN}
+\rwbits{15}{1}{PSEN}
 \end{tikzpicture}
 \end{center}
 \begin{itemize}
@@ -426,7 +426,40 @@ Each point in the sweep is done in stages. Each stage consists of (optionally) r
 \item \textbf{IH:} Individual halt: Sets the behavior of the "halt sweep" bit (see section~\ref{sweepconfig}). If 1, the sampling is halted before each stage. If 0, the sampling is only halted before the point and all stages are executed without additional halts inbetween.
 \item \textbf{Port 1 stage} Number of stage during which the source signal is routed to port 1. Must not have the same value as Port 2 stage.
 \item \textbf{Port 2 stage} Number of stage during which the source signal is routed to port 2. Must not have the same value as Port 1 stage.
+\end{itemize}
 
+\subsection{Hardware override register: 0x07}
+Allows overwriting hardware settings, regardless of whether a sweep is active or not.
+\label{reg:hw_override}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{1}{OWE}
+\rwbits{1}{7}{Attenuator[6:0]}
+\rwbits{8}{2}{SourceFilter}
+\rwbits{10}{1}{BS}
+\rwbits{11}{1}{P1EN}
+\rwbits{12}{1}{P2EN}
+\robits{13}{3}{reserved}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{OWE:} Overwrite enable. If 1, this register is used to configure the hardware. If 0, all other bits in the register are ignored. Must be set to 0 for valid sweep operation.
+\item \textbf{Attenuator[6:0]:} Attenuator setting
+\item \textbf{SourceFilter:} Low pass filter selection for source signal
+\begin{center}
+\begin{tabular}{ c|c }
+Setting & Selected Band\\
+ \hline
+00 & \SIrange{0}{900}{\mega\hertz}\\
+01 & \SIrange{900}{1800}{\mega\hertz}\\
+10 & \SIrange{1800}{3500}{\mega\hertz}\\
+11 & \SIrange{3500}{6000}{\mega\hertz}\\
+\end{tabular}
+\end{center}
+\item \textbf{BS: Band select.} Set to 0 for highband, set to 1 for lowband.
+\item \textbf{P1EN:} Route signal to port 1. Must not be enabled at the same time as P2EN.
+\item \textbf{P2EN:} Route signal to port 2. Must not be enabled at the same time as P1EN.
 \end{itemize}
 
 \subsection{MAX2871 Default Values Registers: 0x08-0x0F}

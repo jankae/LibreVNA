@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.4.0
+
+- New features:
+  - Configurable constant lines for XY-plots
+  - Limit testing on XY-plots
+  - Single sweep functionality
+  - Zero span support for VNA and SA
+  
+- Bugfixes:
+  - Stop duplicate GUI elements from appearing when loading a setup file
+  - Prevent wrong frequency output when sweep starts at DC
+  - Improve automatic source/receiver calibration
+  - Fix signal ID issue which caused valid signals to disappear at low RBWs
+  - Changing trace color triggers replot of graphs
+  - Remove output spikes in generator mode, caused by continuously reconfiguring the PLL
+  - Fix MCU temperature calculation
+
 ## v1.3.0
 
 Some new software features along with a few bug fixes.
@@ -13,7 +30,7 @@ Some new software features along with a few bug fixes.
   - logarithmic sweeps (logarithmic frequency steps)
   - Graph display improvements:
     - (Optionally) show units on all axes
-    - Configurable font size  
+    - Configurable font size
 	- New Y axis options: dBuV, linear magnitude, unwrapped phase, group delay
 	- Zoom feature for smith chart
   - User-selectable IF frequencies

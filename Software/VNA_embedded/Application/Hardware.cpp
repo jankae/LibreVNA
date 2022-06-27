@@ -8,6 +8,7 @@
 #include "Manual.hpp"
 #include "delay.hpp"
 #include "SpectrumAnalyzer.hpp"
+#include "Communication.h"
 #include <cstring>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
@@ -20,7 +21,7 @@ HW::Mode activeMode;
 static bool unlevel = false;
 
 static Protocol::ReferenceSettings ref;
-static uint64_t lastISR;
+static volatile uint64_t lastISR;
 
 static uint32_t IF1 = HW::DefaultIF1;
 static uint32_t IF2 = HW::DefaultIF2;
@@ -139,6 +140,8 @@ bool HW::Init() {
 		return false;
 	}
 
+	FPGA::DisableHardwareOverwrite();
+
 	// Set default ADC samplerate
 	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, ADCprescaler);
 	// Set phase increment according to
@@ -229,6 +232,7 @@ void HW::SetIdle() {
 	unlevel = false;
 	FPGA::AbortSweep();
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::DisableHardwareOverwrite();
 	FPGA::Enable(FPGA::Periphery::SourceChip, false);
 	FPGA::Enable(FPGA::Periphery::SourceRF, false);
 	FPGA::Enable(FPGA::Periphery::LO1Chip, false);
@@ -289,7 +293,16 @@ HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool
 
 bool HW::TimedOut() {
 	constexpr uint64_t timeout = 1000000;
-	if(activeMode != Mode::Idle && Delay::get_us() - lastISR > timeout) {
+	auto bufISR = lastISR;
+	uint64_t now = Delay::get_us();
+	uint64_t timeSinceLast = now - bufISR;
+	if(activeMode != Mode::Idle && activeMode != Mode::Generator && timeSinceLast > timeout) {
+		LOG_WARN("Timed out, last ISR was at %lu%06lu, now %lu%06lu"
+				, (uint32_t) (bufISR / 1000000), (uint32_t)(bufISR%1000000)
+				, (uint32_t) (now / 1000000), (uint32_t)(now%1000000));
+		if(activeMode == Mode::VNA) {
+			VNA::PrintStatus();
+		}
 		return true;
 	} else {
 		return false;
@@ -418,6 +431,28 @@ uint8_t HW::getADCPrescaler() {
 
 uint64_t HW::getLastISRTimestamp() {
 	return lastISR;
+}
+
+void HW::updateDeviceStatus() {
+	if(activeMode == Mode::Idle || activeMode == Mode::Generator) {
+		static uint32_t last_update = 0;
+		if(HAL_GetTick() - last_update >= 1000) {
+			last_update = HAL_GetTick();
+			HW::Ref::update();
+			Protocol::PacketInfo packet;
+			packet.type = Protocol::PacketType::DeviceStatusV1;
+			// Enable PLL chips for temperature reading
+			bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
+			bool LOEn = FPGA::IsEnabled(FPGA::Periphery::LO1Chip);
+			FPGA::Enable(FPGA::Periphery::SourceChip);
+			FPGA::Enable(FPGA::Periphery::LO1Chip);
+			HW::getDeviceStatus(&packet.statusV1, true);
+			// restore PLL state
+			FPGA::Enable(FPGA::Periphery::SourceChip, srcEn);
+			FPGA::Enable(FPGA::Periphery::LO1Chip, LOEn);
+			Communication::Send(packet);
+		}
+	}
 }
 
 uint16_t HW::getDFTPhaseInc() {

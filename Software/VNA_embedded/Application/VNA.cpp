@@ -498,3 +498,16 @@ void VNA::Stop() {
 	active = false;
 	FPGA::AbortSweep();
 }
+
+void VNA::PrintStatus() {
+	HAL_Delay(10);
+	LOG_INFO("VNA status:");
+	HAL_Delay(10);
+	LOG_INFO("Active: %d", active);
+	HAL_Delay(10);
+	LOG_INFO("Points: %d/%d", pointCnt, settings.points);
+	HAL_Delay(10);
+	LOG_INFO("Stages: %d/%d", stageCnt, stages);
+	HAL_Delay(10);
+	LOG_INFO("FPGA status: 0x%04x", FPGA::GetStatus());
+}

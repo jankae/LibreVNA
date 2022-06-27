@@ -61,6 +61,7 @@ private slots:
     void SetCenterFreq(double freq);
     void SetSpan(double span);
     void SetFullSpan();
+    void SetZeroSpan();
     void SpanZoomIn();
     void SpanZoomOut();
     void SetSingleSweep(bool single);
@@ -92,6 +93,7 @@ private:
     bool changingSettings;
     unsigned int averages;
     bool singleSweep;
+    double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
     TraceModel traceModel;
     TraceWidget *traceWidget;
     MarkerModel *markerModel;
@@ -134,7 +136,6 @@ signals:
     void NormalizationLevelChanged(double level);
 
     void averagingChanged(unsigned int averages);
-    void graphColorsChanged();
 };
 
 #endif // VNA_H

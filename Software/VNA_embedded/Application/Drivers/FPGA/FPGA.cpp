@@ -356,6 +356,27 @@ uint16_t FPGA::GetStatus() {
 	return (uint16_t) status[0] << 8 | status[1];
 }
 
+void FPGA::OverwriteHardware(uint8_t attenuation, LowpassFilter filter, bool lowband, bool port1_enabled, bool port2_enabled) {
+	uint16_t val = 0;
+	val |= 0x8000; // enable overwrite
+	val |= (attenuation & 0x7F) << 8;
+	val |= (int) filter << 6;
+	if (lowband) {
+		val |= 0x0020;
+	}
+	if (port1_enabled) {
+		val |= 0x0010;
+	}
+	if (port2_enabled) {
+		val |= 0x0008;
+	}
+	WriteRegister(Reg::HardwareOverwrite, val);
+}
+
+void FPGA::DisableHardwareOverwrite() {
+	WriteRegister(Reg::HardwareOverwrite, 0x0000);
+}
+
 FPGA::ADCLimits FPGA::GetADCLimits() {
 	uint16_t cmd = 0xE000;
 	SwitchBytes(cmd);
@@ -381,12 +402,23 @@ void FPGA::ResetADCLimits() {
 	High(CS);
 }
 
-void FPGA::ResumeHaltedSweep() {
+bool FPGA::ResumeHaltedSweep() {
+	uint32_t start = HAL_GetTick();
 	uint16_t cmd = 0x2000;
+	uint16_t status;
 	SwitchBytes(cmd);
-	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 2, 100);
-	High(CS);
+	do {
+		if(HAL_GetTick() - start > 100) {
+			LOG_WARN("Failed to resume sweep, timed out");
+			return false;
+		}
+		Low(CS);
+		HAL_SPI_TransmitReceive(&FPGA_SPI, (uint8_t*) &cmd, (uint8_t*) &status, 2, 100);
+		High(CS);
+		SwitchBytes(status);
+	} while(status & 0x0010);
+//	LOG_DEBUG("Status: 0x%04x", GetStatus());
+	return true;
 }
 
 void FPGA::SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing) {

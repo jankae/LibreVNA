@@ -66,6 +66,99 @@ static const QString APP_GIT_HASH = QString(GITHASH);
 
 static bool noGUIset = false;
 
+
+class Reference
+{
+public:
+
+    enum class TypeIn {
+        Internal,
+        External,
+        Auto,
+        None
+    };
+
+    enum class OutFreq {
+        MHZ10,
+        MHZ100,
+        Off,
+        None
+    };
+
+    static QString OutFreqToLabel(Reference::OutFreq t)
+    {
+        switch(t) {
+        case OutFreq::MHZ10: return "10 MHz";
+        case OutFreq::MHZ100: return "100 MHz";
+        case OutFreq::Off: return "Off";
+        default: return "Invalid";
+        }
+    }
+
+    static QString OutFreqToKey(Reference::OutFreq f)
+    {
+        switch(f) {
+        case OutFreq::MHZ10: return "10 MHz";
+        case OutFreq::MHZ100: return "100 MHz";
+        case OutFreq::Off: return "Off";
+        default: return "Invalid";
+        }
+    }
+
+    static Reference::OutFreq KeyToOutFreq(QString key)
+    {
+        for (auto r: Reference::getOutFrequencies()) {
+            if(OutFreqToKey((Reference::OutFreq) r) == key) {
+                return (Reference::OutFreq) r;
+            }
+        }
+        // not found
+        return Reference::OutFreq::None;
+    }
+
+
+    static QString TypeToLabel(TypeIn t)
+    {
+        switch(t) {
+        case TypeIn::Internal: return "Internal";
+        case TypeIn::External: return "External";
+        case TypeIn::Auto: return "Auto";
+        default: return "Invalid";
+        }
+    }
+
+    static const QString TypeToKey(TypeIn t)
+    {
+        switch(t) {
+        case TypeIn::Internal: return "Int";
+        case TypeIn::External: return "Ext";
+        case TypeIn::Auto: return "Auto";
+        default: return "Invalid";
+        }
+    }
+
+    static TypeIn KeyToType(QString key)
+    {
+        for (auto r: Reference::getReferencesIn()) {
+            if(TypeToKey((TypeIn) r) == key) {
+                return (TypeIn) r;
+            }
+        }
+        // not found
+        return TypeIn::None;
+    }
+
+    static std::vector<Reference::TypeIn> getReferencesIn()
+    {
+        return {TypeIn::Internal, TypeIn::External, TypeIn::Auto};
+    }
+
+    static std::vector<Reference::OutFreq> getOutFrequencies()
+    {
+        return {OutFreq::Off, OutFreq::MHZ10, OutFreq::MHZ100};
+    }
+};
+
 AppWindow::AppWindow(QWidget *parent)
     : QMainWindow(parent)
     , deviceActionGroup(new QActionGroup(this))
@@ -184,14 +277,9 @@ AppWindow::AppWindow(QWidget *parent)
                 StartTCPServer(p.SCPIServer.port);
             }
         }
-        auto active = Mode::getActiveMode();
 
-        if(active == spectrumAnalyzer) {
-            spectrumAnalyzer->updateGraphColors();
-        }
-        else if (active == vna) {
-             vna->updateGraphColors();
-        }
+        auto active = Mode::getActiveMode();
+        active->updateGraphColors();
 
         // averaging mode may have changed, update for all relevant modes
         if(p.Acquisition.useMedianAveraging) {
@@ -366,16 +454,17 @@ void AppWindow::CreateToolbars()
     auto tb_reference = new QToolBar("Reference", this);
     tb_reference->addWidget(new QLabel("Ref in:"));
     toolbars.reference.type = new QComboBox();
-    toolbars.reference.type->addItem("Int");
-    toolbars.reference.type->addItem("Ext");
-    toolbars.reference.type->addItem("Auto");
+    for (auto r: Reference::getReferencesIn()) {
+        toolbars.reference.type->addItem(Reference::TypeToLabel(r), (int)r);
+    }
     tb_reference->addWidget(toolbars.reference.type);
     tb_reference->addSeparator();
     tb_reference->addWidget(new QLabel("Ref out:"));
     toolbars.reference.outFreq = new QComboBox();
-    toolbars.reference.outFreq->addItem("Off");
-    toolbars.reference.outFreq->addItem("10 MHz");
-    toolbars.reference.outFreq->addItem("100 MHz");
+    for (auto f: Reference::getOutFrequencies()) {
+
+        toolbars.reference.outFreq->addItem(Reference::OutFreqToLabel(f), (int)f);
+    }
     tb_reference->addWidget(toolbars.reference.outFreq);
     connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
     connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
@@ -427,20 +516,24 @@ void AppWindow::SetupSCPI()
         if(params.size() != 1) {
             return "ERROR";
         } else if(params[0] == "0" || params[0] == "OFF") {
-            toolbars.reference.outFreq->setCurrentIndex(0);
+            int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::Off);
+            toolbars.reference.outFreq->setCurrentIndex(index);
         } else if(params[0] == "10") {
-            toolbars.reference.outFreq->setCurrentIndex(1);
+            int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::MHZ10);
+            toolbars.reference.outFreq->setCurrentIndex(index);
         } else if(params[0] == "100") {
-            toolbars.reference.outFreq->setCurrentIndex(2);
+            int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::MHZ100);
+            toolbars.reference.outFreq->setCurrentIndex(index);
         } else {
             return "ERROR";
         }
         return "";
     }, [=](QStringList) -> QString {
-        switch(toolbars.reference.outFreq->currentIndex()) {
-        case 0: return "OFF";
-        case 1: return "10";
-        case 2: return "100";
+        Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
+        switch(f) {
+        case Reference::OutFreq::Off: return "OFF";
+        case Reference::OutFreq::MHZ10: return "10";
+        case Reference::OutFreq::MHZ100: return "100";
         default: return "ERROR";
         }
     }));
@@ -448,11 +541,14 @@ void AppWindow::SetupSCPI()
         if(params.size() != 1) {
             return "ERROR";
         } else if(params[0] == "INT") {
-            toolbars.reference.type->setCurrentIndex(0);
+            int index = toolbars.reference.type->findData((int)Reference::TypeIn::Internal);
+            toolbars.reference.type->setCurrentIndex(index);
         } else if(params[0] == "EXT") {
-            toolbars.reference.type->setCurrentIndex(1);
+            int index = toolbars.reference.type->findData((int)Reference::TypeIn::External);
+            toolbars.reference.type->setCurrentIndex(index);
         } else if(params[0] == "AUTO") {
-            toolbars.reference.type->setCurrentIndex(2);
+            int index = toolbars.reference.type->findData((int)Reference::TypeIn::Auto);
+            toolbars.reference.type->setCurrentIndex(index);
         } else {
             return "ERROR";
         }
@@ -858,20 +954,18 @@ void AppWindow::UpdateReference()
     }
     Protocol::ReferenceSettings s = {};
 
-    QString txt1 = toolbars.reference.type->currentText();
-    if( (txt1=="Ext") || (txt1=="External") ) {
-        s.UseExternalRef = 1;
-    }
-    if( (txt1=="Auto") || (txt1=="Automatic") ) {
-        s.AutomaticSwitch = 1;
+    Reference::TypeIn t = static_cast<Reference::TypeIn>(toolbars.reference.type->currentData().toInt());
+    switch (t) {
+    case Reference::TypeIn::External: s.UseExternalRef = 1; break;
+    case Reference::TypeIn::Auto: s.AutomaticSwitch = 1; break;
+    default: break;
     }
 
-    QString txt2 = toolbars.reference.outFreq->currentText();
-    if(txt2=="10 MHz"){
-        s.ExtRefOuputFreq = 10000000;
-    }
-    if(txt2=="100 MHz"){
-        s.ExtRefOuputFreq = 100000000;
+    Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
+    switch(f) {
+    case Reference::OutFreq::MHZ10: s.ExtRefOuputFreq = 10000000; break;
+    case Reference::OutFreq::MHZ100: s.ExtRefOuputFreq = 100000000; break;
+    default: break;
     }
 
     Protocol::PacketInfo p;
@@ -975,8 +1069,11 @@ nlohmann::json AppWindow::SaveSetup()
         j["activeMode"] = Mode::getActiveMode()->getName().toStdString();
     }
     nlohmann::json ref;
-    ref["Mode"] = toolbars.reference.type->currentText().toStdString();
-    ref["Output"] = toolbars.reference.outFreq->currentText().toStdString();
+
+    Reference::TypeIn t = static_cast<Reference::TypeIn>(toolbars.reference.type->currentData().toInt());
+    ref["Mode"] = Reference::TypeToKey(t).toStdString();
+    Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
+    ref["Output"] =  Reference::OutFreqToKey(f).toStdString();
     j["Reference"] = ref;
     return j;
 }
@@ -1007,7 +1104,10 @@ void AppWindow::LoadSetup(nlohmann::json j)
 //    auto d = new JSONPickerDialog(j);
 //    d->exec();
     if(j.contains("Reference")) {
-        toolbars.reference.type->setCurrentText(QString::fromStdString(j["Reference"].value("Mode", "Int")));
+        QString fallback = Reference::TypeToKey(Reference::TypeIn::Internal);
+        auto mode = QString::fromStdString(j["Reference"].value("Mode",fallback.toStdString()));
+        auto index = toolbars.reference.type->findData((int)Reference::KeyToType(mode));
+        toolbars.reference.type->setCurrentIndex(index);
         toolbars.reference.outFreq->setCurrentText(QString::fromStdString(j["Reference"].value("Output", "Off")));
     }
     while(Mode::getModes().size() > 0) {

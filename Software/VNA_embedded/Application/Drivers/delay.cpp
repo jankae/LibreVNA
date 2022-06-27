@@ -9,10 +9,10 @@ void Delay::Init() {
 
 	// enable update interrupt
 	TIM1->DIER |= TIM_DIER_UIE;
-    HAL_NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 6, 0);
+    HAL_NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
 
-	TIM1->CR1 |= TIM_CR1_CEN;
+	TIM1->CR1 |= TIM_CR1_CEN | TIM_CR1_UIFREMAP;
 }
 
 uint64_t Delay::get_us() {
@@ -22,7 +22,7 @@ uint64_t Delay::get_us() {
 	uint64_t ret;
 	if(buf & 0x80000000) {
 		// UIF bit set, timer overflow not handled yet
-		ret = t_us + UINT16_MAX + timer_value;
+		ret = t_us + UINT16_MAX + 1 + timer_value;
 	} else {
 		ret = t_us + timer_value;
 	}
@@ -35,8 +35,8 @@ void Delay::ms(uint32_t t) {
 		us(1000);
 	}
 }
-void Delay::us(uint32_t t) {
-	uint64_t start = TIM1->CNT;
+void Delay::us(uint16_t t) {
+	uint16_t start = TIM1->CNT;
 	while(TIM1->CNT - start < t);
 }
 
@@ -46,7 +46,7 @@ void TIM1_UP_TIM16_IRQHandler() {
 	// clear bit
 	TIM1->SR &= ~TIM_SR_UIF;
 	// update count
-	t_us += UINT16_MAX;
+	t_us += UINT16_MAX + 1;
 }
 
 }

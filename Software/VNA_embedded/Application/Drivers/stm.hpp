@@ -22,6 +22,8 @@ static inline int8_t getTemperature() {
 	HAL_ADC_Start(&hadc1);
 	HAL_ADC_PollForConversion(&hadc1, 100);
 	int16_t adc = HAL_ADC_GetValue(&hadc1);
+	// convert to used reference during calibration
+	adc = (int32_t) adc * 3300 / TEMPSENSOR_CAL_VREFANALOG;
 	int16_t rangeFrom = *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR;
 	int16_t rangeTo = TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP;
 	adc -= *TEMPSENSOR_CAL1_ADDR;

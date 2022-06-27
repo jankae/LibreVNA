@@ -18,6 +18,7 @@ enum class Reg {
 	ADCPrescaler = 0x04,
 	PhaseIncrement = 0x05,
 	SweepSetup = 0x06,
+	HardwareOverwrite = 0x07,
 	MAX2871Def0LSB = 0x08,
 	MAX2871Def0MSB = 0x09,
 	MAX2871Def1LSB = 0x0A,
@@ -131,8 +132,11 @@ void StartDFT();
 DFTResult ReadDFTResult();
 ADCLimits GetADCLimits();
 void ResetADCLimits();
-void ResumeHaltedSweep();
+bool ResumeHaltedSweep();
 uint16_t GetStatus();
+
+void OverwriteHardware(uint8_t attenuation, LowpassFilter filter, bool lowband, bool port1_enabled, bool port2_enabled);
+void DisableHardwareOverwrite();
 
 void StartSweep();
 void AbortSweep();

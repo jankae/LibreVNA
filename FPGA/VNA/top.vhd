@@ -268,6 +268,8 @@ architecture Behavioral of top is
 		RESET_MINMAX : out STD_LOGIC;
 		SWEEP_HALTED : in STD_LOGIC;
 		SWEEP_RESUME : out STD_LOGIC;
+		SPI_OVERWRITE_ENABLED : out STD_LOGIC;
+		SPI_OVERWRITE_DATA : out STD_LOGIC_VECTOR(14 downto 0);
 		DFT_BIN1_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
 		DFT_DIFFBIN_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
 		DFT_RESULT_READY : in  STD_LOGIC;
@@ -339,6 +341,8 @@ architecture Behavioral of top is
 	signal source_unlocked : std_logic;
 	signal lo_unlocked : std_logic;
 	
+	signal source_filter : std_logic_vector(1 downto 0);
+	
 	-- ADC signals
 	signal adc_trigger_sample : std_logic;
 	signal adc_port1_ready : std_logic;
@@ -372,8 +376,9 @@ architecture Behavioral of top is
 	signal sweep_port2_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_config_data : std_logic_vector(95 downto 0);
 	signal sweep_config_address : std_logic_vector(12 downto 0);
-	signal source_filter : std_logic_vector(1 downto 0);
+	signal sweep_source_filter : std_logic_vector(1 downto 0);
 	signal sweep_band : std_logic;
+	signal sweep_attenuator : std_logic_vector(6 downto 0);
 	
 	signal sweep_config_write_address : std_logic_vector(12 downto 0);
 	signal sweep_config_write_data : std_logic_vector(95 downto 0);
@@ -419,6 +424,10 @@ architecture Behavioral of top is
 	signal debug : std_logic_vector(10 downto 0);
 	signal intr : std_logic;
 	
+	-- HW overwrite signals
+	signal HW_overwrite_enabled : std_logic;
+	signal HW_overwrite_data : std_logic_vector(14 downto 0);
+	
 	-- DFT signals
 	signal dft_bin1_phaseinc : std_logic_vector (15 downto 0);
 	signal dft_diffbin_phaseinc : std_logic_vector (15 downto 0);
@@ -436,20 +445,20 @@ begin
 	LEDS(2) <= SOURCE_LD;
 	LEDS(3) <= LO1_LD;
 	-- Sweep and active port
-	PORT_SELECT2 <= sweep_excite_port2 and portswitch_en;
-	PORT2_SELECT <= sweep_excite_port2 and portswitch_en;
-	PORT_SELECT1 <= sweep_excite_port1 and portswitch_en;
-	PORT1_SELECT <= sweep_excite_port1 and portswitch_en;
-	BAND_SELECT_HIGH <= not sweep_band;
-	BAND_SELECT_LOW <= sweep_band;
+	PORT_SELECT2 <= (sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(3);
+	PORT2_SELECT <= (sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(3);
+	PORT_SELECT1 <= (sweep_excite_port1 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(4);
+	PORT1_SELECT <= (sweep_excite_port1 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(4);
+	BAND_SELECT_HIGH <= not sweep_band when HW_overwrite_enabled = '0' else not HW_overwrite_data(5);
+	BAND_SELECT_LOW <= sweep_band when HW_overwrite_enabled = '0' else HW_overwrite_data(5);
 	PORT1_MIX2_EN <= port1mix_en;
 	PORT1_MIX1_EN <= not port1mix_en;
 	PORT2_MIX2_EN <= port2mix_en;
 	PORT2_MIX1_EN <= not port2mix_en;
 	REF_MIX2_EN <= refmix_en;
 	REF_MIX1_EN <= not refmix_en;
-	LEDS(4) <= not (not sweep_reset and sweep_excite_port2 and portswitch_en);
-	LEDS(5) <= not (not sweep_reset and sweep_excite_port1 and portswitch_en);
+	LEDS(4) <= not (not sweep_reset and sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else not HW_overwrite_data(3);
+	LEDS(5) <= not (not sweep_reset and sweep_excite_port1 and portswitch_en) when HW_overwrite_enabled = '0' else not HW_overwrite_data(4);
 	-- Uncommitted LEDs
 	LEDS(7 downto 6) <= user_leds(1 downto 0);	
 	--LEDS(7) <= '0';
@@ -675,8 +684,8 @@ begin
 		PLL_LOCKED => plls_locked,
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
-		ATTENUATOR => ATTENUATION,
-		SOURCE_FILTER => source_filter,
+		ATTENUATOR => sweep_attenuator,
+		SOURCE_FILTER => sweep_source_filter,
 		STAGES => sweep_stages,
 		INDIVIDUAL_HALT => sweep_individual_halt,
 		PORT1_STAGE => sweep_port1_stage,
@@ -689,10 +698,13 @@ begin
 	);
 	
 	-- Source filter mapping
+	source_filter <= sweep_source_filter when HW_overwrite_enabled = '0' else HW_overwrite_data(7 downto 6);
 	FILT_IN_C1 <= '0' when source_filter = "00" or source_filter = "10" else '1';
 	FILT_IN_C2 <= '0' when source_filter = "11" or source_filter = "10" else '1';
 	FILT_OUT_C1 <= '0' when source_filter = "00" or source_filter = "10" else '1';
 	FILT_OUT_C2 <= '0' when source_filter = "00" or source_filter = "01" else '1';
+	
+	ATTENUATION <= sweep_attenuator when HW_overwrite_enabled = '0' else HW_overwrite_data(14 downto 8);
 	
 	-- PLL/SPI mux
 	-- only select FPGA SPI slave when both AUX1 and AUX2 are low
@@ -756,6 +768,8 @@ begin
 		INDIVIDUAL_HALT => sweep_individual_halt,
 		PORT1_STAGE => sweep_port1_stage,
 		PORT2_STAGE => sweep_port2_stage,
+		SPI_OVERWRITE_ENABLED => HW_overwrite_enabled,
+		SPI_OVERWRITE_DATA => HW_overwrite_data,
 		DFT_BIN1_PHASEINC => dft_bin1_phaseinc,
 		DFT_DIFFBIN_PHASEINC => dft_diffbin_phaseinc,
 		DFT_RESULT_READY => dft_ready,
