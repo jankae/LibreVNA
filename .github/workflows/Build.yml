@@ -49,7 +49,10 @@ jobs:
           path: Software/PC_Application/LibreVNA-GUI
           
   PC_Application_Windows:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v1
       - uses: msys2/setup-msys2@v2
@@ -58,13 +61,13 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           version: '5.15.1'
-          arch: 'win64_mingw73'
+          arch: 'win64_mingw81'
       
       - name: Download libusb
         run: |
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
           7z x libusb.7z -r -olibusb
-          Xcopy /E /I /Y libusb\include ..\Qt\5.15.1\mingw73_64\include
+          Xcopy /E /I /Y libusb\include ..\Qt\5.15.1\mingw81_64\include
           Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application
         shell: cmd
 
@@ -95,10 +98,10 @@ jobs:
           cd Software/PC_Application/release
           del *.o *.cpp
           windeployqt.exe .
-          copy ..\..\..\..\Qt\5.15.1\mingw73_64\bin\libwinpthread-1.dll .
-          copy ..\..\..\..\Qt\5.15.1\mingw73_64\bin\libgcc_s_seh-1.dll .
-          copy "..\..\..\..\Qt\5.15.1\mingw73_64\bin\libstdc++-6.dll" .
-          copy ..\..\..\..\Qt\5.15.1\mingw73_64\bin\Qt5OpenGL.dll .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libgcc_s_seh-1.dll .
+          copy "..\..\..\..\Qt\5.15.1\mingw81_64\bin\libstdc++-6.dll" .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\Qt5OpenGL.dll .
         shell: cmd
         
       - name: Upload
