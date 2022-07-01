@@ -59,6 +59,15 @@ public:
     static bool paramToLong(QStringList params, int index, long &dest);
     static bool paramToBool(QStringList params, int index, bool &dest);
 
+    enum class Result {
+        Empty,
+        Error,
+        False,
+        True
+    };
+
+    static QString getResultName(SCPI::Result r);
+
 public slots:
     void input(QString line);
 signals:

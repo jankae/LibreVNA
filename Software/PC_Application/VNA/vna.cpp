@@ -1290,11 +1290,11 @@ void VNA::SetupSCPI()
                 return "";
             } else if(params[0] == "POWER") {
                 SetSweepType(SweepType::Power);
-                return "";
+                return SCPI::getResultName(SCPI::Result::Empty);
             }
         }
         // either no parameter or invalid
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     }, [=](QStringList) -> QString {
         return settings.sweepType == SweepType::Frequency ? "FREQUENCY" : "POWER";
     }));
@@ -1303,10 +1303,10 @@ void VNA::SetupSCPI()
     scpi_freq->add(new SCPICommand("SPAN", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetSpan(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Freq.stop - settings.Freq.start, 'f', 0);
@@ -1314,10 +1314,10 @@ void VNA::SetupSCPI()
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetStartFreq(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Freq.start, 'f', 0);
@@ -1325,10 +1325,10 @@ void VNA::SetupSCPI()
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetCenterFreq(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number((settings.Freq.start + settings.Freq.stop)/2, 'f', 0);
@@ -1336,10 +1336,10 @@ void VNA::SetupSCPI()
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetStopFreq(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Freq.stop, 'f', 0);
@@ -1347,22 +1347,22 @@ void VNA::SetupSCPI()
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         SetFullSpan();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_freq->add(new SCPICommand("ZERO", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         SetZeroSpan();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     auto scpi_power = new SCPINode("POWer");
     SCPINode::add(scpi_power);
     scpi_power->add(new SCPICommand("START", [=](QStringList params) -> QString {
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetStartPower(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Power.start);
@@ -1370,10 +1370,10 @@ void VNA::SetupSCPI()
     scpi_power->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetStopPower(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Power.stop);
@@ -1383,10 +1383,10 @@ void VNA::SetupSCPI()
     scpi_acq->add(new SCPICommand("IFBW", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetIFBandwidth(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.bandwidth);
@@ -1394,10 +1394,10 @@ void VNA::SetupSCPI()
     scpi_acq->add(new SCPICommand("POINTS", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetPoints(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.npoints);
@@ -1405,10 +1405,10 @@ void VNA::SetupSCPI()
     scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetAveraging(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(averages);
@@ -1417,7 +1417,7 @@ void VNA::SetupSCPI()
         return QString::number(average.getLevel());
     }));
     scpi_acq->add(new SCPICommand("FINished", nullptr, [=](QStringList) -> QString {
-        return average.getLevel() == averages ? "TRUE" : "FALSE";
+        return average.getLevel() == averages ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_acq->add(new SCPICommand("LIMit", nullptr, [=](QStringList) -> QString {
         return central->allLimitsPassing() ? "PASS" : "FAIL";
@@ -1425,23 +1425,23 @@ void VNA::SetupSCPI()
     scpi_acq->add(new SCPICommand("SINGLE", [=](QStringList params) -> QString {
         bool single;
         if(!SCPI::paramToBool(params, 0, single)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetSingleSweep(single);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return singleSweep ? "TRUE" : "FALSE";
+        return singleSweep ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);
     scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetSourceLevel(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Freq.excitation_power);
@@ -1449,10 +1449,10 @@ void VNA::SetupSCPI()
     scpi_stim->add(new SCPICommand("FREQuency", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetPowerSweepFrequency(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.Power.frequency, 'f', 0);
@@ -1462,12 +1462,12 @@ void VNA::SetupSCPI()
     SCPINode::add(scpi_cal);
     scpi_cal->add(new SCPICommand("TYPE", [=](QStringList params) -> QString {
         if(params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             auto type = Calibration::TypeFromString(params[0].replace('_', ' '));
             if(type == Calibration::Type::Last) {
                 // failed to parse string
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             } else if(type == Calibration::Type::None) {
                 DisableCalibration();
             } else {
@@ -1475,11 +1475,11 @@ void VNA::SetupSCPI()
                 if(cal.calculationPossible(type)) {
                     ApplyCalibration(type);
                 } else {
-                    return "ERROR";
+                    return SCPI::getResultName(SCPI::Result::Error);
                 }
             }
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         auto ret = Calibration::TypeToString(cal.getType());
         ret.replace(' ', '_');
@@ -1488,43 +1488,43 @@ void VNA::SetupSCPI()
     scpi_cal->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
         if(params.size() != 1 || CalibrationMeasurementActive() || !window->getDevice() || Mode::getActiveMode() != this) {
             // no measurement specified, still busy or invalid mode
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             auto meas = Calibration::MeasurementFromString(params[0].replace('_', ' '));
             if(meas == Calibration::Measurement::Last) {
                 // failed to parse string
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             } else {
                 std::set<Calibration::Measurement> m;
                 m.insert(meas);
                 StartCalibrationMeasurements(m);
             }
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_cal->add(new SCPICommand("BUSy", nullptr, [=](QStringList) -> QString {
-        return CalibrationMeasurementActive() ? "TRUE" : "FALSE";
+        return CalibrationMeasurementActive() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_cal->add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
         if(params.size() != 1 || !calValid) {
             // no filename given or no calibration active
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if(!cal.saveToFile(params[0])) {
             // some error when writing the calibration file
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         calEdited = false;
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_cal->add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
         if(params.size() != 1) {
             // no filename given or no calibration active
-            return "FALSE";
+            return SCPI::getResultName(SCPI::Result::False);
         }
         if(!cal.openFromFile(params[0])) {
             // some error when loading the calibration file
-            return "FALSE";
+            return SCPI::getResultName(SCPI::Result::False);
         }
         if(cal.getType() == Calibration::Type::None) {
             DisableCalibration();
@@ -1532,7 +1532,7 @@ void VNA::SetupSCPI()
             ApplyCalibration(cal.getType());
         }
         calEdited = false;
-        return "TRUE";
+        return SCPI::getResultName(SCPI::Result::True);
     }));
 }
 

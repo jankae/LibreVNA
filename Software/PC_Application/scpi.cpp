@@ -79,6 +79,20 @@ bool SCPI::paramToBool(QStringList params, int index, bool &dest)
     return okay;
 }
 
+QString SCPI::getResultName(SCPI::Result r)
+{
+    switch (r) {
+    case Result::Empty:
+        return "";
+    case Result::Error:
+        return "ERROR";
+    case Result::False:
+        return "FALSE";
+    case Result::True:
+        return "TRUE";
+    }
+}
+
 void SCPI::input(QString line)
 {
     auto cmds = line.split(";");
@@ -191,7 +205,7 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
             }
         }
         // unable to find subnode
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     } else {
         // no more levels, search for command
         auto params = cmd.split(" ");
@@ -214,14 +228,14 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
             }
         }
         // couldn't find command
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     }
 }
 
 QString SCPICommand::execute(QStringList params)
 {
     if(fn_cmd == nullptr) {
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     } else {
         return fn_cmd(params);
     }
@@ -230,7 +244,7 @@ QString SCPICommand::execute(QStringList params)
 QString SCPICommand::query(QStringList params)
 {
     if(fn_query == nullptr) {
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     } else {
         return fn_query(params);
     }
