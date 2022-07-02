@@ -475,7 +475,7 @@ void AppWindow::SetupSCPI()
     scpi_dev->add(new SCPICommand("DISConnect", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         DisconnectDevice();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_dev->add(new SCPICommand("CONNect", [=](QStringList params) -> QString {
         QString serial;
@@ -485,7 +485,7 @@ void AppWindow::SetupSCPI()
         if(!ConnectToDevice(serial)) {
             return "Device not found";
         } else {
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         if(device) {
@@ -507,7 +507,7 @@ void AppWindow::SetupSCPI()
     scpi_dev->add(scpi_ref);
     scpi_ref->add(new SCPICommand("OUT", [=](QStringList params) -> QString {
         if(params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else if(params[0] == "0" || params[0] == "OFF") {
             int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::Off);
             toolbars.reference.outFreq->setCurrentIndex(index);
@@ -518,21 +518,21 @@ void AppWindow::SetupSCPI()
             int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::MHZ100);
             toolbars.reference.outFreq->setCurrentIndex(index);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
         switch(f) {
         case Reference::OutFreq::Off: return "OFF";
         case Reference::OutFreq::MHZ10: return "10";
         case Reference::OutFreq::MHZ100: return "100";
-        default: return "ERROR";
+        default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
     scpi_ref->add(new SCPICommand("IN", [=](QStringList params) -> QString {
         if(params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else if(params[0] == "INT") {
             int index = toolbars.reference.type->findData((int)Reference::TypeIn::Internal);
             toolbars.reference.type->setCurrentIndex(index);
@@ -543,19 +543,19 @@ void AppWindow::SetupSCPI()
             int index = toolbars.reference.type->findData((int)Reference::TypeIn::Auto);
             toolbars.reference.type->setCurrentIndex(index);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         switch(Device::StatusV1(getDevice()).extRefInUse) {
         case 0: return "INT";
         case 1: return "EXT";
-        default: return "ERROR";
+        default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
     scpi_dev->add(new SCPICommand("MODE", [=](QStringList params) -> QString {
         if (params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         Mode *mode = nullptr;
         if (params[0] == "VNA") {
@@ -569,9 +569,9 @@ void AppWindow::SetupSCPI()
         }
         if(mode) {
             mode->activate();
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
     }, [=](QStringList) -> QString {
         auto active = Mode::getActiveMode();
@@ -582,7 +582,7 @@ void AppWindow::SetupSCPI()
             case Mode::Type::SA: return "SA";
             }
         }
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     }));
     auto scpi_status = new SCPINode("STAtus");
     scpi_dev->add(scpi_status);
@@ -643,29 +643,29 @@ void AppWindow::SetupSCPI()
     auto scpi_manual = new SCPINode("MANual");
     scpi_manual->add(new SCPICommand("STArt",[=](QStringList) -> QString {
         StartManualControl();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_manual->add(new SCPICommand("STOp",[=](QStringList) -> QString {
         manual->close();
         delete manual;
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
 
     auto addBooleanManualSetting = [=](QString cmd, void(ManualControlDialog::*set)(bool), bool(ManualControlDialog::*get)(void)) {
         scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
             bool enable;
             if(!manual || !SCPI::paramToBool(params, 0, enable)) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto set_fn = std::bind(set, manual, std::placeholders::_1);
             set_fn(enable);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
-            return get_fn() ? "TRUE" : "FALSE";
+            return get_fn() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
         }));
     };
 
@@ -673,14 +673,14 @@ void AppWindow::SetupSCPI()
         scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
             double value;
             if(!manual || !SCPI::paramToDouble(params, 0, value)) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto set_fn = std::bind(set, manual, std::placeholders::_1);
             set_fn(value);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
             return QString::number(get_fn());
@@ -690,14 +690,14 @@ void AppWindow::SetupSCPI()
         scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
             double value;
             if(!manual || !SCPI::paramToDouble(params, 0, value)) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto set_fn = std::bind(set, manual, std::placeholders::_1);
             set_fn(value);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
             return QString::number(get_fn());
@@ -707,17 +707,17 @@ void AppWindow::SetupSCPI()
         scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
             double value;
             if(!manual || !SCPI::paramToDouble(params, 0, value)) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto set_fn = std::bind(set, manual, std::placeholders::_1);
             if(set_fn(value)) {
-                return "";
+                return SCPI::getResultName(SCPI::Result::Empty);
             } else {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
         }, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
             return QString::number(get_fn());
@@ -726,7 +726,7 @@ void AppWindow::SetupSCPI()
     auto addIntegerManualQuery = [=](QString cmd, int(ManualControlDialog::*get)(void)) {
         scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
             return QString::number(get_fn());
@@ -735,7 +735,7 @@ void AppWindow::SetupSCPI()
     auto addDoubleManualQuery = [=](QString cmd, double(ManualControlDialog::*get)(void)) {
         scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
             return QString::number(get_fn());
@@ -744,16 +744,16 @@ void AppWindow::SetupSCPI()
     auto addBooleanManualQuery = [=](QString cmd, bool(ManualControlDialog::*get)(void)) {
         scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
-            return get_fn() ? "TRUE" : "FALSE";
+            return get_fn() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
         }));
     };
     auto addComplexManualQuery = [=](QString cmd, std::complex<double>(ManualControlDialog::*get)(void)) {
         scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
             if(!manual) {
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
             auto get_fn = std::bind(get, manual);
             auto res = get_fn();
@@ -769,7 +769,7 @@ void AppWindow::SetupSCPI()
     scpi_manual->add(new SCPICommand("HSRC_LPF", [=](QStringList params) -> QString {
         long value;
         if(!manual || !SCPI::paramToLong(params, 0, value)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         switch(value) {
         case 947:
@@ -785,12 +785,12 @@ void AppWindow::SetupSCPI()
             manual->setHighSourceLPF(ManualControlDialog::LPF::None);
             break;
         default:
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         if(!manual) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         auto lpf = manual->getHighSourceLPF();
         switch(lpf) {
@@ -798,7 +798,7 @@ void AppWindow::SetupSCPI()
         case ManualControlDialog::LPF::M1880: return "1880";
         case ManualControlDialog::LPF::M3500: return "3500";
         case ManualControlDialog::LPF::None: return "0";
-        default: return "ERROR";
+        default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
     addBooleanManualSetting("LSRC_EN", &ManualControlDialog::setLowSourceEnable, &ManualControlDialog::getLowSourceEnable);
@@ -822,7 +822,7 @@ void AppWindow::SetupSCPI()
     addIntegerManualSetting("SAMPLES", &ManualControlDialog::setNumSamples, &ManualControlDialog::getNumSamples);
     scpi_manual->add(new SCPICommand("WINdow", [=](QStringList params) -> QString {
         if(!manual || params.size() < 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if (params[0] == "NONE") {
             manual->setWindow(ManualControlDialog::Window::None);
@@ -835,17 +835,17 @@ void AppWindow::SetupSCPI()
         } else {
             return "INVALID WINDOW";
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         if(!manual) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         switch((ManualControlDialog::Window) manual->getWindow()) {
         case ManualControlDialog::Window::None: return "NONE";
         case ManualControlDialog::Window::Kaiser: return "KAISER";
         case ManualControlDialog::Window::Hann: return "HANN";
         case ManualControlDialog::Window::FlatTop: return "FLATTOP";
-        default: return "ERROR";
+        default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
     addIntegerManualQuery("PORT1_MIN", &ManualControlDialog::getPort1MinADC);

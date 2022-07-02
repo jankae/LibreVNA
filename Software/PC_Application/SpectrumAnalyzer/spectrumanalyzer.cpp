@@ -837,10 +837,10 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_freq->add(new SCPICommand("SPAN", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetSpan(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.f_stop - settings.f_start, 'f', 0);
@@ -848,10 +848,10 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetStartFreq(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.f_start, 'f', 0);
@@ -859,10 +859,10 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetCenterFreq(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number((settings.f_start + settings.f_stop)/2, 'f', 0);
@@ -870,10 +870,10 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetStopFreq(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.f_stop, 'f', 0);
@@ -881,29 +881,29 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         SetFullSpan();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_freq->add(new SCPICommand("ZERO", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         SetZeroSpan();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
     scpi_acq->add(new SCPICommand("RBW", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetRBW(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.RBW);
     }));
     scpi_acq->add(new SCPICommand("WINDow", [=](QStringList params) -> QString {
         if (params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if (params[0] == "NONE") {
             SetWindow(Window::None);
@@ -916,19 +916,19 @@ void SpectrumAnalyzer::SetupSCPI()
         } else {
             return "INVALID WINDOW";
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         switch((Window) settings.WindowType) {
         case Window::None: return "NONE";
         case Window::Kaiser: return "KAISER";
         case Window::Hann: return "HANN";
         case Window::FlatTop: return "FLATTOP";
-        default: return "ERROR";
+        default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
     scpi_acq->add(new SCPICommand("DETector", [=](QStringList params) -> QString {
         if (params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if (params[0] == "+PEAK") {
             SetDetector(Detector::PPeak);
@@ -943,7 +943,7 @@ void SpectrumAnalyzer::SetupSCPI()
         } else {
             return "INVALID MDOE";
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         switch((Detector) settings.Detector) {
         case Detector::PPeak: return "+PEAK";
@@ -951,16 +951,16 @@ void SpectrumAnalyzer::SetupSCPI()
         case Detector::Normal: return "NORMAL";
         case Detector::Sample: return "SAMPLE";
         case Detector::Average: return "AVERAGE";
-        default: return "ERROR";
+        default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
     scpi_acq->add(new SCPICommand("AVG", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetAveraging(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(averages);
@@ -976,59 +976,59 @@ void SpectrumAnalyzer::SetupSCPI()
     }));
     scpi_acq->add(new SCPICommand("SIGid", [=](QStringList params) -> QString {
         if (params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if(params[0] == "1" || params[0] == "TRUE") {
             SetSignalID(true);
         } else if(params[0] == "0" || params[0] == "FALSE") {
             SetSignalID(false);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return settings.SignalID ? "TRUE" : "FALSE";
+        return settings.SignalID ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_acq->add(new SCPICommand("SINGLE", [=](QStringList params) -> QString {
         bool single;
         if(!SCPI::paramToBool(params, 0, single)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetSingleSweep(single);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return singleSweep ? "TRUE" : "FALSE";
+        return singleSweep ? SCPI::getResultName(SCPI::Result::True): SCPI::getResultName(SCPI::Result::False);
     }));
     auto scpi_tg = new SCPINode("TRACKing");
     SCPINode::add(scpi_tg);
     scpi_tg->add(new SCPICommand("ENable", [=](QStringList params) -> QString {
         if (params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if(params[0] == "1" || params[0] == "TRUE") {
             SetTGEnabled(true);
         } else if(params[0] == "0" || params[0] == "FALSE") {
             SetTGEnabled(false);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return settings.trackingGenerator ? "TRUE" : "FALSE";
+        return settings.trackingGenerator ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_tg->add(new SCPICommand("Port", [=](QStringList params) -> QString {
         if (params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if(params[0] == "1") {
             SetTGPort(0);
         } else if(params[0] == "2") {
             SetTGPort(1);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
         return settings.trackingGeneratorPort ? "2" : "1";
     }));
@@ -1036,10 +1036,10 @@ void SpectrumAnalyzer::SetupSCPI()
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
 
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetTGLevel(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.trackingPower / 100.0);
@@ -1047,10 +1047,10 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_tg->add(new SCPICommand("OFFset", [=](QStringList params) -> QString {
         long newval;
         if(!SCPI::paramToLong(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetTGOffset(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.trackingGeneratorOffset);
@@ -1059,18 +1059,18 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_tg->add(scpi_norm);
     scpi_norm->add(new SCPICommand("ENable", [=](QStringList params) -> QString {
         if (params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if(params[0] == "1" || params[0] == "TRUE") {
             EnableNormalization(true);
         } else if(params[0] == "0" || params[0] == "FALSE") {
             EnableNormalization(false);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return normalize.active ? "TRUE" : "FALSE";
+        return normalize.active ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_norm->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
         Q_UNUSED(params)
@@ -1080,10 +1080,10 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_norm->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetNormalizationLevel(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(normalize.Level->value());
