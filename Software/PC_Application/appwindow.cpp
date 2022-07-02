@@ -27,12 +27,14 @@
 #include "CustomWidgets/informationbox.h"
 #include "Util/app_common.h"
 #include "about.h"
+#include "mode.h"
+#include "modehandler.h"
+#include "modewindow.h"
 
 #include <QDockWidget>
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
-#include <mode.h>
 #include <QDebug>
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -168,6 +170,7 @@ AppWindow::AppWindow(QWidget *parent)
     , appVersion(APP_VERSION)
     , appGitHash(APP_GIT_HASH)
 {
+
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 
@@ -186,6 +189,7 @@ AppWindow::AppWindow(QWidget *parent)
 
     Preferences::getInstance().load();
     device = nullptr;
+    modeHandler = nullptr;
 
     if(parser.isSet("port")) {
         bool OK;
@@ -222,12 +226,19 @@ AppWindow::AppWindow(QWidget *parent)
         ui->menuToolbars->addAction(t->toggleViewAction());
     }
 
-    // Create GUI modes
-    central = new QStackedWidget;
-    setCentralWidget(central);
-    auto vna = new VNA(this);
-    auto generator = new Generator(this);
-    auto spectrumAnalyzer = new SpectrumAnalyzer(this);
+    modeHandler = new ModeHandler(this);
+    auto modeWindow = new ModeWindow(modeHandler, this);
+
+    setCentralWidget(modeWindow);
+    modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+    modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
+    modeHandler->createMode("Signal Generator", Mode::Type::SG);
+
+    auto setModeStatusbar = [=](const QString &msg) {
+        lModeInfo.setText(msg);
+    };
+
+    connect(modeHandler, &ModeHandler::StatusBarMessageChanged, setModeStatusbar);
 
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
@@ -271,32 +282,10 @@ AppWindow::AppWindow(QWidget *parent)
             }
         }
 
-        // averaging mode may have changed, update for all relevant modes
-        for (auto m : Mode::getModes())
-        {
-            switch (m->getType())
-            {
-                case Mode::Type::VNA:
-                    if(p.Acquisition.useMedianAveraging) {
-                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Median);
-                    }
-                    else {
-                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Mean);
-                    }
-                    break;
-                case Mode::Type::SA:
-                    if(p.Acquisition.useMedianAveraging) {
-                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Median);
-                    }
-                    else {
-                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Mean);
-                    }
-                    break;
-                case Mode::Type::SG:
-                case Mode::Type::Last:
-                default:
-                    break;
-            }
+        if(p.Acquisition.useMedianAveraging) {
+            modeHandler->setAveragingMode(Averaging::Mode::Median);
+        } else {
+            modeHandler->setAveragingMode(Averaging::Mode::Mean);
         }
 
         // acquisition frequencies may have changed, update
@@ -333,9 +322,6 @@ AppWindow::AppWindow(QWidget *parent)
 
     SetupSCPI();
 
-    // Set default mode
-    vna->activate();
-
     auto pref = Preferences::getInstance();
     if(pref.Startup.UseSetupFile) {
         LoadSetup(pref.Startup.SetupFile);
@@ -351,7 +337,8 @@ AppWindow::AppWindow(QWidget *parent)
         LoadSetup(parser.value("setup"));
     }
     if(parser.isSet("cal")) {
-        vna->LoadCalibration(parser.value("cal"));
+        VNA* mode = static_cast<VNA*>(modeHandler->findFirstOfType(Mode::Type::VNA));
+        mode->LoadCalibration(parser.value("cal"));
     }
     if(!parser.isSet("no-gui")) {
         InformationBox::setGUI(true);
@@ -375,9 +362,7 @@ void AppWindow::closeEvent(QCloseEvent *event)
     if(pref.Startup.UseSetupFile && pref.Startup.AutosaveSetupFile) {
         SaveSetup(pref.Startup.SetupFile);
     }
-    for(auto m : Mode::getModes()) {
-        m->shutdown();
-    }
+    modeHandler->shutdown();
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
     // deactivate currently used mode (stores mode state in settings)
@@ -385,6 +370,8 @@ void AppWindow::closeEvent(QCloseEvent *event)
         Mode::getActiveMode()->deactivate();
     }
     delete device;
+    delete modeHandler;
+    modeHandler = nullptr;
     pref.store();
     QMainWindow::closeEvent(event);
 }
@@ -586,11 +573,11 @@ void AppWindow::SetupSCPI()
         }
         Mode *mode = nullptr;
         if (params[0] == "VNA") {
-            mode = Mode::findFirstOfType(Mode::Type::VNA);
+            mode = modeHandler->findFirstOfType(Mode::Type::VNA);
         } else if(params[0] == "GEN") {
-            mode = Mode::findFirstOfType(Mode::Type::SG);
+            mode = modeHandler->findFirstOfType(Mode::Type::SG);
         } else if(params[0] == "SA") {
-            mode = Mode::findFirstOfType(Mode::Type::SA);
+            mode = modeHandler->findFirstOfType(Mode::Type::SA);
         } else {
             return "INVALID MDOE";
         }
@@ -1082,7 +1069,7 @@ nlohmann::json AppWindow::SaveSetup()
 {
     nlohmann::json j;
     nlohmann::json jm;
-    for(auto m : Mode::getModes()) {
+    for(auto m : modeHandler->getModes()) {
         nlohmann::json jmode;
         jmode["type"] = Mode::TypeToName(m->getType()).toStdString();
         jmode["name"] = m->getName().toStdString();
@@ -1138,28 +1125,31 @@ void AppWindow::LoadSetup(nlohmann::json j)
         toolbars.reference.type->setCurrentIndex(index);
         toolbars.reference.outFreq->setCurrentText(QString::fromStdString(j["Reference"].value("Output", "Off")));
     }
-    while(Mode::getModes().size() > 0) {
-        delete Mode::getModes()[0];
-    }
+
+    modeHandler->closeModes();
 
     // old style VNA/Generator/Spectrum Analyzer settings
     if(j.contains("VNA")) {
-        auto vna = new VNA(this);
+        modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+        auto * vna = static_cast<VNA*>(modeHandler->findFirstOfType(Mode::Type::VNA));
         vna->fromJSON(j["VNA"]);
     }
     if(j.contains("Generator")) {
-        auto generator = new Generator(this);
+        modeHandler->createMode("Generator", Mode::Type::SG);
+        auto * generator = static_cast<Generator*>(modeHandler->findFirstOfType(Mode::Type::SG));
         generator->fromJSON(j["Generator"]);
     }
     if(j.contains("SpectrumAnalyzer")) {
-        auto spectrumAnalyzer = new SpectrumAnalyzer(this);
+        modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
+        auto * spectrumAnalyzer = static_cast<SpectrumAnalyzer*>(modeHandler->findFirstOfType(Mode::Type::SA));
         spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
     }
     if(j.contains("Modes")) {
         for(auto jm : j["Modes"]) {
             auto type = Mode::TypeFromName(QString::fromStdString(jm.value("type", "Invalid")));
             if(type != Mode::Type::Last && jm.contains("settings")) {
-                auto m = Mode::createNew(this, QString::fromStdString(jm.value("name", "")), type);
+                modeHandler->createMode(QString::fromStdString(jm.value("name", "")), type);
+                auto m = modeHandler->getMode(modeHandler->getCurrentIndex());
                 m->fromJSON(jm["settings"]);
             }
         }
@@ -1167,26 +1157,21 @@ void AppWindow::LoadSetup(nlohmann::json j)
 
     // activate the correct mode
     QString modeName = QString::fromStdString(j.value("activeMode", ""));
-    for(auto m : Mode::getModes()) {
+    for(auto m : modeHandler->getModes()) {
         if(m->getName() == modeName) {
             m->activate();
             break;
         }
     }
     // if no mode is activated, there might have been a problem with the setup file. Activate the first mode anyway, to prevent invalid GUI state
-    if(!Mode::getActiveMode() && Mode::getModes().size() > 0) {
-        Mode::getModes()[0]->activate();
+    if(!Mode::getActiveMode() && modeHandler->getModes().size() > 0) {
+        modeHandler->getModes()[0]->activate();
     }
 }
 
 Device *&AppWindow::getDevice()
 {
     return device;
-}
-
-QStackedWidget *AppWindow::getCentral() const
-{
-    return central;
 }
 
 Ui::MainWindow *AppWindow::getUi() const
@@ -1268,3 +1253,4 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
         break;
     }
 }
+

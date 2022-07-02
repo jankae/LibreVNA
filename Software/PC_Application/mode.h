@@ -44,9 +44,8 @@ public:
     virtual void saveSreenshot();
 
     static Mode *createNew(AppWindow *window, QString name, Type t);
-    static bool nameAllowed(QString name);
-    static std::vector<Mode *> getModes();
-    static Mode* findFirstOfType(Type t);
+
+    virtual QWidget *getCentral() const;
 
 signals:
     void statusbarMessage(QString msg);
@@ -60,14 +59,12 @@ protected:
     std::set<QDockWidget*> docks;
 
 private:
-    int findTabIndex();
     static std::vector<Mode*> modes;
     static Mode *activeMode;
-    static QTabBar *tabbar;
-    static QWidget *cornerWidget;
 //    static QButtonGroup *modeButtonGroup;
     QString name;
     QString statusbarMsg;
+
     QWidget *central;
 };
 

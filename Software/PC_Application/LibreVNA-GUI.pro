@@ -123,7 +123,10 @@ HEADERS += \
     averaging.h \
     csv.h \
     json.hpp \
+    modehandler.h \
     mode.h \
+    modetabwidget.h \
+    modewindow.h \
     preferences.h \
     savable.h \
     scpi.h \
@@ -242,7 +245,10 @@ SOURCES += \
     averaging.cpp \
     csv.cpp \
     main.cpp \
+    modehandler.cpp \
     mode.cpp \
+    modetabwidget.cpp \
+    modewindow.cpp \
     preferences.cpp \
     scpi.cpp \
     tcpserver.cpp \
@@ -306,6 +312,7 @@ FORMS += \
     VNA/s2pImportOptions.ui \
     aboutdialog.ui \
     main.ui \
+    modewindow.ui \
     preferencesdialog.ui
 
 DISTFILES +=

@@ -13,10 +13,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 
-std::vector<Mode*> Mode::modes;
 Mode* Mode::activeMode = nullptr;
-QTabBar* Mode::tabbar = nullptr;
-QWidget* Mode::cornerWidget = nullptr;
 //QButtonGroup* Mode::modeButtonGroup = nullptr;
 
 Mode::Mode(AppWindow *window, QString name, QString SCPIname)
@@ -26,80 +23,6 @@ Mode::Mode(AppWindow *window, QString name, QString SCPIname)
       name(name),
       central(nullptr)
 {    
-    if(!nameAllowed(name)) {
-        throw std::runtime_error("Unable to create mode, name already taken");
-    }
-    // Create mode switch button
-    if(!cornerWidget) {
-        // this is the first created mode, initialize corner widget and set this mode as active
-        cornerWidget = new QWidget();
-        cornerWidget->setLayout(new QHBoxLayout);
-        cornerWidget->layout()->setSpacing(0);
-        cornerWidget->layout()->setMargin(0);
-        cornerWidget->layout()->setContentsMargins(0,0,0,0);
-        cornerWidget->setMaximumHeight(window->menuBar()->height());
-
-        tabbar = new QTabBar;
-        tabbar->setTabsClosable(true);
-        tabbar->setStyleSheet("QTabBar::tab { height: "+QString::number(window->menuBar()->height())+"px;}");
-        cornerWidget->layout()->addWidget(tabbar);
-
-        auto bAdd = new QPushButton();
-        QIcon icon;
-        QString iconThemeName = QString::fromUtf8("list-add");
-        if (QIcon::hasThemeIcon(iconThemeName)) {
-            icon = QIcon::fromTheme(iconThemeName);
-        } else {
-            icon.addFile(QString::fromUtf8(":/icons/add.png"), QSize(), QIcon::Normal, QIcon::Off);
-        }
-        bAdd->setIcon(icon);
-
-        auto mAdd = new QMenu();
-        for(unsigned int i=0;i<(int) Type::Last;i++) {
-            auto type = (Type) i;
-            auto action = new QAction(TypeToName(type));
-            mAdd->addAction(action);
-            connect(action, &QAction::triggered, [=](){
-                bool ok;
-                QString text = QInputDialog::getText(window, "Create new "+TypeToName(type)+" tab",
-                                                    "Name:", QLineEdit::Normal,
-                                                    TypeToName(type), &ok);
-                if(ok) {
-                    if(!nameAllowed(text)) {
-                        InformationBox::ShowError("Name collision", "Unable to create tab, no duplicate names allowed");
-                    } else {
-                        auto mode = Mode::createNew(window, text, type);
-                        mode->activate();
-                    }
-                }
-            });
-        }
-        bAdd->setMenu(mAdd);
-        bAdd->setMaximumHeight(window->menuBar()->height());
-        bAdd->setMaximumWidth(40);
-        cornerWidget->layout()->addWidget(bAdd);
-
-        window->menuBar()->setCornerWidget(cornerWidget);
-
-        connect(tabbar, &QTabBar::currentChanged, [=](int index){
-            modes[index]->activate();
-        });
-        connect(tabbar, &QTabBar::tabCloseRequested, [=](int index){
-            delete modes[index];
-        });
-        connect(tabbar, &QTabBar::tabMoved, [=](int from, int to){
-            auto modeFrom = modes.at(from);
-            auto modeTo = modes.at(to);
-            modes[from] = modeTo;
-            modes[to] = modeFrom;
-        });
-    }
-    connect(this, &Mode::statusbarMessage, window, &AppWindow::setModeStatus);
-    modes.push_back(this);
-    tabbar->blockSignals(true);
-    tabbar->insertTab(tabbar->count(), name);
-    tabbar->blockSignals(false);
-    tabbar->setMovable(true);
     window->getSCPI()->add(this);
 }
 
@@ -109,16 +32,6 @@ Mode::~Mode()
     if(activeMode == this) {
         deactivate();
     }
-    auto index = findTabIndex();
-    tabbar->blockSignals(true);
-    tabbar->removeTab(index);
-    tabbar->blockSignals(false);
-    modes.erase(modes.begin() + index);
-    if(modes.size() > 0) {
-        modes[tabbar->currentIndex()]->activate();
-    }
-    window->getCentral()->removeWidget(central);
-    delete central;
     for(auto d : docks) {
         delete d;
     }
@@ -151,7 +64,6 @@ void Mode::activate()
     }
 
     QSettings settings;
-    window->getCentral()->setCurrentWidget(central);
 
     // restore dock and toolbar positions
     window->restoreState(settings.value("windowState_"+name).toByteArray());
@@ -175,10 +87,6 @@ void Mode::activate()
     }
 
     activeMode = this;
-    // force activation of correct tab in case the mode switch was done via script/setup load.
-    // This will trigger a second activation of this mode in the signal of the tab bar, but since it is
-    // already the active mode, this function will just return -> no recursion
-    tabbar->setCurrentIndex(findTabIndex());
 
     if(window->getDevice()) {
         initializeDevice();
@@ -268,21 +176,9 @@ Mode *Mode::createNew(AppWindow *window, QString name, Mode::Type t)
     }
 }
 
-bool Mode::nameAllowed(QString name)
-{
-    for(auto m : modes) {
-        if(m->getName() == name) {
-            // name already taken, no duplicates allowed
-            return false;
-        }
-    }
-    return true;
-}
-
 void Mode::finalize(QWidget *centralWidget)
 {
     central = centralWidget;
-    window->getCentral()->addWidget(central);
     // Set ObjectName for toolbars and docks
     for(auto d : docks) {
         d->setObjectName(d->windowTitle()+name);
@@ -302,27 +198,6 @@ void Mode::finalize(QWidget *centralWidget)
     }
 }
 
-int Mode::findTabIndex()
-{
-    auto it = std::find(modes.begin(), modes.end(), this);
-    return it - modes.begin();
-}
-
-std::vector<Mode *> Mode::getModes()
-{
-    return modes;
-}
-
-Mode *Mode::findFirstOfType(Mode::Type t)
-{
-    for(auto m : modes) {
-        if(m->getType() == t) {
-            return m;
-        }
-    }
-    return nullptr;
-}
-
 void Mode::setStatusbarMessage(QString msg)
 {
     statusbarMsg = msg;
@@ -338,12 +213,7 @@ QString Mode::getName() const
 
 void Mode::setName(const QString &value)
 {
-    if(!nameAllowed(value)) {
-        // unable to use this name
-        return;
-    }
     name = value;
-    tabbar->setTabText(findTabIndex(), name);
 }
 
 void Mode::updateGraphColors()
@@ -353,4 +223,9 @@ void Mode::updateGraphColors()
             p->updateGraphColors();
         }
     }
+}
+
+QWidget *Mode::getCentral() const
+{
+    return central;
 }
