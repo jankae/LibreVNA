@@ -3,10 +3,6 @@
 
 #include "modehandler.h"
 
-namespace Ui {
-    class ModeWindow;
-}
-
 class ModeWindow: public QWidget
 {
     Q_OBJECT
@@ -16,13 +12,14 @@ public:
 
 private:
     ModeHandler* handler;
-    Ui::ModeWindow *ui;
     void SetupUi();
     AppWindow* aw;
+    QTabBar* tabBar;
 
 private slots:
     void ModeCreated(int modeIndex);
     void ModeClosed(int modeIndex);
+    void CurrentModeChanged(int modeIndex);
 };
 
 #endif // MODEWINDOW_H

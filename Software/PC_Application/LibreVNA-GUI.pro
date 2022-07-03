@@ -125,7 +125,6 @@ HEADERS += \
     json.hpp \
     modehandler.h \
     mode.h \
-    modetabwidget.h \
     modewindow.h \
     preferences.h \
     savable.h \
@@ -247,7 +246,6 @@ SOURCES += \
     main.cpp \
     modehandler.cpp \
     mode.cpp \
-    modetabwidget.cpp \
     modewindow.cpp \
     preferences.cpp \
     scpi.cpp \
@@ -312,7 +310,6 @@ FORMS += \
     VNA/s2pImportOptions.ui \
     aboutdialog.ui \
     main.ui \
-    modewindow.ui \
     preferencesdialog.ui
 
 DISTFILES +=

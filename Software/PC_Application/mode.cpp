@@ -32,6 +32,8 @@ Mode::~Mode()
     if(activeMode == this) {
         deactivate();
     }
+    window->getCentral()->removeWidget(central);
+    delete central;
     for(auto d : docks) {
         delete d;
     }
@@ -64,7 +66,7 @@ void Mode::activate()
     }
 
     QSettings settings;
-
+    window->getCentral()->setCurrentWidget(central);
     // restore dock and toolbar positions
     window->restoreState(settings.value("windowState_"+name).toByteArray());
 
@@ -179,6 +181,7 @@ Mode *Mode::createNew(AppWindow *window, QString name, Mode::Type t)
 void Mode::finalize(QWidget *centralWidget)
 {
     central = centralWidget;
+    window->getCentral()->addWidget(central);
     // Set ObjectName for toolbars and docks
     for(auto d : docks) {
         d->setObjectName(d->windowTitle()+name);
@@ -223,9 +226,4 @@ void Mode::updateGraphColors()
             p->updateGraphColors();
         }
     }
-}
-
-QWidget *Mode::getCentral() const
-{
-    return central;
 }

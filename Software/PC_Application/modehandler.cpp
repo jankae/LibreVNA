@@ -18,19 +18,23 @@ void ModeHandler::shutdown()
     }
 }
 
-void ModeHandler::createMode(QString name, Mode::Type t)
+int ModeHandler::createMode(QString name, Mode::Type t)
 {
     auto mode = Mode::createNew(aw, name, t);
-    createMode(mode);
+    return createMode(mode);
 }
 
-void ModeHandler::createMode(Mode *mode)
+int ModeHandler::createMode(Mode *mode)
 {
     modes.push_back(mode);
-    currentModeIndex = int(modes.size());
+    currentModeIndex = int(modes.size()) - 1;
     connect(mode, &Mode::statusbarMessage, this, &ModeHandler::setStatusBarMessageChanged);
-    emit ModeCreated(currentModeIndex - 1);
 
+    auto * m = getMode(currentModeIndex);
+    m->activate();
+
+    emit ModeCreated(currentModeIndex);
+    return (currentModeIndex);
 }
 
 Mode* ModeHandler::getMode(int index)
@@ -45,10 +49,12 @@ std::vector<Mode*> ModeHandler::getModes()
 
 void ModeHandler::setCurrentIndex(int index)
 {
-    if ( (currentModeIndex != index) && (index >= 0)) {
+//    if ( (getCurrentIndex() != index) && (index >= 0)) {
+    if ( (getCurrentIndex() != index) && (index >= 0)) {
         currentModeIndex = index;
-        auto * mode = modes.at(currentModeIndex);
-        mode->activate();
+        auto * m = getMode(getCurrentIndex());
+        m->activate();
+        emit CurrentModeChanged(getCurrentIndex());
     }
 }
 
@@ -62,10 +68,10 @@ void ModeHandler::closeMode(int index)
     disconnect(modes.at(index), &Mode::statusbarMessage, this, &ModeHandler::setStatusBarMessageChanged);
     delete modes.at(index);
     modes.erase(modes.begin() + index);
-    if (currentModeIndex > int(modes.size()) ) {
-        setCurrentIndex(currentModeIndex - 1); // Select bar before one deleted
-        auto vna = modes.at(currentModeIndex);
-        vna->activate();
+    if (int(modes.size()) > 0) {
+        if (getCurrentIndex() == index) {
+            setCurrentIndex(getCurrentIndex()-1); // Select bar before one deleted
+        }
     }
     emit ModeClosed(index);
 }
@@ -93,6 +99,12 @@ bool ModeHandler::nameAllowed(const QString &name)
         }
     }
     return true;
+}
+
+int ModeHandler::findIndex(Mode *targetMode)
+{
+    auto it = std::find(modes.begin(), modes.end(), targetMode);
+    return it - modes.begin();
 }
 
 Mode* ModeHandler::findFirstOfType(Mode::Type t)

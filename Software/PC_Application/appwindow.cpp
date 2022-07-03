@@ -227,12 +227,15 @@ AppWindow::AppWindow(QWidget *parent)
     }
 
     modeHandler = new ModeHandler(this);
-    auto modeWindow = new ModeWindow(modeHandler, this);
+    new ModeWindow(modeHandler, this);
 
-    setCentralWidget(modeWindow);
-    modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+    central = new QStackedWidget;
+    setCentralWidget(central);
+
+    auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
     modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
     modeHandler->createMode("Signal Generator", Mode::Type::SG);
+    modeHandler->setCurrentIndex(vnaIndex);
 
     auto setModeStatusbar = [=](const QString &msg) {
         lModeInfo.setText(msg);
@@ -1128,28 +1131,29 @@ void AppWindow::LoadSetup(nlohmann::json j)
 
     modeHandler->closeModes();
 
-    // old style VNA/Generator/Spectrum Analyzer settings
+    /* old style VNA/Generator/Spectrum Analyzer settings,
+     * no more than one instance in each mode running */
     if(j.contains("VNA")) {
-        modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
-        auto * vna = static_cast<VNA*>(modeHandler->findFirstOfType(Mode::Type::VNA));
+        auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+        auto *vna = static_cast<VNA*>(modeHandler->getMode(vnaIndex));
         vna->fromJSON(j["VNA"]);
     }
     if(j.contains("Generator")) {
-        modeHandler->createMode("Generator", Mode::Type::SG);
-        auto * generator = static_cast<Generator*>(modeHandler->findFirstOfType(Mode::Type::SG));
+        auto sgIndex = modeHandler->createMode("Generator", Mode::Type::SG);
+        auto *generator = static_cast<Generator*>(modeHandler->getMode(sgIndex));
         generator->fromJSON(j["Generator"]);
     }
     if(j.contains("SpectrumAnalyzer")) {
-        modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
-        auto * spectrumAnalyzer = static_cast<SpectrumAnalyzer*>(modeHandler->findFirstOfType(Mode::Type::SA));
+        auto saIndex = modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
+        auto *spectrumAnalyzer = static_cast<SpectrumAnalyzer*>(modeHandler->getMode(saIndex));
         spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
     }
     if(j.contains("Modes")) {
         for(auto jm : j["Modes"]) {
             auto type = Mode::TypeFromName(QString::fromStdString(jm.value("type", "Invalid")));
             if(type != Mode::Type::Last && jm.contains("settings")) {
-                modeHandler->createMode(QString::fromStdString(jm.value("name", "")), type);
-                auto m = modeHandler->getMode(modeHandler->getCurrentIndex());
+                auto index = modeHandler->createMode(QString::fromStdString(jm.value("name", "")), type);
+                auto m = modeHandler->getMode(index);
                 m->fromJSON(jm["settings"]);
             }
         }
@@ -1159,7 +1163,8 @@ void AppWindow::LoadSetup(nlohmann::json j)
     QString modeName = QString::fromStdString(j.value("activeMode", ""));
     for(auto m : modeHandler->getModes()) {
         if(m->getName() == modeName) {
-            m->activate();
+            auto index = modeHandler->findIndex(m);
+            modeHandler->setCurrentIndex(index);
             break;
         }
     }
@@ -1172,6 +1177,11 @@ void AppWindow::LoadSetup(nlohmann::json j)
 Device *&AppWindow::getDevice()
 {
     return device;
+}
+
+QStackedWidget *AppWindow::getCentral() const
+{
+    return central;
 }
 
 Ui::MainWindow *AppWindow::getUi() const

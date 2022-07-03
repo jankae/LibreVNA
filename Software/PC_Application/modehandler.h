@@ -15,7 +15,7 @@ public:
     ~ModeHandler() = default;
 
     void shutdown();
-    void createMode(QString name, Mode::Type t);
+    int createMode(QString name, Mode::Type t);
     void closeMode(int index);
     void closeModes();
     int getCurrentIndex();
@@ -24,6 +24,7 @@ public:
     std::vector<Mode*> getModes();
 
     bool nameAllowed(const QString &name);
+    int findIndex(Mode *targetMode);
     Mode* findFirstOfType(Mode::Type t);
 
     void setAveragingMode(Averaging::Mode m);
@@ -33,6 +34,7 @@ signals:
 
     void ModeCreated(int modeIndex);
     void ModeClosed(int modeIndex);
+    void CurrentModeChanged(int modeIndex);
 
 public slots:
     void setCurrentIndex(int modeIndex);
@@ -40,7 +42,7 @@ public slots:
 private:
     std::vector<Mode*> modes;
     int currentModeIndex;
-    void createMode(Mode *mode);
+    int createMode(Mode *mode);
     AppWindow *aw;
 
 private slots:

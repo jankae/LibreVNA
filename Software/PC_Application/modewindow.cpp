@@ -1,7 +1,6 @@
 #include "modewindow.h"
 
 #include "mode.h"
-#include "ui_modewindow.h"
 #include "appwindow.h"
 #include "CustomWidgets/informationbox.h"
 
@@ -14,31 +13,34 @@ ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw, QWidget* parent):
     handler(handler),
     aw(aw)
 {
-    ui = new Ui::ModeWindow;
-    ui->setupUi(this);
 
     SetupUi();
 
     connect(handler, &ModeHandler::ModeCreated, this, &ModeWindow::ModeCreated);
     connect(handler, &ModeHandler::ModeClosed, this, &ModeWindow::ModeClosed);
+    connect(handler, &ModeHandler::CurrentModeChanged, this, &ModeWindow::CurrentModeChanged);
 
-    connect(ui->tabwidgetModes, &ModeTabWidget::currentChanged, handler, &ModeHandler::setCurrentIndex);
-    connect(ui->tabwidgetModes, &ModeTabWidget::tabCloseRequested, handler, &ModeHandler::closeMode);
-
+    connect(tabBar, &QTabBar::currentChanged, handler, &ModeHandler::setCurrentIndex);
+    connect(tabBar, &QTabBar::tabCloseRequested, handler, &ModeHandler::closeMode);
 }
 
 ModeWindow::~ModeWindow()
 {
-    delete ui;
-    ui = nullptr;
 }
 
 void ModeWindow::SetupUi()
 {
-    ui->horizontalLayout->setSpacing(0);
-    ui->horizontalLayout->setMargin(0);
-    ui->horizontalLayout->setContentsMargins(0,0,0,0);
-    ui->tabwidgetModes->setUsesScrollButtons(true);
+    auto cornerWidget = new QWidget();
+    cornerWidget->setLayout(new QHBoxLayout);
+    cornerWidget->layout()->setSpacing(0);
+    cornerWidget->layout()->setMargin(0);
+    cornerWidget->layout()->setContentsMargins(0,0,0,0);
+    cornerWidget->setMaximumHeight(aw->menuBar()->height());
+
+    tabBar = new QTabBar;
+    tabBar->setStyleSheet("QTabBar::tab { height: " + QString::number(aw->menuBar()->height()) + "px;}");
+    tabBar->setTabsClosable(true);
+    cornerWidget->layout()->addWidget(tabBar);
 
     auto bAdd = new QPushButton();
     QIcon icon;
@@ -50,7 +52,7 @@ void ModeWindow::SetupUi()
         icon.addFile(QString::fromUtf8(":/icons/add.png"), QSize(), QIcon::Normal, QIcon::Off);
 
     bAdd->setIcon(icon);
-    bAdd->setMaximumHeight(450);
+    bAdd->setMaximumHeight(aw->menuBar()->height());
     bAdd->setMaximumWidth(40);
 
     auto mAdd = new QMenu();
@@ -75,7 +77,10 @@ void ModeWindow::SetupUi()
         });
     }
     bAdd->setMenu(mAdd);
-    aw->menuBar()->setCornerWidget(bAdd);
+
+    cornerWidget->layout()->addWidget(bAdd);
+
+    aw->menuBar()->setCornerWidget(cornerWidget);
 }
 
 void ModeWindow::ModeCreated(int modeIndex)
@@ -85,15 +90,27 @@ void ModeWindow::ModeCreated(int modeIndex)
     if (mode)
     {
         const auto name = mode->getName();
-        auto central = mode->getCentral();
-        const auto tabIndex = ui->tabwidgetModes->insertTab(modeIndex, central, name);
-        ui->tabwidgetModes->setCurrentIndex(tabIndex);
+
+        tabBar->blockSignals(true);
+        tabBar->insertTab(modeIndex, name);
+        tabBar->blockSignals(false);
+
+        tabBar->setCurrentIndex(modeIndex);
     }
 }
 
 void ModeWindow::ModeClosed(int modeIndex)
 {
-    auto modeWidget = ui->tabwidgetModes->widget(modeIndex);
-    ui->tabwidgetModes->removeTab(modeIndex);
-    delete modeWidget;
+    tabBar->blockSignals(true);
+    tabBar->removeTab(modeIndex);
+    tabBar->blockSignals(false);
+}
+
+
+void ModeWindow::CurrentModeChanged(int modeIndex)
+{
+    if (modeIndex != tabBar->currentIndex())
+    {
+        tabBar->setCurrentIndex(modeIndex);
+    }
 }

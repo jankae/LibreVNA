@@ -45,8 +45,6 @@ public:
 
     static Mode *createNew(AppWindow *window, QString name, Type t);
 
-    virtual QWidget *getCentral() const;
-
 signals:
     void statusbarMessage(QString msg);
 protected:
