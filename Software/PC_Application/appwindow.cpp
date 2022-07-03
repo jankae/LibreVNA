@@ -271,24 +271,31 @@ AppWindow::AppWindow(QWidget *parent)
             }
         }
 
-        auto active = Mode::getActiveMode();
-        active->updateGraphColors();
-
         // averaging mode may have changed, update for all relevant modes
-        if(p.Acquisition.useMedianAveraging) {
-            spectrumAnalyzer->setAveragingMode(Averaging::Mode::Median);
-            vna->setAveragingMode(Averaging::Mode::Median);
-        } else {
-            spectrumAnalyzer->setAveragingMode(Averaging::Mode::Mean);
-            vna->setAveragingMode(Averaging::Mode::Mean);
+        if (spectrumAnalyzer || vna)
+        {
+            if(p.Acquisition.useMedianAveraging) {
+                spectrumAnalyzer->setAveragingMode(Averaging::Mode::Median);
+                vna->setAveragingMode(Averaging::Mode::Median);
+            } else {
+                spectrumAnalyzer->setAveragingMode(Averaging::Mode::Mean);
+                vna->setAveragingMode(Averaging::Mode::Mean);
+            }
         }
 
         // acquisition frequencies may have changed, update
         UpdateAcquisitionFrequencies();
 
-        if(device) {
-            active->initializeDevice();
+        auto active = Mode::getActiveMode();
+        if (active)
+        {
+            active->updateGraphColors();
+
+            if(device) {
+                active->initializeDevice();
+            }
         }
+
     });
 
     connect(ui->actionAbout, &QAction::triggered, [=](){
