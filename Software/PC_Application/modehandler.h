@@ -17,6 +17,7 @@ public:
     void shutdown();
     int createMode(QString name, Mode::Type t);
     void closeMode(int index);
+    void currentModeMoved(int from, int to);
     void closeModes();
     int getCurrentIndex();
 

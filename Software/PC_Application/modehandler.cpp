@@ -58,6 +58,15 @@ void ModeHandler::setCurrentIndex(int index)
     }
 }
 
+void ModeHandler::currentModeMoved(int from, int to)
+{
+    auto modeFrom = modes.at(from);
+    auto modeTo = modes.at(to);
+    modes[from] = modeTo;
+    modes[to] = modeFrom;
+    setCurrentIndex(to);
+}
+
 int ModeHandler::getCurrentIndex()
 {
     return currentModeIndex;

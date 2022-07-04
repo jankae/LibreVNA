@@ -22,6 +22,7 @@ ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw, QWidget* parent):
 
     connect(tabBar, &QTabBar::currentChanged, handler, &ModeHandler::setCurrentIndex);
     connect(tabBar, &QTabBar::tabCloseRequested, handler, &ModeHandler::closeMode);
+    connect(tabBar, &QTabBar::tabMoved, handler, &ModeHandler::currentModeMoved);
 }
 
 ModeWindow::~ModeWindow()
@@ -94,7 +95,7 @@ void ModeWindow::ModeCreated(int modeIndex)
         tabBar->blockSignals(true);
         tabBar->insertTab(modeIndex, name);
         tabBar->blockSignals(false);
-
+        tabBar->setMovable(true);
         tabBar->setCurrentIndex(modeIndex);
     }
 }
