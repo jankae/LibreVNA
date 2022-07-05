@@ -87,12 +87,19 @@ Mode::Mode(AppWindow *window, QString name, QString SCPIname)
         connect(tabbar, &QTabBar::tabCloseRequested, [=](int index){
             delete modes[index];
         });
+        connect(tabbar, &QTabBar::tabMoved, [=](int from, int to){
+            auto modeFrom = modes.at(from);
+            auto modeTo = modes.at(to);
+            modes[from] = modeTo;
+            modes[to] = modeFrom;
+        });
     }
     connect(this, &Mode::statusbarMessage, window, &AppWindow::setModeStatus);
     modes.push_back(this);
     tabbar->blockSignals(true);
     tabbar->insertTab(tabbar->count(), name);
     tabbar->blockSignals(false);
+    tabbar->setMovable(true);
     window->getSCPI()->add(this);
 }
 
