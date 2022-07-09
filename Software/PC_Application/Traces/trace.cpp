@@ -158,21 +158,13 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
         d.y = t.point(i).S[parameter];
         addData(d, DataType::Frequency);
     }
-    // check if parameter is square (e.i. S11/S22/S33/...)
-    parameter++;
-    bool isSquare = false;
-    for (unsigned int i = 1; i * i <= parameter; i++) {
-
-        // If (i * i = n)
-        if ((parameter % i == 0) && (parameter / i == i)) {
-            isSquare = true;
+    // check if parameter is a reflection measurement (e.i. S11/S22/S33/...)
+    reflection = false;
+    for (unsigned int i = 0; i * i <= parameter; i++) {
+        if (parameter == i * t.ports() + i) {
+            reflection = true;
             break;
         }
-    }
-    if(isSquare == 1) {
-        reflection = true;
-    } else {
-        reflection = false;
     }
     createdFromFile = true;
     reference_impedance = t.getReferenceImpedance();
