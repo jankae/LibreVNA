@@ -98,7 +98,7 @@ public:
     SIUnitEdit* getSettingsEditor();
     void adjustSettings(double value);
     bool isVisible();
-    bool setVisible(bool visible);
+    void setVisible(bool visible);
 
     QMenu *getContextMenu();
 
@@ -107,6 +107,7 @@ public:
     Marker *getParent() const;
     const std::vector<Marker *>& getHelperMarkers() const;
     Marker *helperMarker(unsigned int i);
+    bool canUseAsDelta(Marker *m);
     void assignDeltaMarker(Marker *m);
     QString getSuffix() const;
 
