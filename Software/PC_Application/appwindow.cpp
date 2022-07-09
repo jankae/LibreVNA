@@ -1100,6 +1100,7 @@ nlohmann::json AppWindow::SaveSetup()
     Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
     ref["Output"] =  Reference::OutFreqToKey(f).toStdString();
     j["Reference"] = ref;
+    j["version"] = qlibrevnaApp->applicationVersion().toStdString();
     return j;
 }
 
@@ -1117,6 +1118,8 @@ void AppWindow::LoadSetup(QString filename)
     } catch (exception &e) {
         InformationBox::ShowError("Error", "Failed to parse the setup file (" + QString(e.what()) + ")");
         qWarning() << "Parsing of setup file failed: " << e.what();
+        file.close();
+        return;
     }
     file.close();
     LoadSetup(j);
@@ -1169,6 +1172,10 @@ void AppWindow::LoadSetup(nlohmann::json j)
             m->activate();
             break;
         }
+    }
+    // if no mode is activated, there might have been a problem with the setup file. Activate the first mode anyway, to prevent invalid GUI state
+    if(!Mode::getActiveMode() && Mode::getModes().size() > 0) {
+        Mode::getModes()[0]->activate();
     }
 }
 
