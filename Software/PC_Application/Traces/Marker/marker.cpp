@@ -1498,6 +1498,9 @@ bool Marker::setVisible(bool visible)
         this->visible = visible;
         emit visibilityChanged(this);
     }
+    for(auto h : helperMarkers) {
+        h->setVisible(visible);
+    }
 }
 
 QMenu *Marker::getContextMenu() {
