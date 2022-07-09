@@ -386,6 +386,9 @@ void TraceSmithChart::draw(QPainter &p) {
             // only draw markers if the trace has at least one point
             auto markers = t.first->getMarkers();
             for(auto m : markers) {
+                if(!m->isVisible()) {
+                    continue;
+                }
 //                if (m->isTimeDomain()) {
 //                    continue;
 //                }

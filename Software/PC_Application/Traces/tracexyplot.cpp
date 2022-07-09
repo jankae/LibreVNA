@@ -505,6 +505,9 @@ void TraceXYPlot::draw(QPainter &p)
                 // only draw markers on primary YAxis and if the trace has at least one point
                 auto markers = t->getMarkers();
                 for(auto m : markers) {
+                    if(!m->isVisible()) {
+                        continue;
+                    }
                     double xPosition = m->getPosition();
                     if (xPosition < xAxis.getRangeMin() || xPosition > xAxis.getRangeMax()) {
                         // marker not in graph range

@@ -299,14 +299,22 @@ void Trace::addMarker(Marker *m)
 {
     markers.insert(m);
     connect(m, &Marker::dataFormatChanged, this, &Trace::markerFormatChanged);
+    connect(m, &Marker::visibilityChanged, this, &Trace::markerVisibilityChanged);
     emit markerAdded(m);
 }
 
 void Trace::removeMarker(Marker *m)
 {
     disconnect(m, &Marker::dataFormatChanged, this, &Trace::markerFormatChanged);
+    disconnect(m, &Marker::visibilityChanged, this, &Trace::markerVisibilityChanged);
     markers.erase(m);
     emit markerRemoved(m);
+}
+
+void Trace::markerVisibilityChanged(Marker *m)
+{
+    // trigger replot by pretending that trace visibility also changed
+    emit visibilityChanged(this);
 }
 
 double Trace::getReferenceImpedance() const

@@ -33,6 +33,7 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
 
     ui->treeView->setColumnWidth(MarkerModel::ColIndexNumber, 60);
     ui->treeView->setColumnWidth(MarkerModel::ColIndexGroup, 20);
+    ui->treeView->setColumnWidth(MarkerModel::ColIndexVisible, 20);
     ui->treeView->setColumnWidth(MarkerModel::ColIndexTrace, 60);
     ui->treeView->setColumnWidth(MarkerModel::ColIndexType, 120);
 
@@ -93,6 +94,12 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
         updatePersistentEditors();
     });
     connect(&model, &MarkerModel::setupLoadComplete, this, &MarkerWidget::updatePersistentEditors);
+    connect(ui->treeView, &QTreeView::clicked, [&](const QModelIndex &index){
+        if(index.column() == (int) MarkerModel::ColIndexVisible) {
+            auto marker = model.markerFromIndex(index);
+            marker->setVisible(!marker->isVisible());
+        }
+    });
 }
 
 MarkerWidget::~MarkerWidget()

@@ -95,6 +95,8 @@ public:
     void updateTypeFromEditor(QWidget *c);
     SIUnitEdit* getSettingsEditor();
     void adjustSettings(double value);
+    bool isVisible();
+    bool setVisible(bool visible);
 
     QMenu *getContextMenu();
 
@@ -128,6 +130,7 @@ signals:
     void positionChanged(double pos);
     void deleted(Marker *m);
     void dataChanged(Marker *m);
+    void visibilityChanged(Marker *m);
     void symbolChanged(Marker *m);
     void typeChanged(Marker *m);
     void assignedDeltaChanged(Marker *m);
@@ -170,7 +173,7 @@ private:
     void deleteHelperMarkers();
     void setType(Type t);
     double toDecibel();
-    bool isVisible();
+    bool isDisplayedMarker();
 
     void setTableFormat(Format f);
 
@@ -178,6 +181,7 @@ private:
     Trace *parentTrace;
     double position;
     int number;
+    bool visible;
     // Frequency domain: S parameter
     // Time domain: impulse response
     std::complex<double> data;

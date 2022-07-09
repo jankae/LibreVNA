@@ -95,6 +95,11 @@ void MarkerModel::addMarker(Marker *t)
          auto modelIndex = createIndex(row, 0, root);
          beginRemoveRows(modelIndex, 0, m->getHelperMarkers().size() - 1);
     });
+    connect(t, &Marker::visibilityChanged, [=](Marker *m) {
+        auto row = find(markers.begin(), markers.end(), m) - markers.begin();
+        auto index = createIndex(row, (int) ColIndexVisible, root);
+        emit dataChanged(index, index);
+    });
     connect(t, &Marker::endRemoveHelperMarkers, [=](Marker *m) {
         endRemoveRows();
         markerDataChanged(m);
@@ -222,7 +227,8 @@ int MarkerModel::columnCount(const QModelIndex &) const
 QVariant MarkerModel::data(const QModelIndex &index, int role) const
 {
     auto marker = markerFromIndex(index);
-    if(role == Qt::DisplayRole) {
+    switch(role) {
+    case Qt::DisplayRole:
         switch(index.column()) {
         case ColIndexNumber:
             return QString::number(marker->getNumber()) + marker->getSuffix();
@@ -243,6 +249,16 @@ QVariant MarkerModel::data(const QModelIndex &index, int role) const
         case ColIndexData:
             return marker->readableData();
         }
+        break;
+    case Qt::DecorationRole:
+        switch(index.column()) {
+        case ColIndexVisible:
+            if(marker->isVisible()) {
+                return QIcon(":/icons/visible.svg");
+            } else {
+                return QIcon(":/icons/invisible.svg");
+            }
+        }
     }
     return QVariant();
 }
@@ -254,6 +270,7 @@ QVariant MarkerModel::headerData(int section, Qt::Orientation orientation, int r
         case Qt::DecorationRole:
             switch(section) {
             case ColIndexGroup: return QIcon(":/icons/chainlink.png");
+            case ColIndexVisible: return QIcon(":/icons/visible.svg");
             }
             break;
         case Qt::DisplayRole:
@@ -311,6 +328,7 @@ Qt::ItemFlags MarkerModel::flags(const QModelIndex &index) const
     int flags = Qt::ItemIsSelectable;
     switch(index.column()) {
     case ColIndexNumber: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
+    case ColIndexVisible: flags |= Qt::ItemIsEnabled; break;
     case ColIndexGroup: flags |= Qt::ItemIsEnabled; break;
     case ColIndexTrace: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexType: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;

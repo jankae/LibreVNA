@@ -24,6 +24,7 @@ Marker::Marker(MarkerModel *model, int number, Marker *parent, QString descr)
       parentTrace(nullptr),
       position(1000000000),
       number(number),
+      visible(true),
       data(0),
       type(Type::Manual),
       description(descr),
@@ -680,7 +681,7 @@ void Marker::traceDataChanged()
 
 void Marker::updateSymbol()
 {
-    if(isVisible()) {
+    if(isDisplayedMarker()) {
         constexpr int width = 15, height = 15;
         symbol = QPixmap(width, height);
         symbol.fill(Qt::transparent);
@@ -1056,7 +1057,7 @@ double Marker::toDecibel()
     return Util::SparamTodB(data);
 }
 
-bool Marker::isVisible()
+bool Marker::isDisplayedMarker()
 {
     switch(type) {
     case Type::Manual:
@@ -1119,6 +1120,7 @@ nlohmann::json Marker::toJSON()
 {
     nlohmann::json j;
     j["trace"] = parentTrace->toHash();
+    j["visible"] = visible;
     j["type"] = typeToString(type).toStdString();
     j["number"] = number;
     j["position"] = position;
@@ -1160,6 +1162,7 @@ void Marker::fromJSON(nlohmann::json j)
     }
     number = j.value("number", 1);
     position = j.value("position", 0.0);
+    visible = j.value("visible", true);
 
     unsigned int hash = j["trace"];
     // find correct trace
@@ -1482,6 +1485,19 @@ void Marker::adjustSettings(double value)
         break;
     }
     update();
+}
+
+bool Marker::isVisible()
+{
+    return visible;
+}
+
+bool Marker::setVisible(bool visible)
+{
+    if(this->visible != visible) {
+        this->visible = visible;
+        emit visibilityChanged(this);
+    }
 }
 
 QMenu *Marker::getContextMenu() {

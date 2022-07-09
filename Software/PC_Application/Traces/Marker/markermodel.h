@@ -54,6 +54,7 @@ public:
 
     enum {
         ColIndexNumber,
+        ColIndexVisible,
         ColIndexGroup,
         ColIndexTrace,
         ColIndexType,

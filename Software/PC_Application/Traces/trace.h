@@ -167,6 +167,9 @@ signals:
     void markerRemoved(Marker *m);
     void markerFormatChanged(Marker *m);
 
+private slots:
+    void markerVisibilityChanged(Marker *m);
+
 private:
     QString _name;
     QColor _color;
