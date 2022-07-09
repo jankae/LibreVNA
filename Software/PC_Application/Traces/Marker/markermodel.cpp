@@ -275,7 +275,7 @@ QVariant MarkerModel::headerData(int section, Qt::Orientation orientation, int r
             break;
         case Qt::DisplayRole:
             switch(section) {
-            case ColIndexNumber: return "#";
+            case ColIndexNumber: return "Marker #"; // How to center-align this column, if only # char is used?
             case ColIndexTrace: return "Trace";
             case ColIndexType: return "Type";
             case ColIndexSettings: return "Settings";
@@ -286,9 +286,10 @@ QVariant MarkerModel::headerData(int section, Qt::Orientation orientation, int r
         case Qt::WhatsThisRole:
             switch(section) {
             case ColIndexNumber: return "Marker number, used to identify markers on the graphs";
-            case ColIndexGroup: return "Number of group this marker is linked to. Linked markers move together.";
+            case ColIndexVisible: return "Temporarily hide/show marker";
+            case ColIndexGroup: return "Ctrl-click to select marker(s), right-click to group. Linked markers move together.";
             case ColIndexTrace: return "The trace from which the marker gets its data";
-            case ColIndexType: return "Markertype, depending on the type, the marker can be positioned by the user or will be set automatically";
+            case ColIndexType: return "Depending on marker type, it can be positioned by the user or will be set automatically";
             case ColIndexSettings: return "Configurable marker parameter, depends on the marker type";
             case ColIndexData: return "Tracedata at the marker position";
             }
