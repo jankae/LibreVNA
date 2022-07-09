@@ -1,8 +1,11 @@
 #include "tilewidget.h"
+
 #include "ui_tilewidget.h"
-#include <QDebug>
 #include "Traces/tracexyplot.h"
 #include "Traces/tracesmithchart.h"
+#include "Traces/tracewaterfall.h"
+
+#include <QDebug>
 
 TileWidget::TileWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),
@@ -13,13 +16,17 @@ TileWidget::TileWidget(TraceModel &model, QWidget *parent) :
     child1(0),
     child2(0),
     hasContent(false),
+    isFullScreen(false),
     content(0),
     model(model)
 {
     ui->setupUi(this);
     auto layout = new QGridLayout;
     layout->setContentsMargins(0,0,0,0);
+    auto fsLayout = new QGridLayout;
+    fsLayout->setContentsMargins(0,0,0,0);
     ui->ContentPage->setLayout(layout);
+    ui->ContentFullScreenMode->setLayout(fsLayout);
     ui->bClose->setVisible(false);
 }
 
@@ -32,6 +39,7 @@ void TileWidget::clear()
 {
     if(hasContent) {
         delete content;
+        content = nullptr;
         hasContent = false;
     }
     if(isSplit) {
@@ -61,6 +69,9 @@ nlohmann::json TileWidget::toJSON()
         case TracePlot::Type::XYPlot:
             plotname = "XY-plot";
             break;
+        case TracePlot::Type::Waterfall:
+            plotname = "Waterfall";
+            break;
         }
         j["plot"] = plotname;
         j["plotsettings"] = content->toJSON();
@@ -87,32 +98,48 @@ void TileWidget::fromJSON(nlohmann::json j)
         auto plotname = j["plot"];
         if(plotname == "smithchart") {
             content = new TraceSmithChart(model);
-        } else {
+        } else if (plotname == "XY-plot"){
             content = new TraceXYPlot(model);
+        } else if (plotname == "Waterfall"){
+            content = new TraceWaterfall(model);
         }
-        setContent(content);
-        content->fromJSON(j["plotsettings"]);
+        if(content) {
+            setContent(content);
+            content->fromJSON(j["plotsettings"]);
+        }
     }
 }
 
-void TileWidget::splitVertically()
+bool TileWidget::allLimitsPassing()
+{
+    if(isSplit) {
+        return child1->allLimitsPassing() && child2->allLimitsPassing();
+    } else if(hasContent) {
+        return content->getLimitPassing();
+    } else {
+        // empty tile always passes
+        return true;
+    }
+}
+
+void TileWidget::splitVertically(bool moveContentToSecondChild)
 {
     if(isSplit) {
         return;
     }
     isSplit = true;
     splitter = new QSplitter(Qt::Vertical);
-    split();
+    split(moveContentToSecondChild);
 }
 
-void TileWidget::splitHorizontally()
+void TileWidget::splitHorizontally(bool moveContentToSecondChild)
 {
     if(isSplit) {
         return;
     }
     isSplit = true;
     splitter = new QSplitter(Qt::Horizontal);
-    split();
+    split(moveContentToSecondChild);
 }
 
 void TileWidget::closeTile()
@@ -170,7 +197,7 @@ TileWidget::TileWidget(TraceModel &model, TileWidget &parent)
     ui->bClose->setVisible(true);
 }
 
-void TileWidget::split()
+void TileWidget::split(bool moveContentToSecondChild)
 {
     splitter->setHandleWidth(0);
     child1 = new TileWidget(model, *this);
@@ -178,16 +205,80 @@ void TileWidget::split()
     splitter->addWidget(child1);
     splitter->addWidget(child2);
     ui->ContentPage->layout()->addWidget(splitter);
+    if(hasContent) {
+        if(moveContentToSecondChild) {
+            child2->setContent(content);
+        } else {
+            child1->setContent(content);
+        }
+        removeContent();
+    }
+
     ui->stack->setCurrentWidget(ui->ContentPage);
 }
 
 void TileWidget::setContent(TracePlot *plot)
 {
     content = plot;
+    content->setParentTile(this);
     hasContent = true;
     ui->ContentPage->layout()->addWidget(plot);
     ui->stack->setCurrentWidget(ui->ContentPage);
-    connect(content, &TracePlot::deleted, this, &TileWidget::traceDeleted);
+    connect(content, &TracePlot::deleted, this, &TileWidget::plotDeleted);
+    connect(content, &TracePlot::doubleClicked, this, &TileWidget::on_plotDoubleClicked);
+}
+
+void TileWidget::removeContent()
+{
+    if(hasContent) {
+        disconnect(content, &TracePlot::deleted, this, &TileWidget::plotDeleted);
+        disconnect(content, &TracePlot::doubleClicked, this, &TileWidget::on_plotDoubleClicked);
+        hasContent = false;
+        content = nullptr;
+        ui->stack->setCurrentWidget(ui->TilePage);
+    }
+}
+
+void TileWidget::on_plotDoubleClicked()
+{
+    setFullScreen();
+}
+
+void TileWidget::setFullScreen(void)
+{
+    auto clickedTile = this;
+
+    if(!clickedTile->parent) {
+        // Toplevel tile is already in full screen
+        return;
+    }
+
+    auto rootTile = findRootTile();
+
+    rootTile->fullScreenPlot = clickedTile->content;
+
+    if (isFullScreen == false)
+    {
+        ui->ContentPage->layout()->removeWidget(clickedTile->content);
+        rootTile->ui->ContentFullScreenMode->layout()->addWidget(rootTile->fullScreenPlot);
+        rootTile->ui->stack->setCurrentWidget(rootTile->ui->ContentFullScreenMode);
+        isFullScreen = true;
+    }
+    else {
+        rootTile->ui->stack->setCurrentWidget(rootTile->ui->ContentPage);
+        rootTile->ui->ContentFullScreenMode->layout()->removeWidget(rootTile->fullScreenPlot);
+        ui->ContentPage->layout()->addWidget(clickedTile->content);
+        isFullScreen = false;
+    }
+}
+
+TileWidget* TileWidget::findRootTile(void)
+{
+    auto node = this;
+    while (node->parent != nullptr) { // root tile should nullptr
+        node = node->parent;
+    }
+    return node;
 }
 
 void TileWidget::on_bSmithchart_clicked()
@@ -202,9 +293,21 @@ void TileWidget::on_bXYplot_clicked()
     plot->axisSetupDialog();
 }
 
-void TileWidget::traceDeleted(TracePlot *)
+void TileWidget::plotDeleted()
 {
+    if (isFullScreen)
+    {
+        auto rootTile = findRootTile();
+        rootTile->ui->stack->setCurrentWidget(rootTile->ui->ContentPage);
+    }
+
     ui->stack->setCurrentWidget(ui->TilePage);
     hasContent = false;
     content = nullptr;
 }
+
+void TileWidget::on_bWaterfall_clicked()
+{
+    setContent(new TraceWaterfall(model));
+}
+

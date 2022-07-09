@@ -50,8 +50,10 @@ entity SPICommands is
            SWEEP_WRITE : out  STD_LOGIC_VECTOR (0 downto 0);
            SWEEP_POINTS : out  STD_LOGIC_VECTOR (12 downto 0);
            NSAMPLES : out  STD_LOGIC_VECTOR (12 downto 0);
-			  EXCITE_PORT1 : out STD_LOGIC;
-			  EXCITE_PORT2 : out STD_LOGIC;
+			  STAGES : out STD_LOGIC_VECTOR (2 downto 0);
+			  INDIVIDUAL_HALT : out STD_LOGIC;
+			  PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
+			  PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 			  PORT1_EN : out STD_LOGIC;
 			  PORT2_EN : out STD_LOGIC;
 			  REF_EN : out STD_LOGIC;
@@ -69,6 +71,10 @@ entity SPICommands is
 			  RESET_MINMAX : out STD_LOGIC;
 			  SWEEP_HALTED : in STD_LOGIC;
 			  SWEEP_RESUME : out STD_LOGIC;
+			  
+			  -- hardware overwrite signals
+			  SPI_OVERWRITE_ENABLED : out STD_LOGIC;
+			  SPI_OVERWRITE_DATA : out STD_LOGIC_VECTOR(14 downto 0);
 			  
 			  -- DFT signals
 			  DFT_BIN1_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
@@ -154,8 +160,6 @@ begin
 				SOURCE_CE_EN <= '0';
 				LO_CE_EN <= '0';
 				PORTSWITCH_EN <= '0';
-				EXCITE_PORT1 <= '0';
-				EXCITE_PORT2 <= '0';
 				LEDS <= (others => '1');
 				WINDOW_SETTING <= "00";
 				unread_sampling_data <= '0';
@@ -165,6 +169,9 @@ begin
 				RESET_MINMAX <= '0';
 				INTERRUPT_ASSERTED <= '0';
 				latched_result <= (others => '0');
+				
+				SPI_OVERWRITE_ENABLED <= '0';
+				SPI_OVERWRITE_DATA <= (others => '0');
 				
 				DFT_BIN1_PHASEINC <= (others => '0');
 				DFT_DIFFBIN_PHASEINC <= (others => '0');
@@ -243,10 +250,14 @@ begin
 										WINDOW_SETTING <= spi_buf_out(6 downto 5);
 										SOURCE_CE_EN <= spi_buf_out(4);
 										LO_CE_EN <= spi_buf_out(3);
-										EXCITE_PORT1 <= spi_buf_out(1);
-										EXCITE_PORT2 <= spi_buf_out(2);
 							when 4 => ADC_PRESCALER <= spi_buf_out(7 downto 0);
 							when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
+							when 6 => STAGES <= spi_buf_out(15 downto 13);
+										INDIVIDUAL_HALT <= spi_buf_out(12);
+										PORT1_STAGE <= spi_buf_out(5 downto 3);
+										PORT2_STAGE <= spi_buf_out(2 downto 0);
+							when 7 => SPI_OVERWRITE_ENABLED <= spi_buf_out(15);
+										SPI_OVERWRITE_DATA <= spi_buf_out(14 downto 0);
 							when 8 => MAX2871_DEF_0(15 downto 0) <= spi_buf_out;
 							when 9 => MAX2871_DEF_0(31 downto 16) <= spi_buf_out;
 							when 10 => MAX2871_DEF_1(15 downto 0) <= spi_buf_out;

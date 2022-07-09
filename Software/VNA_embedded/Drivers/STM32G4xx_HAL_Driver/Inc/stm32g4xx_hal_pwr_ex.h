@@ -6,13 +6,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -767,15 +766,6 @@ void HAL_PWREx_EnablePVM4(void);
 void HAL_PWREx_DisablePVM4(void);
 HAL_StatusTypeDef HAL_PWREx_ConfigPVM(PWR_PVMTypeDef *sConfigPVM);
 
-#if defined(PWR_CR3_UCPD_DBDIS)
-void HAL_PWREx_EnableUSBDeadBatteryPD(void);
-void HAL_PWREx_DisableUSBDeadBatteryPD(void);
-#endif /* PWR_CR3_UCPD_DBDIS */
-#if defined(PWR_CR3_UCPD_STDBY)
-void HAL_PWREx_EnableUSBStandByModePD(void);
-void HAL_PWREx_DisableUSBStandByModePD (void);
-#endif /* PWR_CR3_UCPD_STDBY */
-
 /* Low Power modes configuration functions ************************************/
 void HAL_PWREx_EnableLowPowerRunMode(void);
 HAL_StatusTypeDef HAL_PWREx_DisableLowPowerRunMode(void);
@@ -792,6 +782,15 @@ void HAL_PWREx_PVM2Callback(void);
 #endif /* PWR_CR2_PVME2 */
 void HAL_PWREx_PVM3Callback(void);
 void HAL_PWREx_PVM4Callback(void);
+
+#if defined(PWR_CR3_UCPD_STDBY)
+void HAL_PWREx_EnableUCPDStandbyMode(void);
+void HAL_PWREx_DisableUCPDStandbyMode(void);
+#endif /* PWR_CR3_UCPD_STDBY */
+#if defined(PWR_CR3_UCPD_DBDIS)
+void HAL_PWREx_EnableUCPDDeadBattery(void);
+void HAL_PWREx_DisableUCPDDeadBattery(void);
+#endif /* PWR_CR3_UCPD_DBDIS */
 
 /**
   * @}
@@ -816,4 +815,3 @@ void HAL_PWREx_PVM4Callback(void);
 
 #endif /* STM32G4xx_HAL_PWR_EX_H */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

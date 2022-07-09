@@ -1,8 +1,13 @@
 #include "traceeditdialog.h"
+
 #include "ui_traceeditdialog.h"
+#include "ui_newtracemathdialog.h"
+#include "Math/tdr.h"
+#include "appwindow.h"
+
 #include <QColorDialog>
 #include <QFileDialog>
-#include "ui_newtracemathdialog.h"
+
 namespace Ui {
 class NewTraceMathDialog;
 }
@@ -17,6 +22,30 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->name->setText(t.name());
     ui->color->setColor(trace.color());
     ui->vFactor->setValue(t.velocityFactor());
+    ui->impedance->setUnit("Ω");
+    ui->impedance->setPrecision(3);
+    ui->impedance->setValue(t.getReferenceImpedance());
+
+    connect(ui->bLive, &QPushButton::clicked, [=](bool live) {
+        if(live) {
+            ui->stack->setCurrentIndex(0);
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+        }
+    });
+    connect(ui->bFile, &QPushButton::clicked, [&](bool file) {
+        if(file) {
+            if(t.getFilename().endsWith(".csv")) {
+                ui->stack->setCurrentIndex(2);
+                ui->csvImport->setFile(t.getFilename());
+                ui->csvImport->selectTrace(t.getFileParameter());
+            } else {
+                // attempt to parse as touchstone
+                ui->stack->setCurrentIndex(1);
+                ui->touchstoneImport->setFile(t.getFilename());
+            }
+        }
+    });
+
     connect(ui->color, &ColorPickerButton::colorChanged, [=](const QColor& color){
        trace.setColor(color);
     });
@@ -24,7 +53,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->GSource->setId(ui->bLive, 0);
     ui->GSource->setId(ui->bFile, 1);
 
-    if(t.isCalibration() || (t.isFromFile() && t.getFilename().endsWith(".csv"))) {
+    if(t.isCalibration()) {
         // prevent editing imported calibration traces (and csv files for now)
         ui->bLive->setEnabled(false);
         ui->bFile->setEnabled(false);
@@ -32,12 +61,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         ui->CLiveParam->setEnabled(false);
     }
 
-    if(t.isFromFile() && !t.getFilename().endsWith(".csv")) {
-        ui->bFile->click();
-        ui->touchstoneImport->setFile(t.getFilename());
-    }
-
-    auto updateFileStatus = [this]() {
+    auto updateTouchstoneFileStatus = [this]() {
         // remove all options from paramater combo box
         while(ui->CParameter->count() > 0) {
             ui->CParameter->removeItem(0);
@@ -58,6 +82,25 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             } else {
                 ui->CParameter->setCurrentIndex(0);
             }
+        }
+        if(ui->touchstoneImport->getFilename().endsWith(".csv")) {
+            // switch to csv import dialog
+            ui->stack->setCurrentIndex(2);
+            ui->csvImport->setFile(ui->touchstoneImport->getFilename());
+        }
+    };
+
+    auto updateCSVFileStatus = [this]() {
+        if (ui->bFile->isChecked() && !ui->csvImport->getStatus())  {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        } else {
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+            auto touchstone = ui->touchstoneImport->getTouchstone();
+        }
+        if(!(ui->touchstoneImport->getFilename().endsWith(".csv"))) {
+            // switch to touchstone import dialog
+            ui->stack->setCurrentIndex(1);
+            ui->touchstoneImport->setFile(ui->csvImport->getFilename());
         }
     };
 
@@ -89,11 +132,13 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     default: break;
     }
 
-    connect(ui->GSource, qOverload<int>(&QButtonGroup::buttonClicked), updateFileStatus);
-    connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, updateFileStatus);
-    connect(ui->touchstoneImport, &TouchstoneImport::filenameChanged, updateFileStatus);
+    connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, updateTouchstoneFileStatus);
+    connect(ui->touchstoneImport, &TouchstoneImport::filenameChanged, updateTouchstoneFileStatus);
+    connect(ui->csvImport, &CSVImport::filenameChanged, updateCSVFileStatus);
 
-    updateFileStatus();
+    if(t.isFromFile()) {
+        ui->bFile->click();
+    }
 
     // setup math part of the GUI
     auto model = new MathModel(t);
@@ -128,6 +173,9 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         auto d = new QDialog();
         auto ui = new Ui::NewTraceMathDialog();
         ui->setupUi(d);
+        connect(d, &QDialog::rejected, [=](){
+            delete ui;
+        });
         for(int i = 0; i < (int) TraceMath::Type::Last;i++) {
             auto info = TraceMath::getInfo(static_cast<TraceMath::Type>(i));
             ui->list->addItem(info.name);
@@ -140,29 +188,47 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         connect(ui->list, &QListWidget::currentRowChanged, ui->stack, &QStackedWidget::setCurrentIndex);
 
         connect(ui->list, &QListWidget::doubleClicked, ui->buttonBox, &QDialogButtonBox::accepted);
-        connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
+        connect(d, &QDialog::accepted, [=](){
             auto type = static_cast<TraceMath::Type>(ui->list->currentRow());
+            delete ui;
             auto newMath = TraceMath::createMath(type);
             model->addOperations(newMath);
             if(newMath.size() == 1) {
-               // any normal math operation added, edit now
-               newMath[0]->edit();
+                // any normal math operation added, edit now
+                newMath[0]->edit();
             } else {
-               // composite operation added, check which one and edit the correct suboperation
-               switch(type) {
-               case TraceMath::Type::TimeDomainGating:
-                   // TDR/DFT can be left at default, edit the actual gate
-                   newMath[1]->edit();
+                // composite operation added, check which one and edit the correct suboperation
+                switch(type) {
+                case TraceMath::Type::TimeDomainGating:
+                    // Automatically select bandpass/lowpass TDR, depending on selected span
+                    if(newMath[0]->getInput()->rData().size() > 0) {
+                        // Automatically select bandpass/lowpass TDR, depending on selected span
+                        auto tdr = (Math::TDR*) newMath[0];
+                        auto fstart = tdr->getInput()->rData().front().x;
+                        auto fstop = tdr->getInput()->rData().back().x;
+
+                        if(fstart < fstop / 100.0) {
+                            tdr->setMode(Math::TDR::Mode::Lowpass);
+                        } else {
+                            // lowpass mode would result in very few points in the time domain, switch to bandpass mode
+                            tdr->setMode(Math::TDR::Mode::Bandpass);
+                        }
+                    }
+
+                    // TDR/DFT can be left at default, edit the actual gate
+                    newMath[1]->edit();
                    break;
-               default:
+                default:
                    break;
-               }
+                }
             }
         });
         ui->list->setCurrentRow(0);
         ui->stack->setCurrentIndex(0);
 
-        d->show();
+        if(AppWindow::showGUI()) {
+            d->show();
+        }
     });
     connect(ui->bDelete, &QPushButton::clicked, [=](){
         model->deleteRow(ui->view->currentIndex().row());
@@ -191,8 +257,14 @@ void TraceEditDialog::on_buttonBox_accepted()
     if(!trace.isCalibration()) {
         // only apply changes if it is not a calibration trace
         if (ui->bFile->isChecked()) {
-            auto t = ui->touchstoneImport->getTouchstone();
-            trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
+            if(ui->stack->currentIndex() == 1) {
+                // touchstone page active
+                auto t = ui->touchstoneImport->getTouchstone();
+                trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
+            } else {
+                // CSV page active
+                ui->csvImport->fillTrace(trace);
+            }
         } else {
             Trace::LivedataType type = Trace::LivedataType::Overwrite;
             Trace::LiveParameter param = Trace::LiveParameter::S11;
@@ -277,7 +349,12 @@ QVariant MathModel::data(const QModelIndex &index, int role) const
                 return "Time";
             case TraceMath::DataType::Frequency:
                 return "Frequency";
+            case TraceMath::DataType::Power:
+                return "Power";
+            case TraceMath::DataType::TimeZeroSpan:
+                return "Time (Zero Span)";
             case TraceMath::DataType::Invalid:
+            default:
                 return "Invalid";
             }
         }

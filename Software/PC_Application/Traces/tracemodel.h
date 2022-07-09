@@ -1,11 +1,15 @@
 #ifndef TRACEMODEL_H
 #define TRACEMODEL_H
 
-#include <QAbstractTableModel>
-#include "trace.h"
-#include <vector>
 #include "Device/device.h"
 #include "savable.h"
+#include "trace.h"
+#include "VNA/vnadata.h"
+
+#include <QAbstractTableModel>
+#include <vector>
+
+class MarkerModel;
 
 class TraceModel : public QAbstractTableModel, public Savable
 {
@@ -20,6 +24,12 @@ public:
         ColIndexMath = 2,
         ColIndexName = 3,
         ColIndexLast,
+    };
+
+    enum class DataSource {
+        VNA,
+        SA,
+        Unknown,
     };
 
     void addTrace(Trace *t);
@@ -40,6 +50,12 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    MarkerModel *getMarkerModel() const;
+    void setMarkerModel(MarkerModel *value);
+
+    DataSource getSource() const;
+    void setSource(const DataSource &value);
+
 signals:
     void SpanChanged(double fmin, double fmax);
     void traceAdded(Trace *t);
@@ -48,12 +64,14 @@ signals:
     void traceNameChanged(Trace *t);
 
 public slots:
-    void clearVNAData();
-    void addVNAData(const Protocol::Datapoint& d, const Protocol::SweepSettings& settings);
+    void clearLiveData();
+    void addVNAData(const VNAData& d, TraceMath::DataType datatype);
     void addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings);
 
 private:
+    DataSource source;
     std::vector<Trace*> traces;
+    MarkerModel *markerModel;
 };
 
 #endif // TRACEMODEL_H

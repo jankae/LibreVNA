@@ -3,9 +3,10 @@
 
 #include <QWidget>
 #include "Traces/traceplot.h"
-#include <QSplitter>
 #include "Traces/tracemodel.h"
 #include "savable.h"
+
+#include <QSplitter>
 
 namespace Ui {
 class TileWidget;
@@ -19,36 +20,48 @@ public:
     explicit TileWidget(TraceModel &model, QWidget *parent = nullptr);
     ~TileWidget();
 
-    TileWidget *Child1() { return child1; };
-    TileWidget *Child2() { return child2; };
+    TileWidget *Child1() { return child1; }
+    TileWidget *Child2() { return child2; }
 
     // closes all plots/childs, leaving only the tilewidget at the top
     void clear();
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+    // check potential trace limits on graphs, only returns true if all traces in all graphs are within limits
+    bool allLimitsPassing();
+
 public slots:
-    void splitVertically();
-    void splitHorizontally();
+    void splitVertically(bool moveContentToSecondChild = false);
+    void splitHorizontally(bool moveContentToSecondChild = false);
     void closeTile();
     void setPlot(TracePlot *plot);
 
 private slots:
     void on_bSmithchart_clicked();
     void on_bXYplot_clicked();
-    void traceDeleted(TracePlot *t);
+    void on_plotDoubleClicked();
+    void plotDeleted();
+
+    void on_bWaterfall_clicked();
 
 private:
     TileWidget(TraceModel &model, TileWidget &parent);
-    void split();
+    void split(bool moveContentToSecondChild = false);
     void setContent(TracePlot *plot);
+    void removeContent();
     void setChild();
+    TileWidget* findRootTile();
+    void setFullScreen();
+    TracePlot *fullScreenPlot;
     Ui::TileWidget *ui;
     QSplitter *splitter;
     bool isSplit;
     TileWidget *parent;
     TileWidget *child1, *child2;
     bool hasContent;
+    bool isFullScreen;
     TracePlot *content;
     TraceModel &model;
 };

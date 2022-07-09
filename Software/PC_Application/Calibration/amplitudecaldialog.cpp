@@ -1,13 +1,16 @@
 #include "amplitudecaldialog.h"
+
 #include "ui_amplitudecaldialog.h"
 #include "mode.h"
 #include "unit.h"
-#include <QDebug>
 #include "ui_addamplitudepointsdialog.h"
 #include "ui_automaticamplitudedialog.h"
+#include "json.hpp"
+#include "Util/util.h"
+
+#include <QDebug>
 #include <QMessageBox>
 #include <QFileDialog>
-#include "json.hpp"
 #include <fstream>
 #include <CustomWidgets/informationbox.h>
 
@@ -81,7 +84,7 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
         file >> j;
         for(auto point : j) {
             if(!point.contains("Frequency") || !point.contains("Port1") || !point.contains("Port2")) {
-                QMessageBox::warning(this, "Error loading file", "Failed to parse calibration point");
+                InformationBox::ShowError("Error loading file", "Failed to parse calibration point");
                 return;
             }
             CorrectionPoint p;
@@ -250,7 +253,7 @@ void AmplitudeCalDialog::RemoveAllPoints()
 
 bool AmplitudeCalDialog::AddPoint(AmplitudeCalDialog::CorrectionPoint &p)
 {
-    if (points.size() >= Device::Info().limits_maxAmplitudePoints) {
+    if (points.size() >= Device::Info(dev).limits_maxAmplitudePoints) {
         // already at limit
         return false;
     }
@@ -286,6 +289,9 @@ void AmplitudeCalDialog::AddPointDialog()
     auto d = new QDialog();
     auto ui = new Ui::AddAmplitudePointsDialog();
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->frequency->setUnit("Hz");
     ui->frequency->setPrefixes(" kMG");
     ui->startFreq->setUnit("Hz");
@@ -293,8 +299,8 @@ void AmplitudeCalDialog::AddPointDialog()
     ui->stopFreq->setUnit("Hz");
     ui->stopFreq->setPrefixes(" kMG");
     ui->frequency->setValue(1000000000.0);
-    ui->startFreq->setValue(Device::Info().limits_minFreq);
-    ui->stopFreq->setValue(Device::Info().limits_maxFreq);
+    ui->startFreq->setValue(Device::Info(dev).limits_minFreq);
+    ui->stopFreq->setValue(Device::Info(dev).limits_maxFreq);
     connect(ui->singlePoint, &QRadioButton::toggled, [=](bool single) {
         ui->stopFreq->setEnabled(!single);
         ui->startFreq->setEnabled(!single);
@@ -335,7 +341,9 @@ void AmplitudeCalDialog::AddPointDialog()
 
     dev->SendCommandWithoutPayload(requestCommand());
 
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 void AmplitudeCalDialog::AutomaticMeasurementDialog()
@@ -353,6 +361,9 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
     automatic.dialog = new QDialog(this);
     auto ui = new Ui::AutomaticAmplitudeDialog();
     ui->setupUi(automatic.dialog);
+    connect(automatic.dialog, &QDialog::finished, [=](){
+        delete ui;
+    });
     automatic.progress = ui->progress;
     ui->explanation->setText(info);
     ui->status->setText("Gathering information about "+otherCal+" Calibration...");
@@ -406,27 +417,40 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
         SetupNextAutomaticPoint(automatic.isSourceCal);
     });
 
-    automatic.dialog->show();
+    if(AppWindow::showGUI()) {
+        automatic.dialog->show();
+    }
 }
 
 void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res)
 {
-    if(res.pointNum == 1) {
-        // store result in center of sweep of 3 points
+    MeasurementResult m = {.port1 = Util::SparamTodB(res.port1), .port2 = Util::SparamTodB(res.port2)};
+    sweepMeasurements.push_back(m);
+    if(res.pointNum == automaticSweepPoints - 1) {
+        // sweep finished, find maximum for each port
+        double maxPort1 = std::numeric_limits<double>::lowest();
+        double maxPort2 = std::numeric_limits<double>::lowest();
+        for(auto s : sweepMeasurements) {
+            if(s.port1 > maxPort1) {
+                maxPort1 = s.port1;
+            }
+            if(s.port2 > maxPort2) {
+                maxPort2 = s.port2;
+            }
+        }
+        MeasurementResult max = {.port1 = maxPort1, .port2 = maxPort2};
         if(measured.size() >= averages) {
             measured.pop_front();
         }
-        MeasurementResult m = {.port1 = 20*log10(res.port1), .port2 = 20*log10(res.port2)};
-        measured.push_back(m);
+        measured.push_back(max);
+        sweepMeasurements.clear();
     }
 }
 
 bool AmplitudeCalDialog::ConfirmActionIfEdited()
 {
     if(edited) {
-        auto reply = QMessageBox::question(this, "Confirm action", "Some points have been edited but not saved in the device yet. If you continue, all changes will be lost (unless they are already saved to a file). Do you want to continue?",
-                                        QMessageBox::Yes|QMessageBox::No);
-        return reply == QMessageBox::Yes;
+        return InformationBox::AskQuestion("Confirm action", "Some points have been edited but not saved in the device yet. If you continue, all changes will be lost (unless they are already saved to a file). Do you want to continue?", true);
     } else {
         // not edited yet, nothing to confirm
         return true;
@@ -462,10 +486,12 @@ void AmplitudeCalDialog::SetupNextAutomaticPoint(bool isSourceCal)
     p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
     p.spectrumSettings.RBW = 10000;
     p.spectrumSettings.UseDFT = 0;
-    // setup 3 points centered around the measurement frequency (zero span not supported yet)
-    p.spectrumSettings.f_stop = point.frequency + 1.0;
-    p.spectrumSettings.f_start = point.frequency - 1.0;
-    p.spectrumSettings.pointNum = 3;
+    // setup points centered around the measurement frequency:
+    // use a span proportional to the center frequency (this makes sure to catch the peak of the excitation signal which
+    // might be slightly off due to PLL divider limtis). Also make sure to use at least a span of 2 Hz (zero span not supported yet)
+    p.spectrumSettings.f_stop = point.frequency * 1.00001 + 1.0;
+    p.spectrumSettings.f_start = point.frequency / 1.00001 - 1.0;
+    p.spectrumSettings.pointNum = automaticSweepPoints;
     p.spectrumSettings.Detector = 0;
     p.spectrumSettings.SignalID = 1;
     p.spectrumSettings.WindowType = 3;
@@ -498,12 +524,14 @@ void AmplitudeCalDialog::SetupNextAutomaticPoint(bool isSourceCal)
     }
     automatic.settlingCount = averages + automaticSettling;
     dev->SendPacket(p);
+    sweepMeasurements.clear();
+    sweepMeasurements.reserve(automaticSweepPoints);
 }
 
 void AmplitudeCalDialog::ReceivedAutomaticMeasurementResult(Protocol::SpectrumAnalyzerResult res)
 {
-    if(res.pointNum != 1) {
-        // ignore first and last point, only use the middle one
+    if(res.pointNum != automaticSweepPoints - 1) {
+        // ignore everything except end of sweep
         return;
     }
     if(automatic.settlingCount > 0) {

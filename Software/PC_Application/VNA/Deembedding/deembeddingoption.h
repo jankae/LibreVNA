@@ -1,9 +1,11 @@
 #ifndef DEEMBEDDINGOPTION_H
 #define DEEMBEDDINGOPTION_H
 
-#include <QWidget>
 #include "savable.h"
 #include "Device/device.h"
+#include "Traces/tracemodel.h"
+
+#include <QWidget>
 
 class DeembeddingOption : public QObject, public Savable
 {
@@ -13,6 +15,7 @@ public:
         PortExtension,
         TwoThru,
         MatchingNetwork,
+        ImpedanceRenormalization,
         // Add new deembedding options here, do not explicitly assign values and keep the Last entry at the last position
         Last,
     };
@@ -20,12 +23,12 @@ public:
     static DeembeddingOption *create(Type type);
     static QString getName(Type type);
 
-    virtual void transformDatapoint(Protocol::Datapoint &p) = 0;
+    virtual void transformDatapoint(VNAData &p) = 0;
     virtual void edit(){};
     virtual Type getType() = 0;
 
 public slots:
-    virtual void measurementCompleted(std::vector<Protocol::Datapoint> m){Q_UNUSED(m)};
+    virtual void measurementCompleted(std::vector<VNAData> m){Q_UNUSED(m)};
 signals:
     // Deembedding option may selfdestruct if not applicable with current settings. It should emit this signal before deleting itself
     void deleted(DeembeddingOption *option);

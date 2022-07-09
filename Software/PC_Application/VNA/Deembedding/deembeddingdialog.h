@@ -1,9 +1,10 @@
 #ifndef DEEMBEDDINGDIALOG_H
 #define DEEMBEDDINGDIALOG_H
 
-#include <QDialog>
 #include "deembeddingoption.h"
 #include "deembedding.h"
+
+#include <QDialog>
 #include <QAbstractTableModel>
 
 namespace Ui {

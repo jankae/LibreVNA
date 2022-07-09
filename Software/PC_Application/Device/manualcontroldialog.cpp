@@ -1,9 +1,13 @@
 #include "manualcontroldialog.h"
+
 #include "ui_manualcontroldialog.h"
+#include "Util/util.h"
+
 #include <QComboBox>
 #include <QDebug>
 #include <QButtonGroup>
 #include <complex>
+
 
 using namespace std;
 
@@ -183,7 +187,400 @@ ManualControlDialog::~ManualControlDialog()
     delete ui;
 }
 
-void ManualControlDialog::NewStatus(Protocol::ManualStatus status)
+void ManualControlDialog::setHighSourceChipEnable(bool enable)
+{
+    ui->SourceCE->setChecked(enable);
+}
+
+bool ManualControlDialog::getHighSourceChipEnable()
+{
+    return ui->SourceCE->isChecked();
+}
+
+void ManualControlDialog::setHighSourceRFEnable(bool enable)
+{
+    ui->SourceRFEN->setChecked(enable);
+}
+
+bool ManualControlDialog::getHighSourceRFEnable()
+{
+    return ui->SourceRFEN->isChecked();
+}
+
+bool ManualControlDialog::getHighSourceLocked()
+{
+    return ui->SourceLocked->isChecked();
+}
+
+bool ManualControlDialog::setHighSourcePower(int dBm)
+{
+    switch(dBm) {
+    case -4:
+        ui->SourceHighPower->setCurrentIndex(0);
+        break;
+    case -1:
+        ui->SourceHighPower->setCurrentIndex(1);
+        break;
+    case 2:
+        ui->SourceHighPower->setCurrentIndex(2);
+        break;
+    case 5:
+        ui->SourceHighPower->setCurrentIndex(3);
+        break;
+    default:
+        // invalid power setting
+        return false;
+    }
+    return true;
+}
+
+int ManualControlDialog::getHighSourcePower()
+{
+    int powers[4] = {-4,-1,2,5};
+    return powers[ui->SourceHighPower->currentIndex()];
+}
+
+void ManualControlDialog::setHighSourceFrequency(double f)
+{
+    ui->SourceHighFrequency->setValue(f);
+}
+
+double ManualControlDialog::getHighSourceFrequency()
+{
+    return ui->SourceHighFrequency->value();
+}
+
+void ManualControlDialog::setHighSourceLPF(ManualControlDialog::LPF lpf)
+{
+    switch(lpf) {
+    case LPF::M947:
+        ui->SourceLowpass->setCurrentIndex(0);
+        break;
+    case LPF::M1880:
+        ui->SourceLowpass->setCurrentIndex(1);
+        break;
+    case LPF::M3500:
+        ui->SourceLowpass->setCurrentIndex(2);
+        break;
+    case LPF::None:
+        ui->SourceLowpass->setCurrentIndex(3);
+        break;
+    }
+}
+
+ManualControlDialog::LPF ManualControlDialog::getHighSourceLPF()
+{
+    LPF lpfs[4] = {LPF::M947, LPF::M1880, LPF::M3500, LPF::None};
+    return lpfs[ui->SourceLowpass->currentIndex()];
+}
+
+void ManualControlDialog::setLowSourceEnable(bool enable)
+{
+    ui->SourceLowEnable->setChecked(enable);
+}
+
+bool ManualControlDialog::getLowSourceEnable()
+{
+    return ui->SourceLowEnable->isChecked();
+}
+
+bool ManualControlDialog::setLowSourcePower(int mA)
+{
+    switch(mA) {
+    case 2:
+        ui->SourceLowPower->setCurrentIndex(0);
+        break;
+    case 4:
+        ui->SourceLowPower->setCurrentIndex(1);
+        break;
+    case 6:
+        ui->SourceLowPower->setCurrentIndex(2);
+        break;
+    case 8:
+        ui->SourceLowPower->setCurrentIndex(3);
+        break;
+    default:
+        // invalid power setting
+        return false;
+    }
+    return true;
+}
+
+int ManualControlDialog::getLowSourcePower()
+{
+    int powers[4] = {2,4,6,8};
+    return powers[ui->SourceLowPower->currentIndex()];
+}
+
+void ManualControlDialog::setLowSourceFrequency(double f)
+{
+    ui->SourceLowFrequency->setValue(f);
+}
+
+double ManualControlDialog::getLowSourceFrequency()
+{
+    return ui->SourceLowFrequency->value();
+}
+
+void ManualControlDialog::setHighband(bool high)
+{
+    if(high) {
+        ui->SwitchHighband->setChecked(true);
+    } else {
+        ui->SwitchLowband->setChecked(true);
+    }
+}
+
+bool ManualControlDialog::getHighband()
+{
+    return ui->SwitchHighband->isChecked();
+}
+
+void ManualControlDialog::setAttenuator(double att)
+{
+    ui->Attenuator->setValue(att);
+}
+
+double ManualControlDialog::getAttenuator()
+{
+    return ui->Attenuator->value();
+}
+
+void ManualControlDialog::setAmplifierEnable(bool enable)
+{
+    ui->AmplifierEnable->setChecked(enable);
+}
+
+bool ManualControlDialog::getAmplifierEnable()
+{
+    return ui->AmplifierEnable->isChecked();
+}
+
+bool ManualControlDialog::setPortSwitch(int port)
+{
+    switch(port) {
+    case 1:
+        ui->Port1Switch->setChecked(true);
+        break;
+    case 2:
+        ui->Port2Switch->setChecked(true);
+        break;
+    default:
+        // invalid port
+        return false;
+    }
+    return true;
+}
+
+int ManualControlDialog::getPortSwitch()
+{
+    if(ui->Port1Switch->isChecked()) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
+void ManualControlDialog::setLO1ChipEnable(bool enable)
+{
+    ui->LO1CE->setChecked(enable);
+}
+
+bool ManualControlDialog::getLO1ChipEnable()
+{
+    return ui->LO1CE->isChecked();
+}
+
+void ManualControlDialog::setLO1RFEnable(bool enable)
+{
+    ui->LO1RFEN->setChecked(enable);
+}
+
+bool ManualControlDialog::getLO1RFEnable()
+{
+    return ui->LO1RFEN->isChecked();
+}
+
+bool ManualControlDialog::getLO1Locked()
+{
+    return ui->LO1locked->isChecked();
+}
+
+void ManualControlDialog::setLO1Frequency(double f)
+{
+    ui->LO1FreqType->setCurrentIndex(1);
+    ui->LO1Frequency->setValue(f);
+}
+
+double ManualControlDialog::getLO1Frequency()
+{
+    return ui->LO1Frequency->value();
+}
+
+void ManualControlDialog::setIF1Frequency(double f)
+{
+    ui->LO1FreqType->setCurrentIndex(0);
+    ui->IF1->setValue(f);
+}
+
+double ManualControlDialog::getIF1Frequency()
+{
+    return ui->IF1->value();
+}
+
+void ManualControlDialog::setLO2Enable(bool enable)
+{
+    ui->LO2EN->setChecked(enable);
+}
+
+bool ManualControlDialog::getLO2Enable()
+{
+    return ui->LO2EN->isChecked();
+}
+
+void ManualControlDialog::setLO2Frequency(double f)
+{
+    ui->LO2FreqType->setCurrentIndex(1);
+    ui->LO2Frequency->setValue(f);
+}
+
+double ManualControlDialog::getLO2Frequency()
+{
+    return ui->LO2Frequency->value();
+}
+
+void ManualControlDialog::setIF2Frequency(double f)
+{
+    ui->LO2FreqType->setCurrentIndex(0);
+    ui->IF2->setValue(f);
+}
+
+double ManualControlDialog::getIF2Frequency()
+{
+    return ui->IF2->value();
+}
+
+void ManualControlDialog::setPort1Enable(bool enable)
+{
+    ui->Port1Enable->setChecked(enable);
+}
+
+bool ManualControlDialog::getPort1Enable()
+{
+    return ui->Port1Enable->isChecked();
+}
+
+void ManualControlDialog::setPort2Enable(bool enable)
+{
+    ui->Port2Enable->setChecked(enable);
+}
+
+bool ManualControlDialog::getPort2Enable()
+{
+    return ui->Port2Enable->isChecked();
+}
+
+void ManualControlDialog::setRefEnable(bool enable)
+{
+    ui->RefEnable->setChecked(enable);
+}
+
+bool ManualControlDialog::getRefEnable()
+{
+    return ui->RefEnable->isChecked();
+}
+
+void ManualControlDialog::setNumSamples(int samples)
+{
+    ui->Samples->setValue(samples);
+}
+
+int ManualControlDialog::getNumSamples()
+{
+    return ui->Samples->value();
+}
+
+void ManualControlDialog::setWindow(ManualControlDialog::Window w)
+{
+    ui->cbWindow->setCurrentIndex((int) w);
+}
+
+ManualControlDialog::Window ManualControlDialog::getWindow()
+{
+    return (Window) ui->cbWindow->currentIndex();
+}
+
+int ManualControlDialog::getPort1MinADC()
+{
+    return ui->port1min->text().toInt();
+}
+
+int ManualControlDialog::getPort1MaxADC()
+{
+    return ui->port1max->text().toInt();
+}
+
+double ManualControlDialog::getPort1Magnitude()
+{
+    return ui->port1mag->text().toDouble();
+}
+
+double ManualControlDialog::getPort1Phase()
+{
+    return ui->port1phase->text().toDouble();
+}
+
+std::complex<double> ManualControlDialog::getPort1Referenced()
+{
+    return port1referenced;
+}
+
+int ManualControlDialog::getPort2MinADC()
+{
+    return ui->port2min->text().toInt();
+}
+
+int ManualControlDialog::getPort2MaxADC()
+{
+    return ui->port2max->text().toInt();
+}
+
+double ManualControlDialog::getPort2Magnitude()
+{
+    return ui->port2mag->text().toDouble();
+}
+
+double ManualControlDialog::getPort2Phase()
+{
+    return ui->port2phase->text().toDouble();
+}
+
+std::complex<double> ManualControlDialog::getPort2Referenced()
+{
+    return port2referenced;
+}
+
+int ManualControlDialog::getRefMinADC()
+{
+    return ui->refmin->text().toInt();
+}
+
+int ManualControlDialog::getRefMaxADC()
+{
+    return ui->refmax->text().toInt();
+}
+
+double ManualControlDialog::getRefMagnitude()
+{
+    return ui->refmag->text().toDouble();
+}
+
+double ManualControlDialog::getRefPhase()
+{
+    return ui->refphase->text().toDouble();
+}
+
+void ManualControlDialog::NewStatus(Protocol::ManualStatusV1 status)
 {
     // ADC values
     ui->port1min->setText(QString::number(status.port1min));
@@ -204,10 +601,10 @@ void ManualControlDialog::NewStatus(Protocol::ManualStatus status)
     ui->refmag->setText(QString::number(abs(ref)));
     ui->refphase->setText(QString::number(arg(ref)*180/M_PI));
 
-    auto port1referenced = port1 / ref;
-    auto port2referenced = port2 / ref;
-    auto port1db = 20*log10(abs(port1referenced));
-    auto port2db = 20*log10(abs(port2referenced));
+    port1referenced = port1 / ref;
+    port2referenced = port2 / ref;
+    auto port1db = Util::SparamTodB(port1referenced);
+    auto port2db = Util::SparamTodB(port2referenced);
 
     ui->port1referenced->setText(QString::number(port1db, 'f', 1) + "db@" + QString::number(arg(port1referenced)*180/M_PI, 'f', 0) + "°");
     ui->port2referenced->setText(QString::number(port2db, 'f', 1) + "db@" + QString::number(arg(port2referenced)*180/M_PI, 'f', 0) + "°");
@@ -219,7 +616,7 @@ void ManualControlDialog::NewStatus(Protocol::ManualStatus status)
 
 void ManualControlDialog::UpdateDevice()
 {
-    Protocol::ManualControl m;
+    Protocol::ManualControlV1 m;
     // Source highband
     m.SourceHighCE = ui->SourceCE->isChecked();
     m.SourceHighRFEN = ui->SourceRFEN->isChecked();

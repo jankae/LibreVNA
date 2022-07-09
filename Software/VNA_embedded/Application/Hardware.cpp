@@ -6,7 +6,9 @@
 #include "Exti.hpp"
 #include "VNA.hpp"
 #include "Manual.hpp"
+#include "delay.hpp"
 #include "SpectrumAnalyzer.hpp"
+#include "Communication.h"
 #include <cstring>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
@@ -19,7 +21,13 @@ HW::Mode activeMode;
 static bool unlevel = false;
 
 static Protocol::ReferenceSettings ref;
-static uint32_t lastISR;
+static volatile uint64_t lastISR;
+
+static uint32_t IF1 = HW::DefaultIF1;
+static uint32_t IF2 = HW::DefaultIF2;
+static uint32_t ADCsamplerate = HW::DefaultADCSamplerate;
+static uint8_t ADCprescaler = HW::DefaultADCprescaler;
+static uint16_t DFTphaseInc = HW::DefaultDFTphaseInc;
 
 using namespace HWHAL;
 
@@ -55,7 +63,7 @@ static void ReadComplete(const FPGA::SamplingResult &result) {
 
 static void FPGA_Interrupt(void*) {
 	FPGA::InitiateSampleRead(ReadComplete);
-	lastISR = HAL_GetTick();
+	lastISR = Delay::get_us();
 }
 
 void HW::Work() {
@@ -75,7 +83,7 @@ void HW::Work() {
 }
 
 bool HW::Init() {
-#ifdef USE_DEBUG_PINS
+#if USE_DEBUG_PINS
 	// initialize debug pins
 	GPIO_InitTypeDef gpio;
 	gpio.Pin = DEBUG1_PIN;
@@ -92,10 +100,10 @@ bool HW::Init() {
 	Si5351.Init();
 
 	// Use Si5351 to generate reference frequencies for other PLLs and ADC
-	Si5351.SetPLL(Si5351C::PLL::A, 832000000, Si5351C::PLLSource::XTAL);
+	Si5351.SetPLL(Si5351C::PLL::A, HW::SI5351CPLLConstantFrequency, Si5351C::PLLSource::XTAL);
 	while(!Si5351.Locked(Si5351C::PLL::A));
 
-	Si5351.SetPLL(Si5351C::PLL::B, 832000000, Si5351C::PLLSource::XTAL);
+	Si5351.SetPLL(Si5351C::PLL::B, HW::SI5351CPLLAlignedFrequency, Si5351C::PLLSource::XTAL);
 	while(!Si5351.Locked(Si5351C::PLL::B));
 
 	extRefInUse = 0;
@@ -104,13 +112,13 @@ bool HW::Init() {
 
 	// Both MAX2871 get a 100MHz reference
 //	Si5351.SetBypass(SiChannel::Source, Si5351C::PLLSource::XTAL);
-	Si5351.SetCLK(SiChannel::Source, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::Source, HW::PLLRef, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::Source);
 //	Si5351.SetBypass(SiChannel::LO1, Si5351C::PLLSource::XTAL);
-	Si5351.SetCLK(SiChannel::LO1, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::LO1, HW::PLLRef, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::LO1);
 	// 16MHz FPGA clock
-	Si5351.SetCLK(SiChannel::FPGA, 16000000, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::FPGA, HW::FPGAClkInFrequency, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::FPGA);
 
 	// Generate second LO with Si5351
@@ -132,10 +140,12 @@ bool HW::Init() {
 		return false;
 	}
 
+	FPGA::DisableHardwareOverwrite();
+
 	// Set default ADC samplerate
-	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, ADCprescaler);
 	// Set phase increment according to
-	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, DFTphaseInc);
 
 	Exti::SetCallback(FPGA_INTR_GPIO_Port, FPGA_INTR_Pin, Exti::EdgeType::Rising, Exti::Pull::Down, FPGA_Interrupt);
 
@@ -203,7 +213,7 @@ void HW::SetMode(Mode mode) {
 	if(mode != Mode::Idle) {
 		// do a full initialization when switching directly between modes
 		HW::Init();
-		lastISR = HAL_GetTick();
+		lastISR = Delay::get_us();
 	}
 	SetIdle();
 	activeMode = mode;
@@ -222,6 +232,7 @@ void HW::SetIdle() {
 	unlevel = false;
 	FPGA::AbortSweep();
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::DisableHardwareOverwrite();
 	FPGA::Enable(FPGA::Periphery::SourceChip, false);
 	FPGA::Enable(FPGA::Periphery::SourceRF, false);
 	FPGA::Enable(FPGA::Periphery::LO1Chip, false);
@@ -231,11 +242,12 @@ void HW::SetIdle() {
 	FPGA::Enable(FPGA::Periphery::Port2Mixer, false);
 	FPGA::Enable(FPGA::Periphery::RefMixer, false);
 	FPGA::Enable(FPGA::Periphery::PortSwitch, false);
+	activeMode = Mode::Idle;
 }
 
 HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool applyCorrections, bool port2) {
 	if (applyCorrections) {
-		auto correction = AmplitudeCal::SourceCorrection(freq);
+		auto correction = Cal::SourceCorrection(freq);
 		if (port2) {
 			cdbm += correction.port2;
 		} else {
@@ -280,8 +292,17 @@ HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool
 }
 
 bool HW::TimedOut() {
-	constexpr uint32_t timeout = 1000;
-	if(activeMode != Mode::Idle && HAL_GetTick() - lastISR > timeout) {
+	constexpr uint64_t timeout = 1000000;
+	auto bufISR = lastISR;
+	uint64_t now = Delay::get_us();
+	uint64_t timeSinceLast = now - bufISR;
+	if(activeMode != Mode::Idle && activeMode != Mode::Generator && timeSinceLast > timeout) {
+		LOG_WARN("Timed out, last ISR was at %lu%06lu, now %lu%06lu"
+				, (uint32_t) (bufISR / 1000000), (uint32_t)(bufISR%1000000)
+				, (uint32_t) (now / 1000000), (uint32_t)(now%1000000));
+		if(activeMode == Mode::VNA) {
+			VNA::PrintStatus();
+		}
 		return true;
 	} else {
 		return false;
@@ -292,9 +313,7 @@ void HW::SetOutputUnlevel(bool unlev) {
 	unlevel = unlev;
 }
 
-void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
-	// copy constant default values
-	memcpy(info, &HW::Info, sizeof(HW::Info));
+void HW::getDeviceStatus(Protocol::DeviceStatusV1 *status, bool updateEvenWhenBusy) {
 	if(activeMode == Mode::Idle || updateEvenWhenBusy) {
 		// updating values from FPGA allowed
 
@@ -307,35 +326,25 @@ void HW::fillDeviceInfo(Protocol::DeviceInfo *info, bool updateEvenWhenBusy) {
 		LOG_INFO("ADC limits: P1: %d/%d P2: %d/%d R: %d/%d",
 				limits.P1min, limits.P1max, limits.P2min, limits.P2max,
 				limits.Rmin, limits.Rmax);
-		#define ADC_LIMIT 		30000
+	#define ADC_LIMIT 		27000
 		if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
 				|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
 				|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
-			info->ADC_overload = true;
+			status->ADC_overload = true;
 		} else {
-			info->ADC_overload = false;
+			status->ADC_overload = false;
 		}
-		auto status = FPGA::GetStatus();
-		info->LO1_locked = (status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
-		info->source_locked = (status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
-		info->extRefAvailable = Ref::available();
-		info->extRefInUse = extRefInUse;
-		info->unlevel = unlevel;
-		info->temp_LO1 = tempLO;
-		info->temp_source = tempSource;
+		auto FPGA_status = FPGA::GetStatus();
+		status->LO1_locked = (FPGA_status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
+		status->source_locked = (FPGA_status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
+		status->extRefAvailable = Ref::available();
+		status->extRefInUse = extRefInUse;
+		status->unlevel = unlevel;
+		status->temp_LO1 = tempLO;
+		status->temp_source = tempSource;
 		FPGA::ResetADCLimits();
-		if( (tempLO > Protocol::TemperatureLimit_Hard) || (tempSource > Protocol::TemperatureLimit_Hard) ){
-			// if any temperature limit crossed, set flag
-			info->temp_over_hardLimit = true;
-		}
 	}
-//	info->temp_MCU = STM::getTemperature();
-	auto stmTemp = STM::getTemperature();
-	info->temp_MCU = stmTemp;
-	if(stmTemp > Protocol::TemperatureLimit_Hard){
-		// also if mcu temperature limit crossed, set flag
-		info->temp_over_hardLimit = true;
-	}
+	status->temp_MCU = STM::getTemperature();
 }
 
 bool HW::Ref::available() {
@@ -344,6 +353,10 @@ bool HW::Ref::available() {
 
 void HW::Ref::set(Protocol::ReferenceSettings s) {
 	ref = s;
+}
+
+bool HW::Ref::usingExternal() {
+	return extRefInUse;
 }
 
 void HW::Ref::update() {
@@ -370,18 +383,18 @@ void HW::Ref::update() {
 				LOG_WARN("Forced switch to external reference but no signal detected");
 			}
 			Si5351.ConfigureCLKIn(10000000);
-			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::CLKIN);
-			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::CLKIN);
+			Si5351.SetPLL(Si5351C::PLL::A, HW::SI5351CPLLConstantFrequency, Si5351C::PLLSource::CLKIN);
+			Si5351.SetPLL(Si5351C::PLL::B, HW::SI5351CPLLAlignedFrequency, Si5351C::PLLSource::CLKIN);
 			LOG_INFO("Switched to external reference");
 			FPGA::Enable(FPGA::Periphery::ExtRefLED);
 		} else {
-			Si5351.SetPLL(Si5351C::PLL::A, 800000000, Si5351C::PLLSource::XTAL);
-			Si5351.SetPLL(Si5351C::PLL::B, 800000000, Si5351C::PLLSource::XTAL);
+			Si5351.SetPLL(Si5351C::PLL::A, HW::SI5351CPLLConstantFrequency, Si5351C::PLLSource::XTAL);
+			Si5351.SetPLL(Si5351C::PLL::B, HW::SI5351CPLLAlignedFrequency, Si5351C::PLLSource::XTAL);
 			LOG_INFO("Switched to internal reference");
 			FPGA::Disable(FPGA::Periphery::ExtRefLED);
 		}
 	}
-	constexpr uint32_t lock_timeout = 10;
+	constexpr uint32_t lock_timeout = 100;
 	uint32_t start = HAL_GetTick();
 	while(!Si5351.Locked(Si5351C::PLL::A) || !Si5351.Locked(Si5351C::PLL::A)) {
 		if(HAL_GetTick() - start > lock_timeout) {
@@ -390,3 +403,59 @@ void HW::Ref::update() {
 		}
 	}
 }
+
+void HW::setAcquisitionFrequencies(Protocol::AcquisitionFrequencySettings s) {
+	IF1 = s.IF1;
+	ADCprescaler = s.ADCprescaler;
+	DFTphaseInc = s.DFTphaseInc;
+	float ADCrate = (float) FPGA::Clockrate / ADCprescaler;
+	IF2 = ADCrate * DFTphaseInc / 4096;
+	ADCsamplerate = ADCrate;
+}
+
+uint32_t HW::getIF1() {
+	return IF1;
+}
+
+uint32_t HW::getIF2() {
+	return IF2;
+}
+
+uint32_t HW::getADCRate() {
+	return ADCsamplerate;
+}
+
+uint8_t HW::getADCPrescaler() {
+	return ADCprescaler;
+}
+
+uint64_t HW::getLastISRTimestamp() {
+	return lastISR;
+}
+
+void HW::updateDeviceStatus() {
+	if(activeMode == Mode::Idle || activeMode == Mode::Generator) {
+		static uint32_t last_update = 0;
+		if(HAL_GetTick() - last_update >= 1000) {
+			last_update = HAL_GetTick();
+			HW::Ref::update();
+			Protocol::PacketInfo packet;
+			packet.type = Protocol::PacketType::DeviceStatusV1;
+			// Enable PLL chips for temperature reading
+			bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
+			bool LOEn = FPGA::IsEnabled(FPGA::Periphery::LO1Chip);
+			FPGA::Enable(FPGA::Periphery::SourceChip);
+			FPGA::Enable(FPGA::Periphery::LO1Chip);
+			HW::getDeviceStatus(&packet.statusV1, true);
+			// restore PLL state
+			FPGA::Enable(FPGA::Periphery::SourceChip, srcEn);
+			FPGA::Enable(FPGA::Periphery::LO1Chip, LOEn);
+			Communication::Send(packet);
+		}
+	}
+}
+
+uint16_t HW::getDFTPhaseInc() {
+	return DFTphaseInc;
+}
+

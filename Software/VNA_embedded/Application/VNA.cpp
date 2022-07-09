@@ -13,6 +13,7 @@
 #include "task.h"
 #include "Util.hpp"
 #include "usb.h"
+#include <cmath>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"VNA"
@@ -20,12 +21,18 @@
 
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
-static bool excitingPort1;
+static uint8_t stageCnt;
+static uint8_t stages;
+static double logMultiplier, logFrequency;
 static Protocol::Datapoint data;
 static bool active = false;
-static bool sourceHighPower;
+static Si5351C::DriveStrength fixedPowerLowband;
 static bool adcShifted;
 static uint32_t actualBandwidth;
+
+static uint64_t firstPointTime;
+static bool firstPoint;
+static bool zerospan;
 
 static constexpr uint8_t sourceHarmonic = 5;
 static constexpr uint8_t LOHarmonic = 3;
@@ -42,14 +49,33 @@ static uint16_t IFTableIndexCnt = 0;
 static constexpr float alternativeSamplerate = 914285.7143f;
 static constexpr uint8_t alternativePrescaler = 102400000UL / alternativeSamplerate;
 static_assert(alternativePrescaler * alternativeSamplerate == 102400000UL, "alternative ADCSamplerate can not be reached exactly");
-static constexpr uint16_t alternativePhaseInc = 4096 * HW::IF2 / alternativeSamplerate;
-static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::IF2, "DFT can not be computed for 2.IF when using alternative samplerate");
+static constexpr uint16_t alternativePhaseInc = 4096 * HW::DefaultIF2 / alternativeSamplerate;
+static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::DefaultIF2, "DFT can not be computed for 2.IF when using alternative samplerate");
 
 // Constants for USB buffer overflow prevention
 static constexpr uint16_t maxPointsBetweenHalts = 40;
 static constexpr uint32_t reservedUSBbuffer = maxPointsBetweenHalts * (sizeof(Protocol::Datapoint) + 8 /*USB packet overhead*/);
 
 using namespace HWHAL;
+
+static uint64_t getPointFrequency(uint16_t pointNum) {
+	if(!settings.logSweep) {
+		return settings.f_start + (settings.f_stop - settings.f_start) * pointNum / (settings.points - 1);
+	} else {
+		static uint16_t lastPointNum = 0;
+		if (pointNum == 0) {
+			logFrequency = settings.f_start;
+		} else if(pointNum == lastPointNum) {
+			// nothing to do
+		} else if(pointNum == lastPointNum + 1) {
+			logFrequency *= logMultiplier;
+		} else {
+			logFrequency = settings.f_start * pow(10.0, pointNum * log10((double)settings.f_stop / settings.f_start) / (settings.points - 1));
+		}
+		lastPointNum = pointNum;
+		return logFrequency;
+	}
+}
 
 bool VNA::Setup(Protocol::SweepSettings s) {
 	VNA::Stop();
@@ -61,50 +87,64 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		active = false;
 		return false;
 	}
-	settings = s;
 	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
-	uint16_t points = settings.points <= FPGA::MaxPoints ? settings.points : FPGA::MaxPoints;
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
+	if(settings.points > FPGA::MaxPoints) {
+		settings.points = FPGA::MaxPoints;
+	}
+	settings = s;
+	// calculate factor between adjacent points for log sweep for faster calculation when sweeping
+	logMultiplier = pow((double) settings.f_stop / settings.f_start, 1.0 / (settings.points-1));
 	// Configure sweep
-	FPGA::SetNumberOfPoints(points);
-	uint32_t samplesPerPoint = (HW::ADCSamplerate / s.if_bandwidth);
+	FPGA::SetNumberOfPoints(settings.points);
+	uint32_t samplesPerPoint = (HW::getADCRate() / s.if_bandwidth);
 	// round up to next multiple of 16 (16 samples are spread across 5 IF2 periods)
 	if(samplesPerPoint%16) {
 		samplesPerPoint += 16 - samplesPerPoint%16;
 	}
-	actualBandwidth = HW::ADCSamplerate / samplesPerPoint;
+	actualBandwidth = HW::getADCRate() / samplesPerPoint;
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
-	// Set level (not very accurate)
-	int16_t cdbm = s.cdbm_excitation;
-	if(cdbm > -1000) {
-		// use higher source power (approx 0dbm with no attenuation)
-		sourceHighPower = true;
-		Source.SetPowerOutA(MAX2871::Power::p5dbm, true);
-	} else {
-		// use lower source power (approx -10dbm with no attenuation)
-		sourceHighPower = false;
-		Source.SetPowerOutA(MAX2871::Power::n4dbm, true);
-		cdbm += 1000;
+	// reset unlevel flag if it was set from a previous sweep/mode
+	HW::SetOutputUnlevel(false);
+	// Start with average level
+	auto cdbm = (s.cdbm_excitation_start + s.cdbm_excitation_stop) / 2;
+	// correct for port 1, assumes port 2 is identical
+	auto centerFreq = (s.f_start + s.f_stop) / 2;
+	// force calculation of amplitude setting for PLL, even with lower frequencies
+	if(centerFreq < HW::BandSwitchFrequency) {
+		centerFreq = HW::BandSwitchFrequency;
 	}
-	uint8_t attenuator;
-	if(cdbm >= 0) {
-		attenuator = 0;
-	} else if (cdbm <= -3175){
-		attenuator = 127;
-	} else {
-		attenuator = (-cdbm) / 25;
+	auto amplitude = HW::GetAmplitudeSettings(cdbm, centerFreq, true, false);
+	if(amplitude.unlevel) {
+		HW::SetOutputUnlevel(true);
 	}
+
+	uint8_t fixedAttenuatorHighband = amplitude.attenuator;
+	Source.SetPowerOutA(amplitude.highBandPower, true);
+
+	// amplitude calculation for lowband
+	amplitude = HW::GetAmplitudeSettings(cdbm, HW::BandSwitchFrequency / 2, true, false);
+	if(amplitude.unlevel) {
+		HW::SetOutputUnlevel(true);
+	}
+	uint8_t fixedAttenuatorLowband = amplitude.attenuator;
+	fixedPowerLowband = amplitude.lowBandPower;
+
 	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
-	uint32_t last_LO2 = HW::IF1 - HW::IF2;
+	uint32_t last_LO2 = HW::getIF1() - HW::getIF2();
 	Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
 
 	IFTableIndexCnt = 0;
+
+	zerospan = (s.f_start == s.f_stop) && (s.cdbm_excitation_start == s.cdbm_excitation_stop);
 
 	bool last_lowband = false;
 
@@ -114,9 +154,11 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	uint16_t pointsWithoutHalt = 0;
 
 	// Transfer PLL configuration to FPGA
-	for (uint16_t i = 0; i < points; i++) {
+	for (uint16_t i = 0; i < settings.points; i++) {
 		bool harmonic_mixing = false;
-		uint64_t freq = s.f_start + (s.f_stop - s.f_start) * i / (points - 1);
+		uint64_t freq = getPointFrequency(i);
+		int16_t power = s.cdbm_excitation_start + (s.cdbm_excitation_stop - s.cdbm_excitation_start) * i / (settings.points - 1);
+		freq = Cal::FrequencyCorrectionToDevice(freq);
 
 		if(freq > 6000000000ULL) {
 			harmonic_mixing = true;
@@ -147,7 +189,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			// additional halt before first highband point to enable highband source
 			needs_halt = true;
 		}
-		uint64_t LOFreq = freq + HW::IF1;
+		uint64_t LOFreq = freq + HW::getIF1();
 		if(harmonic_mixing) {
 			LOFreq /= LOHarmonic;
 		}
@@ -158,7 +200,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		}
 		uint32_t actualFirstIF = actualLO1 - actualSourceFreq;
 		uint32_t actualFinalIF = actualFirstIF - last_LO2;
-		uint32_t IFdeviation = abs(actualFinalIF - HW::IF2);
+		uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
 		bool needs_LO2_shift = false;
 		if(IFdeviation > actualBandwidth / 2) {
 			needs_LO2_shift = true;
@@ -171,13 +213,15 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 				if(IFTableIndexCnt < IFTableNumEntries - 1) {
 					// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
 					// the correct clock settings
-					last_LO2 = actualFirstIF - HW::IF2;
-					LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency",
+					last_LO2 = actualFirstIF - HW::getIF2();
+					LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency (1.LO: %lu%06luHz, 1.IF: %lu%06luHz)",
 							last_LO2, i, (uint32_t ) (freq / 1000000),
-							(uint32_t ) (freq % 1000000));
+							(uint32_t ) (freq % 1000000), (uint32_t ) (actualLO1 / 1000000),
+							(uint32_t ) (actualLO1 % 1000000), (uint32_t ) (actualFirstIF / 1000000),
+							(uint32_t ) (actualFirstIF % 1000000));
 				} else {
 					// last entry in IF table, revert LO2 to default
-					last_LO2 = HW::IF1 - HW::IF2;
+					last_LO2 = HW::getIF1() - HW::getIF2();
 				}
 				Si5351.SetCLK(SiChannel::RefLO2, last_LO2,
 						Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
@@ -205,16 +249,34 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			pointsWithoutHalt = 0;
 		}
 
+		uint8_t attenuator = freq >= HW::BandSwitchFrequency ? fixedAttenuatorHighband : fixedAttenuatorLowband;
+		if(!s.fixedPowerSetting) {
+			// adapt power level throughout the sweep
+			amplitude = HW::GetAmplitudeSettings(power, freq, true, false);
+			if(freq >= HW::BandSwitchFrequency) {
+				Source.SetPowerOutA(amplitude.highBandPower, true);
+			}
+			if(amplitude.unlevel) {
+				HW::SetOutputUnlevel(true);
+			}
+			attenuator = amplitude.attenuator;
+		}
+
+		// needs halt before first point to allow PLLs to settle
+		if (i == 0) {
+			needs_halt = true;
+		}
+
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
 				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us20,
 				FPGA::Samples::SPPRegister, needs_halt);
 		last_lowband = lowband;
 	}
 	// revert clk configuration to previous value (might have been changed in sweep calculation)
-	Si5351.SetCLK(SiChannel::RefLO2, HW::IF1 - HW::IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::RefLO2, HW::getIF1() - HW::getIF2(), Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
 	// Enable mixers/amplifier/PLLs
-	FPGA::SetWindow(FPGA::Window::None);
+	FPGA::SetWindow(FPGA::Window::Kaiser);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
 	FPGA::Enable(FPGA::Periphery::RefMixer);
@@ -223,12 +285,22 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::Enable(FPGA::Periphery::SourceRF);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.excitePort1);
-	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.excitePort2);
+	if(s.excitePort1 && s.excitePort2) {
+		// two stages, port 1 first, followed by port 2
+		FPGA::SetupSweep(1, 0, 1);
+		stages = 2;
+	} else if(s.excitePort1) {
+		// one stage, port 1 only
+		FPGA::SetupSweep(0, 0, 1);
+		stages = 1;
+	} else {
+		// one stage, port 2 only
+		FPGA::SetupSweep(0, 1, 0);
+		stages = 1;
+	}
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 	pointCnt = 0;
-	// starting port depends on whether port 1 is active in sweep
-	excitingPort1 = s.excitePort1;
+	stageCnt = 0;
 	IFTableIndexCnt = 0;
 	adcShifted = false;
 	active = true;
@@ -236,6 +308,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
 	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
 	// Start the sweep
+	firstPoint = true;
 	FPGA::StartSweep();
 	return true;
 }
@@ -251,8 +324,8 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	if(!active) {
 		return false;
 	}
-	if(result.pointNum != pointCnt || !result.activePort != excitingPort1) {
-		LOG_WARN("Indicated point does not match (%u != %u, %d != %d)", result.pointNum, pointCnt, result.activePort, !excitingPort1);
+	if(result.pointNum != pointCnt || result.stageNum != stageCnt) {
+		LOG_WARN("Indicated point does not match (%u != %u, %d != %d)", result.pointNum, pointCnt, result.stageNum, stageCnt);
 		FPGA::AbortSweep();
 		return false;
 	}
@@ -263,30 +336,38 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	auto port1 = port1_raw / ref;
 	auto port2 = port2_raw / ref;
 	data.pointNum = pointCnt;
-	data.frequency = settings.f_start + (settings.f_stop - settings.f_start) * pointCnt / (settings.points - 1);
-	if(excitingPort1) {
+	if(zerospan) {
+		uint64_t timestamp = HW::getLastISRTimestamp();
+		if(firstPoint) {
+			data.us = 0;
+			firstPointTime = timestamp;
+			firstPoint = false;
+		} else {
+			data.us = timestamp - firstPointTime;
+		}
+	} else {
+		// non-zero span, set frequency/power
+		data.frequency = getPointFrequency(pointCnt);
+		data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
+	}
+	if(stageCnt == 0 && settings.excitePort1) {
+		// stimulus is present at port 1
 		data.real_S11 = port1.real();
 		data.imag_S11 = port1.imag();
 		data.real_S21 = port2.real();
 		data.imag_S21 = port2.imag();
 	} else {
+		// stimulus is present at port 2
 		data.real_S12 = port1.real();
 		data.imag_S12 = port1.imag();
 		data.real_S22 = port2.real();
 		data.imag_S22 = port2.imag();
 	}
-	// figure out whether this sweep point is complete and which port gets excited next
-	bool pointComplete = false;
-	if(settings.excitePort1 == 1 && settings.excitePort2 == 1) {
-		// point is complete when port 2 was active
-		pointComplete = !excitingPort1;
-		// next measurement will be from other port
-		excitingPort1 = !excitingPort1;
-	} else {
-		// only one port active, point is complete after every measurement
-		pointComplete = true;
-	}
-	if(pointComplete) {
+	// figure out whether this sweep point is complete
+	stageCnt++;
+	if(stageCnt == stages) {
+		// point is complete
+		stageCnt = 0;
 		STM::DispatchToInterrupt(PassOnData);
 		pointCnt++;
 		if (pointCnt >= settings.points) {
@@ -305,9 +386,10 @@ void VNA::Work() {
 	HW::Ref::update();
 	// Compile info packet
 	Protocol::PacketInfo packet;
-	packet.type = Protocol::PacketType::DeviceInfo;
-	HW::fillDeviceInfo(&packet.info, true);
+	packet.type = Protocol::PacketType::DeviceStatusV1;
+	HW::getDeviceStatus(&packet.statusV1, true);
 	Communication::Send(packet);
+	// do not reset unlevel flag here, as it is calculated only once at the setup of the sweep
 	// Start next sweep
 	FPGA::StartSweep();
 }
@@ -327,34 +409,54 @@ void VNA::SweepHalted() {
 		// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
 		Delay::us(1300);
 	}
-	uint64_t frequency = settings.f_start
-			+ (settings.f_stop - settings.f_start) * pointCnt
-					/ (settings.points - 1);
+	uint64_t frequency = getPointFrequency(pointCnt);
+	int16_t power = settings.cdbm_excitation_start
+			+ (settings.cdbm_excitation_stop - settings.cdbm_excitation_start)
+					* pointCnt / (settings.points - 1);
 	bool adcShiftRequired = false;
 	if (frequency < HW::BandSwitchFrequency) {
-		// need the Si5351 as Source
-		Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B,
-				sourceHighPower ? Si5351C::DriveStrength::mA8 : Si5351C::DriveStrength::mA4);
-		if (pointCnt == 0) {
-			// First point in sweep, enable CLK
-			Si5351.Enable(SiChannel::LowbandSource);
-			FPGA::Disable(FPGA::Periphery::SourceRF);
-			Delay::us(1300);
+		auto driveStrength = fixedPowerLowband;
+		if(!settings.fixedPowerSetting) {
+			auto amplitude = HW::GetAmplitudeSettings(power, frequency, true, false);
+			// attenuator value has already been set in sweep setup
+			driveStrength = amplitude.lowBandPower;
 		}
 
-		// At low frequencies the 1.LO feedtrough mixes with the 2.LO in the second mixer.
+		// need the Si5351 as Source
+		bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B, driveStrength);
+		static bool lowbandDisabled = false;
+		if (pointCnt == 0) {
+			// First point in sweep, switch to correct source
+			FPGA::Disable(FPGA::Periphery::SourceRF);
+			lowbandDisabled = true;
+		}
+		if(lowbandDisabled && freqSuccess) {
+			// frequency is valid, can enable lowband source now
+			Si5351.Enable(SiChannel::LowbandSource);
+			Delay::us(1300);
+			lowbandDisabled = false;
+		}
+
+		// At low frequencies the 1.LO feedthrough mixes with the 2.LO in the second mixer.
 		// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
 		// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
-		uint32_t LO_mixing = (HW::IF1 + frequency) - (HW::IF1 - HW::IF2);
-		if(abs(Util::Alias(LO_mixing, HW::ADCSamplerate) - HW::IF2) <= actualBandwidth * 2) {
+
+		uint32_t LO_mixing = (HW::getIF1() + frequency) - (HW::getIF1() - HW::getIF2());
+		if(abs(Util::Alias(LO_mixing, HW::getADCRate()) - HW::getIF2()) <= actualBandwidth * 2) {
 			// the image is in or near the IF bandwidth and would cause a peak
-			// Use a slightly different ADC samplerate
-			adcShiftRequired = true;
+			// Use a slightly different ADC sample rate if possible
+			if(HW::getIF2() == HW::DefaultIF2) {
+				adcShiftRequired = true;
+			}
 		}
 	} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
 		// first sweep point in highband is also halted, disable lowband source
 		Si5351.Disable(SiChannel::LowbandSource);
 		FPGA::Enable(FPGA::Periphery::SourceRF);
+	}
+
+	if (pointCnt == 0) {
+		HAL_Delay(2);
 	}
 
 	if(adcShiftRequired) {
@@ -363,8 +465,8 @@ void VNA::SweepHalted() {
 		adcShifted = true;
 	} else if(adcShifted) {
 		// reset to default value
-		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::ADCprescaler);
-		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::DFTphaseInc);
+		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
 		adcShifted = false;
 	}
 
@@ -376,7 +478,17 @@ void VNA::SweepHalted() {
 		// This function is called from a low level interrupt, need to dispatch to lower priority to allow USB
 		// handling to continue
 		STM::DispatchToInterrupt([](){
-			while(usb_available_buffer() < reservedUSBbuffer);
+			uint32_t start = HAL_GetTick();
+			while(usb_available_buffer() < reservedUSBbuffer) {
+				if(HAL_GetTick() - start > 100) {
+					// still no buffer space after some time, something more serious must have gone wrong
+					// -> abort sweep and return to idle
+					usb_clear_buffer();
+					FPGA::AbortSweep();
+					HW::SetIdle();
+					return;
+				}
+			}
 			FPGA::ResumeHaltedSweep();
 		});
 	}
@@ -385,4 +497,17 @@ void VNA::SweepHalted() {
 void VNA::Stop() {
 	active = false;
 	FPGA::AbortSweep();
+}
+
+void VNA::PrintStatus() {
+	HAL_Delay(10);
+	LOG_INFO("VNA status:");
+	HAL_Delay(10);
+	LOG_INFO("Active: %d", active);
+	HAL_Delay(10);
+	LOG_INFO("Points: %d/%d", pointCnt, settings.points);
+	HAL_Delay(10);
+	LOG_INFO("Stages: %d/%d", stageCnt, stages);
+	HAL_Delay(10);
+	LOG_INFO("FPGA status: 0x%04x", FPGA::GetStatus());
 }

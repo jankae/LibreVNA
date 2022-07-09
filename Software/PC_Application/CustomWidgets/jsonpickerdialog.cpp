@@ -1,8 +1,6 @@
 #include "jsonpickerdialog.h"
+
 #include "ui_jsonpickerdialog.h"
-
-
-
 
 JSONPickerDialog::JSONPickerDialog(const nlohmann::json &json, QWidget *parent) :
     QDialog(parent),
@@ -115,12 +113,11 @@ QVariant JSONModel::data(const QModelIndex &index, int role) const
         case 0:
             return info.name;
         case 1:
-            if(item->is_object() || item->is_array()) {
-                return QVariant();
-            } else {
+            if(!item->is_object() && !item->is_array()) {
                 return info.data;
             }
         }
+        return QVariant();
     case Qt::CheckStateRole: {
         if(index.column() == 0) {
             return info.enabled ? Qt::Checked : Qt::Unchecked;

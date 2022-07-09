@@ -1,35 +1,43 @@
 #ifndef SPECTRUMANALYZER_H
 #define SPECTRUMANALYZER_H
 
-#include <QObject>
-#include <QWidget>
 #include "appwindow.h"
 #include "mode.h"
 #include "CustomWidgets/tilewidget.h"
-#include <QComboBox>
-#include <QCheckBox>
 #include "scpi.h"
 #include "Traces/tracewidget.h"
 
-class SpectrumAnalyzer : public Mode, public SCPINode
+#include <QObject>
+#include <QWidget>
+#include <QComboBox>
+#include <QCheckBox>
+
+class SpectrumAnalyzer : public Mode
 {
     Q_OBJECT
 public:
-    SpectrumAnalyzer(AppWindow *window);
+    SpectrumAnalyzer(AppWindow *window, QString name = "Spectrum Analyzer");
 
     void deactivate() override;
     void initializeDevice() override;
 
+    virtual Type getType() override { return Type::SA;}
+
     // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+    void updateGraphColors();
+    void setAveragingMode(Averaging::Mode mode);
+
 
 private:
     enum class Window {
         None = 0,
         Kaiser = 1,
         Hann = 2,
-        FlatTop = 3
+        FlatTop = 3,
+        Last
     };
     enum class Detector {
         PPeak = 0,
@@ -37,19 +45,26 @@ private:
         Sample = 2,
         Normal = 3,
         Average = 4,
+        Last
     };
+
+    static QString WindowToString(Window w);
+    static Window WindowFromString(QString s);
+    static QString DetectorToString(Detector d);
+    static Detector DetectorFromString(QString s);
 
 private slots:
     void NewDatapoint(Protocol::SpectrumAnalyzerResult d);
-    void StartImpedanceMatching();
     // Sweep control
     void SetStartFreq(double freq);
     void SetStopFreq(double freq);
     void SetCenterFreq(double freq);
     void SetSpan(double span);
     void SetFullSpan();
+    void SetZeroSpan();
     void SpanZoomIn();
     void SpanZoomOut();
+    void SetSingleSweep(bool single);
     // Acquisition control
     void SetRBW(double bandwidth);
     void SetWindow(Window w);
@@ -75,10 +90,13 @@ private:
     void StoreSweepSettings();
 
     Protocol::SpectrumAnalyzerSettings  settings;
+    bool changingSettings;
     unsigned int averages;
+    bool singleSweep;
+    double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
     TraceModel traceModel;
     TraceWidget *traceWidget;
-    TraceMarkerModel *markerModel;
+    MarkerModel *markerModel;
     Averaging average;
 
     TileWidget *central;
@@ -109,6 +127,7 @@ signals:
     void stopFreqChanged(double freq);
     void centerFreqChanged(double freq);
     void spanChanged(double span);
+    void singleSweepChanged(bool single);
     void RBWChanged(double RBW);
     void TGStateChanged(bool enabled);
     void TGPortChanged(int port);

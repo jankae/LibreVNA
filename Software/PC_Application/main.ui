@@ -54,6 +54,7 @@
     <addaction name="separator"/>
     <addaction name="actionSource_Calibration"/>
     <addaction name="actionReceiver_Calibration"/>
+    <addaction name="actionFrequency_Calibration"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -193,10 +194,19 @@
   </action>
   <action name="actionSave_image">
    <property name="icon">
-    <iconset theme="camera-photo"/>
+    <iconset theme="camera-photo">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Save image...</string>
+   </property>
+  </action>
+  <action name="actionFrequency_Calibration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Frequency Calibration</string>
    </property>
   </action>
  </widget>

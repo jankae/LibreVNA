@@ -1,8 +1,9 @@
 #include "medianfilter.h"
+
 #include "ui_medianfilterdialog.h"
 #include "ui_medianexplanationwidget.h"
-
-#include <QMessageBox>
+#include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
 
 using namespace Math;
 using namespace std;
@@ -29,12 +30,15 @@ void MedianFilter::edit()
     auto d = new QDialog();
     auto ui = new Ui::MedianFilterDialog();
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->kernelSize->setValue(kernelSize);
     ui->sortingMethod->setCurrentIndex((int) order);
 
     connect(ui->kernelSize, qOverload<int>(&QSpinBox::valueChanged), [=](int newval) {
         if((newval & 0x01) == 0) {
-            QMessageBox::information(d, "Median filter", "Only odd values are allowed for the kernel size");
+            InformationBox::ShowMessageBlocking("Median filter", "Only odd values are allowed for the kernel size");
             newval++;
         }
         ui->kernelSize->setValue(newval);
@@ -44,7 +48,9 @@ void MedianFilter::edit()
     connect(ui->sortingMethod, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
         order = (Order) index;
     });
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 QWidget *MedianFilter::createExplanationWidget()
@@ -52,6 +58,9 @@ QWidget *MedianFilter::createExplanationWidget()
     auto w = new QWidget();
     auto ui = new Ui::MedianFilterExplanationWidget;
     ui->setupUi(w);
+    connect(w, &QWidget::destroyed, [=](){
+        delete ui;
+    });
     return w;
 }
 

@@ -1,11 +1,12 @@
 #ifndef CALKITDIALOG_H
 #define CALKITDIALOG_H
 
+#include "calkit.h"
+
 #include <QDialog>
 #include <QAbstractButton>
 #include <iostream>
 #include <iomanip>
-#include "calkit.h"
 
 namespace Ui {
 class CalkitDialog;
@@ -19,7 +20,9 @@ public:
     explicit CalkitDialog(Calkit &c, QWidget *parent = nullptr);
     ~CalkitDialog();
 
-private:
+signals:
+    void settingsChanged();
+private:  
     void parseEntries();
     void updateEntries();
     Ui::CalkitDialog *ui;

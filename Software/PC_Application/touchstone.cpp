@@ -1,4 +1,7 @@
 #include "touchstone.h"
+
+#include "Util/util.h"
+
 #include <limits>
 #include <algorithm>
 #include <fstream>
@@ -6,12 +9,14 @@
 #include <cmath>
 #include <cctype>
 #include <string>
+#include <QDebug>
 
 using namespace std;
 
 Touchstone::Touchstone(unsigned int ports)
 {
     this->m_ports = ports;
+    referenceImpedance = 50.0;
     m_datapoints.clear();
 }
 
@@ -33,36 +38,45 @@ void Touchstone::AddDatapoint(Touchstone::Datapoint p)
     }
 }
 
-void Touchstone::toFile(string filename, Unit unit, Format format)
+void Touchstone::toFile(QString filename, Scale unit, Format format)
 {
-    // strip any potential file name extension and apply snp convention
-    if(filename.find_last_of('.') != string::npos) {
-        filename.erase(filename.find_last_of('.'));
+    // add correct file extension if not already present
+    QString extension = ".s"+QString::number(m_ports)+"p";
+    if(!filename.endsWith(extension)) {
+        filename.append(extension);
     }
-    filename.append(".s" + to_string(m_ports) + "p");
 
     // create file
     ofstream file;
-    file.open(filename);
-    file << std::fixed << std::setprecision(12);
+    file.open(filename.toStdString());
 
+    file << toString(unit, format).rdbuf();
+
+    file.close();
+    this->filename = filename;
+}
+
+stringstream Touchstone::toString(Touchstone::Scale unit, Touchstone::Format format)
+{
+    stringstream s;
+    s << std::fixed << std::setprecision(12);
     // write option line
-    file << "# ";
+    s << "# ";
     switch(unit) {
-        case Unit::Hz: file << "HZ "; break;
-        case Unit::kHz: file << "KHZ "; break;
-        case Unit::MHz: file << "MHZ "; break;
-        case Unit::GHz: file << "GHZ "; break;
+        case Scale::Hz: s << "HZ "; break;
+        case Scale::kHz: s << "KHZ "; break;
+        case Scale::MHz: s << "MHZ "; break;
+        case Scale::GHz: s << "GHZ "; break;
     }
     // only S parameters supported so far
-    file << "S ";
+    s << "S ";
     switch(format) {
-        case Format::DBAngle: file << "DB "; break;
-        case Format::RealImaginary: file << "RI "; break;
-        case Format::MagnitudeAngle: file << "MA "; break;
+        case Format::DBAngle: s << "DB "; break;
+        case Format::RealImaginary: s << "RI "; break;
+        case Format::MagnitudeAngle: s << "MA "; break;
     }
-    // reference impedance is always 50 ohm
-    file << "R 50\n";
+    // reference impedance
+    s << "R " << referenceImpedance << "\n";
 
     auto printParameter = [format](ostream &out, complex<double> &c) {
         switch (format) {
@@ -73,52 +87,51 @@ void Touchstone::toFile(string filename, Unit unit, Format format)
             out << abs(c) << " " << arg(c) / M_PI * 180.0;
             break;
         case Format::DBAngle:
-            out << 20*log10(abs(c)) << " " << arg(c) / M_PI * 180.0;
+            out << Util::SparamTodB(c) << " " << arg(c) / M_PI * 180.0;
             break;
         }
     };
 
     for(auto p : m_datapoints) {
         switch(unit) {
-            case Unit::Hz: file << p.frequency; break;
-            case Unit::kHz: file << p.frequency / 1e3; break;
-            case Unit::MHz: file << p.frequency / 1e6; break;
-            case Unit::GHz: file << p.frequency / 1e9; break;
+            case Scale::Hz: s << p.frequency; break;
+            case Scale::kHz: s << p.frequency / 1e3; break;
+            case Scale::MHz: s << p.frequency / 1e6; break;
+            case Scale::GHz: s << p.frequency / 1e9; break;
         }
-        file << " ";
+        s << " ";
         // special cases for 1 and 2 port
         if (m_ports == 1) {
-            printParameter(file, p.S[0]);
-            file << "\n";
+            printParameter(s, p.S[0]);
+            s << "\n";
         } else if (m_ports == 2){
-            printParameter(file, p.S[0]);
+            printParameter(s, p.S[0]);
             // touchstone expects S11 S21 S12 S22 order, swap S12 and S21
-            file << " ";
-            printParameter(file, p.S[2]);
-            file << " ";
-            printParameter(file, p.S[1]);
-            file << " ";
-            printParameter(file, p.S[3]);
-            file << "\n";
+            s << " ";
+            printParameter(s, p.S[2]);
+            s << " ";
+            printParameter(s, p.S[1]);
+            s << " ";
+            printParameter(s, p.S[3]);
+            s << "\n";
         } else {
             // print parameters in matrix form
             for(unsigned int i=0;i<m_ports;i++) {
                 for(unsigned int j=0;j<m_ports;j++) {
-                    printParameter(file, p.S[i*m_ports + j]);
+                    printParameter(s, p.S[i*m_ports + j]);
                     if (j%4 == 3) {
-                        file << "\n";
+                        s << "\n";
                     } else {
-                        file << " ";
+                        s << " ";
                     }
                 }
                 if(m_ports%4 != 0) {
-                    file << "\n";
+                    s << "\n";
                 }
             }
         }
     }
-    file.close();
-    this->filename = QString::fromStdString(filename);
+    return s;
 }
 
 Touchstone Touchstone::fromFile(string filename)
@@ -141,7 +154,7 @@ Touchstone Touchstone::fromFile(string filename)
     unsigned int ports = filename[index_extension + 2] - '0';
     auto ret = Touchstone(ports);
 
-    Unit unit = Unit::GHz;
+    Scale unit = Scale::GHz;
     Format format = Format::RealImaginary;
 
     bool option_line_found = false;
@@ -180,20 +193,18 @@ Touchstone Touchstone::fromFile(string filename)
             for(;iss>>s;) {
                 if(last_R) {
                     last_R = false;
-                    // check reference impedance
-                    if (stoi(s, nullptr, 10) != 50) {
-                        throw runtime_error("Invalid reference impedance, only 50Ohm is supported");
-                    }
+                    // read reference impedance
+                    ret.referenceImpedance = stod(s, nullptr);
                     break;
                 }
                 if (!s.compare("HZ")) {
-                    unit = Unit::Hz;
+                    unit = Scale::Hz;
                 } else if (!s.compare("KHZ")) {
-                    unit = Unit::kHz;
+                    unit = Scale::kHz;
                 } else if (!s.compare("MHZ")) {
-                    unit = Unit::MHz;
+                    unit = Scale::MHz;
                 } else if (!s.compare("GHZ")) {
-                    unit = Unit::GHz;
+                    unit = Scale::GHz;
                 } else if (!s.compare("S")) {
                     // S parameter, nothing to do
                 } else if (!s.compare("Y")) {
@@ -245,10 +256,10 @@ Touchstone Touchstone::fromFile(string filename)
                 iss >> point.frequency;
                 point.S.clear();
                 switch(unit) {
-                    case Unit::Hz: break;
-                    case Unit::kHz: point.frequency *= 1e3; break;
-                    case Unit::MHz: point.frequency *= 1e6; break;
-                    case Unit::GHz: point.frequency *= 1e9; break;
+                    case Scale::Hz: break;
+                    case Scale::kHz: point.frequency *= 1e3; break;
+                    case Scale::MHz: point.frequency *= 1e6; break;
+                    case Scale::GHz: point.frequency *= 1e9; break;
                 }
             }
             unsigned int parameters_per_line;
@@ -371,4 +382,68 @@ void Touchstone::reduceTo1Port(unsigned int port)
 QString Touchstone::getFilename() const
 {
     return filename;
+}
+
+nlohmann::json Touchstone::toJSON()
+{
+    nlohmann::json j;
+    j["ports"] = m_ports;
+    j["filename"] = filename.toStdString();
+    if(m_datapoints.size() > 0) {
+        nlohmann::json json_points;
+        for(auto d : m_datapoints) {
+            nlohmann::json point;
+            point["frequency"] = d.frequency;
+            nlohmann::json sparams;
+            for(auto s : d.S) {
+                nlohmann::json sparam;
+                sparam["real"] = s.real();
+                sparam["imag"] = s.imag();
+                sparams.push_back(sparam);
+            }
+            point["Sparams"] = sparams;
+            json_points.push_back(point);
+        }
+        j["datapoints"] = json_points;
+    }
+    return j;
+}
+
+void Touchstone::fromJSON(nlohmann::json j)
+{
+    m_datapoints.clear();
+    filename = QString::fromStdString(j.value("filename", ""));
+    m_ports = j.value("ports", 0);
+    if(!m_ports || !j.contains("datapoints")) {
+        return;
+    }
+    auto json_points = j["datapoints"];
+    for(auto point : json_points) {
+        Datapoint d;
+        if(!point.contains("frequency") || !point.contains("Sparams")) {
+            // missing data, abort here
+            qWarning() << "Touchstone data point does not contain frequency or S parameters";
+            break;
+        }
+        d.frequency = point["frequency"];
+        if(point["Sparams"].size() != m_ports * m_ports) {
+            // invalid number of Sparams, abort here
+            qWarning() << "Invalid number of S parameters, got" << point["Sparams"].size() << "expected" << m_ports*m_ports;
+            break;
+        }
+        for(auto Sparam : point["Sparams"]) {
+            d.S.push_back(complex<double>(Sparam.value("real", 0.0), Sparam.value("imag", 0.0)));
+        }
+        m_datapoints.push_back(d);
+    }
+}
+
+double Touchstone::getReferenceImpedance() const
+{
+    return referenceImpedance;
+}
+
+void Touchstone::setReferenceImpedance(double value)
+{
+    referenceImpedance = value;
 }

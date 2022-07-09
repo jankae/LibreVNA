@@ -124,7 +124,6 @@ architecture Behavioral of top is
 		PLL_LOCKED : IN std_logic; 
 		CONFIG_ADDRESS : OUT std_logic_vector(12 downto 0);
 		START_SAMPLING : OUT std_logic;
-		PORT_SELECT : OUT std_logic;
 		BAND_SELECT : out STD_LOGIC;
 		SOURCE_REG_4 : OUT std_logic_vector(31 downto 0);
 		SOURCE_REG_3 : OUT std_logic_vector(31 downto 0);
@@ -139,8 +138,13 @@ architecture Behavioral of top is
 		SWEEP_RESUME : in STD_LOGIC;
 		ATTENUATOR : OUT std_logic_vector(6 downto 0);
 		SOURCE_FILTER : OUT std_logic_vector(1 downto 0);
-		EXCITE_PORT1 : in STD_LOGIC;
-		EXCITE_PORT2 : in STD_LOGIC;
+		STAGES : in STD_LOGIC_VECTOR (2 downto 0);
+		INDIVIDUAL_HALT : in STD_LOGIC;
+		PORT1_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
+		PORT2_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
+
+		PORT1_ACTIVE : out STD_LOGIC;
+		PORT2_ACTIVE : out STD_LOGIC;
 		RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0);
 		DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
 		);
@@ -243,8 +247,10 @@ architecture Behavioral of top is
 		SWEEP_WRITE : OUT std_logic_vector(0 to 0);
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
 		NSAMPLES : OUT std_logic_vector(12 downto 0);
-		EXCITE_PORT1 : out STD_LOGIC;
-		EXCITE_PORT2 : out STD_LOGIC;
+	   STAGES : out STD_LOGIC_VECTOR (2 downto 0);
+	   INDIVIDUAL_HALT : out STD_LOGIC;
+	   PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
+	   PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 		PORT1_EN : out STD_LOGIC;
 		PORT2_EN : out STD_LOGIC;
 		REF_EN : out STD_LOGIC;
@@ -262,6 +268,8 @@ architecture Behavioral of top is
 		RESET_MINMAX : out STD_LOGIC;
 		SWEEP_HALTED : in STD_LOGIC;
 		SWEEP_RESUME : out STD_LOGIC;
+		SPI_OVERWRITE_ENABLED : out STD_LOGIC;
+		SPI_OVERWRITE_DATA : out STD_LOGIC_VECTOR(14 downto 0);
 		DFT_BIN1_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
 		DFT_DIFFBIN_PHASEINC : out  STD_LOGIC_VECTOR (15 downto 0);
 		DFT_RESULT_READY : in  STD_LOGIC;
@@ -311,7 +319,7 @@ architecture Behavioral of top is
 		);
 	END COMPONENT;
 	
-	signal clk160 : std_logic;
+	signal clk_pll : std_logic;
 	signal clk_locked : std_logic;
 	signal inv_clk_locked : std_logic;
 	signal int_reset : std_logic;
@@ -332,6 +340,8 @@ architecture Behavioral of top is
 	signal plls_locked : std_logic;
 	signal source_unlocked : std_logic;
 	signal lo_unlocked : std_logic;
+	
+	signal source_filter : std_logic_vector(1 downto 0);
 	
 	-- ADC signals
 	signal adc_trigger_sample : std_logic;
@@ -360,10 +370,15 @@ architecture Behavioral of top is
 	
 	-- Sweep signals
 	signal sweep_points : std_logic_vector(12 downto 0);
+	signal sweep_stages : STD_LOGIC_VECTOR (2 downto 0);
+	signal sweep_individual_halt : STD_LOGIC;
+	signal sweep_port1_stage : STD_LOGIC_VECTOR (2 downto 0);
+	signal sweep_port2_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_config_data : std_logic_vector(95 downto 0);
 	signal sweep_config_address : std_logic_vector(12 downto 0);
-	signal source_filter : std_logic_vector(1 downto 0);
-	signal sweep_port_select : std_logic;
+	signal sweep_source_filter : std_logic_vector(1 downto 0);
+	signal sweep_band : std_logic;
+	signal sweep_attenuator : std_logic_vector(6 downto 0);
 	
 	signal sweep_config_write_address : std_logic_vector(12 downto 0);
 	signal sweep_config_write_data : std_logic_vector(95 downto 0);
@@ -375,8 +390,6 @@ architecture Behavioral of top is
 	
 	signal sweep_excite_port1 : std_logic;
 	signal sweep_excite_port2 : std_logic;
-	
-	signal sweep_band : std_logic;
 	
 	-- Configuration signals
 	signal settling_time : std_logic_vector(15 downto 0);
@@ -411,6 +424,10 @@ architecture Behavioral of top is
 	signal debug : std_logic_vector(10 downto 0);
 	signal intr : std_logic;
 	
+	-- HW overwrite signals
+	signal HW_overwrite_enabled : std_logic;
+	signal HW_overwrite_data : std_logic_vector(14 downto 0);
+	
 	-- DFT signals
 	signal dft_bin1_phaseinc : std_logic_vector (15 downto 0);
 	signal dft_diffbin_phaseinc : std_logic_vector (15 downto 0);
@@ -428,20 +445,20 @@ begin
 	LEDS(2) <= SOURCE_LD;
 	LEDS(3) <= LO1_LD;
 	-- Sweep and active port
-	PORT_SELECT2 <= not sweep_port_select and portswitch_en;
-	PORT2_SELECT <= not sweep_port_select and portswitch_en;
-	PORT_SELECT1 <= sweep_port_select and portswitch_en;
-	PORT1_SELECT <= sweep_port_select and portswitch_en;
-	BAND_SELECT_HIGH <= not sweep_band;
-	BAND_SELECT_LOW <= sweep_band;
+	PORT_SELECT2 <= (sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(3);
+	PORT2_SELECT <= (sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(3);
+	PORT_SELECT1 <= (sweep_excite_port1 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(4);
+	PORT1_SELECT <= (sweep_excite_port1 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(4);
+	BAND_SELECT_HIGH <= not sweep_band when HW_overwrite_enabled = '0' else not HW_overwrite_data(5);
+	BAND_SELECT_LOW <= sweep_band when HW_overwrite_enabled = '0' else HW_overwrite_data(5);
 	PORT1_MIX2_EN <= port1mix_en;
 	PORT1_MIX1_EN <= not port1mix_en;
 	PORT2_MIX2_EN <= port2mix_en;
 	PORT2_MIX1_EN <= not port2mix_en;
 	REF_MIX2_EN <= refmix_en;
 	REF_MIX1_EN <= not refmix_en;
-	LEDS(4) <= not (not sweep_reset and not sweep_port_select and portswitch_en);
-	LEDS(5) <= not (not sweep_reset and sweep_port_select and portswitch_en);
+	LEDS(4) <= not (not sweep_reset and sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else not HW_overwrite_data(3);
+	LEDS(5) <= not (not sweep_reset and sweep_excite_port1 and portswitch_en) when HW_overwrite_enabled = '0' else not HW_overwrite_data(4);
 	-- Uncommitted LEDs
 	LEDS(7 downto 6) <= user_leds(1 downto 0);	
 	--LEDS(7) <= '0';
@@ -453,7 +470,7 @@ begin
 		-- Clock in ports
 		CLK_IN1 => CLK,
 		-- Clock out ports
-		CLK_OUT1 => clk160,
+		CLK_OUT1 => clk_pll,
 		-- Status and control signals
 		RESET  => RESET,
 		LOCKED => clk_locked
@@ -464,7 +481,7 @@ begin
 	Inst_ResetDelay: ResetDelay
 	GENERIC MAP(CLK_DELAY => 100)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		IN_RESET => inv_clk_locked,
 		OUT_RESET => int_reset
 	);
@@ -472,42 +489,42 @@ begin
 	Sync_AUX1 : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_AUX1,
 		SYNC_OUT => aux1_sync
 	);
 	Sync_AUX2 : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_AUX2,
 		SYNC_OUT => aux2_sync
 	);
 	Sync_AUX3 : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_AUX3,
 		SYNC_OUT => aux3_sync
 	);
 	Sync_LO_LD : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => LO1_LD,
 		SYNC_OUT => lo_ld_sync
 	);
 	Sync_SOURCE_LD : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => SOURCE_LD,
 		SYNC_OUT => source_ld_sync
 	);	
 	Sync_NSS : Synchronizer
 	GENERIC MAP(stages => 2)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		SYNC_IN => MCU_NSS,
 		SYNC_OUT => nss_sync
 	);	
@@ -516,7 +533,7 @@ begin
 	Source: MAX2871
 	GENERIC MAP(CLK_DIV => 10)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		REG4 => source_reg_4,
 		REG3 => source_reg_3,
@@ -531,7 +548,7 @@ begin
 	LO1: MAX2871
 	GENERIC MAP(CLK_DIV => 10)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		REG4 => lo_reg_4,
 		REG3 => lo_reg_3,
@@ -550,7 +567,7 @@ begin
 	GENERIC MAP(CLK_DIV => 2,
 				CONVCYCLES => 77)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		START => adc_trigger_sample,
 		READY => adc_port1_ready,
@@ -566,7 +583,7 @@ begin
 	GENERIC MAP(CLK_DIV => 2,
 				CONVCYCLES => 77)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		START => adc_trigger_sample,
 		READY => open, -- synchronous ADCs, ready indicated by port 1 ADC
@@ -582,7 +599,7 @@ begin
 	GENERIC MAP(CLK_DIV => 2,
 				CONVCYCLES => 77)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		START => adc_trigger_sample,
 		READY => open, -- synchronous ADCs, ready indicated by port 1 ADC
@@ -597,7 +614,7 @@ begin
 	
 	
 	Windower: Windowing PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => sampling_start,
 		WINDOW_TYPE => sampling_window,
 		PORT1_RAW => adc_port1_data,
@@ -614,7 +631,7 @@ begin
 	Sampler: Sampling
 	GENERIC MAP(CLK_CYCLES_PRE_DONE => 0)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => sweep_reset,
 		ADC_PRESCALER => sampling_prescaler,
 		PHASEINC => sampling_phaseinc,
@@ -639,7 +656,7 @@ begin
 	sweep_reset <= not aux3_sync;
 
 	SweepModule: Sweep PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => sweep_reset,
 		NPOINTS => sweep_points,
 		CONFIG_ADDRESS => sweep_config_address,
@@ -649,7 +666,6 @@ begin
 		SAMPLING_BUSY => sampling_busy,
 		SAMPLING_DONE => sampling_done,
 		START_SAMPLING => sampling_start,
-		PORT_SELECT => sweep_port_select,
 		BAND_SELECT => sweep_band,
 		MAX2871_DEF_4 => def_reg_4,
 		MAX2871_DEF_3 => def_reg_3,
@@ -668,19 +684,27 @@ begin
 		PLL_LOCKED => plls_locked,
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
-		ATTENUATOR => ATTENUATION,
-		SOURCE_FILTER => source_filter,
-		EXCITE_PORT1 => sweep_excite_port1,
-		EXCITE_PORT2 => sweep_excite_port2,
+		ATTENUATOR => sweep_attenuator,
+		SOURCE_FILTER => sweep_source_filter,
+		STAGES => sweep_stages,
+		INDIVIDUAL_HALT => sweep_individual_halt,
+		PORT1_STAGE => sweep_port1_stage,
+		PORT2_STAGE => sweep_port2_stage,
+
+		PORT1_ACTIVE => sweep_excite_port1,
+		PORT2_ACTIVE => sweep_excite_port2,
 		DEBUG_STATUS => debug,
 		RESULT_INDEX => sampling_result(303 downto 288)
 	);
 	
 	-- Source filter mapping
+	source_filter <= sweep_source_filter when HW_overwrite_enabled = '0' else HW_overwrite_data(7 downto 6);
 	FILT_IN_C1 <= '0' when source_filter = "00" or source_filter = "10" else '1';
 	FILT_IN_C2 <= '0' when source_filter = "11" or source_filter = "10" else '1';
 	FILT_OUT_C1 <= '0' when source_filter = "00" or source_filter = "10" else '1';
 	FILT_OUT_C2 <= '0' when source_filter = "00" or source_filter = "01" else '1';
+	
+	ATTENUATION <= sweep_attenuator when HW_overwrite_enabled = '0' else HW_overwrite_data(14 downto 8);
 	
 	-- PLL/SPI mux
 	-- only select FPGA SPI slave when both AUX1 and AUX2 are low
@@ -703,7 +727,7 @@ begin
 	source_unlocked <= not source_ld_sync;
 
 	SPI: SPICommands PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => int_reset,
 		SCLK => MCU_SCK,
 		MOSI => MCU_MOSI,
@@ -740,8 +764,12 @@ begin
 		RESET_MINMAX => adc_reset_minmax,
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
-		EXCITE_PORT1 => sweep_excite_port1,
-		EXCITE_PORT2 => sweep_excite_port2,
+		STAGES => sweep_stages,
+		INDIVIDUAL_HALT => sweep_individual_halt,
+		PORT1_STAGE => sweep_port1_stage,
+		PORT2_STAGE => sweep_port2_stage,
+		SPI_OVERWRITE_ENABLED => HW_overwrite_enabled,
+		SPI_OVERWRITE_DATA => HW_overwrite_data,
 		DFT_BIN1_PHASEINC => dft_bin1_phaseinc,
 		DFT_DIFFBIN_PHASEINC => dft_diffbin_phaseinc,
 		DFT_RESULT_READY => dft_ready,
@@ -755,7 +783,7 @@ begin
 	
 	SA_DFT: DFT GENERIC MAP(BINS => 96)
 	PORT MAP(
-		CLK => clk160,
+		CLK => clk_pll,
 		RESET => dft_reset,
 		PORT1 => port1_windowed,
 		PORT2 => port2_windowed,
@@ -770,12 +798,12 @@ begin
 	
 	ConfigMem : SweepConfigMem
 	PORT MAP (
-		clka => clk160,
+		clka => clk_pll,
 		ena => '1',
 		wea => sweep_config_write,
 		addra => sweep_config_write_address,
 		dina => sweep_config_write_data,
-		clkb => clk160,
+		clkb => clk_pll,
 		addrb => sweep_config_address,
 		doutb => sweep_config_data
 	);

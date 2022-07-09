@@ -1,9 +1,10 @@
 #ifndef MANUALDEEMBEDDINGDIALOG_H
 #define MANUALDEEMBEDDINGDIALOG_H
 
-#include <QDialog>
 #include "Traces/tracemodel.h"
 #include "deembedding.h"
+
+#include <QDialog>
 
 namespace Ui {
 class ManualDeembeddingDialog;

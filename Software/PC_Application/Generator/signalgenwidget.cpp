@@ -1,9 +1,11 @@
 #include "signalgenwidget.h"
+
 #include "ui_signalgenwidget.h"
 
-SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
+SignalgeneratorWidget::SignalgeneratorWidget(Device *&dev, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SignalgeneratorWidget)
+    ui(new Ui::SignalgeneratorWidget),
+    dev(dev)
 {
     ui->setupUi(this);
     ui->frequency->setUnit("Hz");
@@ -30,16 +32,16 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     ui->steps->setPrecision(0);
 
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
-       if(newval < Device::Info().limits_minFreq) {
-           newval = Device::Info().limits_minFreq;
-       } else if (newval > Device::Info().limits_maxFreq) {
-           newval = Device::Info().limits_maxFreq;
+       if(newval < Device::Info(dev).limits_minFreq) {
+           newval = Device::Info(dev).limits_minFreq;
+       } else if (newval > Device::Info(dev).limits_maxFreq) {
+           newval = Device::Info(dev).limits_maxFreq;
        }
        ui->frequency->setValueQuiet(newval);
        if (newval < ui->span->value()/2)
            ui->span->setValueQuiet(newval/2);
-       if (newval + ui->span->value()/2 > Device::Info().limits_maxFreq)
-           ui->span->setValueQuiet((Device::Info().limits_maxFreq - newval)*2);
+       if (newval + ui->span->value()/2 > Device::Info(dev).limits_maxFreq)
+           ui->span->setValueQuiet((Device::Info(dev).limits_maxFreq - newval)*2);
        newval = ui->frequency->value() - ui->span->value()/2;
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -48,8 +50,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     connect(ui->span, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > Device::Info().limits_maxFreq - Device::Info().limits_minFreq) {
-           newval = Device::Info().limits_maxFreq - Device::Info().limits_minFreq;
+       } else if (newval > Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq) {
+           newval = Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq;
        }
        ui->span->setValueQuiet(newval);
 
@@ -58,8 +60,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
            ui->frequency->setValueQuiet(ui->span->value()/2);
        }
        newF = ui->frequency->value() + ui->span->value()/2;
-       if (newF  > Device::Info().limits_maxFreq) {
-           ui->frequency->setValueQuiet(Device::Info().limits_maxFreq - ui->span->value()/2);
+       if (newF  > Device::Info(dev).limits_maxFreq) {
+           ui->frequency->setValueQuiet(Device::Info(dev).limits_maxFreq - ui->span->value()/2);
        }
 
        newval = ui->frequency->value() - ui->span->value()/2;
@@ -70,8 +72,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(QWidget *parent) :
     connect(ui->current, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > Device::Info().limits_maxFreq - Device::Info().limits_minFreq) {
-           newval = Device::Info().limits_maxFreq - Device::Info().limits_minFreq;
+       } else if (newval > Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq) {
+           newval = Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq;
        }
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -155,6 +157,44 @@ Protocol::GeneratorSettings SignalgeneratorWidget::getDeviceStatus()
     }
     s.applyAmplitudeCorrection = 1;
     return s;
+}
+
+nlohmann::json SignalgeneratorWidget::toJSON()
+{
+    nlohmann::json j;
+    j["frequency"] = ui->frequency->value();
+    j["power"] = ui->levelSpin->value();
+    if(ui->EnablePort1->isChecked()) {
+        j["port"] = 1;
+    } else if(ui->EnablePort2->isChecked()) {
+        j["port"] = 2;
+    } else {
+        j["port"] = 0;
+    }
+    nlohmann::json sweep;
+    sweep["span"] = ui->span->value();
+    sweep["steps"] = ui->steps->value();
+    sweep["dwell"] = ui->dwell->value();
+    sweep["enabled"] = ui->EnabledSweep->isChecked();
+    j["sweep"] = sweep;
+    return j;
+}
+
+void SignalgeneratorWidget::fromJSON(nlohmann::json j)
+{
+    setFrequency(j.value("frequency", ui->frequency->value()));
+    setLevel(j.value("power", ui->levelSpin->value()));
+    setPort(j.value("port", 0));
+    if(j.contains("sweep")) {
+        auto sweep = j["sweep"];
+        // extract sweep settings, keeping current values as default
+        ui->span->setValue(sweep.value("span", ui->span->value()));
+        ui->steps->setValue(sweep.value("steps", ui->steps->value()));
+        ui->dwell->setValue(sweep.value("dwell", ui->dwell->value()));
+        ui->EnabledSweep->setChecked(sweep.value("enabled", false));
+    } else {
+        ui->EnabledSweep->setChecked(false);
+    }
 }
 
 void SignalgeneratorWidget::setLevel(double level)

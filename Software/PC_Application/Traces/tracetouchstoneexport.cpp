@@ -1,8 +1,10 @@
 ﻿#include "tracetouchstoneexport.h"
+
 #include "ui_tracetouchstoneexport.h"
+#include "touchstone.h"
+
 #include <QDebug>
 #include <QFileDialog>
-#include "touchstone.h"
 #include <QPushButton>
 
 TraceTouchstoneExport::TraceTouchstoneExport(TraceModel &model, QWidget *parent) :
@@ -66,6 +68,7 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
     if(filename.length() > 0) {
         auto ports = ui->sbPorts->value();
         auto t = Touchstone(ports);
+        t.setReferenceImpedance(referenceImpedance);
         // add trace points to touchstone
         for(unsigned int s=0;s<points;s++) {
             Touchstone::Datapoint tData;
@@ -85,12 +88,12 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
             }
             t.AddDatapoint(tData);
         }
-        Touchstone::Unit unit = Touchstone::Unit::GHz;
+        Touchstone::Scale unit = Touchstone::Scale::GHz;
         switch(ui->cUnit->currentIndex()) {
-        case 0: unit = Touchstone::Unit::Hz; break;
-        case 1: unit = Touchstone::Unit::kHz; break;
-        case 2: unit = Touchstone::Unit::MHz; break;
-        case 3: unit = Touchstone::Unit::GHz; break;
+        case 0: unit = Touchstone::Scale::Hz; break;
+        case 1: unit = Touchstone::Scale::kHz; break;
+        case 2: unit = Touchstone::Scale::MHz; break;
+        case 3: unit = Touchstone::Scale::GHz; break;
         }
         Touchstone::Format format = Touchstone::Format::RealImaginary;
         switch(ui->cFormat->currentIndex()) {
@@ -99,7 +102,7 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
         case 2: format = Touchstone::Format::RealImaginary; break;
         }
 
-        t.toFile(filename.toStdString(), unit, format);
+        t.toFile(filename, unit, format);
         delete this;
     }
 }
@@ -163,6 +166,7 @@ void TraceTouchstoneExport::selectionChanged(QComboBox *w)
         // the first trace has been selected, extract frequency info
         Trace *t = qvariant_cast<Trace*>(w->itemData(w->currentIndex()));
         points = t->size();
+        referenceImpedance = t->getReferenceImpedance();
         ui->points->setText(QString::number(points));
         if(points > 0) {
             lowerFreq = t->minX();
@@ -177,7 +181,7 @@ void TraceTouchstoneExport::selectionChanged(QComboBox *w)
             for(auto c : v1) {
                 for(int i=1;i<c->count();i++) {
                     Trace *t = qvariant_cast<Trace*>(c->itemData(i));
-                    if(t->size() != points || (points > 0 && (t->minX() != lowerFreq || t->maxX() != upperFreq))) {
+                    if(t->getReferenceImpedance() != referenceImpedance || t->size() != points || (points > 0 && (t->minX() != lowerFreq || t->maxX() != upperFreq))) {
                         // this trace is not available anymore
                         c->removeItem(i);
                         // decrement to check the next index in the next loop iteration

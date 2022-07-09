@@ -1,54 +1,47 @@
 #include "calkit.h"
 
+#include "calkitdialog.h"
+#include "json.hpp"
+#include "CustomWidgets/informationbox.h"
+#include "appwindow.h"
+
 #include <fstream>
 #include <iomanip>
-#include "calkitdialog.h"
-#include <math.h>
-#include "json.hpp"
 #include <QMessageBox>
 #include <QDebug>
+#include <math.h>
 
 using json = nlohmann::json;
 using namespace std;
 
 Calkit::Calkit()
- : ts_open(nullptr),
-   ts_short(nullptr),
-   ts_load(nullptr),
+ : ts_open_m(nullptr),
+   ts_short_m(nullptr),
+   ts_load_m(nullptr),
+   ts_open_f(nullptr),
+   ts_short_f(nullptr),
+   ts_load_f(nullptr),
    ts_through(nullptr),
    ts_cached(false)
 {
 
     // set default values
-    for(auto e : json_descr) {
+    for(auto e : descr) {
         e.var.setValue(e.def);
     }
 }
 
 void Calkit::toFile(QString filename)
 {
+    if(!filename.endsWith(".calkit")) {
+        filename.append(".calkit");
+    }
+
     qDebug() << "Saving calkit to file" << filename;
 
     TransformPathsToRelative(filename);
 
-    json j;
-    for(auto e : json_descr) {
-        auto list = e.name.split("/");
-        auto *json_entry = &j;
-        while(list.size() > 0) {
-            json_entry = &(*json_entry)[list.takeFirst().toStdString()];
-        }
-        // json library does not now about QVariant, handle used cases
-        auto val = e.var.value();
-        switch(static_cast<QMetaType::Type>(val.type())) {
-        case QMetaType::Double: *json_entry = val.toDouble(); break;
-        case QMetaType::Int: *json_entry = val.toInt(); break;
-        case QMetaType::Bool: *json_entry = val.toBool(); break;
-        case QMetaType::QString: *json_entry = val.toString().toStdString(); break;
-        default:
-            throw runtime_error("Unimplemented metatype");
-        }
-    }
+    json j = Savable::createJSON(descr);
     ofstream file;
     file.open(filename.toStdString());
     file << setw(4) << j << endl;
@@ -75,82 +68,73 @@ Calkit Calkit::fromFile(QString filename)
     }
 
     json j;
-    file >> j;
+    try {
+        file >> j;
+    } catch (exception &e) {
+        throw runtime_error("JSON parsing error: " + string(e.what()));
+    }
     if(j.contains("SOLT")) {
+        // older file versions specify Z0 for resistance. Set resistance to Nan to detect missing values later
+        c.SOLT.load_m.resistance = std::numeric_limits<double>::quiet_NaN();
+        c.SOLT.load_f.resistance = std::numeric_limits<double>::quiet_NaN();
+
         qDebug() << "JSON format detected";
         // calkit file uses json format, parse
-        for(auto e : c.json_descr) {
-            auto list = e.name.split("/");
-            auto *json_entry = &j;
-            bool entry_exists = true;
-            while(list.size() > 0) {
-                auto key = list.takeFirst().toStdString();
-                if((*json_entry).contains(key)) {
-                    json_entry = &(*json_entry)[key];
-                } else {
-                    entry_exists = false;
-                    break;
-                }
-            }
-            if(!entry_exists) {
-                // missing entry in json file, nothing to do (default values already set in constructor)
-                qWarning() << "Entry" << e.name << "not present in file, assuming default value";
-                continue;
-            }
-            // json library does not now about QVariant, handle used cases
-            auto val = e.var.value();
-            switch(static_cast<QMetaType::Type>(val.type())) {
-            case QMetaType::Double: e.var.setValue((*json_entry).get<double>()); break;
-            case QMetaType::Int: e.var.setValue((*json_entry).get<int>()); break;
-            case QMetaType::Bool: e.var.setValue((*json_entry).get<bool>()); break;
-            case QMetaType::QString: {
-                auto s = QString::fromStdString((*json_entry).get<string>());
-                e.var.setValue(s);
-            }
-
-                break;
-            default:
-                throw runtime_error("Unimplemented metatype");
-            }
+        Savable::parseJSON(j, c.descr);
+        auto jSOLT = j["SOLT"];
+        if (!jSOLT.contains("loadModelCFirst")) {
+            // older version which did not allow the user to choose the load model. CFirst seems to be the more
+            // used standard so it is the default for newer calkits. However, old calkits used LFirst so we need
+            // to keep that to not mess with older calkit files
+            c.SOLT.loadModelCFirst = false;
+        }
+        // adjust Z0/resistance in case of older calkit file version with missing resistance entries
+        if(isnan(c.SOLT.load_f.resistance)) {
+            c.SOLT.load_f.resistance = c.SOLT.load_f.Z0;
+            c.SOLT.load_f.Z0 = 50.0;
+        }
+        if(isnan(c.SOLT.load_m.resistance)) {
+            c.SOLT.load_m.resistance = c.SOLT.load_m.Z0;
+            c.SOLT.load_m.Z0 = 50.0;
         }
     } else {
         qDebug() << "Legacy format detected";
         // legacy file format, return to beginning of file
         file.clear();
         file.seekg(0);
-        c.SOLT.Open.useMeasurements = readLine(file).toInt();
-        c.SOLT.Short.useMeasurements = readLine(file).toInt();
-        c.SOLT.Load.useMeasurements = readLine(file).toInt();
+        c.SOLT.open_m.useMeasurements = readLine(file).toInt();
+        c.SOLT.short_m.useMeasurements = readLine(file).toInt();
+        c.SOLT.load_m.useMeasurements = readLine(file).toInt();
         c.SOLT.Through.useMeasurements = readLine(file).toInt();
-        c.SOLT.Open.Z0 = readLine(file).toDouble();
-        c.SOLT.Open.delay = readLine(file).toDouble();
-        c.SOLT.Open.loss = readLine(file).toDouble();
-        c.SOLT.Open.C0 = readLine(file).toDouble();
-        c.SOLT.Open.C1 = readLine(file).toDouble();
-        c.SOLT.Open.C2 = readLine(file).toDouble();
-        c.SOLT.Open.C3 = readLine(file).toDouble();
-        c.SOLT.Short.Z0 = readLine(file).toDouble();
-        c.SOLT.Short.delay = readLine(file).toDouble();
-        c.SOLT.Short.loss = readLine(file).toDouble();
-        c.SOLT.Short.L0 = readLine(file).toDouble();
-        c.SOLT.Short.L1 = readLine(file).toDouble();
-        c.SOLT.Short.L2 = readLine(file).toDouble();
-        c.SOLT.Short.L3 = readLine(file).toDouble();
-        c.SOLT.Load.Z0 = readLine(file).toDouble();
+        c.SOLT.open_m.Z0 = readLine(file).toDouble();
+        c.SOLT.open_m.delay = readLine(file).toDouble();
+        c.SOLT.open_m.loss = readLine(file).toDouble();
+        c.SOLT.open_m.C0 = readLine(file).toDouble();
+        c.SOLT.open_m.C1 = readLine(file).toDouble();
+        c.SOLT.open_m.C2 = readLine(file).toDouble();
+        c.SOLT.open_m.C3 = readLine(file).toDouble();
+        c.SOLT.short_m.Z0 = readLine(file).toDouble();
+        c.SOLT.short_m.delay = readLine(file).toDouble();
+        c.SOLT.short_m.loss = readLine(file).toDouble();
+        c.SOLT.short_m.L0 = readLine(file).toDouble();
+        c.SOLT.short_m.L1 = readLine(file).toDouble();
+        c.SOLT.short_m.L2 = readLine(file).toDouble();
+        c.SOLT.short_m.L3 = readLine(file).toDouble();
+        c.SOLT.load_m.resistance = readLine(file).toDouble();
         c.SOLT.Through.Z0 = readLine(file).toDouble();
         c.SOLT.Through.delay = readLine(file).toDouble();
         c.SOLT.Through.loss = readLine(file).toDouble();
-        if(c.SOLT.Open.useMeasurements) {
-            c.SOLT.Open.file = readLine(file);
-            c.SOLT.Open.Sparam = readLine(file).toInt();
+        if(c.SOLT.open_m.useMeasurements) {
+            c.SOLT.open_m.file = readLine(file);
+            c.SOLT.open_m.Sparam = readLine(file).toInt();
         }
-        if(c.SOLT.Short.useMeasurements) {
-            c.SOLT.Short.file = readLine(file);
-            c.SOLT.Short.Sparam = readLine(file).toInt();
+        if(c.SOLT.short_m.useMeasurements) {
+            c.SOLT.short_m.file = readLine(file);
+            c.SOLT.short_m.Sparam = readLine(file).toInt();
         }
-        if(c.SOLT.Load.useMeasurements) {
-            c.SOLT.Load.file = readLine(file);
-            c.SOLT.Load.Sparam = readLine(file).toInt();
+        if(c.SOLT.load_m.useMeasurements) {
+            c.SOLT.load_m.file = readLine(file);
+            c.SOLT.load_m.Sparam = readLine(file).toInt();
         }
         if(c.SOLT.Through.useMeasurements) {
             c.SOLT.Through.file = readLine(file);
@@ -163,13 +147,11 @@ Calkit Calkit::fromFile(QString filename)
         c.TRL.Line.minFreq = readLine(file).toDouble();
         c.TRL.Line.maxFreq = readLine(file).toDouble();
 
-        auto msg = new QMessageBox();
-        msg->setWindowTitle("Loading calkit file");
-        msg->setText("The file \"" + filename + "\" is stored in a deprecated"
+        c.SOLT.separate_male_female = false;
+
+        InformationBox::ShowMessage("Loading calkit file", "The file \"" + filename + "\" is stored in a deprecated"
                      " calibration kit format. Future versions of this application might not support"
                      " it anymore. Please save the calibration kit to update to the new format");
-        msg->setStandardButtons(QMessageBox::Ok);
-        msg->show();
     }
     file.close();
 
@@ -177,51 +159,87 @@ Calkit Calkit::fromFile(QString filename)
 
     // set default values for non-editable items (for now)
     c.TRL.Through.Z0 = 50.0;
-    c.SOLT.Short.Z0 = 50.0;
-    c.SOLT.Open.Z0 = 50.0;
     c.SOLT.Through.Z0 = 50.0;
 
     return c;
 }
 
-void Calkit::edit(std::function<void (void)> done)
+void Calkit::edit(std::function<void (void)> updateCal)
 {
     auto dialog = new CalkitDialog(*this);
-    if(done) {
-        QObject::connect(dialog, &QDialog::accepted, [=](){
-            done();
+    if(updateCal) {
+        QObject::connect(dialog, &CalkitDialog::settingsChanged, [=](){
+            updateCal();
         });
     }
-    dialog->show();
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
 }
 
-class Calkit::SOLT Calkit::toSOLT(double frequency)
+bool Calkit::hasSeparateMaleFemaleStandards()
 {
+    return SOLT.separate_male_female;
+}
+
+class Calkit::SOLT Calkit::toSOLT(double frequency, bool male_standards)
+{
+    auto addTransmissionLine = [](complex<double> termination_reflection, double offset_impedance, double offset_delay, double offset_loss, double frequency) -> complex<double> {
+        // nomenclature and formulas from https://loco.lab.asu.edu/loco-memos/edges_reports/report_20130807.pdf
+        auto Gamma_T = termination_reflection;
+        auto f = frequency;
+        auto w = 2.0 * M_PI * frequency;
+        auto f_sqrt = sqrt(f / 1e9);
+
+        auto Z_c = complex<double>(offset_impedance + (offset_loss / (2*w)) * f_sqrt, -(offset_loss / (2*w)) * f_sqrt);
+        auto gamma_l = complex<double>(offset_loss*offset_delay/(2*offset_impedance)*f_sqrt, w*offset_delay+offset_loss*offset_delay/(2*offset_impedance)*f_sqrt);
+
+        auto Z_r = complex<double>(50.0);
+
+        auto Gamma_1 = (Z_c - Z_r) / (Z_c + Z_r);
+
+        auto Gamma_i = (Gamma_1*(1.0-exp(-2.0*gamma_l)-Gamma_1*Gamma_T)+exp(-2.0*gamma_l)*Gamma_T)
+                / (1.0-Gamma_1*(exp(-2.0*gamma_l)*Gamma_1+Gamma_T*(1.0-exp(-2.0*gamma_l))));
+
+        return Gamma_i;
+    };
+
+    auto Load = male_standards ? SOLT.load_m : SOLT.load_f;
+    auto Short = male_standards ? SOLT.short_m : SOLT.short_f;
+    auto Open = male_standards ? SOLT.open_m : SOLT.open_f;
+    auto ts_load = male_standards ? ts_load_m : ts_load_f;
+    auto ts_short = male_standards ? ts_short_m : ts_short_f;
+    auto ts_open = male_standards ? ts_open_m : ts_open_f;
+
     fillTouchstoneCache();
     class SOLT ref;
-    if(SOLT.Load.useMeasurements) {
+    if(Load.useMeasurements) {
         ref.Load = ts_load->interpolate(frequency).S[0];
     } else {
-        auto imp_load = complex<double>(SOLT.Load.Z0, 0);
+        auto imp_load = complex<double>(Load.resistance, 0);
+        if (SOLT.loadModelCFirst) {
+            // C is the first parameter starting from the VNA port. But the load is modeled here starting from
+            // the other end, so we need to start with the inductor
+            imp_load += complex<double>(0, frequency * 2 * M_PI * Load.Lseries);
+        }
         // Add parallel capacitor to impedance
-        if(SOLT.Load.Cparallel > 0) {
-            auto imp_C = complex<double>(0, -1.0 / (frequency * 2 * M_PI * SOLT.Load.Cparallel));
+        if(Load.Cparallel > 0) {
+            auto imp_C = complex<double>(0, -1.0 / (frequency * 2 * M_PI * Load.Cparallel));
             imp_load = (imp_load * imp_C) / (imp_load + imp_C);
         }
-        // add series inductor to impedance
-        auto imp_L = complex<double>(0, frequency * 2 * M_PI * SOLT.Load.Lseries);
-        imp_load += imp_L;
+        if (!SOLT.loadModelCFirst) {
+            // inductor not added yet, do so now
+            imp_load += complex<double>(0, frequency * 2 * M_PI * Load.Lseries);
+        }
         ref.Load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
-        // apply phaseshift due to delay
-        double load_phaseshift = -2 * M_PI * frequency * 2 * SOLT.Load.delay * 1e-12;
-        ref.Load *= polar<double>(1.0, load_phaseshift);
+        ref.Load = addTransmissionLine(ref.Load, Load.Z0, Load.delay*1e-12, 0, frequency);
     }
 
-    if(SOLT.Open.useMeasurements) {
+    if(Open.useMeasurements) {
         ref.Open = ts_open->interpolate(frequency).S[0];
     } else {
         // calculate fringing capacitance for open
-        double Cfringing = SOLT.Open.C0 * 1e-15 + SOLT.Open.C1 * 1e-27 * frequency + SOLT.Open.C2 * 1e-36 * pow(frequency, 2) + SOLT.Open.C3 * 1e-45 * pow(frequency, 3);
+        double Cfringing = Open.C0 * 1e-15 + Open.C1 * 1e-27 * frequency + Open.C2 * 1e-36 * pow(frequency, 2) + Open.C3 * 1e-45 * pow(frequency, 3);
         // convert to impedance
         if (Cfringing == 0) {
             // special case to avoid issues with infinity
@@ -230,28 +248,18 @@ class Calkit::SOLT Calkit::toSOLT(double frequency)
             auto imp_open = complex<double>(0, -1.0 / (frequency * 2 * M_PI * Cfringing));
             ref.Open = (imp_open - complex<double>(50.0)) / (imp_open + complex<double>(50.0));
         }
-        // transform the delay into a phase shift for the given frequency
-        double open_phaseshift = -2 * M_PI * frequency * 2 * SOLT.Open.delay * 1e-12;
-        double open_att_db = SOLT.Open.loss * 1e9 * 4.3429 * 2 * SOLT.Open.delay * 1e-12 / SOLT.Open.Z0 * sqrt(frequency / 1e9);
-        double open_att = pow(10.0, -open_att_db / 10.0);
-        auto open_correction = polar<double>(open_att, open_phaseshift);
-        ref.Open *= open_correction;
+        ref.Open = addTransmissionLine(ref.Open, Open.Z0, Open.delay*1e-12, Open.loss*1e9, frequency);
     }
 
-    if(SOLT.Short.useMeasurements) {
+    if(Short.useMeasurements) {
         ref.Short = ts_short->interpolate(frequency).S[0];
     } else {
         // calculate inductance for short
-        double Lseries = SOLT.Short.L0 * 1e-12 + SOLT.Short.L1 * 1e-24 * frequency + SOLT.Short.L2 * 1e-33 * pow(frequency, 2) + SOLT.Short.L3 * 1e-42 * pow(frequency, 3);
+        double Lseries = Short.L0 * 1e-12 + Short.L1 * 1e-24 * frequency + Short.L2 * 1e-33 * pow(frequency, 2) + Short.L3 * 1e-42 * pow(frequency, 3);
         // convert to impedance
         auto imp_short = complex<double>(0, frequency * 2 * M_PI * Lseries);
         ref.Short =  (imp_short - complex<double>(50.0)) / (imp_short + complex<double>(50.0));
-        // transform the delay into a phase shift for the given frequency
-        double short_phaseshift = -2 * M_PI * frequency * 2 * SOLT.Short.delay * 1e-12;
-        double short_att_db = SOLT.Short.loss * 1e9 * 4.3429 * 2 * SOLT.Short.delay * 1e-12 / SOLT.Short.Z0 * sqrt(frequency / 1e9);;
-        double short_att = pow(10.0, -short_att_db / 10.0);
-        auto short_correction = polar<double>(short_att, short_phaseshift);
-        ref.Short *= short_correction;
+        ref.Short = addTransmissionLine(ref.Short, Short.Z0, Short.delay*1e-12, Short.loss*1e9, frequency);
     }
 
     if(SOLT.Through.useMeasurements) {
@@ -288,47 +296,91 @@ class Calkit::TRL Calkit::toTRL(double)
     return trl;
 }
 
-double Calkit::minFreq(bool trl)
+double Calkit::minFreqTRL()
 {
-    if(trl) {
-        return TRL.Line.minFreq;
-    } else {
-        fillTouchstoneCache();
-        double min = 0;
-        array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
-        // find the highest minimum frequency in all measurement files
-        for(auto ts : ts_list) {
-            if(!ts) {
-                // this calibration standard is defined by coefficients, no minimum frequency
-                continue;
-            }
-            if(ts->minFreq() > min) {
-                min = ts->minFreq();
-            }
-        }
-        return min;
-    }
+    return TRL.Line.minFreq;
 }
 
-double Calkit::maxFreq(bool trl)
+double Calkit::maxFreqTRL()
 {
-    if(trl) {
-        return TRL.Line.maxFreq;
+    return TRL.Line.maxFreq;
+}
+
+double Calkit::minFreqSOLT(bool male_standards)
+{
+    fillTouchstoneCache();
+    double min = 0;
+    auto ts_load = male_standards ? ts_load_m : ts_load_f;
+    auto ts_short = male_standards ? ts_short_m : ts_short_f;
+    auto ts_open = male_standards ? ts_open_m : ts_open_f;
+    array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
+    // find the highest minimum frequency in all measurement files
+    for(auto ts : ts_list) {
+        if(!ts) {
+            // this calibration standard is defined by coefficients, no minimum frequency
+            continue;
+        }
+        if(ts->minFreq() > min) {
+            min = ts->minFreq();
+        }
+    }
+    return min;
+}
+
+double Calkit::maxFreqSOLT(bool male_standards)
+{
+    fillTouchstoneCache();
+    double max = std::numeric_limits<double>::max();
+    auto ts_load = male_standards ? ts_load_m : ts_load_f;
+    auto ts_short = male_standards ? ts_short_m : ts_short_f;
+    auto ts_open = male_standards ? ts_open_m : ts_open_f;
+    array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
+    // find the highest minimum frequency in all measurement files
+    for(auto ts : ts_list) {
+        if(!ts) {
+            // this calibration standard is defined by coefficients, no minimum frequency
+            continue;
+        }
+        if(ts->maxFreq() < max) {
+            max = ts->maxFreq();
+        }
+    }
+    return max;
+}
+
+bool Calkit::checkIfValid(double min_freq, double max_freq, bool isTRL, bool include_male, bool include_female)
+{
+    auto min_supported = std::numeric_limits<double>::min();
+    auto max_supported = std::numeric_limits<double>::max();
+    if(isTRL) {
+        min_supported = TRL.Line.minFreq;
+        max_supported = TRL.Line.maxFreq;
     } else {
-        fillTouchstoneCache();
-        double max = std::numeric_limits<double>::max();
-        array<Touchstone*, 4> ts_list = {ts_open, ts_short, ts_load, ts_through};
-        // find the highest minimum frequency in all measurement files
-        for(auto ts : ts_list) {
-            if(!ts) {
-                // this calibration standard is defined by coefficients, no minimum frequency
-                continue;
+        if(include_male) {
+            auto min_male = minFreqSOLT(true);
+            auto max_male = maxFreqSOLT(true);
+            if(min_male > min_supported) {
+                min_supported = min_male;
             }
-            if(ts->maxFreq() < max) {
-                max = ts->maxFreq();
+            if(max_male > max_supported) {
+                max_supported = max_male;
             }
         }
-        return max;
+        if(include_female) {
+            auto min_female = minFreqSOLT(false);
+            auto max_female = maxFreqSOLT(false);
+            if(min_female > min_supported) {
+                min_supported = min_female;
+            }
+            if(max_female > max_supported) {
+                max_supported = max_female;
+            }
+        }
+    }
+    if(min_supported <= min_freq && max_supported >= max_freq) {
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -339,7 +391,7 @@ bool Calkit::isTRLReflectionShort() const
 
 void Calkit::TransformPathsToRelative(QFileInfo d)
 {
-    vector<QString*> filenames = {&SOLT.Short.file, &SOLT.Open.file, &SOLT.Load.file, &SOLT.Through.file};
+    vector<QString*> filenames = {&SOLT.short_m.file, &SOLT.open_m.file, &SOLT.load_m.file, &SOLT.short_f.file, &SOLT.open_f.file, &SOLT.load_f.file, &SOLT.Through.file};
     for(auto f : filenames) {
         if(f->isEmpty()) {
             continue;
@@ -354,7 +406,7 @@ void Calkit::TransformPathsToRelative(QFileInfo d)
 
 void Calkit::TransformPathsToAbsolute(QFileInfo d)
 {
-    vector<QString*> filenames = {&SOLT.Short.file, &SOLT.Open.file, &SOLT.Load.file, &SOLT.Through.file};
+    vector<QString*> filenames = {&SOLT.short_m.file, &SOLT.open_m.file, &SOLT.load_m.file, &SOLT.short_f.file, &SOLT.open_f.file, &SOLT.load_f.file, &SOLT.Through.file};
     for(auto f : filenames) {
         if(f->isEmpty()) {
             continue;
@@ -370,12 +422,18 @@ void Calkit::TransformPathsToAbsolute(QFileInfo d)
 
 void Calkit::clearTouchstoneCache()
 {
-    delete ts_open;
-    ts_open = nullptr;
-    delete ts_short;
-    ts_short = nullptr;
-    delete ts_load;
-    ts_load = nullptr;
+    delete ts_open_m;
+    ts_open_m = nullptr;
+    delete ts_short_m;
+    ts_short_m = nullptr;
+    delete ts_load_m;
+    ts_load_m = nullptr;
+    delete ts_open_f;
+    ts_open_f = nullptr;
+    delete ts_short_f;
+    ts_short_f = nullptr;
+    delete ts_load_f;
+    ts_load_f = nullptr;
     delete ts_through;
     ts_through = nullptr;
     ts_cached = false;
@@ -386,20 +444,35 @@ void Calkit::fillTouchstoneCache()
     if(ts_cached) {
         return;
     }
-    if(SOLT.Open.useMeasurements) {
-        ts_open = new Touchstone(1);
-        *ts_open = Touchstone::fromFile(SOLT.Open.file.toStdString());
-        ts_open->reduceTo1Port(SOLT.Open.Sparam);
+    if(SOLT.open_m.useMeasurements) {
+        ts_open_m = new Touchstone(1);
+        *ts_open_m = Touchstone::fromFile(SOLT.open_m.file.toStdString());
+        ts_open_m->reduceTo1Port(SOLT.open_m.Sparam);
     }
-    if(SOLT.Short.useMeasurements) {
-        ts_short = new Touchstone(1);
-        *ts_short = Touchstone::fromFile(SOLT.Short.file.toStdString());
-        ts_short->reduceTo1Port(SOLT.Short.Sparam);
+    if(SOLT.short_m.useMeasurements) {
+        ts_short_m = new Touchstone(1);
+        *ts_short_m = Touchstone::fromFile(SOLT.short_m.file.toStdString());
+        ts_short_m->reduceTo1Port(SOLT.short_m.Sparam);
     }
-    if(SOLT.Load.useMeasurements) {
-        ts_load = new Touchstone(1);
-        *ts_load = Touchstone::fromFile(SOLT.Load.file.toStdString());
-        ts_load->reduceTo1Port(SOLT.Load.Sparam);
+    if(SOLT.load_m.useMeasurements) {
+        ts_load_m = new Touchstone(1);
+        *ts_load_m = Touchstone::fromFile(SOLT.load_m.file.toStdString());
+        ts_load_m->reduceTo1Port(SOLT.load_m.Sparam);
+    }
+    if(SOLT.open_f.useMeasurements) {
+        ts_open_f = new Touchstone(1);
+        *ts_open_f = Touchstone::fromFile(SOLT.open_f.file.toStdString());
+        ts_open_f->reduceTo1Port(SOLT.open_f.Sparam);
+    }
+    if(SOLT.short_f.useMeasurements) {
+        ts_short_f = new Touchstone(1);
+        *ts_short_f = Touchstone::fromFile(SOLT.short_f.file.toStdString());
+        ts_short_f->reduceTo1Port(SOLT.short_f.Sparam);
+    }
+    if(SOLT.load_f.useMeasurements) {
+        ts_load_f = new Touchstone(1);
+        *ts_load_f = Touchstone::fromFile(SOLT.load_f.file.toStdString());
+        ts_load_f->reduceTo1Port(SOLT.load_f.Sparam);
     }
     if(SOLT.Through.useMeasurements) {
         ts_through = new Touchstone(2);

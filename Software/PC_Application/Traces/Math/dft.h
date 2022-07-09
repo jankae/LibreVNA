@@ -4,12 +4,31 @@
 #include "tracemath.h"
 #include "windowfunction.h"
 
+#include <QThread>
+#include <QSemaphore>
+
 namespace Math {
+
+class DFT;
+
+class DFTThread : public QThread
+{
+    Q_OBJECT
+public:
+    DFTThread(DFT &dft);
+    ~DFTThread(){};
+private:
+    void run() override;
+    DFT &dft;
+};
 
 class DFT : public TraceMath
 {
+    friend class DFTThread;
+    Q_OBJECT
 public:
     DFT();
+    ~DFT();
 
     DataType outputType(DataType inputType) override;
     QString description() override;
@@ -29,6 +48,9 @@ private:
     bool automaticDC;
     double DCfreq;
     WindowFunction window;
+    DFTThread *thread;
+    bool destructing;
+    QSemaphore semphr;
 };
 
 }

@@ -36,10 +36,16 @@ static uint8_t attenuator;
 static int64_t trackingFreq;
 static bool trackingLowband;
 
+static uint64_t firstPointTime;
+static bool firstPoint;
+static bool zerospan;
+
 static void StartNextSample() {
 	uint64_t freq = s.f_start + (s.f_stop - s.f_start) * pointCnt / (points - 1);
+	freq = Cal::FrequencyCorrectionToDevice(freq);
 	uint64_t LO1freq;
 	uint32_t LO2freq;
+	bool LO1inverted = false;
 	switch(signalIDstep) {
 	case 0:
 		// reset minimum amplitudes in first signal ID step
@@ -48,8 +54,8 @@ static void StartNextSample() {
 			port2Measurement[i] = std::numeric_limits<float>::max();
 		}
 		// Use default LO frequencies
-		LO1freq = freq + HW::IF1;
-		LO2freq = HW::IF1 - HW::IF2;
+		LO1freq = freq + HW::getIF1();
+		LO2freq = HW::getIF1() - HW::getIF2();
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, 112);
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, 1120);
 		negativeDFT = true;
@@ -87,17 +93,18 @@ static void StartNextSample() {
 		}
 		break;
 	case 1:
-		LO2freq = HW::IF1 - HW::IF2;
+		LO2freq = HW::getIF1() - HW::getIF2();
 		negativeDFT = false;
 		// Shift first LO to other side
 		// depending on the measurement frequency this is not possible or additive mixing has to be used
-		if(freq >= HW::IF1 + HW::LO1_minFreq) {
+		if(freq >= HW::getIF1() + HW::LO1_minFreq) {
 			// frequency is high enough to shift 1.LO below measurement frequency
-			LO1freq = freq - HW::IF1;
+			LO1freq = freq - HW::getIF1();
+			LO1inverted = true;
 			break;
-		} else if(freq <= HW::IF1 - HW::LO1_minFreq) {
+		} else if(freq <= HW::getIF1() - HW::LO1_minFreq) {
 			// frequency is low enough to add 1.LO to measurement frequency
-			LO1freq = HW::IF1 - freq;
+			LO1freq = HW::getIF1() - freq;
 			break;
 		}
 		// unable to reach required frequency with 1.LO, skip this signal ID step
@@ -105,22 +112,24 @@ static void StartNextSample() {
 		/* no break */
 	case 2:
 		// Shift second LOs to other side
-		LO1freq = freq + HW::IF1;
-		LO2freq = HW::IF1 + HW::IF2;
+		LO1freq = freq + HW::getIF1();
+		LO1inverted = false;
+		LO2freq = HW::getIF1() + HW::getIF2();
 		negativeDFT = false;
 		break;
 	case 3:
 		// Shift both LO to other side
-		LO2freq = HW::IF1 + HW::IF2;
+		LO2freq = HW::getIF1() + HW::getIF2();
 		negativeDFT = true;
 		// depending on the measurement frequency this is not possible or additive mixing has to be used
-		if(freq >= HW::IF1 + HW::LO1_minFreq) {
+		if(freq >= HW::getIF1() + HW::LO1_minFreq) {
 			// frequency is high enough to shift 1.LO below measurement frequency
-			LO1freq = freq - HW::IF1;
+			LO1freq = freq - HW::getIF1();
+			LO1inverted = true;
 			break;
-		} else if(freq <= HW::IF1 - HW::LO1_minFreq) {
+		} else if(freq <= HW::getIF1() - HW::LO1_minFreq) {
 			// frequency is low enough to add 1.LO to measurement frequency
-			LO1freq = HW::IF1 - freq;
+			LO1freq = HW::getIF1() - freq;
 			break;
 		}
 		// unable to reach required frequency with 1.LO, skip this signal ID step
@@ -129,24 +138,29 @@ static void StartNextSample() {
 	default:
 		// Use default frequencies with different ADC samplerate to remove images in final IF
 		negativeDFT = true;
-		LO1freq = freq + HW::IF1;
-		LO2freq = HW::IF1 - HW::IF2;
+		LO1freq = freq + HW::getIF1();
+		LO1inverted = false;
+		LO2freq = HW::getIF1() - HW::getIF2();
 		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, signalIDprescalers[signalIDstep-4]);
 		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, (uint16_t) signalIDprescalers[signalIDstep-4] * 10);
 	}
 	LO1.SetFrequency(LO1freq);
 	// LO1 is not able to reach all frequencies with the required precision, adjust LO2 to account for deviation
 	int32_t LO1deviation = (int64_t) LO1.GetActualFrequency() - LO1freq;
+	if(LO1inverted) {
+		LO1deviation = -LO1deviation;
+	}
 	LO2freq += LO1deviation;
+
 	// only adjust LO2 PLL if necessary (if the deviation is significantly less than the RBW it does not matter)
-	if((uint32_t) abs(LO2freq - lastLO2) > actualRBW / 2) {
+	if((uint32_t) abs(LO2freq - lastLO2) > actualRBW / 100) {
 		Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		lastLO2 = LO2freq;
 	}
 	if (s.UseDFT) {
 		uint32_t spacing = (s.f_stop - s.f_start) / (points - 1);
-		uint32_t start = HW::IF2;
+		uint32_t start = HW::getIF2();
 		if(negativeDFT) {
 			// needs to look below the start frequency, shift start
 			start -= spacing * (DFTpoints - 1);
@@ -171,13 +185,15 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	s = settings;
 	HW::SetMode(HW::Mode::SA);
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
 	// in almost all cases a full sweep requires more points than the FPGA can handle at a time
 	// individually start each point and do the sweep in the uC
 	FPGA::SetNumberOfPoints(1);
 	// calculate required samples per measurement for requested RBW
 	// see https://www.tek.com/blog/window-functions-spectrum-analyzers for window factors
 	constexpr float window_factors[4] = {0.89f, 2.23f, 1.44f, 3.77f};
-	sampleNum = HW::ADCSamplerate * window_factors[s.WindowType] / s.RBW;
+	sampleNum = HW::getADCRate() * window_factors[s.WindowType] / s.RBW;
 	// round up to next multiple of 16
 	if(sampleNum%16) {
 		sampleNum += 16 - sampleNum%16;
@@ -185,7 +201,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	if(sampleNum >= HW::MaxSamples) {
 		sampleNum = HW::MaxSamples;
 	}
-	actualRBW = HW::ADCSamplerate * window_factors[s.WindowType] / sampleNum;
+	actualRBW = HW::getADCRate() * window_factors[s.WindowType] / sampleNum;
 	FPGA::SetSamplesPerPoint(sampleNum);
 	// calculate amount of required points
 	points = 2 * (s.f_stop - s.f_start) / actualRBW;
@@ -193,6 +209,8 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	points += s.pointNum - points % s.pointNum;
 	binSize = points / s.pointNum;
 	LOG_DEBUG("%u displayed points, resulting in %lu points and bins of size %u", s.pointNum, points, binSize);
+
+	zerospan = (s.f_start == s.f_stop);
 	// set initial state
 	pointCnt = 0;
 	// enable the required hardware resources
@@ -206,8 +224,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::SetWindow((FPGA::Window) s.WindowType);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::Enable(FPGA::Periphery::ExcitePort1, s.trackingGeneratorPort == 0);
-	FPGA::Enable(FPGA::Periphery::ExcitePort2, s.trackingGeneratorPort == 1);
+	FPGA::SetupSweep(0, s.trackingGeneratorPort == 1, s.trackingGeneratorPort == 0);
 	FPGA::Enable(FPGA::Periphery::PortSwitch, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Amplifier, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
@@ -245,6 +262,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	}
 
 	lastLO2 = 0;
+	firstPoint = true;
 	active = true;
 	StartNextSample();
 }
@@ -296,9 +314,14 @@ void SA::Work() {
 	if(!active) {
 		return;
 	}
+
 	if(!s.SignalID || signalIDstep >= signalIDsteps - 1) {
 		// this measurement point is done, handle result according to detector
 		for(uint16_t i=0;i<DFTpoints;i++) {
+			if(pointCnt + i >= points) {
+				// DFT covered more points than are required for the remaining sweep, can abort here
+				break;
+			}
 			uint16_t binIndex = (pointCnt + i) / binSize;
 			uint32_t pointInBin = (pointCnt + i) % binSize;
 			bool lastPointInBin = pointInBin >= binSize - 1;
@@ -359,12 +382,24 @@ void SA::Work() {
 				// Send result to application
 				p.type = Protocol::PacketType::SpectrumAnalyzerResult;
 				// measurements are already up to date, fill remaining fields
-				p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
+				if(zerospan) {
+					uint64_t timestamp = HW::getLastISRTimestamp();
+					if(firstPoint) {
+						p.spectrumResult.us = 0;
+						firstPointTime = timestamp;
+						firstPoint = false;
+					} else {
+						p.spectrumResult.us = timestamp - firstPointTime;
+					}
+				} else {
+					// non-zero span, set frequency
+					p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
+				}
 				// scale approximately (constant determined empirically)
 				p.spectrumResult.port1 /= 253000000.0;
 				p.spectrumResult.port2 /= 253000000.0;
 				if (s.applyReceiverCorrection) {
-					auto correction = AmplitudeCal::ReceiverCorrection(p.spectrumResult.frequency);
+					auto correction = Cal::ReceiverCorrection(p.spectrumResult.frequency);
 					p.spectrumResult.port1 *= powf(10.0f, (float) correction.port1 / 100.0f / 20.0f);
 					p.spectrumResult.port2 *= powf(10.0f, (float) correction.port2 / 100.0f / 20.0f);
 				}
@@ -379,13 +414,13 @@ void SA::Work() {
 			// send device info every nth point
 			FPGA::Enable(FPGA::Periphery::SourceChip); // needs to enable the chip to get a valid temperature reading
 			Protocol::PacketInfo packet;
-			packet.type = Protocol::PacketType::DeviceInfo;
-			HW::fillDeviceInfo(&packet.info, true);
+			packet.type = Protocol::PacketType::DeviceStatusV1;
+			HW::getDeviceStatus(&packet.statusV1, true);
 			FPGA::Disable(FPGA::Periphery::SourceChip);
 			Communication::Send(packet);
 		}
 
-		if(pointCnt < points - DFTpoints) {
+		if(pointCnt + DFTpoints < points) {
 			pointCnt += DFTpoints;
 		} else {
 			pointCnt = 0;

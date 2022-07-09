@@ -21,7 +21,7 @@ void usb_init(usbd_recv_callback_t receive_callback);
 bool usb_transmit(const uint8_t *data, uint16_t length);
 uint16_t usb_available_buffer();
 void usb_log(const char *log, uint16_t length);
-
+void usb_clear_buffer();
 
 #ifdef __cplusplus
 }

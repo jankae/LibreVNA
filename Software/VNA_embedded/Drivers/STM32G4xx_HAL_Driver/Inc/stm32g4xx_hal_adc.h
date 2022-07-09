@@ -6,13 +6,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -113,7 +112,7 @@ typedef struct
                                         0           Gain compensation will be disabled and coefficient set to 0
                                         1 -> 0x3FFF Gain compensation will be enabled and coefficient set to specified value
 
-                                       Note: Gain compensation when enabled is appied to all channels. */
+                                       Note: Gain compensation when enabled is applied to all channels. */
 
   uint32_t ScanConvMode;          /*!< Configure the sequencer of ADC groups regular and injected.
                                        This parameter can be associated to parameter 'DiscontinuousConvMode' to have main sequence subdivided in successive parts.
@@ -132,8 +131,8 @@ typedef struct
                                        This feature automatically adapts the frequency of ADC conversions triggers to the speed of the system that reads the data. Moreover, this avoids risk of overrun
                                        for low frequency applications.
                                        This parameter can be set to ENABLE or DISABLE.
-                                       Note: Do not use with interruption or DMA (HAL_ADC_Start_IT(), HAL_ADC_Start_DMA()) since they clear immediately the EOC flag
-                                             to free the IRQ vector sequencer.
+                                       Note: It is not recommended to use with interruption or DMA (HAL_ADC_Start_IT(), HAL_ADC_Start_DMA()) since these modes have to clear immediately the EOC flag (by CPU to free the IRQ pending event or by DMA).
+                                             Auto wait will work but fort a very short time, discarding its intended benefit (except specific case of high load of CPU or DMA transfers which can justify usage of auto wait).
                                              Do use with polling: 1. Start conversion with HAL_ADC_Start(), 2. Later on, when ADC conversion data is needed:
                                              use HAL_ADC_PollForConversion() to ensure that conversion is completed and HAL_ADC_GetValue() to retrieve conversion result and trig another conversion start.
                                              (in case of usage of ADC group injected, use the equivalent functions HAL_ADCExInjected_Start(), HAL_ADCEx_InjectedGetValue(), ...). */
@@ -251,7 +250,7 @@ typedef struct
                                         Note: This parameter must be modified when no conversion is on going on both regular and injected groups (ADC disabled, or ADC enabled
                                               without continuous mode or external trigger that could launch a conversion). */
 
-  uint32_t OffsetSign;                /*!< Define if the offset should be substracted (negative sign) or added (positive sign) from or to the raw converted data.
+  uint32_t OffsetSign;                /*!< Define if the offset should be subtracted (negative sign) or added (positive sign) from or to the raw converted data.
                                         This parameter can be a value of @ref ADCEx_OffsetSign.
                                         Note: This parameter must be modified when no conversion is on going on both regular and injected groups (ADC disabled, or ADC enabled
                                               without continuous mode or external trigger that could launch a conversion). */
@@ -357,7 +356,7 @@ typedef struct
                                                               external trigger, low power auto power-on (if feature available), multimode ADC master control (if feature available)) */
 #define HAL_ADC_STATE_REG_EOC           (0x00000200UL)   /*!< Conversion data available on group regular */
 #define HAL_ADC_STATE_REG_OVR           (0x00000400UL)   /*!< Overrun occurrence */
-#define HAL_ADC_STATE_REG_EOSMP         (0x00000800UL)   /*!< Not available on this STM32 serie: End Of Sampling flag raised  */
+#define HAL_ADC_STATE_REG_EOSMP         (0x00000800UL)   /*!< Not available on this STM32 series: End Of Sampling flag raised  */
 
 /* States of ADC group injected */
 #define HAL_ADC_STATE_INJ_BUSY          (0x00001000UL)   /*!< A conversion on ADC group injected is ongoing or can occur (either by auto-injection mode,
@@ -384,7 +383,7 @@ typedef struct
 typedef struct __ADC_HandleTypeDef
 #else
 typedef struct
-#endif
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
 {
   ADC_TypeDef                   *Instance;              /*!< Register base address */
   ADC_InitTypeDef               Init;                   /*!< ADC initialization parameters and regular conversions setting */
@@ -499,7 +498,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   * @{
   */
 #define ADC_DATAALIGN_RIGHT                (LL_ADC_DATA_ALIGN_RIGHT)/*!< ADC conversion data alignment: right aligned (alignment on data register LSB bit 0)*/
-#define ADC_DATAALIGN_LEFT                 (LL_ADC_DATA_ALIGN_LEFT)       /*!< ADC conversion data alignment: left aligned (aligment on data register MSB bit 15)*/
+#define ADC_DATAALIGN_LEFT                 (LL_ADC_DATA_ALIGN_LEFT)       /*!< ADC conversion data alignment: left aligned (alignment on data register MSB bit 15)*/
 /**
   * @}
   */
@@ -666,17 +665,17 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
 #define ADC_CHANNEL_16                     (LL_ADC_CHANNEL_16)              /*!< ADC external channel (channel connected to GPIO pin) ADCx_IN16 */
 #define ADC_CHANNEL_17                     (LL_ADC_CHANNEL_17)              /*!< ADC external channel (channel connected to GPIO pin) ADCx_IN17 */
 #define ADC_CHANNEL_18                     (LL_ADC_CHANNEL_18)              /*!< ADC external channel (channel connected to GPIO pin) ADCx_IN18 */
-#define ADC_CHANNEL_VREFINT                (LL_ADC_CHANNEL_VREFINT)         /*!< ADC internal channel connected to VrefInt: Internal voltage reference. On this STM32 serie, ADC channel available on all instances but ADC2. */
-#define ADC_CHANNEL_TEMPSENSOR_ADC1        (LL_ADC_CHANNEL_TEMPSENSOR_ADC1) /*!< ADC internal channel connected to Temperature sensor. On this STM32 serie, ADC channel available only on ADC1 instance. */
-#define ADC_CHANNEL_TEMPSENSOR_ADC5        (LL_ADC_CHANNEL_TEMPSENSOR_ADC5) /*!< ADC internal channel connected to Temperature sensor. On this STM32 serie, ADC channel available only on ADC5 instance. Refer to device datasheet for ADC5 availaibility */
-#define ADC_CHANNEL_VBAT                   (LL_ADC_CHANNEL_VBAT)            /*!< ADC internal channel connected to Vbat/3: Vbat voltage through a divider ladder of factor 1/3 to have Vbat always below Vdda. On this STM32 serie, ADC channel available on all ADC instances but ADC2 & ADC4. Refer to device datasheet for ADC4 availaibility */
-#define ADC_CHANNEL_VOPAMP1                (LL_ADC_CHANNEL_VOPAMP1)         /*!< ADC internal channel connected to OPAMP1 output. On this STM32 serie, ADC channel available only on ADC1 instance. */
-#define ADC_CHANNEL_VOPAMP2                (LL_ADC_CHANNEL_VOPAMP2)         /*!< ADC internal channel connected to OPAMP2 output. On this STM32 serie, ADC channel available only on ADC2 instance. */
-#define ADC_CHANNEL_VOPAMP3_ADC2           (LL_ADC_CHANNEL_VOPAMP3_ADC2)    /*!< ADC internal channel connected to OPAMP3 output. On this STM32 serie, ADC channel available only on ADC2 instance. */
-#define ADC_CHANNEL_VOPAMP3_ADC3           (LL_ADC_CHANNEL_VOPAMP3_ADC3)    /*!< ADC internal channel connected to OPAMP3 output. On this STM32 serie, ADC channel available only on ADC3 instance. Refer to device datasheet for ADC3 availability */
-#define ADC_CHANNEL_VOPAMP4                (LL_ADC_CHANNEL_VOPAMP4)         /*!< ADC internal channel connected to OPAMP4 output. On this STM32 serie, ADC channel available only on ADC5 instance. Refer to device datasheet for ADC5 availability */
-#define ADC_CHANNEL_VOPAMP5                (LL_ADC_CHANNEL_VOPAMP5)         /*!< ADC internal channel connected to OPAMP5 output. On this STM32 serie, ADC channel available only on ADC5 instance. Refer to device datasheet for ADC5 availability */
-#define ADC_CHANNEL_VOPAMP6                (LL_ADC_CHANNEL_VOPAMP6)         /*!< ADC internal channel connected to OPAMP6 output. On this STM32 serie, ADC channel available only on ADC4 instance. Refer to device datasheet for ADC4 availability */
+#define ADC_CHANNEL_VREFINT                (LL_ADC_CHANNEL_VREFINT)         /*!< ADC internal channel connected to VrefInt: Internal voltage reference. On this STM32 series, ADC channel available on all instances but ADC2. */
+#define ADC_CHANNEL_TEMPSENSOR_ADC1        (LL_ADC_CHANNEL_TEMPSENSOR_ADC1) /*!< ADC internal channel connected to Temperature sensor. On this STM32 series, ADC channel available only on ADC1 instance. */
+#define ADC_CHANNEL_TEMPSENSOR_ADC5        (LL_ADC_CHANNEL_TEMPSENSOR_ADC5) /*!< ADC internal channel connected to Temperature sensor. On this STM32 series, ADC channel available only on ADC5 instance. Refer to device datasheet for ADC5 availaibility */
+#define ADC_CHANNEL_VBAT                   (LL_ADC_CHANNEL_VBAT)            /*!< ADC internal channel connected to Vbat/3: Vbat voltage through a divider ladder of factor 1/3 to have Vbat always below Vdda. On this STM32 series, ADC channel available on all ADC instances but ADC2 & ADC4. Refer to device datasheet for ADC4 availaibility */
+#define ADC_CHANNEL_VOPAMP1                (LL_ADC_CHANNEL_VOPAMP1)         /*!< ADC internal channel connected to OPAMP1 output. On this STM32 series, ADC channel available only on ADC1 instance. */
+#define ADC_CHANNEL_VOPAMP2                (LL_ADC_CHANNEL_VOPAMP2)         /*!< ADC internal channel connected to OPAMP2 output. On this STM32 series, ADC channel available only on ADC2 instance. */
+#define ADC_CHANNEL_VOPAMP3_ADC2           (LL_ADC_CHANNEL_VOPAMP3_ADC2)    /*!< ADC internal channel connected to OPAMP3 output. On this STM32 series, ADC channel available only on ADC2 instance. */
+#define ADC_CHANNEL_VOPAMP3_ADC3           (LL_ADC_CHANNEL_VOPAMP3_ADC3)    /*!< ADC internal channel connected to OPAMP3 output. On this STM32 series, ADC channel available only on ADC3 instance. Refer to device datasheet for ADC3 availability */
+#define ADC_CHANNEL_VOPAMP4                (LL_ADC_CHANNEL_VOPAMP4)         /*!< ADC internal channel connected to OPAMP4 output. On this STM32 series, ADC channel available only on ADC5 instance. Refer to device datasheet for ADC5 availability */
+#define ADC_CHANNEL_VOPAMP5                (LL_ADC_CHANNEL_VOPAMP5)         /*!< ADC internal channel connected to OPAMP5 output. On this STM32 series, ADC channel available only on ADC5 instance. Refer to device datasheet for ADC5 availability */
+#define ADC_CHANNEL_VOPAMP6                (LL_ADC_CHANNEL_VOPAMP6)         /*!< ADC internal channel connected to OPAMP6 output. On this STM32 series, ADC channel available only on ADC4 instance. Refer to device datasheet for ADC4 availability */
 /**
   * @}
   */
@@ -768,7 +767,6 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
 /**
   * @}
   */
-
 
 /** @defgroup ADC_Event_type ADC Event type
   * @{
@@ -988,25 +986,25 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_HRTIM_TRG10)     || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_LPTIM_OUT)       || \
                                                  ((((__HANDLE__)->Instance == ADC1) || ((__HANDLE__)->Instance == ADC2)) && \
-                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC1)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC2)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC2)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC4)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC4)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC2)   || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC3)   || \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC2)       || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC3)       || \
                                                    ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT11)))    || \
                                                  ((((__HANDLE__)->Instance == ADC3) || ((__HANDLE__)->Instance == ADC4) || ((__HANDLE__)->Instance == ADC5)) && \
-                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC1)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC3)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC1)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC1)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_CC1)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_HRTIM_TRG2)     || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_HRTIM_TRG4)     || \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC3)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_HRTIM_TRG2)    || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_HRTIM_TRG4)    || \
                                                    ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT2)))     || \
                                                  ((__REGTRIG__) == ADC_SOFTWARE_START)           )
-#elif defined(STM32G473xx)
+#elif defined(STM32G473xx) || defined(STM32G483xx)
 #define IS_ADC_EXTTRIG(__HANDLE__, __REGTRIG__) (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO)         || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO2)        || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC3)          || \
@@ -1023,23 +1021,51 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC1)         || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_LPTIM_OUT)       || \
                                                  ((((__HANDLE__)->Instance == ADC1) || ((__HANDLE__)->Instance == ADC2)) && \
-                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC1)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC2)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC2)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC4)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC4)    || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC2)   || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC3)   || \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC2)       || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC3)       || \
                                                    ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT11)))    || \
                                                  ((((__HANDLE__)->Instance == ADC3) || ((__HANDLE__)->Instance == ADC4) || ((__HANDLE__)->Instance == ADC5)) && \
-                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC1)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC3)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC1)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC1)         || \
-                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_CC1)         || \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC3)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_CC1)        || \
                                                    ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT2)))     || \
                                                  ((__REGTRIG__) == ADC_SOFTWARE_START)           )
-#elif defined(STM32GBK1CB) || defined(STM32G431xx) || defined(STM32G441xx) || defined(STM32G471xx)
+#elif defined(STM32G471xx)
+#define IS_ADC_EXTTRIG(__HANDLE__, __REGTRIG__) (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO2)        || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC3)          || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T6_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T7_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_TRGO2)        || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T15_TRGO)        || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_LPTIM_OUT)       || \
+                                                 ((((__HANDLE__)->Instance == ADC1) || ((__HANDLE__)->Instance == ADC2)) && \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT11)))    || \
+                                                 ((((__HANDLE__)->Instance == ADC3)) && \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC3)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT2)))     || \
+                                                 ((__REGTRIG__) == ADC_SOFTWARE_START)           )
+#elif defined(STM32GBK1CB) || defined(STM32G431xx) || defined(STM32G441xx)
 #define IS_ADC_EXTTRIG(__HANDLE__, __REGTRIG__) (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO)         || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO2)        || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC1)          || \
@@ -1058,6 +1084,39 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_T15_TRGO)        || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_LPTIM_OUT)       || \
                                                  ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT11)        || \
+                                                 ((__REGTRIG__) == ADC_SOFTWARE_START)           )
+#elif defined(STM32G491xx) || defined(STM32G4A1xx)
+#define IS_ADC_EXTTRIG(__HANDLE__, __REGTRIG__) (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_TRGO2)        || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC3)          || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T6_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T7_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_TRGO)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_TRGO2)        || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T15_TRGO)        || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_TRGO)        || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_TRGO2)       || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC1)         || \
+                                                 ((__REGTRIG__) == ADC_EXTERNALTRIG_LPTIM_OUT)       || \
+                                                 ((((__HANDLE__)->Instance == ADC1) || ((__HANDLE__)->Instance == ADC2)) && \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T1_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC2)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC4)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC2)       || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T20_CC3)       || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT11)))    || \
+                                                 (((__HANDLE__)->Instance == ADC3) && \
+                                                  (((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T2_CC3)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T3_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T4_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_T8_CC1)        || \
+                                                   ((__REGTRIG__) == ADC_EXTERNALTRIG_EXT_IT2)))     || \
                                                  ((__REGTRIG__) == ADC_SOFTWARE_START)           )
 #endif
 
@@ -1178,7 +1237,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
 #else
 #define __HAL_ADC_RESET_HANDLE_STATE(__HANDLE__)                               \
   ((__HANDLE__)->State = HAL_ADC_STATE_RESET)
-#endif
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
 
 /**
   * @brief Enable ADC interrupt.
@@ -1341,7 +1400,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   *         (5) On STM32G4, parameter available only on ADC instance: ADC5.\n
   *         (6) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC5.\n
   *         (7) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC4, ADC5.\n
-  *          -  On this STM32 serie, all ADCx are not available on all devices. Refer to device datasheet for more details.
+  *          -  On this STM32 series, all ADCx are not available on all devices. Refer to device datasheet for more details.
   *         (8) On STM32G4, fast channel allows: 2.5 (sampling) + 12.5 (conversion) = 15 ADC clock cycles (fADC) to convert in 12-bit resolution.
   *             Other channels are slow channels  allows: 6.5 (sampling) + 12.5 (conversion) = 19 ADC clock cycles (fADC) to convert in 12-bit resolution.\n
   * @retval Value between Min_Data=0 and Max_Data=18
@@ -1395,7 +1454,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   *         (5) On STM32G4, parameter available only on ADC instance: ADC5.\n
   *         (6) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC5.\n
   *         (7) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC4, ADC5.\n
-  *          -  On this STM32 serie, all ADCx are not available on all devices. Refer to device datasheet for more details.
+  *          -  On this STM32 series, all ADCx are not available on all devices. Refer to device datasheet for more details.
   *         (8) On STM32G4, fast channel allows: 2.5 (sampling) + 12.5 (conversion) = 15 ADC clock cycles (fADC) to convert in 12-bit resolution.
   *             Other channels are slow channels  allows: 6.5 (sampling) + 12.5 (conversion) = 19 ADC clock cycles (fADC) to convert in 12-bit resolution.\n
   *         (1, 2, 3, 4, 5, 7) For ADC channel read back from ADC register,
@@ -1461,7 +1520,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   *         (5) On STM32G4, parameter available only on ADC instance: ADC5.\n
   *         (6) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC5.\n
   *         (7) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC4, ADC5.\n
-  *          -  On this STM32 serie, all ADCx are not available on all devices. Refer to device datasheet for more details.
+  *          -  On this STM32 series, all ADCx are not available on all devices. Refer to device datasheet for more details.
   *         (8) On STM32G4, fast channel allows: 2.5 (sampling) + 12.5 (conversion) = 15 ADC clock cycles (fADC) to convert in 12-bit resolution.
   *             Other channels are slow channels  allows: 6.5 (sampling) + 12.5 (conversion) = 19 ADC clock cycles (fADC) to convert in 12-bit resolution.\n
   * @retval Value "0" if the channel corresponds to a parameter definition of a ADC external channel (channel connected to a GPIO pin).
@@ -1522,7 +1581,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   *         (5) On STM32G4, parameter available only on ADC instance: ADC5.\n
   *         (6) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC5.\n
   *         (7) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC4, ADC5.\n
-  *          -  On this STM32 serie, all ADCx are not available on all devices. Refer to device datasheet for more details.
+  *          -  On this STM32 series, all ADCx are not available on all devices. Refer to device datasheet for more details.
   *         (8) On STM32G4, fast channel allows: 2.5 (sampling) + 12.5 (conversion) = 15 ADC clock cycles (fADC) to convert in 12-bit resolution.
   *             Other channels are slow channels  allows: 6.5 (sampling) + 12.5 (conversion) = 19 ADC clock cycles (fADC) to convert in 12-bit resolution.\n
   * @retval Returned value can be one of the following values:
@@ -1583,7 +1642,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   *         (5) On STM32G4, parameter available only on ADC instance: ADC5.\n
   *         (6) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC5.\n
   *         (7) On STM32G4, parameter available only on ADC instances: ADC1, ADC3, ADC4, ADC5.\n
-  *          -  On this STM32 serie, all ADCx are not available on all devices. Refer to device datasheet for more details.
+  *          -  On this STM32 series, all ADCx are not available on all devices. Refer to device datasheet for more details.
   * @retval Value "0" if the internal channel selected is not available on the ADC instance selected.
   *         Value "1" if the internal channel selected is available on the ADC instance selected.
   */
@@ -1606,7 +1665,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   */
 #define __HAL_ADC_MULTI_CONV_DATA_MASTER_SLAVE(__ADC_MULTI_MASTER_SLAVE__, __ADC_MULTI_CONV_DATA__)  \
   __LL_ADC_MULTI_CONV_DATA_MASTER_SLAVE((__ADC_MULTI_MASTER_SLAVE__), (__ADC_MULTI_CONV_DATA__))
-#endif
+#endif /* ADC_MULTIMODE_SUPPORT */
 
 /**
   * @brief  Helper macro to select the ADC common instance
@@ -1677,10 +1736,10 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   */
 #define __HAL_ADC_CONVERT_DATA_RESOLUTION(__DATA__,\
                                           __ADC_RESOLUTION_CURRENT__,\
-                                          __ADC_RESOLUTION_TARGET__)            \
-  __LL_ADC_CONVERT_DATA_RESOLUTION((__DATA__),                                  \
-                                   (__ADC_RESOLUTION_CURRENT__),                \
-                                   (__ADC_RESOLUTION_TARGET__))
+                                          __ADC_RESOLUTION_TARGET__) \
+__LL_ADC_CONVERT_DATA_RESOLUTION((__DATA__),\
+                                 (__ADC_RESOLUTION_CURRENT__),\
+                                 (__ADC_RESOLUTION_TARGET__))
 
 /**
   * @brief  Helper macro to calculate the voltage (unit: mVolt)
@@ -1700,10 +1759,10 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   */
 #define __HAL_ADC_CALC_DATA_TO_VOLTAGE(__VREFANALOG_VOLTAGE__,\
                                        __ADC_DATA__,\
-                                       __ADC_RESOLUTION__)                     \
-  __LL_ADC_CALC_DATA_TO_VOLTAGE((__VREFANALOG_VOLTAGE__),                      \
-                                (__ADC_DATA__),                                \
-                                (__ADC_RESOLUTION__))
+                                       __ADC_RESOLUTION__) \
+__LL_ADC_CALC_DATA_TO_VOLTAGE((__VREFANALOG_VOLTAGE__),\
+                              (__ADC_DATA__),\
+                              (__ADC_RESOLUTION__))
 
 /**
   * @brief  Helper macro to calculate analog reference voltage (Vref+)
@@ -1715,7 +1774,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   *         connected to pin Vref+.
   *         On devices with small package, the pin Vref+ is not present
   *         and internally bonded to pin Vdda.
-  * @note   On this STM32 serie, calibration data of internal voltage reference
+  * @note   On this STM32 series, calibration data of internal voltage reference
   *         VrefInt corresponds to a resolution of 12 bits,
   *         this is the recommended ADC resolution to convert voltage of
   *         internal voltage reference VrefInt.
@@ -1731,9 +1790,9 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   * @retval Analog reference voltage (unit: mV)
   */
 #define __HAL_ADC_CALC_VREFANALOG_VOLTAGE(__VREFINT_ADC_DATA__,\
-                                          __ADC_RESOLUTION__)                  \
-  __LL_ADC_CALC_VREFANALOG_VOLTAGE((__VREFINT_ADC_DATA__),                     \
-                                  (__ADC_RESOLUTION__))
+                                          __ADC_RESOLUTION__) \
+__LL_ADC_CALC_VREFANALOG_VOLTAGE((__VREFINT_ADC_DATA__),\
+                                 (__ADC_RESOLUTION__))
 
 /**
   * @brief  Helper macro to calculate the temperature (unit: degree Celsius)
@@ -1762,7 +1821,7 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   * @note   Analog reference voltage (Vref+) must be either known from
   *         user board environment or can be calculated using ADC measurement
   *         and ADC helper macro @ref __LL_ADC_CALC_VREFANALOG_VOLTAGE().
-  * @note   On this STM32 serie, calibration data of temperature sensor
+  * @note   On this STM32 series, calibration data of temperature sensor
   *         corresponds to a resolution of 12 bits,
   *         this is the recommended ADC resolution to convert voltage of
   *         temperature sensor.
@@ -1782,10 +1841,10 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
   */
 #define __HAL_ADC_CALC_TEMPERATURE(__VREFANALOG_VOLTAGE__,\
                                    __TEMPSENSOR_ADC_DATA__,\
-                                   __ADC_RESOLUTION__)                         \
-  __LL_ADC_CALC_TEMPERATURE((__VREFANALOG_VOLTAGE__),                          \
-                            (__TEMPSENSOR_ADC_DATA__),                         \
-                            (__ADC_RESOLUTION__))
+                                   __ADC_RESOLUTION__) \
+__LL_ADC_CALC_TEMPERATURE((__VREFANALOG_VOLTAGE__),\
+                          (__TEMPSENSOR_ADC_DATA__),\
+                          (__ADC_RESOLUTION__))
 
 /**
   * @brief  Helper macro to calculate the temperature (unit: degree Celsius)
@@ -1836,13 +1895,13 @@ typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to 
                                               __TEMPSENSOR_CALX_TEMP__,\
                                               __VREFANALOG_VOLTAGE__,\
                                               __TEMPSENSOR_ADC_DATA__,\
-                                              __ADC_RESOLUTION__)              \
-  __LL_ADC_CALC_TEMPERATURE_TYP_PARAMS((__TEMPSENSOR_TYP_AVGSLOPE__),          \
-                                      (__TEMPSENSOR_TYP_CALX_V__),             \
-                                      (__TEMPSENSOR_CALX_TEMP__),              \
-                                      (__VREFANALOG_VOLTAGE__),                \
-                                      (__TEMPSENSOR_ADC_DATA__),               \
-                                      (__ADC_RESOLUTION__))
+                                              __ADC_RESOLUTION__) \
+__LL_ADC_CALC_TEMPERATURE_TYP_PARAMS((__TEMPSENSOR_TYP_AVGSLOPE__),\
+                                     (__TEMPSENSOR_TYP_CALX_V__),\
+                                     (__TEMPSENSOR_CALX_TEMP__),\
+                                     (__VREFANALOG_VOLTAGE__),\
+                                     (__TEMPSENSOR_ADC_DATA__),\
+                                     (__ADC_RESOLUTION__))
 
 /**
   * @}
@@ -1973,5 +2032,3 @@ void ADC_DMAError(DMA_HandleTypeDef *hdma);
 
 
 #endif /* STM32G4xx_HAL_ADC_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

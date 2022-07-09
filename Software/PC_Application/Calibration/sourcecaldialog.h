@@ -1,8 +1,9 @@
 #ifndef SOURCECALDIALOG_H
 #define SOURCECALDIALOG_H
 
-#include <QObject>
 #include "amplitudecaldialog.h"
+
+#include <QObject>
 
 class SourceCalDialog : public AmplitudeCalDialog
 {

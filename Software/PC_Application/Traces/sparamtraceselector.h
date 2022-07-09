@@ -1,8 +1,9 @@
 #ifndef SPARAMTRACESELECTOR_H
 #define SPARAMTRACESELECTOR_H
 
-#include <QWidget>
 #include "tracemodel.h"
+
+#include <QWidget>
 #include <QComboBox>
 
 class SparamTraceSelector : public QWidget

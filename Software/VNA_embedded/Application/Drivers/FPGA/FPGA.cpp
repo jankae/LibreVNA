@@ -130,6 +130,17 @@ void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
 	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
 
+void FPGA::SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool individual_halt) {
+	uint16_t value = 0x0000;
+	value |= (uint16_t) (stages & 0x07) << 13;
+	if(individual_halt) {
+		value |= 0x1000;
+	}
+	value |= (port1_stage & 0x07) << 3;
+	value |= (port2_stage & 0x07) << 0;
+	WriteRegister(Reg::SweepSetup, value);
+}
+
 void FPGA::Enable(Periphery p, bool enable) {
 	if (enable) {
 		SysCtrlReg |= (uint16_t) p;
@@ -197,6 +208,8 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 	uint16_t Source_VCO = (SourceRegs[3] & 0xFC000000) >> 26;
 	uint16_t Source_DIV_A = (SourceRegs[4] & 0x00700000) >> 20;
 
+	uint16_t Source_Power = (SourceRegs[4] & 0x00000018) >> 3;
+
 	send[1] = LO_M >> 4;
 	if (halt) {
 		send[1] |= 0x8000;
@@ -218,13 +231,13 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 		send[1] |= (int) filter << 8;
 	}
 	send[2] = (LO_M & 0x000F) << 12 | LO_FRAC;
-	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | LO_N;
-	send[4] = (uint16_t) attenuation << 8 | Source_M >> 4;
+	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | LO_N << 1;
 	if (lowband) {
-		send[4] |= 0x8000;
+		send[3] |= 0x0001;
 	}
-	send[5] = (Source_M & 0x000F) << 12 | Source_FRAC;
-	send[6] = Source_DIV_A << 13 | Source_VCO << 7 | Source_N;
+	send[4] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
+	send[5] = (Source_M & 0x001F) << 11 | Source_FRAC >> 1;
+	send[6] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | Source_N;
 	SwitchBytes(send[0]);
 	SwitchBytes(send[1]);
 	SwitchBytes(send[2]);
@@ -280,7 +293,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	result.RefI = assembleSampleResultValue(&raw[8]);
 	result.RefQ = assembleSampleResultValue(&raw[2]);
 	result.pointNum = (uint16_t)(raw[38]&0x1F) << 8 | raw[39];
-	result.activePort = raw[38] & 0x80 ? 1 : 0;
+	result.stageNum = (raw[38] & 0xE0) >> 5;
 	High(CS);
 	busy_reading = false;
 	if ((status & 0x0004) && callback) {
@@ -343,6 +356,27 @@ uint16_t FPGA::GetStatus() {
 	return (uint16_t) status[0] << 8 | status[1];
 }
 
+void FPGA::OverwriteHardware(uint8_t attenuation, LowpassFilter filter, bool lowband, bool port1_enabled, bool port2_enabled) {
+	uint16_t val = 0;
+	val |= 0x8000; // enable overwrite
+	val |= (attenuation & 0x7F) << 8;
+	val |= (int) filter << 6;
+	if (lowband) {
+		val |= 0x0020;
+	}
+	if (port1_enabled) {
+		val |= 0x0010;
+	}
+	if (port2_enabled) {
+		val |= 0x0008;
+	}
+	WriteRegister(Reg::HardwareOverwrite, val);
+}
+
+void FPGA::DisableHardwareOverwrite() {
+	WriteRegister(Reg::HardwareOverwrite, 0x0000);
+}
+
 FPGA::ADCLimits FPGA::GetADCLimits() {
 	uint16_t cmd = 0xE000;
 	SwitchBytes(cmd);
@@ -368,12 +402,23 @@ void FPGA::ResetADCLimits() {
 	High(CS);
 }
 
-void FPGA::ResumeHaltedSweep() {
+bool FPGA::ResumeHaltedSweep() {
+	uint32_t start = HAL_GetTick();
 	uint16_t cmd = 0x2000;
+	uint16_t status;
 	SwitchBytes(cmd);
-	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) &cmd, 2, 100);
-	High(CS);
+	do {
+		if(HAL_GetTick() - start > 100) {
+			LOG_WARN("Failed to resume sweep, timed out");
+			return false;
+		}
+		Low(CS);
+		HAL_SPI_TransmitReceive(&FPGA_SPI, (uint8_t*) &cmd, (uint8_t*) &status, 2, 100);
+		High(CS);
+		SwitchBytes(status);
+	} while(status & 0x0010);
+//	LOG_DEBUG("Status: 0x%04x", GetStatus());
+	return true;
 }
 
 void FPGA::SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing) {

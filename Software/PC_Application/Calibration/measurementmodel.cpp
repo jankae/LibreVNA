@@ -1,5 +1,7 @@
 #include "measurementmodel.h"
+
 #include "../unit.h"
+
 #include <algorithm>
 
 MeasurementModel::MeasurementModel(Calibration *cal, std::vector<Calibration::Measurement> measurements) :
@@ -17,21 +19,46 @@ int MeasurementModel::rowCount(const QModelIndex &) const
 
 int MeasurementModel::columnCount(const QModelIndex &) const
 {
-    return ColIndexLast;
+    return (int) ColIndex::Last;
 }
 
 QVariant MeasurementModel::data(const QModelIndex &index, int role) const
 {
     auto info = cal->getMeasurementInfo(measurements[index.row()]);
     if(role == Qt::DisplayRole) {
-        switch(index.column()) {
-        case ColIndexName:
+        switch((ColIndex) index.column()) {
+        case ColIndex::Name:
             return info.name;
             break;
-        case ColIndexDescription:
+        case ColIndex::Gender:
+            switch(measurements[index.row()]) {
+            case Calibration::Measurement::Port1Load:
+            case Calibration::Measurement::Port1Open:
+            case Calibration::Measurement::Port1Short:
+                if(cal->getPortStandard(1) == Calibration::PortStandard::Male) {
+                    return "Male";
+                } else {
+                    return "Female";
+                }
+                break;
+            case Calibration::Measurement::Port2Load:
+            case Calibration::Measurement::Port2Open:
+            case Calibration::Measurement::Port2Short:
+                if(cal->getPortStandard(2) == Calibration::PortStandard::Male) {
+                    return "Male";
+                } else {
+                    return "Female";
+                }
+                break;
+            default:
+                return "";
+            }
+
+            break;
+        case ColIndex::Description:
             return info.prerequisites;
             break;
-        case ColIndexData:
+        case ColIndex::Data:
             if(info.points > 0) {
                 QString data = QString::number(info.points);
                 data.append(" points from ");
@@ -43,16 +70,19 @@ QVariant MeasurementModel::data(const QModelIndex &index, int role) const
                 return "Not available";
             }
             break;
-        case ColIndexDate:
+        case ColIndex::Date:
             return info.timestamp.toString("dd.MM.yyyy hh:mm:ss");
             break;
+        case ColIndex::Last:
+            return "";
         }
     } else if(role == Qt::SizeHintRole) {
-        switch(index.column()) {
-        case ColIndexName: return 200; break;
-        case ColIndexDescription: return 500; break;
-        case ColIndexData: return 300; break;
-        case ColIndexDate: return 300; break;
+        switch((ColIndex) index.column()) {
+        case ColIndex::Name: return 200; break;
+        case ColIndex::Gender: return 150; break;
+        case ColIndex::Description: return 500; break;
+        case ColIndex::Data: return 300; break;
+        case ColIndex::Date: return 300; break;
         default: return QVariant(); break;
         }
     }
@@ -63,11 +93,12 @@ QVariant MeasurementModel::data(const QModelIndex &index, int role) const
 QVariant MeasurementModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if(orientation == Qt::Horizontal && role == Qt::DisplayRole) {
-        switch(section) {
-        case ColIndexName: return "Type"; break;
-        case ColIndexDescription: return "Prerequisites"; break;
-        case ColIndexData: return "Statistics"; break;
-        case ColIndexDate: return "Timestamp"; break;
+        switch((ColIndex) section) {
+        case ColIndex::Name: return "Type"; break;
+        case ColIndex::Gender: return "Gender"; break;
+        case ColIndex::Description: return "Prerequisites"; break;
+        case ColIndex::Data: return "Statistics"; break;
+        case ColIndex::Date: return "Timestamp"; break;
         default: return QVariant(); break;
         }
     } else {
@@ -81,6 +112,11 @@ void MeasurementModel::measurementUpdated(Calibration::Measurement m)
     auto it = std::find(measurements.begin(), measurements.end(), m);
     if(it != measurements.end()) {
         int row = it - measurements.begin();
-        emit dataChanged(index(row, 0), index(row, ColIndexLast - 1));
+        emit dataChanged(index(row, 0), index(row, (int) ColIndex::Last - 1));
     }
+}
+
+void MeasurementModel::genderUpdated()
+{
+    emit dataChanged(index(0, (int) ColIndex::Gender), index(rowCount() - 1, (int) ColIndex::Gender));
 }

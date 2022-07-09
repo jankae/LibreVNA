@@ -5,9 +5,7 @@ Creating all the different parts from the source code requires quite a few tools
   * [Qt Creator](https://www.qt.io/offline-installers) (at least with Qt 5.9)
   * [libusb-1.0](https://libusb.info/)
 * For building the VNA firmware:
-  * [CubeMX:](https://www.st.com/en/development-tools/stm32cubemx.html) Code generator for initializing STM32 microcontrollers (only required when changing device initialization settings in CubeMX)
-  * [SW4STM32:](https://www.st.com/en/development-tools/sw4stm32.html) Eclipse based IDE, compatible with CubeMX (other IDEs could also be used but this is supported out of the box with CubeMX)
-  * [OpenOCD](http://openocd.org/) or other tool to flash firmware into the microcontroller
+  * [STM32CubeIDE:](https://www.st.com/en/development-tools/stm32cubeide.html) Code generator and IDE for STM32 microcontrollers 
 * For creating the FPGA bitstream:
   * [Xilinx ISE](https://www.xilinx.com/products/design-tools/ise-design-suite.html) with support for Spartan 6 FPGA
  
@@ -28,15 +26,12 @@ Creating all the different parts from the source code requires quite a few tools
     * Build the application with Qt Creator
 
 ## Building the MCU firmware:
-* Generating initialization code (only required when changes to CubeMX have been made):
-  * Open Software/VNA_embedded/VNA_embedded.ioc with CubeMX
-  * Click "Generate Code"
 * Importing the project (only has to be done once):
-  * Open SW4STM32 with the workspace set to Software/
+  * Open STM32CubeIDE with the workspace set to Software/
   * Import the project: File > Import... > General > Exisiting Projects into Workspace > Select root directory (should already be set to Software/) > Select the "VNA_embedded" project > Finish
 * Build project: Project > Build Project
 * Flashing/Debugging the MCU (only required once for a new hardware or when debugging):
-  * Create build configuration if it doesn't exist alreay: Run > Run configurations > Create new "Ac6 STM32 Debugging" > In tab "Main" select the compiled .elf-file
+  * Create build configuration if it doesn't exist alreay: Run > Run configurations > Create new "STM32 Cortex-M C/C++ Application" > In tab "Main" select the compiled .elf-file
   * Connect to the MCU with an ST-Link and the SWD pads on the PCB (requires removing the aluminium enclosure)
   * Flash/debug: Run > Run or Run > Debug
 

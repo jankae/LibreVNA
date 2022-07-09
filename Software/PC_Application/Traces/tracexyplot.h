@@ -2,7 +2,56 @@
 #define TRACEXYPLOT_H
 
 #include "traceplot.h"
+#include "traceaxis.h"
+
 #include <set>
+
+class XYPlotConstantLine : public QObject, public Savable
+{
+    Q_OBJECT
+public:
+    enum class Axis {
+        Primary,
+        Secondary,
+        Last,
+    };
+    enum class PassFail {
+        DontCare,
+        HighLimit,
+        LowLimit,
+        Last,
+    };
+
+    XYPlotConstantLine();
+    QColor getColor() const;
+    void setColor(const QColor &value);
+
+    void fromJSON(nlohmann::json j) override;
+    nlohmann::json toJSON() override;
+
+    bool pass(QPointF testPoint);
+
+    static QString AxisToString(Axis axis);
+    static Axis AxisFromString(QString s);
+
+    static QString PassFailToString(PassFail pf);
+    static PassFail PassFailFromString(QString s);
+
+    void editDialog(QString xUnit, QString yUnitPrimary, QString yUnitSecondary);
+    QString getDescription();
+    Axis getAxis() const;
+
+    const std::vector<QPointF> &getPoints() const;
+
+signals:
+    void editingFinished();
+private:
+    QString name;
+    QColor color;
+    Axis axis;
+    PassFail passFail;
+    std::vector<QPointF> points;
+};
 
 class TraceXYPlot : public TracePlot
 {
@@ -10,27 +59,8 @@ class TraceXYPlot : public TracePlot
     Q_OBJECT
 public:
     TraceXYPlot(TraceModel &model, QWidget *parent = nullptr);
+    ~TraceXYPlot();
 
-    enum class YAxisType {
-        Disabled = 0,
-        // S parameter options
-        Magnitude = 1,
-        Phase = 2,
-        VSWR = 3,
-        // TDR options
-        ImpulseReal = 4,
-        ImpulseMag = 5,
-        Step = 6,
-        Impedance = 7,
-        Last,
-    };
-    static const std::set<YAxisType> YAxisTypes;
-    enum class XAxisType {
-        Frequency,
-        Time,
-        Distance,
-        Last,
-    };
     enum class XAxisMode {
         UseSpan,
         FitTraces,
@@ -38,22 +68,25 @@ public:
         Last,
     };
 
-    void setYAxis(int axis, YAxisType type, bool log, bool autorange, double min, double max, double div);
-    void setXAxis(XAxisType type, XAxisMode mode, double min, double max, double div);
+    void setYAxis(int axis, YAxis::Type type, bool log, bool autorange, double min, double max, double div);
+    void setXAxis(XAxis::Type type, XAxisMode mode, bool log, double min, double max, double div);
     void enableTrace(Trace *t, bool enabled) override;
     void updateSpan(double min, double max) override;
     void replot() override;
 
-    virtual Type getType() override { return Type::XYPlot;};
+    virtual Type getType() override { return Type::XYPlot;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
-    bool isTDRtype(YAxisType type);
+    bool isTDRtype(YAxis::Type type);
+
+    static int sideMargin(bool YAxisEnabled);
 
 public slots:
     void axisSetupDialog();
 
 protected:
+    virtual bool configureForTrace(Trace *t) override;
     virtual void updateContextMenu() override;
     virtual bool dropSupported(Trace *t) override;
     virtual void draw(QPainter &p) override;
@@ -61,55 +94,31 @@ protected:
 private slots:
     void updateAxisTicks();
 private:
-    static constexpr int AxisLabelSize = 10;
-    QString AxisTypeToName(YAxisType type);
-    QString AxisTypeToName(XAxisType type);
-    QString AxisModeToName(XAxisMode mode);
-    XAxisType XAxisTypeFromName(QString name);
-    YAxisType YAxisTypeFromName(QString name);
-    XAxisMode AxisModeFromName(QString name);
+    static constexpr int yAxisDisabledSpace = 10;
+    static QString AxisModeToName(XAxisMode mode);
+    static XAxisMode AxisModeFromName(QString name);
     void enableTraceAxis(Trace *t, int axis, bool enabled);
+    bool domainMatch(Trace *t);
     bool supported(Trace *t) override;
-    bool supported(Trace *t, YAxisType type);
-    void removeUnsupportedTraces();
-    QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxisType type);
+    bool supported(Trace *t, YAxis::Type type);
+    QPointF traceToCoordinate(Trace *t, unsigned int sample, YAxis &yaxis);
     QPoint plotValueToPixel(QPointF plotValue, int Yaxis);
     QPointF pixelToPlotValue(QPoint pixel, int YAxis);
-    QPoint markerToPixel(TraceMarker *m) override;
-    double nearestTracePoint(Trace *t, QPoint pixel) override;
+    QPoint markerToPixel(Marker *m) override;
+    double nearestTracePoint(Trace *t, QPoint pixel, double *distance = nullptr) override;
+    virtual bool markerVisible(double x) override;
     void traceDropped(Trace *t, QPoint position) override;
     QString mouseText(QPoint pos) override;
 
-    static QString AxisUnit(YAxisType type);
-    static QString AxisUnit(XAxisType type);
-
     std::set<Trace*> tracesAxis[2];
 
-    class YAxis {
-    public:
-        YAxisType type;
-        bool log; // not used yet
-        bool autorange;
-        double rangeMin;
-        double rangeMax;
-        double rangeDiv;
-        std::vector<double> ticks;
-    };
-    class XAxis {
-    public:
-        XAxisType type;
-        XAxisMode mode;
-        bool log; // not used yet
-        double rangeMin;
-        double rangeMax;
-        double rangeDiv;
-        std::vector<double> ticks;
-    };
+    YAxis yAxis[2];
+    XAxis xAxis;
+    XAxisMode xAxisMode;
 
-    YAxis YAxis[2];
-    XAxis XAxis;
+    int plotAreaLeft, plotAreaWidth, plotAreaBottom, plotAreaTop;
 
-    int plotAreaLeft, plotAreaWidth, plotAreaBottom;
+    std::vector<XYPlotConstantLine*> constantLines;
 };
 
 #endif // TRACEXYPLOT_H

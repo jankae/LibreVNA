@@ -1,15 +1,21 @@
 #include "tracewidget.h"
+
 #include "ui_tracewidget.h"
-#include "trace.h"
-#include <QKeyEvent>
 #include "traceeditdialog.h"
 #include "traceimportdialog.h"
 #include "tracetouchstoneexport.h"
+#include "trace.h"
+#include "unit.h"
+#include "Util/util.h"
+#include "appwindow.h"
+
+#include <QKeyEvent>
 #include <QFileDialog>
 #include <QDrag>
 #include <QMimeData>
 #include <QDebug>
 #include <QMenu>
+
 
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),
@@ -108,7 +114,9 @@ void TraceWidget::on_edit_clicked()
 {
     if(ui->view->currentIndex().isValid()) {
         auto edit = new TraceEditDialog(*model.trace(ui->view->currentIndex().row()));
-        edit->show();
+        if(AppWindow::showGUI()) {
+            edit->show();
+        }
     }
 }
 
@@ -116,7 +124,9 @@ void TraceWidget::on_view_doubleClicked(const QModelIndex &index)
 {
     if(index.column() == TraceModel::ColIndexName) {
         auto edit = new TraceEditDialog(*model.trace(index.row()));
-        edit->show();
+        if(AppWindow::showGUI()) {
+            edit->show();
+        }
     }
 }
 
@@ -139,13 +149,10 @@ void TraceWidget::on_view_clicked(const QModelIndex &index)
 
 void TraceWidget::SetupSCPI()
 {
-    auto findTrace = [=](QStringList params) -> Trace* {
-        if(params.size() < 1) {
-            return nullptr;
-        }
+    auto findTraceFromName = [=](QString name) -> Trace* {
         // check if trace is specified by number
         bool ok;
-        auto n = params[0].toUInt(&ok);
+        auto n = name.toUInt(&ok);
         if(ok) {
             // check if enough traces exist
             if(n < model.getTraces().size()) {
@@ -157,7 +164,7 @@ void TraceWidget::SetupSCPI()
         } else {
             // trace specified by name
             for(auto t : model.getTraces()) {
-                if(t->name().compare(params[0], Qt::CaseInsensitive) == 0) {
+                if(t->name().compare(name, Qt::CaseInsensitive) == 0) {
                     return t;
                 }
             }
@@ -165,13 +172,19 @@ void TraceWidget::SetupSCPI()
             return nullptr;
         }
     };
+    auto findTrace = [=](QStringList params) -> Trace* {
+        if(params.size() < 1) {
+            return nullptr;
+        }
+        return findTraceFromName(params[0]);
+    };
 
     auto createStringFromData = [](Trace *t, const Trace::Data &d) -> QString {
         if(Trace::isSAParamater(t->liveParameter())) {
             if(std::isnan(d.x)) {
                 return "NaN";
             }
-            return QString::number(20*log10(d.y.real()));
+            return QString::number(Util::SparamTodB(d.y.real()));
         } else {
             if(std::isnan(d.x)) {
                 return "NaN,NaN";
@@ -196,7 +209,14 @@ void TraceWidget::SetupSCPI()
         QString ret;
         for(unsigned int i=0;i<t->size();i++) {
             auto d = t->sample(i);
-            ret += "["+QString::number(d.x)+","+createStringFromData(t, d)+"],";
+            int precision = 0;
+            switch(t->outputType()) {
+            case Trace::DataType::Frequency: precision = 0; break;
+            case Trace::DataType::Time: precision = 12; break;
+            case Trace::DataType::Power: precision = 3; break;
+            case Trace::DataType::TimeZeroSpan: precision = 4; break;
+            }
+            ret += "[" + QString::number(d.x, 'f', precision) + ","+createStringFromData(t, d)+"],";
         }
         ret.chop(1);
         return ret;
@@ -218,35 +238,92 @@ void TraceWidget::SetupSCPI()
             }
         }
     }));
+    add(new SCPICommand("TOUCHSTONE", nullptr, [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            // no traces given
+            return "ERROR";
+        }
+        // check number of paramaters, must be a square number
+        int numTraces = params.size();
+        int ports = round(sqrt(numTraces));
+        if(ports * ports != numTraces) {
+            // invalid number of traces
+            return "ERROR";
+        }
+        Trace* traces[numTraces];
+        for(int i=0;i<numTraces;i++) {
+            traces[i] = findTraceFromName(params[i]);
+            if(!traces[i]) {
+                // couldn't find that trace
+                return "ERROR";
+            }
+        }
+        // check if trace selection is valid
+        auto npoints = traces[0]->size();
+        auto f_start = traces[0]->minX();
+        auto f_stop = traces[0]->maxX();
+        for(int i=0;i<ports;i++) {
+            for(int j=0;j<ports;j++) {
+                bool need_reflection = i==j;
+                auto t = traces[j+i*ports];
+                if(t->getDataType() != Trace::DataType::Frequency) {
+                    // invalid domain
+                    return "ERROR";
+                }
+                if(t->isReflection() != need_reflection) {
+                    // invalid measurement at this position
+                    return "ERROR";
+                }
+                if((t->size() != npoints) || (t->minX() != f_start) || (t->maxX() != f_stop)) {
+                    // frequency points are not identical
+                    return "ERROR";
+                }
+            }
+        }
+        // all traces checked, they are valid.
+        // Constructing touchstone
+        Touchstone t = Touchstone(ports);
+        for(unsigned int i=0;i<npoints;i++) {
+            Touchstone::Datapoint d;
+            d.frequency = traces[0]->getSample(i).x;
+            for(auto trace : traces) {
+                d.S.push_back(trace->getSample(i).y);
+            }
+            t.AddDatapoint(d);
+        }
+        // touchstone assembled, save to dummyfile
+        auto s = t.toString(Touchstone::Scale::GHz, Touchstone::Format::RealImaginary);
+        return QString::fromStdString(s.str());
+    }));
     add(new SCPICommand("MAXFrequency", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
            return "ERROR";
         }
-        return QString::number(t->maxX());
+        return QString::number(t->maxX(), 'f', 0);
     }));
     add(new SCPICommand("MINFrequency", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
            return "ERROR";
         }
-        return QString::number(t->minX());
+        return QString::number(t->minX(), 'f', 0);
     }));
     add(new SCPICommand("MAXAmplitude", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
            return "ERROR";
         }
-        auto d = t->interpolatedSample(t->findExtremumFreq(true));
-        return QString::number(d.x)+","+createStringFromData(t, d);
+        auto d = t->interpolatedSample(t->findExtremum(true));
+        return QString::number(d.x, 'f', 0)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("MINAmplitude", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
            return "ERROR";
         }
-        auto d = t->interpolatedSample(t->findExtremumFreq(false));
-        return QString::number(d.x)+","+createStringFromData(t, d);
+        auto d = t->interpolatedSample(t->findExtremum(false));
+        return QString::number(d.x, 'f', 0)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("NEW", [=](QStringList params) -> QString {
         if(params.size() != 1) {
@@ -279,8 +356,7 @@ void TraceWidget::SetupSCPI()
     }, nullptr));
     add(new SCPICommand("RESUME", [=](QStringList params) -> QString {
         auto t = findTrace(params);
-        if(!t) {
-           return "ERROR";
+        if(!t) {           return "ERROR";
         }
         t->resume();
         return "";

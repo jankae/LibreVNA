@@ -190,6 +190,14 @@ bool MAX2871::SetFrequency(uint64_t f) {
 
 	auto approx = Algorithm::BestRationalApproximation(fraction, 4095);
 
+	if (approx.denom == approx.num) {
+		// got an impossible result due to floating point limitations(?)
+		// Set fractional part to zero, increase integer part instead
+		approx.num = 0;
+		approx.denom = 2;
+		N++;
+	}
+
 	if(approx.denom == 1) {
 		// M value must be at least 2
 		approx.denom = 2;

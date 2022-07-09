@@ -1,17 +1,21 @@
 #ifndef TRACE_H
 #define TRACE_H
 
+#include "touchstone.h"
+#include "csv.h"
+#include "Device/device.h"
+#include "Math/tracemath.h"
+#include "Tools/parameters.h"
+#include "tracemodel.h"
+#include "VNA/vnadata.h"
+
 #include <QObject>
 #include <complex>
 #include <map>
 #include <QColor>
 #include <set>
-#include "touchstone.h"
-#include "csv.h"
-#include "Device/device.h"
-#include "Math/tracemath.h"
 
-class TraceMarker;
+class Marker;
 
 class Trace : public TraceMath
 {
@@ -40,19 +44,17 @@ public:
         Invalid,
     };
 
-
     void clear();
-    void addData(const Data& d);
-    void addData(const Data& d, const Protocol::SweepSettings& s);
-    void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s);
+    void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
+    void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s, int index = -1);
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
-    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<Protocol::Datapoint> &data);
+    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data);
     void fromLivedata(LivedataType type, LiveParameter param);
-    QString name() { return _name; };
-    QColor color() { return _color; };
+    QString name() { return _name; }
+    QColor color() { return _color; }
     bool isVisible();
     void pause();
     void resume();
@@ -63,11 +65,11 @@ public:
     bool isReflection();
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
-    TraceMath::DataType outputType() const { return lastMath->getDataType(); };
+    TraceMath::DataType outputType() const { return lastMath->getDataType(); }
     unsigned int size() const;
     double minX();
     double maxX();
-    double findExtremumFreq(bool max);
+    double findExtremum(bool max);
     /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
      * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.
      * Only peaks with at least minLevel will be considered.
@@ -80,15 +82,16 @@ public:
         TimeStep,
     };
 
-    Data sample(unsigned int index, SampleType type = SampleType::Frequency) const;
-    // returns a (possibly interpolated sample) at a specified frequency/time
+    Data sample(unsigned int index, bool getStepResponse = false) const;
+    double getUnwrappedPhase(unsigned int index);
+    // returns a (possibly interpolated sample) at a specified frequency/time/power
     Data interpolatedSample(double x);
     QString getFilename() const;
     unsigned int getFileParameter() const;
     /* Returns the noise in dbm/Hz for spectrum analyzer measurements. May return NaN if calculation not possible */
     double getNoise(double frequency);
     int index(double x);
-    std::set<TraceMarker *> getMarkers() const;
+    std::set<Marker *> getMarkers() const;
     void setCalibration(bool value);
     void setReflection(bool value);
 
@@ -120,7 +123,7 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
-    Type getType() override {return Type::Last;}; // can return invalid type, this will never be called
+    Type getType() override {return Type::Last;} // can return invalid type, this will never be called
 
     // Traces are referenced by pointers throughout this project (e.g. when added to a graph)
     // When saving the current graph configuration, the pointer is not useful. Instead a trace
@@ -133,7 +136,7 @@ public:
 
     // Assembles datapoints as received from the VNA from four S parameter traces. Requires that all traces are in the frequency domain,
     // have the same number of samples and their samples must be at the same frequencies across all traces
-    static std::vector<Protocol::Datapoint> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
+    static std::vector<VNAData> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
 
     static LiveParameter ParameterFromString(QString s);
     static QString ParameterToString(LiveParameter p);
@@ -143,23 +146,29 @@ public:
     static LivedataType TypeFromString(QString s);
     static QString TypeToString(LivedataType t);
 
+    double getReferenceImpedance() const;
+
 public slots:
     void setVisible(bool visible);
     void setColor(QColor color);
-    void addMarker(TraceMarker *m);
-    void removeMarker(TraceMarker *m);
+    void addMarker(Marker *m);
+    void removeMarker(Marker *m);
 
 signals:
     void cleared(Trace *t);
     void typeChanged(Trace *t);
     void deleted(Trace *t);
     void visibilityChanged(Trace *t);
-    void dataChanged();
+    void dataChanged(unsigned int begin, unsigned int end);
     void nameChanged();
     void pauseChanged();
     void colorChanged(Trace *t);
-    void markerAdded(TraceMarker *m);
-    void markerRemoved(TraceMarker *m);
+    void markerAdded(Marker *m);
+    void markerRemoved(Marker *m);
+    void markerFormatChanged(Marker *m);
+
+private slots:
+    void markerVisibilityChanged(Marker *m);
 
 private:
     QString _name;
@@ -172,13 +181,13 @@ private:
     bool paused;
     bool createdFromFile;
     bool calibration;
-    bool timeDomain;
+    double reference_impedance;
+    DataType domain;
     QString filename;
-    unsigned int fileParemeter;
-    std::set<TraceMarker*> markers;
+    unsigned int fileParameter;
+    std::set<Marker*> markers;
     struct {
         union {
-            Protocol::SweepSettings VNA;
             Protocol::SpectrumAnalyzerSettings SA;
         };
         bool valid;
@@ -186,6 +195,7 @@ private:
 
     std::vector<MathInfo> mathOps;
     TraceMath *lastMath;
+    std::vector<double> unwrappedPhase;
     void updateLastMath(std::vector<MathInfo>::reverse_iterator start);
 };
 

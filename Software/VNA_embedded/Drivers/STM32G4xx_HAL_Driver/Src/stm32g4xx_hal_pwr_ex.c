@@ -11,13 +11,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -40,10 +39,10 @@
 /* Private define ------------------------------------------------------------*/
 
 
-#if defined (STM32G474xx) || defined (STM32G473xx) || defined (STM32G471xx) || defined (STM32G484xx)
+#if defined (STM32G471xx) || defined (STM32G473xx) || defined (STM32G474xx) || defined (STM32G483xx) || defined (STM32G484xx)
 #define PWR_PORTF_AVAILABLE_PINS   0x0000FFFFU /* PF0..PF15 */
 #define PWR_PORTG_AVAILABLE_PINS   0x000007FFU /* PG0..PG10 */
-#elif defined (STM32G431xx) || defined (STM32G441xx) || defined (STM32GBK1CB)
+#elif defined (STM32G431xx) || defined (STM32G441xx) || defined (STM32GBK1CB) || defined (STM32G491xx) || defined (STM32G4A1xx)
 #define PWR_PORTF_AVAILABLE_PINS   0x00000607U /* PF0..PF2 and PF9 and PF10 */
 #define PWR_PORTG_AVAILABLE_PINS   0x00000400U /* PG10 */
 #endif
@@ -229,7 +228,7 @@ HAL_StatusTypeDef HAL_PWREx_ControlVoltageScaling(uint32_t VoltageScaling)
 
 /**
   * @brief Enable battery charging.
-  *        When VDD is present, charge the external battery on VBAT thru an internal resistor.
+  *        When VDD is present, charge the external battery on VBAT through an internal resistor.
   * @param  ResistorSelection: specifies the resistor impedance.
   *          This parameter can be one of the following values:
   *            @arg @ref PWR_BATTERY_CHARGING_RESISTOR_5     5 kOhms resistor
@@ -682,7 +681,7 @@ HAL_StatusTypeDef HAL_PWREx_ConfigPVM(PWR_PVMTypeDef *sConfigPVM)
 
 
   /* Configure EXTI 35 to 38 interrupts if so required:
-     scan thru PVMType to detect which PVMx is set and
+     scan through PVMType to detect which PVMx is set and
      configure the corresponding EXTI line accordingly. */
   switch (sConfigPVM->PVMType)
   {
@@ -822,62 +821,6 @@ HAL_StatusTypeDef HAL_PWREx_ConfigPVM(PWR_PVMTypeDef *sConfigPVM)
   return status;
 }
 
-#if defined(PWR_CR3_UCPD_DBDIS)
-/**
-  * @brief Enable the USB Type-C dead battery pull-down behavior
-  *        on UCPDx_CC1 and UCPDx_CC2 pins
-  * @note After exiting reset, the USB Type-C dead battery behavior will be enabled,
-  *       which may have a pull-down effect on CC1 and CC2 pins.
-  *       It is recommended to disable it in all cases, either to stop this pull-down
-  *       or to hand over control to the UCPD (which should therefore be
-  *       initialized before doing the disable).
-  * @retval None
-  */
-void HAL_PWREx_EnableUSBDeadBatteryPD(void)
-{
-   /* writing 0 to enable the USB Type-C dead battery pull-down behavior */
-   CLEAR_BIT(PWR->CR3, PWR_CR3_UCPD_DBDIS);
-}
-
-/**
-  * @brief Disable the USB Type-C dead battery pull-down behavior
-  *        on UCPDx_CC1 and UCPDx_CC2 pins
-  * @note After exiting reset, the USB Type-C dead battery behavior will be enabled,
-  *       which may have a pull-down effect on CC1 and CC2 pins.
-  *       It is recommended to disable it in all cases, either to stop this pull-down
-  *       or to hand over control to the UCPD (which should therefore be
-  *       initialized before doing the disable).
-  * @retval None
-  */
-void HAL_PWREx_DisableUSBDeadBatteryPD(void)
-{
-   /* writing 1 to disable the USB Type-C dead battery pull-down behavior */
-   SET_BIT(PWR->CR3, PWR_CR3_UCPD_DBDIS);
-}
-#endif /* PWR_CR3_UCPD_DBDIS */
-
-#if defined(PWR_CR3_UCPD_STDBY)
-/**
-  * @brief Enable the USB Type-C and Power Delivery standby mode
-  * @retval None
-  */
-void HAL_PWREx_EnableUSBStandByModePD(void)
-{
-   /* Write 1 just before entering Standby when using UCPD */
-   SET_BIT(PWR->CR3, PWR_CR3_UCPD_STDBY);
-}
-
-/**
-  * @brief Disable the USB Type-C and Power Delivery standby mode
-  * @retval None
-  */
-void HAL_PWREx_DisableUSBStandByModePD (void)
-{
-   /* Write 0 immediately after Standby exit when using UCPD,
-      and before writing any UCPD registers */
-   CLEAR_BIT(PWR->CR3, PWR_CR3_UCPD_STDBY);
-}
-#endif /* PWR_CR3_UCPD_STDBY */
 
 /**
   * @brief Enter Low-power Run mode
@@ -1164,6 +1107,61 @@ __weak void HAL_PWREx_PVM4Callback(void)
    */
 }
 
+#if defined(PWR_CR3_UCPD_STDBY)
+/**
+  * @brief Enable UCPD configuration memorization in Standby.
+  * @retval None
+  */
+void HAL_PWREx_EnableUCPDStandbyMode(void)
+{
+  /* Memorize UCPD configuration when entering standby mode */
+  SET_BIT(PWR->CR3, PWR_CR3_UCPD_STDBY);
+}
+
+/**
+  * @brief Disable UCPD configuration memorization in Standby.
+  * @note  This function must be called on exiting the Standby mode and before any UCPD
+  *        configuration update.
+  * @retval None
+  */
+void HAL_PWREx_DisableUCPDStandbyMode(void)
+{
+  /* Write 0 immediately after Standby exit when using UCPD,
+     and before writing any UCPD registers */
+  CLEAR_BIT(PWR->CR3, PWR_CR3_UCPD_STDBY);
+}
+#endif /* PWR_CR3_UCPD_STDBY */
+
+#if defined(PWR_CR3_UCPD_DBDIS)
+/**
+  * @brief Enable the USB Type-C dead battery pull-down behavior
+  *        on UCPDx_CC1 and UCPDx_CC2 pins
+  * @retval None
+  */
+void HAL_PWREx_EnableUCPDDeadBattery(void)
+{
+  /* Write 0 to enable the USB Type-C dead battery pull-down behavior */
+  CLEAR_BIT(PWR->CR3, PWR_CR3_UCPD_DBDIS);
+}
+
+/**
+  * @brief Disable the USB Type-C dead battery pull-down behavior
+  *        on UCPDx_CC1 and UCPDx_CC2 pins
+  * @note After exiting reset, the USB Type-C dead battery behavior will be enabled,
+  *       which may have a pull-down effect on CC1 and CC2 pins.
+  *       It is recommended to disable it in all cases, either to stop this pull-down
+  *       or to hand over control to the UCPD (which should therefore be
+  *       initialized before doing the disable).
+  * @retval None
+  */
+void HAL_PWREx_DisableUCPDDeadBattery(void)
+{
+  /* Write 1 to disable the USB Type-C dead battery pull-down behavior */
+  SET_BIT(PWR->CR3, PWR_CR3_UCPD_DBDIS);
+}
+#endif /* PWR_CR3_UCPD_DBDIS */
+
+
 
 /**
   * @}
@@ -1182,4 +1180,3 @@ __weak void HAL_PWREx_PVM4Callback(void)
   * @}
   */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

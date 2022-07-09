@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest new functionality
+labels: ["feature ::sparkles:"]
+
+body:
+- type: markdown
+  attributes:
+    value: |     
+      **If you came here, we really appreciate your time in wanting to discuss how a new 
+      feature can be integrated.**
+
+      Before actually start typing, please double check that there are not already existing 
+      issues related to this feature, including open and closed.
+
+- type: textarea
+  attributes:
+    label: Summary
+    description: Describe what's the funcionality you aiming to suggest
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Paths to implement it
+    description: Describe in which way your suggestion can be achieved
+  validations:
+            required: true
+
+- type: textarea
+  attributes:
+    label: Extra information
+    description: Any information that you may find would be relevant and that doesn´t fit
+      in other fields
+  validations:
+            required: true
+
+

@@ -1,18 +1,17 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    stm32g4xx_hal_timebase_TIM.c 
+  * @file    stm32g4xx_hal_timebase_TIM.c
   * @brief   HAL time base based on the hardware TIM.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -45,12 +44,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   uint32_t              uwTimclock = 0;
   uint32_t              uwPrescalerValue = 0;
   uint32_t              pFLatency;
-
-  /*Configure the TIM17 IRQ priority */
-  HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM17_IRQn, TickPriority ,0);
-
-  /* Enable the TIM17 global Interrupt */
-  HAL_NVIC_EnableIRQ(TIM1_TRG_COM_TIM17_IRQn);
+  HAL_StatusTypeDef     status = HAL_OK;
 
   /* Enable TIM17 clock */
   __HAL_RCC_TIM17_CLK_ENABLE();
@@ -60,9 +54,8 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 
   /* Compute TIM17 clock */
   uwTimclock = HAL_RCC_GetPCLK2Freq();
-
   /* Compute the prescaler value to have TIM17 counter clock equal to 1MHz */
-  uwPrescalerValue = (uint32_t) ((uwTimclock / 1000000) - 1);
+  uwPrescalerValue = (uint32_t) ((uwTimclock / 1000000U) - 1U);
 
   /* Initialize TIM17 */
   htim17.Instance = TIM17;
@@ -73,18 +66,35 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   + ClockDivision = 0
   + Counter direction = Up
   */
-  htim17.Init.Period = (1000000 / 1000) - 1;
+  htim17.Init.Period = (1000000U / 1000U) - 1U;
   htim17.Init.Prescaler = uwPrescalerValue;
   htim17.Init.ClockDivision = 0;
   htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
-  if(HAL_TIM_Base_Init(&htim17) == HAL_OK)
+
+  status = HAL_TIM_Base_Init(&htim17);
+  if (status == HAL_OK)
   {
     /* Start the TIM time Base generation in interrupt mode */
-    return HAL_TIM_Base_Start_IT(&htim17);
+    status = HAL_TIM_Base_Start_IT(&htim17);
+    if (status == HAL_OK)
+    {
+    /* Enable the TIM17 global Interrupt */
+        HAL_NVIC_EnableIRQ(TIM1_TRG_COM_TIM17_IRQn);
+      /* Configure the SysTick IRQ priority */
+      if (TickPriority < (1UL << __NVIC_PRIO_BITS))
+      {
+        /* Configure the TIM IRQ priority */
+        HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM17_IRQn, TickPriority, 0U);
+        uwTickPrio = TickPriority;
+      }
+      else
+      {
+        status = HAL_ERROR;
+      }
+    }
   }
-
-  /* Return function status */
-  return HAL_ERROR;
+ /* Return function status */
+  return status;
 }
 
 /**
@@ -111,4 +121,3 @@ void HAL_ResumeTick(void)
   __HAL_TIM_ENABLE_IT(&htim17, TIM_IT_UPDATE);
 }
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

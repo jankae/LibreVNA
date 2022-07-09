@@ -1,5 +1,7 @@
 #include "device.h"
 
+#include "CustomWidgets/informationbox.h"
+
 #include <signal.h>
 #include <QDebug>
 #include <QString>
@@ -117,17 +119,8 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .FW_major = 0,
     .FW_minor = 0,
     .FW_patch = 0,
+    .hardware_version = 1,
     .HW_Revision = '0',
-    .extRefAvailable = 0,
-    .extRefInUse = 0,
-    .FPGA_configured = 0,
-    .source_locked = 0,
-    .LO1_locked = 0,
-    .ADC_overload = 0,
-    .unlevel = 0,
-    .temp_source = 0,
-    .temp_LO1 = 0,
-    .temp_MCU = 0,
     .limits_minFreq = 0,
     .limits_maxFreq = 6000000000,
     .limits_minIFBW = 10,
@@ -141,14 +134,26 @@ static constexpr Protocol::DeviceInfo defaultInfo = {
     .limits_maxFreqHarmonic = 18000000000,
 };
 
-Protocol::DeviceInfo Device::lastInfo = defaultInfo;
+static constexpr Protocol::DeviceStatusV1 defaultStatusV1 = {
+    .extRefAvailable = 0,
+    .extRefInUse = 0,
+    .FPGA_configured = 0,
+    .source_locked = 0,
+    .LO1_locked = 0,
+    .ADC_overload = 0,
+    .unlevel = 0,
+    .temp_source = 0,
+    .temp_LO1 = 0,
+    .temp_MCU = 0,
+};
 
 Device::Device(QString serial)
 {
-    lastInfo = defaultInfo;
+    info = defaultInfo;
+    status = {};
 
     m_handle = nullptr;
-    lastInfoValid = false;
+    infoValid = false;
     libusb_init(&m_context);
 #if LIBUSB_API_VERSION >= 0x01000106
     libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
@@ -169,8 +174,10 @@ Device::Device(QString serial)
 
     if(!m_handle) {
         QString message =  "No device found";
-        auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-        msg->show();
+        if(!serial.isEmpty()) {
+            // only show error message if specific device was requested
+            InformationBox::ShowError("Error opening device", message);
+        }
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
         return;
@@ -186,8 +193,7 @@ Device::Device(QString serial)
         message.append(libusb_strerror((libusb_error) ret));
         message.append("\" Maybe you are already connected to this device?");
         qWarning() << message;
-        auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-        msg->show();
+        InformationBox::ShowError("Error opening device", message);
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
     }
@@ -228,6 +234,14 @@ Device::~Device()
     }
 }
 
+void Device::RegisterTypes()
+{
+    qRegisterMetaType<Protocol::Datapoint>("Datapoint");
+    qRegisterMetaType<Protocol::ManualStatusV1>("ManualV1");
+    qRegisterMetaType<Protocol::SpectrumAnalyzerResult>("SpectrumAnalyzerResult");
+    qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>("AmplitudeCorrection");
+}
+
 bool Device::SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb, unsigned int timeout)
 {
     Transmission t;
@@ -250,25 +264,25 @@ bool Device::Configure(Protocol::SweepSettings settings, std::function<void(Tran
     return SendPacket(p, cb);
 }
 
-bool Device::Configure(Protocol::SpectrumAnalyzerSettings settings)
+bool Device::Configure(Protocol::SpectrumAnalyzerSettings settings, std::function<void (Device::TransmissionResult)> cb)
 {
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
     p.spectrumSettings = settings;
-    return SendPacket(p);
+    return SendPacket(p, cb);
 }
 
-bool Device::SetManual(Protocol::ManualControl manual)
+bool Device::SetManual(Protocol::ManualControlV1 manual)
 {
     Protocol::PacketInfo p;
-    p.type = Protocol::PacketType::ManualControl;
+    p.type = Protocol::PacketType::ManualControlV1;
     p.manual = manual;
     return SendPacket(p);
 }
 
-bool Device::SetIdle()
+bool Device::SetIdle(std::function<void(TransmissionResult)> cb)
 {
-    return SendCommandWithoutPayload(Protocol::PacketType::SetIdle);
+    return SendCommandWithoutPayload(Protocol::PacketType::SetIdle, cb);
 }
 
 bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)
@@ -279,11 +293,11 @@ bool Device::SendFirmwareChunk(Protocol::FirmwarePacket &fw)
     return SendPacket(p);
 }
 
-bool Device::SendCommandWithoutPayload(Protocol::PacketType type)
+bool Device::SendCommandWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb)
 {
     Protocol::PacketInfo p;
     p.type = type;
-    return SendPacket(p);
+    return SendPacket(p, cb);
 }
 
 std::set<QString> Device::GetDevices()
@@ -356,11 +370,9 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
                 message.append(libusb_strerror((libusb_error) ret));
                 message.append("\" On Linux this is most likely caused by a missing udev rule. "
                                "On Windows this most likely means that you are already connected to "
-                               "this device (is another instance of the application already runnning? "
-                               "If that is not the case, you can try installing the WinUSB driver using Zadig (https://zadig.akeo.ie/)");
+                               "this device (is another instance of the application already runnning?)");
                 qWarning() << message;
-                auto msg = new QMessageBox(QMessageBox::Icon::Warning, "Error opening device", message);
-                msg->show();
+                InformationBox::ShowError("Error opening device", message);
             }
             continue;
         }
@@ -392,25 +404,48 @@ void Device::SearchDevices(std::function<bool (libusb_device_handle *, QString)>
 
 const Protocol::DeviceInfo &Device::Info()
 {
-    return lastInfo;
+    return info;
+}
+
+const Protocol::DeviceInfo &Device::Info(Device *dev)
+{
+    if(dev) {
+        return dev->Info();
+    } else {
+        return defaultInfo;
+    }
+}
+
+Protocol::DeviceStatusV1 &Device::StatusV1()
+{
+    return status.v1;
+}
+
+const Protocol::DeviceStatusV1 &Device::StatusV1(Device *dev)
+{
+    if(dev) {
+        return dev->StatusV1();
+    } else {
+        return defaultStatusV1;
+    }
 }
 
 QString Device::getLastDeviceInfoString()
 {
     QString ret;
-    if(!lastInfoValid) {
+    if(!infoValid) {
         ret.append("No device information available yet");
     } else {
         ret.append("HW Rev.");
-        ret.append(lastInfo.HW_Revision);
-        ret.append(" FW "+QString::number(lastInfo.FW_major)+"."+QString::number(lastInfo.FW_minor)+"."+QString::number(lastInfo.FW_patch));
-        ret.append(" Temps: "+QString::number(lastInfo.temp_source)+"°C/"+QString::number(lastInfo.temp_LO1)+"°C/"+QString::number(lastInfo.temp_MCU)+"°C");
+        ret.append(info.HW_Revision);
+        ret.append(" FW "+QString::number(info.FW_major)+"."+QString::number(info.FW_minor)+"."+QString::number(info.FW_patch));
+        ret.append(" Temps: "+QString::number(status.v1.temp_source)+"°C/"+QString::number(status.v1.temp_LO1)+"°C/"+QString::number(status.v1.temp_MCU)+"°C");
         ret.append(" Reference:");
-        if(lastInfo.extRefInUse) {
+        if(status.v1.extRefInUse) {
             ret.append("External");
         } else {
             ret.append("Internal");
-            if(lastInfo.extRefAvailable) {
+            if(status.v1.extRefAvailable) {
                 ret.append(" (External available)");
             }
         }
@@ -430,8 +465,8 @@ void Device::ReceivedData()
         case Protocol::PacketType::Datapoint:
             emit DatapointReceived(packet.datapoint);
             break;
-        case Protocol::PacketType::Status:
-            emit ManualStatusReceived(packet.status);
+        case Protocol::PacketType::ManualStatusV1:
+            emit ManualStatusReceived(packet.manualStatusV1);
             break;
         case Protocol::PacketType::SpectrumAnalyzerResult:
             emit SpectrumResultReceived(packet.spectrumResult);
@@ -442,14 +477,18 @@ void Device::ReceivedData()
             break;
         case Protocol::PacketType::DeviceInfo:
             if(packet.info.ProtocolVersion != Protocol::Version) {
-                if(!lastInfoValid) {
+                if(!infoValid) {
                 emit NeedsFirmwareUpdate(packet.info.ProtocolVersion, Protocol::Version);
                 }
             } else {
-                lastInfo = packet.info;
+                info = packet.info;
             }
-            lastInfoValid = true;
+            infoValid = true;
             emit DeviceInfoUpdated();
+            break;
+        case Protocol::PacketType::DeviceStatusV1:
+            status.v1 = packet.statusV1;
+            emit DeviceStatusUpdated();
             break;
         case Protocol::PacketType::Ack:
             emit AckReceived();
@@ -458,6 +497,9 @@ void Device::ReceivedData()
         case Protocol::PacketType::Nack:
             emit NackReceived();
             emit receivedAnswer(TransmissionResult::Nack);
+            break;
+        case Protocol::PacketType::FrequencyCorrection:
+            emit FrequencyCorrectionReceived(packet.frequencyCorrection.ppm);
             break;
        default:
             break;

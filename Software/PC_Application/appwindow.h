@@ -1,26 +1,28 @@
 ﻿#ifndef APPWINDOW_H
 #define APPWINDOW_H
 
+#include "Device/device.h"
+#include "Traces/traceplot.h"
+#include "Calibration/calibration.h"
+#include "Traces/tracemodel.h"
+#include "Traces/Marker/markermodel.h"
+#include "averaging.h"
+#include "Device/devicelog.h"
+#include "preferences.h"
+#include "scpi.h"
+#include "tcpserver.h"
+#include "Device/manualcontroldialog.h"
+
 #include <QWidget>
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QComboBox>
 #include <QStackedWidget>
-#include "Device/device.h"
-#include "Traces/traceplot.h"
-#include "Calibration/calibration.h"
-#include <QProgressDialog>
-#include "Traces/tracemodel.h"
-#include "Traces/tracemarkermodel.h"
-#include "averaging.h"
-#include "Device/devicelog.h"
-#include "preferences.h"
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QLabel>
 #include <QCommandLineParser>
-#include "scpi.h"
-#include "tcpserver.h"
+#include <QProgressDialog>
 
 namespace Ui {
 class MainWindow;
@@ -39,7 +41,17 @@ public:
 
     Ui::MainWindow *getUi() const;
     QStackedWidget *getCentral() const;
-    Device *getDevice() const;
+    Device*&getDevice();
+
+    const QString& getAppVersion() const;
+    const QString& getAppGitHash() const;
+
+    static bool showGUI();
+
+    SCPI* getSCPI();
+
+public slots:
+    void setModeStatus(QString msg);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -49,14 +61,29 @@ private slots:
     int UpdateDeviceList();
     void StartManualControl();
     void UpdateReference();
+    void UpdateAcquisitionFrequencies();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
+    void DeviceStatusUpdated();
     void SourceCalibrationDialog();
     void ReceiverCalibrationDialog();
+    void FrequencyCalibrationDialog();
     nlohmann::json SaveSetup();
+    void SaveSetup(QString filename);
+    void LoadSetup(QString filename);
     void LoadSetup(nlohmann::json j);
 private:
+
+    enum class DeviceStatusBar {
+        Connected,
+        Updated,
+        Disconnected,
+    };
+
     void DeviceConnectionLost();
+
+    void SetupStatusBar();
+    void UpdateStatusBar(DeviceStatusBar status);
     void CreateToolbars();
     void SetupSCPI();
     void StartTCPServer(int port);
@@ -76,14 +103,14 @@ private:
     QString deviceSerial;
     QActionGroup *deviceActionGroup;
 
-    // Modes
-    VNA *vna;
-    Generator *generator;
-    SpectrumAnalyzer *spectrumAnalyzer;
+    ManualControlDialog *manual;
 
     // Status bar widgets
     QLabel lConnectionStatus;
     QLabel lDeviceInfo;
+
+    QLabel lModeInfo;
+    QLabel lSetupName;
     // Error flag labels
     QLabel lADCOverload;
     QLabel lUnlevel;
@@ -94,6 +121,9 @@ private:
 
     SCPI scpi;
     TCPServer *server;
+
+    QString appVersion;
+    QString appGitHash;
 };
 
-#endif // VNA_H
+#endif // APPWINDOW_H

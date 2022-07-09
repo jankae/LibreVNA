@@ -1,16 +1,19 @@
 #include "impedancematchdialog.h"
+
 #include "ui_impedancematchdialog.h"
 #include "Tools/eseries.h"
+#include "Util/util.h"
+#include "preferences.h"
 
 using namespace std;
 
-constexpr double ImpedanceMatchDialog::Z0;
-
-ImpedanceMatchDialog::ImpedanceMatchDialog(TraceMarkerModel &model, TraceMarker *marker, QWidget *parent) :
+ImpedanceMatchDialog::ImpedanceMatchDialog(MarkerModel &model, Marker *marker, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ImpedanceMatchDialog)
 {
     ui->setupUi(this);
+
+    Z0 = 50.0;
 
     // set SI units and prefixes
     ui->zReal->setUnit("Ohm");
@@ -43,7 +46,7 @@ ImpedanceMatchDialog::ImpedanceMatchDialog(TraceMarkerModel &model, TraceMarker 
             // matching only possible for reflections
             continue;
         }
-        ui->cSource->addItem("From Marker "+QString::number(m->getNumber()), QVariant::fromValue<TraceMarker*>(m));
+        ui->cSource->addItem("From Marker "+QString::number(m->getNumber()), QVariant::fromValue<Marker*>(m));
         if(m == marker) {
             // select the last index, e.i. the just created marker
             ui->cSource->setCurrentIndex(ui->cSource->count()-1);
@@ -64,13 +67,16 @@ void ImpedanceMatchDialog::on_cSource_currentIndexChanged(int index)
     ui->zImag->setEnabled(index == 0);
     ui->zFreq->setEnabled(index == 0);
     if(index > 0) {
-        auto m = qvariant_cast<TraceMarker*>(ui->cSource->itemData(index));
+        auto m = qvariant_cast<Marker*>(ui->cSource->itemData(index));
         ui->rbSeries->setChecked(true);
         auto data = m->getData();
+        Z0 = m->getTrace()->getReferenceImpedance();
         auto reflection = Z0 * (1.0 + data) / (1.0 - data);
         ui->zReal->setValue(reflection.real());
         ui->zImag->setValue(reflection.imag());
         ui->zFreq->setValue(m->getPosition());
+    } else {
+        Z0 = 50.0;
     }
 }
 
@@ -239,7 +245,7 @@ void ImpedanceMatchDialog::calculateMatch()
         ui->mReal->setValue(Zmatched.real());
         ui->mImag->setValue(Zmatched.imag());
         double reflection = abs((Zmatched-Z0)/(Zmatched+Z0));
-        auto loss = 20.0*log10(reflection);
+        auto loss = Util::SparamTodB(reflection);
         ui->mLoss->setValue(loss);
 
         // set correct image
@@ -264,7 +270,7 @@ void ImpedanceMatchDialog::calculateMatch()
                 ui->Image->setPixmap(QPixmap(":/icons/pCsC_small.png"));
             }
         }
-    } catch (exception e){
+    } catch (exception &e){
         // something went wrong, probably caused by (intermediate) invalid input, such as f=0Hz
         ui->lValue->setValue(nan(""));
         ui->cValue->setValue(nan(""));

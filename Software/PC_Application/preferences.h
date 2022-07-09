@@ -1,12 +1,31 @@
 #ifndef PREFERENCESDIALOG_H
 #define PREFERENCESDIALOG_H
 
+#include "Util/qpointervariant.h"
+#include "savable.h"
+
 #include <QDialog>
 #include <QVariant>
 #include <exception>
-#include "Util/qpointervariant.h"
 
-class Preferences {
+enum GraphDomainChangeBehavior {
+    RemoveChangedTraces = 0,
+    AdjustGraphs = 1,
+    AdjustGrahpsIfOnlyTrace = 2,
+};
+
+Q_DECLARE_METATYPE(GraphDomainChangeBehavior);
+
+enum GraphLimitIndication {
+    DontShowAnything = 0,
+    PassFailText = 1,
+    Overlay = 2,
+};
+
+Q_DECLARE_METATYPE(GraphLimitIndication);
+
+
+class Preferences : public Savable {
 public:
     static Preferences& getInstance() {
         return instance;
@@ -21,12 +40,22 @@ public:
     struct {
         bool ConnectToFirstDevice;
         bool RememberSweepSettings;
+        bool UseSetupFile;
+        bool AutosaveSetupFile;
+        QString SetupFile;
         struct {
-            double start;
-            double stop;
+            QString type;
+            double f_start;
+            double f_stop;
+            bool logSweep;
+            double f_excitation;
+
+            double dbm_start;
+            double dbm_stop;
+            double dbm_freq;
+
             int points;
             double bandwidth;
-            double excitation;
             int averaging;
         } DefaultSweep;
         struct {
@@ -46,48 +75,78 @@ public:
     struct {
         bool alwaysExciteBothPorts;
         bool suppressPeaks;
+        bool adjustPowerLevel;
         bool harmonicMixing;
+        bool allowSegmentedSweep;
         bool useDFTinSAmode;
         double RBWLimitForDFT;
+        bool useMedianAveraging;
+
+        // advanced, hardware specific settings
+        double IF1;
+        int ADCprescaler;
+        int DFTPhaseInc;
     } Acquisition;
     struct {
+        bool showUnits;
         struct {
             QColor background;
             QColor axis;
-            QColor divisions;
-        } graphColors;
+            struct {
+                QColor divisions;
+                struct {
+                    bool enabled;
+                    QColor background;
+                } Background;
+            } Ticks;
+        } Color;
+        GraphDomainChangeBehavior domainChangeBehavior;
+        GraphLimitIndication limitIndication;
+
+        double lineWidth;
+        int fontSizeAxis;
+        int fontSizeMarkerData;
+        int fontSizeTraceNames;
+        int fontSizeCursorOverlay;
+    } Graphs;
+    struct {
         struct {
-            bool enabled;
-            int port;
-        } SCPI;
-        struct {
-            // warning temperature
-            int warnLimit;
-            int warnAction;
-            // critical temperature (future improvement)
-            // int criticalLimit
-            // int criticalAction
-        } HWTemp;   // related to embedded device temperatures
-    } General;
+            bool showDataOnGraphs;
+            bool showAllData;
+        } defaultBehavior;
+        bool interpolatePoints;
+    } Marker;
+    struct {
+        bool enabled;
+        int port;
+    } SCPIServer;
 
     bool TCPoverride; // in case of manual port specification via command line
+
+    void fromJSON(nlohmann::json j) override;
+    nlohmann::json toJSON() override;
+
 private:
     Preferences() :
      TCPoverride(false) {};
     static Preferences instance;
-    using SettingDescription = struct {
-        QPointerVariant var;
-        QString name;
-        QVariant def;
-    };
-    const std::array<SettingDescription, 29> descr = {{
+
+    const std::vector<Savable::SettingDescription> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},
-        {&Startup.DefaultSweep.start, "Startup.DefaultSweep.start", 1000000.0},
-        {&Startup.DefaultSweep.stop, "Startup.DefaultSweep.stop", 6000000000.0},
+        {&Startup.UseSetupFile, "Startup.UseSetupFile", false},
+        {&Startup.SetupFile, "Startup.SetupFile", ""},
+        {&Startup.AutosaveSetupFile, "Startup.AutosaveSetupFile", false},
+        {&Startup.DefaultSweep.type, "Startup.DefaultSweep.type", "Frequency"},
+        {&Startup.DefaultSweep.f_start, "Startup.DefaultSweep.start", 1000000.0},
+        {&Startup.DefaultSweep.f_stop, "Startup.DefaultSweep.stop", 6000000000.0},
+        {&Startup.DefaultSweep.logSweep, "Startup.DefaultSweep.logSweep", false},
+        {&Startup.DefaultSweep.f_excitation, "Startup.DefaultSweep.excitation", -10.00},
+        {&Startup.DefaultSweep.dbm_start, "Startup.DefaultSweep.dbm_start", -30.00},
+        {&Startup.DefaultSweep.dbm_stop, "Startup.DefaultSweep.dbm_stop", -10.0},
+        {&Startup.DefaultSweep.dbm_freq, "Startup.DefaultSweep.dbm_freq", 1000000000.0},
         {&Startup.DefaultSweep.points, "Startup.DefaultSweep.points", 501},
         {&Startup.DefaultSweep.bandwidth, "Startup.DefaultSweep.bandwidth", 1000.0},
-        {&Startup.DefaultSweep.excitation, "Startup.DefaultSweep.excitation", -10.00},
         {&Startup.DefaultSweep.averaging, "Startup.DefaultSweep.averaging", 1},
         {&Startup.Generator.frequency, "Startup.Generator.frequency", 1000000000.0},
         {&Startup.Generator.level, "Startup.Generator.level", -10.00},
@@ -100,16 +159,33 @@ private:
         {&Startup.SA.signalID, "Startup.SA.signalID", true},
         {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", true},
         {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
+        {&Acquisition.adjustPowerLevel, "Acquisition.adjustPowerLevel", false},
         {&Acquisition.harmonicMixing, "Acquisition.harmonicMixing", false},
+        {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", false},
         {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
         {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
-        {&General.graphColors.background, "General.graphColors.background", QColor(Qt::black)},
-        {&General.graphColors.axis, "General.graphColors.axis", QColor(Qt::white)},
-        {&General.graphColors.divisions, "General.graphColors.divisions", QColor(Qt::gray)},
-        {&General.SCPI.enabled, "General.SCPI.enabled", true},
-        {&General.SCPI.port, "General.SCPI.port", 19542},
-        {&General.HWTemp.warnLimit, "General.HWTemperature.warnLimit", 70},
-        {&General.HWTemp.warnAction, "General.HWTemperature.warnAction", 0},
+        {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
+        {&Acquisition.IF1, "Acquisition.IF1", 62000000},
+        {&Acquisition.ADCprescaler, "Acquisition.ADCprescaler", 128},
+        {&Acquisition.DFTPhaseInc, "Acquisition.DFTPhaseInc", 1280},
+        {&Graphs.showUnits, "Graphs.showUnits", true},
+        {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
+        {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
+        {&Graphs.Color.Ticks.Background.enabled, "Graphs.Color.Ticks.Background.enabled", true},
+        {&Graphs.Color.Ticks.Background.background, "Graphs.Color.Ticks.Background.background", QColor(20, 20, 20)},
+        {&Graphs.Color.Ticks.divisions, "Graphs.Color.Ticks.divisions", QColor(Qt::gray)},
+        {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
+        {&Graphs.limitIndication, "Graphs.limitIndication", GraphLimitIndication::PassFailText},
+        {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
+        {&Graphs.fontSizeAxis, "Graphs.fontSizeAxis", 10},
+        {&Graphs.fontSizeCursorOverlay, "Graphs.fontSizeCursorOverlay", 12},
+        {&Graphs.fontSizeMarkerData, "Graphs.fontSizeMarkerData", 12},
+        {&Graphs.fontSizeTraceNames, "Graphs.fontSizeTraceNames", 12},
+        {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
+        {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
+        {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
+        {&SCPIServer.enabled, "SCPIServer.enabled", true},
+        {&SCPIServer.port, "SCPIServer.port", 19542},
     }};
 };
 
@@ -127,6 +203,7 @@ public:
 
 private:
     void setInitialGUIState();
+    void updateFromGUI();
     Ui::PreferencesDialog *ui;
     Preferences *p;
 };

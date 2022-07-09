@@ -12,5 +12,7 @@ void Work();
 void SweepHalted();
 void Stop();
 
+void PrintStatus();
+
 }
 

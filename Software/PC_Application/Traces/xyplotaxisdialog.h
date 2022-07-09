@@ -1,8 +1,9 @@
 #ifndef XYPLOTAXISDIALOG_H
 #define XYPLOTAXISDIALOG_H
 
-#include <QDialog>
 #include "tracexyplot.h"
+
+#include <QDialog>
 
 namespace Ui {
 class XYplotAxisDialog;
@@ -21,7 +22,8 @@ private slots:
     void XAxisTypeChanged(int XAxisIndex);
 
 private:
-    std::set<TraceXYPlot::YAxisType> supportedYAxis(TraceXYPlot::XAxisType type);
+    std::set<YAxis::Type> supportedYAxis(XAxis::Type type);
+    bool isSupported(XAxis::Type type);
     Ui::XYplotAxisDialog *ui;
     TraceXYPlot *plot;
 };

@@ -1,8 +1,10 @@
 #ifndef TRACECSVEXPORT_H
 #define TRACECSVEXPORT_H
 
-#include <QDialog>
 #include "tracemodel.h"
+#include "traceaxis.h"
+
+#include <QDialog>
 
 namespace Ui {
 class TraceCSVExport;
@@ -43,9 +45,11 @@ public:
     ~TraceCSVExport();
 
 private slots:
+    void columnSelectionChanged();
     void on_buttonBox_accepted();
 
 private:
+    std::vector<YAxis::Type> getSelectedYAxisTypes();
     Ui::TraceCSVExport *ui;
     TraceCSVModel model;
 };

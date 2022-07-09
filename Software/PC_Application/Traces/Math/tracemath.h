@@ -1,11 +1,11 @@
 #ifndef TRACEMATH_H
 #define TRACEMATH_H
 
+#include "savable.h"
+
 #include <QObject>
 #include <vector>
 #include <complex>
-#include "savable.h"
-
 /*
  * How to implement a new type of math operation:
  * 1. Create your new math operation class by deriving from this class. Put the new class in the namespace
@@ -60,6 +60,8 @@ public:
     enum class DataType {
         Frequency,
         Time,
+        Power,
+        TimeZeroSpan,
         Invalid,
     };
 
@@ -92,6 +94,9 @@ public:
     double getStepResponse(unsigned int index);
     Data getInterpolatedSample(double x);
     unsigned int numSamples();
+
+    static QString dataTypeToString(DataType type);
+    static DataType dataTypeFromString(QString s);
 
     // indicate whether this function produces time or frequency domain data
     virtual DataType outputType(DataType inputType) = 0;

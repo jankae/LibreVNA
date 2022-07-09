@@ -1,4 +1,5 @@
 #include "unit.h"
+
 #include <math.h>
 #include <sstream>
 #include <iomanip>
@@ -53,6 +54,9 @@ QString Unit::ToString(double value, QString unit, QString prefixes, int precisi
         value /= SIPrefixToFactor(prefixes[prefixIndex].toLatin1());
         stringstream ss;
         ss << std::fixed;
+        if(precision < 0) {
+            precision = 0;
+        }
         if(preDotDigits >= 0) {
             if(precision - preDotDigits < 0) {
                 ss << std::setprecision(0);

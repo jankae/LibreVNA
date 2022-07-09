@@ -1,6 +1,11 @@
 #include "trace.h"
-#include <math.h>
+
 #include "fftcomplex.h"
+#include "Util/util.h"
+#include "Marker/marker.h"
+#include "traceaxis.h"
+
+#include <math.h>
 #include <QDebug>
 #include <QScrollBar>
 #include <QSettings>
@@ -15,11 +20,12 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       _liveParam(live),
       vFactor(0.66),
       reflection(true),
+      reference_impedance(50.0),
       visible(true),
       paused(false),
       createdFromFile(false),
       calibration(false),
-      timeDomain(false),
+      domain(DataType::Frequency),
       lastMath(nullptr)
 {
     MathInfo self = {.math = this, .enabled = true};
@@ -29,8 +35,15 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
     self.enabled = false;
     dataType = DataType::Frequency;
     connect(this, &Trace::typeChanged, [=](){
-        dataType = timeDomain ? DataType::Time : DataType::Frequency;
+        dataType = domain;
         emit outputTypeChanged(dataType);
+    });
+    connect(this, &Trace::outputSamplesChanged, [=](unsigned int begin, unsigned int end){
+        Q_UNUSED(end);
+        // some samples changed, delete unwrapped phases from here until the end
+        if(unwrappedPhase.size() > begin) {
+            unwrappedPhase.resize(begin);
+        }
     });
 }
 
@@ -50,56 +63,73 @@ void Trace::clear() {
     emit outputSamplesChanged(0, 0);
 }
 
-void Trace::addData(const Trace::Data& d) {
-    // add or replace data in vector while keeping it sorted with increasing frequency
-    auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
-        return lhs.x < rhs.x;
-    });
-    // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
-    auto index = lower - data.begin();
-    if(lower == data.end()) {
-        // highest frequency yet, add to vector
-        data.push_back(d);
-    } else if(lower->x == d.x) {
-        switch(_liveType) {
-        case LivedataType::Overwrite:
-            // replace this data element
-            *lower = d;
-            break;
-        case LivedataType::MaxHold:
-            // replace this data element
-            if(abs(d.y) > abs(lower->y)) {
-                *lower = d;
-            }
-            break;
-        case LivedataType::MinHold:
-            // replace this data element
-            if(abs(d.y) < abs(lower->y)) {
-                *lower = d;
-            }
-            break;
-        default: break;
+void Trace::addData(const Trace::Data& d, DataType domain, double reference_impedance, int index) {
+    if(this->domain != domain) {
+        clear();
+        this->domain = domain;
+        emit typeChanged(this);
+    }
+    if(index >= 0) {
+        // index position specified
+        if(data.size() <= index) {
+            data.resize(index + 1);
         }
+        data[index] = d;
     } else {
-        // insert at this position
-        data.insert(lower, d);
+        // no index given, determine position by X-coordinate
+
+        // add or replace data in vector while keeping it sorted with increasing frequency
+        auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
+            return lhs.x < rhs.x;
+        });
+        // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
+        index = lower - data.begin();
+        if(lower == data.end()) {
+            // highest frequency yet, add to vector
+            data.push_back(d);
+        } else if(lower->x == d.x) {
+            switch(_liveType) {
+            case LivedataType::Overwrite:
+                // replace this data element
+                *lower = d;
+                break;
+            case LivedataType::MaxHold:
+                // replace this data element
+                if(abs(d.y) > abs(lower->y)) {
+                    *lower = d;
+                }
+                break;
+            case LivedataType::MinHold:
+                // replace this data element
+                if(abs(d.y) < abs(lower->y)) {
+                    *lower = d;
+                }
+                break;
+            default: break;
+            }
+        } else {
+            // insert at this position
+            data.insert(lower, d);
+        }
+    }
+    if(this->reference_impedance != reference_impedance) {
+        this->reference_impedance = reference_impedance;
+        emit typeChanged(this);
     }
     success();
     emit outputSamplesChanged(index, index + 1);
 }
 
-void Trace::addData(const Trace::Data &d, const Protocol::SweepSettings &s)
-{
-    settings.VNA = s;
-    settings.valid = true;
-    addData(d);
-}
-
-void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettings &s)
+void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettings &s, int index)
 {
     settings.SA = s;
     settings.valid = true;
-    addData(d);
+    auto domain = DataType::Frequency;
+    if (s.f_start == s.f_stop) {
+        // in zerospan mode
+        domain = DataType::TimeZeroSpan;
+    }
+    addData(d, domain, 50.0, index);
 }
 
 void Trace::setName(QString name) {
@@ -118,15 +148,15 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
         throw runtime_error("Parameter for touchstone out of range");
     }
     clear();
-    timeDomain = false;
-    fileParemeter = parameter;
+    domain = DataType::Frequency;
+    fileParameter = parameter;
     filename = t.getFilename();
     for(unsigned int i=0;i<t.points();i++) {
         auto tData = t.point(i);
         Data d;
         d.x = tData.frequency;
         d.y = t.point(i).S[parameter];
-        addData(d);
+        addData(d, DataType::Frequency);
     }
     // check if parameter is square (e.i. S11/S22/S33/...)
     parameter++;
@@ -145,6 +175,7 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
         reflection = false;
     }
     createdFromFile = true;
+    reference_impedance = t.getReferenceImpedance();
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
 }
@@ -152,73 +183,79 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
 QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
 {
     // find correct column
-    unsigned int traceNum = 0;
-    vector<double> real;
-    vector<double> imag;
+    int traceNum = -1;
     unsigned int i=1;
-    QString traceName;
+    QString lastTraceName = "";
     bool hasImagValues;
+    std::map<YAxis::Type, int> columnMapping;
     for(;i<csv.columns();i++) {
-        traceName = QString();
-        hasImagValues = false;
-        // check column names
-        if(i < csv.columns() - 1) {
-            // not the last column, check if this and next header implies real/imag values
-            auto name_real = csv.getHeader(i);
-            auto name_imag = csv.getHeader(i + 1);
-            if(name_real.endsWith("_real") && name_imag.endsWith("_imag")) {
-                // check if headers have the same beginning
-                name_real.chop(5);
-                name_imag.chop(5);
-                if(name_real == name_imag) {
-                    hasImagValues = true;
-                    traceName = name_real;
-                }
-            }
+        auto header = csv.getHeader(i);
+        auto splitIndex = header.lastIndexOf("_");
+        if(splitIndex == -1) {
+            // no "_", not following naming format of CSV export, skip
+            continue;
         }
-        if(!hasImagValues) {
-            traceName = csv.getHeader(i);
+        auto traceName = header.left(splitIndex);
+        auto yaxistype = header.right(header.size() - splitIndex - 1);
+        if(traceName != lastTraceName) {
+            traceNum++;
+            if(traceNum > parameter) {
+                // got all columns for the trace we are interested in
+                break;
+            }
+            lastTraceName = traceName;
         }
         if(traceNum == parameter) {
-            // this is the desired trace
-            break;
-        } else {
-            traceNum++;
-        }
-        if(hasImagValues) {
-            // next column already used by this trace, skip
-            i++;
+            // this is the trace we are looking for, get axistype and add to mapping
+
+            // handle legacy column naming, translate to new naming
+            if(yaxistype == "real") {
+                yaxistype = YAxis::TypeToName(YAxis::Type::Real);
+            } else if(yaxistype == "imag") {
+                yaxistype = YAxis::TypeToName(YAxis::Type::Imaginary);
+            }
+
+            columnMapping[YAxis::TypeFromName(yaxistype)] = i;
         }
     }
-    if(i >= csv.columns()) {
+    if(traceNum < parameter) {
         throw runtime_error("Not enough traces in CSV file");
     }
-    real = csv.getColumn(i);
-    if(hasImagValues) {
-        imag = csv.getColumn(i + 1);
-    } else {
-        imag.resize(real.size());
-        fill(imag.begin(), imag.end(), 0.0);
+    if(columnMapping.size() == 0) {
+        throw runtime_error("No data for trace in CSV file");
     }
+
     clear();
-    fileParemeter = parameter;
+    fileParameter = parameter;
     filename = csv.getFilename();
     auto xColumn = csv.getColumn(0);
-    timeDomain = csv.getHeader(0).compare("time", Qt::CaseInsensitive) == 0;
+    if(csv.getHeader(0).compare("time", Qt::CaseInsensitive) == 0) {
+        domain = DataType::Time;
+    } else if(csv.getHeader(0).compare("power", Qt::CaseInsensitive) == 0) {
+        domain = DataType::Power;
+    } else if(csv.getHeader(0).compare("time (zero span)", Qt::CaseInsensitive) == 0) {
+        domain = DataType::TimeZeroSpan;
+    } else {
+        domain = DataType::Frequency;
+    }
     for(unsigned int i=0;i<xColumn.size();i++) {
+        std::map<YAxis::Type, double> data;
+        for(auto map : columnMapping) {
+            data[map.first] = csv.getColumn(map.second)[i];
+        }
         Data d;
         d.x = xColumn[i];
-        d.y = complex<double>(real[i], imag[i]);
-        addData(d);
+        d.y = YAxis::reconstructValueFromYAxisType(data);
+        addData(d, domain);
     }
     reflection = false;
     createdFromFile = true;
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
-    return traceName;
+    return lastTraceName;
 }
 
-void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<Protocol::Datapoint> &data)
+void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data)
 {
     S11.clear();
     S12.clear();
@@ -227,20 +264,19 @@ void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, c
     for(auto d : data) {
         Trace::Data td;
         td.x = d.frequency;
-        td.y = complex<double>(d.real_S11, d.imag_S11);
-        S11.addData(td);
-        td.y = complex<double>(d.real_S12, d.imag_S12);
-        S12.addData(td);
-        td.y = complex<double>(d.real_S21, d.imag_S21);
-        S21.addData(td);
-        td.y = complex<double>(d.real_S22, d.imag_S22);
-        S22.addData(td);
+        td.y = d.S.m11;
+        S11.addData(td, DataType::Frequency);
+        td.y = d.S.m12;
+        S12.addData(td, DataType::Frequency);
+        td.y = d.S.m21;
+        S21.addData(td, DataType::Frequency);
+        td.y = d.S.m22;
+        S22.addData(td, DataType::Frequency);
     }
 }
 
 void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
 {
-    timeDomain = false;
     createdFromFile = false;
     _liveType = type;
     _liveParam = param;
@@ -259,16 +295,31 @@ void Trace::setColor(QColor color) {
     }
 }
 
-void Trace::addMarker(TraceMarker *m)
+void Trace::addMarker(Marker *m)
 {
     markers.insert(m);
+    connect(m, &Marker::dataFormatChanged, this, &Trace::markerFormatChanged);
+    connect(m, &Marker::visibilityChanged, this, &Trace::markerVisibilityChanged);
     emit markerAdded(m);
 }
 
-void Trace::removeMarker(TraceMarker *m)
+void Trace::removeMarker(Marker *m)
 {
+    disconnect(m, &Marker::dataFormatChanged, this, &Trace::markerFormatChanged);
+    disconnect(m, &Marker::visibilityChanged, this, &Trace::markerVisibilityChanged);
     markers.erase(m);
     emit markerRemoved(m);
+}
+
+void Trace::markerVisibilityChanged(Marker *m)
+{
+    // trigger replot by pretending that trace visibility also changed
+    emit visibilityChanged(this);
+}
+
+double Trace::getReferenceImpedance() const
+{
+    return reference_impedance;
 }
 
 const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
@@ -319,7 +370,7 @@ nlohmann::json Trace::toJSON()
     } else if(isFromFile()) {
         j["type"] = "File";
         j["filename"] = filename.toStdString();
-        j["parameter"] = fileParemeter;
+        j["parameter"] = fileParameter;
     }
     j["velocityFactor"] = vFactor;
     j["reflection"] = reflection;
@@ -357,15 +408,15 @@ void Trace::fromJSON(nlohmann::json j)
         paused = j.value("paused", false);
     } else if(type == "Touchstone" || type == "File") {
         auto filename = QString::fromStdString(j.value("filename", ""));
-        fileParemeter = j.value("parameter", 0);
+        fileParameter = j.value("parameter", 0);
         try {
             if(filename.endsWith(".csv")) {
                 auto csv = CSV::fromFile(filename);
-                fillFromCSV(csv, fileParemeter);
+                fillFromCSV(csv, fileParameter);
             } else {
                 // has to be a touchstone file
                 Touchstone t = Touchstone::fromFile(filename.toStdString());
-                fillFromTouchstone(t, fileParemeter);
+                fillFromTouchstone(t, fileParameter);
             }
         } catch (const exception &e) {
             std::string what = e.what();
@@ -458,12 +509,13 @@ std::vector<Trace *> Trace::createFromCSV(CSV &csv)
     return traces;
 }
 
-std::vector<Protocol::Datapoint> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
+std::vector<VNAData> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
 {
-    vector<Protocol::Datapoint> ret;
+    vector<VNAData> ret;
 
     // Sanity check traces
     unsigned int samples = S11.size();
+    auto impedance = S11.getReferenceImpedance();
     vector<const Trace*> traces;
     traces.push_back(&S11);
     traces.push_back(&S12);
@@ -473,6 +525,10 @@ std::vector<Protocol::Datapoint> Trace::assembleDatapoints(const Trace &S11, con
     for(const auto t : traces) {
         if(t->size() != samples) {
             qWarning() << "Selected traces do not have the same size";
+            return ret;
+        }
+        if(t->getReferenceImpedance() != impedance) {
+            qWarning() << "Selected traces do not have the same reference impedance";
             return ret;
         }
         if(t->outputType() != Trace::DataType::Frequency) {
@@ -631,11 +687,7 @@ void Trace::setReflection(bool value)
 TraceMath::DataType Trace::outputType(TraceMath::DataType inputType)
 {
     Q_UNUSED(inputType);
-    if(timeDomain) {
-        return DataType::Time;
-    } else {
-        return DataType::Frequency;
-    }
+    return domain;
 }
 
 QString Trace::description()
@@ -648,7 +700,7 @@ void Trace::setCalibration(bool value)
     calibration = value;
 }
 
-std::set<TraceMarker *> Trace::getMarkers() const
+std::set<Marker *> Trace::getMarkers() const
 {
     return markers;
 }
@@ -833,12 +885,8 @@ double Trace::maxX()
     }
 }
 
-double Trace::findExtremumFreq(bool max)
+double Trace::findExtremum(bool max)
 {
-    if(lastMath->getDataType() != DataType::Frequency) {
-        // not in frequency domain
-        return numeric_limits<double>::quiet_NaN();
-    }
     double compare = max ? numeric_limits<double>::min() : numeric_limits<double>::max();
     double freq = 0.0;
     for(auto sample : lastMath->rData()) {
@@ -867,7 +915,7 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     double max_dbm = -200.0;
     double min_dbm = 200.0;
     for(auto d : lastMath->rData()) {
-        double dbm = 20*log10(abs(d.y));
+        double dbm = Util::SparamTodB(d.y);
         if((dbm >= max_dbm) && (min_dbm <= dbm - minValley)) {
             // potential peak frequency
             frequency = d.x;
@@ -908,14 +956,35 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     return frequencies;
 }
 
-Trace::Data Trace::sample(unsigned int index, SampleType type) const
+Trace::Data Trace::sample(unsigned int index, bool getStepResponse) const
 {
     auto data = lastMath->getSample(index);
-    if(type == SampleType::TimeStep) {
+    if(outputType() == Trace::DataType::Time && getStepResponse) {
         // exchange impulse data with step data
         data.y = lastMath->getStepResponse(index);
     }
     return data;
+}
+
+double Trace::getUnwrappedPhase(unsigned int index)
+{
+    if(index >= size()) {
+        return 0.0;
+    } else if(index >= unwrappedPhase.size()) {
+        // unwrapped phase not available for this entry, calculate
+        // copy wrapped phases first
+        unsigned int start_index = unwrappedPhase.size();
+        unwrappedPhase.resize(index + 1);
+        for(unsigned int i=start_index;i<=index;i++) {
+            unwrappedPhase[i] = arg(lastMath->getSample(i).y);
+        }
+        // unwrap the updated part
+        if(start_index > 0) {
+            start_index--;
+        }
+        Util::unwrapPhase(unwrappedPhase, start_index);
+    }
+    return unwrappedPhase[index];
 }
 
 Trace::Data Trace::interpolatedSample(double x)
@@ -931,7 +1000,7 @@ QString Trace::getFilename() const
 
 unsigned int Trace::getFileParameter() const
 {
-    return fileParemeter;
+    return fileParameter;
 }
 
 double Trace::getNoise(double frequency)
@@ -941,7 +1010,7 @@ double Trace::getNoise(double frequency)
         return std::numeric_limits<double>::quiet_NaN();
     }
     // convert to dbm
-    auto dbm = 20*log10(abs(lastMath->getInterpolatedSample(frequency).y));
+    auto dbm = Util::SparamTodB(lastMath->getInterpolatedSample(frequency).y);
     // convert to 1Hz bandwidth
     dbm -= 10*log10(settings.SA.RBW);
     return dbm;

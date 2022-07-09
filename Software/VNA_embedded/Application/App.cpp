@@ -1,3 +1,4 @@
+#include <Cal.hpp>
 #include <VNA.hpp>
 #include "App.h"
 
@@ -18,7 +19,6 @@
 #include "Generator.hpp"
 #include "SpectrumAnalyzer.hpp"
 #include "HW_HAL.hpp"
-#include "AmplitudeCal.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -27,6 +27,7 @@
 static Protocol::PacketInfo recv_packet;
 static Protocol::PacketInfo last_measure_packet; // contains the command that started the last measured (replay in case of timeout)
 static TaskHandle_t handle;
+static bool sweepActive;
 
 #if HW_REVISION >= 'B'
 // has MCU controllable flash chip, firmware update supported
@@ -45,8 +46,9 @@ static void USBPacketReceived(const Protocol::PacketInfo &p) {
 	portYIELD_FROM_ISR(woken);
 }
 
-void App_Start() {
+inline void App_Init() {
 	STM::Init();
+	Delay::Init();
 	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 	handle = xTaskGetCurrentTaskHandle();
 	usb_init(communication_usb_input);
@@ -86,7 +88,7 @@ void App_Start() {
 	EN_6V_GPIO_Port->BSRR = EN_6V_Pin;
 #endif
 
-	AmplitudeCal::Load();
+	Cal::Load();
 
 	if (!HW::Init()) {
 		LOG_CRIT("Initialization failed, unable to start");
@@ -98,10 +100,13 @@ void App_Start() {
 	USB_EN_GPIO_Port->BSRR = USB_EN_Pin;
 #endif
 
-	bool sweepActive = false;
-
 	LED::Off();
-	while (1) {
+
+	sweepActive = false;
+}
+
+inline void App_Process() {
+	while(1) {
 		uint32_t notification;
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
 			// something happened
@@ -113,7 +118,7 @@ void App_Start() {
 					sweepActive = VNA::Setup(recv_packet.settings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-				case Protocol::PacketType::ManualControl:
+				case Protocol::PacketType::ManualControlV1:
 					sweepActive = false;
 					last_measure_packet = recv_packet;
 					Manual::Setup(recv_packet.manual);
@@ -141,19 +146,28 @@ void App_Start() {
 					SA::Setup(recv_packet.spectrumSettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-				case Protocol::PacketType::RequestDeviceInfo:
+				case Protocol::PacketType::RequestDeviceInfo: {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					Protocol::PacketInfo p;
 					p.type = Protocol::PacketType::DeviceInfo;
-					HW::fillDeviceInfo(&p.info);
+					p.info = HW::Info;
 					Communication::Send(p);
+				}
+					break;
+				case Protocol::PacketType::RequestDeviceStatus: {
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					Protocol::PacketInfo p;
+					p.type = Protocol::PacketType::DeviceStatusV1;
+					HW::getDeviceStatus(&p.statusV1);
+					Communication::Send(p);
+				}
 					break;
 				case Protocol::PacketType::SetIdle:
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-#ifdef HAS_FLASH
+		#ifdef HAS_FLASH
 				case Protocol::PacketType::ClearFlash:
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;
@@ -188,21 +202,49 @@ void App_Start() {
 					}
 				}
 					break;
-#endif
+		#endif
 				case Protocol::PacketType::RequestSourceCal:
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
-					AmplitudeCal::SendSource();
+					Cal::SendSource();
 					break;
 				case Protocol::PacketType::RequestReceiverCal:
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
-					AmplitudeCal::SendReceiver();
+					Cal::SendReceiver();
 					break;
 				case Protocol::PacketType::SourceCalPoint:
-					AmplitudeCal::AddSourcePoint(recv_packet.amplitudePoint);
+					Cal::AddSourcePoint(recv_packet.amplitudePoint);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::ReceiverCalPoint:
-					AmplitudeCal::AddReceiverPoint(recv_packet.amplitudePoint);
+					Cal::AddReceiverPoint(recv_packet.amplitudePoint);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
+				case Protocol::PacketType::RequestFrequencyCorrection:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					{
+						Protocol::PacketInfo send;
+						send.type = Protocol::PacketType::FrequencyCorrection;
+						send.frequencyCorrection.ppm = Cal::getFrequencyCal();
+						Communication::Send(send);
+					}
+					break;
+				case Protocol::PacketType::FrequencyCorrection:
+					Cal::setFrequencyCal(recv_packet.frequencyCorrection.ppm);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
+				case Protocol::PacketType::RequestAcquisitionFrequencySettings:
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					{
+						Protocol::PacketInfo send;
+						send.type = Protocol::PacketType::AcquisitionFrequencySettings;
+						send.acquisitionFrequencySettings.IF1 = HW::getIF1();
+						send.acquisitionFrequencySettings.ADCprescaler = HW::getADCPrescaler();
+						send.acquisitionFrequencySettings.DFTphaseInc = HW::getDFTPhaseInc();
+						Communication::Send(send);
+					}
+					break;
+				case Protocol::PacketType::AcquisitionFrequencySettings:
+					HW::setAcquisitionFrequencies(recv_packet.acquisitionFrequencySettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				default:
@@ -217,5 +259,11 @@ void App_Start() {
 			// insert the last received packet (restarts the timed out operation)
 			USBPacketReceived(last_measure_packet);
 		}
+		HW::updateDeviceStatus();
 	}
+}
+
+void App_Start() {
+	App_Init();
+	App_Process();
 }

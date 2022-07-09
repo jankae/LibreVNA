@@ -5,11 +5,13 @@ HEADERS += \
     Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
+    Calibration/frequencycaldialog.h \
     Calibration/manualcalibrationdialog.h \
     Calibration/measurementmodel.h \
     Calibration/receivercaldialog.h \
     Calibration/sourcecaldialog.h \
     CustomWidgets/colorpickerbutton.h \
+    CustomWidgets/csvimport.h \
     CustomWidgets/informationbox.h \
     CustomWidgets/jsonpickerdialog.h \
     CustomWidgets/siunitedit.h \
@@ -27,6 +29,10 @@ HEADERS += \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
     Tools/parameters.h \
+    Traces/Marker/marker.h \
+    Traces/Marker/markergroup.h \
+    Traces/Marker/markermodel.h \
+    Traces/Marker/markerwidget.h \
     Traces/Math/dft.h \
     Traces/Math/expression.h \
     Traces/Math/medianfilter.h \
@@ -83,32 +89,36 @@ HEADERS += \
     Traces/Math/tracemath.h \
     Traces/Math/windowfunction.h \
     Traces/fftcomplex.h \
-    Traces/markerwidget.h \
     Traces/sparamtraceselector.h \
     Traces/trace.h \
+    Traces/traceaxis.h \
     Traces/tracecsvexport.h \
     Traces/traceeditdialog.h \
     Traces/traceimportdialog.h \
-    Traces/tracemarker.h \
-    Traces/tracemarkermodel.h \
     Traces/tracemodel.h \
     Traces/traceplot.h \
     Traces/tracesmithchart.h \
     Traces/tracetouchstoneexport.h \
+    Traces/tracewaterfall.h \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
+    Traces/waterfallaxisdialog.h \
     Traces/xyplotaxisdialog.h \
     Util/qpointervariant.h \
     Util/util.h \
+    Util/app_common.h \
     VNA/Deembedding/deembedding.h \
     VNA/Deembedding/deembeddingdialog.h \
     VNA/Deembedding/deembeddingoption.h \
+    VNA/Deembedding/impedancerenormalization.h \
     VNA/Deembedding/manualdeembeddingdialog.h \
     VNA/Deembedding/matchingnetwork.h \
     VNA/Deembedding/portextension.h \
     VNA/Deembedding/twothru.h \
     VNA/tracewidgetvna.h \
     VNA/vna.h \
+    VNA/vnadata.h \
+    about.h \
     appwindow.h \
     averaging.h \
     csv.h \
@@ -128,11 +138,13 @@ SOURCES += \
     Calibration/calibrationtracedialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
+    Calibration/frequencycaldialog.cpp \
     Calibration/manualcalibrationdialog.cpp \
     Calibration/measurementmodel.cpp \
     Calibration/receivercaldialog.cpp \
     Calibration/sourcecaldialog.cpp \
     CustomWidgets/colorpickerbutton.cpp \
+    CustomWidgets/csvimport.cpp \
     CustomWidgets/informationbox.cpp \
     CustomWidgets/jsonpickerdialog.cpp \
     CustomWidgets/siunitedit.cpp \
@@ -150,6 +162,10 @@ SOURCES += \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
     Tools/parameters.cpp \
+    Traces/Marker/marker.cpp \
+    Traces/Marker/markergroup.cpp \
+    Traces/Marker/markermodel.cpp \
+    Traces/Marker/markerwidget.cpp \
     Traces/Math/dft.cpp \
     Traces/Math/expression.cpp \
     Traces/Math/medianfilter.cpp \
@@ -195,30 +211,33 @@ SOURCES += \
     Traces/Math/tracemath.cpp \
     Traces/Math/windowfunction.cpp \
     Traces/fftcomplex.cpp \
-    Traces/markerwidget.cpp \
     Traces/sparamtraceselector.cpp \
     Traces/trace.cpp \
+    Traces/traceaxis.cpp \
     Traces/tracecsvexport.cpp \
     Traces/traceeditdialog.cpp \
     Traces/traceimportdialog.cpp \
-    Traces/tracemarker.cpp \
-    Traces/tracemarkermodel.cpp \
     Traces/tracemodel.cpp \
     Traces/traceplot.cpp \
     Traces/tracesmithchart.cpp \
     Traces/tracetouchstoneexport.cpp \
+    Traces/tracewaterfall.cpp \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
+    Traces/waterfallaxisdialog.cpp \
     Traces/xyplotaxisdialog.cpp \
+    Util/util.cpp \
     VNA/Deembedding/deembedding.cpp \
     VNA/Deembedding/deembeddingdialog.cpp \
     VNA/Deembedding/deembeddingoption.cpp \
+    VNA/Deembedding/impedancerenormalization.cpp \
     VNA/Deembedding/manualdeembeddingdialog.cpp \
     VNA/Deembedding/matchingnetwork.cpp \
     VNA/Deembedding/portextension.cpp \
     VNA/Deembedding/twothru.cpp \
     VNA/tracewidgetvna.cpp \
     VNA/vna.cpp \
+    about.cpp \
     appwindow.cpp \
     averaging.cpp \
     csv.cpp \
@@ -249,7 +268,9 @@ FORMS += \
     Calibration/automaticamplitudedialog.ui \
     Calibration/calibrationtracedialog.ui \
     Calibration/calkitdialog.ui \
+    Calibration/frequencycaldialog.ui \
     Calibration/manualcalibrationdialog.ui \
+    CustomWidgets/csvimport.ui \
     CustomWidgets/jsonpickerdialog.ui \
     CustomWidgets/tilewidget.ui \
     CustomWidgets/touchstoneimport.ui \
@@ -258,6 +279,7 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
+    Traces/Marker/markerwidget.ui \
     Traces/Math/dftdialog.ui \
     Traces/Math/dftexplanationwidget.ui \
     Traces/Math/expressiondialog.ui \
@@ -270,31 +292,35 @@ FORMS += \
     Traces/Math/timedomaingatingexplanationwidget.ui \
     Traces/Math/timegatedialog.ui \
     Traces/Math/timegateexplanationwidget.ui \
-    Traces/markerwidget.ui \
+    Traces/XYPlotConstantLineEditDialog.ui \
     Traces/smithchartdialog.ui \
     Traces/tracecsvexport.ui \
     Traces/traceeditdialog.ui \
     Traces/traceimportdialog.ui \
     Traces/tracetouchstoneexport.ui \
     Traces/tracewidget.ui \
+    Traces/waterfallaxisdialog.ui \
     Traces/xyplotaxisdialog.ui \
     VNA/Deembedding/deembeddingdialog.ui \
+    VNA/Deembedding/impedancenormalizationdialog.ui \
     VNA/Deembedding/manualdeembeddingdialog.ui \
     VNA/Deembedding/matchingnetworkdialog.ui \
     VNA/Deembedding/measurementdialog.ui \
     VNA/Deembedding/portextensioneditdialog.ui \
     VNA/Deembedding/twothrudialog.ui \
     VNA/s2pImportOptions.ui \
+    aboutdialog.ui \
     main.ui \
     preferencesdialog.ui
 
 DISTFILES +=
 
 RESOURCES += \
-    icons.qrc
+    icons.qrc \
+    resources/librevna.qrc
 
 CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
-DEFINES += FW_MAJOR=1 FW_MINOR=0 FW_PATCH=0 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
+DEFINES += FW_MAJOR=1 FW_MINOR=4 FW_PATCH=0 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
 DEFINES -= _UNICODE UNICODE

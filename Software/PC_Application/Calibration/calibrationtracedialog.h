@@ -1,10 +1,11 @@
 #ifndef CALIBRATIONTRACEDIALOG_H
 #define CALIBRATIONTRACEDIALOG_H
 
-#include <QDialog>
 #include "calibration.h"
 #include "measurementmodel.h"
 #include "Device/device.h"
+
+#include <QDialog>
 
 namespace Ui {
 class CalibrationTraceDialog;
@@ -15,13 +16,14 @@ class CalibrationTraceDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CalibrationTraceDialog(Calibration *cal, Protocol::SweepSettings sweep, Calibration::Type type = Calibration::Type::None);
+    explicit CalibrationTraceDialog(Calibration *cal, double f_min, double f_max, Calibration::Type type = Calibration::Type::None);
     ~CalibrationTraceDialog();
 
 public slots:
+    void measurementsComplete(std::set<Calibration::Measurement> m);
     void measurementComplete(Calibration::Measurement m);
 signals:
-    void triggerMeasurement(Calibration::Measurement m);
+    void triggerMeasurements(std::set<Calibration::Measurement> m);
     void applyCalibration(Calibration::Type type);
     void calibrationInvalidated();
 

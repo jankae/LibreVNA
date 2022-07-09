@@ -1,0 +1,222 @@
+name: Upload release for tag stable
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+
+  PC_Application_Ubuntu:
+    runs-on: ubuntu-18.04
+    outputs:
+      upload_url: ${{ steps.bump_release.outputs.upload_url }} 
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libusb-1.0-0-dev qt5-default qt5-qmake qtbase5-dev zip
+
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/PC_Application
+          fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          echo "::set-output name=app_version::v$fw_major.$fw_minor.$fw_patch"
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application
+          qmake LibreVNA-GUI.pro
+          make -j9
+          zip LibreVNA-GUI.zip LibreVNA-GUI
+        shell: bash
+
+      - name: Bump release page
+        id: bump_release
+        uses: actions/create-release@v1
+        env:
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{env.LIBREVNA_VERSION}}
+          release_name: ${{env.LIBREVNA_VERSION}}
+          body: |
+              See [CHANGELOG](https://github.com/${{github.repository}}/blob/${{env.LIBREVNA_VERSION}}/CHANGELOG.md) for more information.
+          draft: false
+          prerelease: false
+
+      - name: 'Upload release asset'
+        uses: actions/upload-release-asset@v1
+        env:
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.bump_release.outputs.upload_url }}
+          asset_path: ./Software/PC_Application/LibreVNA-GUI.zip
+          asset_name: LibreVNA-GUI-Ubuntu-${{env.LIBREVNA_VERSION}}.zip
+          asset_content_type: application/tar+gzip
+          
+  PC_Application_Windows:
+    needs: PC_Application_Ubuntu
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: msys2/setup-msys2@v2
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: '5.15.1'
+          arch: 'win64_mingw81'
+      
+      - name: Download libusb
+        run: |
+          curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
+          7z x libusb.7z -r -olibusb
+          Xcopy /E /I /Y libusb\include ..\Qt\5.15.1\mingw81_64\include
+          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application
+        shell: cmd
+
+      - name: Get app version
+        id: id_version
+        shell: msys2 {0}
+        run: |
+          cd Software/PC_Application
+          fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          echo "::set-output name=app_version::v$fw_major.$fw_minor.$fw_patch"
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application
+          qmake LibreVNA-GUI.pro
+          make -j9
+        shell: cmd
+
+      - name: Deploy application
+        run: |
+          cd Software/PC_Application/release
+          del *.o *.cpp
+          windeployqt.exe .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libgcc_s_seh-1.dll .
+          copy "..\..\..\..\Qt\5.15.1\mingw81_64\bin\libstdc++-6.dll" .
+          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\Qt5OpenGL.dll .
+        shell: cmd
+
+      - name: Zip app
+        shell: cmd
+        env: 
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+        run: |
+          7z a LibreVNA-GUI_Windows-${{env.LIBREVNA_VERSION}}.zip ./Software/PC_Application/release
+
+      - name: 'Upload release asset'
+        uses: actions/upload-release-asset@v1
+        env:
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.PC_Application_Ubuntu.outputs.upload_url }}
+          asset_path: ./LibreVNA-GUI_Windows-${{env.LIBREVNA_VERSION}}.zip
+          asset_name: LibreVNA-GUI_Windows-${{env.LIBREVNA_VERSION}}.zip
+          asset_content_type: application/tar+gzip
+          
+  PC_Application_OSX:
+    needs: PC_Application_Ubuntu
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          brew install qt@5 libusb
+          
+      - name: Set Environment
+        run: |
+          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
+          
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/PC_Application
+          fw_major=`pcregrep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`pcregrep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`pcregrep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          echo "::set-output name=app_version::v$fw_major.$fw_minor.$fw_patch"
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application
+          qmake LibreVNA-GUI.pro
+          make -j9
+          macdeployqt LibreVNA-GUI.app
+          zip -ry LibreVNA-GUI.zip LibreVNA-GUI.app
+        shell: bash
+
+      - name: 'Upload release asset'
+        uses: actions/upload-release-asset@v1
+        env:
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.PC_Application_Ubuntu.outputs.upload_url }}
+          asset_path: ./Software/PC_Application/LibreVNA-GUI.zip
+          asset_name: LibreVNA-GUI-OSX-${{env.LIBREVNA_VERSION}}.zip
+          asset_content_type: application/tar+gzip
+          
+  Embedded_Firmware:
+    needs: PC_Application_Ubuntu
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+        
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/VNA_embedded
+          fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' Makefile`
+          fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' Makefile`
+          fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' Makefile`
+          hw_revision=`grep "DHW_REVISION=" Makefile | sed "s/-DHW_REVISION=\"'//" | sed "sr'\" [\]rr"`
+          echo "::set-output name=app_version::hw-rev-$hw_revision-v$fw_major.$fw_minor.$fw_patch"
+
+      - name: Build application
+        run: |
+          cd Software/VNA_embedded
+          make -j9
+          cp build/VNA_embedded.elf ../../
+        shell: bash
+
+      - name: Combine with FPGA bitstream
+        run: |
+          python3 AssembleFirmware.py
+        shell: bash
+
+      - name: Zip firmware
+        env: 
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+        run: |
+          zip EmbeddedFirmware-${{env.LIBREVNA_VERSION}}.zip VNA_embedded.elf combined.vnafw
+        shell: bash
+        
+      - name: 'Upload release asset'
+        uses: actions/upload-release-asset@v1
+        env:
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.PC_Application_Ubuntu.outputs.upload_url }}
+          asset_path: ./EmbeddedFirmware-${{env.LIBREVNA_VERSION}}.zip
+          asset_name: EmbeddedFirmware-${{env.LIBREVNA_VERSION}}.zip
+          asset_content_type: application/tar+gzip

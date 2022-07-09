@@ -20,7 +20,7 @@ TARGET = VNA_embedded
 # building variables
 ######################################
 # debug build?
-DEBUG = 0
+DEBUG = 1
 # optimization
 OPT = -O2
 
@@ -58,7 +58,7 @@ CXX_SOURCES := $(foreach sdir,$(SOURCES_DIR),$(wildcard $(sdir)/*.cpp))
 
 # ASM sources
 ASM_SOURCES =  \
-startup/startup_stm32g431xx.s
+Startup/startup_stm32g431cbux.s
 
 
 ######################################
@@ -70,7 +70,7 @@ PERIFLIB_SOURCES =
 #######################################
 # binaries
 #######################################
-BINPATH = /usr/bin
+BINPATH ?= /usr/bin
 PREFIX = arm-none-eabi-
 CC = $(BINPATH)/$(PREFIX)gcc
 CXX  = $(BINPATH)/$(PREFIX)g++
@@ -100,8 +100,9 @@ MCU = $(CPU) -mthumb $(FLOAT-ABI) $(FPU)
 # C defines
 C_DEFS =  \
 -DFW_MAJOR=1 \
--DFW_MINOR=0 \
+-DFW_MINOR=4 \
 -DFW_PATCH=0 \
+-DDEBUG \
 -DUSE_FULL_LL_DRIVER \
 -DHW_REVISION="'B'" \
 -D__weak="__attribute__((weak))" \
@@ -141,8 +142,8 @@ endif
 # compile gcc flags
 ASFLAGS = $(MCU) -g
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fmessage-length=0 -ffunction-sections -fdata-sections -c
-CXXFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fmessage-length=0 -ffunction-sections -fdata-sections -c -fno-exceptions -fno-rtti
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -ffunction-sections -fdata-sections -c --specs=nano.specs -fstack-usage
+CXXFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fmessage-length=0 -ffunction-sections -fdata-sections -c -fno-exceptions -fno-rtti --specs=nano.specs -fno-use-cxa-atexit -fstack-usage
 
 
 
@@ -156,12 +157,12 @@ CXXFLAGS += -MMD -MP
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32G431CBUx_FLASH.ld
+LDSCRIPT = STM32G431CBUX_FLASH.ld
 
 # libraries
-LIBS = -lm -l:USBPDCORE_PD3_FULL_CM4_wc32.a
-LIBDIR = -LMiddlewares/ST/STM32_USBPD_Library/Core/lib
-LDFLAGS = $(MCU) -specs=nosys.specs -specs=nano.specs $(LIBDIR) -T$(LDSCRIPT) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map -Wl,--gc-sections -fno-exceptions -fno-rtti
+LIBS = -lc -lm -lstdc++ -lsupc++
+#LIBDIR = -LMiddlewares/ST/STM32_USBPD_Library/Core/lib
+LDFLAGS = $(MCU) -static -specs=nano.specs $(LIBDIR) -T$(LDSCRIPT) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map -Wl,--gc-sections -fno-exceptions -fno-rtti -Wl,--start-group -Wl,--end-group
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin

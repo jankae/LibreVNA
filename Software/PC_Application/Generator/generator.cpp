@@ -1,11 +1,11 @@
 #include "generator.h"
+
 #include <QSettings>
 
-Generator::Generator(AppWindow *window)
-    : Mode(window, "Signal Generator")
-    , SCPINode("GENerator")
+Generator::Generator(AppWindow *window, QString name)
+    : Mode(window, name, "GENerator")
 {
-    central = new SignalgeneratorWidget(window);
+    central = new SignalgeneratorWidget(window->getDevice(), window);
 
     auto pref = Preferences::getInstance();
 
@@ -40,6 +40,19 @@ void Generator::initializeDevice()
     updateDevice();
 }
 
+nlohmann::json Generator::toJSON()
+{
+    return central->toJSON();
+}
+
+void Generator::fromJSON(nlohmann::json j)
+{
+    if(j.is_null()) {
+        return;
+    }
+    central->fromJSON(j);
+}
+
 void Generator::updateDevice()
 {
     if(!window->getDevice() || Mode::getActiveMode() != this) {
@@ -55,12 +68,12 @@ void Generator::updateDevice()
 void Generator::setupSCPI()
 {
     add(new SCPICommand("FREQuency", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval)) {
-            return "ERROR";
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             central->setFrequency(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(central->getDeviceStatus().frequency);
@@ -69,21 +82,21 @@ void Generator::setupSCPI()
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
 
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             central->setLevel(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(central->getDeviceStatus().cdbm_level / 100.0);
     }));
     add(new SCPICommand("PORT", [=](QStringList params) -> QString {
-        unsigned long newval;
-        if(!SCPI::paramToULong(params, 0, newval) || newval > 2) {
-            return "ERROR";
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval) || newval > 2) {
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             central->setPort(newval);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
         return QString::number(central->getDeviceStatus().activePort);

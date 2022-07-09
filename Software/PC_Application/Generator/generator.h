@@ -5,16 +5,18 @@
 #include "signalgenwidget.h"
 #include "scpi.h"
 
-class Generator : public Mode, public SCPINode
+class Generator : public Mode
 {
 public:
-    Generator(AppWindow *window);
+    Generator(AppWindow *window, QString name = "Signal Generator");
     void deactivate() override;
     void initializeDevice() override;
 
+    virtual Type getType() override { return Type::SG;}
+
     // Nothing to do for now
-    virtual nlohmann::json toJSON() override {return nlohmann::json();};
-    virtual void fromJSON(nlohmann::json j) override {Q_UNUSED(j)};
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 
 private slots:
     void updateDevice();

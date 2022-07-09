@@ -2,17 +2,18 @@
 #define CALIBRATION_H
 
 #include "Device/device.h"
+#include "calkit.h"
+#include "Traces/tracemodel.h"
+
 #include <complex>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <iomanip>
-#include "calkit.h"
-#include "Traces/tracemodel.h"
 #include <QDateTime>
-#include "calkit.h"
+#include <savable.h>
 
-class Calibration
+class Calibration : public Savable
 {
 public:
     Calibration();
@@ -29,9 +30,23 @@ public:
         Line,
         Last,
     };
+
+    enum class Standard {
+        Open,
+        Short,
+        Load,
+        Through,
+        Any,
+    };
+
+    static Standard getPort1Standard(Measurement m);
+    static Standard getPort2Standard(Measurement m);
+
     void clearMeasurements();
+    void clearMeasurements(std::set<Measurement> types);
     void clearMeasurement(Measurement type);
-    void addMeasurement(Measurement type, Protocol::Datapoint &d);
+    void addMeasurement(Measurement type, VNAData &d);
+    void addMeasurements(std::set<Measurement> types, VNAData &d);
 
     enum class Type {
         Port1SOL,
@@ -48,7 +63,7 @@ public:
     bool constructErrorTerms(Type type);
     void resetErrorTerms();
 
-    void correctMeasurement(Protocol::Datapoint &d);
+    void correctMeasurement(VNAData &d);
     void correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
 
     enum class InterpolationType {
@@ -59,7 +74,7 @@ public:
         NoCalibration, // No calibration available
     };
 
-    InterpolationType getInterpolation(Protocol::SweepSettings settings);
+    InterpolationType getInterpolation(double f_start, double f_stop, int points);
 
     static Measurement MeasurementFromString(QString s);
     static QString MeasurementToString(Measurement m);
@@ -78,7 +93,6 @@ public:
     const std::vector<Measurement> Measurements(Type type = Type::None, bool optional_included = true);
     MeasurementInfo getMeasurementInfo(Measurement m);
 
-    friend std::ostream& operator<<(std::ostream& os, const Calibration& c);
     friend std::istream& operator >> (std::istream &in, Calibration& c);
     int nPoints() {
         return points.size();
@@ -94,6 +108,23 @@ public:
     Calkit& getCalibrationKit();
     void setCalibrationKit(const Calkit &value);
 
+    enum class PortStandard {
+        Male,
+        Female,
+    };
+    void setPortStandard(int port, PortStandard standard);
+    PortStandard getPortStandard(int port);
+    bool getThroughZeroLength() const;
+    void setThroughZeroLength(bool value);
+
+    QString getCurrentCalibrationFile();
+    double getMinFreq();
+    double getMaxFreq();
+    int getNumPoints();
+
+    nlohmann::json toJSON() override;
+    void fromJSON(nlohmann::json j) override;
+
 private:
     void construct12TermPoints();
     void constructPort1SOL();
@@ -106,11 +137,11 @@ private:
     public:
         double frequency;
         // Forward error terms
-        std::complex<double> fe00, fe11, fe10e01, fe10e32, fe22, fe30;
+        std::complex<double> fe00, fe11, fe10e01, fe10e32, fe22, fe30, fex;
         // Reverse error terms
-        std::complex<double> re33, re11, re23e32, re23e01, re22, re03;
+        std::complex<double> re33, re11, re23e32, re23e01, re22, re03, rex;
     };
-    Point getCalibrationPoint(Protocol::Datapoint &d);
+    Point getCalibrationPoint(VNAData &d);
     /*
      * Constructs directivity, match and tracking correction factors from measurements of three distinct impedances
      * Normally, an open, short and load are used (with ideal reflection coefficients of 1, -1 and 0 respectively).
@@ -126,6 +157,15 @@ private:
                     std::complex<double> o_c = std::complex<double>(1.0, 0),
                     std::complex<double> s_c = std::complex<double>(-1.0, 0),
                     std::complex<double> l_c = std::complex<double>(0, 0));
+    void computeIsolation(std::complex<double> x0_m,
+                          std::complex<double> x1_m,
+                          std::complex<double> reverse_match,
+                          std::complex<double> reverse_tracking,
+                          std::complex<double> reverse_directivity,
+                          std::complex<double> x0,
+                          std::complex<double> x1,
+                          std::complex<double> &internal_isolation,
+                          std::complex<double> &external_isolation);
     std::complex<double> correctSOL(std::complex<double> measured,
                                     std::complex<double> directivity,
                                     std::complex<double> match,
@@ -133,7 +173,7 @@ private:
     class MeasurementData {
     public:
         QDateTime timestamp;
-        std::vector<Protocol::Datapoint> datapoints;
+        std::vector<VNAData> datapoints;
     };
     Type type;
 
@@ -143,14 +183,10 @@ private:
 
     Calkit kit;
     QString descriptiveCalName();
-
-private:
     QString currentCalFile;
-public:
-    QString getCurrentCalibrationFile();
-    double getMinFreq();
-    double getMaxFreq();
-    int getNumPoints();
+
+    PortStandard port1Standard, port2Standard;
+    bool throughZeroLength;
 };
 
 #endif // CALIBRATION_H

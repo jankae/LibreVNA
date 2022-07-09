@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 5;
+static constexpr uint16_t Version = 11;
 
 #pragma pack(push, 1)
 
@@ -13,8 +13,18 @@ using Datapoint = struct _datapoint {
 	float real_S21, imag_S21;
 	float real_S12, imag_S12;
 	float real_S22, imag_S22;
-	uint64_t frequency;
-	uint16_t pointNum;
+	union {
+		struct {
+			// for non-zero span
+			uint64_t frequency;
+			int16_t cdbm;
+		};
+		struct {
+			// for zero span
+			uint64_t us; // time in us since first datapoint
+		};
+	};
+    uint16_t pointNum;
 };
 
 using SweepSettings = struct _sweepSettings {
@@ -22,10 +32,13 @@ using SweepSettings = struct _sweepSettings {
 	uint64_t f_stop;
     uint16_t points;
     uint32_t if_bandwidth;
-    int16_t cdbm_excitation; // in 1/100 dbm
+    int16_t cdbm_excitation_start; // in 1/100 dbm
 	uint8_t excitePort1:1;
 	uint8_t excitePort2:1;
 	uint8_t suppressPeaks:1;
+	uint8_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
+	uint8_t logSweep:1;
+    int16_t cdbm_excitation_stop; // in 1/100 dbm
 };
 
 using ReferenceSettings = struct _referenceSettings {
@@ -41,23 +54,13 @@ using GeneratorSettings = struct _generatorSettings {
     uint8_t applyAmplitudeCorrection :1;
 };
 
-static constexpr int8_t TemperatureLimit_Hard = 85;	// safest max operating temp. among PLL, MCU, FPGA, etc
 using DeviceInfo = struct _deviceInfo {
 	uint16_t ProtocolVersion;
     uint8_t FW_major;
     uint8_t FW_minor;
     uint8_t FW_patch;
+    uint8_t hardware_version;
     char HW_Revision;
-    uint8_t extRefAvailable:1;
-    uint8_t extRefInUse:1;
-    uint8_t FPGA_configured:1;
-    uint8_t source_locked:1;
-    uint8_t LO1_locked:1;
-    uint8_t ADC_overload:1;
-    uint8_t unlevel:1;
-	uint8_t temp_source;
-	uint8_t temp_LO1;
-	uint8_t temp_MCU;
 	uint64_t limits_minFreq;
 	uint64_t limits_maxFreq;
 	uint32_t limits_minIFBW;
@@ -69,10 +72,23 @@ using DeviceInfo = struct _deviceInfo {
 	uint32_t limits_maxRBW;
     uint8_t limits_maxAmplitudePoints;
     uint64_t limits_maxFreqHarmonic;
-    uint8_t temp_over_hardLimit:1;
 };
 
-using ManualStatus = struct _manualstatus {
+using DeviceStatusV1 = struct _deviceStatusV1 {
+    uint8_t extRefAvailable:1;
+    uint8_t extRefInUse:1;
+    uint8_t FPGA_configured:1;
+    uint8_t source_locked:1;
+    uint8_t LO1_locked:1;
+    uint8_t ADC_overload:1;
+    uint8_t unlevel:1;
+	uint8_t temp_source;
+	uint8_t temp_LO1;
+	uint8_t temp_MCU;
+};
+
+
+using ManualStatusV1 = struct _manualstatusV1 {
         int16_t port1min, port1max;
         int16_t port2min, port2max;
         int16_t refmin, refmax;
@@ -85,7 +101,7 @@ using ManualStatus = struct _manualstatus {
         uint8_t LO_locked :1;
 };
 
-using ManualControl = struct _manualControl {
+using ManualControlV1 = struct _manualControlV1 {
     // Highband Source
     uint8_t SourceHighCE :1;
     uint8_t SourceHighRFEN :1;
@@ -136,7 +152,16 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
 	float port1;
 	float port2;
-	uint64_t frequency;
+	union {
+		struct {
+			// for non-zero span
+			uint64_t frequency;
+		};
+		struct {
+			// for zero span
+			uint64_t us; // time in us since first datapoint
+		};
+	};
 	uint16_t pointNum;
 };
 
@@ -154,12 +179,22 @@ using AmplitudeCorrectionPoint = struct _amplitudecorrectionpoint {
 	int16_t port2;
 };
 
+using FrequencyCorrection = struct _frequencycorrection {
+	float ppm;
+};
+
+using AcquisitionFrequencySettings = struct _acquisitionfrequencysettigns {
+	uint32_t IF1;
+	uint8_t ADCprescaler;
+	uint16_t DFTphaseInc;
+};
+
 enum class PacketType : uint8_t {
 	None = 0,
 	Datapoint = 1,
 	SweepSettings = 2,
-    Status = 3,
-    ManualControl = 4,
+    ManualStatusV1 = 3,
+    ManualControlV1 = 4,
     DeviceInfo = 5,
     FirmwarePacket = 6,
     Ack = 7,
@@ -176,6 +211,12 @@ enum class PacketType : uint8_t {
 	SourceCalPoint = 18,
 	ReceiverCalPoint = 19,
 	SetIdle = 20,
+	RequestFrequencyCorrection = 21,
+	FrequencyCorrection = 22,
+	RequestAcquisitionFrequencySettings = 23,
+	AcquisitionFrequencySettings = 24,
+	DeviceStatusV1 = 25,
+	RequestDeviceStatus = 26,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -185,13 +226,16 @@ using PacketInfo = struct _packetinfo {
 		SweepSettings settings;
 		ReferenceSettings reference;
 		GeneratorSettings generator;
+		DeviceStatusV1 statusV1;
         DeviceInfo info;
-        ManualControl manual;
+        ManualControlV1 manual;
         FirmwarePacket firmware;
-        ManualStatus status;
+        ManualStatusV1 manualStatusV1;
         SpectrumAnalyzerSettings spectrumSettings;
         SpectrumAnalyzerResult spectrumResult;
         AmplitudeCorrectionPoint amplitudePoint;
+        FrequencyCorrection frequencyCorrection;
+        AcquisitionFrequencySettings acquisitionFrequencySettings;
 	};
 };
 

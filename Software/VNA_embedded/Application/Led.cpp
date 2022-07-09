@@ -6,7 +6,7 @@
 
 #if HW_REVISION == 'B'
 
-#define LED_TASK_STACK		128
+#define LED_STATUS_TASK_STACK_SIZE_WORDS	128
 
 extern TIM_HandleTypeDef htim2;
 
@@ -21,9 +21,11 @@ enum class Mode {
 static Mode mode;
 static uint8_t led_statecnt;
 static int8_t led_ncnt;
-static xTaskHandle task;
-static StaticTask_t xTask;
-static StackType_t xStack[LED_TASK_STACK];
+
+static StackType_t LedStatusStack[LED_STATUS_TASK_STACK_SIZE_WORDS];
+static StaticTask_t LedStatusCB;
+static xTaskHandle LedStatusHandle = NULL;
+
 static uint8_t err_cnt;
 
 static void led_set_percentage(uint8_t val) {
@@ -31,8 +33,8 @@ static void led_set_percentage(uint8_t val) {
 	TIM2->CCR1 = compare;
 }
 
-static void led_task(void* unused) {
-	UNUSED(unused);
+static void LedStatus(void * const argument) {
+	UNUSED(argument);
 	while (1) {
 		if (led_statecnt < 199) {
 			led_statecnt++;
@@ -88,9 +90,10 @@ void LED::Init() {
 	HAL_TIM_Base_Start(&htim2);
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 
-	task = xTaskCreateStatic(led_task, "LED",
-	LED_TASK_STACK, NULL, 6, xStack, &xTask);
-	vTaskSuspend(task);
+	LedStatusHandle = xTaskCreateStatic(LedStatus, "LedStatusTask", LED_STATUS_TASK_STACK_SIZE_WORDS,
+										NULL, 6, LedStatusStack, &LedStatusCB);
+
+	vTaskSuspend(LedStatusHandle);
 #endif
 }
 
@@ -99,9 +102,9 @@ void LED::Pulsating() {
 	if(led_ncnt) {
 		return;
 	}
-	vTaskSuspend(task);
+	vTaskSuspend(LedStatusHandle);
 	mode = Mode::Pulsating;
-	vTaskResume(task);
+	vTaskResume(LedStatusHandle);
 #endif
 }
 
@@ -110,9 +113,9 @@ void LED::Off() {
 	if(led_ncnt) {
 		return;
 	}
-	vTaskSuspend(task);
+	vTaskSuspend(LedStatusHandle);
 	mode = Mode::Off;
-	vTaskResume(task);
+	vTaskResume(LedStatusHandle);
 #endif
 }
 
@@ -121,11 +124,11 @@ void LED::Error(uint8_t code) {
 	if(led_ncnt) {
 		return;
 	}
-	vTaskSuspend(task);
+	vTaskSuspend(LedStatusHandle);
 	mode = Mode::Error;
 	led_statecnt = 0;
 	err_cnt = 0;
 	led_ncnt = code;
-	vTaskResume(task);
+	vTaskResume(LedStatusHandle);
 #endif
 }

@@ -6,13 +6,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -82,6 +81,7 @@ extern "C" {
 #endif /* TIM5 */
 #define GPIO_AF2_TIM8          ((uint8_t)0x02)  /* TIM8 Alternate Function mapping  */
 #define GPIO_AF2_TIM15         ((uint8_t)0x02)  /* TIM15 Alternate Function mapping */
+#define GPIO_AF2_TIM16         ((uint8_t)0x02)  /* TIM16 Alternate Function mapping */
 #if defined(TIM20)
 #define GPIO_AF2_TIM20         ((uint8_t)0x02)  /* TIM20 Alternate Function mapping */
 #endif /* TIM20 */
@@ -214,6 +214,7 @@ extern "C" {
   * @brief   AF 9 selection
   */
 #define GPIO_AF9_TIM1          ((uint8_t)0x09)  /* TIM1 Alternate Function mapping    */
+#define GPIO_AF9_TIM8          ((uint8_t)0x09)  /* TIM8 Alternate Function mapping    */
 #define GPIO_AF9_TIM15         ((uint8_t)0x09)  /* TIM15 Alternate Function mapping   */
 #define GPIO_AF9_TIM1_COMP1    ((uint8_t)0x09)  /* TIM1/COMP1 Break in Alternate Function mapping   */
 #define GPIO_AF9_TIM8_COMP1    ((uint8_t)0x09)  /* TIM8/COMP1 Break in Alternate Function mapping   */
@@ -245,6 +246,7 @@ extern "C" {
 #define GPIO_AF11_FDCAN3       ((uint8_t)0x0B)  /* FDCAN3 Alternate Function mapping  */
 #endif /* FDCAN3 */
 #define GPIO_AF11_TIM1         ((uint8_t)0x0B)  /* TIM1 Alternate Function mapping    */
+#define GPIO_AF11_TIM8         ((uint8_t)0x0B)  /* TIM8 Alternate Function mapping    */
 #define GPIO_AF11_TIM8_COMP1   ((uint8_t)0x0B)  /* TIM8/COMP1 Break in Alternate Function mapping  */
 #define GPIO_AF11_LPTIM1       ((uint8_t)0x0B)  /* LPTIM1 Alternate Function mapping  */
 
@@ -252,7 +254,8 @@ extern "C" {
   * @brief   AF 12 selection
   */
 #define GPIO_AF12_LPUART1      ((uint8_t)0x0C)  /* LPUART1 Alternate Function mapping */
-#define GPIO_AF12_TIM1_COMP1   ((uint8_t)0x0C)  /* TIM8/COMP2 Break in Alternate Function mapping  */
+#define GPIO_AF12_TIM1         ((uint8_t)0x0C)  /* TIM1 Alternate Function mapping    */
+#define GPIO_AF12_TIM1_COMP1   ((uint8_t)0x0C)  /* TIM1/COMP1 Break in Alternate Function mapping  */
 #define GPIO_AF12_TIM1_COMP2   ((uint8_t)0x0C)  /* TIM1/COMP2 Break in Alternate Function mapping  */
 #if defined(HRTIM1)
 #define GPIO_AF12_HRTIM1       ((uint8_t)0x0C)  /* HRTIM1 Alternate Function mapping  */
@@ -335,4 +338,3 @@ extern "C" {
 
 #endif /* STM32G4xx_HAL_GPIO_EX_H */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

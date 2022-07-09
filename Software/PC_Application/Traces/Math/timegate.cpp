@@ -1,14 +1,19 @@
 #include "timegate.h"
-#include <QWidget>
-#include <QDialog>
+
 #include "ui_timegatedialog.h"
 #include "ui_timegateexplanationwidget.h"
 #include "preferences.h"
-#include <QPainter>
 #include "Util/util.h"
 #include "Traces/fftcomplex.h"
+#include "Util/util.h"
 #include "unit.h"
+#include "appwindow.h"
+
+#include <QWidget>
+#include <QDialog>
+#include <QPainter>
 #include <QMouseEvent>
+
 
 Math::TimeGate::TimeGate()
 {
@@ -54,6 +59,9 @@ void Math::TimeGate::edit()
     auto d = new QDialog();
     auto ui = new Ui::TimeGateDialog();
     ui->setupUi(d);
+    connect(d, &QDialog::finished, [=](){
+        delete ui;
+    });
     ui->graph->setGate(this);
     ui->windowBox->setLayout(new QVBoxLayout);
     ui->windowBox->layout()->addWidget(window.createEditor());
@@ -101,7 +109,9 @@ void Math::TimeGate::edit()
 
     updateFilter();
 
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 QWidget *Math::TimeGate::createExplanationWidget()
@@ -109,6 +119,9 @@ QWidget *Math::TimeGate::createExplanationWidget()
     auto w = new QWidget();
     auto ui = new Ui::TimeGateExplanationWidget;
     ui->setupUi(w);
+    connect(w, &QWidget::destroyed, [=](){
+        delete ui;
+    });
     return w;
 }
 
@@ -135,6 +148,10 @@ void Math::TimeGate::fromJSON(nlohmann::json j)
 
 void Math::TimeGate::setStart(double start)
 {
+    if(input && input->rData().size() > 0 && start < input->rData().front().x) {
+        start = input->rData().back().x;
+    }
+
     double stop = center + span / 2;
     if(start < stop) {
         span = stop - start;
@@ -148,6 +165,10 @@ void Math::TimeGate::setStart(double start)
 
 void Math::TimeGate::setStop(double stop)
 {
+    if(input && input->rData().size() > 0 && stop > input->rData().back().x) {
+        stop = input->rData().back().x;
+    }
+
     double start = center - span / 2;
     if(stop > start) {
         span = stop - start;
@@ -198,7 +219,11 @@ void Math::TimeGate::inputSamplesChanged(unsigned int begin, unsigned int end)
         data[i].y *= filter[i];
     }
     emit outputSamplesChanged(begin, end);
-    success();
+    if(input->rData().size() > 0) {
+        success();
+    } else {
+        warning("No input data");
+    }
 }
 
 void Math::TimeGate::updateFilter()
@@ -214,12 +239,7 @@ void Math::TimeGate::updateFilter()
     }
     auto maxX = input->rData().back().x;
     auto minX = input->rData().front().x;
-    if(center - span / 2 < minX) {
-        span = (center - minX) * 2;
-    }
-    if(center + span / 2 > maxX) {
-        span = (maxX - center) * 2;
-    }
+
     auto wc1 = Util::Scale<double>(center - span / 2, minX, maxX, 0, 1);
     auto wc2 = Util::Scale<double>(center + span / 2, minX, maxX, 0, 1);
 
@@ -244,7 +264,7 @@ void Math::TimeGate::updateFilter()
     Fft::shift(buf, true);
     Fft::transform(buf, false);
 
-    filter.resize(buf.size());
+    filter.resize(buf.size() / 2);
     for(unsigned int i=0;i<buf.size() / 2;i++) {
         filter[i] = abs(buf[i]);
     }
@@ -265,6 +285,10 @@ Math::TimeGateGraph::TimeGateGraph(QWidget *parent)
 
 QPoint Math::TimeGateGraph::plotValueToPixel(double x, double y)
 {
+    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+        return QPoint(0, 0);
+    }
+
     auto input = gate->getInput()->rData();
     auto minX = input.front().x;
     auto maxX = input.back().x;
@@ -282,6 +306,10 @@ QPoint Math::TimeGateGraph::plotValueToPixel(double x, double y)
 
 QPointF Math::TimeGateGraph::pixelToPlotValue(QPoint p)
 {
+    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+        return QPointF(0.0, 0.0);
+    }
+
     auto input = gate->getInput()->rData();
     auto minX = input.front().x;
     auto maxX = input.back().x;
@@ -309,28 +337,52 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     auto pref = Preferences::getInstance();
     QPainter p(this);
     // fill background
-    p.setBackground(QBrush(pref.General.graphColors.background));
-    p.fillRect(0, 0, width(), height(), QBrush(pref.General.graphColors.background));
+    p.setBackground(QBrush(pref.Graphs.Color.background));
+    p.fillRect(0, 0, width(), height(), QBrush(pref.Graphs.Color.background));
+
+    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+        // no data yet, nothing to plot
+        return;
+    }
 
     // plot trace
     auto pen = QPen(Qt::green, 1);
     pen.setCosmetic(true);
     pen.setStyle(Qt::SolidLine);
     p.setPen(pen);
-    for(unsigned int i=1;i<input.size();i++) {
-        auto last = input[i-1];
+
+    auto minX = input.front().x;
+    auto maxX = input.back().x;
+
+    int plotLeft = 0;
+    int plotRight = size().width();
+    int plotTop = 0;
+    int plotBottom = size().height();
+
+    QPoint p1, p2;
+
+    // limit amount of displayed points to keep GUI snappy
+    auto increment = input.size() / 500;
+    if(!increment) {
+        increment = 1;
+    }
+
+    for(unsigned int i=increment;i<input.size();i+=increment) {
+        auto last = input[i-increment];
         auto now = input[i];
 
-        auto y_last = 20*log10(abs(last.y));
-        auto y_now = 20*log10(abs(now.y));
+        auto y_last = Util::SparamTodB(last.y);
+        auto y_now = Util::SparamTodB(now.y);
 
         if(std::isnan(y_last) || std::isnan(y_now) || std::isinf(y_last) || std::isinf(y_now)) {
             continue;
         }
 
         // scale to plot coordinates
-        auto p1 = plotValueToPixel(last.x, y_last);
-        auto p2 = plotValueToPixel(now.x, y_now);
+        p1.setX(Util::Scale<double>(last.x, minX, maxX, plotLeft, plotRight));
+        p1.setY(Util::Scale<double>(y_last, -120, 20, plotBottom, plotTop));
+        p2.setX(Util::Scale<double>(now.x, minX, maxX, plotLeft, plotRight));
+        p2.setY(Util::Scale<double>(y_now, -120, 20, plotBottom, plotTop));
         // draw line
         p.drawLine(p1, p2);
     }
@@ -338,21 +390,22 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     auto filter = gate->rFilter();
     pen = QPen(Qt::red, 1);
     p.setPen(pen);
-    for(unsigned int i=1;i<filter.size();i++) {
-        auto x_last = input[i-1].x;
+    for(unsigned int i=increment;i<filter.size() && i<input.size();i+=increment) {
+        auto x_last = input[i-increment].x;
         auto x_now = input[i].x;
 
-        auto f_last = 20*log10(filter[i-1]);
-        auto f_now = 20*log10(filter[i]);
+        auto f_last = Util::SparamTodB(filter[i-increment]);
+        auto f_now = Util::SparamTodB(filter[i]);
 
         if(std::isnan(f_last) || std::isnan(f_now) || std::isinf(f_last) || std::isinf(f_now)) {
             continue;
         }
 
         // scale to plot coordinates
-        auto p1 = plotValueToPixel(x_last, f_last);
-        auto p2 = plotValueToPixel(x_now, f_now);
-
+        p1.setX(Util::Scale<double>(x_last, minX, maxX, plotLeft, plotRight));
+        p1.setY(Util::Scale<double>(f_last, -120, 20, plotBottom, plotTop));
+        p2.setX(Util::Scale<double>(x_now, minX, maxX, plotLeft, plotRight));
+        p2.setY(Util::Scale<double>(f_now, -120, 20, plotBottom, plotTop));
         // draw line
         p.drawLine(p1, p2);
     }
@@ -367,10 +420,19 @@ void Math::TimeGateGraph::mousePressEvent(QMouseEvent *event)
     grabbedStart = false;
     auto startX = plotValueToPixel(gate->getStart(), 0).x();
     auto stopX = plotValueToPixel(gate->getStop(), 0).x();
-    if(abs(event->pos().x() - startX) < catchDistance) {
+    auto distStart = abs(event->pos().x() - startX);
+    auto distStop = abs(event->pos().x() - stopX);
+    if(distStart < distStop && distStart < catchDistance) {
         grabbedStart = true;
-    } else if(abs(event->pos().x() - stopX) < catchDistance) {
+    } else if(distStop < distStart && distStop < catchDistance) {
         grabbedStop = true;
+    } else if(distStop == distStart && distStop < catchDistance) {
+        // could happen if start/stop are close to each with respect to input range
+        if(event->pos().x() > stopX) {
+            grabbedStop = true;
+        } else {
+            grabbedStart = true;
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 #include "tracemodel.h"
+
 #include <QIcon>
 #include <QDebug>
 
@@ -8,6 +9,7 @@ TraceModel::TraceModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
     traces.clear();
+    source = DataSource::Unknown;
 }
 
 TraceModel::~TraceModel()
@@ -195,7 +197,7 @@ void TraceModel::fromJSON(nlohmann::json j)
     }
 }
 
-void TraceModel::clearVNAData()
+void TraceModel::clearLiveData()
 {
     for(auto t : traces) {
         if (t->isLive()) {
@@ -205,32 +207,56 @@ void TraceModel::clearVNAData()
     }
 }
 
-void TraceModel::addVNAData(const Protocol::Datapoint &d, const Protocol::SweepSettings& settings)
+void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
 {
+    source = DataSource::VNA;
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
+            int index = -1;
             Trace::Data td;
-            td.x = d.frequency;
+            switch(datatype) {
+            case TraceMath::DataType::Frequency:
+                td.x = d.frequency;
+                break;
+            case TraceMath::DataType::Power:
+                td.x = (double) d.cdbm / 100.0;
+                break;
+            case TraceMath::DataType::TimeZeroSpan:
+                td.x = d.time;
+                index = d.pointNum;
+                break;
+            default:
+                // invalid type, can not add
+                return;
+            }
             switch(t->liveParameter()) {
-            case Trace::LiveParameter::S11: td.y = complex<double>(d.real_S11, d.imag_S11); break;
-            case Trace::LiveParameter::S12: td.y = complex<double>(d.real_S12, d.imag_S12); break;
-            case Trace::LiveParameter::S21: td.y = complex<double>(d.real_S21, d.imag_S21); break;
-            case Trace::LiveParameter::S22: td.y = complex<double>(d.real_S22, d.imag_S22); break;
+            case Trace::LiveParameter::S11: td.y = d.S.m11; break;
+            case Trace::LiveParameter::S12: td.y = d.S.m12; break;
+            case Trace::LiveParameter::S21: td.y = d.S.m21; break;
+            case Trace::LiveParameter::S22: td.y = d.S.m22; break;
             default:
                 // not a VNA trace, skip
                 continue;
             }
-            t->addData(td, settings);
+            t->addData(td, datatype, d.reference_impedance, index);
         }
     }
 }
 
 void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings)
 {
+    source = DataSource::SA;
     for(auto t : traces) {
         if (t->isLive() && !t->isPaused()) {
+            int index = -1;
             Trace::Data td;
-            td.x = d.frequency;
+            if(settings.f_start == settings.f_stop) {
+                // in zerospan mode, insert data by index
+                index = d.pointNum;
+                td.x = (double) d.us / 1000000.0;
+            } else {
+                td.x = d.frequency;
+            }
             switch(t->liveParameter()) {
             case Trace::LiveParameter::Port1: td.y = complex<double>(d.port1, 0); break;
             case Trace::LiveParameter::Port2: td.y = complex<double>(d.port2, 0); break;
@@ -238,7 +264,27 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
                 // not a SA trace, skip
                 continue;
             }
-            t->addData(td, settings);
+            t->addData(td, settings, index);
         }
     }
+}
+
+TraceModel::DataSource TraceModel::getSource() const
+{
+    return source;
+}
+
+void TraceModel::setSource(const DataSource &value)
+{
+    source = value;
+}
+
+MarkerModel *TraceModel::getMarkerModel() const
+{
+    return markerModel;
+}
+
+void TraceModel::setMarkerModel(MarkerModel *value)
+{
+    markerModel = value;
 }

@@ -1,8 +1,9 @@
 #ifndef TRACEEDITDIALOG_H
 #define TRACEEDITDIALOG_H
 
-#include <QDialog>
 #include "trace.h"
+
+#include <QDialog>
 #include <QAbstractTableModel>
 
 namespace Ui {

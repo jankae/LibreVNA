@@ -2,6 +2,7 @@
 #define UNIT_H
 
 #include <QString>
+#include <complex>
 
 namespace Unit
 {

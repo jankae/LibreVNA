@@ -1,6 +1,6 @@
 /*
- * FreeRTOS Kernel V10.0.1
- * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.3.1
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -61,6 +61,10 @@
 
 #ifndef FREERTOS_MESSAGE_BUFFER_H
 #define FREERTOS_MESSAGE_BUFFER_H
+
+#ifndef INC_FREERTOS_H
+	#error "include FreeRTOS.h must appear in source files before include message_buffer.h"
+#endif
 
 /* Message buffers are built onto of stream buffers. */
 #include "stream_buffer.h"
@@ -395,10 +399,10 @@ BaseType_t xHigherPriorityTaskWoken = pdFALSE; // Initialised to pdFALSE.
     // priority of the currently executing task was unblocked and a context
     // switch should be performed to ensure the ISR returns to the unblocked
     // task.  In most FreeRTOS ports this is done by simply passing
-    // xHigherPriorityTaskWoken into taskYIELD_FROM_ISR(), which will test the
+    // xHigherPriorityTaskWoken into portYIELD_FROM_ISR(), which will test the
     // variables value, and perform the context switch if necessary.  Check the
     // documentation for the port in use for port specific instructions.
-    taskYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 </pre>
  * \defgroup xMessageBufferSendFromISR xMessageBufferSendFromISR
@@ -584,10 +588,10 @@ BaseType_t xHigherPriorityTaskWoken = pdFALSE;  // Initialised to pdFALSE.
     // priority of the currently executing task was unblocked and a context
     // switch should be performed to ensure the ISR returns to the unblocked
     // task.  In most FreeRTOS ports this is done by simply passing
-    // xHigherPriorityTaskWoken into taskYIELD_FROM_ISR(), which will test the
+    // xHigherPriorityTaskWoken into portYIELD_FROM_ISR(), which will test the
     // variables value, and perform the context switch if necessary.  Check the
     // documentation for the port in use for port specific instructions.
-    taskYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 </pre>
  * \defgroup xMessageBufferReceiveFromISR xMessageBufferReceiveFromISR
@@ -692,6 +696,26 @@ size_t xMessageBufferSpaceAvailable( MessageBufferHandle_t xMessageBuffer ) );
  * \ingroup MessageBufferManagement
  */
 #define xMessageBufferSpaceAvailable( xMessageBuffer ) xStreamBufferSpacesAvailable( ( StreamBufferHandle_t ) xMessageBuffer )
+#define xMessageBufferSpacesAvailable( xMessageBuffer ) xStreamBufferSpacesAvailable( ( StreamBufferHandle_t ) xMessageBuffer ) /* Corrects typo in original macro name. */
+
+/**
+ * message_buffer.h
+ <pre>
+ size_t xMessageBufferNextLengthBytes( MessageBufferHandle_t xMessageBuffer ) );
+ </pre>
+ * Returns the length (in bytes) of the next message in a message buffer.
+ * Useful if xMessageBufferReceive() returned 0 because the size of the buffer
+ * passed into xMessageBufferReceive() was too small to hold the next message.
+ *
+ * @param xMessageBuffer The handle of the message buffer being queried.
+ *
+ * @return The length (in bytes) of the next message in the message buffer, or 0
+ * if the message buffer is empty.
+ *
+ * \defgroup xMessageBufferNextLengthBytes xMessageBufferNextLengthBytes
+ * \ingroup MessageBufferManagement
+ */
+#define xMessageBufferNextLengthBytes( xMessageBuffer ) xStreamBufferNextMessageLengthBytes( ( StreamBufferHandle_t ) xMessageBuffer ) PRIVILEGED_FUNCTION;
 
 /**
  * message_buffer.h

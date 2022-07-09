@@ -16,8 +16,8 @@ public:
     QString execute(QStringList params);
     QString query(QStringList params);
     QString name() {return _name;}
-    bool queryable() { return fn_query != nullptr;};
-    bool executable() { return fn_cmd != nullptr;};
+    bool queryable() { return fn_query != nullptr;}
+    bool executable() { return fn_cmd != nullptr;}
 private:
     const QString _name;
     std::function<QString(QStringList)> fn_cmd;
@@ -28,9 +28,11 @@ class SCPINode {
     friend class SCPI;
 public:
     SCPINode(QString name) :
-        name(name){}
+        name(name), parent(nullptr){}
+    ~SCPINode();
 
     bool add(SCPINode *node);
+    bool remove(SCPINode *node);
     bool add(SCPICommand *cmd);
 
 private:
@@ -40,6 +42,7 @@ private:
     const QString name;
     std::vector<SCPINode*> subnodes;
     std::vector<SCPICommand*> commands;
+    SCPINode *parent;
 };
 
 class SCPI : public QObject, public SCPINode
@@ -52,8 +55,18 @@ public:
     static QString alternateName(QString name);
 
     static bool paramToDouble(QStringList params, int index, double &dest);
-    static bool paramToULong(QStringList params, int index, unsigned long &dest);
+    static bool paramToULongLong(QStringList params, int index, unsigned long long &dest);
     static bool paramToLong(QStringList params, int index, long &dest);
+    static bool paramToBool(QStringList params, int index, bool &dest);
+
+    enum class Result {
+        Empty,
+        Error,
+        False,
+        True
+    };
+
+    static QString getResultName(SCPI::Result r);
 
 public slots:
     void input(QString line);

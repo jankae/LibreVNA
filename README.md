@@ -1,20 +1,51 @@
-# LibreVNA
+![LibreVNA](Software/PC_Application/resources/banner.png)
+
 **100kHz to 6GHz VNA**
 
 This is the improved version of my [first attempt](https://www.github.com/jankae/VNA) at a VNA.
 
 ![](Documentation/Pictures/RevisionBTop.JPG)
 
+## GUI Installation
+
+### Windows
+* Download the latest [Release](https://github.com/jankae/LibreVNA/releases) and unpack the zip file
+* Start the included LibreVNA-GUI.exe
+* No installation or driver is required, simply move the extracted folder somewhere convenient
+
+### Ubuntu
+* Download the latest [Release](https://github.com/jankae/LibreVNA/releases) and unpack the zip file
+* Install the required libraries:
+```console
+sudo apt install libqt5widgets5
+```
+* Install the udev rule (otherwise you don't have the permissions to access the USB device):
+```console
+wget https://raw.githubusercontent.com/jankae/LibreVNA/master/Software/PC_Application/51-vna.rules
+sudo cp 51-vna.rules /etc/udev/rules.d
+```
+* Either reboot or reload the udev rules manually:
+```console
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+* You can now start GUI:
+```console
+cd $UNPACKED_ZIP_FOLDER$
+./LibreVNA-GUI
+```
+
 ## Quick Start
 * You can find released versions of the GUI application and the device firmware [here](https://github.com/jankae/LibreVNA/releases).
 * If you would like to try out the newest features, the compiled versions of each commit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete).
 * An (incomplete) [user manual](Documentation/UserManual/manual.pdf) is also available.
+* If you would like to control the LibreVNA with a script, see the [SCPI Programming Guide](Documentation/UserManual/ProgrammingGuide.pdf).
 
 Please also take a look at the [FAQ](Documentation/FAQ.md).
 
 If you notice bugs or have ideas for improvements, please create an issue for that.
 
-For general questions or discussions, the [LibreVNA group](https://groups.io/g/LibreVNA) is probably the best place.
+For general questions or discussions, the [LibreVNA group](https://groups.io/g/LibreVNA-support/) is probably the best place.
 
 ### Preliminary specifications
 Some [specifications](Documentation/UserManual/specsheet.pdf) are available but this project is still under development and the specifications might change.

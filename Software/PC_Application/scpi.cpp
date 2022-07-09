@@ -1,4 +1,5 @@
 #include "scpi.h"
+
 #include <QDebug>
 
 SCPI::SCPI() :
@@ -26,7 +27,7 @@ bool SCPI::match(QString s1, QString s2)
 
 QString SCPI::alternateName(QString name)
 {
-    while(name[name.size()-1].isLower()) {
+    while(name.size() > 0 && name[name.size()-1].isLower()) {
         name.chop(1);
     }
     return name;
@@ -42,13 +43,13 @@ bool SCPI::paramToDouble(QStringList params, int index, double &dest)
     return okay;
 }
 
-bool SCPI::paramToULong(QStringList params, int index, unsigned long &dest)
+bool SCPI::paramToULongLong(QStringList params, int index, unsigned long long &dest)
 {
     if(index >= params.size()) {
         return false;
     }
     bool okay;
-    dest = params[index].toULong(&okay);
+    dest = params[index].toULongLong(&okay);
     return okay;
 }
 
@@ -60,6 +61,36 @@ bool SCPI::paramToLong(QStringList params, int index, long &dest)
     bool okay;
     dest = params[index].toLong(&okay);
     return okay;
+}
+
+bool SCPI::paramToBool(QStringList params, int index, bool &dest)
+{
+    if(index >= params.size()) {
+        return false;
+    }
+    bool okay = false;
+    if(params[index] == "TRUE") {
+        dest = true;
+        okay = true;
+    } else if(params[index] == "FALSE") {
+        dest = false;
+        okay = true;
+    }
+    return okay;
+}
+
+QString SCPI::getResultName(SCPI::Result r)
+{
+    switch (r) {
+    case Result::Empty:
+        return "";
+    case Result::Error:
+        return "ERROR";
+    case Result::False:
+        return "FALSE";
+    case Result::True:
+        return "TRUE";
+    }
 }
 
 void SCPI::input(QString line)
@@ -79,6 +110,22 @@ void SCPI::input(QString line)
     }
 }
 
+SCPINode::~SCPINode()
+{
+    if(parent) {
+        parent->remove(this);
+    }
+    while(commands.size() > 0) {
+        delete commands.front();
+        commands.erase(commands.begin());
+    }
+    while(subnodes.size() > 0) {
+        auto node = subnodes.front();
+        remove(node);
+        delete node;
+    }
+}
+
 bool SCPINode::add(SCPINode *node)
 {
     if(nameCollision(node->name)) {
@@ -86,7 +133,20 @@ bool SCPINode::add(SCPINode *node)
         return false;
     }
     subnodes.push_back(node);
+    node->parent = this;
     return true;
+}
+
+bool SCPINode::remove(SCPINode *node)
+{
+    auto it = std::find(subnodes.begin(), subnodes.end(), node);
+    if(it != subnodes.end()) {
+        subnodes.erase(it);
+        node->parent = nullptr;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool SCPINode::add(SCPICommand *cmd)
@@ -145,7 +205,7 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
             }
         }
         // unable to find subnode
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     } else {
         // no more levels, search for command
         auto params = cmd.split(" ");
@@ -168,14 +228,14 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
             }
         }
         // couldn't find command
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     }
 }
 
 QString SCPICommand::execute(QStringList params)
 {
     if(fn_cmd == nullptr) {
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     } else {
         return fn_cmd(params);
     }
@@ -184,7 +244,7 @@ QString SCPICommand::execute(QStringList params)
 QString SCPICommand::query(QStringList params)
 {
     if(fn_query == nullptr) {
-        return "ERROR";
+        return SCPI::getResultName(SCPI::Result::Error);
     } else {
         return fn_query(params);
     }

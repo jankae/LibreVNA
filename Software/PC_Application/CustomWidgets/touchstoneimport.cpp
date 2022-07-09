@@ -1,5 +1,7 @@
 #include "touchstoneimport.h"
+
 #include "ui_touchstoneimport.h"
+
 #include <QFileDialog>
 #include <QDebug>
 #include <QtGlobal>
@@ -33,6 +35,7 @@ TouchstoneImport::TouchstoneImport(QWidget *parent, int ports) :
     connect(ui->port2Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](int id) {
         preventCollisionWithGroup(ui->port1Group, id);
     });
+    connect(ui->file, &QLineEdit::textChanged, this, &TouchstoneImport::setFile);
     setPorts(ports);
 }
 
@@ -103,6 +106,7 @@ void TouchstoneImport::setFile(QString filename)
 {
     ui->file->setText(filename);
     evaluateFile();
+    emit filenameChanged(filename);
 }
 
 void TouchstoneImport::on_browse_clicked()
@@ -110,7 +114,6 @@ void TouchstoneImport::on_browse_clicked()
     auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, QFileDialog::DontUseNativeDialog);
     if (filename.length() > 0) {
         ui->file->setText(filename);
-        evaluateFile();
     }
 }
 

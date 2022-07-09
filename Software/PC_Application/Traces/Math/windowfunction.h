@@ -1,10 +1,11 @@
 #ifndef WINDOWFUNCTION_H
 #define WINDOWFUNCTION_H
 
+#include "savable.h"
+
 #include <QWidget>
 #include <complex>
 #include <vector>
-#include "savable.h"
 
 class WindowFunction : public QObject, public Savable
 {

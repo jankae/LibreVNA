@@ -1,15 +1,20 @@
 #include "deembedding.h"
+
 #include "deembeddingdialog.h"
-#include <QDebug>
 #include "ui_measurementdialog.h"
 #include "Traces/sparamtraceselector.h"
+#include "appwindow.h"
+
+#include <QDebug>
 
 using namespace std;
 
 void Deembedding::configure()
 {
     auto d = new DeembeddingDialog(this);
-    d->show();
+    if(AppWindow::showGUI()) {
+        d->show();
+    }
 }
 
 void Deembedding::measurementCompleted()
@@ -32,6 +37,9 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
     auto ui = new Ui_DeembeddingMeasurementDialog;
     measurementUI = ui;
     ui->setupUi(measurementDialog);
+    connect(measurementDialog, &QDialog::finished, [=](){
+        delete ui;
+    });
 
     // add the trace selector
     set<unsigned int> skip;
@@ -99,17 +107,20 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
         measurementCompleted();
     });
 
-    measurementDialog->show();
+    if(AppWindow::showGUI()) {
+        measurementDialog->show();
+    }
 }
 
 Deembedding::Deembedding(TraceModel &tm)
     : tm(tm),
-      measuring(false)
+      measuring(false),
+      sweepPoints(0)
 {
 
 }
 
-void Deembedding::Deembed(Protocol::Datapoint &d)
+void Deembedding::Deembed(VNAData &d)
 {
     // figure out the point in one sweep based on the incomig pointNums
     static unsigned lastPointNum;

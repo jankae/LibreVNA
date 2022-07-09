@@ -1,9 +1,10 @@
 #ifndef JSONPICKERDIALOG_H
 #define JSONPICKERDIALOG_H
 
+#include "json.hpp"
+
 #include <QDialog>
 #include <QAbstractItemModel>
-#include "json.hpp"
 
 namespace Ui {
 class JSONPickerDialog;
