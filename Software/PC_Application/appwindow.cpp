@@ -1100,6 +1100,7 @@ nlohmann::json AppWindow::SaveSetup()
     Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
     ref["Output"] =  Reference::OutFreqToKey(f).toStdString();
     j["Reference"] = ref;
+    j["version"] = qlibrevnaApp->applicationVersion().toStdString();
     return j;
 }
 
