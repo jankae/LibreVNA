@@ -211,12 +211,7 @@ void TraceWaterfall::updateContextMenu()
         contextmenu->addAction(action);
     }
 
-    contextmenu->addSeparator();
-    auto close = new QAction("Close", contextmenu);
-    contextmenu->addAction(close);
-    connect(close, &QAction::triggered, [=]() {
-        markedForDeletion = true;
-    });
+    finishContextMenu();
 }
 
 void TraceWaterfall::draw(QPainter &p)

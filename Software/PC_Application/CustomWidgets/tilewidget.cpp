@@ -122,24 +122,24 @@ bool TileWidget::allLimitsPassing()
     }
 }
 
-void TileWidget::splitVertically()
+void TileWidget::splitVertically(bool moveContentToSecondChild)
 {
     if(isSplit) {
         return;
     }
     isSplit = true;
     splitter = new QSplitter(Qt::Vertical);
-    split();
+    split(moveContentToSecondChild);
 }
 
-void TileWidget::splitHorizontally()
+void TileWidget::splitHorizontally(bool moveContentToSecondChild)
 {
     if(isSplit) {
         return;
     }
     isSplit = true;
     splitter = new QSplitter(Qt::Horizontal);
-    split();
+    split(moveContentToSecondChild);
 }
 
 void TileWidget::closeTile()
@@ -197,7 +197,7 @@ TileWidget::TileWidget(TraceModel &model, TileWidget &parent)
     ui->bClose->setVisible(true);
 }
 
-void TileWidget::split()
+void TileWidget::split(bool moveContentToSecondChild)
 {
     splitter->setHandleWidth(0);
     child1 = new TileWidget(model, *this);
@@ -205,17 +205,38 @@ void TileWidget::split()
     splitter->addWidget(child1);
     splitter->addWidget(child2);
     ui->ContentPage->layout()->addWidget(splitter);
+    if(hasContent) {
+        if(moveContentToSecondChild) {
+            child2->setContent(content);
+        } else {
+            child1->setContent(content);
+        }
+        removeContent();
+    }
+
     ui->stack->setCurrentWidget(ui->ContentPage);
 }
 
 void TileWidget::setContent(TracePlot *plot)
 {
     content = plot;
+    content->setParentTile(this);
     hasContent = true;
     ui->ContentPage->layout()->addWidget(plot);
     ui->stack->setCurrentWidget(ui->ContentPage);
-    connect(content, &TracePlot::deleted, this, &TileWidget::traceDeleted);
+    connect(content, &TracePlot::deleted, this, &TileWidget::plotDeleted);
     connect(content, &TracePlot::doubleClicked, this, &TileWidget::on_plotDoubleClicked);
+}
+
+void TileWidget::removeContent()
+{
+    if(hasContent) {
+        disconnect(content, &TracePlot::deleted, this, &TileWidget::plotDeleted);
+        disconnect(content, &TracePlot::doubleClicked, this, &TileWidget::on_plotDoubleClicked);
+        hasContent = false;
+        content = nullptr;
+        ui->stack->setCurrentWidget(ui->TilePage);
+    }
 }
 
 void TileWidget::on_plotDoubleClicked()
@@ -272,9 +293,8 @@ void TileWidget::on_bXYplot_clicked()
     plot->axisSetupDialog();
 }
 
-void TileWidget::traceDeleted(TracePlot *)
+void TileWidget::plotDeleted()
 {
-
     if (isFullScreen)
     {
         auto rootTile = findRootTile();

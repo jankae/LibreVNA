@@ -10,6 +10,8 @@
 #include <QLabel>
 #include <QWidget>
 
+class TileWidget;
+
 class TracePlot : public QWidget, public Savable
 {
     Q_OBJECT
@@ -22,6 +24,8 @@ public:
 
     TracePlot(TraceModel &model, QWidget *parent = nullptr);
     ~TracePlot();
+
+    void setParentTile(TileWidget *tile);
 
     virtual void enableTrace(Trace *t, bool enabled);
     void mouseDoubleClickEvent(QMouseEvent *event) override;
@@ -51,6 +55,8 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     virtual void updateContextMenu(){}
+    // adds common entries at bottom of context menu. Should be called at the end of derived udpateContextMenu functions
+    void finishContextMenu();
     virtual void replot(){update();}
     virtual void draw(QPainter& p) = 0;
     virtual bool supported(Trace *t) = 0;
@@ -97,6 +103,7 @@ protected:
     double sweep_fmin, sweep_fmax;
     TraceModel &model;
     Marker *selectedMarker;
+    TileWidget *parentTile;
 
     // graph settings have been changed, check and possibly remove incompatible traces before next paint event
     bool traceRemovalPending;

@@ -322,12 +322,7 @@ void TraceXYPlot::updateContextMenu()
         }
     }
 
-    contextmenu->addSeparator();
-    auto close = new QAction("Close", contextmenu);
-    contextmenu->addAction(close);
-    connect(close, &QAction::triggered, [=]() {
-        markedForDeletion = true;
-    });
+    finishContextMenu();
 }
 
 bool TraceXYPlot::dropSupported(Trace *t)

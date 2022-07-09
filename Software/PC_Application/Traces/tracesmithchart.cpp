@@ -525,12 +525,7 @@ void TraceSmithChart::updateContextMenu()
         contextmenu->addAction(action);
     }
 
-    contextmenu->addSeparator();
-    auto close = new QAction("Close", contextmenu);
-    contextmenu->addAction(close);
-    connect(close, &QAction::triggered, [=]() {
-        markedForDeletion = true;
-    });
+    finishContextMenu();
 }
 
 bool TraceSmithChart::supported(Trace *t)

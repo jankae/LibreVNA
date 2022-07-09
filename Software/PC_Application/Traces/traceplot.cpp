@@ -5,6 +5,7 @@
 #include "Marker/markermodel.h"
 #include "preferences.h"
 #include "Util/util.h"
+#include "CustomWidgets/tilewidget.h"
 
 #include <QPainter>
 #include <QPainterPath>
@@ -25,6 +26,8 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
       marginTop(20),
       limitPassing(true)
 {
+    parentTile = nullptr;
+
     contextmenu = new QMenu();
     markedForDeletion = false;
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -49,6 +52,12 @@ TracePlot::~TracePlot()
     plots.erase(this);
     delete contextmenu;
     delete cursorLabel;
+}
+
+void TracePlot::setParentTile(TileWidget *tile)
+{
+    parentTile = tile;
+    updateContextMenu();
 }
 
 void TracePlot::enableTrace(Trace *t, bool enabled)
@@ -244,6 +253,45 @@ void TracePlot::paintEvent(QPaintEvent *event)
     p.setWindow(0, 0, w, h);
 
     draw(p);
+}
+
+void TracePlot::finishContextMenu()
+{
+    contextmenu->addSeparator();
+    if(parentTile) {
+        auto add = new QMenu("Add graph...", contextmenu);
+        auto left = new QAction("to the left");
+        connect(left, &QAction::triggered, [=](){
+            // split, keep current graph on the right
+            parentTile->splitHorizontally(true);
+        });
+        add->addAction(left);
+        auto right = new QAction("to the right");
+        connect(right, &QAction::triggered, [=](){
+            // split, keep current graph on the left
+            parentTile->splitHorizontally(false);
+        });
+        add->addAction(right);
+        auto above = new QAction("above");
+        connect(above, &QAction::triggered, [=](){
+            // split, keep current graph on the bottom
+            parentTile->splitVertically(true);
+        });
+        add->addAction(above);
+        auto below = new QAction("below");
+        connect(below, &QAction::triggered, [=](){
+            // split, keep current graph on the top
+            parentTile->splitVertically(false);
+        });
+        add->addAction(below);
+        contextmenu->addMenu(add);
+    }
+
+    auto close = new QAction("Close", contextmenu);
+    contextmenu->addAction(close);
+    connect(close, &QAction::triggered, [=]() {
+        markedForDeletion = true;
+    });
 }
 
 
