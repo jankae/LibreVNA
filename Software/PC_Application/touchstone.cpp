@@ -145,10 +145,9 @@ Touchstone Touchstone::fromFile(string filename)
 
     // extract number of ports from filename
     auto index_extension = filename.find_last_of('.');
-    if(filename[index_extension + 1] != 's'
-            || filename[index_extension+2] < '1'
-            || filename[index_extension+2] > '9'
-            || filename[index_extension+3] != 'p') {
+    if((filename[index_extension + 1] != 's' && filename[index_extension + 1] != 'S')
+            || filename[index_extension+2] < '1' || filename[index_extension+2] > '9'
+            || (filename[index_extension+3] != 'p' && filename[index_extension+3] != 'P')) {
         throw runtime_error("Invalid filename extension");
     }
     unsigned int ports = filename[index_extension + 2] - '0';
