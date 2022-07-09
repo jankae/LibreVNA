@@ -49,8 +49,7 @@ std::vector<Mode*> ModeHandler::getModes()
 
 void ModeHandler::setCurrentIndex(int index)
 {
-//    if ( (getCurrentIndex() != index) && (index >= 0)) {
-    if ( (getCurrentIndex() != index) && (index >= 0)) {
+    if (index >= 0) {
         currentModeIndex = index;
         auto * m = getMode(getCurrentIndex());
         m->activate();
@@ -75,13 +74,51 @@ int ModeHandler::getCurrentIndex()
 void ModeHandler::closeMode(int index)
 {
     disconnect(modes.at(index), &Mode::statusbarMessage, this, &ModeHandler::setStatusBarMessageChanged);
-    delete modes.at(index);
-    modes.erase(modes.begin() + index);
+
+    std::vector<int> idx;
+    for(int i=0; i < int(modes.size()); i++)
+    {
+       idx.push_back(i);
+    }
+
+    auto left = std::find(idx.begin(), idx.end(), getCurrentIndex()-1);
+    auto right = std::find(idx.begin(), idx.end(), getCurrentIndex()+1);
+    auto foundLeft = false;
+    auto foundRight = false;
+
+    if ( left != idx.end() )
+    {
+       foundLeft = true;
+    }
+
+    if ( right != idx.end() )
+    {
+       foundRight = true;
+    }
+
+    auto lastIndex = getCurrentIndex();
+
     if (int(modes.size()) > 0) {
-        if (getCurrentIndex() == index) {
-            setCurrentIndex(getCurrentIndex()-1); // Select bar before one deleted
+        if (getCurrentIndex() == index)
+        {
+            if (foundLeft)
+            {
+                setCurrentIndex(getCurrentIndex()-1);
+            }
+            else if (foundRight)
+            {
+                 setCurrentIndex(getCurrentIndex()+1);
+            }
         }
     }
+
+    delete modes.at(index);
+    modes.erase(modes.begin() + index);
+
+    if (getCurrentIndex() == 1 && lastIndex == 0) {
+        setCurrentIndex(0);
+    }
+
     emit ModeClosed(index);
 }
 
@@ -157,3 +194,4 @@ void ModeHandler::setAveragingMode(Averaging::Mode value)
         }
     }
 }
+
