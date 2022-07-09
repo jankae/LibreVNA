@@ -416,7 +416,9 @@ bool AppWindow::ConnectToDevice(QString serial)
         ui->actionFrequency_Calibration->setEnabled(true);
 
         UpdateAcquisitionFrequencies();
-        Mode::getActiveMode()->initializeDevice();
+        if (Mode::getActiveMode()) {
+            Mode::getActiveMode()->initializeDevice();
+        }
         UpdateReference();
 
         for(auto d : deviceActionGroup->actions()) {
@@ -453,7 +455,9 @@ void AppWindow::DisconnectDevice()
         deviceActionGroup->checkedAction()->setChecked(false);
     }
     UpdateStatusBar(DeviceStatusBar::Disconnected);
-    Mode::getActiveMode()->deviceDisconnected();
+    if(Mode::getActiveMode()) {
+        Mode::getActiveMode()->deviceDisconnected();
+    }
     qDebug() << "Disconnected device";
 }
 
