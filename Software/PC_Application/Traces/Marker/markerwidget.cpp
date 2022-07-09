@@ -91,6 +91,7 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
         connect(m, &Marker::typeChanged, this, &MarkerWidget::updatePersistentEditors);
         connect(m, &Marker::traceChanged, this, &MarkerWidget::updatePersistentEditors);
         connect(m, &Marker::assignedDeltaChanged, this, &MarkerWidget::updatePersistentEditors);
+        connect(m, &Marker::deleted, this, &MarkerWidget::updatePersistentEditors);
         updatePersistentEditors();
     });
     connect(&model, &MarkerModel::setupLoadComplete, this, &MarkerWidget::updatePersistentEditors);

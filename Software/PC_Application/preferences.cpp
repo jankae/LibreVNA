@@ -258,6 +258,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
     ui->MarkerShowAllMarkerData->setChecked(p->Marker.defaultBehavior.showAllData);
     ui->MarkerInterpolate->setCurrentIndex(p->Marker.interpolatePoints ? 1 : 0);
+    ui->MarkerSortOrder->setCurrentIndex((int) p->Marker.sortOrder);
 
     ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
     ui->SCPIServerPort->setValue(p->SCPIServer.port);
@@ -323,6 +324,7 @@ void PreferencesDialog::updateFromGUI()
     p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
     p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();
     p->Marker.interpolatePoints = ui->MarkerInterpolate->currentIndex() == 1;
+    p->Marker.sortOrder = (MarkerSortOrder) ui->MarkerSortOrder->currentIndex();
 
     p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
     p->SCPIServer.port = ui->SCPIServerPort->value();

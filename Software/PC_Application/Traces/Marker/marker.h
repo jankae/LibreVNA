@@ -69,6 +69,8 @@ public:
 
     QPixmap& getSymbol();
 
+    unsigned long getCreationTimestamp() const;
+
     int getNumber() const;
     void setNumber(int value);
 
@@ -96,7 +98,7 @@ public:
     SIUnitEdit* getSettingsEditor();
     void adjustSettings(double value);
     bool isVisible();
-    bool setVisible(bool visible);
+    void setVisible(bool visible);
 
     QMenu *getContextMenu();
 
@@ -105,6 +107,7 @@ public:
     Marker *getParent() const;
     const std::vector<Marker *>& getHelperMarkers() const;
     Marker *helperMarker(unsigned int i);
+    bool canUseAsDelta(Marker *m);
     void assignDeltaMarker(Marker *m);
     QString getSuffix() const;
 
@@ -179,6 +182,7 @@ private:
 
     MarkerModel *model;
     Trace *parentTrace;
+    unsigned long creationTimestamp;
     double position;
     int number;
     bool visible;

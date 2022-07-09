@@ -15,6 +15,7 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <QApplication>
+#include <QDateTime>
 
 using namespace std;
 
@@ -37,6 +38,7 @@ Marker::Marker(MarkerModel *model, int number, Marker *parent, QString descr)
       formatTable(Format::dBAngle),
       group(nullptr)
 {
+    creationTimestamp = QDateTime::currentSecsSinceEpoch();
     connect(this, &Marker::traceChanged, this, &Marker::updateContextmenu);
     connect(this, &Marker::typeChanged, this, &Marker::updateContextmenu);
     updateContextmenu();
@@ -706,9 +708,8 @@ void Marker::checkDeltaMarker()
         // not a delta marker, nothing to do
         return;
     }
-    // Check if type of delta marker is still okay
-    if(!delta || delta->getDomain() != getDomain()) {
-        // not the same domain anymore, adjust delta
+    if(!canUseAsDelta(delta)) {
+        // incompatible delta marker, select best choice instead
         assignDeltaMarker(bestDeltaCandidate());
     }
 }
@@ -971,6 +972,20 @@ Marker *Marker::bestDeltaCandidate()
     return match;
 }
 
+bool Marker::canUseAsDelta(Marker *m)
+{
+    if(type != Type::Delta) {
+        // not a delta marker, nothing to do
+        return false;
+    }
+    if(m->getDomain() != getDomain()) {
+        // not the same domain anymore, unusable
+        return false;
+    }
+
+    return true;
+}
+
 void Marker::assignDeltaMarker(Marker *m)
 {
     if(type != Type::Delta) {
@@ -1120,6 +1135,7 @@ nlohmann::json Marker::toJSON()
 {
     nlohmann::json j;
     j["trace"] = parentTrace->toHash();
+    j["creationTimestamp"] = creationTimestamp;
     j["visible"] = visible;
     j["type"] = typeToString(type).toStdString();
     j["number"] = number;
@@ -1160,6 +1176,7 @@ void Marker::fromJSON(nlohmann::json j)
     if(!j.contains("trace")) {
         throw runtime_error("Marker has no trace assigned");
     }
+    creationTimestamp = j.value("creationTimestamp", QDateTime::currentSecsSinceEpoch());
     number = j.value("number", 1);
     position = j.value("position", 0.0);
     visible = j.value("visible", true);
@@ -1281,14 +1298,19 @@ QWidget *Marker::getTypeEditor(QAbstractItemDelegate *delegate)
         layout->setMargin(0);
         layout->setSpacing(0);
         layout->addWidget(new QLabel("to"));
-        auto spinbox = new QSpinBox;
-        if(delta) {
-            spinbox->setValue(delta->number);
+        auto deltaChooser = new QComboBox;
+        for(auto m : model->getMarkers()) {
+            if(canUseAsDelta(m)) {
+                deltaChooser->addItem(QString::number(m->getNumber()));
+            }
         }
-        connect(spinbox, qOverload<int>(&QSpinBox::valueChanged), [=](int newval){
+        if(delta) {
+            deltaChooser->setCurrentText(QString::number(delta->number));
+        }
+        connect(deltaChooser, qOverload<int>(&QComboBox::currentIndexChanged), [=](int){
            bool found = false;
            for(auto m : model->getMarkers()) {
-                if(m->number == newval) {
+                if(m->number == deltaChooser->currentText().toInt()) {
                     assignDeltaMarker(m);
                     found = true;
                     break;
@@ -1299,8 +1321,8 @@ QWidget *Marker::getTypeEditor(QAbstractItemDelegate *delegate)
            }
            update();
         });
-        spinbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        layout->addWidget(spinbox);
+        deltaChooser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        layout->addWidget(deltaChooser);
         w->setLayout(layout);
         c->setObjectName("Type");
         if(delegate){
@@ -1492,7 +1514,7 @@ bool Marker::isVisible()
     return visible;
 }
 
-bool Marker::setVisible(bool visible)
+void Marker::setVisible(bool visible)
 {
     if(this->visible != visible) {
         this->visible = visible;
@@ -1700,6 +1722,11 @@ bool Marker::isMovable()
 QPixmap &Marker::getSymbol()
 {
     return symbol;
+}
+
+unsigned long Marker::getCreationTimestamp() const
+{
+    return creationTimestamp;
 }
 
 double Marker::getPosition() const
