@@ -271,24 +271,47 @@ AppWindow::AppWindow(QWidget *parent)
             }
         }
 
-        auto active = Mode::getActiveMode();
-        active->updateGraphColors();
-
         // averaging mode may have changed, update for all relevant modes
-        if(p.Acquisition.useMedianAveraging) {
-            spectrumAnalyzer->setAveragingMode(Averaging::Mode::Median);
-            vna->setAveragingMode(Averaging::Mode::Median);
-        } else {
-            spectrumAnalyzer->setAveragingMode(Averaging::Mode::Mean);
-            vna->setAveragingMode(Averaging::Mode::Mean);
+        for (auto m : Mode::getModes())
+        {
+            switch (m->getType())
+            {
+                case Mode::Type::VNA:
+                    if(p.Acquisition.useMedianAveraging) {
+                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Median);
+                    }
+                    else {
+                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Mean);
+                    }
+                    break;
+                case Mode::Type::SA:
+                    if(p.Acquisition.useMedianAveraging) {
+                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Median);
+                    }
+                    else {
+                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Mean);
+                    }
+                    break;
+                case Mode::Type::SG:
+                case Mode::Type::Last:
+                default:
+                    break;
+            }
         }
 
         // acquisition frequencies may have changed, update
         UpdateAcquisitionFrequencies();
 
-        if(device) {
-            active->initializeDevice();
+        auto active = Mode::getActiveMode();
+        if (active)
+        {
+            active->updateGraphColors();
+
+            if(device) {
+                active->initializeDevice();
+            }
         }
+
     });
 
     connect(ui->actionAbout, &QAction::triggered, [=](){
