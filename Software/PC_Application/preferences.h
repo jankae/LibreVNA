@@ -24,6 +24,14 @@ enum GraphLimitIndication {
 
 Q_DECLARE_METATYPE(GraphLimitIndication);
 
+enum MarkerSortOrder {
+    PrefMarkerSortXCoord = 0,
+    PrefMarkerSortNumber = 1,
+    PrefMarkerSortTimestamp = 2,
+};
+
+Q_DECLARE_METATYPE(MarkerSortOrder);
+
 
 class Preferences : public Savable {
 public:
@@ -115,6 +123,7 @@ public:
             bool showAllData;
         } defaultBehavior;
         bool interpolatePoints;
+        MarkerSortOrder sortOrder;
     } Marker;
     struct {
         bool enabled;
@@ -184,6 +193,7 @@ private:
         {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
         {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
+        {&Marker.sortOrder, "Marker.sortOrder", MarkerSortOrder::PrefMarkerSortXCoord},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
     }};

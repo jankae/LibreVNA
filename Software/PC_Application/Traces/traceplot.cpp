@@ -196,7 +196,19 @@ void TracePlot::paintEvent(QPaintEvent *event)
         x += usedLabelArea.width()+labelMarginRight;
 
         auto tmarkers = t.first->getMarkers();
-        for(auto m : tmarkers) {
+        std::vector<Marker*> vmarkers(tmarkers.begin(), tmarkers.end());
+        sort(vmarkers.begin(), vmarkers.end(), [](Marker *l, Marker *r) -> bool {
+            switch(Preferences::getInstance().Marker.sortOrder) {
+            case PrefMarkerSortXCoord:
+                return l->getPosition() < r->getPosition();
+            case PrefMarkerSortNumber:
+                return l->getNumber() < r->getNumber();
+            case PrefMarkerSortTimestamp:
+                return l->getCreationTimestamp() < r->getCreationTimestamp();
+            }
+            return false;
+        });
+        for(auto m : vmarkers) {
             if(!m->isVisible()) {
                 continue;
             }

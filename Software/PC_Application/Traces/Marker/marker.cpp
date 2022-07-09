@@ -15,6 +15,7 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <QApplication>
+#include <QDateTime>
 
 using namespace std;
 
@@ -37,6 +38,7 @@ Marker::Marker(MarkerModel *model, int number, Marker *parent, QString descr)
       formatTable(Format::dBAngle),
       group(nullptr)
 {
+    creationTimestamp = QDateTime::currentSecsSinceEpoch();
     connect(this, &Marker::traceChanged, this, &Marker::updateContextmenu);
     connect(this, &Marker::typeChanged, this, &Marker::updateContextmenu);
     updateContextmenu();
@@ -1120,6 +1122,7 @@ nlohmann::json Marker::toJSON()
 {
     nlohmann::json j;
     j["trace"] = parentTrace->toHash();
+    j["creationTimestamp"] = creationTimestamp;
     j["visible"] = visible;
     j["type"] = typeToString(type).toStdString();
     j["number"] = number;
@@ -1160,6 +1163,7 @@ void Marker::fromJSON(nlohmann::json j)
     if(!j.contains("trace")) {
         throw runtime_error("Marker has no trace assigned");
     }
+    creationTimestamp = j.value("creationTimestamp", QDateTime::currentSecsSinceEpoch());
     number = j.value("number", 1);
     position = j.value("position", 0.0);
     visible = j.value("visible", true);
@@ -1700,6 +1704,11 @@ bool Marker::isMovable()
 QPixmap &Marker::getSymbol()
 {
     return symbol;
+}
+
+unsigned long Marker::getCreationTimestamp() const
+{
+    return creationTimestamp;
 }
 
 double Marker::getPosition() const

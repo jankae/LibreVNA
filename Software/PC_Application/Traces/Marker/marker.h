@@ -69,6 +69,8 @@ public:
 
     QPixmap& getSymbol();
 
+    unsigned long getCreationTimestamp() const;
+
     int getNumber() const;
     void setNumber(int value);
 
@@ -179,6 +181,7 @@ private:
 
     MarkerModel *model;
     Trace *parentTrace;
+    unsigned long creationTimestamp;
     double position;
     int number;
     bool visible;
