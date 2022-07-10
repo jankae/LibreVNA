@@ -586,6 +586,8 @@ void AppWindow::SetupSCPI()
         }
         if(mode) {
             mode->activate();
+            int index = modeHandler->findIndex(mode);
+            modeHandler->setCurrentIndex(index);
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {
             return SCPI::getResultName(SCPI::Result::Error);
