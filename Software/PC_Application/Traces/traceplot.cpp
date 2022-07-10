@@ -122,6 +122,18 @@ std::vector<Trace *> TracePlot::activeTraces()
     return ret;
 }
 
+std::vector<Trace *> TracePlot::orderedTraces()
+{
+    std::vector<Trace*> ordered;
+    for(auto t : traces) {
+        ordered.push_back(t.first);
+    }
+    sort(ordered.begin(), ordered.end(), [](Trace *l, Trace *r) -> bool {
+        return l->name() < r->name();
+    });
+    return ordered;
+}
+
 void TracePlot::contextMenuEvent(QContextMenuEvent *event)
 {
     auto m = markerAtPosition(event->pos());

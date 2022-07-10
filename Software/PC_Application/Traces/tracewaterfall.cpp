@@ -196,17 +196,17 @@ void TraceWaterfall::updateContextMenu()
 
     contextmenu->addSection("Traces");
     // Populate context menu
-    for(auto t : traces) {
-        if(!supported(t.first)) {
+    for(auto t : orderedTraces()) {
+        if(!supported(t)) {
             continue;
         }
-        auto action = new QAction(t.first->name(), contextmenu);
+        auto action = new QAction(t->name(), contextmenu);
         action->setCheckable(true);
-        if(t.second) {
+        if(traces[t]) {
             action->setChecked(true);
         }
         connect(action, &QAction::toggled, [=](bool active) {
-            enableTrace(t.first, active);
+            enableTrace(t, active);
         });
         contextmenu->addAction(action);
     }
