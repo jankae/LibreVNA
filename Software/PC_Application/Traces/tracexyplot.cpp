@@ -304,19 +304,19 @@ void TraceXYPlot::updateContextMenu()
         } else {
             contextmenu->addSection("Secondary Traces");
         }
-        for(auto t : traces) {
+        for(auto t : orderedTraces()) {
             // Skip traces that are not applicable for the selected axis type
-            if(!supported(t.first, yAxis[axis].getType())) {
+            if(!supported(t, yAxis[axis].getType())) {
                 continue;
             }
 
-            auto action = new QAction(t.first->name(), contextmenu);
+            auto action = new QAction(t->name(), contextmenu);
             action->setCheckable(true);
-            if(tracesAxis[axis].find(t.first) != tracesAxis[axis].end()) {
+            if(tracesAxis[axis].find(t) != tracesAxis[axis].end()) {
                 action->setChecked(true);
             }
             connect(action, &QAction::toggled, [=](bool active) {
-                enableTraceAxis(t.first, axis, active);
+                enableTraceAxis(t, axis, active);
             });
             contextmenu->addAction(action);
         }
