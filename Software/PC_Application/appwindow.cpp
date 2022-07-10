@@ -181,10 +181,15 @@ AppWindow::AppWindow(QWidget *parent)
     parser.addOption(QCommandLineOption("no-gui", "Disables the graphical interface"));
     parser.addOption(QCommandLineOption("cal", "Calibration file to load on startup", "cal"));
     parser.addOption(QCommandLineOption("setup", "Setup file to load on startup", "setup"));
+    parser.addOption(QCommandLineOption("reset-preferences", "Resets all preferences to their default values"));
 
     parser.process(QCoreApplication::arguments());
 
-    Preferences::getInstance().load();
+    if(parser.isSet("reset-preferences")) {
+        Preferences::getInstance().setDefault();
+    } else {
+        Preferences::getInstance().load();
+    }
     device = nullptr;
 
     if(parser.isSet("port")) {
