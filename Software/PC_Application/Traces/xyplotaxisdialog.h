@@ -26,6 +26,7 @@ private:
     bool isSupported(XAxis::Type type);
     Ui::XYplotAxisDialog *ui;
     TraceXYPlot *plot;
+    void removeLine(int index);
 };
 
 #endif // XYPLOTAXISDIALOG_H
