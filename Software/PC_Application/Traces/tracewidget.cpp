@@ -426,6 +426,8 @@ void TraceWidget::contextMenuEvent(QContextMenuEvent *event)
         auto duplicate = new Trace();
         duplicate->fromJSON(json);
         duplicate->setName(duplicate->name() + " - Duplicate");
+        // force update of hash
+        duplicate->toHash(true);
         model.addTrace(duplicate);
     });
     ctxmenu->addAction(action_duplicate);

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>931</width>
-    <height>392</height>
+    <width>979</width>
+    <height>487</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -110,6 +110,16 @@
            </attribute>
           </widget>
          </item>
+         <item>
+          <widget class="QRadioButton" name="bMath">
+           <property name="text">
+            <string>From Math</string>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">GSource</string>
+           </attribute>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -133,7 +143,7 @@
        <item>
         <widget class="QStackedWidget" name="stack">
          <property name="currentIndex">
-          <number>0</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="LivePage">
           <layout class="QFormLayout" name="formLayout_2">
@@ -200,6 +210,34 @@
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
             <widget class="CSVImport" name="csvImport" native="true"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="MathPage">
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <widget class="QTableWidget" name="mathTraceTable">
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>Formula:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lMathFormula"/>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>

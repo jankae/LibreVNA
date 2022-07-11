@@ -32,6 +32,7 @@ void TraceModel::addTrace(Trace *t)
     });
     traces.push_back(t);
     endInsertRows();
+    t->setModel(this);
     emit traceAdded(t);
 }
 
@@ -117,7 +118,7 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
         }
         break;
     case ColIndexPlayPause:
-        if (role == Qt::DecorationRole && trace->isLive()) {
+        if (role == Qt::DecorationRole && trace->getSource() == Trace::Source::Live) { // TODO trace needs function to check if it may change due to live data
             if (trace->isPaused()) {
                 return QIcon(":/icons/pause.svg");
             } else {
@@ -157,7 +158,7 @@ std::vector<Trace *> TraceModel::getTraces() const
 bool TraceModel::PortExcitationRequired(int port)
 {
     for(auto t : traces) {
-        if(t->isLive() && !t->isPaused()) {
+        if(t->getSource() == Trace::Source::Live && !t->isPaused()) {
             // this trace needs measurements from VNA, check if port has to be excited for its measurement
             auto param = t->liveParameter();
             if(port == 1 && (param == Trace::LiveParameter::S11 || param == Trace::LiveParameter::S21)) {
@@ -188,6 +189,7 @@ void TraceModel::fromJSON(nlohmann::json j)
     }
     for(auto jt : j) {
         auto trace = new Trace();
+        trace->setModel(this);
         try {
             trace->fromJSON(jt);
             addTrace(trace);
@@ -195,12 +197,17 @@ void TraceModel::fromJSON(nlohmann::json j)
             qWarning() << "Failed to create trace:" << e.what();
         }
     }
+    for(auto t : traces) {
+        if(!t->resolveMathSourceHashes()) {
+            qWarning() << "Failed to resolve all math source hashes for"<<t;
+        }
+    }
 }
 
 void TraceModel::clearLiveData()
 {
     for(auto t : traces) {
-        if (t->isLive()) {
+        if (t->getSource() == Trace::Source::Live) {
             // this trace is fed from live data
             t->clear();
         }
@@ -211,7 +218,7 @@ void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
 {
     source = DataSource::VNA;
     for(auto t : traces) {
-        if (t->isLive() && !t->isPaused()) {
+        if (t->getSource() == Trace::Source::Live && !t->isPaused()) {
             int index = -1;
             Trace::Data td;
             switch(datatype) {
@@ -247,7 +254,7 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
 {
     source = DataSource::SA;
     for(auto t : traces) {
-        if (t->isLive() && !t->isPaused()) {
+        if (t->getSource() == Trace::Source::Live && !t->isPaused()) {
             int index = -1;
             Trace::Data td;
             if(settings.f_start == settings.f_stop) {

@@ -26,6 +26,11 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->impedance->setPrecision(3);
     ui->impedance->setValue(t.getReferenceImpedance());
 
+    if(!t.getModel()) {
+        // without information about the other traces in the model, math is not available as a source
+        ui->bMath->setEnabled(false);
+    }
+
     connect(ui->bLive, &QPushButton::clicked, [=](bool live) {
         if(live) {
             ui->stack->setCurrentIndex(0);
@@ -45,6 +50,12 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             }
         }
     });
+    connect(ui->bMath, &QPushButton::clicked, [&](bool math){
+       if(math) {
+           ui->stack->setCurrentIndex(3);
+           ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+       }
+    });
 
     connect(ui->color, &ColorPickerButton::colorChanged, [=](const QColor& color){
        trace.setColor(color);
@@ -52,8 +63,9 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 
     ui->GSource->setId(ui->bLive, 0);
     ui->GSource->setId(ui->bFile, 1);
+    ui->GSource->setId(ui->bFile, 2);
 
-    if(t.isCalibration()) {
+    if(t.getSource() == Trace::Source::Calibration) {
         // prevent editing imported calibration traces (and csv files for now)
         ui->bLive->setEnabled(false);
         ui->bFile->setEnabled(false);
@@ -136,8 +148,83 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     connect(ui->touchstoneImport, &TouchstoneImport::filenameChanged, updateTouchstoneFileStatus);
     connect(ui->csvImport, &CSVImport::filenameChanged, updateCSVFileStatus);
 
-    if(t.isFromFile()) {
-        ui->bFile->click();
+    // Math source configuration
+    if(t.getModel()) {
+        ui->lMathFormula->setText(t.getMathFormula());
+        connect(ui->lMathFormula, &QLineEdit::editingFinished, [&](){
+            t.setMathFormula(ui->lMathFormula->text());
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+        });
+
+        ui->mathTraceTable->setColumnCount(2);
+        ui->mathTraceTable->setHorizontalHeaderItem(0, new QTableWidgetItem("Trace Name"));
+        ui->mathTraceTable->setHorizontalHeaderItem(1, new QTableWidgetItem("Variable Name"));
+        auto traces = t.getModel()->getTraces();
+        ui->mathTraceTable->setRowCount(traces.size());
+        for(unsigned int i=0;i<traces.size();i++) {
+            auto ts = traces[i];
+            auto traceItem = new QTableWidgetItem(ts->name());
+            auto flags = traceItem->flags() | Qt::ItemIsUserCheckable;
+            flags &= ~(Qt::ItemIsEditable | Qt::ItemIsEnabled);
+            if(t.canAddAsMathSource(ts)) {
+                flags |= Qt::ItemIsEnabled;
+            }
+            traceItem->setFlags(flags);
+            auto variableItem = new QTableWidgetItem(t.getSourceVariableName(ts));
+            variableItem->setFlags(variableItem->flags() & ~Qt::ItemIsEditable);
+            if(t.mathDependsOn(ts, true)) {
+                traceItem->setCheckState(Qt::Checked);
+                variableItem->setFlags(variableItem->flags() | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+            } else {
+                traceItem->setCheckState(Qt::Unchecked);
+            }
+            ui->mathTraceTable->setItem(i, 0, traceItem);
+            ui->mathTraceTable->setItem(i, 1, variableItem);
+        }
+        connect(ui->mathTraceTable, &QTableWidget::itemChanged, [&](QTableWidgetItem *item){
+            auto row = ui->mathTraceTable->row(item);
+            auto column = ui->mathTraceTable->column(item);
+            qDebug() << "Item changed at row"<<row<<"column"<<column;
+            ui->mathTraceTable->blockSignals(true);
+            auto trace = t.getModel()->trace(row);
+            if(column == 0) {
+                auto variableItem = ui->mathTraceTable->item(row, 1);
+                // checked state changed
+                if(item->checkState() == Qt::Checked) {
+                    // add this trace to the math sources, enable editing of variable name
+                    t.addMathSource(trace, trace->name());
+                    variableItem->setText(trace->name());
+                    variableItem->setFlags(variableItem->flags() | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+                } else {
+                    // trace disabled, remove from math sources
+                    t.removeMathSource(trace);
+                    variableItem->setText("");
+                    variableItem->setFlags(variableItem->flags() & ~(Qt::ItemIsEnabled | Qt::ItemIsEditable));
+                }
+                // available trace selections may have changed, disable/enable other rows
+                for(unsigned int i=0;i<t.getModel()->getTraces().size();i++) {
+                    auto traceItem = ui->mathTraceTable->item(i, 0);
+                    auto flags = traceItem->flags();
+                    if(t.canAddAsMathSource(t.getModel()->trace(i))) {
+                        traceItem->setFlags(flags | Qt::ItemIsEnabled);
+                    } else {
+                        traceItem->setFlags(flags & ~Qt::ItemIsEnabled);
+                    }
+                }
+            } else {
+                // changed the variable name text
+                t.addMathSource(trace, item->text());
+            }
+            ui->mathTraceTable->blockSignals(false);
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+        });
+    }
+
+    switch(t.getSource()) {
+    case Trace::Source::Live: ui->bLive->click(); break;
+    case Trace::Source::File: ui->bFile->click(); break;
+    case Trace::Source::Math: ui->bMath->click(); break;
+    default: break;
     }
 
     // setup math part of the GUI
@@ -254,7 +341,7 @@ void TraceEditDialog::on_buttonBox_accepted()
 {
     trace.setName(ui->name->text());
     trace.setVelocityFactor(ui->vFactor->value());
-    if(!trace.isCalibration()) {
+    if(trace.getSource() != Trace::Source::Calibration) {
         // only apply changes if it is not a calibration trace
         if (ui->bFile->isChecked()) {
             if(ui->stack->currentIndex() == 1) {
@@ -265,7 +352,7 @@ void TraceEditDialog::on_buttonBox_accepted()
                 // CSV page active
                 ui->csvImport->fillTrace(trace);
             }
-        } else {
+        } else if(ui->bLive->isChecked()) {
             Trace::LivedataType type = Trace::LivedataType::Overwrite;
             Trace::LiveParameter param = Trace::LiveParameter::S11;
             switch(ui->CLiveType->currentIndex()) {
@@ -287,6 +374,9 @@ void TraceEditDialog::on_buttonBox_accepted()
                 }
             }
             trace.fromLivedata(type, param);
+        } else {
+            // math operation trace
+            trace.fromMath();
         }
     }
     delete this;

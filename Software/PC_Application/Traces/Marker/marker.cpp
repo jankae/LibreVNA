@@ -870,7 +870,7 @@ std::set<Marker::Type> Marker::getSupportedTypes()
                 supported.insert(Type::Highpass);
                 supported.insert(Type::Bandpass);
             }
-            if(parentTrace->isLive()) {
+            if(parentTrace->getSource() == Trace::Source::Live) {
                 switch(parentTrace->liveParameter()) {
                 case Trace::LiveParameter::S11:
                 case Trace::LiveParameter::S12:

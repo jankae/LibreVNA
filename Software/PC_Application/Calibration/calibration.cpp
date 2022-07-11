@@ -672,7 +672,7 @@ std::vector<Trace *> Calibration::getErrorTermTraces()
     constexpr bool reflection[12] = {true, true, false, false, true, false, true, true, false, false, true, false};
     for(int i=0;i<12;i++) {
         auto t = new Trace(traceNames[i], Qt::red);
-        t->setCalibration(true);
+        t->setCalibration();
         t->setReflection(reflection[i]);
         traces.push_back(t);
     }
@@ -728,7 +728,7 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
             }
             for(auto prefix : usedPrefixes) {
                 auto t = new Trace(prefix + " " + info.name);
-                t->setCalibration(true);
+                t->setCalibration();
                 t->setReflection(prefix == "S11" || prefix == "S22");
                 for(auto p : m.second.datapoints) {
                     Trace::Data d;

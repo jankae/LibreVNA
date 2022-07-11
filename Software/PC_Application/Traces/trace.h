@@ -6,7 +6,6 @@
 #include "Device/device.h"
 #include "Math/tracemath.h"
 #include "Tools/parameters.h"
-#include "tracemodel.h"
 #include "VNA/vnadata.h"
 
 #include <QObject>
@@ -14,8 +13,10 @@
 #include <map>
 #include <QColor>
 #include <set>
+#include <QTime>
 
 class Marker;
+class TraceModel;
 
 class Trace : public TraceMath
 {
@@ -23,6 +24,14 @@ class Trace : public TraceMath
 public:
 
     using Data = TraceMath::Data;
+
+    enum class Source {
+        Live,
+        File,
+        Math,
+        Calibration,
+        Last,
+    };
 
     enum class LiveParameter {
         S11,
@@ -44,7 +53,7 @@ public:
         Invalid,
     };
 
-    void clear();
+    void clear(bool force = false);
     void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
     void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s, int index = -1);
     void setName(QString name);
@@ -53,15 +62,14 @@ public:
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
     static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data);
     void fromLivedata(LivedataType type, LiveParameter param);
+    void fromMath();
     QString name() { return _name; }
     QColor color() { return _color; }
     bool isVisible();
     void pause();
     void resume();
     bool isPaused();
-    bool isFromFile();
-    bool isCalibration();
-    bool isLive();
+    Source getSource() {return source;}
     bool isReflection();
     LiveParameter liveParameter() { return _liveParam; }
     LivedataType liveType() { return _liveType; }
@@ -92,7 +100,7 @@ public:
     double getNoise(double frequency);
     int index(double x);
     std::set<Marker *> getMarkers() const;
-    void setCalibration(bool value);
+    void setCalibration();
     void setReflection(bool value);
 
     DataType outputType(DataType inputType) override;
@@ -129,7 +137,7 @@ public:
     // When saving the current graph configuration, the pointer is not useful. Instead a trace
     // hash is saved to identify the correct trace. The hash should be influenced by every setting
     // the trace can have (and its math function). It should not depend on the acquired trace samples
-    unsigned int toHash();
+    unsigned int toHash(bool forceUpdate = false);
 
     static std::vector<Trace*> createFromTouchstone(Touchstone &t);
     static std::vector<Trace*> createFromCSV(CSV &csv);
@@ -148,11 +156,27 @@ public:
 
     double getReferenceImpedance() const;
 
+    void setModel(TraceModel *newModel);
+    TraceModel *getModel() const;
+
+    const QString &getMathFormula() const;
+    void setMathFormula(const QString &newMathFormula);
+    bool mathFormularValid() const;
+
+    bool resolveMathSourceHashes();
+
 public slots:
     void setVisible(bool visible);
     void setColor(QColor color);
     void addMarker(Marker *m);
     void removeMarker(Marker *m);
+
+    // functions for handling source == Source::Math
+    bool mathDependsOn(Trace *t, bool onlyDirectDependency = false);
+    bool canAddAsMathSource(Trace *t);
+    bool addMathSource(Trace *t, QString variableName);
+    void removeMathSource(Trace *t);
+    QString getSourceVariableName(Trace *t);
 
 signals:
     void cleared(Trace *t);
@@ -170,21 +194,50 @@ signals:
 private slots:
     void markerVisibilityChanged(Marker *m);
 
+    // functions for handling source == Source::Math
+    bool updateMathTracePoints();
+    void mathSourceTraceDeleted(Trace *t);
+    void scheduleMathCalculation(unsigned int begin, unsigned int end);
+    void calculateMath();
+    void clearMathSources();
+
+    bool addMathSource(unsigned int hash, QString variableName);
+
 private:
+    TraceModel *model; // model which this trace will be part of
     QString _name;
     QColor _color;
+    Source source;
+
+    unsigned int hash;
+    bool hashSet;
+    bool JSONskipHash;
+
+    // Members for when source == Source::Live
     LivedataType _liveType;
     LiveParameter _liveParam;
+
+    // Members for when source == Source::File
+    QString filename;
+    unsigned int fileParameter;
+
+    // Members for when source == Source::Math
+    std::map<Trace*,QString> mathSourceTraces;
+    std::map<unsigned int,QString> mathSourceUnresolvedHashes;
+    QString mathFormula;
+    static constexpr int MinMathUpdateInterval = 100;
+    QTime lastMathUpdate;
+    QTimer mathCalcTimer;
+    unsigned int mathUpdateBegin;
+    unsigned int mathUpdateEnd;
+
     double vFactor;
     bool reflection;
     bool visible;
     bool paused;
-    bool createdFromFile;
-    bool calibration;
     double reference_impedance;
     DataType domain;
-    QString filename;
-    unsigned int fileParameter;
+
     std::set<Marker*> markers;
     struct {
         union {

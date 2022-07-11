@@ -4,6 +4,8 @@
 #include "Util/util.h"
 #include "Marker/marker.h"
 #include "traceaxis.h"
+#include "tracemodel.h"
+#include "Math/parser/mpParser.h"
 
 #include <math.h>
 #include <QDebug>
@@ -12,25 +14,33 @@
 #include <functional>
 
 using namespace std;
+using namespace mup;
 
 Trace::Trace(QString name, QColor color, LiveParameter live)
-    : _name(name),
+    : model(nullptr),
+      _name(name),
       _color(color),
+      source(Source::Live),
+      hash(0),
+      hashSet(false),
+      JSONskipHash(false),
       _liveType(LivedataType::Overwrite),
       _liveParam(live),
       vFactor(0.66),
       reflection(true),
-      reference_impedance(50.0),
       visible(true),
       paused(false),
-      createdFromFile(false),
-      calibration(false),
+      reference_impedance(50.0),
       domain(DataType::Frequency),
       lastMath(nullptr)
 {
     MathInfo self = {.math = this, .enabled = true};
     mathOps.push_back(self);
     updateLastMath(mathOps.rbegin());
+
+    lastMathUpdate = QTime::currentTime();
+    mathCalcTimer.setSingleShot(true);
+    connect(&mathCalcTimer, &QTimer::timeout, this, &Trace::calculateMath);
 
     self.enabled = false;
     dataType = DataType::Frequency;
@@ -52,8 +62,8 @@ Trace::~Trace()
     emit deleted(this);
 }
 
-void Trace::clear() {
-    if(paused) {
+void Trace::clear(bool force) {
+    if(paused && !force) {
         return;
     }
     data.clear();
@@ -166,7 +176,8 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
             break;
         }
     }
-    createdFromFile = true;
+    clearMathSources();
+    source = Source::File;
     reference_impedance = t.getReferenceImpedance();
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
@@ -241,7 +252,8 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
         addData(d, domain);
     }
     reflection = false;
-    createdFromFile = true;
+    clearMathSources();
+    source = Source::File;
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
     return lastTraceName;
@@ -269,7 +281,8 @@ void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, c
 
 void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
 {
-    createdFromFile = false;
+    clearMathSources();
+    source = Source::Live;
     _liveType = type;
     _liveParam = param;
     if(param == LiveParameter::S11 || param == LiveParameter::S22) {
@@ -277,6 +290,15 @@ void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
     } else {
         reflection = false;
     }
+    emit typeChanged(this);
+}
+
+void Trace::fromMath()
+{
+    source = Source::Math;
+    clear();
+    updateMathTracePoints();
+    scheduleMathCalculation(0, data.size());
     emit typeChanged(this);
 }
 
@@ -307,6 +329,281 @@ void Trace::markerVisibilityChanged(Marker *m)
 {
     // trigger replot by pretending that trace visibility also changed
     emit visibilityChanged(this);
+}
+
+const QString &Trace::getMathFormula() const
+{
+    return mathFormula;
+}
+
+void Trace::setMathFormula(const QString &newMathFormula)
+{
+    mathFormula = newMathFormula;
+}
+
+bool Trace::mathFormularValid() const
+{
+    if(mathFormula.isEmpty()) {
+        return false;
+    }
+    try {
+        ParserX parser(pckCOMMON | pckUNIT | pckCOMPLEX);
+        parser.SetExpr(mathFormula.toStdString());
+        auto vars = parser.GetExprVar();
+        for(auto var : vars) {
+            auto varName = QString::fromStdString(var.first);
+            // try to find variable name
+            bool found = false;
+            for(auto ms : mathSourceTraces) {
+                if(ms.second == varName) {
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                return false;
+            }
+        }
+    } catch (const ParserError &e) {
+        // parser error occurred
+        return false;
+    }
+    // all variables used in the expression are set as math sources
+    return true;
+}
+
+bool Trace::resolveMathSourceHashes()
+{
+    bool success = true;
+    for(auto unresolved : mathSourceUnresolvedHashes) {
+        if(!addMathSource(unresolved.first, unresolved.second)) {
+            success = false;
+        }
+    }
+    if(success) {
+        mathSourceUnresolvedHashes.clear();
+    }
+    return success;
+}
+
+bool Trace::updateMathTracePoints()
+{
+    if(!mathSourceTraces.size()) {
+        return false;
+    }
+    double startX = std::numeric_limits<double>::lowest();
+    double stopX = std::numeric_limits<double>::max();
+    double stepSize = std::numeric_limits<double>::max();
+    for(auto t : mathSourceTraces) {
+        if(t.first->minX() > startX) {
+            startX = t.first->minX();
+        }
+        if(t.first->maxX() < stopX) {
+            stopX = t.first->maxX();
+        }
+        double traceStepSize = std::numeric_limits<double>::max();
+        if(t.first->numSamples() > 1) {
+            traceStepSize = (t.first->maxX() - t.first->minX()) / (t.first->numSamples() - 1);
+        }
+        if(traceStepSize < stepSize) {
+            stepSize = traceStepSize;
+        }
+    }
+    unsigned int samples = round((stopX - startX) / stepSize + 1);
+    bool fullUpdate = false;
+    if(samples != data.size()) {
+        data.resize(samples);
+        fullUpdate = true;
+    }
+    if(samples > 0 && (startX != data.front().x || stopX != data.back().x)) {
+        fullUpdate = true;
+    }
+    if(fullUpdate) {
+        // steps changed, complete update required
+        mathUpdateBegin = 0;
+        mathUpdateEnd = samples;
+        for(unsigned int i=0;i<samples;i++) {
+            data[i].x = startX + i * stepSize;
+            data[i].y = numeric_limits<complex<double>>::quiet_NaN();
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void Trace::mathSourceTraceDeleted(Trace *t)
+{
+    if (mathSourceTraces.count(t)) {
+        removeMathSource(t);
+    }
+}
+
+void Trace::scheduleMathCalculation(unsigned int begin, unsigned int end)
+{
+    if(source != Source::Math) {
+        return;
+    }
+    if(begin < mathUpdateBegin) {
+        mathUpdateBegin = begin;
+    }
+    if(end > mathUpdateEnd) {
+        mathUpdateEnd = end;
+    }
+    auto now = QTime::currentTime();
+    if (lastMathUpdate.msecsTo(now) >= MinMathUpdateInterval) {
+        calculateMath();
+    } else {
+        mathCalcTimer.start(MinMathUpdateInterval);
+    }
+}
+
+void Trace::calculateMath()
+{
+    lastMathUpdate = QTime::currentTime();
+    if(mathUpdateBegin >= data.size() || mathUpdateEnd >= data.size() + 1) {
+        return;
+    }
+    if(mathFormula.isEmpty()) {
+        error("Expression is empty");
+        return;
+    }
+    if(!isPaused()) {
+        try {
+            ParserX parser(pckCOMMON | pckUNIT | pckCOMPLEX);
+            parser.SetExpr(mathFormula.toStdString());
+            map<Trace*,Value> values;
+            Value x;
+            parser.DefineVar("x", Variable(&x));
+            for(const auto &ts : mathSourceTraces) {
+                values[ts.first] = Value();
+                parser.DefineVar(ts.second.toStdString(), Variable(&values[ts.first]));
+            }
+            for(unsigned int i=mathUpdateBegin;i<mathUpdateEnd;i++) {
+                x = data[i].x;
+                for(auto &val : values) {
+                    val.second = val.first->interpolatedSample(data[i].x).y;
+                }
+                Value res = parser.Eval();
+                data[i].y = res.GetComplex();
+            }
+        } catch (const ParserError &e) {
+            error(QString::fromStdString(e.GetMsg()));
+            // parser error occurred
+            for(unsigned int i=mathUpdateBegin;i<mathUpdateEnd;i++) {
+                data[i].y = numeric_limits<complex<double>>::quiet_NaN();
+            }
+        }
+        success();
+        emit outputSamplesChanged(mathUpdateBegin, mathUpdateEnd + 1);
+    }
+    mathUpdateBegin = data.size();
+    mathUpdateEnd = 0;
+}
+
+void Trace::clearMathSources()
+{
+    while(mathSourceTraces.size() > 0) {
+        removeMathSource(mathSourceTraces.begin()->first);
+    }
+}
+
+bool Trace::addMathSource(unsigned int hash, QString variableName)
+{
+    if(!model) {
+        return false;
+    }
+    for(auto t : model->getTraces()) {
+        if(t->toHash() == hash) {
+            return addMathSource(t, variableName);
+        }
+    }
+    return false;
+}
+
+bool Trace::mathDependsOn(Trace *t, bool onlyDirectDependency)
+{
+    if(mathSourceTraces.count(t)) {
+        return true;
+    }
+    if(onlyDirectDependency) {
+        return false;
+    } else {
+        // also check math source traces recursively
+        for(auto m : mathSourceTraces) {
+            if(m.first->mathDependsOn(t)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+bool Trace::canAddAsMathSource(Trace *t)
+{
+    if(t == this) {
+        // can't add itself
+        return false;
+    }
+    // check if we would create a loop of math traces depending on each other
+    if(t->mathDependsOn(this)) {
+        return false;
+    }
+    if(mathSourceTraces.size() == 0) {
+        // no traces used as source yet, can add anything
+        return true;
+    } else {
+        // can only add traces of the same domain
+        if(mathSourceTraces.begin()->first->outputType() == t->outputType()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+bool Trace::addMathSource(Trace *t, QString variableName)
+{
+//    qDebug() << "Adding trace" << t << "as a math source to" << this << "as variable" << variableName;
+    if(!canAddAsMathSource(t)) {
+        return false;
+    }
+    mathSourceTraces[t] = variableName;
+    connect(t, &Trace::deleted, this, &Trace::mathSourceTraceDeleted, Qt::UniqueConnection);
+    connect(t, &Trace::dataChanged, this, [=](unsigned int begin, unsigned int end){
+        updateMathTracePoints();
+        auto startX = t->sample(begin).x;
+        auto stopX = t->sample(end).x;
+        scheduleMathCalculation(index(startX), index(stopX));
+    });
+    return true;
+}
+
+void Trace::removeMathSource(Trace *t)
+{
+//    qDebug() << "Removing trace" << t << "as a math source from" << this;
+    mathSourceTraces.erase(t);
+    disconnect(t, &Trace::deleted, this, &Trace::mathSourceTraceDeleted);
+    disconnect(t, &Trace::dataChanged, this, nullptr);
+}
+
+QString Trace::getSourceVariableName(Trace *t)
+{
+    if(mathSourceTraces.count(t)) {
+        return mathSourceTraces[t];
+    } else {
+        return QString();
+    }
+}
+
+TraceModel *Trace::getModel() const
+{
+    return model;
+}
+
+void Trace::setModel(TraceModel *model)
+{
+    this->model = model;
 }
 
 double Trace::getReferenceImpedance() const
@@ -347,22 +644,41 @@ double Trace::distanceToTime(double distance)
 nlohmann::json Trace::toJSON()
 {
     nlohmann::json j;
-    if(isCalibration()) {
+    if(!JSONskipHash) {
+        j["hash"] = toHash(true);
+    }
+    if(source == Source::Calibration) {
         // calibration traces can't be saved
         return j;
     }
     j["name"] = _name.toStdString();
     j["color"] = _color.name().toStdString();
     j["visible"] = visible;
-    if(isLive()) {
+    switch(source) {
+    case Source::Live:
         j["type"] = "Live";
         j["parameter"] = _liveParam;
         j["livetype"] = _liveType;
         j["paused"] = paused;
-    } else if(isFromFile()) {
+        break;
+    case Source::File:
         j["type"] = "File";
         j["filename"] = filename.toStdString();
         j["parameter"] = fileParameter;
+        break;
+    case Source::Math: {
+        j["type"] = "Math";
+        j["expression"] = mathFormula.toStdString();
+        nlohmann::json jsources;
+        for(auto ms : mathSourceTraces) {
+            nlohmann::json jsource;
+            jsource["trace"] = ms.first->toHash();
+            jsource["variable"] = ms.second.toStdString();
+            jsources.push_back(jsource);
+        }
+        j["sources"] = jsources;
+    }
+        break;
     }
     j["velocityFactor"] = vFactor;
     j["reflection"] = reflection;
@@ -388,8 +704,13 @@ nlohmann::json Trace::toJSON()
 
 void Trace::fromJSON(nlohmann::json j)
 {
-    createdFromFile = false;
-    calibration = false;
+    source = Source::Live;
+    if(j.contains("hash")) {
+        hash = j["hash"];
+        hashSet = true;
+    } else {
+        hashSet = false;
+    }
     _name = QString::fromStdString(j.value("name", "Missing name"));
     _color = QColor(QString::fromStdString(j.value("color", "yellow")));
     visible = j.value("visible", true);
@@ -414,6 +735,19 @@ void Trace::fromJSON(nlohmann::json j)
             std::string what = e.what();
             throw runtime_error("Failed to create from file:" + what);
         }
+    } else if(type == "Math") {
+        mathFormula = QString::fromStdString(j.value("expression", ""));
+        if(j.contains("sources")) {
+            for(auto js : j["sources"]) {
+                auto hash = js.value("trace", 0);
+                QString varName = QString::fromStdString(js.value("variable", ""));
+                if(!addMathSource(hash, varName)) {
+                    qWarning() << "Unable to find requested math source trace ( hash:"<<hash<<"), probably not loaded yet";
+                    mathSourceUnresolvedHashes[hash] = varName;
+                }
+            }
+        }
+        fromMath();
     }
     vFactor = j.value("velocityFactor", 0.66);
     reflection = j.value("reflection", false);
@@ -453,12 +787,18 @@ void Trace::fromJSON(nlohmann::json j)
     enableMath(j.value("math_enabled", true));
 }
 
-unsigned int Trace::toHash()
+unsigned int Trace::toHash(bool forceUpdate)
 {
-    // taking the easy way: create the json string and hash it (already contains all necessary information)
-    // This is slower than it could be, but this function is only used when loading setups, so this isn't a big problem
-    std::string json_string = toJSON().dump();
-    return hash<std::string>{}(json_string);
+    if(!hashSet || forceUpdate) {
+        // taking the easy way: create the json string and hash it (already contains all necessary information)
+        // This is slower than it could be, but this function is only used when loading setups, so this isn't a big problem
+        JSONskipHash = true;
+        std::string json_string = toJSON().dump();
+        JSONskipHash = false;
+        hash = std::hash<std::string>{}(json_string);
+        hashSet = true;
+    }
+    return hash;
 }
 
 std::vector<Trace *> Trace::createFromTouchstone(Touchstone &t)
@@ -687,9 +1027,9 @@ QString Trace::description()
     return name() + ": measured data";
 }
 
-void Trace::setCalibration(bool value)
+void Trace::setCalibration()
 {
-    calibration = value;
+    source = Source::Calibration;
 }
 
 std::set<Marker *> Trace::getMarkers() const
@@ -729,21 +1069,6 @@ void Trace::resume()
 bool Trace::isPaused()
 {
     return paused;
-}
-
-bool Trace::isFromFile()
-{
-    return createdFromFile;
-}
-
-bool Trace::isCalibration()
-{
-    return calibration;
-}
-
-bool Trace::isLive()
-{
-    return !isCalibration() && !isFromFile();
 }
 
 bool Trace::isReflection()
@@ -997,7 +1322,7 @@ unsigned int Trace::getFileParameter() const
 
 double Trace::getNoise(double frequency)
 {
-    if(!isLive() || !settings.valid || (_liveParam != LiveParameter::Port1 && _liveParam != LiveParameter::Port2) || lastMath->getDataType() != DataType::Frequency) {
+    if(source != Trace::Source::Live || !settings.valid || (_liveParam != LiveParameter::Port1 && _liveParam != LiveParameter::Port2) || lastMath->getDataType() != DataType::Frequency) {
         // data not suitable for noise calculation
         return std::numeric_limits<double>::quiet_NaN();
     }
