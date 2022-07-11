@@ -264,7 +264,7 @@ AppWindow::AppWindow(QWidget *parent)
         LoadSetup(filename);
     });
     connect(ui->actionSave_image, &QAction::triggered, [=](){
-        Mode::getActiveMode()->saveSreenshot();
+        modeHandler->getActiveMode()->saveSreenshot();
     });
 
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
@@ -284,17 +284,38 @@ AppWindow::AppWindow(QWidget *parent)
                 StartTCPServer(p.SCPIServer.port);
             }
         }
-
-        if(p.Acquisition.useMedianAveraging) {
-            modeHandler->setAveragingMode(Averaging::Mode::Median);
-        } else {
-            modeHandler->setAveragingMode(Averaging::Mode::Mean);
+        // averaging mode may have changed, update for all relevant modes
+        for (auto m : modeHandler->getModes())
+        {
+            switch (m->getType())
+            {
+                case Mode::Type::VNA:
+                    if(p.Acquisition.useMedianAveraging) {
+                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Median);
+                    }
+                    else {
+                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Mean);
+                    }
+                    break;
+                case Mode::Type::SA:
+                    if(p.Acquisition.useMedianAveraging) {
+                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Median);
+                    }
+                    else {
+                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Mean);
+                    }
+                    break;
+                case Mode::Type::SG:
+                case Mode::Type::Last:
+                default:
+                    break;
+            }
         }
 
         // acquisition frequencies may have changed, update
         UpdateAcquisitionFrequencies();
 
-        auto active = Mode::getActiveMode();
+        auto active = modeHandler->getActiveMode();
         if (active)
         {
             active->updateGraphColors();
@@ -369,8 +390,8 @@ void AppWindow::closeEvent(QCloseEvent *event)
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
     // deactivate currently used mode (stores mode state in settings)
-    if(Mode::getActiveMode()) {
-        Mode::getActiveMode()->deactivate();
+    if(modeHandler->getActiveMode()) {
+        modeHandler->deactivate(modeHandler->getActiveMode());
     }
     delete device;
     delete modeHandler;
@@ -406,8 +427,8 @@ bool AppWindow::ConnectToDevice(QString serial)
         ui->actionFrequency_Calibration->setEnabled(true);
 
         UpdateAcquisitionFrequencies();
-        if (Mode::getActiveMode()) {
-            Mode::getActiveMode()->initializeDevice();
+        if (modeHandler->getActiveMode()) {
+            modeHandler->getActiveMode()->initializeDevice();
         }
         UpdateReference();
 
@@ -445,8 +466,8 @@ void AppWindow::DisconnectDevice()
         deviceActionGroup->checkedAction()->setChecked(false);
     }
     UpdateStatusBar(DeviceStatusBar::Disconnected);
-    if(Mode::getActiveMode()) {
-        Mode::getActiveMode()->deviceDisconnected();
+    if(modeHandler->getActiveMode()) {
+        modeHandler->getActiveMode()->deviceDisconnected();
     }
     qDebug() << "Disconnected device";
 }
@@ -585,7 +606,6 @@ void AppWindow::SetupSCPI()
             return "INVALID MDOE";
         }
         if(mode) {
-            mode->activate();
             int index = modeHandler->findIndex(mode);
             modeHandler->setCurrentIndex(index);
             return SCPI::getResultName(SCPI::Result::Empty);
@@ -593,7 +613,7 @@ void AppWindow::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Error);
         }
     }, [=](QStringList) -> QString {
-        auto active = Mode::getActiveMode();
+        auto active = modeHandler->getActiveMode();
         if(active) {
             switch(active->getType()) {
             case Mode::Type::VNA: return "VNA";
@@ -955,7 +975,7 @@ void AppWindow::StartManualControl()
     connect(manual, &QDialog::finished, [=](){
         manual = nullptr;
         if(device) {
-            Mode::getActiveMode()->initializeDevice();
+            modeHandler->getActiveMode()->initializeDevice();
         }
     });
     if(AppWindow::showGUI()) {
@@ -1035,7 +1055,7 @@ void AppWindow::DeviceStatusUpdated()
 
 void AppWindow::SourceCalibrationDialog()
 {
-    auto d = new SourceCalDialog(device);
+    auto d = new SourceCalDialog(device, modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1043,7 +1063,7 @@ void AppWindow::SourceCalibrationDialog()
 
 void AppWindow::ReceiverCalibrationDialog()
 {
-    auto d = new ReceiverCalDialog(device);
+    auto d = new ReceiverCalDialog(device, modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1051,7 +1071,7 @@ void AppWindow::ReceiverCalibrationDialog()
 
 void AppWindow::FrequencyCalibrationDialog()
 {
-    auto d = new FrequencyCalDialog(device);
+    auto d = new FrequencyCalDialog(device, modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1082,8 +1102,8 @@ nlohmann::json AppWindow::SaveSetup()
         jm.push_back(jmode);
     }
     j["Modes"] = jm;
-    if(Mode::getActiveMode()) {
-        j["activeMode"] = Mode::getActiveMode()->getName().toStdString();
+    if(modeHandler->getActiveMode()) {
+        j["activeMode"] = modeHandler->getActiveMode()->getName().toStdString();
     }
     nlohmann::json ref;
 
@@ -1171,8 +1191,8 @@ void AppWindow::LoadSetup(nlohmann::json j)
         }
     }
     // if no mode is activated, there might have been a problem with the setup file. Activate the first mode anyway, to prevent invalid GUI state
-    if(!Mode::getActiveMode() && modeHandler->getModes().size() > 0) {
-        modeHandler->getModes()[0]->activate();
+    if(!modeHandler->getActiveMode() && modeHandler->getModes().size() > 0) {
+        modeHandler->activate(modeHandler->getModes()[0]);
     }
 }
 
@@ -1185,6 +1205,12 @@ QStackedWidget *AppWindow::getCentral() const
 {
     return central;
 }
+
+ModeHandler* AppWindow::getModeHandler() const
+{
+    return modeHandler;
+}
+
 
 Ui::MainWindow *AppWindow::getUi() const
 {

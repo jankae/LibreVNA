@@ -42,6 +42,7 @@ public:
 
     Ui::MainWindow *getUi() const;
     QStackedWidget *getCentral() const;
+    ModeHandler* getModeHandler() const;
     Device*&getDevice();
 
     const QString& getAppVersion() const;

@@ -2,12 +2,13 @@
 #define RECEIVERCALDIALOG_H
 
 #include "amplitudecaldialog.h"
+#include "modehandler.h"
 
 class ReceiverCalDialog : public AmplitudeCalDialog
 {
     Q_OBJECT
 public:
-    ReceiverCalDialog(Device *dev);
+    ReceiverCalDialog(Device *dev, ModeHandler *handler);
 protected:
     Protocol::PacketType requestCommand() override { return Protocol::PacketType::RequestReceiverCal; }
     Protocol::PacketType pointType() override { return Protocol::PacketType::ReceiverCalPoint; }

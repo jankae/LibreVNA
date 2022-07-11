@@ -17,6 +17,7 @@
 #include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
+#include "modehandler.h"
 
 #include <QDockWidget>
 #include <QDesktopWidget>
@@ -433,7 +434,7 @@ using namespace std;
 
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
-    if(Mode::getActiveMode() != this) {
+    if(window->getModeHandler()->getActiveMode() != this) {
         return;
     }
 
@@ -570,7 +571,7 @@ void SpectrumAnalyzer::SettingsChanged()
         }
     }
 
-    if(window->getDevice() && Mode::getActiveMode() == this) {
+    if(window->getDevice() && window->getModeHandler()->getActiveMode() == this) {
         window->getDevice()->Configure(settings, [=](Device::TransmissionResult res){
             // device received command
             changingSettings = false;

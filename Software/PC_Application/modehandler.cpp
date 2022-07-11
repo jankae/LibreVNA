@@ -20,7 +20,7 @@ void ModeHandler::shutdown()
 
 int ModeHandler::createMode(QString name, Mode::Type t)
 {
-    auto mode = Mode::createNew(aw, name, t);
+    auto mode = createNew(aw, name, t);
     return createMode(mode);
 }
 
@@ -30,16 +30,50 @@ int ModeHandler::createMode(Mode *mode)
     currentModeIndex = int(modes.size()) - 1;
     connect(mode, &Mode::statusbarMessage, this, &ModeHandler::setStatusBarMessageChanged);
 
-    auto * m = getMode(currentModeIndex);
-    m->activate();
+    auto m = getMode(currentModeIndex);
+    activate(m);
 
     emit ModeCreated(currentModeIndex);
     return (currentModeIndex);
 }
 
+Mode *ModeHandler::createNew(AppWindow *aw, QString name, Mode::Type t)
+{
+    switch(t) {
+    case Mode::Type::VNA: return new VNA(aw, name);
+    case Mode::Type::SG: return new Generator(aw, name);
+    case Mode::Type::SA: return new SpectrumAnalyzer(aw, name);
+    default: return nullptr;
+    }
+}
+
+Mode* ModeHandler::getActiveMode()
+{
+    return activeMode;
+}
+
 Mode* ModeHandler::getMode(int index)
 {
     return modes.at(index);
+}
+
+void ModeHandler::activate(Mode * mode)
+{
+    if (getActiveMode() == mode) {
+        // Already active
+        return;
+    }
+    else if (getActiveMode()) {
+        deactivate(getActiveMode());
+    }
+    activeMode = mode;
+    mode->activate();
+}
+
+void ModeHandler::deactivate(Mode* mode)
+{
+    mode->deactivate();
+    activeMode = nullptr;
 }
 
 std::vector<Mode*> ModeHandler::getModes()
@@ -51,8 +85,8 @@ void ModeHandler::setCurrentIndex(int index)
 {
     if (index >= 0) {
         currentModeIndex = index;
-        auto * m = getMode(getCurrentIndex());
-        m->activate();
+        auto m = getMode(getCurrentIndex());
+        activate(m);
         emit CurrentModeChanged(getCurrentIndex());
     }
 }
@@ -111,6 +145,10 @@ void ModeHandler::closeMode(int index)
         }
     }
 
+    if (getActiveMode() == modes.at(index)) {
+         deactivate(getActiveMode());
+    }
+
     delete modes.at(index);
     modes.erase(modes.begin() + index);
 
@@ -130,7 +168,10 @@ void ModeHandler::closeModes()
 
 void ModeHandler::setStatusBarMessageChanged(const QString &msg)
 {
-    emit StatusBarMessageChanged(msg);
+   QObject* mode = sender();
+   if ( getActiveMode() == mode) {
+        emit StatusBarMessageChanged(msg);
+    }
 }
 
 bool ModeHandler::nameAllowed(const QString &name)
@@ -161,36 +202,3 @@ Mode* ModeHandler::findFirstOfType(Mode::Type t)
     }
     return nullptr;
 }
-
-void ModeHandler::setAveragingMode(Averaging::Mode value)
-{
-
-
-    // averaging mode may have changed, update for all relevant modes
-    for (auto m : getModes())
-    {
-        switch (m->getType())
-        {
-            case Mode::Type::VNA:
-                static_cast<VNA*>(m)->setAveragingMode(value);
-                break;
-            case Mode::Type::SA:
-                static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(value);
-                break;
-            case Mode::Type::SG:
-            case Mode::Type::Last:
-            default:
-                break;
-        }
-    }
-
-    for(auto m : modes) {
-        if (m->getType() == Mode::Type::SA) {
-            static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(value);
-        }
-        else if (m->getType() == Mode::Type::VNA) {
-            static_cast<VNA*>(m)->setAveragingMode(value);
-        }
-    }
-}
-

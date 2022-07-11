@@ -21,14 +21,17 @@ public:
     void closeModes();
     int getCurrentIndex();
 
+    Mode* getActiveMode();
+
+    void activate(Mode * mode);
+    void deactivate(Mode* mode);
+
     Mode* getMode(int index);
     std::vector<Mode*> getModes();
 
     bool nameAllowed(const QString &name);
     int findIndex(Mode *targetMode);
     Mode* findFirstOfType(Mode::Type t);
-
-    void setAveragingMode(Averaging::Mode m);
 
 signals:
     void StatusBarMessageChanged(const QString &msg);
@@ -44,7 +47,9 @@ private:
     std::vector<Mode*> modes;
     int currentModeIndex;
     int createMode(Mode *mode);
+    Mode *createNew(AppWindow *window, QString name, Mode::Type t);
     AppWindow *aw;
+    Mode *activeMode = nullptr;
 
 private slots:
     void setStatusBarMessageChanged(const QString &msg);

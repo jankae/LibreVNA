@@ -13,7 +13,6 @@
 #include <QFileDialog>
 #include <QInputDialog>
 
-Mode* Mode::activeMode = nullptr;
 //QButtonGroup* Mode::modeButtonGroup = nullptr;
 
 Mode::Mode(AppWindow *window, QString name, QString SCPIname)
@@ -29,9 +28,6 @@ Mode::Mode(AppWindow *window, QString name, QString SCPIname)
 Mode::~Mode()
 {
     window->getSCPI()->remove(this);
-    if(activeMode == this) {
-        deactivate();
-    }
     window->getCentral()->removeWidget(central);
     delete central;
     for(auto d : docks) {
@@ -44,13 +40,6 @@ Mode::~Mode()
 
 void Mode::activate()
 {
-    if(activeMode == this) {
-        // already active;
-        return;
-    } else if(activeMode) {
-        activeMode->deactivate();
-    }
-
     qDebug() << "Activating mode" << name;
     // show all mode specific GUI elements
     for(auto t : toolbars) {
@@ -88,8 +77,6 @@ void Mode::activate()
         }
     }
 
-    activeMode = this;
-
     if(window->getDevice()) {
         initializeDevice();
     }
@@ -126,12 +113,6 @@ void Mode::deactivate()
     if(window->getDevice()) {
         window->getDevice()->SetIdle();
     }
-    activeMode = nullptr;
-}
-
-Mode *Mode::getActiveMode()
-{
-    return activeMode;
 }
 
 QString Mode::TypeToName(Mode::Type t)
@@ -168,16 +149,6 @@ void Mode::saveSreenshot()
     central->grab().save(filename);
 }
 
-Mode *Mode::createNew(AppWindow *window, QString name, Mode::Type t)
-{
-    switch(t) {
-    case Type::VNA: return new VNA(window, name);
-    case Type::SG: return new Generator(window, name);
-    case Type::SA: return new SpectrumAnalyzer(window, name);
-    default: return nullptr;
-    }
-}
-
 void Mode::finalize(QWidget *centralWidget)
 {
     central = centralWidget;
@@ -204,9 +175,7 @@ void Mode::finalize(QWidget *centralWidget)
 void Mode::setStatusbarMessage(QString msg)
 {
     statusbarMsg = msg;
-    if(this == activeMode) {
-        emit statusbarMessage(msg);
-    }
+    emit statusbarMessage(msg);
 }
 
 QString Mode::getName() const

@@ -16,6 +16,7 @@
 class Mode : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
+    friend class ModeHandler;
 public:
     enum class Type {
         VNA,
@@ -27,13 +28,10 @@ public:
     Mode(AppWindow *window, QString name, QString SCPIname);
     ~Mode();
 
-    virtual void activate(); // derived classes must call Mode::activate before doing anything
-    virtual void deactivate(); // derived classes must call Mode::deactivate before returning
     virtual void shutdown(){}; // called when the application is about to exit
     QString getName() const;
     void setName(const QString &value);
     void updateGraphColors();
-    static Mode *getActiveMode();
     static QString TypeToName(Type t);
     static Type TypeFromName(QString s);
     virtual Type getType() = 0;
@@ -43,11 +41,13 @@ public:
 
     virtual void saveSreenshot();
 
-    static Mode *createNew(AppWindow *window, QString name, Type t);
-
 signals:
     void statusbarMessage(QString msg);
 protected:
+
+    virtual void activate(); // derived classes must call Mode::activate before doing anything
+    virtual void deactivate(); // derived classes must call Mode::deactivate before returning
+
     void setStatusbarMessage(QString msg);
     // call once the derived class is fully initialized
     void finalize(QWidget *centralWidget);
@@ -57,8 +57,6 @@ protected:
     std::set<QDockWidget*> docks;
 
 private:
-    static std::vector<Mode*> modes;
-    static Mode *activeMode;
 //    static QButtonGroup *modeButtonGroup;
     QString name;
     QString statusbarMsg;

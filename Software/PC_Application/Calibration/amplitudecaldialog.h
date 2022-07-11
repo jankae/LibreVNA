@@ -2,6 +2,7 @@
 #define AMPLITUDECALDIALOG_H
 
 #include "mode.h"
+#include "modehandler.h"
 #include "Device/device.h"
 
 #include <QDialog>
@@ -42,7 +43,7 @@ class AmplitudeCalDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AmplitudeCalDialog(Device *dev, QWidget *parent = nullptr);
+    explicit AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidget *parent = nullptr);
     ~AmplitudeCalDialog();
     void reject() override;
 
@@ -100,7 +101,7 @@ protected:
     std::vector<CorrectionPoint> points;
     Ui::AmplitudeCalDialog *ui;
     Device *dev;
-    Mode *activeMode;
+    ModeHandler *modeHandler;
     AmplitudeModel model;
     bool edited;
     CalibrationMode mode;
