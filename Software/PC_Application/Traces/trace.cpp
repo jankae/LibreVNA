@@ -341,6 +341,7 @@ const QString &Trace::getMathFormula() const
 void Trace::setMathFormula(const QString &newMathFormula)
 {
     mathFormula = newMathFormula;
+    scheduleMathCalculation(0, data.size());
 }
 
 bool Trace::mathFormularValid() const
@@ -433,6 +434,8 @@ void Trace::mathSourceTraceDeleted(Trace *t)
 {
     if (mathSourceTraces.count(t)) {
         removeMathSource(t);
+        updateMathTracePoints();
+        scheduleMathCalculation(0, data.size());
     }
 }
 
@@ -592,6 +595,8 @@ bool Trace::addMathSource(Trace *t, QString variableName)
 
         scheduleMathCalculation(calcIndex(startX), calcIndex(stopX)+1);
     });
+    updateMathTracePoints();
+    scheduleMathCalculation(0, data.size());
     return true;
 }
 
