@@ -781,6 +781,11 @@ void TraceXYPlot::updateAxisTicks()
                         continue;
                     }
 
+                    if(isnan(point.y()) || isinf(point.y())) {
+                        // skip NaN and Infty values
+                        continue;
+                    }
+
                     if(point.y() > max) {
                         max = point.y();
                     }

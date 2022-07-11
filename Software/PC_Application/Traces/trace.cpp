@@ -297,6 +297,8 @@ void Trace::fromMath()
 {
     source = Source::Math;
     clear();
+    mathUpdateEnd = 0;
+    mathUpdateBegin = numeric_limits<unsigned int>::max();
     updateMathTracePoints();
     scheduleMathCalculation(0, data.size());
     emit typeChanged(this);
@@ -386,10 +388,10 @@ bool Trace::resolveMathSourceHashes()
     return success;
 }
 
-bool Trace::updateMathTracePoints()
+void Trace::updateMathTracePoints()
 {
     if(!mathSourceTraces.size()) {
-        return false;
+        return;
     }
     double startX = std::numeric_limits<double>::lowest();
     double stopX = std::numeric_limits<double>::max();
@@ -410,25 +412,20 @@ bool Trace::updateMathTracePoints()
         }
     }
     unsigned int samples = round((stopX - startX) / stepSize + 1);
-    bool fullUpdate = false;
+//    qDebug() << "Updated trace points, now"<<samples<<"points from"<<startX<<"to"<<stopX;
     if(samples != data.size()) {
+        auto oldSize = data.size();
         data.resize(samples);
-        fullUpdate = true;
+        if(oldSize < samples) {
+            for(unsigned int i=oldSize;i<samples;i++) {
+                data[i].x = startX + i * stepSize;
+                data[i].y = numeric_limits<complex<double>>::quiet_NaN();
+            }
+        }
     }
     if(samples > 0 && (startX != data.front().x || stopX != data.back().x)) {
-        fullUpdate = true;
-    }
-    if(fullUpdate) {
-        // steps changed, complete update required
         mathUpdateBegin = 0;
         mathUpdateEnd = samples;
-        for(unsigned int i=0;i<samples;i++) {
-            data[i].x = startX + i * stepSize;
-            data[i].y = numeric_limits<complex<double>>::quiet_NaN();
-        }
-        return true;
-    } else {
-        return false;
     }
 }
 
@@ -441,6 +438,7 @@ void Trace::mathSourceTraceDeleted(Trace *t)
 
 void Trace::scheduleMathCalculation(unsigned int begin, unsigned int end)
 {
+//    qDebug() << "Scheduling calculation from"<<begin<<"to"<<end;
     if(source != Source::Math) {
         return;
     }
@@ -462,6 +460,7 @@ void Trace::calculateMath()
 {
     lastMathUpdate = QTime::currentTime();
     if(mathUpdateBegin >= data.size() || mathUpdateEnd >= data.size() + 1) {
+        qWarning() << "Not calculating math trace, out of limits. Requested from" << mathUpdateBegin << "to" << mathUpdateEnd <<" but data is of size" << data.size();
         return;
     }
     if(mathFormula.isEmpty()) {
@@ -573,8 +572,25 @@ bool Trace::addMathSource(Trace *t, QString variableName)
     connect(t, &Trace::dataChanged, this, [=](unsigned int begin, unsigned int end){
         updateMathTracePoints();
         auto startX = t->sample(begin).x;
-        auto stopX = t->sample(end).x;
-        scheduleMathCalculation(index(startX), index(stopX));
+        auto stopX = t->sample(end-1).x;
+
+//        qDebug() << "Source update from"<<startX<<"to"<<stopX<<". Index from"<<begin<<"to"<<end;
+
+        auto calcIndex = [&](double x) -> int {
+            if(data.size() == 0) {
+                return 0;
+            }
+            auto lower = lower_bound(data.begin(), data.end(), x, [](const Data &lhs, const double x) -> bool {
+                return lhs.x < x;
+            });
+            if(lower == data.end()) {
+                // actually beyond the last sample, return the index of the last anyway to avoid access past data
+                return data.size() - 1;
+            }
+            return lower - data.begin();
+        };
+
+        scheduleMathCalculation(calcIndex(startX), calcIndex(stopX)+1);
     });
     return true;
 }
@@ -1048,6 +1064,28 @@ void Trace::setVisible(bool visible)
 bool Trace::isVisible()
 {
     return visible;
+}
+
+bool Trace::canBePaused()
+{
+    switch(source) {
+    case Source::Live:
+        return true;
+    case Source::File:
+        return false;
+    case Source::Calibration:
+        return false;
+    case Source::Math:
+        // depends on the math, if it depends on any live data, it may be paused
+        for(auto ms : mathSourceTraces) {
+            if(ms.first->canBePaused()) {
+                return true;
+            }
+        }
+        return false;
+    default:
+        return false;
+    }
 }
 
 void Trace::pause()

@@ -530,6 +530,9 @@ void TraceWaterfall::traceDataChanged(unsigned int begin, unsigned int end)
         data.back()[i] = trace->sample(i);
         if(yAxis.getAutorange() && !YAxisUpdateRequired) {
             double val = yAxis.sampleToCoordinate(trace->sample(i));
+            if(isnan(val) || isinf(val)) {
+                continue;
+            }
             if(val < min) {
                 min = val;
             }

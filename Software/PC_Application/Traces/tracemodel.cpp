@@ -63,7 +63,7 @@ void TraceModel::toggleVisibility(unsigned int index)
 
 void TraceModel::togglePause(unsigned int index)
 {
-    if (index < traces.size()) {
+    if (index < traces.size() && traces[index]->canBePaused()) {
         if(traces[index]->isPaused()) {
             traces[index]->resume();
         } else {
@@ -118,7 +118,7 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
         }
         break;
     case ColIndexPlayPause:
-        if (role == Qt::DecorationRole && trace->getSource() == Trace::Source::Live) { // TODO trace needs function to check if it may change due to live data
+        if (role == Qt::DecorationRole && trace->canBePaused()) {
             if (trace->isPaused()) {
                 return QIcon(":/icons/pause.svg");
             } else {

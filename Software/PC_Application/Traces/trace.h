@@ -66,6 +66,7 @@ public:
     QString name() { return _name; }
     QColor color() { return _color; }
     bool isVisible();
+    bool canBePaused();
     void pause();
     void resume();
     bool isPaused();
@@ -163,6 +164,9 @@ public:
     void setMathFormula(const QString &newMathFormula);
     bool mathFormularValid() const;
 
+    // When loading setups, some traces may be used as a math source before they are loaded.
+    // If that happens, their hashes are added to a list. Call this function for every new trace
+    // after all traces from the setup file have been created. It will look for the missing traces
     bool resolveMathSourceHashes();
 
 public slots:
@@ -171,11 +175,23 @@ public slots:
     void addMarker(Marker *m);
     void removeMarker(Marker *m);
 
-    // functions for handling source == Source::Math
+    // Functions for handling source == Source::Math
+
+    // Checks whether the trace data depends on trace t.
+    // If onlyDirectDependency is true, only the direct math sources are checked (i.e. the math sources of this trace).
+    // If onlyDirectDependency is false, math sources and all their sources are checked recursively
     bool mathDependsOn(Trace *t, bool onlyDirectDependency = false);
+    // Checks whether a trace can potentially be used as a math source. It can not be used if:
+    // - it is the trace itself
+    // - it is in a different domain than an already used math source
+    // - it depends on this trace
     bool canAddAsMathSource(Trace *t);
+    // Adds another trace as a math source, with a custom variable name. The same trace may be added multiple times with
+    // different names, older variable names will be replaced with the new one
     bool addMathSource(Trace *t, QString variableName);
+    // Removes a trace as a math source (if its variable name is still used in the mathFormula, this will break the calculation)
     void removeMathSource(Trace *t);
+    // Retrieves the variable name used for the specified trace. If the trace is not used as a math source, an emptry string is returned
     QString getSourceVariableName(Trace *t);
 
 signals:
@@ -194,13 +210,25 @@ signals:
 private slots:
     void markerVisibilityChanged(Marker *m);
 
-    // functions for handling source == Source::Math
-    bool updateMathTracePoints();
-    void mathSourceTraceDeleted(Trace *t);
-    void scheduleMathCalculation(unsigned int begin, unsigned int end);
-    void calculateMath();
-    void clearMathSources();
+    // Functions for handling source == Source::Math
 
+    // Updates the datapoints, based on the available span of all math sources.
+    // The least common span is used for this trace. This function only creates the datapoints
+    // and sets the X coordinate. The Y coordinates are set in calculateMath()
+    void updateMathTracePoints();
+    // Keeps track of deleted traces and removes them from the math sources
+    void mathSourceTraceDeleted(Trace *t);
+    // Schedules an update of this trace, should be called whenever any source data changes.
+    // As it is likely that multiple source traces will change directly after each other, no
+    // calculation is performed directly. Instead the calculation is only scheduled and executed
+    // shortly after. This prevents calculating data that will be overwritten immediately afterwards
+    void scheduleMathCalculation(unsigned int begin, unsigned int end);
+    // Actually calculates the Y coordinate values of this trace. It expects that the data vector is
+    // already set up with the required amount of points and X coordinates
+    void calculateMath();
+    // Removes all math sources, use this when switching to a different source mode
+    void clearMathSources();
+    // Attempts to add a math source using the trace hash instead of a pointer (when loading setups)
     bool addMathSource(unsigned int hash, QString variableName);
 
 private:
@@ -209,6 +237,10 @@ private:
     QColor _color;
     Source source;
 
+    // Hash for identifying the trace when loading/saving setup files.
+    // When writing setup files, the hash is created from the JSON representation of the trace.
+    // When loading setup files, the hash specified in the setup file is used (prevents different
+    // hashes when the JSON format changes in newer versions)
     unsigned int hash;
     bool hashSet;
     bool JSONskipHash;
