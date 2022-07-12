@@ -234,6 +234,60 @@ AppWindow::AppWindow(QWidget *parent)
     auto generator = new Generator(this);
     auto spectrumAnalyzer = new SpectrumAnalyzer(this);
 
+    SetupMenu();
+
+    setWindowTitle(qlibrevnaApp->applicationName() + " v"  + getAppVersion());
+
+    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+    {
+        QSettings settings;
+        restoreGeometry(settings.value("geometry").toByteArray());
+    }
+
+    SetupSCPI();
+
+    // Set default mode
+    vna->activate();
+
+    auto pref = Preferences::getInstance();
+    if(pref.Startup.UseSetupFile) {
+        LoadSetup(pref.Startup.SetupFile);
+    }
+    // List available devices
+    UpdateDeviceList();
+    if(pref.Startup.ConnectToFirstDevice) {
+        // at least one device available
+        ConnectToDevice();
+    }
+
+    if(parser.isSet("setup")) {
+        LoadSetup(parser.value("setup"));
+    }
+    if(parser.isSet("cal")) {
+        vna->LoadCalibration(parser.value("cal"));
+    }
+    if(!parser.isSet("no-gui")) {
+        InformationBox::setGUI(true);
+        resize(1280, 800);
+        show();
+    } else {
+        InformationBox::setGUI(false);
+        noGUIset = true;
+    }
+}
+
+AppWindow::~AppWindow()
+{
+    StopTCPServer();
+    delete ui;
+}
+
+void AppWindow::SetupMenu()
+{
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
@@ -324,54 +378,6 @@ AppWindow::AppWindow(QWidget *parent)
         a.about();
     });
 
-    setWindowTitle(qlibrevnaApp->applicationName() + " v"  + getAppVersion());
-
-    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
-    {
-        QSettings settings;
-        restoreGeometry(settings.value("geometry").toByteArray());
-    }
-
-    SetupSCPI();
-
-    // Set default mode
-    vna->activate();
-
-    auto pref = Preferences::getInstance();
-    if(pref.Startup.UseSetupFile) {
-        LoadSetup(pref.Startup.SetupFile);
-    }
-    // List available devices
-    UpdateDeviceList();
-    if(pref.Startup.ConnectToFirstDevice) {
-        // at least one device available
-        ConnectToDevice();
-    }
-
-    if(parser.isSet("setup")) {
-        LoadSetup(parser.value("setup"));
-    }
-    if(parser.isSet("cal")) {
-        vna->LoadCalibration(parser.value("cal"));
-    }
-    if(!parser.isSet("no-gui")) {
-        InformationBox::setGUI(true);
-        resize(1280, 800);
-        show();
-    } else {
-        InformationBox::setGUI(false);
-        noGUIset = true;
-    }
-}
-
-AppWindow::~AppWindow()
-{
-    StopTCPServer();
-    delete ui;
 }
 
 void AppWindow::closeEvent(QCloseEvent *event)
