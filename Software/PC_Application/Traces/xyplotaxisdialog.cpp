@@ -3,7 +3,12 @@
 #include "ui_xyplotaxisdialog.h"
 #include "traceaxis.h"
 
+#include <QFileDialog>
 #include <QStandardItemModel>
+#include <fstream>
+#include <iomanip>
+
+#include <CustomWidgets/informationbox.h>
 
 using namespace std;
 
@@ -183,16 +188,68 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         ui->removeLine->setEnabled(true);
         editLine(line);
         connect(line, &XYPlotConstantLine::editingFinished, [=](){
-            item->setText(line->getDescription());
+            if(line->getPoints().size() < 2) {  // must have 2 points to be a line
+                int index = ui->lineList->currentRow();
+                removeLine(index);
+            } else {
+                item->setText(line->getDescription());
+            }
         });
     });
     connect(ui->removeLine, &QPushButton::clicked, [=](){
-        auto index = ui->lineList->currentRow();
-        delete ui->lineList->takeItem(index);
-        delete plot->constantLines[index];
-        plot->constantLines.erase(plot->constantLines.begin() + index);
-        if(plot->constantLines.size() == 0) {
-            ui->removeLine->setEnabled(false);
+        int index = ui->lineList->currentRow();
+        removeLine(index);
+    });
+    connect(ui->exportLines, &QPushButton::clicked, [=](){
+        QString filename = QFileDialog::getSaveFileName(nullptr, "Save limit lines", "", "Limit files (*.limits)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        if(!filename.endsWith(".limits")) {
+            filename.append(".limits");
+        }
+
+        nlohmann::json jlines;
+        for(auto l : plot->constantLines ) {
+            jlines.push_back(l->toJSON());
+        }
+        nlohmann::json j;
+        j["limitLines"] = jlines;
+
+        ofstream file;
+        file.open(filename.toStdString());
+        file << setw(4) << j << endl;
+        file.close();
+
+    });
+    connect(ui->importLines, &QPushButton::clicked, [=](){
+        QString filename = QFileDialog::getOpenFileName(nullptr, "Load limit lines", "", "Limit files (*.limits)", nullptr, QFileDialog::DontUseNativeDialog);
+        ifstream file;
+        file.open(filename.toStdString());
+        if(!file.is_open()) {
+            qWarning() << "Unable to open file:" << filename;
+            return;
+        }
+        nlohmann::json j;
+        try {
+            file >> j;
+        } catch (exception &e) {
+            InformationBox::ShowError("Error", "Failed to parse file (" + QString(e.what()) + ")");
+            qWarning() << "Parsing of limits file failed: " << e.what();
+            file.close();
+            return;
+        }
+        file.close();
+        if(j.contains("limitLines")) {
+            for(auto jline : j["limitLines"]) {
+                auto line = new XYPlotConstantLine;
+                line->fromJSON(jline);
+                plot->constantLines.push_back(line);
+                auto item = new QListWidgetItem(line->getDescription());
+                ui->lineList->addItem(item);
+
+            }
         }
     });
 
@@ -275,4 +332,16 @@ std::set<YAxis::Type> XYplotAxisDialog::supportedYAxis(XAxis::Type type)
 bool XYplotAxisDialog::isSupported(XAxis::Type type)
 {
     return XAxis::isSupported(type, plot->getModel().getSource());
+}
+
+void XYplotAxisDialog::removeLine(int index) {
+    if (index < 0) {
+        return;
+    }
+    delete ui->lineList->takeItem(index);
+    delete plot->constantLines[index];
+    plot->constantLines.erase(plot->constantLines.begin() + index);
+    if(plot->constantLines.size() == 0) {
+        ui->removeLine->setEnabled(false);
+    }
 }
