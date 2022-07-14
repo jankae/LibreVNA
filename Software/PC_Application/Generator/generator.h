@@ -18,6 +18,8 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    void setAveragingMode(Averaging::Mode mode) override {Q_UNUSED(mode)};
+
 private slots:
     void updateDevice();
 

@@ -28,7 +28,7 @@ public:
     virtual void fromJSON(nlohmann::json j) override;
 
     void updateGraphColors();
-    void setAveragingMode(Averaging::Mode mode);
+    void setAveragingMode(Averaging::Mode mode) override;
 
 
 private:

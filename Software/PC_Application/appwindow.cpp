@@ -290,19 +290,12 @@ AppWindow::AppWindow(QWidget *parent)
             switch (m->getType())
             {
                 case Mode::Type::VNA:
-                    if(p.Acquisition.useMedianAveraging) {
-                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Median);
-                    }
-                    else {
-                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Mean);
-                    }
-                    break;
                 case Mode::Type::SA:
                     if(p.Acquisition.useMedianAveraging) {
-                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Median);
+                        m->setAveragingMode(Averaging::Mode::Median);
                     }
                     else {
-                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Mean);
+                        m->setAveragingMode(Averaging::Mode::Mean);
                     }
                     break;
                 case Mode::Type::SG:
