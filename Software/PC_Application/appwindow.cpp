@@ -932,6 +932,7 @@ int AppWindow::UpdateDeviceList()
         devices.insert(device->serial());
     }
     int available = 0;
+    bool found = false;
     if(devices.size()) {
         for(auto d : devices) {
             if(!parser.value("device").isEmpty() && parser.value("device") != d) {
@@ -947,13 +948,11 @@ int AppWindow::UpdateDeviceList()
             connect(connectAction, &QAction::triggered, [this, d]() {
                ConnectToDevice(d);
             });
-            ui->menuConnect_to->setEnabled(true);
+            found = true;
             available++;
         }
-    } else {
-        // no devices available, disable connection option
-        ui->menuConnect_to->setEnabled(false);
     }
+    ui->menuConnect_to->setEnabled(found);
     qDebug() << "Updated device list, found" << available;
     return available;
 }
