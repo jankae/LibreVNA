@@ -19,6 +19,7 @@ Mode::Mode(AppWindow *window, QString name, QString SCPIname)
     : QObject(window),
       SCPINode(SCPIname),
       window(window),
+      isActive(false),
       name(name),
       central(nullptr)
 {    
@@ -40,6 +41,7 @@ Mode::~Mode()
 
 void Mode::activate()
 {
+    isActive = true;
     qDebug() << "Activating mode" << name;
     // show all mode specific GUI elements
     for(auto t : toolbars) {
@@ -86,6 +88,7 @@ void Mode::activate()
 
 void Mode::deactivate()
 {
+    isActive = false;
     QSettings settings;
     // save dock/toolbar visibility
     for(auto d : docks) {
@@ -110,6 +113,7 @@ void Mode::deactivate()
     }
 
     qDebug() << "Deactivated mode" << name;
+
     if(window->getDevice()) {
         window->getDevice()->SetIdle();
     }

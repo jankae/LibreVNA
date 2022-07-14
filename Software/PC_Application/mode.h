@@ -47,6 +47,7 @@ protected:
 
     virtual void activate(); // derived classes must call Mode::activate before doing anything
     virtual void deactivate(); // derived classes must call Mode::deactivate before returning
+    bool isActive;
 
     void setStatusbarMessage(QString msg);
     // call once the derived class is fully initialized

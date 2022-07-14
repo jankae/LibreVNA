@@ -1,5 +1,4 @@
 #include "generator.h"
-#include "modehandler.h"
 
 #include <QSettings>
 
@@ -56,7 +55,7 @@ void Generator::fromJSON(nlohmann::json j)
 
 void Generator::updateDevice()
 {
-    if(!window->getDevice() || window->getModeHandler()->getActiveMode() != this) {
+    if(!window->getDevice() || isActive != true) {
         // can't update if not connected
         return;
     }
