@@ -27,12 +27,14 @@
 #include "CustomWidgets/informationbox.h"
 #include "Util/app_common.h"
 #include "about.h"
+#include "mode.h"
+#include "modehandler.h"
+#include "modewindow.h"
 
 #include <QDockWidget>
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
-#include <mode.h>
 #include <QDebug>
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -168,6 +170,7 @@ AppWindow::AppWindow(QWidget *parent)
     , appVersion(APP_VERSION)
     , appGitHash(APP_GIT_HASH)
 {
+
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 
@@ -191,6 +194,7 @@ AppWindow::AppWindow(QWidget *parent)
         Preferences::getInstance().load();
     }
     device = nullptr;
+    modeHandler = nullptr;
 
     if(parser.isSet("port")) {
         bool OK;
@@ -227,12 +231,22 @@ AppWindow::AppWindow(QWidget *parent)
         ui->menuToolbars->addAction(t->toggleViewAction());
     }
 
-    // Create GUI modes
+    modeHandler = new ModeHandler(this);
+    new ModeWindow(modeHandler, this);
+
     central = new QStackedWidget;
     setCentralWidget(central);
-    auto vna = new VNA(this);
-    auto generator = new Generator(this);
-    auto spectrumAnalyzer = new SpectrumAnalyzer(this);
+
+    auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+    modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
+    modeHandler->createMode("Signal Generator", Mode::Type::SG);
+    modeHandler->setCurrentIndex(vnaIndex);
+
+    auto setModeStatusbar = [=](const QString &msg) {
+        lModeInfo.setText(msg);
+    };
+
+    connect(modeHandler, &ModeHandler::StatusBarMessageChanged, setModeStatusbar);
 
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
@@ -255,7 +269,7 @@ AppWindow::AppWindow(QWidget *parent)
         LoadSetup(filename);
     });
     connect(ui->actionSave_image, &QAction::triggered, [=](){
-        Mode::getActiveMode()->saveSreenshot();
+        modeHandler->getActiveMode()->saveSreenshot();
     });
 
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
@@ -275,26 +289,18 @@ AppWindow::AppWindow(QWidget *parent)
                 StartTCPServer(p.SCPIServer.port);
             }
         }
-
         // averaging mode may have changed, update for all relevant modes
-        for (auto m : Mode::getModes())
+        for (auto m : modeHandler->getModes())
         {
             switch (m->getType())
             {
                 case Mode::Type::VNA:
-                    if(p.Acquisition.useMedianAveraging) {
-                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Median);
-                    }
-                    else {
-                        static_cast<VNA*>(m)->setAveragingMode(Averaging::Mode::Mean);
-                    }
-                    break;
                 case Mode::Type::SA:
                     if(p.Acquisition.useMedianAveraging) {
-                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Median);
+                        m->setAveragingMode(Averaging::Mode::Median);
                     }
                     else {
-                        static_cast<SpectrumAnalyzer*>(m)->setAveragingMode(Averaging::Mode::Mean);
+                        m->setAveragingMode(Averaging::Mode::Mean);
                     }
                     break;
                 case Mode::Type::SG:
@@ -307,7 +313,7 @@ AppWindow::AppWindow(QWidget *parent)
         // acquisition frequencies may have changed, update
         UpdateAcquisitionFrequencies();
 
-        auto active = Mode::getActiveMode();
+        auto active = modeHandler->getActiveMode();
         if (active)
         {
             active->updateGraphColors();
@@ -338,9 +344,6 @@ AppWindow::AppWindow(QWidget *parent)
 
     SetupSCPI();
 
-    // Set default mode
-    vna->activate();
-
     auto pref = Preferences::getInstance();
     if(pref.Startup.UseSetupFile) {
         LoadSetup(pref.Startup.SetupFile);
@@ -356,7 +359,8 @@ AppWindow::AppWindow(QWidget *parent)
         LoadSetup(parser.value("setup"));
     }
     if(parser.isSet("cal")) {
-        vna->LoadCalibration(parser.value("cal"));
+        VNA* mode = static_cast<VNA*>(modeHandler->findFirstOfType(Mode::Type::VNA));
+        mode->LoadCalibration(parser.value("cal"));
     }
     if(!parser.isSet("no-gui")) {
         InformationBox::setGUI(true);
@@ -380,16 +384,16 @@ void AppWindow::closeEvent(QCloseEvent *event)
     if(pref.Startup.UseSetupFile && pref.Startup.AutosaveSetupFile) {
         SaveSetup(pref.Startup.SetupFile);
     }
-    for(auto m : Mode::getModes()) {
-        m->shutdown();
-    }
+    modeHandler->shutdown();
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
     // deactivate currently used mode (stores mode state in settings)
-    if(Mode::getActiveMode()) {
-        Mode::getActiveMode()->deactivate();
+    if(modeHandler->getActiveMode()) {
+        modeHandler->deactivate(modeHandler->getActiveMode());
     }
     delete device;
+    delete modeHandler;
+    modeHandler = nullptr;
     pref.store();
     QMainWindow::closeEvent(event);
 }
@@ -421,8 +425,8 @@ bool AppWindow::ConnectToDevice(QString serial)
         ui->actionFrequency_Calibration->setEnabled(true);
 
         UpdateAcquisitionFrequencies();
-        if (Mode::getActiveMode()) {
-            Mode::getActiveMode()->initializeDevice();
+        if (modeHandler->getActiveMode()) {
+            modeHandler->getActiveMode()->initializeDevice();
         }
         UpdateReference();
 
@@ -460,8 +464,8 @@ void AppWindow::DisconnectDevice()
         deviceActionGroup->checkedAction()->setChecked(false);
     }
     UpdateStatusBar(DeviceStatusBar::Disconnected);
-    if(Mode::getActiveMode()) {
-        Mode::getActiveMode()->deviceDisconnected();
+    if(modeHandler->getActiveMode()) {
+        modeHandler->getActiveMode()->deviceDisconnected();
     }
     qDebug() << "Disconnected device";
 }
@@ -591,22 +595,23 @@ void AppWindow::SetupSCPI()
         }
         Mode *mode = nullptr;
         if (params[0] == "VNA") {
-            mode = Mode::findFirstOfType(Mode::Type::VNA);
+            mode = modeHandler->findFirstOfType(Mode::Type::VNA);
         } else if(params[0] == "GEN") {
-            mode = Mode::findFirstOfType(Mode::Type::SG);
+            mode = modeHandler->findFirstOfType(Mode::Type::SG);
         } else if(params[0] == "SA") {
-            mode = Mode::findFirstOfType(Mode::Type::SA);
+            mode = modeHandler->findFirstOfType(Mode::Type::SA);
         } else {
             return "INVALID MDOE";
         }
         if(mode) {
-            mode->activate();
+            int index = modeHandler->findIndex(mode);
+            modeHandler->setCurrentIndex(index);
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {
             return SCPI::getResultName(SCPI::Result::Error);
         }
     }, [=](QStringList) -> QString {
-        auto active = Mode::getActiveMode();
+        auto active = modeHandler->getActiveMode();
         if(active) {
             switch(active->getType()) {
             case Mode::Type::VNA: return "VNA";
@@ -968,7 +973,7 @@ void AppWindow::StartManualControl()
     connect(manual, &QDialog::finished, [=](){
         manual = nullptr;
         if(device) {
-            Mode::getActiveMode()->initializeDevice();
+            modeHandler->getActiveMode()->initializeDevice();
         }
     });
     if(AppWindow::showGUI()) {
@@ -1048,7 +1053,7 @@ void AppWindow::DeviceStatusUpdated()
 
 void AppWindow::SourceCalibrationDialog()
 {
-    auto d = new SourceCalDialog(device);
+    auto d = new SourceCalDialog(device, modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1056,7 +1061,7 @@ void AppWindow::SourceCalibrationDialog()
 
 void AppWindow::ReceiverCalibrationDialog()
 {
-    auto d = new ReceiverCalDialog(device);
+    auto d = new ReceiverCalDialog(device, modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1064,7 +1069,7 @@ void AppWindow::ReceiverCalibrationDialog()
 
 void AppWindow::FrequencyCalibrationDialog()
 {
-    auto d = new FrequencyCalDialog(device);
+    auto d = new FrequencyCalDialog(device, modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1087,7 +1092,7 @@ nlohmann::json AppWindow::SaveSetup()
 {
     nlohmann::json j;
     nlohmann::json jm;
-    for(auto m : Mode::getModes()) {
+    for(auto m : modeHandler->getModes()) {
         nlohmann::json jmode;
         jmode["type"] = Mode::TypeToName(m->getType()).toStdString();
         jmode["name"] = m->getName().toStdString();
@@ -1095,8 +1100,8 @@ nlohmann::json AppWindow::SaveSetup()
         jm.push_back(jmode);
     }
     j["Modes"] = jm;
-    if(Mode::getActiveMode()) {
-        j["activeMode"] = Mode::getActiveMode()->getName().toStdString();
+    if(modeHandler->getActiveMode()) {
+        j["activeMode"] = modeHandler->getActiveMode()->getName().toStdString();
     }
     nlohmann::json ref;
 
@@ -1143,28 +1148,32 @@ void AppWindow::LoadSetup(nlohmann::json j)
         toolbars.reference.type->setCurrentIndex(index);
         toolbars.reference.outFreq->setCurrentText(QString::fromStdString(j["Reference"].value("Output", "Off")));
     }
-    while(Mode::getModes().size() > 0) {
-        delete Mode::getModes()[0];
-    }
 
-    // old style VNA/Generator/Spectrum Analyzer settings
+    modeHandler->closeModes();
+
+    /* old style VNA/Generator/Spectrum Analyzer settings,
+     * no more than one instance in each mode running */
     if(j.contains("VNA")) {
-        auto vna = new VNA(this);
+        auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+        auto *vna = static_cast<VNA*>(modeHandler->getMode(vnaIndex));
         vna->fromJSON(j["VNA"]);
     }
     if(j.contains("Generator")) {
-        auto generator = new Generator(this);
+        auto sgIndex = modeHandler->createMode("Generator", Mode::Type::SG);
+        auto *generator = static_cast<Generator*>(modeHandler->getMode(sgIndex));
         generator->fromJSON(j["Generator"]);
     }
     if(j.contains("SpectrumAnalyzer")) {
-        auto spectrumAnalyzer = new SpectrumAnalyzer(this);
+        auto saIndex = modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
+        auto *spectrumAnalyzer = static_cast<SpectrumAnalyzer*>(modeHandler->getMode(saIndex));
         spectrumAnalyzer->fromJSON(j["SpectrumAnalyzer"]);
     }
     if(j.contains("Modes")) {
         for(auto jm : j["Modes"]) {
             auto type = Mode::TypeFromName(QString::fromStdString(jm.value("type", "Invalid")));
             if(type != Mode::Type::Last && jm.contains("settings")) {
-                auto m = Mode::createNew(this, QString::fromStdString(jm.value("name", "")), type);
+                auto index = modeHandler->createMode(QString::fromStdString(jm.value("name", "")), type);
+                auto m = modeHandler->getMode(index);
                 m->fromJSON(jm["settings"]);
             }
         }
@@ -1172,15 +1181,16 @@ void AppWindow::LoadSetup(nlohmann::json j)
 
     // activate the correct mode
     QString modeName = QString::fromStdString(j.value("activeMode", ""));
-    for(auto m : Mode::getModes()) {
+    for(auto m : modeHandler->getModes()) {
         if(m->getName() == modeName) {
-            m->activate();
+            auto index = modeHandler->findIndex(m);
+            modeHandler->setCurrentIndex(index);
             break;
         }
     }
     // if no mode is activated, there might have been a problem with the setup file. Activate the first mode anyway, to prevent invalid GUI state
-    if(!Mode::getActiveMode() && Mode::getModes().size() > 0) {
-        Mode::getModes()[0]->activate();
+    if(!modeHandler->getActiveMode() && modeHandler->getModes().size() > 0) {
+        modeHandler->activate(modeHandler->getModes()[0]);
     }
 }
 
@@ -1193,6 +1203,12 @@ QStackedWidget *AppWindow::getCentral() const
 {
     return central;
 }
+
+ModeHandler* AppWindow::getModeHandler() const
+{
+    return modeHandler;
+}
+
 
 Ui::MainWindow *AppWindow::getUi() const
 {
@@ -1273,3 +1289,4 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
         break;
     }
 }
+

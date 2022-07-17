@@ -433,7 +433,7 @@ using namespace std;
 
 void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
 {
-    if(Mode::getActiveMode() != this) {
+    if(isActive != true) {
         return;
     }
 
@@ -570,7 +570,7 @@ void SpectrumAnalyzer::SettingsChanged()
         }
     }
 
-    if(window->getDevice() && Mode::getActiveMode() == this) {
+    if(window->getDevice() && isActive) {
         window->getDevice()->Configure(settings, [=](Device::TransmissionResult res){
             // device received command
             changingSettings = false;

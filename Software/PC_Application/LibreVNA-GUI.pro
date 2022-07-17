@@ -123,7 +123,9 @@ HEADERS += \
     averaging.h \
     csv.h \
     json.hpp \
+    modehandler.h \
     mode.h \
+    modewindow.h \
     preferences.h \
     savable.h \
     scpi.h \
@@ -242,7 +244,9 @@ SOURCES += \
     averaging.cpp \
     csv.cpp \
     main.cpp \
+    modehandler.cpp \
     mode.cpp \
+    modewindow.cpp \
     preferences.cpp \
     scpi.cpp \
     tcpserver.cpp \

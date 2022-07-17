@@ -1,7 +1,7 @@
 #include "receivercaldialog.h"
 
-ReceiverCalDialog::ReceiverCalDialog(Device *dev)
-    : AmplitudeCalDialog(dev)
+ReceiverCalDialog::ReceiverCalDialog(Device *dev, ModeHandler *handler)
+    : AmplitudeCalDialog(dev, handler)
 {
     setWindowTitle("Receiver Calibration Dialog");
     LoadFromDevice();

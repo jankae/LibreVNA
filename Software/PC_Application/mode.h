@@ -16,6 +16,7 @@
 class Mode : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
+    friend class ModeHandler;
 public:
     enum class Type {
         VNA,
@@ -27,13 +28,10 @@ public:
     Mode(AppWindow *window, QString name, QString SCPIname);
     ~Mode();
 
-    virtual void activate(); // derived classes must call Mode::activate before doing anything
-    virtual void deactivate(); // derived classes must call Mode::deactivate before returning
     virtual void shutdown(){}; // called when the application is about to exit
     QString getName() const;
     void setName(const QString &value);
     void updateGraphColors();
-    static Mode *getActiveMode();
     static QString TypeToName(Type t);
     static Type TypeFromName(QString s);
     virtual Type getType() = 0;
@@ -43,14 +41,16 @@ public:
 
     virtual void saveSreenshot();
 
-    static Mode *createNew(AppWindow *window, QString name, Type t);
-    static bool nameAllowed(QString name);
-    static std::vector<Mode *> getModes();
-    static Mode* findFirstOfType(Type t);
+    virtual void setAveragingMode(Averaging::Mode mode) = 0;
 
 signals:
     void statusbarMessage(QString msg);
 protected:
+
+    virtual void activate(); // derived classes must call Mode::activate before doing anything
+    virtual void deactivate(); // derived classes must call Mode::deactivate before returning
+    bool isActive;
+
     void setStatusbarMessage(QString msg);
     // call once the derived class is fully initialized
     void finalize(QWidget *centralWidget);
@@ -60,14 +60,10 @@ protected:
     std::set<QDockWidget*> docks;
 
 private:
-    int findTabIndex();
-    static std::vector<Mode*> modes;
-    static Mode *activeMode;
-    static QTabBar *tabbar;
-    static QWidget *cornerWidget;
 //    static QButtonGroup *modeButtonGroup;
     QString name;
     QString statusbarMsg;
+
     QWidget *central;
 };
 

@@ -2,6 +2,7 @@
 #define SOURCECALDIALOG_H
 
 #include "amplitudecaldialog.h"
+#include "modehandler.h"
 
 #include <QObject>
 
@@ -9,7 +10,7 @@ class SourceCalDialog : public AmplitudeCalDialog
 {
     Q_OBJECT
 public:
-    SourceCalDialog(Device *dev);
+    SourceCalDialog(Device *dev, ModeHandler *handler);
 protected:
     Protocol::PacketType requestCommand() override { return Protocol::PacketType::RequestSourceCal; }
     Protocol::PacketType pointType() override { return Protocol::PacketType::SourceCalPoint; }

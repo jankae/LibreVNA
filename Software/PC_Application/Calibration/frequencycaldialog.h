@@ -2,6 +2,7 @@
 #define FREQUENCYCALDIALOG_H
 
 #include "Device/device.h"
+#include "modehandler.h"
 #include "mode.h"
 
 #include <QDialog>
@@ -15,7 +16,7 @@ class FrequencyCalDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FrequencyCalDialog(Device *dev, QWidget *parent = nullptr);
+    explicit FrequencyCalDialog(Device *dev, ModeHandler *handler, QWidget *parent = nullptr);
     ~FrequencyCalDialog();
 
 private:

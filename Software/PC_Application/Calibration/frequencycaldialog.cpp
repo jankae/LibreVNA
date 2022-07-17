@@ -2,7 +2,7 @@
 
 #include "ui_frequencycaldialog.h"
 
-FrequencyCalDialog::FrequencyCalDialog(Device *dev, QWidget *parent) :
+FrequencyCalDialog::FrequencyCalDialog(Device *dev,  ModeHandler *handler, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FrequencyCalDialog),
     dev(dev)
@@ -22,9 +22,9 @@ FrequencyCalDialog::FrequencyCalDialog(Device *dev, QWidget *parent) :
         p.frequencyCorrection.ppm = ui->ppm->value();
         dev->SendPacket(p);
         // force restart of current mode for setting to take effect
-        auto activeMode = Mode::getActiveMode();
-        activeMode->deactivate();
-        activeMode->activate();
+        auto activeMode = handler->getActiveMode();
+        handler->deactivate(activeMode);
+        handler->activate(activeMode);
         accept();
         delete this;
     });

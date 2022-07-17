@@ -801,7 +801,7 @@ using namespace std;
 
 void VNA::NewDatapoint(Protocol::Datapoint d)
 {
-    if(Mode::getActiveMode() != this) {
+    if(isActive != true) {
         // ignore
         return;
     }
@@ -972,7 +972,7 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (Device::Transmis
         s.cdbm_excitation_stop = stop * 100;
         s.logSweep = false;
     }
-    if(window->getDevice() && Mode::getActiveMode() == this) {
+    if(window->getDevice() && isActive) {
         if(s.excitePort1 == 0 && s.excitePort2 == 0) {
             // no signal at either port, just set the device to idle
             window->getDevice()->SetIdle();
@@ -1486,7 +1486,7 @@ void VNA::SetupSCPI()
         return ret;
     }));
     scpi_cal->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
-        if(params.size() != 1 || CalibrationMeasurementActive() || !window->getDevice() || Mode::getActiveMode() != this) {
+        if(params.size() != 1 || CalibrationMeasurementActive() || !window->getDevice() || isActive != true) {
             // no measurement specified, still busy or invalid mode
             return SCPI::getResultName(SCPI::Result::Error);
         } else {

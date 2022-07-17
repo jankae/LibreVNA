@@ -31,6 +31,7 @@ class MainWindow;
 class VNA;
 class Generator;
 class SpectrumAnalyzer;
+class ModeHandler;
 
 class AppWindow : public QMainWindow
 {
@@ -41,6 +42,7 @@ public:
 
     Ui::MainWindow *getUi() const;
     QStackedWidget *getCentral() const;
+    ModeHandler* getModeHandler() const;
     Device*&getDevice();
 
     const QString& getAppVersion() const;
@@ -98,6 +100,7 @@ private:
         } reference;
     } toolbars;
 
+    ModeHandler *modeHandler;
     Device *device;
     DeviceLog deviceLog;
     QString deviceSerial;

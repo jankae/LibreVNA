@@ -17,15 +17,16 @@
 using namespace std;
 using namespace nlohmann;
 
-AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
+AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AmplitudeCalDialog),
     dev(dev),
+    modeHandler(handler),
     model(this),
     mode(CalibrationMode::BothPorts)
 {
-    activeMode = Mode::getActiveMode();
-    activeMode->deactivate();
+    auto activeMode = modeHandler->getActiveMode();
+    modeHandler->deactivate(activeMode);
     dev->SetIdle();
     ui->setupUi(this);
     ui->view->setModel(&model);
@@ -137,7 +138,8 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, QWidget *parent) :
 AmplitudeCalDialog::~AmplitudeCalDialog()
 {
     delete ui;
-    activeMode->activate();
+    auto activeMode = modeHandler->getActiveMode();
+    modeHandler->activate(activeMode);
 }
 
 void AmplitudeCalDialog::reject()

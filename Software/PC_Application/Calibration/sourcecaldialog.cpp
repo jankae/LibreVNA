@@ -2,8 +2,8 @@
 
 #include <QDebug>
 
-SourceCalDialog::SourceCalDialog(Device *dev)
-    : AmplitudeCalDialog(dev)
+SourceCalDialog::SourceCalDialog(Device *dev, ModeHandler *handler)
+    : AmplitudeCalDialog(dev, handler)
 {
     setWindowTitle("Source Calibration Dialog");
     LoadFromDevice();
