@@ -238,8 +238,8 @@ AppWindow::AppWindow(QWidget *parent)
     setCentralWidget(central);
 
     auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
-    modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
     modeHandler->createMode("Signal Generator", Mode::Type::SG);
+    modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
     modeHandler->setCurrentIndex(vnaIndex);
 
     auto setModeStatusbar = [=](const QString &msg) {

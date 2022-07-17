@@ -25,7 +25,7 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidge
     model(this),
     mode(CalibrationMode::BothPorts)
 {
-    auto activeMode = modeHandler->getActiveMode();
+    activeMode = modeHandler->getActiveMode();
     modeHandler->deactivate(activeMode);
     dev->SetIdle();
     ui->setupUi(this);
@@ -138,7 +138,6 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidge
 AmplitudeCalDialog::~AmplitudeCalDialog()
 {
     delete ui;
-    auto activeMode = modeHandler->getActiveMode();
     modeHandler->activate(activeMode);
 }
 

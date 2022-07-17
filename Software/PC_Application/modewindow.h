@@ -7,7 +7,7 @@ class ModeWindow: public QWidget
 {
     Q_OBJECT
 public:
-    explicit ModeWindow(ModeHandler* handler, AppWindow* aw, QWidget *parent = nullptr);
+    explicit ModeWindow(ModeHandler* handler, AppWindow* aw);
     ~ModeWindow();
 
 private:

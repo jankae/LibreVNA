@@ -101,6 +101,7 @@ protected:
     std::vector<CorrectionPoint> points;
     Ui::AmplitudeCalDialog *ui;
     Device *dev;
+    Mode *activeMode;
     ModeHandler *modeHandler;
     AmplitudeModel model;
     bool edited;

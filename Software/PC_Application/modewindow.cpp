@@ -8,8 +8,8 @@
 #include <QPushButton>
 #include <QMenuBar>
 
-ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw, QWidget* parent):
-    QWidget(parent),
+ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw):
+    QWidget(aw),
     handler(handler),
     aw(aw)
 {
