@@ -4,6 +4,7 @@
 #include "Traces/tracexyplot.h"
 #include "Traces/tracesmithchart.h"
 #include "Traces/tracewaterfall.h"
+#include "Traces/tracepolarchart.h"
 
 #include <QDebug>
 
@@ -72,6 +73,9 @@ nlohmann::json TileWidget::toJSON()
         case TracePlot::Type::Waterfall:
             plotname = "Waterfall";
             break;
+        case TracePlot::Type::PolarChart:
+            plotname = "PolarChart";
+            break;
         }
         j["plot"] = plotname;
         j["plotsettings"] = content->toJSON();
@@ -102,6 +106,8 @@ void TileWidget::fromJSON(nlohmann::json j)
             content = new TraceXYPlot(model);
         } else if (plotname == "Waterfall"){
             content = new TraceWaterfall(model);
+        } else if (plotname == "PolarChart"){
+            content = new TracePolarChart(model);
         }
         if(content) {
             setContent(content);
@@ -309,5 +315,10 @@ void TileWidget::plotDeleted()
 void TileWidget::on_bWaterfall_clicked()
 {
     setContent(new TraceWaterfall(model));
+}
+
+void TileWidget::on_bPolarchart_clicked()
+{
+    setContent(new TracePolarChart(model));
 }
 

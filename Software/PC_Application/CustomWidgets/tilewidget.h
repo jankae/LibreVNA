@@ -45,6 +45,7 @@ private slots:
     void plotDeleted();
 
     void on_bWaterfall_clicked();
+    void on_bPolarchart_clicked();
 
 private:
     TileWidget(TraceModel &model, TileWidget &parent);
