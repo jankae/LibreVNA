@@ -17,6 +17,7 @@
 #include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
+#include "sadata.h"
 
 #include <QDockWidget>
 #include <QDesktopWidget>
@@ -330,6 +331,7 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     acq["detector"] = DetectorToString((Detector) settings.Detector).toStdString();
     acq["signal ID"] = settings.SignalID ? true : false;
     sweep["acquisition"] = acq;
+    sweep["averages"] = averages;
     nlohmann::json tracking;
     tracking["enabled"] = settings.trackingGenerator ? true : false;
     tracking["port"] = settings.trackingGeneratorPort ? 2 : 1;
@@ -425,6 +427,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
                 EnableNormalization(false);
             }
         }
+        SetAveraging(sweep.value("averages", 0));
         SetSingleSweep(sweep.value("single", singleSweep));
     }
 }
@@ -455,15 +458,17 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
         return;
     }
 
-    d = average.process(d);
+    auto sd = SAData(d);
+
+    sd = average.process(sd);
 
     if(settings.f_start == settings.f_stop) {
         // keep track of first point time
-        if(d.pointNum == 0) {
-            firstPointTime = d.us;
-            d.us = 0;
+        if(sd.pointNum == 0) {
+            firstPointTime = sd.time;
+            sd.time = 0;
         } else {
-            d.us -= firstPointTime;
+            sd.time -= firstPointTime;
         }
     }
 
@@ -472,8 +477,8 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
             // this is the last averaging sweep, use values for normalization
             if(normalize.port1Correction.size() > 0 || d.pointNum == 0) {
                 // add measurement
-                normalize.port1Correction.push_back(d.port1);
-                normalize.port2Correction.push_back(d.port2);
+                normalize.port1Correction.push_back(abs(sd.port1));
+                normalize.port2Correction.push_back(abs(sd.port2));
                 if(d.pointNum == settings.pointNum - 1) {
                     // this was the last point
                     normalize.measuring = false;
@@ -490,14 +495,14 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
     }
 
     if(normalize.active) {
-        d.port1 /= normalize.port1Correction[d.pointNum];
-        d.port2 /= normalize.port2Correction[d.pointNum];
+        sd.port1 /= normalize.port1Correction[d.pointNum];
+        sd.port2 /= normalize.port2Correction[d.pointNum];
         double corr = pow(10.0, normalize.Level->value() / 20.0);
-        d.port1 *= corr;
-        d.port2 *= corr;
+        sd.port1 *= corr;
+        sd.port2 *= corr;
     }
 
-    traceModel.addSAData(d, settings);
+    traceModel.addSAData(sd, settings);
     emit dataChanged();
     if(d.pointNum == settings.pointNum - 1) {
         UpdateAverageCount();

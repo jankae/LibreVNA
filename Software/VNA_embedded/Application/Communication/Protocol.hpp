@@ -4,7 +4,7 @@
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 11;
+static constexpr uint16_t Version = 12;
 
 #pragma pack(push, 1)
 
@@ -150,8 +150,8 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 };
 
 using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
-	float port1;
-	float port2;
+	float real_port1, imag_port1;
+	float real_port2, imag_port2;
 	union {
 		struct {
 			// for non-zero span

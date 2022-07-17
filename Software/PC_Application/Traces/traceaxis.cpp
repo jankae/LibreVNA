@@ -354,6 +354,7 @@ std::set<YAxis::Type> YAxis::getSupported(XAxis::Type type, TraceModel::DataSour
         case XAxis::Type::Frequency:
             ret.insert(YAxis::Type::Magnitude);
             ret.insert(YAxis::Type::MagnitudedBuV);
+            ret.insert(YAxis::Type::Phase);
             break;
         default:
             break;

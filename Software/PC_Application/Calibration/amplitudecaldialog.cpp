@@ -425,7 +425,7 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
 
 void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res)
 {
-    MeasurementResult m = {.port1 = Util::SparamTodB(res.port1), .port2 = Util::SparamTodB(res.port2)};
+    MeasurementResult m = {.port1 = Util::SparamTodB(complex<double>(res.real_port1, res.imag_port1)), .port2 = Util::SparamTodB(complex<double>(res.real_port2, res.imag_port2))};
     sweepMeasurements.push_back(m);
     if(res.pointNum == automaticSweepPoints - 1) {
         // sweep finished, find maximum for each port

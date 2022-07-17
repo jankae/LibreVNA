@@ -22,13 +22,17 @@ static uint32_t binSize;
 static uint8_t signalIDstep;
 static uint32_t sampleNum;
 static Protocol::PacketInfo p;
+
+// Result values
+static std::complex<double> res_port1, res_port2;
+
 static bool active = false;
 static uint32_t lastLO2;
 static uint32_t actualRBW;
 static uint16_t DFTpoints;
 static bool negativeDFT; // if true, a positive frequency shift at input results in a negative shift at the 2.IF. Handle DFT accordingly
 
-static float port1Measurement[FPGA::DFTbins], port2Measurement[FPGA::DFTbins];
+static std::complex<float> port1Measurement[FPGA::DFTbins], port2Measurement[FPGA::DFTbins];
 
 static uint8_t signalIDsteps;
 static std::array<uint8_t, 4> signalIDprescalers;
@@ -274,15 +278,15 @@ bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 	FPGA::AbortSweep();
 
 	for(uint16_t i=0;i<DFTpoints;i++) {
-		float port1, port2;
+		std::complex<double> port1, port2;
 		if (s.UseDFT) {
 			// use DFT result
 			auto dft = FPGA::ReadDFTResult();
 			port1 = dft.P1;
 			port2 = dft.P2;
 		} else {
-			port1 = fabs(std::complex<float>(result.P1I, result.P1Q));
-			port2 = fabs(std::complex<float>(result.P2I, result.P2Q));
+			port1 = std::complex<float>(result.P1I, result.P1Q);
+			port2 = std::complex<float>(result.P2I, result.P2Q);
 		}
 		port1 /= sampleNum;
 		port2 /= sampleNum;
@@ -293,10 +297,11 @@ bool SA::MeasurementDone(const FPGA::SamplingResult &result) {
 			index = DFTpoints - i - 1;
 		}
 
-		if(port1 < port1Measurement[index]) {
+		// Signal ID: only keep the lowest measurement
+		if(abs(port1) < abs(port1Measurement[index])) {
 			port1Measurement[index] = port1;
 		}
-		if(port2 < port2Measurement[index]) {
+		if(abs(port2) < abs(port2Measurement[index])) {
 			port2Measurement[index] = port2;
 		}
 	}
@@ -332,46 +337,46 @@ void SA::Work() {
 			switch(det) {
 			case Detector::PosPeak:
 				if(pointInBin == 0) {
-					p.spectrumResult.port1 = std::numeric_limits<float>::min();
-					p.spectrumResult.port2 = std::numeric_limits<float>::min();
+					res_port1 = std::numeric_limits<std::complex<float>>::min();
+					res_port2 = std::numeric_limits<std::complex<float>>::min();
 				}
-				if(port1Measurement[i] > p.spectrumResult.port1) {
-					p.spectrumResult.port1 = port1Measurement[i];
+				if(abs(port1Measurement[i]) > abs(res_port1)) {
+					res_port1 = port1Measurement[i];
 				}
-				if(port2Measurement[i] > p.spectrumResult.port2) {
-					p.spectrumResult.port2 = port2Measurement[i];
+				if(abs(port2Measurement[i]) > abs(res_port2)) {
+					res_port2 = port2Measurement[i];
 				}
 				break;
 			case Detector::NegPeak:
 				if(pointInBin == 0) {
-					p.spectrumResult.port1 = std::numeric_limits<float>::max();
-					p.spectrumResult.port2 = std::numeric_limits<float>::max();
+					res_port1 = std::complex<float>(std::numeric_limits<float>::max());
+					res_port2 = std::complex<float>(std::numeric_limits<float>::max());
 				}
-				if(port1Measurement[i] < p.spectrumResult.port1) {
-					p.spectrumResult.port1 = port1Measurement[i];
+				if(abs(port1Measurement[i]) < abs(res_port1)) {
+					res_port1 = port1Measurement[i];
 				}
-				if(port2Measurement[i] < p.spectrumResult.port2) {
-					p.spectrumResult.port2 = port2Measurement[i];
+				if(abs(port2Measurement[i]) < abs(res_port2)) {
+					res_port2 = port2Measurement[i];
 				}
 				break;
 			case Detector::Sample:
 				if(pointInBin <= binSize / 2) {
 					// still in first half of bin, simply overwrite
-					p.spectrumResult.port1 = port1Measurement[i];
-					p.spectrumResult.port2 = port2Measurement[i];
+					res_port1 = port1Measurement[i];
+					res_port2 = port2Measurement[i];
 				}
 				break;
 			case Detector::Average:
 				if(pointInBin == 0) {
-					p.spectrumResult.port1 = 0;
-					p.spectrumResult.port2 = 0;
+					res_port1 = 0;
+					res_port2 = 0;
 				}
-				p.spectrumResult.port1 += port1Measurement[i];
-				p.spectrumResult.port2 += port2Measurement[i];
+				res_port1 += port1Measurement[i];
+				res_port2 += port2Measurement[i];
 				if(lastPointInBin) {
 					// calculate average
-					p.spectrumResult.port1 /= binSize;
-					p.spectrumResult.port2 /= binSize;
+					res_port1 /= binSize;
+					res_port2 /= binSize;
 				}
 				break;
 			case Detector::Normal:
@@ -396,13 +401,17 @@ void SA::Work() {
 					p.spectrumResult.frequency = s.f_start + (s.f_stop - s.f_start) * binIndex / (s.pointNum - 1);
 				}
 				// scale approximately (constant determined empirically)
-				p.spectrumResult.port1 /= 253000000.0;
-				p.spectrumResult.port2 /= 253000000.0;
+				res_port1 /= 253000000.0;
+				res_port2 /= 253000000.0;
 				if (s.applyReceiverCorrection) {
 					auto correction = Cal::ReceiverCorrection(p.spectrumResult.frequency);
-					p.spectrumResult.port1 *= powf(10.0f, (float) correction.port1 / 100.0f / 20.0f);
-					p.spectrumResult.port2 *= powf(10.0f, (float) correction.port2 / 100.0f / 20.0f);
+					res_port1 *= powf(10.0f, (float) correction.port1 / 100.0f / 20.0f);
+					res_port2 *= powf(10.0f, (float) correction.port2 / 100.0f / 20.0f);
 				}
+				p.spectrumResult.real_port1 = real(res_port1);
+				p.spectrumResult.imag_port1 = imag(res_port1);
+				p.spectrumResult.real_port2 = real(res_port2);
+				p.spectrumResult.imag_port2 = imag(res_port2);
 				p.spectrumResult.pointNum = binIndex;
 				Communication::Send(p);
 			}

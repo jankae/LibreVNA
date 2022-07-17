@@ -452,11 +452,9 @@ FPGA::DFTResult FPGA::ReadDFTResult() {
 	int64_t p1real = assembleSampleResultValue(&recv[18]);
 //	LOG_INFO("DFT raw: %ld, %ld, %ld, %ld", (int32_t) p1real, (int32_t) p1imag, (int32_t) p2real, (int32_t) p2imag);
 //	Log_Flush();
-	auto p1 = std::complex<float>(p1real, p1imag);
-	auto p2 = std::complex<float>(p2real, p2imag);
 	DFTResult res;
+	res.P1 = std::complex<float>(p1real, p1imag);
+	res.P2 = std::complex<float>(p2real, p2imag);
 //	LOG_INFO("DFT: %ld, %ld, %ld, %ld", (int32_t) p1.real(), (int32_t) p1.imag(), (int32_t) p2.real(), (int32_t) p2.imag());
-	res.P1 = std::abs(p1);
-	res.P2 = std::abs(p2);
 	return res;
 }

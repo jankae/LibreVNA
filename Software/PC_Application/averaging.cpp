@@ -104,7 +104,7 @@ VNAData Averaging::process(VNAData d)
     return d;
 }
 
-Protocol::SpectrumAnalyzerResult Averaging::process(Protocol::SpectrumAnalyzerResult d)
+SAData Averaging::process(SAData d)
 {
     if (d.pointNum == avg.size()) {
         // add moving average entry
@@ -123,16 +123,21 @@ Protocol::SpectrumAnalyzerResult Averaging::process(Protocol::SpectrumAnalyzerRe
             deque->pop_front();
         }
 
+        if(averages == 1) {
+            // no need for any calculation, no averaging set
+            return d;
+        }
+
         switch(mode) {
         case Mode::Mean: {
             // calculate average
             complex<double> sum[2];
             for(auto s : *deque) {
-                sum[0] += s[0];
-                sum[1] += s[1];
+                sum[0] += abs(s[0]);
+                sum[1] += abs(s[1]);
             }
-            d.port1 = abs(sum[0] / (double) (deque->size()));
-            d.port2 = abs(sum[1] / (double) (deque->size()));
+            d.port1 = sum[0] / (double) (deque->size());
+            d.port2 = sum[1] / (double) (deque->size());
         }
             break;
         case Mode::Median: {
@@ -143,12 +148,12 @@ Protocol::SpectrumAnalyzerResult Averaging::process(Protocol::SpectrumAnalyzerRe
             port2.reserve(size);
             for(auto d : *deque) {
                 port1.insert(upper_bound(port1.begin(), port1.end(), abs(d[0])), abs(d[0]));
-                port2.insert(upper_bound(port2.begin(), port2.end(), abs(d[0])), abs(d[0]));
+                port2.insert(upper_bound(port2.begin(), port2.end(), abs(d[1])), abs(d[1]));
             }
             if(size & 0x01) {
                 // odd number of samples
                 d.port1 = port1[size / 2];
-                d.port2 = port1[size / 2];
+                d.port2 = port2[size / 2];
             } else {
                 // even number, use average of middle samples
                 d.port1 = (port1[size / 2 - 1] + port1[size / 2]) / 2;

@@ -737,6 +737,7 @@ nlohmann::json VNA::toJSON()
     sweep["power"] = power;
     sweep["points"] = settings.npoints;
     sweep["IFBW"] = settings.bandwidth;
+    sweep["averages"] = averages;
     j["sweep"] = sweep;
 
     j["traces"] = traceModel.toJSON();
@@ -793,6 +794,7 @@ void VNA::fromJSON(nlohmann::json j)
             type = SweepType::Frequency;
         }
         SetSweepType(type);
+        SetAveraging(sweep.value("averages", 0));
         SetSingleSweep(sweep.value("single", singleSweep));
     }
 }

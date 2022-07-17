@@ -5,6 +5,7 @@
 #include "savable.h"
 #include "trace.h"
 #include "VNA/vnadata.h"
+#include "SpectrumAnalyzer/sadata.h"
 
 #include <QAbstractTableModel>
 #include <vector>
@@ -66,7 +67,7 @@ signals:
 public slots:
     void clearLiveData();
     void addVNAData(const VNAData& d, TraceMath::DataType datatype);
-    void addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings);
+    void addSAData(const SAData& d, const Protocol::SpectrumAnalyzerSettings& settings);
 
 private:
     DataSource source;

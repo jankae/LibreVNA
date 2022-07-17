@@ -250,7 +250,7 @@ void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
     }
 }
 
-void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings)
+void TraceModel::addSAData(const SAData &d, const Protocol::SpectrumAnalyzerSettings& settings)
 {
     source = DataSource::SA;
     for(auto t : traces) {
@@ -260,13 +260,13 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
             if(settings.f_start == settings.f_stop) {
                 // in zerospan mode, insert data by index
                 index = d.pointNum;
-                td.x = (double) d.us / 1000000.0;
+                td.x = (double) d.time / 1000000.0;
             } else {
                 td.x = d.frequency;
             }
             switch(t->liveParameter()) {
-            case Trace::LiveParameter::Port1: td.y = complex<double>(d.port1, 0); break;
-            case Trace::LiveParameter::Port2: td.y = complex<double>(d.port2, 0); break;
+            case Trace::LiveParameter::Port1: td.y = d.port1; break;
+            case Trace::LiveParameter::Port2: td.y = d.port2; break;
             default:
                 // not a SA trace, skip
                 continue;

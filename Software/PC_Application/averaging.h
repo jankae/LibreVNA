@@ -3,6 +3,7 @@
 
 #include "Device/device.h"
 #include "VNA/vnadata.h"
+#include "SpectrumAnalyzer/sadata.h"
 
 #include <array>
 #include <deque>
@@ -20,7 +21,7 @@ public:
     void reset(unsigned int points);
     void setAverages(unsigned int a);
     VNAData process(VNAData d);
-    Protocol::SpectrumAnalyzerResult process(Protocol::SpectrumAnalyzerResult d);
+    SAData process(SAData d);
     // Returns the number of averaged sweeps. Value is incremented whenever the last point of the sweep is added.
     // Returned values are in range 0 to averages
     unsigned int getLevel();

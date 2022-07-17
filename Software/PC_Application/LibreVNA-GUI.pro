@@ -24,6 +24,7 @@ HEADERS += \
     Device/manualcontroldialog.h \
     Generator/generator.h \
     Generator/signalgenwidget.h \
+    SpectrumAnalyzer/sadata.h \
     SpectrumAnalyzer/spectrumanalyzer.h \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \

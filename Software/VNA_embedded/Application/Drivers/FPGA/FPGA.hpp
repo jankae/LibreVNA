@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <complex>
 #include "Flash.hpp"
 #include "max2871.hpp"
 
@@ -40,7 +41,7 @@ using SamplingResult = struct _samplingresult {
 };
 
 using DFTResult = struct _dftresult {
-	float P1, P2;
+	std::complex<float> P1, P2;
 };
 
 using ADCLimits = struct _adclimits {
