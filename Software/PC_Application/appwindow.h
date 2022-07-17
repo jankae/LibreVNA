@@ -84,6 +84,7 @@ private:
 
     void DeviceConnectionLost();
 
+    void SetupMenu();
     void SetupStatusBar();
     void UpdateStatusBar(DeviceStatusBar status);
     void CreateToolbars();

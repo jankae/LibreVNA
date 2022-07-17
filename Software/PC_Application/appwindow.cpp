@@ -248,6 +248,58 @@ AppWindow::AppWindow(QWidget *parent)
 
     connect(modeHandler, &ModeHandler::StatusBarMessageChanged, setModeStatusbar);
 
+    SetupMenu();
+
+    setWindowTitle(qlibrevnaApp->applicationName() + " v"  + getAppVersion());
+
+    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+    {
+        QSettings settings;
+        restoreGeometry(settings.value("geometry").toByteArray());
+    }
+
+    SetupSCPI();
+
+    auto pref = Preferences::getInstance();
+    if(pref.Startup.UseSetupFile) {
+        LoadSetup(pref.Startup.SetupFile);
+    }
+    // List available devices
+    UpdateDeviceList();
+    if(pref.Startup.ConnectToFirstDevice) {
+        // at least one device available
+        ConnectToDevice();
+    }
+
+    if(parser.isSet("setup")) {
+        LoadSetup(parser.value("setup"));
+    }
+    if(parser.isSet("cal")) {
+        VNA* mode = static_cast<VNA*>(modeHandler->findFirstOfType(Mode::Type::VNA));
+        mode->LoadCalibration(parser.value("cal"));
+    }
+    if(!parser.isSet("no-gui")) {
+        InformationBox::setGUI(true);
+        resize(1280, 800);
+        show();
+    } else {
+        InformationBox::setGUI(false);
+        noGUIset = true;
+    }
+}
+
+AppWindow::~AppWindow()
+{
+    StopTCPServer();
+    delete ui;
+}
+
+void AppWindow::SetupMenu()
+{
     // UI connections
     connect(ui->actionUpdate_Device_List, &QAction::triggered, this, &AppWindow::UpdateDeviceList);
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
@@ -329,53 +381,6 @@ AppWindow::AppWindow(QWidget *parent)
         auto &a = About::getInstance();
         a.about();
     });
-
-    setWindowTitle(qlibrevnaApp->applicationName() + " v"  + getAppVersion());
-
-    setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-    setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
-    {
-        QSettings settings;
-        restoreGeometry(settings.value("geometry").toByteArray());
-    }
-
-    SetupSCPI();
-
-    auto pref = Preferences::getInstance();
-    if(pref.Startup.UseSetupFile) {
-        LoadSetup(pref.Startup.SetupFile);
-    }
-    // List available devices
-    UpdateDeviceList();
-    if(pref.Startup.ConnectToFirstDevice) {
-        // at least one device available
-        ConnectToDevice();
-    }
-
-    if(parser.isSet("setup")) {
-        LoadSetup(parser.value("setup"));
-    }
-    if(parser.isSet("cal")) {
-        VNA* mode = static_cast<VNA*>(modeHandler->findFirstOfType(Mode::Type::VNA));
-        mode->LoadCalibration(parser.value("cal"));
-    }
-    if(!parser.isSet("no-gui")) {
-        InformationBox::setGUI(true);
-        resize(1280, 800);
-        show();
-    } else {
-        InformationBox::setGUI(false);
-        noGUIset = true;
-    }
-}
-
-AppWindow::~AppWindow()
-{
-    StopTCPServer();
-    delete ui;
 }
 
 void AppWindow::closeEvent(QCloseEvent *event)
@@ -937,6 +942,7 @@ int AppWindow::UpdateDeviceList()
         devices.insert(device->serial());
     }
     int available = 0;
+    bool found = false;
     if(devices.size()) {
         for(auto d : devices) {
             if(!parser.value("device").isEmpty() && parser.value("device") != d) {
@@ -952,13 +958,11 @@ int AppWindow::UpdateDeviceList()
             connect(connectAction, &QAction::triggered, [this, d]() {
                ConnectToDevice(d);
             });
-            ui->menuConnect_to->setEnabled(true);
+            found = true;
             available++;
         }
-    } else {
-        // no devices available, disable connection option
-        ui->menuConnect_to->setEnabled(false);
     }
+    ui->menuConnect_to->setEnabled(found);
     qDebug() << "Updated device list, found" << available;
     return available;
 }

@@ -490,6 +490,34 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="exportLines">
+          <property name="toolTip">
+           <string>Export</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../icons.qrc">
+            <normaloff>:/icons/export.png</normaloff>:/icons/export.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="importLines">
+          <property name="toolTip">
+           <string>Import</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../icons.qrc">
+            <normaloff>:/icons/import.png</normaloff>:/icons/import.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -564,8 +592,8 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="Y2group"/>
   <buttongroup name="Y1group"/>
   <buttongroup name="Xgroup"/>
+  <buttongroup name="Y2group"/>
  </buttongroups>
 </ui>

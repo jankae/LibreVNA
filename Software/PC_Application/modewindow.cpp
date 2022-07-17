@@ -9,11 +9,10 @@
 #include <QMenuBar>
 
 ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw):
-    QWidget(aw),
+    QWidget(nullptr),
     handler(handler),
     aw(aw)
 {
-
     SetupUi();
 
     connect(handler, &ModeHandler::ModeCreated, this, &ModeWindow::ModeCreated);
@@ -63,7 +62,7 @@ void ModeWindow::SetupUi()
         mAdd->addAction(action);
         connect(action, &QAction::triggered, [=](){
             bool ok;
-            QString text = QInputDialog::getText(this,
+            QString text = QInputDialog::getText(aw,
                                                 "Create new "+Mode::TypeToName(type)+" tab",
                                                 "Name:", QLineEdit::Normal,
                                                 Mode::TypeToName(type), &ok);
