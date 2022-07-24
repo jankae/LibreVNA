@@ -7,6 +7,7 @@
   - Limit testing on XY-plots
   - Single sweep functionality
   - Zero span support for VNA and SA
+  - Math operations across traces
   
 - Bugfixes:
   - Stop duplicate GUI elements from appearing when loading a setup file
@@ -16,6 +17,11 @@
   - Changing trace color triggers replot of graphs
   - Remove output spikes in generator mode, caused by continuously reconfiguring the PLL
   - Fix MCU temperature calculation
+
+- Small improvements:
+  - Split plots without closing the plot first
+  - Configurable marker sort order
+  - Refactoring
 
 ## v1.3.0
 
