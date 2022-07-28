@@ -123,6 +123,7 @@ void TraceSmithChart::axisSetupDialog()
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
        limitToSpan = ui->displayModeFreq->currentIndex() == 1;
        limitToEdge = ui->displayModeImp->currentIndex() == 1;
+       updateContextMenu();
        triggerReplot();
     });
     connect(ui->zoomFactor, &SIUnitEdit::valueChanged, [=](){
@@ -140,6 +141,8 @@ void TraceSmithChart::axisSetupDialog()
                 checkIfStillSupported(t.first);
             }
         }
+        // depending on the preferences, the Z0 value may have been changed to match the active traces,
+        // overwrite again without causing an additional signal
         ui->impedance->setValueQuiet(Z0);
     });
     connect(ui->lineTable, &QTableView::clicked, [=](const QModelIndex &index){
@@ -287,6 +290,7 @@ bool TraceSmithChart::configureForTrace(Trace *t)
                 enableTrace(t.first, false);
             }
         }
+        updateContextMenu();
         return true;
     }
     return false;
