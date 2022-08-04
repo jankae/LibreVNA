@@ -3,10 +3,9 @@
 
 #include "touchstone.h"
 #include "csv.h"
-#include "Device/device.h"
+#include "Device/virtualdevice.h"
 #include "Math/tracemath.h"
 #include "Tools/parameters.h"
-#include "VNA/vnadata.h"
 
 #include <QObject>
 #include <complex>
@@ -33,17 +32,7 @@ public:
         Last,
     };
 
-    enum class LiveParameter {
-        S11,
-        S12,
-        S21,
-        S22,
-        Port1,
-        Port2,
-        Invalid,
-    };
-
-    Trace(QString name = QString(), QColor color = Qt::darkYellow, LiveParameter live = LiveParameter::S11);
+    Trace(QString name = QString(), QColor color = Qt::darkYellow, QString live = "S11");
     ~Trace();
 
     enum class LivedataType {
@@ -55,13 +44,13 @@ public:
 
     void clear(bool force = false);
     void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
-    void addData(const Data& d, const Protocol::SpectrumAnalyzerSettings& s, int index = -1);
+    void addData(const Data& d, const VirtualDevice::SASettings &s, int index = -1);
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
-    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data);
-    void fromLivedata(LivedataType type, LiveParameter param);
+    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VirtualDevice::VNAMeasurement> &data);
+    void fromLivedata(LivedataType type, QString param);
     void fromMath();
     QString name() { return _name; }
     QColor color() { return _color; }
@@ -72,7 +61,7 @@ public:
     bool isPaused();
     Source getSource() {return source;}
     bool isReflection();
-    LiveParameter liveParameter() { return _liveParam; }
+    QString liveParameter() { return liveParam; }
     LivedataType liveType() { return _liveType; }
     TraceMath::DataType outputType() const { return lastMath->getDataType(); }
     unsigned int size() const;
@@ -125,6 +114,9 @@ public:
     };
     const std::vector<MathInfo>& getMathOperations() const;
 
+    static bool isSAParameter(QString param);
+    static bool isVNAParameter(QString param);
+
     double velocityFactor();
     double timeToDistance(double time);
     double distanceToTime(double distance);
@@ -145,12 +137,7 @@ public:
 
     // Assembles datapoints as received from the VNA from four S parameter traces. Requires that all traces are in the frequency domain,
     // have the same number of samples and their samples must be at the same frequencies across all traces
-    static std::vector<VNAData> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
-
-    static LiveParameter ParameterFromString(QString s);
-    static QString ParameterToString(LiveParameter p);
-    static bool isVNAParameter(LiveParameter p);
-    static bool isSAParamater(LiveParameter p);
+    static std::vector<VirtualDevice::VNAMeasurement> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
 
     static LivedataType TypeFromString(QString s);
     static QString TypeToString(LivedataType t);
@@ -247,7 +234,7 @@ private:
 
     // Members for when source == Source::Live
     LivedataType _liveType;
-    LiveParameter _liveParam;
+    QString liveParam;
 
     // Members for when source == Source::File
     QString filename;
@@ -273,7 +260,7 @@ private:
     std::set<Marker*> markers;
     struct {
         union {
-            Protocol::SpectrumAnalyzerSettings SA;
+            VirtualDevice::SASettings SA;
         };
         bool valid;
     } settings;

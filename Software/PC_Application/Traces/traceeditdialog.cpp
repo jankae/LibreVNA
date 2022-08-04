@@ -124,25 +124,15 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     }
 
     VNAtrace = Trace::isVNAParameter(t.liveParameter());
-    if(VNAtrace) {
-        ui->CLiveParam->addItem("S11");
-        ui->CLiveParam->addItem("S12");
-        ui->CLiveParam->addItem("S21");
-        ui->CLiveParam->addItem("S22");
-    } else {
-        ui->CLiveParam->addItem("Port 1");
-        ui->CLiveParam->addItem("Port 2");
+    if(VirtualDevice::getConnected()) {
+        if(VNAtrace) {
+            ui->CLiveParam->addItems(VirtualDevice::getConnected()->availableVNAMeasurements());
+        } else {
+            ui->CLiveParam->addItems(VirtualDevice::getConnected()->availableSAMeasurements());
+        }
     }
 
-    switch(t.liveParameter()) {
-    case Trace::LiveParameter::S11: ui->CLiveParam->setCurrentIndex(0); break;
-    case Trace::LiveParameter::S12: ui->CLiveParam->setCurrentIndex(1); break;
-    case Trace::LiveParameter::S21: ui->CLiveParam->setCurrentIndex(2); break;
-    case Trace::LiveParameter::S22: ui->CLiveParam->setCurrentIndex(3); break;
-    case Trace::LiveParameter::Port1: ui->CLiveParam->setCurrentIndex(0); break;
-    case Trace::LiveParameter::Port2: ui->CLiveParam->setCurrentIndex(1); break;
-    default: break;
-    }
+    ui->CLiveParam->setCurrentText(t.liveParameter());
 
     connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, updateTouchstoneFileStatus);
     connect(ui->touchstoneImport, &TouchstoneImport::filenameChanged, updateTouchstoneFileStatus);
@@ -354,26 +344,12 @@ void TraceEditDialog::on_buttonBox_accepted()
             }
         } else if(ui->bLive->isChecked()) {
             Trace::LivedataType type = Trace::LivedataType::Overwrite;
-            Trace::LiveParameter param = Trace::LiveParameter::S11;
             switch(ui->CLiveType->currentIndex()) {
             case 0: type = Trace::LivedataType::Overwrite; break;
             case 1: type = Trace::LivedataType::MaxHold; break;
             case 2: type = Trace::LivedataType::MinHold; break;
             }
-            if(VNAtrace) {
-                switch(ui->CLiveParam->currentIndex()) {
-                case 0: param = Trace::LiveParameter::S11; break;
-                case 1: param = Trace::LiveParameter::S12; break;
-                case 2: param = Trace::LiveParameter::S21; break;
-                case 3: param = Trace::LiveParameter::S22; break;
-                }
-            } else {
-                switch(ui->CLiveParam->currentIndex()) {
-                case 0: param = Trace::LiveParameter::Port1; break;
-                case 1: param = Trace::LiveParameter::Port2; break;
-                }
-            }
-            trace.fromLivedata(type, param);
+            trace.fromLivedata(type, ui->CLiveParam->currentText());
         } else {
             // math operation trace
             trace.fromMath();

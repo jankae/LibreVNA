@@ -184,7 +184,7 @@ std::vector<Marker::Format> Marker::applicableFormats()
         case Type::Maximum:
         case Type::Minimum:
         case Type::PeakTable:
-            if(Trace::isSAParamater(parentTrace->liveParameter())) {
+            if(Trace::isSAParameter(parentTrace->liveParameter())) {
                 ret.push_back(Format::dBm);
                 ret.push_back(Format::dBuV);
             } else {
@@ -217,7 +217,7 @@ std::vector<Marker::Format> Marker::applicableFormats()
         case Type::Maximum:
         case Type::Minimum:
         case Type::PeakTable:
-            if(Trace::isSAParamater(parentTrace->liveParameter())) {
+            if(Trace::isSAParameter(parentTrace->liveParameter())) {
                 ret.push_back(Format::dBm);
                 ret.push_back(Format::dBuV);
             } else {
@@ -871,20 +871,13 @@ std::set<Marker::Type> Marker::getSupportedTypes()
                 supported.insert(Type::Bandpass);
             }
             if(parentTrace->getSource() == Trace::Source::Live) {
-                switch(parentTrace->liveParameter()) {
-                case Trace::LiveParameter::S11:
-                case Trace::LiveParameter::S12:
-                case Trace::LiveParameter::S21:
-                case Trace::LiveParameter::S22:
+                if(Trace::isVNAParameter(parentTrace->liveParameter())) {
                     // no special marker types for VNA yet
-                    break;
-                case Trace::LiveParameter::Port1:
-                case Trace::LiveParameter::Port2:
+                }
+                if(Trace::isSAParameter(parentTrace->liveParameter())) {
                     // special SA marker types
                     supported.insert(Type::TOI);
                     supported.insert(Type::PhaseNoise);
-                    break;
-                default: break;
                 }
             }
             break;

@@ -31,7 +31,7 @@ protected:
     void SetupSCPI();
     void contextMenuEvent(QContextMenuEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
-    virtual Trace::LiveParameter defaultParameter() = 0;
+    virtual QString defaultParameter() = 0;
     QPoint dragStartPosition;
     Trace *dragTrace;
     Ui::TraceWidget *ui;

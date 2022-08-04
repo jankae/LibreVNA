@@ -16,7 +16,7 @@ class TwoThru : public DeembeddingOption
 public:
     TwoThru();
 
-    virtual void transformDatapoint(VNAData& p) override;
+    virtual void transformDatapoint(VirtualDevice::VNAMeasurement& p) override;
     virtual void edit() override;
     virtual Type getType() override {return DeembeddingOption::Type::TwoThru;}
     nlohmann::json toJSON() override;
@@ -25,19 +25,19 @@ public:
 private slots:
     void startMeasurement();
     void updateGUI();
-    void measurementCompleted(std::vector<VNAData> m) override;
+    void measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m) override;
 private:
     using Point = struct {
         double freq;
         Tparam inverseP1, inverseP2;
     };
 
-    static std::vector<VNAData> interpolateEvenFrequencySteps(std::vector<VNAData> input);
-    static std::vector<Point> calculateErrorBoxes(std::vector<VNAData> data_2xthru);
-    static std::vector<Point> calculateErrorBoxes(std::vector<VNAData> data_2xthru, std::vector<VNAData> data_fix_dut_fix, double z0);
+    static std::vector<VirtualDevice::VNAMeasurement> interpolateEvenFrequencySteps(std::vector<VirtualDevice::VNAMeasurement> input);
+    static std::vector<Point> calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru);
+    static std::vector<Point> calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru, std::vector<VirtualDevice::VNAMeasurement> data_fix_dut_fix, double z0);
 
-    std::vector<VNAData> measurements2xthru;
-    std::vector<VNAData> measurementsDUT;
+    std::vector<VirtualDevice::VNAMeasurement> measurements2xthru;
+    std::vector<VirtualDevice::VNAMeasurement> measurementsDUT;
     double Z0;
     std::vector<Point> points;
     bool measuring2xthru;

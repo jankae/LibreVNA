@@ -29,7 +29,7 @@ PortExtension::PortExtension()
     kit = nullptr;
 }
 
-void PortExtension::transformDatapoint(VNAData &d)
+void PortExtension::transformDatapoint(VirtualDevice::VNAMeasurement &d)
 {
     if(port1.enabled || port2.enabled) {
         if(port1.enabled) {
@@ -41,9 +41,9 @@ void PortExtension::transformDatapoint(VNAData &d)
             // convert from db to factor
             auto att = pow(10.0, -db_attennuation / 20.0);
             auto correction = polar<double>(att, phase);
-            d.S.m11 /= correction * correction;
-            d.S.m21 /= correction;
-            d.S.m12 /= correction;
+            d.measurements["S11"] /= correction * correction;
+            d.measurements["S21"] /= correction;
+            d.measurements["S12"] /= correction;
         }
         if(port2.enabled) {
             auto phase = -2 * M_PI * port2.delay * d.frequency;
@@ -54,9 +54,9 @@ void PortExtension::transformDatapoint(VNAData &d)
             // convert from db to factor
             auto att = pow(10.0, -db_attennuation / 20.0);
             auto correction = polar<double>(att, phase);
-            d.S.m22 /= correction * correction;
-            d.S.m21 /= correction;
-            d.S.m12 /= correction;
+            d.measurements["S22"] /= correction * correction;
+            d.measurements["S21"] /= correction;
+            d.measurements["S12"] /= correction;
         }
     }
 }
@@ -194,7 +194,7 @@ void PortExtension::edit()
     }
 }
 
-void PortExtension::measurementCompleted(std::vector<VNAData> m)
+void PortExtension::measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m)
 {
     if(m.size() > 0) {
         double last_phase = 0.0;
@@ -205,9 +205,9 @@ void PortExtension::measurementCompleted(std::vector<VNAData> m)
             // grab correct measurement
             complex<double> reflection;
             if(isPort1) {
-                reflection = p.S.m11;
+                reflection = p.measurements["S11"];
             } else {
-                reflection = p.S.m22;
+                reflection = p.measurements["S22"];
             }
             // remove calkit if specified
             if(!isIdeal) {

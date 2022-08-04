@@ -12,7 +12,7 @@ void Averaging::reset(unsigned int points)
 {
     avg.clear();
     for(unsigned int i = 0;i<points;i++) {
-        avg.push_back(deque<array<complex<double>, 4>>());
+        avg.push_back(deque<vector<complex<double>>>());
     }
 }
 
@@ -22,162 +22,41 @@ void Averaging::setAverages(unsigned int a)
     reset(avg.size());
 }
 
-VNAData Averaging::process(VNAData d)
+VirtualDevice::VNAMeasurement Averaging::process(VirtualDevice::VNAMeasurement d)
 {
-    auto S11 = d.S.m11;
-    auto S12 = d.S.m12;
-    auto S21 = d.S.m21;
-    auto S22 = d.S.m22;
-
-    if (d.pointNum == avg.size()) {
-        // add moving average entry
-        deque<array<complex<double>, 4>> deque;
-        avg.push_back(deque);
+    if(d.measurements.size() != numMeasurements) {
+        numMeasurements = d.measurements.size();
+        reset(avg.size());
     }
 
-    if (d.pointNum < avg.size()) {
-        // can compute average
-        // get correct queue
-        auto deque = &avg[d.pointNum];
-        // add newest sample to queue
-        array<complex<double>, 4> sample = {S11, S12, S21, S22};
-        deque->push_back(sample);
-        if(deque->size() > averages) {
-            deque->pop_front();
-        }
-
-        switch(mode) {
-        case Mode::Mean: {
-            // calculate average
-            complex<double> sum[4];
-            for(auto s : *deque) {
-                sum[0] += s[0];
-                sum[1] += s[1];
-                sum[2] += s[2];
-                sum[3] += s[3];
-            }
-            S11 = sum[0] / (double) (deque->size());
-            S12 = sum[1] / (double) (deque->size());
-            S21 = sum[2] / (double) (deque->size());
-            S22 = sum[3] / (double) (deque->size());
-        }
-            break;
-        case Mode::Median: {
-            auto size = deque->size();
-            // create sorted arrays
-            std::vector<complex<double>> S11sorted, S12sorted, S21sorted, S22sorted;
-            S11sorted.reserve(size);
-            S12sorted.reserve(size);
-            S21sorted.reserve(size);
-            S22sorted.reserve(size);
-
-            auto comp = [=](const complex<double>&a, const complex<double>&b){
-                return abs(a) < abs(b);
-            };
-
-            for(auto d : *deque) {
-                S11sorted.insert(upper_bound(S11sorted.begin(), S11sorted.end(), d[0], comp), d[0]);
-                S12sorted.insert(upper_bound(S12sorted.begin(), S12sorted.end(), d[1], comp), d[1]);
-                S21sorted.insert(upper_bound(S21sorted.begin(), S21sorted.end(), d[2], comp), d[2]);
-                S22sorted.insert(upper_bound(S22sorted.begin(), S22sorted.end(), d[3], comp), d[3]);
-            }
-            if(size & 0x01) {
-                // odd number of samples
-                S11 = S11sorted[size / 2];
-                S12 = S12sorted[size / 2];
-                S21 = S21sorted[size / 2];
-                S22 = S22sorted[size / 2];
-            } else {
-                // even number, use average of middle samples
-                S11 = (S11sorted[size / 2 - 1] + S11sorted[size / 2]) / 2.0;
-                S12 = (S12sorted[size / 2 - 1] + S12sorted[size / 2]) / 2.0;
-                S21 = (S21sorted[size / 2 - 1] + S21sorted[size / 2]) / 2.0;
-                S22 = (S22sorted[size / 2 - 1] + S22sorted[size / 2]) / 2.0;
-            }
-        }
-            break;
-        }
+    vector<complex<double>> data;
+    for(auto m : d.measurements) {
+        data.push_back(m.second);
     }
-
-    d.S = Sparam(S11, S12, S21, S22);
-
+    process(d.pointNum, data);
+    int i=0;
+    for(auto &m : d.measurements) {
+        m.second = data[i++];
+    }
     return d;
 }
 
 VirtualDevice::SAMeasurement Averaging::process(VirtualDevice::SAMeasurement d)
 {
     if(d.measurements.size() != numMeasurements) {
+        numMeasurements = d.measurements.size();
         reset(avg.size());
     }
 
-    if (d.pointNum == avg.size()) {
-        // add moving average entry
-        deque<vector<complex<double>>> deque;
-        avg.push_back(deque);
+    vector<complex<double>> data;
+    for(auto m : d.measurements) {
+        data.push_back(m.second);
     }
-
-    if (d.pointNum < avg.size()) {
-        // can compute average
-        // get correct queue
-        auto deque = &avg[d.pointNum];
-        // add newest sample to queue
-        vector<complex<double>> sample;
-        for(auto m : d.measurements) {
-            sample.push_back(m.second);
-        }
-        deque->push_back(sample);
-        if(deque->size() > averages) {
-            deque->pop_front();
-        }
-
-        deque<double> averagedResults;
-
-        switch(mode) {
-        case Mode::Mean: {
-            // calculate average
-            complex<double> sum[numMeasurements];
-            for(auto s : *deque) {
-                for(int i=0;i<numMeasurements;i++) {
-                    sum[i] += s[i];
-                }
-            }
-            for(auto s : sum) {
-                averagedResults.push_back(abs(s / (double) (deque->size())));
-            }
-        }
-            break;
-        case Mode::Median: {
-            auto size = deque->size();
-            // create sorted vectors
-            array<vector<double>, numMeasurements> vectors;
-            for(auto &v : vectors) {
-                v.reserve(size);
-            }
-            for(auto d : *deque) {
-                for(auto &v : vectors) {
-                    v.insert(upper_bound(v.begin(), v.end(), abs(d[0])), abs(d[0]));
-                }
-            }
-            if(size & 0x01) {
-                // odd number of samples
-                for(auto v : vectors) {
-                    averagedResults.push_back(v[size / 2]);
-                }
-            } else {
-                // even number, use average of middle samples
-                for(auto v : vectors) {
-                    averagedResults.push_back((v[size / 2 - 1] + v[size / 2]) / 2);
-                }
-            }
-        }
-            break;
-        }
-
-        for(auto &m : d.measurements) {
-            m.second = averagedResults.pop_front();
-        }
+    process(d.pointNum, data);
+    int i=0;
+    for(auto &m : d.measurements) {
+        m.second = data[i++].real();
     }
-
     return d;
 }
 
@@ -207,4 +86,81 @@ Averaging::Mode Averaging::getMode() const
 void Averaging::setMode(const Mode &value)
 {
     mode = value;
+}
+
+void Averaging::process(int pointNum, std::vector<std::complex<double>> &data)
+{
+    if(data.size() != numMeasurements) {
+        numMeasurements = data.size();
+        reset(avg.size());
+    }
+
+    if (pointNum == avg.size()) {
+        // add moving average entry
+        deque<vector<complex<double>>> deque;
+        avg.push_back(deque);
+    }
+
+    if (pointNum < avg.size()) {
+        // can compute average
+        // get correct queue
+        auto deque = &avg[pointNum];
+        // add newest sample to queue
+        deque->push_back(data);
+        // remove oldest sample if required number of averages reached
+        if(deque->size() > averages) {
+            deque->pop_front();
+        }
+
+        std::deque<complex<double>> averagedResults = {};
+
+        switch(mode) {
+        case Mode::Mean: {
+            // calculate average
+            complex<double> sum[numMeasurements];
+            for(auto s : *deque) {
+                for(int i=0;i<numMeasurements;i++) {
+                    sum[i] += s[i];
+                }
+            }
+            for(auto s : sum) {
+                averagedResults.push_back(abs(s / (double) (deque->size())));
+            }
+        }
+            break;
+        case Mode::Median: {
+            auto size = deque->size();
+            // create sorted vectors
+            vector<vector<complex<double>>> vectors(numMeasurements);
+
+            auto comp = [=](const complex<double>&a, const complex<double>&b){
+                return abs(a) < abs(b);
+            };
+            for(auto d : *deque) {
+                int i=0;
+                for(auto &v : vectors) {
+                    v.insert(upper_bound(v.begin(), v.end(), d[i], comp), d[i]);
+                    i++;
+                }
+            }
+            if(size & 0x01) {
+                // odd number of samples
+                for(auto v : vectors) {
+                    averagedResults.push_back(v[size / 2]);
+                }
+            } else {
+                // even number, use average of middle samples
+                for(auto v : vectors) {
+                    averagedResults.push_back((v[size / 2 - 1] + v[size / 2]) / 2.0);
+                }
+            }
+        }
+            break;
+        }
+
+        for(auto &m : data) {
+            m = averagedResults.front();
+            averagedResults.pop_front();
+        }
+    }
 }

@@ -190,6 +190,7 @@ VirtualDevice::VirtualDevice(QString serial)
         connect(dev, &Device::DatapointReceived, [&](Protocol::Datapoint res){
             VNAMeasurement m;
             m.pointNum = res.pointNum;
+            m.Z0 = 50.0;
             if(zerospan) {
                 m.us = res.us;
             } else {
@@ -485,4 +486,49 @@ std::set<QString> VirtualDevice::GetDevices()
 VirtualDevice *VirtualDevice::getConnected()
 {
     return connected;
+}
+
+Sparam VirtualDevice::VNAMeasurement::toSparam(int port1, int port2)
+{
+    Sparam S;
+    S.m11 = measurements["S"+QString::number(port1)+QString::number(port1)];
+    S.m12 = measurements["S"+QString::number(port1)+QString::number(port2)];
+    S.m21 = measurements["S"+QString::number(port2)+QString::number(port1)];
+    S.m22 = measurements["S"+QString::number(port2)+QString::number(port2)];
+    return S;
+}
+
+void VirtualDevice::VNAMeasurement::fromSparam(Sparam S, int port1, int port2)
+{
+    QString s11 = "S"+QString::number(port1)+QString::number(port1);
+    QString s12 = "S"+QString::number(port1)+QString::number(port2);
+    QString s21 = "S"+QString::number(port2)+QString::number(port1);
+    QString s22 = "S"+QString::number(port2)+QString::number(port2);
+    if(measurements.count(s11)) {
+        measurements[s11] = S.m11;
+    }
+    if(measurements.count(s12)) {
+        measurements[s12] = S.m12;
+    }
+    if(measurements.count(s21)) {
+        measurements[s21] = S.m21;
+    }
+    if(measurements.count(s22)) {
+        measurements[s22] = S.m22;
+    }
+}
+
+VirtualDevice::VNAMeasurement VirtualDevice::VNAMeasurement::interpolateTo(const VirtualDevice::VNAMeasurement &to, double a)
+{
+    VNAMeasurement ret;
+    ret.frequency = frequency * (1.0 - a) + to.frequency * a;
+    ret.dBm = dBm * (1.0 - a) + to.dBm * a;
+    ret.Z0 = Z0 * (1.0 - a) + to.Z0 * a;
+    for(auto m : measurements) {
+        if(to.measurements.count(m.first) == 0) {
+            throw runtime_error("Nothing to interpolate to, expected measurement +\""+m.first.toStdString()+"\"");
+        }
+        ret.measurements[m.first] = measurements[m.first] * (1.0 - a) + to.measurements.at(m.first) * a;
+    }
+    return ret;
 }

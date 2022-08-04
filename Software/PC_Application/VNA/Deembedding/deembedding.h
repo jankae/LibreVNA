@@ -17,15 +17,15 @@ class Deembedding : public QObject, public Savable
     Q_OBJECT
 public:
     Deembedding(TraceModel &tm);
-    ~Deembedding(){};
+    ~Deembedding(){}
 
-    void Deembed(VNAData &d);
+    void Deembed(VirtualDevice::VNAMeasurement &d);
     void Deembed(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
 
     void removeOption(unsigned int index);
     void addOption(DeembeddingOption* option);
     void swapOptions(unsigned int index);
-    std::vector<DeembeddingOption*>& getOptions() {return options;};
+    std::vector<DeembeddingOption*>& getOptions() {return options;}
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;
 public slots:
@@ -42,7 +42,7 @@ private:
     TraceModel &tm;
 
     bool measuring;
-    std::vector<VNAData> measurements;
+    std::vector<VirtualDevice::VNAMeasurement> measurements;
     QDialog *measurementDialog;
     Ui_DeembeddingMeasurementDialog *measurementUI;
 

@@ -23,12 +23,12 @@ public:
     static DeembeddingOption *create(Type type);
     static QString getName(Type type);
 
-    virtual void transformDatapoint(VNAData &p) = 0;
-    virtual void edit(){};
+    virtual void transformDatapoint(VirtualDevice::VNAMeasurement &p) = 0;
+    virtual void edit(){}
     virtual Type getType() = 0;
 
 public slots:
-    virtual void measurementCompleted(std::vector<VNAData> m){Q_UNUSED(m)};
+    virtual void measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m){Q_UNUSED(m)}
 signals:
     // Deembedding option may selfdestruct if not applicable with current settings. It should emit this signal before deleting itself
     void deleted(DeembeddingOption *option);

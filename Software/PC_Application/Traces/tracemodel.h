@@ -4,7 +4,6 @@
 #include "Device/device.h"
 #include "savable.h"
 #include "trace.h"
-#include "VNA/vnadata.h"
 
 #include <QAbstractTableModel>
 #include <vector>
@@ -65,8 +64,8 @@ signals:
 
 public slots:
     void clearLiveData();
-    void addVNAData(const VNAData& d, TraceMath::DataType datatype);
-    void addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings);
+    void addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype);
+    void addSAData(const VirtualDevice::SAMeasurement &d, const VirtualDevice::SASettings &settings);
 
 private:
     DataSource source;

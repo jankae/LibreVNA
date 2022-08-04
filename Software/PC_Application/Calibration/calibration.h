@@ -45,8 +45,8 @@ public:
     void clearMeasurements();
     void clearMeasurements(std::set<Measurement> types);
     void clearMeasurement(Measurement type);
-    void addMeasurement(Measurement type, VNAData &d);
-    void addMeasurements(std::set<Measurement> types, VNAData &d);
+    void addMeasurement(Measurement type, VirtualDevice::VNAMeasurement &d);
+    void addMeasurements(std::set<Measurement> types, VirtualDevice::VNAMeasurement &d);
 
     enum class Type {
         Port1SOL,
@@ -63,7 +63,7 @@ public:
     bool constructErrorTerms(Type type);
     void resetErrorTerms();
 
-    void correctMeasurement(VNAData &d);
+    void correctMeasurement(VirtualDevice::VNAMeasurement &d);
     void correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
 
     enum class InterpolationType {
@@ -141,7 +141,7 @@ private:
         // Reverse error terms
         std::complex<double> re33, re11, re23e32, re23e01, re22, re03, rex;
     };
-    Point getCalibrationPoint(VNAData &d);
+    Point getCalibrationPoint(VirtualDevice::VNAMeasurement &d);
     /*
      * Constructs directivity, match and tracking correction factors from measurements of three distinct impedances
      * Normally, an open, short and load are used (with ideal reflection coefficients of 1, -1 and 0 respectively).
@@ -173,7 +173,7 @@ private:
     class MeasurementData {
     public:
         QDateTime timestamp;
-        std::vector<VNAData> datapoints;
+        std::vector<VirtualDevice::VNAMeasurement> datapoints;
     };
     Type type;
 

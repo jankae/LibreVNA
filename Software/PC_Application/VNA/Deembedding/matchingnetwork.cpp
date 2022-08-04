@@ -26,10 +26,10 @@ MatchingNetwork::MatchingNetwork()
     addNetwork = true;
 }
 
-void MatchingNetwork::transformDatapoint(VNAData &p)
+void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
-    auto S = p.S;
-    auto measurement = ABCDparam(S, p.reference_impedance);
+    auto S = p.toSparam(1, 2);
+    auto measurement = ABCDparam(S, p.Z0);
     if(matching.count(p.frequency) == 0) {
         // this point is not calculated yet
         MatchingPoint m;
@@ -53,7 +53,7 @@ void MatchingNetwork::transformDatapoint(VNAData &p)
     // at this point the map contains the matching network effect
     auto m = matching[p.frequency];
     auto corrected = m.p1 * measurement * m.p2;
-    p.S = Sparam(corrected, p.reference_impedance);
+    p.fromSparam(Sparam(corrected, p.Z0), 1, 2);
 }
 
 void MatchingNetwork::edit()

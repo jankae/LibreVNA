@@ -180,7 +180,7 @@ void TraceWidget::SetupSCPI()
     };
 
     auto createStringFromData = [](Trace *t, const Trace::Data &d) -> QString {
-        if(Trace::isSAParamater(t->liveParameter())) {
+        if(Trace::isSAParameter(t->liveParameter())) {
             if(std::isnan(d.x)) {
                 return "NaN";
             }
@@ -373,7 +373,7 @@ void TraceWidget::SetupSCPI()
         if(!t || params.size() < 2) {
            return "ERROR";
         }
-        auto newparam = Trace::ParameterFromString(params[1]);
+        auto newparam = params[1];
         if((Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))
                 || (Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))) {
             t->fromLivedata(t->liveType(), newparam);
@@ -386,7 +386,7 @@ void TraceWidget::SetupSCPI()
         if(!t) {
            return "ERROR";
         }
-        return Trace::ParameterToString(t->liveParameter());
+        return t->liveParameter();
     }));
     add(new SCPICommand("TYPE", [=](QStringList params) -> QString {
         auto t = findTrace(params);

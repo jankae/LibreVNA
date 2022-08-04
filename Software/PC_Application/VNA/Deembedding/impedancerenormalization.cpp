@@ -15,10 +15,11 @@ ImpedanceRenormalization::ImpedanceRenormalization()
 
 }
 
-void ImpedanceRenormalization::transformDatapoint(VNAData &p)
+void ImpedanceRenormalization::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
-    p.S = Sparam(ABCDparam(p.S, p.reference_impedance), impedance);
-    p.reference_impedance = impedance;
+    //p.S = Sparam(ABCDparam(p.S, p.Z0), impedance);
+    // TODO
+    p.Z0 = impedance;
 }
 
 nlohmann::json ImpedanceRenormalization::toJSON()

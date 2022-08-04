@@ -12,7 +12,7 @@ protected slots:
     virtual void importDialog() override;
 
 protected:
-    virtual Trace::LiveParameter defaultParameter() override {return Trace::LiveParameter::Port1;};
+    virtual QString defaultParameter() override {return "PORT1";}
 };
 
 #endif // TRACEWIDGETSA_H

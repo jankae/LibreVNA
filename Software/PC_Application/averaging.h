@@ -1,8 +1,7 @@
 #ifndef AVERAGING_H
 #define AVERAGING_H
 
-#include "Device/virtualdevice.h".h"
-#include "VNA/vnadata.h"
+#include "Device/virtualdevice.h"
 
 #include <array>
 #include <deque>
@@ -19,7 +18,7 @@ public:
     Averaging();
     void reset(unsigned int points);
     void setAverages(unsigned int a);
-    VNAData process(VNAData d);
+    VirtualDevice::VNAMeasurement process(VirtualDevice::VNAMeasurement d);
     VirtualDevice::SAMeasurement process(VirtualDevice::SAMeasurement d);
     // Returns the number of averaged sweeps. Value is incremented whenever the last point of the sweep is added.
     // Returned values are in range 0 to averages
@@ -31,6 +30,8 @@ public:
     void setMode(const Mode &value);
 
 private:
+    void process(int pointNum, std::vector<std::complex<double> > &data);
+
     std::vector<std::deque<std::vector<std::complex<double>>>> avg;
     int maxPoints;
     int numMeasurements;

@@ -2,6 +2,7 @@
 #define VIRTUALDEVICE_H
 
 #include "device.h"
+#include "Tools/parameters.h"
 
 #include <set>
 #include <complex>
@@ -66,6 +67,7 @@ public:
     class VNAMeasurement {
     public:
         int pointNum;
+        double Z0;
         union {
             struct {
                 // for non-zero span
@@ -78,6 +80,10 @@ public:
             };
         };
         std::map<QString, std::complex<double>> measurements;
+
+        Sparam toSparam(int port1, int port2);
+        void fromSparam(Sparam S, int port1, int port2);
+        VNAMeasurement interpolateTo(const VNAMeasurement &to, double a);
     };
 
     QStringList availableVNAMeasurements();

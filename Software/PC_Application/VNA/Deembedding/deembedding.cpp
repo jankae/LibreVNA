@@ -76,31 +76,26 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
         auto S21 = t[2];
         auto S22 = t[3];
         for(unsigned int i=0;i<traceChooser->getPoints();i++) {
-            Protocol::Datapoint p;
+            VirtualDevice::VNAMeasurement p;
             p.pointNum = i;
+            p.Z0 = 0;
+            p.dBm = 0;
+            Sparam S;
             if(S11) {
-                auto sample = S11->sample(i);
-                p.imag_S11 = sample.y.imag();
-                p.real_S11 = sample.y.real();
-                p.frequency = sample.x;
+                S.m11 = S11->sample(i).y;
+                p.frequency = S11->sample(i).x;
             }
             if(S12) {
-                auto sample = S12->sample(i);
-                p.imag_S12 = sample.y.imag();
-                p.real_S12 = sample.y.real();
-                p.frequency = sample.x;
+                S.m12 = S12->sample(i).y;
+                p.frequency = S11->sample(i).x;
             }
             if(S21) {
-                auto sample = S21->sample(i);
-                p.imag_S21 = sample.y.imag();
-                p.real_S21 = sample.y.real();
-                p.frequency = sample.x;
+                S.m21 = S21->sample(i).y;
+                p.frequency = S11->sample(i).x;
             }
             if(S22) {
-                auto sample = S22->sample(i);
-                p.imag_S22 = sample.y.imag();
-                p.real_S22 = sample.y.real();
-                p.frequency = sample.x;
+                S.m22 = S22->sample(i).y;
+                p.frequency = S11->sample(i).x;
             }
             measurements.push_back(p);
         }
@@ -120,7 +115,7 @@ Deembedding::Deembedding(TraceModel &tm)
 
 }
 
-void Deembedding::Deembed(VNAData &d)
+void Deembedding::Deembed(VirtualDevice::VNAMeasurement &d)
 {
     // figure out the point in one sweep based on the incomig pointNums
     static unsigned lastPointNum;

@@ -118,7 +118,6 @@ HEADERS += \
     VNA/Deembedding/twothru.h \
     VNA/tracewidgetvna.h \
     VNA/vna.h \
-    VNA/vnadata.h \
     about.h \
     appwindow.h \
     averaging.h \

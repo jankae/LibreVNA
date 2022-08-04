@@ -15,11 +15,11 @@ TwoThru::TwoThru()
     Z0 = 50.0;
 }
 
-void TwoThru::transformDatapoint(VNAData &p)
+void TwoThru::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
     // correct measurement
     if(points.size() > 0) {
-        Tparam meas(p.S);
+        Tparam meas(p.toSparam(1,2));
 
         Tparam inv1, inv2;
         if(p.frequency < points.front().freq) {
@@ -49,7 +49,7 @@ void TwoThru::transformDatapoint(VNAData &p)
         // perform correction
         Tparam corrected = inv1*meas*inv2;
         // transform back into S parameters
-        p.S = Sparam(corrected);
+        p.fromSparam(Sparam(corrected), 1, 2);
     }
 }
 
@@ -99,7 +99,7 @@ void TwoThru::updateGUI()
     }
 }
 
-void TwoThru::measurementCompleted(std::vector<VNAData> m)
+void TwoThru::measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m)
 {
     if (measuring2xthru) {
         measurements2xthru = m;
@@ -210,7 +210,7 @@ void TwoThru::fromJSON(nlohmann::json j)
     }
 }
 
-std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> data_2xthru)
+std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru)
 {
     // calculate error boxes, see https://www.freelists.org/post/si-list/IEEE-P370-Opensource-Deembedding-MATLAB-functions
     // create vectors of S parameters
@@ -229,10 +229,10 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> da
             // ignore possible DC point
             continue;
         }
-        S11.push_back(m.S.m11);
-        S12.push_back(m.S.m12);
-        S21.push_back(m.S.m21);
-        S22.push_back(m.S.m22);
+        S11.push_back(m.measurements["S11"]);
+        S12.push_back(m.measurements["S12"]);
+        S21.push_back(m.measurements["S21"]);
+        S22.push_back(m.measurements["S22"]);
         f.push_back(m.frequency);
     }
     auto n = f.size();
@@ -390,7 +390,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> da
     return ret;
 }
 
-std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> data_2xthru, std::vector<VNAData> data_fix_dut_fix, double z0)
+std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru, std::vector<VirtualDevice::VNAMeasurement> data_fix_dut_fix, double z0)
 {
     vector<Point> ret;
 
@@ -414,13 +414,13 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> da
     vector<Sparam> p;
     vector<double> f;
     for(auto d : data_2xthru) {
-        p.push_back(d.S);
+        p.push_back(d.toSparam(1, 2));
         f.push_back(d.frequency);
     }
     auto data_2xthru_Sparam = p;
     vector<Sparam> data_fix_dut_fix_Sparam;
     for(auto d : data_fix_dut_fix) {
-        data_fix_dut_fix_Sparam.push_back(d.S);
+        data_fix_dut_fix_Sparam.push_back(d.toSparam(1, 2));
     }
 
     // grabbing S21
@@ -663,9 +663,9 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VNAData> da
     return ret;
 }
 
-std::vector<VNAData> TwoThru::interpolateEvenFrequencySteps(std::vector<VNAData> input)
+std::vector<VirtualDevice::VNAMeasurement> TwoThru::interpolateEvenFrequencySteps(std::vector<VirtualDevice::VNAMeasurement> input)
 {
-    vector<VNAData> ret;
+    vector<VirtualDevice::VNAMeasurement> ret;
     if(input.size() > 1) {
         int size = input.size();
         double freqStep = 0.0;
@@ -687,8 +687,8 @@ std::vector<VNAData> TwoThru::interpolateEvenFrequencySteps(std::vector<VNAData>
             // needs to interpolate
             double freq = freqStep;
             while(freq <= input.back().frequency) {
-                VNAData interp;
-                auto it = lower_bound(input.begin(), input.end(), freq, [](const VNAData &lhs, const double f) -> bool {
+                VirtualDevice::VNAMeasurement interp;
+                auto it = lower_bound(input.begin(), input.end(), freq, [](const VirtualDevice::VNAMeasurement &lhs, const double f) -> bool {
                     return lhs.frequency < f;
                 });
                 if(it->frequency == freq) {
@@ -699,12 +699,7 @@ std::vector<VNAData> TwoThru::interpolateEvenFrequencySteps(std::vector<VNAData>
                     it--;
                     auto low = *it;
                     double alpha = (freq - low.frequency) / (high.frequency - low.frequency);
-                    interp.S.m11 = low.S.m11 * (1.0 - alpha) + high.S.m11 * alpha;
-                    interp.S.m12 = low.S.m12 * (1.0 - alpha) + high.S.m12 * alpha;
-                    interp.S.m21 = low.S.m21 * (1.0 - alpha) + high.S.m21 * alpha;
-                    interp.S.m22 = low.S.m22 * (1.0 - alpha) + high.S.m22 * alpha;
-                    interp.cdbm = low.cdbm * (1.0 - alpha) + high.cdbm * alpha;
-                    interp.reference_impedance = low.reference_impedance * (1.0 - alpha) + high.reference_impedance * alpha;
+                    interp = low.interpolateTo(high, alpha);
                 }
                 interp.pointNum = it->pointNum;
                 interp.frequency = freq;

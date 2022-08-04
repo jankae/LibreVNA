@@ -16,7 +16,7 @@
 using namespace std;
 using namespace mup;
 
-Trace::Trace(QString name, QColor color, LiveParameter live)
+Trace::Trace(QString name, QColor color, QString live)
     : model(nullptr),
       _name(name),
       _color(color),
@@ -25,7 +25,7 @@ Trace::Trace(QString name, QColor color, LiveParameter live)
       hashSet(false),
       JSONskipHash(false),
       _liveType(LivedataType::Overwrite),
-      _liveParam(live),
+      liveParam(live),
       vFactor(0.66),
       reflection(true),
       visible(true),
@@ -130,12 +130,12 @@ void Trace::addData(const Trace::Data& d, DataType domain, double reference_impe
     emit outputSamplesChanged(index, index + 1);
 }
 
-void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettings &s, int index)
+void Trace::addData(const Trace::Data &d, const VirtualDevice::SASettings &s, int index)
 {
     settings.SA = s;
     settings.valid = true;
     auto domain = DataType::Frequency;
-    if (s.f_start == s.f_stop) {
+    if (s.freqStart == s.freqStop) {
         // in zerospan mode
         domain = DataType::TimeZeroSpan;
     }
@@ -143,7 +143,7 @@ void Trace::addData(const Trace::Data &d, const Protocol::SpectrumAnalyzerSettin
 }
 
 void Trace::setName(QString name) {
-    _name = name;
+    name = name;
     emit nameChanged();
 }
 
@@ -259,7 +259,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     return lastTraceName;
 }
 
-void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VNAData> &data)
+void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VirtualDevice::VNAMeasurement> &data)
 {
     S11.clear();
     S12.clear();
@@ -267,25 +267,26 @@ void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, c
     S22.clear();
     for(auto d : data) {
         Trace::Data td;
+        auto S = d.toSparam(1, 2);
         td.x = d.frequency;
-        td.y = d.S.m11;
+        td.y = S.m11;
         S11.addData(td, DataType::Frequency);
-        td.y = d.S.m12;
+        td.y = S.m12;
         S12.addData(td, DataType::Frequency);
-        td.y = d.S.m21;
+        td.y = S.m21;
         S21.addData(td, DataType::Frequency);
-        td.y = d.S.m22;
+        td.y = S.m22;
         S22.addData(td, DataType::Frequency);
     }
 }
 
-void Trace::fromLivedata(Trace::LivedataType type, LiveParameter param)
+void Trace::fromLivedata(Trace::LivedataType type, QString param)
 {
     clearMathSources();
     source = Source::Live;
     _liveType = type;
-    _liveParam = param;
-    if(param == LiveParameter::S11 || param == LiveParameter::S22) {
+    liveParam = param;
+    if(param.length() == 3 && param[0] == 'S' && param[1].isDigit() && param[1] == param[2]) {
         reflection = true;
     } else {
         reflection = false;
@@ -305,8 +306,8 @@ void Trace::fromMath()
 }
 
 void Trace::setColor(QColor color) {
-    if(_color != color) {
-        _color = color;
+    if(color != color) {
+        color = color;
         emit colorChanged(this);
     }
 }
@@ -637,6 +638,16 @@ const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
     return mathOps;
 }
 
+bool Trace::isSAParameter(QString param)
+{
+    return param.length() == 5 && param.startsWith("PORT") && param[4].isDigit();
+}
+
+bool Trace::isVNAParameter(QString param)
+{
+    return param.length() == 3 && param[0] == 'S' && param[1].isDigit() && param[2].isDigit();
+}
+
 double Trace::velocityFactor()
 {
     return vFactor;
@@ -678,7 +689,7 @@ nlohmann::json Trace::toJSON()
     switch(source) {
     case Source::Live:
         j["type"] = "Live";
-        j["parameter"] = _liveParam;
+        j["parameter"] = liveParam.toStdString();
         j["livetype"] = _liveType;
         j["paused"] = paused;
         break;
@@ -737,7 +748,7 @@ void Trace::fromJSON(nlohmann::json j)
     visible = j.value("visible", true);
     auto type = QString::fromStdString(j.value("type", "Live"));
     if(type == "Live") {
-        _liveParam = j.value("parameter", LiveParameter::S11);
+        liveParam = QString::fromStdString(j.value("parameter", "S11"));
         _liveType = j.value("livetype", LivedataType::Overwrite);
         paused = j.value("paused", false);
     } else if(type == "Touchstone" || type == "File") {
@@ -862,9 +873,9 @@ std::vector<Trace *> Trace::createFromCSV(CSV &csv)
     return traces;
 }
 
-std::vector<VNAData> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
+std::vector<VirtualDevice::VNAMeasurement> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
 {
-    vector<VNAData> ret;
+    vector<VirtualDevice::VNAMeasurement> ret;
 
     // Sanity check traces
     unsigned int samples = S11.size();
@@ -906,84 +917,16 @@ std::vector<VNAData> Trace::assembleDatapoints(const Trace &S11, const Trace &S1
 
     // Checks passed, assemble datapoints
     for(unsigned int i=0;i<samples;i++) {
-        Protocol::Datapoint d;
-        d.real_S11 = real(S11.sample(i).y);
-        d.imag_S11 = imag(S11.sample(i).y);
-        d.real_S12 = real(S12.sample(i).y);
-        d.imag_S12 = imag(S12.sample(i).y);
-        d.real_S21 = real(S21.sample(i).y);
-        d.imag_S21 = imag(S21.sample(i).y);
-        d.real_S22 = real(S22.sample(i).y);
-        d.imag_S22 = imag(S22.sample(i).y);
+        VirtualDevice::VNAMeasurement d;
+        d.measurements["S11"] = S11.sample(i).y;
+        d.measurements["S12"] = S12.sample(i).y;
+        d.measurements["S21"] = S21.sample(i).y;
+        d.measurements["S22"] = S22.sample(i).y;
         d.pointNum = i;
         d.frequency = freqs[i];
         ret.push_back(d);
     }
     return ret;
-}
-
-Trace::LiveParameter Trace::ParameterFromString(QString s)
-{
-    s = s.toUpper();
-    if(s == "S11") {
-        return LiveParameter::S11;
-    } else if(s == "S12") {
-        return LiveParameter::S12;
-    } else if(s == "S21") {
-        return LiveParameter::S21;
-    } else if(s == "S22") {
-        return LiveParameter::S22;
-    } else if(s == "PORT1") {
-        return LiveParameter::Port1;
-    } else if(s == "PORT2") {
-        return LiveParameter::Port2;
-    } else {
-        return LiveParameter::Invalid;
-    }
-}
-
-QString Trace::ParameterToString(LiveParameter p)
-{
-    switch(p) {
-    case Trace::LiveParameter::S11: return "S11";
-    case Trace::LiveParameter::S12: return "S12";
-    case Trace::LiveParameter::S21: return "S21";
-    case Trace::LiveParameter::S22: return "S22";
-    case Trace::LiveParameter::Port1: return "Port1";
-    case Trace::LiveParameter::Port2: return "Port2";
-    default: return "Invalid";
-    }
-}
-
-bool Trace::isVNAParameter(Trace::LiveParameter p)
-{
-    switch(p) {
-    case Trace::LiveParameter::S11:
-    case Trace::LiveParameter::S12:
-    case Trace::LiveParameter::S21:
-    case Trace::LiveParameter::S22:
-        return true;
-    case Trace::LiveParameter::Port1:
-    case Trace::LiveParameter::Port2:
-    default:
-        return false;
-    }
-}
-
-bool Trace::isSAParamater(Trace::LiveParameter p)
-{
-    switch(p) {
-    case Trace::LiveParameter::S11:
-    case Trace::LiveParameter::S12:
-    case Trace::LiveParameter::S21:
-    case Trace::LiveParameter::S22:
-        return false;
-    case Trace::LiveParameter::Port1:
-    case Trace::LiveParameter::Port2:
-        return true;
-    default:
-        return false;
-    }
 }
 
 Trace::LivedataType Trace::TypeFromString(QString s)
@@ -1365,7 +1308,7 @@ unsigned int Trace::getFileParameter() const
 
 double Trace::getNoise(double frequency)
 {
-    if(source != Trace::Source::Live || !settings.valid || (_liveParam != LiveParameter::Port1 && _liveParam != LiveParameter::Port2) || lastMath->getDataType() != DataType::Frequency) {
+    if(source != Trace::Source::Live || !settings.valid || !liveParam.startsWith("PORT") || lastMath->getDataType() != DataType::Frequency) {
         // data not suitable for noise calculation
         return std::numeric_limits<double>::quiet_NaN();
     }

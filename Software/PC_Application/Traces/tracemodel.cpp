@@ -1,4 +1,4 @@
-#include "tracemodel.h"
+﻿#include "tracemodel.h"
 
 #include <QIcon>
 #include <QDebug>
@@ -161,9 +161,7 @@ bool TraceModel::PortExcitationRequired(int port)
         if(t->getSource() == Trace::Source::Live && !t->isPaused()) {
             // this trace needs measurements from VNA, check if port has to be excited for its measurement
             auto param = t->liveParameter();
-            if(port == 1 && (param == Trace::LiveParameter::S11 || param == Trace::LiveParameter::S21)) {
-                return true;
-            } else if(port == 2 && (param == Trace::LiveParameter::S22 || param == Trace::LiveParameter::S12)) {
+            if(port == QString(param[2]).toInt()) {
                 return true;
             }
         }
@@ -214,7 +212,7 @@ void TraceModel::clearLiveData()
     }
 }
 
-void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
+void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype)
 {
     source = DataSource::VNA;
     for(auto t : traces) {
@@ -226,31 +224,28 @@ void TraceModel::addVNAData(const VNAData& d, TraceMath::DataType datatype)
                 td.x = d.frequency;
                 break;
             case TraceMath::DataType::Power:
-                td.x = (double) d.cdbm / 100.0;
+                td.x = d.dBm;
                 break;
             case TraceMath::DataType::TimeZeroSpan:
-                td.x = d.time;
+                td.x = d.us;
                 index = d.pointNum;
                 break;
             default:
                 // invalid type, can not add
                 return;
             }
-            switch(t->liveParameter()) {
-            case Trace::LiveParameter::S11: td.y = d.S.m11; break;
-            case Trace::LiveParameter::S12: td.y = d.S.m12; break;
-            case Trace::LiveParameter::S21: td.y = d.S.m21; break;
-            case Trace::LiveParameter::S22: td.y = d.S.m22; break;
-            default:
-                // not a VNA trace, skip
+            if(d.measurements.count(t->liveParameter())) {
+                td.y = d.measurements.at(t->liveParameter());
+            } else {
+                // parameter not included in data, skip
                 continue;
             }
-            t->addData(td, datatype, d.reference_impedance, index);
+            t->addData(td, datatype, d.Z0, index);
         }
     }
 }
 
-void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Protocol::SpectrumAnalyzerSettings& settings)
+void TraceModel::addSAData(const VirtualDevice::SAMeasurement& d, const VirtualDevice::SASettings &settings)
 {
     source = DataSource::SA;
     for(auto t : traces) {
@@ -264,11 +259,10 @@ void TraceModel::addSAData(const Protocol::SpectrumAnalyzerResult& d, const Prot
             } else {
                 td.x = d.frequency;
             }
-            switch(t->liveParameter()) {
-            case Trace::LiveParameter::Port1: td.y = complex<double>(d.port1, 0); break;
-            case Trace::LiveParameter::Port2: td.y = complex<double>(d.port2, 0); break;
-            default:
-                // not a SA trace, skip
+            if(d.measurements.count(t->liveParameter())) {
+                td.y = d.measurements.at(t->liveParameter());
+            } else {
+                // parameter not included in data, skip
                 continue;
             }
             t->addData(td, settings, index);

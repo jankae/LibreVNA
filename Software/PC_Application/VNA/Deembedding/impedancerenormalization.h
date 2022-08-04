@@ -13,7 +13,7 @@ class ImpedanceRenormalization : public DeembeddingOption
 public:
     ImpedanceRenormalization();
 
-    void transformDatapoint(VNAData &p) override;
+    void transformDatapoint(VirtualDevice::VNAMeasurement &p) override;
     Type getType() override { return Type::ImpedanceRenormalization;}
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;

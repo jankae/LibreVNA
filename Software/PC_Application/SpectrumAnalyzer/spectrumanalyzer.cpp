@@ -61,10 +61,10 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
 
     // Create default traces
     auto tPort1 = new Trace("Port1", Qt::yellow);
-    tPort1->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::Port1);
+    tPort1->fromLivedata(Trace::LivedataType::Overwrite, "PORT1");
     traceModel.addTrace(tPort1);
     auto tPort2 = new Trace("Port2", Qt::blue);
-    tPort2->fromLivedata(Trace::LivedataType::Overwrite, Trace::LiveParameter::Port2);
+    tPort2->fromLivedata(Trace::LivedataType::Overwrite, "PORT2");
     traceModel.addTrace(tPort2);
 
     auto traceXY = new TraceXYPlot(traceModel);
