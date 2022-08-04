@@ -2,7 +2,7 @@
 
 #include "ui_signalgenwidget.h"
 
-SignalgeneratorWidget::SignalgeneratorWidget(Device *&dev, QWidget *parent) :
+SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SignalgeneratorWidget),
     dev(dev)
@@ -32,16 +32,16 @@ SignalgeneratorWidget::SignalgeneratorWidget(Device *&dev, QWidget *parent) :
     ui->steps->setPrecision(0);
 
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
-       if(newval < Device::Info(dev).limits_minFreq) {
-           newval = Device::Info(dev).limits_minFreq;
-       } else if (newval > Device::Info(dev).limits_maxFreq) {
-           newval = Device::Info(dev).limits_maxFreq;
+       if(newval < VirtualDevice::getInfo(dev).Limits.minFreq) {
+           newval = VirtualDevice::getInfo(dev).Limits.minFreq;
+       } else if (newval > VirtualDevice::getInfo(dev).Limits.maxFreq) {
+           newval = VirtualDevice::getInfo(dev).Limits.maxFreq;
        }
        ui->frequency->setValueQuiet(newval);
        if (newval < ui->span->value()/2)
            ui->span->setValueQuiet(newval/2);
-       if (newval + ui->span->value()/2 > Device::Info(dev).limits_maxFreq)
-           ui->span->setValueQuiet((Device::Info(dev).limits_maxFreq - newval)*2);
+       if (newval + ui->span->value()/2 > VirtualDevice::getInfo(dev).Limits.maxFreq)
+           ui->span->setValueQuiet((VirtualDevice::getInfo(dev).Limits.maxFreq - newval)*2);
        newval = ui->frequency->value() - ui->span->value()/2;
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -50,8 +50,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(Device *&dev, QWidget *parent) :
     connect(ui->span, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq) {
-           newval = Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq;
+       } else if (newval > VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq) {
+           newval = VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq;
        }
        ui->span->setValueQuiet(newval);
 
@@ -60,8 +60,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(Device *&dev, QWidget *parent) :
            ui->frequency->setValueQuiet(ui->span->value()/2);
        }
        newF = ui->frequency->value() + ui->span->value()/2;
-       if (newF  > Device::Info(dev).limits_maxFreq) {
-           ui->frequency->setValueQuiet(Device::Info(dev).limits_maxFreq - ui->span->value()/2);
+       if (newF  > VirtualDevice::getInfo(dev).Limits.maxFreq) {
+           ui->frequency->setValueQuiet(VirtualDevice::getInfo(dev).Limits.maxFreq - ui->span->value()/2);
        }
 
        newval = ui->frequency->value() - ui->span->value()/2;
@@ -72,8 +72,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(Device *&dev, QWidget *parent) :
     connect(ui->current, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq) {
-           newval = Device::Info(dev).limits_maxFreq - Device::Info(dev).limits_minFreq;
+       } else if (newval > VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq) {
+           newval = VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq;
        }
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -140,22 +140,21 @@ void SignalgeneratorWidget::timerEvent(QTimerEvent *event)
     }
 }
 
-Protocol::GeneratorSettings SignalgeneratorWidget::getDeviceStatus()
+VirtualDevice::SGSettings SignalgeneratorWidget::getDeviceStatus()
 {
-    Protocol::GeneratorSettings s = {};
+    VirtualDevice::SGSettings s = {};
     if (ui->EnabledSweep->isChecked())
-        s.frequency = ui->current->value();
+        s.freq = ui->current->value();
     else
-        s.frequency = ui->frequency->value();
-    s.cdbm_level = ui->levelSpin->value() * 100.0;
+        s.freq = ui->frequency->value();
+    s.dBm = ui->levelSpin->value();
     if(ui->EnablePort1->isChecked()) {
-        s.activePort = 1;
+        s.port = 1;
     } else if(ui->EnablePort2->isChecked()) {
-        s.activePort = 2;
+        s.port = 2;
     } else {
-        s.activePort = 0;
+        s.port = 0;
     }
-    s.applyAmplitudeCorrection = 1;
     return s;
 }
 

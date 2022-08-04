@@ -1,7 +1,7 @@
 ﻿#ifndef APPWINDOW_H
 #define APPWINDOW_H
 
-#include "Device/device.h"
+#include "Device/virtualdevice.h".h"
 #include "Traces/traceplot.h"
 #include "Calibration/calibration.h"
 #include "Traces/tracemodel.h"
@@ -43,7 +43,7 @@ public:
     Ui::MainWindow *getUi() const;
     QStackedWidget *getCentral() const;
     ModeHandler* getModeHandler() const;
-    Device*&getDevice();
+    VirtualDevice *getDevice();
 
     const QString& getAppVersion() const;
     const QString& getAppGitHash() const;
@@ -62,11 +62,12 @@ private slots:
     void DisconnectDevice();
     int UpdateDeviceList();
     void StartManualControl();
+    void UpdateReferenceToolbar();
     void UpdateReference();
     void UpdateAcquisitionFrequencies();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
-    void DeviceStatusUpdated();
+    void DeviceStatusUpdated(VirtualDevice::Status &status);
     void SourceCalibrationDialog();
     void ReceiverCalibrationDialog();
     void FrequencyCalibrationDialog();
@@ -102,7 +103,7 @@ private:
     } toolbars;
 
     ModeHandler *modeHandler;
-    Device *device;
+    VirtualDevice *vdevice;
     DeviceLog deviceLog;
     QString deviceSerial;
     QActionGroup *deviceActionGroup;

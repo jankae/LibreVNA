@@ -68,99 +68,6 @@ static const QString APP_GIT_HASH = QString(GITHASH);
 
 static bool noGUIset = false;
 
-
-class Reference
-{
-public:
-
-    enum class TypeIn {
-        Internal,
-        External,
-        Auto,
-        None
-    };
-
-    enum class OutFreq {
-        MHZ10,
-        MHZ100,
-        Off,
-        None
-    };
-
-    static QString OutFreqToLabel(Reference::OutFreq t)
-    {
-        switch(t) {
-        case OutFreq::MHZ10: return "10 MHz";
-        case OutFreq::MHZ100: return "100 MHz";
-        case OutFreq::Off: return "Off";
-        default: return "Invalid";
-        }
-    }
-
-    static QString OutFreqToKey(Reference::OutFreq f)
-    {
-        switch(f) {
-        case OutFreq::MHZ10: return "10 MHz";
-        case OutFreq::MHZ100: return "100 MHz";
-        case OutFreq::Off: return "Off";
-        default: return "Invalid";
-        }
-    }
-
-    static Reference::OutFreq KeyToOutFreq(QString key)
-    {
-        for (auto r: Reference::getOutFrequencies()) {
-            if(OutFreqToKey((Reference::OutFreq) r) == key) {
-                return (Reference::OutFreq) r;
-            }
-        }
-        // not found
-        return Reference::OutFreq::None;
-    }
-
-
-    static QString TypeToLabel(TypeIn t)
-    {
-        switch(t) {
-        case TypeIn::Internal: return "Internal";
-        case TypeIn::External: return "External";
-        case TypeIn::Auto: return "Auto";
-        default: return "Invalid";
-        }
-    }
-
-    static const QString TypeToKey(TypeIn t)
-    {
-        switch(t) {
-        case TypeIn::Internal: return "Int";
-        case TypeIn::External: return "Ext";
-        case TypeIn::Auto: return "Auto";
-        default: return "Invalid";
-        }
-    }
-
-    static TypeIn KeyToType(QString key)
-    {
-        for (auto r: Reference::getReferencesIn()) {
-            if(TypeToKey((TypeIn) r) == key) {
-                return (TypeIn) r;
-            }
-        }
-        // not found
-        return TypeIn::None;
-    }
-
-    static std::vector<Reference::TypeIn> getReferencesIn()
-    {
-        return {TypeIn::Internal, TypeIn::External, TypeIn::Auto};
-    }
-
-    static std::vector<Reference::OutFreq> getOutFrequencies()
-    {
-        return {OutFreq::Off, OutFreq::MHZ10, OutFreq::MHZ100};
-    }
-};
-
 AppWindow::AppWindow(QWidget *parent)
     : QMainWindow(parent)
     , deviceActionGroup(new QActionGroup(this))
@@ -193,7 +100,7 @@ AppWindow::AppWindow(QWidget *parent)
     } else {
         Preferences::getInstance().load();
     }
-    device = nullptr;
+    vdevice = nullptr;
     modeHandler = nullptr;
 
     if(parser.isSet("port")) {
@@ -370,7 +277,7 @@ void AppWindow::SetupMenu()
         {
             active->updateGraphColors();
 
-            if(device) {
+            if(vdevice) {
                 active->initializeDevice();
             }
         }
@@ -396,7 +303,7 @@ void AppWindow::closeEvent(QCloseEvent *event)
     if(modeHandler->getActiveMode()) {
         modeHandler->deactivate(modeHandler->getActiveMode());
     }
-    delete device;
+    delete vdevice;
     delete modeHandler;
     modeHandler = nullptr;
     pref.store();
@@ -410,33 +317,36 @@ bool AppWindow::ConnectToDevice(QString serial)
     } else {
         qDebug() << "Trying to connect to" << serial;
     }
-    if(device) {
+    if(vdevice) {
         qDebug() << "Already connected to a device, disconnecting first...";
         DisconnectDevice();
     }
     try {
         qDebug() << "Attempting to connect to device...";
-        device = new Device(serial);
+        vdevice = new VirtualDevice(serial);
         UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
-        connect(device, &Device::LogLineReceived, &deviceLog, &DeviceLog::addLine);
-        connect(device, &Device::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
-        connect(device, &Device::DeviceStatusUpdated, this, &AppWindow::DeviceStatusUpdated);
-        connect(device, &Device::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
+        connect(vdevice, &VirtualDevice::LogLineReceived, &deviceLog, &DeviceLog::addLine);
+        connect(vdevice, &VirtualDevice::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
+        connect(vdevice, &VirtualDevice::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
+        connect(vdevice, &VirtualDevice::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
-        ui->actionManual_Control->setEnabled(true);
-        ui->actionFirmware_Update->setEnabled(true);
-        ui->actionSource_Calibration->setEnabled(true);
-        ui->actionReceiver_Calibration->setEnabled(true);
-        ui->actionFrequency_Calibration->setEnabled(true);
+        if(!vdevice->isCompoundDevice()) {
+            ui->actionManual_Control->setEnabled(true);
+            ui->actionFirmware_Update->setEnabled(true);
+            ui->actionSource_Calibration->setEnabled(true);
+            ui->actionReceiver_Calibration->setEnabled(true);
+            ui->actionFrequency_Calibration->setEnabled(true);
+        }
 
         UpdateAcquisitionFrequencies();
         if (modeHandler->getActiveMode()) {
             modeHandler->getActiveMode()->initializeDevice();
         }
+        UpdateReferenceToolbar();
         UpdateReference();
 
         for(auto d : deviceActionGroup->actions()) {
-            if(d->text() == device->serial()) {
+            if(d->text() == vdevice->serial()) {
                 d->blockSignals(true);
                 d->setChecked(true);
                 d->blockSignals(false);
@@ -454,8 +364,8 @@ bool AppWindow::ConnectToDevice(QString serial)
 
 void AppWindow::DisconnectDevice()
 {
-    delete device;
-    device = nullptr;
+    delete vdevice;
+    vdevice = nullptr;
     ui->actionDisconnect->setEnabled(false);
     ui->actionManual_Control->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);
@@ -488,17 +398,10 @@ void AppWindow::CreateToolbars()
     auto tb_reference = new QToolBar("Reference", this);
     tb_reference->addWidget(new QLabel("Ref in:"));
     toolbars.reference.type = new QComboBox();
-    for (auto r: Reference::getReferencesIn()) {
-        toolbars.reference.type->addItem(Reference::TypeToLabel(r), (int)r);
-    }
     tb_reference->addWidget(toolbars.reference.type);
     tb_reference->addSeparator();
     tb_reference->addWidget(new QLabel("Ref out:"));
     toolbars.reference.outFreq = new QComboBox();
-    for (auto f: Reference::getOutFrequencies()) {
-
-        toolbars.reference.outFreq->addItem(Reference::OutFreqToLabel(f), (int)f);
-    }
     tb_reference->addWidget(toolbars.reference.outFreq);
     connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
     connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
@@ -529,8 +432,8 @@ void AppWindow::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        if(device) {
-            return device->serial();
+        if(vdevice) {
+            return vdevice->serial();
         } else {
             return "Not connected";
         }
@@ -629,57 +532,64 @@ void AppWindow::SetupSCPI()
     auto scpi_status = new SCPINode("STAtus");
     scpi_dev->add(scpi_status);
     scpi_status->add(new SCPICommand("UNLOcked", nullptr, [=](QStringList){
-        bool locked = Device::StatusV1(getDevice()).source_locked && Device::StatusV1(getDevice()).LO1_locked;
-        return locked ? "FALSE" : "TRUE";
+        return VirtualDevice::getStatus(getDevice()).unlocked ? "TRUE" : "FALSE";
     }));
     scpi_status->add(new SCPICommand("ADCOVERload", nullptr, [=](QStringList){
-        return Device::StatusV1(getDevice()).ADC_overload ? "TRUE" : "FALSE";
+        return VirtualDevice::getStatus(getDevice()).overload ? "TRUE" : "FALSE";
     }));
     scpi_status->add(new SCPICommand("UNLEVel", nullptr, [=](QStringList){
-        return Device::StatusV1(getDevice()).unlevel ? "TRUE" : "FALSE";
+        return VirtualDevice::getStatus(getDevice()).unlevel ? "TRUE" : "FALSE";
     }));
     auto scpi_info = new SCPINode("INFo");
     scpi_dev->add(scpi_info);
     scpi_info->add(new SCPICommand("FWREVision", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).FW_major)+"."+QString::number(Device::Info(getDevice()).FW_minor)+"."+QString::number(Device::Info(getDevice()).FW_patch);
+        return QString::number(VirtualDevice::getInfo(getDevice()).FW_major)+"."+QString::number(VirtualDevice::getInfo(getDevice()).FW_minor)+"."+QString::number(VirtualDevice::getInfo(getDevice()).FW_patch);
     }));
     scpi_info->add(new SCPICommand("HWREVision", nullptr, [=](QStringList){
-        return QString(Device::Info(getDevice()).HW_Revision);
+        return QString(VirtualDevice::getInfo(getDevice()).HW_Revision);
     }));
     scpi_info->add(new SCPICommand("TEMPeratures", nullptr, [=](QStringList){
-        return QString::number(Device::StatusV1(getDevice()).temp_source)+"/"+QString::number(Device::StatusV1(getDevice()).temp_LO1)+"/"+QString::number(Device::StatusV1(getDevice()).temp_MCU);
+        if(!vdevice) {
+            return QString("0/0/0");
+        } else if(vdevice->isCompoundDevice()) {
+            // TODO
+            return QString();
+        } else {
+            auto dev = vdevice->getDevice();
+            return QString::number(dev->StatusV1().temp_source)+"/"+QString::number(dev->StatusV1().temp_LO1)+"/"+QString::number(dev->StatusV1().temp_MCU);
+        }
     }));
     auto scpi_limits = new SCPINode("LIMits");
     scpi_info->add(scpi_limits);
     scpi_limits->add(new SCPICommand("MINFrequency", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_minFreq);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.minFreq);
     }));
     scpi_limits->add(new SCPICommand("MAXFrequency", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_maxFreq);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxFreq);
     }));
     scpi_limits->add(new SCPICommand("MINIFBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_minIFBW);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.minIFBW);
     }));
     scpi_limits->add(new SCPICommand("MAXIFBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_maxIFBW);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxIFBW);
     }));
     scpi_limits->add(new SCPICommand("MAXPoints", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_maxPoints);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxPoints);
     }));
     scpi_limits->add(new SCPICommand("MINPOWer", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_cdbm_min / 100.0);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.mindBm);
     }));
     scpi_limits->add(new SCPICommand("MAXPOWer", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_cdbm_max / 100.0);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxdBm);
     }));
     scpi_limits->add(new SCPICommand("MINRBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_minRBW);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.minRBW);
     }));
     scpi_limits->add(new SCPICommand("MAXRBW", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_maxRBW);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxRBW);
     }));
     scpi_limits->add(new SCPICommand("MAXHARMonicfrequency", nullptr, [=](QStringList){
-        return QString::number(Device::Info(getDevice()).limits_maxFreqHarmonic);
+        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxFreqHarmonic);
     }));
 
     auto scpi_manual = new SCPINode("MANual");
@@ -938,8 +848,8 @@ int AppWindow::UpdateDeviceList()
     deviceActionGroup->setExclusive(true);
     ui->menuConnect_to->clear();
     auto devices = Device::GetDevices();
-    if(device) {
-        devices.insert(device->serial());
+    if(vdevice) {
+        devices.insert(vdevice->serial());
     }
     int available = 0;
     bool found = false;
@@ -952,7 +862,7 @@ int AppWindow::UpdateDeviceList()
             auto connectAction = ui->menuConnect_to->addAction(d);
             connectAction->setCheckable(true);
             connectAction->setActionGroup(deviceActionGroup);
-            if(device && d == device->serial()) {
+            if(vdevice && d == vdevice->serial()) {
                 connectAction->setChecked(true);
             }
             connect(connectAction, &QAction::triggered, [this, d]() {
@@ -969,14 +879,17 @@ int AppWindow::UpdateDeviceList()
 
 void AppWindow::StartManualControl()
 {
+    if(!vdevice || vdevice->isCompoundDevice()) {
+        return;
+    }
     if(manual) {
         // dialog already active, nothing to do
         return;
     }
-    manual = new ManualControlDialog(*device, this);
+    manual = new ManualControlDialog(*vdevice->getDevice(), this);
     connect(manual, &QDialog::finished, [=](){
         manual = nullptr;
-        if(device) {
+        if(vdevice) {
             modeHandler->getActiveMode()->initializeDevice();
         }
     });
@@ -985,37 +898,48 @@ void AppWindow::StartManualControl()
     }
 }
 
+void AppWindow::UpdateReferenceToolbar()
+{
+    if(!vdevice || !vdevice->getInfo().supportsExtRef) {
+        toolbars.reference.type->setEnabled(false);
+        toolbars.reference.outFreq->setEnabled(false);
+    }
+    // save current setting
+    auto refInBuf = toolbars.reference.type->currentText();
+    auto refOutBuf = toolbars.reference.outFreq->currentText();
+    toolbars.reference.type->clear();
+    for(auto in : vdevice->availableExtRefInSettings()) {
+        toolbars.reference.type->addItem(in);
+    }
+    toolbars.reference.outFreq->clear();
+    for(auto out : vdevice->availableExtRefOutSettings()) {
+        toolbars.reference.outFreq->addItem(in);
+    }
+    // restore previous setting if still available
+    if(toolbars.reference.type->findText(refInBuf) >= 0) {
+        toolbars.reference.type->setCurrentText(refInBuf);
+    } else {
+        toolbars.reference.type->setCurrentIndex(0);
+    }
+    if(toolbars.reference.outFreq->findText(refOutBuf) >= 0) {
+        toolbars.reference.outFreq->setCurrentText(refOutBuf);
+    } else {
+        toolbars.reference.outFreq->setCurrentIndex(0);
+    }
+}
+
 void AppWindow::UpdateReference()
 {
-    if(!device) {
+    if(!vdevice) {
         // can't update without a device connected
         return;
     }
-    Protocol::ReferenceSettings s = {};
-
-    Reference::TypeIn t = static_cast<Reference::TypeIn>(toolbars.reference.type->currentData().toInt());
-    switch (t) {
-    case Reference::TypeIn::External: s.UseExternalRef = 1; break;
-    case Reference::TypeIn::Auto: s.AutomaticSwitch = 1; break;
-    default: break;
-    }
-
-    Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
-    switch(f) {
-    case Reference::OutFreq::MHZ10: s.ExtRefOuputFreq = 10000000; break;
-    case Reference::OutFreq::MHZ100: s.ExtRefOuputFreq = 100000000; break;
-    default: break;
-    }
-
-    Protocol::PacketInfo p;
-    p.type = Protocol::PacketType::Reference;
-    p.reference = s;
-    device->SendPacket(p);
+    vdevice->setExtRef(toolbars.reference.type->currentText(), toolbars.reference.outFreq->currentText());
 }
 
 void AppWindow::UpdateAcquisitionFrequencies()
 {
-    if(!device) {
+    if(!vdevice) {
         return;
     }
     Protocol::PacketInfo p;
@@ -1024,18 +948,21 @@ void AppWindow::UpdateAcquisitionFrequencies()
     p.acquisitionFrequencySettings.IF1 = pref.Acquisition.IF1;
     p.acquisitionFrequencySettings.ADCprescaler = pref.Acquisition.ADCprescaler;
     p.acquisitionFrequencySettings.DFTphaseInc = pref.Acquisition.DFTPhaseInc;
-    device->SendPacket(p);
+    for(auto dev : vdevice->getDevices()) {
+        dev->SendPacket(p);
+    }
 }
 
 void AppWindow::StartFirmwareUpdateDialog()
 {
-    if(device) {
-        auto fw_update = new FirmwareUpdateDialog(device);
-        connect(fw_update, &FirmwareUpdateDialog::DeviceRebooting, this, &AppWindow::DisconnectDevice);
-        connect(fw_update, &FirmwareUpdateDialog::DeviceRebooted, this, &AppWindow::ConnectToDevice);
-        if(AppWindow::showGUI()) {
-            fw_update->exec();
-        }
+    if(!vdevice || vdevice->isCompoundDevice()) {
+        return;
+    }
+    auto fw_update = new FirmwareUpdateDialog(vdevice->getDevice());
+    connect(fw_update, &FirmwareUpdateDialog::DeviceRebooting, this, &AppWindow::DisconnectDevice);
+    connect(fw_update, &FirmwareUpdateDialog::DeviceRebooted, this, &AppWindow::ConnectToDevice);
+    if(AppWindow::showGUI()) {
+        fw_update->exec();
     }
 }
 
@@ -1046,18 +973,29 @@ void AppWindow::DeviceNeedsUpdate(int reported, int expected)
                                 "version (" + QString::number(reported) + ") than expected (" + QString::number(expected) + ").\n"
                                 "A firmware update is strongly recommended. Do you want to update now?", false);
     if (ret) {
+        if (vdevice->isCompoundDevice()) {
+            InformationBox::ShowError("Unable to update the firmware", "The connected device is a compound device, direct firmware"
+                                    " update is not supported. Connect to each LibreVNA individually for the update.");
+            return;
+        }
         StartFirmwareUpdateDialog();
     }
 }
 
-void AppWindow::DeviceStatusUpdated()
+void AppWindow::DeviceStatusUpdated(VirtualDevice::Status &status)
 {
-    UpdateStatusBar(DeviceStatusBar::Updated);
+    lDeviceInfo.setText(status.statusString);
+    lADCOverload.setVisible(status.overload);
+    lUnlevel.setVisible(status.unlevel);
+    lUnlock.setVisible(status.unlocked);
 }
 
 void AppWindow::SourceCalibrationDialog()
 {
-    auto d = new SourceCalDialog(device, modeHandler);
+    if(!vdevice || vdevice->isCompoundDevice()) {
+        return;
+    }
+    auto d = new SourceCalDialog(vdevice->getDevice(), modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1065,7 +1003,10 @@ void AppWindow::SourceCalibrationDialog()
 
 void AppWindow::ReceiverCalibrationDialog()
 {
-    auto d = new ReceiverCalDialog(device, modeHandler);
+    if(!vdevice || vdevice->isCompoundDevice()) {
+        return;
+    }
+    auto d = new ReceiverCalDialog(vdevice->getDevice(), modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1073,7 +1014,10 @@ void AppWindow::ReceiverCalibrationDialog()
 
 void AppWindow::FrequencyCalibrationDialog()
 {
-    auto d = new FrequencyCalDialog(device, modeHandler);
+    if(!vdevice || vdevice->isCompoundDevice()) {
+        return;
+    }
+    auto d = new FrequencyCalDialog(vdevice->getDevice(), modeHandler);
     if(AppWindow::showGUI()) {
         d->exec();
     }
@@ -1109,10 +1053,8 @@ nlohmann::json AppWindow::SaveSetup()
     }
     nlohmann::json ref;
 
-    Reference::TypeIn t = static_cast<Reference::TypeIn>(toolbars.reference.type->currentData().toInt());
-    ref["Mode"] = Reference::TypeToKey(t).toStdString();
-    Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
-    ref["Output"] =  Reference::OutFreqToKey(f).toStdString();
+    ref["Mode"] = toolbars.reference.type->currentText().toStdString();
+    ref["Output"] =  toolbars.reference.outFreq->currentText().toStdString();
     j["Reference"] = ref;
     j["version"] = qlibrevnaApp->applicationVersion().toStdString();
     return j;
@@ -1146,10 +1088,7 @@ void AppWindow::LoadSetup(nlohmann::json j)
 //    auto d = new JSONPickerDialog(j);
 //    d->exec();
     if(j.contains("Reference")) {
-        QString fallback = Reference::TypeToKey(Reference::TypeIn::Internal);
-        auto mode = QString::fromStdString(j["Reference"].value("Mode",fallback.toStdString()));
-        auto index = toolbars.reference.type->findData((int)Reference::KeyToType(mode));
-        toolbars.reference.type->setCurrentIndex(index);
+        toolbars.reference.type->setCurrentText(QString::fromStdString(j["Reference"].value("Mode", "Internal")));
         toolbars.reference.outFreq->setCurrentText(QString::fromStdString(j["Reference"].value("Output", "Off")));
     }
 
@@ -1198,9 +1137,9 @@ void AppWindow::LoadSetup(nlohmann::json j)
     }
 }
 
-Device *&AppWindow::getDevice()
+VirtualDevice *AppWindow::getDevice()
 {
-    return device;
+    return vdevice;
 }
 
 QStackedWidget *AppWindow::getCentral() const
@@ -1274,19 +1213,19 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
 {
     switch(status) {
     case DeviceStatusBar::Connected:
-        lConnectionStatus.setText("Connected to " + device->serial());
-        qInfo() << "Connected to" << device->serial();
-        lDeviceInfo.setText(device->getLastDeviceInfoString());
+        lConnectionStatus.setText("Connected to " + vdevice->serial());
+        qInfo() << "Connected to" << vdevice->serial();
+//        lDeviceInfo.setText(vdevice->getLastDeviceInfoString());
         break;
     case DeviceStatusBar::Disconnected:
         lConnectionStatus.setText("No device connected");
         lDeviceInfo.setText("No device information available yet");
         break;
     case DeviceStatusBar::Updated:
-        lDeviceInfo.setText(device->getLastDeviceInfoString());
-        lADCOverload.setVisible(device->StatusV1().ADC_overload);
-        lUnlevel.setVisible(device->StatusV1().unlevel);
-        lUnlock.setVisible(!device->StatusV1().LO1_locked || !device->StatusV1().source_locked);
+//        lDeviceInfo.setText(vdevice->getLastDeviceInfoString());
+//        lADCOverload.setVisible(vdevice->StatusV1().ADC_overload);
+//        lUnlevel.setVisible(vdevice->StatusV1().unlevel);
+//        lUnlock.setVisible(!vdevice->StatusV1().LO1_locked || !vdevice->StatusV1().source_locked);
         break;
     default:
         // invalid status

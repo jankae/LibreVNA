@@ -115,7 +115,7 @@ void Mode::deactivate()
     qDebug() << "Deactivated mode" << name;
 
     if(window->getDevice()) {
-        window->getDevice()->SetIdle();
+        window->getDevice()->setIdle();
     }
 }
 

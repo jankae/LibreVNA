@@ -14,7 +14,7 @@
 #include "Tools/impedancematchdialog.h"
 #include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
-#include "Device/firmwareupdatedialog.h"
+#include "Device/virtualdevice.h".h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
 
@@ -164,7 +164,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     cbWindowType->addItem("Flat Top");
     cbWindowType->setCurrentIndex(1);
     connect(cbWindowType, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       SetWindow((Window) index);
+       SetWindow((VirtualDevice::SASettings::Window) index);
     });
     tb_acq->addWidget(cbWindowType);
 
@@ -177,7 +177,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     cbDetector->addItem("Average");
     cbDetector->setCurrentIndex(0);
     connect(cbDetector, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       SetDetector((Detector) index);
+       SetDetector((VirtualDevice::SASettings::Detector) index);
     });
     tb_acq->addWidget(cbDetector);
 
@@ -286,14 +286,14 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     if(pref.Startup.RememberSweepSettings) {
         LoadSweepSettings();
     } else {
-        settings.f_start = pref.Startup.SA.start;
-        settings.f_stop = pref.Startup.SA.stop;
+        settings.freqStart = pref.Startup.SA.start;
+        settings.freqStop = pref.Startup.SA.stop;
         ConstrainAndUpdateFrequencies();
         SetRBW(pref.Startup.SA.RBW);
         SetAveraging(pref.Startup.SA.averaging);
-        settings.pointNum = 1001;
-        SetWindow((Window) pref.Startup.SA.window);
-        SetDetector((Detector) pref.Startup.SA.detector);
+        settings.points = 1001;
+        SetWindow((VirtualDevice::SASettings::Window) pref.Startup.SA.window);
+        SetDetector((VirtualDevice::SASettings::Detector) pref.Startup.SA.detector);
         SetSignalID(pref.Startup.SA.signalID);
     }
 
@@ -308,7 +308,7 @@ void SpectrumAnalyzer::deactivate()
 
 void SpectrumAnalyzer::initializeDevice()
 {
-    connect(window->getDevice(), &Device::SpectrumResultReceived, this, &SpectrumAnalyzer::NewDatapoint, Qt::UniqueConnection);
+    connect(window->getDevice(), &VirtualDevice::SAmeasurementReceived, this, &SpectrumAnalyzer::NewDatapoint, Qt::UniqueConnection);
 
     // Configure initial state of device
     SettingsChanged();
@@ -320,20 +320,20 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     // save current sweep/acquisition settings
     nlohmann::json sweep;
     nlohmann::json freq;
-    freq["start"] = settings.f_start;
-    freq["stop"] = settings.f_stop;
+    freq["start"] = settings.freqStart;
+    freq["stop"] = settings.freqStop;
     sweep["frequency"] = freq;
     sweep["single"] = singleSweep;
     nlohmann::json acq;
     acq["RBW"] = settings.RBW;
-    acq["window"] = WindowToString((Window) settings.WindowType).toStdString();
-    acq["detector"] = DetectorToString((Detector) settings.Detector).toStdString();
-    acq["signal ID"] = settings.SignalID ? true : false;
+    acq["window"] = WindowToString((VirtualDevice::SASettings::Window) settings.window).toStdString();
+    acq["detector"] = DetectorToString((VirtualDevice::SASettings::Detector) settings.detector).toStdString();
+    acq["signal ID"] = settings.signalID ? true : false;
     sweep["acquisition"] = acq;
     nlohmann::json tracking;
     tracking["enabled"] = settings.trackingGenerator ? true : false;
-    tracking["port"] = settings.trackingGeneratorPort ? 2 : 1;
-    tracking["offset"] = settings.trackingGeneratorOffset;
+    tracking["port"] = settings.trackingPort ? 2 : 1;
+    tracking["offset"] = settings.trackingOffset;
     tracking["power"] = (double) settings.trackingPower / 100.0; // convert to dBm
     sweep["trackingGenerator"] = tracking;
 
@@ -343,8 +343,11 @@ nlohmann::json SpectrumAnalyzer::toJSON()
         norm["stop"] = normalize.f_stop;
         norm["points"] = normalize.points;
         norm["level"] = normalize.Level->value();
-        norm["port1"] = normalize.port1Correction;
-        norm["port2"] = normalize.port2Correction;
+        nlohmann::json jCorr;
+        for(auto m : normalize.portCorrection) {
+            jCorr[m.first.toStdString()] = m.second;
+        }
+        norm["corrections"] = jCorr;
         sweep["normalization"] = norm;
     }
     j["sweep"] = sweep;
@@ -374,25 +377,25 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
         auto sweep = j["sweep"];
         if(sweep.contains("frequency")) {
             auto freq = sweep["frequency"];
-            SetStartFreq(freq.value("start", settings.f_start));
-            SetStopFreq(freq.value("stop", settings.f_start));
+            SetStartFreq(freq.value("start", settings.freqStart));
+            SetStopFreq(freq.value("stop", settings.freqStop));
         }
         if(sweep.contains("acquisition")) {
             auto acq = sweep["acquisition"];
             SetRBW(acq.value("RBW", settings.RBW));
             auto w = WindowFromString(QString::fromStdString(acq.value("window", "")));
-            if(w == Window::Last) {
+            if(w == VirtualDevice::SASettings::Window::Last) {
                 // invalid, keep current value
-                w = (Window) settings.WindowType;
+                w = (VirtualDevice::SASettings::Window) settings.window;
             }
             SetWindow(w);
             auto d = DetectorFromString(QString::fromStdString(acq.value("detector", "")));
-            if(d == Detector::Last) {
+            if(d == VirtualDevice::SASettings::Detector::Last) {
                 // invalid, keep current value
-                d = (Detector) settings.Detector;
+                d = (VirtualDevice::SASettings::Detector) settings.detector;
             }
             SetDetector(d);
-            SetSignalID(acq.value("signal ID", settings.SignalID ? true : false));
+            SetSignalID(acq.value("signal ID", settings.signalID ? true : false));
         }
         if(sweep.contains("trackingGenerator")) {
             auto tracking = sweep["trackingGenerator"];
@@ -401,29 +404,33 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
             // Function expects 0 for port1, 1 for port2
             SetTGPort(port - 1);
             SetTGLevel(tracking.value("power", settings.trackingPower));
-            SetTGOffset(tracking.value("offset", settings.trackingGeneratorOffset));
+            SetTGOffset(tracking.value("offset", settings.trackingOffset));
         }
         if(sweep.contains("normalization")) {
             auto norm = sweep["normalization"];
             // restore normalization data
-            normalize.port1Correction.clear();
-            for(double p1 : norm["port1"]) {
-                normalize.port1Correction.push_back(p1);
-            }
-            normalize.port2Correction.clear();
-            for(double p2 : norm["port2"]) {
-                normalize.port2Correction.push_back(p2);
+            normalize.portCorrection.clear();
+            if(norm.contains("corrections")) {
+                for(auto& el : norm["corrections"].items()) {
+                    normalize.portCorrection[QString::fromStdString(el.key())] = {};
+                    for(auto p : el.value()) {
+                        normalize.portCorrection[QString::fromStdString(el.key())].push_back(p);
+                    }
+                }
             }
             normalize.f_start = norm.value("start", normalize.f_start);
             normalize.f_stop = norm.value("stop", normalize.f_stop);
             normalize.points = norm.value("points", normalize.points);
             normalize.Level->setValue(norm.value("level", normalize.Level->value()));
-            if((normalize.port1Correction.size() == normalize.points) && (normalize.port1Correction.size() == normalize.points)) {
-                // got the correct number of points
-                EnableNormalization(true);
-            } else {
-                EnableNormalization(false);
+            // check correction vector size
+            bool correctSize = true;
+            for(auto c : normalize.portCorrection) {
+                if(c.second.size() != normalize.points) {
+                    correctSize = false;
+                    break;
+                }
             }
+            EnableNormalization(correctSize);
         }
         SetSingleSweep(sweep.value("single", singleSweep));
     }
@@ -431,7 +438,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
 
 using namespace std;
 
-void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
+void SpectrumAnalyzer::NewDatapoint(const VirtualDevice::SAMeasurement &m)
 {
     if(isActive != true) {
         return;
@@ -445,115 +452,100 @@ void SpectrumAnalyzer::NewDatapoint(Protocol::SpectrumAnalyzerResult d)
     if(singleSweep && average.getLevel() == averages) {
         changingSettings = true;
         // single sweep finished
-        window->getDevice()->SetIdle([=](Device::TransmissionResult){
+        window->getDevice()->setIdle([=](bool){
             changingSettings = false;
         });
     }
 
-    if(d.pointNum >= settings.pointNum) {
-        qWarning() << "Ignoring point with too large point number (" << d.pointNum << ")";
+    if(m.pointNum >= settings.points) {
+        qWarning() << "Ignoring point with too large point number (" << m.pointNum << ")";
         return;
     }
 
-    d = average.process(d);
+    auto m_avg = average.process(m);
 
-    if(settings.f_start == settings.f_stop) {
+    if(settings.freqStart == settings.freqStop) {
         // keep track of first point time
-        if(d.pointNum == 0) {
-            firstPointTime = d.us;
-            d.us = 0;
+        if(m_avg.pointNum == 0) {
+            firstPointTime = m_avg.us;
+            m_avg.us = 0;
         } else {
-            d.us -= firstPointTime;
+            m_avg.us -= firstPointTime;
         }
     }
 
     if(normalize.measuring) {
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for normalization
-            if(normalize.port1Correction.size() > 0 || d.pointNum == 0) {
+            if(normalize.portCorrection[0].size() > 0 || m_avg.pointNum == 0) {
                 // add measurement
-                normalize.port1Correction.push_back(d.port1);
-                normalize.port2Correction.push_back(d.port2);
-                if(d.pointNum == settings.pointNum - 1) {
+                for(auto m : m_avg.measurements) {
+                    normalize.portCorrection[m.first].push_back(m.second);
+                }
+                if(m_avg.pointNum == settings.points - 1) {
                     // this was the last point
                     normalize.measuring = false;
-                    normalize.f_start = settings.f_start;
-                    normalize.f_stop = settings.f_stop;
-                    normalize.points = settings.pointNum;
+                    normalize.f_start = settings.freqStart;
+                    normalize.f_stop = settings.freqStop;
+                    normalize.points = settings.points;
                     EnableNormalization(true);
                     qDebug() << "Normalization measurement complete";
                 }
             }
         }
-        int percentage = (((average.currentSweep() - 1) * 100) + (d.pointNum + 1) * 100 / settings.pointNum) / averages;
+        int percentage = (((average.currentSweep() - 1) * 100) + (m_avg.pointNum + 1) * 100 / settings.points) / averages;
         normalize.dialog.setValue(percentage);
     }
 
     if(normalize.active) {
-        d.port1 /= normalize.port1Correction[d.pointNum];
-        d.port2 /= normalize.port2Correction[d.pointNum];
         double corr = pow(10.0, normalize.Level->value() / 20.0);
-        d.port1 *= corr;
-        d.port2 *= corr;
+        for(auto &m : m_avg.measurements) {
+            m.second /= normalize.portCorrection[m.first][m_avg.pointNum];
+            m.second *= corr;
+        }
     }
 
-    traceModel.addSAData(d, settings);
+    traceModel.addSAData(m_avg, settings);
     emit dataChanged();
-    if(d.pointNum == settings.pointNum - 1) {
+    if(m_avg.pointNum == settings.points - 1) {
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
     static unsigned int lastPoint = 0;
-    if(d.pointNum > 0 && d.pointNum != lastPoint + 1) {
-        qWarning() << "Got point" << d.pointNum << "but last received point was" << lastPoint << "("<<(d.pointNum-lastPoint-1)<<"missed points)";
+    if(m_avg.pointNum > 0 && m_avg.pointNum != lastPoint + 1) {
+        qWarning() << "Got point" << m_avg.pointNum << "but last received point was" << lastPoint << "("<<(m_avg.pointNum-lastPoint-1)<<"missed points)";
     }
-    lastPoint = d.pointNum;
+    lastPoint = m_avg.pointNum;
 }
 
 void SpectrumAnalyzer::SettingsChanged()
 {
     changingSettings = true;
-    if(settings.f_stop - settings.f_start >= 1000 || settings.f_stop - settings.f_start <= 0) {
-        settings.pointNum = 1001;
+    if(settings.freqStop - settings.freqStart >= 1000 || settings.freqStop - settings.freqStart <= 0) {
+        settings.points = 1001;
     } else {
-        settings.pointNum = settings.f_stop - settings.f_start + 1;
-    }
-    settings.applyReceiverCorrection = 1;
-    settings.applySourceCorrection = 1;
-
-    auto pref = Preferences::getInstance();
-    if(settings.f_stop > settings.f_start) {
-        // non-zerospan, check usability of DFT
-        if(!settings.trackingGenerator && pref.Acquisition.useDFTinSAmode && settings.RBW <= pref.Acquisition.RBWLimitForDFT) {
-            // Enable DFT if below RBW threshold and TG is not enabled
-            settings.UseDFT = 1;
-        } else {
-            settings.UseDFT = 0;
-        }
-    } else {
-        // zerospan, DFT not usable
-        settings.UseDFT = 0;
+        settings.points = settings.freqStop - settings.freqStart + 1;
     }
 
-    if(settings.trackingGenerator && settings.f_stop >= 25000000) {
+    if(settings.trackingGenerator && settings.freqStop >= 25000000) {
         // Check point spacing.
         // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
         // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
         // respect to the point number, it is ensured that every displayed point has at least one sample with
         // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
         // settings.
-        auto pointSpacing = (settings.f_stop - settings.f_start) / (settings.pointNum - 1);
+        auto pointSpacing = (settings.freqStop - settings.freqStart) / (settings.points - 1);
         // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
         // This code assumes some knowledge of the actual hardware and probably should be moved
         // onto the device at some point
         double minSpacing = 25000;
-        auto stop = settings.f_stop;
+        auto stop = settings.freqStop;
         while(stop <= 3000000000) {
             minSpacing /= 2;
             stop *= 2;
         }
         if(pointSpacing < minSpacing) {
-            auto requiredMinSpan = minSpacing * (settings.pointNum - 1);
+            auto requiredMinSpan = minSpacing * (settings.points - 1);
             auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
                             "With your current span, this could result in the signal not being detected at some bands. A minimum"
                             " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
@@ -563,7 +555,7 @@ void SpectrumAnalyzer::SettingsChanged()
 
     if(normalize.active) {
         // check if normalization is still valid
-        if(normalize.f_start != settings.f_start || normalize.f_stop != settings.f_stop || normalize.points != settings.pointNum) {
+        if(normalize.f_start != settings.freqStart || normalize.f_stop != settings.freqStop || normalize.points != settings.points) {
             // normalization was taken at different settings, disable
             EnableNormalization(false);
             InformationBox::ShowMessage("Information", "Normalization was disabled because the span has been changed");
@@ -571,104 +563,104 @@ void SpectrumAnalyzer::SettingsChanged()
     }
 
     if(window->getDevice() && isActive) {
-        window->getDevice()->Configure(settings, [=](Device::TransmissionResult res){
+        window->getDevice()->setSA(settings, [=](bool){
             // device received command
             changingSettings = false;
         });
     }
-    average.reset(settings.pointNum);
+    average.reset(settings.points);
     UpdateAverageCount();
     traceModel.clearLiveData();
-    emit traceModel.SpanChanged(settings.f_start, settings.f_stop);
+    emit traceModel.SpanChanged(settings.freqStart, settings.freqStop);
 }
 
 void SpectrumAnalyzer::SetStartFreq(double freq)
 {
-    settings.f_start = freq;
-    if(settings.f_stop < freq) {
-        settings.f_stop = freq;
+    settings.freqStart = freq;
+    if(settings.freqStop < freq) {
+        settings.freqStop = freq;
     }
     ConstrainAndUpdateFrequencies();
 }
 
 void SpectrumAnalyzer::SetStopFreq(double freq)
 {
-    settings.f_stop = freq;
-    if(settings.f_start > freq) {
-        settings.f_start = freq;
+    settings.freqStop = freq;
+    if(settings.freqStart > freq) {
+        settings.freqStart = freq;
     }
     ConstrainAndUpdateFrequencies();
 }
 
 void SpectrumAnalyzer::SetCenterFreq(double freq)
 {
-    auto old_span = settings.f_stop - settings.f_start;
-    if (freq - old_span / 2 <= Device::Info(window->getDevice()).limits_minFreq) {
+    auto old_span = settings.freqStop - settings.freqStart;
+    if (freq - old_span / 2 <= VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
         // would shift start frequency below minimum
-        settings.f_start = 0;
-        settings.f_stop = 2 * freq;
-    } else if(freq + old_span / 2 >= Device::Info(window->getDevice()).limits_maxFreq) {
+        settings.freqStart = 0;
+        settings.freqStop = 2 * freq;
+    } else if(freq + old_span / 2 >= VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
         // would shift stop frequency above maximum
-        settings.f_start = 2 * freq - Device::Info(window->getDevice()).limits_maxFreq;
-        settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
+        settings.freqStart = 2 * freq - VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
     } else {
-        settings.f_start = freq - old_span / 2;
-        settings.f_stop = freq + old_span / 2;
+        settings.freqStart = freq - old_span / 2;
+        settings.freqStop = freq + old_span / 2;
     }
     ConstrainAndUpdateFrequencies();
 }
 
 void SpectrumAnalyzer::SetSpan(double span)
 {
-    auto old_center = (settings.f_start + settings.f_stop) / 2;
-    if(old_center < Device::Info(window->getDevice()).limits_minFreq + span / 2) {
+    auto old_center = (settings.freqStart + settings.freqStop) / 2;
+    if(old_center < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq + span / 2) {
         // would shift start frequency below minimum
-        settings.f_start = Device::Info(window->getDevice()).limits_minFreq;
-        settings.f_stop = Device::Info(window->getDevice()).limits_minFreq + span;
-    } else if(old_center > Device::Info(window->getDevice()).limits_maxFreq - span / 2) {
+        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq + span;
+    } else if(old_center > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - span / 2) {
         // would shift stop frequency above maximum
-        settings.f_start = Device::Info(window->getDevice()).limits_maxFreq - span;
-        settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
+        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - span;
+        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
     } else {
-        settings.f_start = old_center - span / 2;
-         settings.f_stop = settings.f_start + span;
+        settings.freqStart = old_center - span / 2;
+         settings.freqStop = settings.freqStart + span;
     }
     ConstrainAndUpdateFrequencies();
 }
 
 void SpectrumAnalyzer::SetFullSpan()
 {
-    settings.f_start = Device::Info(window->getDevice()).limits_minFreq;
-    settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
+    settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+    settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
     ConstrainAndUpdateFrequencies();
 }
 
 void SpectrumAnalyzer::SetZeroSpan()
 {
-    auto center = (settings.f_start + settings.f_stop) / 2;
+    auto center = (settings.freqStart + settings.freqStop) / 2;
     SetStartFreq(center);
     SetStopFreq(center);
 }
 
 void SpectrumAnalyzer::SpanZoomIn()
 {
-    auto center = (settings.f_start + settings.f_stop) / 2;
-    auto old_span = settings.f_stop - settings.f_start;
-    settings.f_start = center - old_span / 4;
-    settings.f_stop = center + old_span / 4;
+    auto center = (settings.freqStart + settings.freqStop) / 2;
+    auto old_span = settings.freqStop - settings.freqStart;
+    settings.freqStart = center - old_span / 4;
+    settings.freqStop = center + old_span / 4;
     ConstrainAndUpdateFrequencies();
 }
 
 void SpectrumAnalyzer::SpanZoomOut()
 {
-    auto center = (settings.f_start + settings.f_stop) / 2;
-    auto old_span = settings.f_stop - settings.f_start;
+    auto center = (settings.freqStart + settings.freqStop) / 2;
+    auto old_span = settings.freqStop - settings.freqStart;
     if(center > old_span) {
-        settings.f_start = center - old_span;
+        settings.freqStart = center - old_span;
     } else {
-        settings.f_start = 0;
+        settings.freqStart = 0;
     }
-    settings.f_stop = center + old_span;
+    settings.freqStop = center + old_span;
     ConstrainAndUpdateFrequencies();
 }
 
@@ -683,26 +675,26 @@ void SpectrumAnalyzer::SetSingleSweep(bool single)
 
 void SpectrumAnalyzer::SetRBW(double bandwidth)
 {
-    if(bandwidth > Device::Info(window->getDevice()).limits_maxRBW) {
-        bandwidth = Device::Info(window->getDevice()).limits_maxRBW;
-    } else if(bandwidth < Device::Info(window->getDevice()).limits_minRBW) {
-        bandwidth = Device::Info(window->getDevice()).limits_minRBW;
+    if(bandwidth > VirtualDevice::getInfo(window->getDevice()).Limits.maxRBW) {
+        bandwidth = VirtualDevice::getInfo(window->getDevice()).Limits.maxRBW;
+    } else if(bandwidth < VirtualDevice::getInfo(window->getDevice()).Limits.minRBW) {
+        bandwidth = VirtualDevice::getInfo(window->getDevice()).Limits.minRBW;
     }
     settings.RBW = bandwidth;
     emit RBWChanged(settings.RBW);
     SettingsChanged();
 }
 
-void SpectrumAnalyzer::SetWindow(SpectrumAnalyzer::Window w)
+void SpectrumAnalyzer::SetWindow(VirtualDevice::SASettings::Window w)
 {
-    settings.WindowType = (int) w;
+    settings.window = w;
     cbWindowType->setCurrentIndex((int) w);
     SettingsChanged();
 }
 
-void SpectrumAnalyzer::SetDetector(SpectrumAnalyzer::Detector d)
+void SpectrumAnalyzer::SetDetector(VirtualDevice::SASettings::Detector d)
 {
-    settings.Detector = (int) d;
+    settings.detector = d;
     cbDetector->setCurrentIndex((int) d);
     SettingsChanged();
 }
@@ -717,7 +709,7 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
 
 void SpectrumAnalyzer::SetSignalID(bool enabled)
 {
-    settings.SignalID = enabled ? 1 : 0;
+    settings.signalID = enabled ? 1 : 0;
     cbSignalID->setChecked(enabled);
     SettingsChanged();
 }
@@ -743,8 +735,8 @@ void SpectrumAnalyzer::SetTGPort(int port)
     if(port < 0 || port > 1) {
         return;
     }
-    if(port != settings.trackingGeneratorPort) {
-        settings.trackingGeneratorPort = port;
+    if(port != settings.trackingPort) {
+        settings.trackingPort = port;
         emit TGPortChanged(port);
         if(settings.trackingGenerator) {
              SettingsChanged();
@@ -754,10 +746,10 @@ void SpectrumAnalyzer::SetTGPort(int port)
 
 void SpectrumAnalyzer::SetTGLevel(double level)
 {
-    if(level > Device::Info(window->getDevice()).limits_cdbm_max / 100.0) {
-        level = Device::Info(window->getDevice()).limits_cdbm_max / 100.0;
-    } else if(level < Device::Info(window->getDevice()).limits_cdbm_min / 100.0) {
-        level = Device::Info(window->getDevice()).limits_cdbm_min / 100.0;
+    if(level > VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm / 100.0) {
+        level = VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm / 100.0;
+    } else if(level < VirtualDevice::getInfo(window->getDevice()).Limits.mindBm / 100.0) {
+        level = VirtualDevice::getInfo(window->getDevice()).Limits.mindBm / 100.0;
     }
     emit TGLevelChanged(level);
     settings.trackingPower = level * 100;
@@ -768,7 +760,7 @@ void SpectrumAnalyzer::SetTGLevel(double level)
 
 void SpectrumAnalyzer::SetTGOffset(double offset)
 {
-    settings.trackingGeneratorOffset = offset;
+    settings.trackingOffset = offset;
 
     ConstrainAndUpdateFrequencies();
     if(settings.trackingGenerator) {
@@ -778,9 +770,14 @@ void SpectrumAnalyzer::SetTGOffset(double offset)
 
 void SpectrumAnalyzer::MeasureNormalization()
 {
+    if(!window->getDevice()) {
+        return;
+    }
     normalize.active = false;
-    normalize.port1Correction.clear();
-    normalize.port2Correction.clear();
+    normalize.portCorrection.clear();
+    for(auto m : window->getDevice()->availableSAMeasurements()) {
+        normalize.portCorrection[m] = {};
+    }
     normalize.measuring = true;
     normalize.dialog.setLabelText("Taking normalization measurement...");
     normalize.dialog.setCancelButtonText("Abort");
@@ -807,7 +804,7 @@ void SpectrumAnalyzer::EnableNormalization(bool enabled)
     if(enabled != normalize.active) {
         if(enabled) {
             // check if measurements already taken
-            if(normalize.f_start == settings.f_start && normalize.f_stop == settings.f_stop && normalize.points == settings.pointNum) {
+            if(normalize.f_start == settings.freqStart && normalize.f_stop == settings.freqStop && normalize.points == settings.points) {
                 // same settings as with normalization measurement, can enable
                 normalize.active = true;
             } else {
@@ -843,7 +840,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_stop - settings.f_start, 'f', 0);
+        return QString::number(settings.freqStop - settings.freqStart, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("START", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -854,7 +851,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_start, 'f', 0);
+        return QString::number(settings.freqStart, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("CENTer", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -865,7 +862,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number((settings.f_start + settings.f_stop)/2, 'f', 0);
+        return QString::number((settings.freqStart + settings.freqStop)/2, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("STOP", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -876,7 +873,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.f_stop, 'f', 0);
+        return QString::number(settings.freqStop, 'f', 0);
     }));
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
@@ -906,23 +903,23 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Error);
         }
         if (params[0] == "NONE") {
-            SetWindow(Window::None);
+            SetWindow(VirtualDevice::SASettings::Window::None);
         } else if(params[0] == "KAISER") {
-            SetWindow(Window::Kaiser);
+            SetWindow(VirtualDevice::SASettings::Window::Kaiser);
         } else if(params[0] == "HANN") {
-            SetWindow(Window::Hann);
+            SetWindow(VirtualDevice::SASettings::Window::Hann);
         } else if(params[0] == "FLATTOP") {
-            SetWindow(Window::FlatTop);
+            SetWindow(VirtualDevice::SASettings::Window::FlatTop);
         } else {
             return "INVALID WINDOW";
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        switch((Window) settings.WindowType) {
-        case Window::None: return "NONE";
-        case Window::Kaiser: return "KAISER";
-        case Window::Hann: return "HANN";
-        case Window::FlatTop: return "FLATTOP";
+        switch((VirtualDevice::SASettings::Window) settings.window) {
+        case VirtualDevice::SASettings::Window::None: return "NONE";
+        case VirtualDevice::SASettings::Window::Kaiser: return "KAISER";
+        case VirtualDevice::SASettings::Window::Hann: return "HANN";
+        case VirtualDevice::SASettings::Window::FlatTop: return "FLATTOP";
         default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
@@ -931,26 +928,26 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Error);
         }
         if (params[0] == "+PEAK") {
-            SetDetector(Detector::PPeak);
+            SetDetector(VirtualDevice::SASettings::Detector::PPeak);
         } else if(params[0] == "-PEAK") {
-            SetDetector(Detector::NPeak);
+            SetDetector(VirtualDevice::SASettings::Detector::NPeak);
         } else if(params[0] == "NORMAL") {
-            SetDetector(Detector::Normal);
+            SetDetector(VirtualDevice::SASettings::Detector::Normal);
         } else if(params[0] == "SAMPLE") {
-            SetDetector(Detector::Sample);
+            SetDetector(VirtualDevice::SASettings::Detector::Sample);
         } else if(params[0] == "AVERAGE") {
-            SetDetector(Detector::Average);
+            SetDetector(VirtualDevice::SASettings::Detector::Average);
         } else {
             return "INVALID MDOE";
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        switch((Detector) settings.Detector) {
-        case Detector::PPeak: return "+PEAK";
-        case Detector::NPeak: return "-PEAK";
-        case Detector::Normal: return "NORMAL";
-        case Detector::Sample: return "SAMPLE";
-        case Detector::Average: return "AVERAGE";
+        switch((VirtualDevice::SASettings::Detector) settings.detector) {
+        case VirtualDevice::SASettings::Detector::PPeak: return "+PEAK";
+        case VirtualDevice::SASettings::Detector::NPeak: return "-PEAK";
+        case VirtualDevice::SASettings::Detector::Normal: return "NORMAL";
+        case VirtualDevice::SASettings::Detector::Sample: return "SAMPLE";
+        case VirtualDevice::SASettings::Detector::Average: return "AVERAGE";
         default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
@@ -987,7 +984,7 @@ void SpectrumAnalyzer::SetupSCPI()
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return settings.SignalID ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+        return settings.signalID ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_acq->add(new SCPICommand("SINGLE", [=](QStringList params) -> QString {
         bool single;
@@ -1030,7 +1027,7 @@ void SpectrumAnalyzer::SetupSCPI()
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return settings.trackingGeneratorPort ? "2" : "1";
+        return QString::number(settings.trackingPort);
     }));
     scpi_tg->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;
@@ -1053,7 +1050,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.trackingGeneratorOffset);
+        return QString::number(settings.trackingOffset);
     }));
     auto scpi_norm = new SCPINode("NORMalize");
     scpi_tg->add(scpi_norm);
@@ -1098,34 +1095,34 @@ void SpectrumAnalyzer::UpdateAverageCount()
 
 void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 {
-    if(settings.f_stop > Device::Info(window->getDevice()).limits_maxFreq) {
-        settings.f_stop = Device::Info(window->getDevice()).limits_maxFreq;
+    if(settings.freqStop > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
+        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
     }
-    if(settings.f_start > settings.f_stop) {
-        settings.f_start = settings.f_stop;
+    if(settings.freqStart > settings.freqStop) {
+        settings.freqStart = settings.freqStop;
     }
-    if(settings.f_start < Device::Info(window->getDevice()).limits_minFreq) {
-        settings.f_start = Device::Info(window->getDevice()).limits_minFreq;
+    if(settings.freqStart < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
+        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
     }
 
     bool trackingOffset_limited = false;
-    if(settings.f_stop + settings.trackingGeneratorOffset > Device::Info(window->getDevice()).limits_maxFreq) {
+    if(settings.freqStop + settings.trackingOffset > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
         trackingOffset_limited = true;
-        settings.trackingGeneratorOffset = Device::Info(window->getDevice()).limits_maxFreq - settings.f_stop;
+        settings.trackingOffset = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - settings.freqStop;
     }
-    if(settings.f_start + settings.trackingGeneratorOffset < Device::Info(window->getDevice()).limits_minFreq) {
+    if(settings.freqStart + settings.trackingOffset < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
         trackingOffset_limited = true;
-        settings.trackingGeneratorOffset = Device::Info(window->getDevice()).limits_minFreq - settings.f_start;
+        settings.trackingOffset = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq - settings.freqStart;
     }
     if(trackingOffset_limited) {
         InformationBox::ShowMessage("Warning", "The selected tracking generator offset is not reachable for all frequencies with the current span. "
                                     "The tracking generator offset has been constrained according to the selected start and stop frequencies");
     }
-    emit startFreqChanged(settings.f_start);
-    emit stopFreqChanged(settings.f_stop);
-    emit spanChanged(settings.f_stop - settings.f_start);
-    emit centerFreqChanged((settings.f_stop + settings.f_start)/2);
-    emit TGOffsetChanged(settings.trackingGeneratorOffset);
+    emit startFreqChanged(settings.freqStart);
+    emit stopFreqChanged(settings.freqStop);
+    emit spanChanged(settings.freqStop - settings.freqStart);
+    emit centerFreqChanged((settings.freqStop + settings.freqStart)/2);
+    emit TGOffsetChanged(settings.trackingOffset);
     SettingsChanged();
 }
 
@@ -1133,13 +1130,13 @@ void SpectrumAnalyzer::LoadSweepSettings()
 {
     QSettings s;
     auto pref = Preferences::getInstance();
-    settings.f_start = s.value("SAStart", pref.Startup.SA.start).toULongLong();
-    settings.f_stop = s.value("SAStop", pref.Startup.SA.stop).toULongLong();
+    settings.freqStart = s.value("SAStart", pref.Startup.SA.start).toULongLong();
+    settings.freqStop = s.value("SAStop", pref.Startup.SA.stop).toULongLong();
     ConstrainAndUpdateFrequencies();
     SetRBW(s.value("SARBW", pref.Startup.SA.RBW).toUInt());
-    settings.pointNum = 1001;
-    SetWindow((Window) s.value("SAWindow", pref.Startup.SA.window).toInt());
-    SetDetector((Detector) s.value("SADetector", pref.Startup.SA.detector).toInt());
+    settings.points = 1001;
+    SetWindow((VirtualDevice::SASettings::Window) s.value("SAWindow", pref.Startup.SA.window).toInt());
+    SetDetector((VirtualDevice::SASettings::Detector) s.value("SADetector", pref.Startup.SA.detector).toInt());
     SetSignalID(s.value("SASignalID", pref.Startup.SA.signalID).toBool());
     SetAveraging(s.value("SAAveraging", pref.Startup.SA.averaging).toInt());
 }
@@ -1147,13 +1144,13 @@ void SpectrumAnalyzer::LoadSweepSettings()
 void SpectrumAnalyzer::StoreSweepSettings()
 {
     QSettings s;
-    s.setValue("SAStart", static_cast<unsigned long long>(settings.f_start));
-    s.setValue("SAStop", static_cast<unsigned long long>(settings.f_stop));
+    s.setValue("SAStart", static_cast<unsigned long long>(settings.freqStart));
+    s.setValue("SAStop", static_cast<unsigned long long>(settings.freqStop));
     s.setValue("SARBW", settings.RBW);
-    s.setValue("SAWindow", settings.WindowType);
-    s.setValue("SADetector", settings.Detector);
+    s.setValue("SAWindow", (int) settings.window);
+    s.setValue("SADetector", (int) settings.detector);
     s.setValue("SAAveraging", averages);
-    s.setValue("SASignalID", static_cast<bool>(settings.SignalID));
+    s.setValue("SASignalID", static_cast<bool>(settings.signalID));
 }
 
 void SpectrumAnalyzer::setAveragingMode(Averaging::Mode mode)
@@ -1161,47 +1158,47 @@ void SpectrumAnalyzer::setAveragingMode(Averaging::Mode mode)
     average.setMode(mode);
 }
 
-QString SpectrumAnalyzer::WindowToString(SpectrumAnalyzer::Window w)
+QString SpectrumAnalyzer::WindowToString(VirtualDevice::SASettings::Window w)
 {
     switch(w) {
-    case Window::None: return "None";
-    case Window::Kaiser: return "Kaiser";
-    case Window::Hann: return "Hann";
-    case Window::FlatTop: return "FlatTop";
+    case VirtualDevice::SASettings::Window::None: return "None";
+    case VirtualDevice::SASettings::Window::Kaiser: return "Kaiser";
+    case VirtualDevice::SASettings::Window::Hann: return "Hann";
+    case VirtualDevice::SASettings::Window::FlatTop: return "FlatTop";
     default: return "Unknown";
     }
 }
 
-SpectrumAnalyzer::Window SpectrumAnalyzer::WindowFromString(QString s)
+VirtualDevice::SASettings::Window SpectrumAnalyzer::WindowFromString(QString s)
 {
-    for(int i=0;i<(int)Window::Last;i++) {
-        if(WindowToString((Window) i) == s) {
-            return (Window) i;
+    for(int i=0;i<(int)VirtualDevice::SASettings::Window::Last;i++) {
+        if(WindowToString((VirtualDevice::SASettings::Window) i) == s) {
+            return (VirtualDevice::SASettings::Window) i;
         }
     }
     // not found
-    return Window::Last;
+    return VirtualDevice::SASettings::Window::Last;
 }
 
-QString SpectrumAnalyzer::DetectorToString(SpectrumAnalyzer::Detector d)
+QString SpectrumAnalyzer::DetectorToString(VirtualDevice::SASettings::Detector d)
 {
     switch(d) {
-    case Detector::PPeak: return "+Peak";
-    case Detector::NPeak: return "-Peak";
-    case Detector::Sample: return "Sample";
-    case Detector::Normal: return "Normal";
-    case Detector::Average: return "Average";
+    case VirtualDevice::SASettings::Detector::PPeak: return "+Peak";
+    case VirtualDevice::SASettings::Detector::NPeak: return "-Peak";
+    case VirtualDevice::SASettings::Detector::Sample: return "Sample";
+    case VirtualDevice::SASettings::Detector::Normal: return "Normal";
+    case VirtualDevice::SASettings::Detector::Average: return "Average";
     default: return "Unknown";
     }
 }
 
-SpectrumAnalyzer::Detector SpectrumAnalyzer::DetectorFromString(QString s)
+VirtualDevice::SASettings::Detector SpectrumAnalyzer::DetectorFromString(QString s)
 {
-    for(int i=0;i<(int)Detector::Last;i++) {
-        if(DetectorToString((Detector) i) == s) {
-            return (Detector) i;
+    for(int i=0;i<(int)VirtualDevice::SASettings::Detector::Last;i++) {
+        if(DetectorToString((VirtualDevice::SASettings::Detector) i) == s) {
+            return (VirtualDevice::SASettings::Detector) i;
         }
     }
     // not found
-    return Detector::Last;
+    return VirtualDevice::SASettings::Detector::Last;
 }

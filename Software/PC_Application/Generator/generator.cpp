@@ -30,8 +30,8 @@ void Generator::deactivate()
     // store current settings
     QSettings s;
     auto settings = central->getDeviceStatus();
-    s.setValue("GeneratorFrequency", static_cast<unsigned long long>(settings.frequency));
-    s.setValue("GeneratorLevel", static_cast<unsigned long long>((double) settings.cdbm_level / 100.0));
+    s.setValue("GeneratorFrequency", static_cast<unsigned long long>(settings.freq));
+    s.setValue("GeneratorLevel", static_cast<unsigned long long>((double) settings.dBm));
     Mode::deactivate();
 }
 
@@ -59,10 +59,7 @@ void Generator::updateDevice()
         // can't update if not connected
         return;
     }
-    Protocol::PacketInfo p;
-    p.type = Protocol::PacketType::Generator;
-    p.generator = central->getDeviceStatus();
-    window->getDevice()->SendPacket(p);
+    window->getDevice()->setSG(central->getDeviceStatus());
 }
 
 void Generator::setupSCPI()
@@ -76,7 +73,7 @@ void Generator::setupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(central->getDeviceStatus().frequency);
+        return QString::number(central->getDeviceStatus().freq);
     }));
     add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;
@@ -88,7 +85,7 @@ void Generator::setupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(central->getDeviceStatus().cdbm_level / 100.0);
+        return QString::number(central->getDeviceStatus().dBm);
     }));
     add(new SCPICommand("PORT", [=](QStringList params) -> QString {
         unsigned long long newval;
@@ -99,6 +96,6 @@ void Generator::setupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(central->getDeviceStatus().activePort);
+        return QString::number(central->getDeviceStatus().port);
     }));
 }

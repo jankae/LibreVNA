@@ -104,11 +104,15 @@ VNAData Averaging::process(VNAData d)
     return d;
 }
 
-Protocol::SpectrumAnalyzerResult Averaging::process(Protocol::SpectrumAnalyzerResult d)
+VirtualDevice::SAMeasurement Averaging::process(VirtualDevice::SAMeasurement d)
 {
+    if(d.measurements.size() != numMeasurements) {
+        reset(avg.size());
+    }
+
     if (d.pointNum == avg.size()) {
         // add moving average entry
-        deque<array<complex<double>, 4>> deque;
+        deque<vector<complex<double>>> deque;
         avg.push_back(deque);
     }
 
@@ -117,45 +121,60 @@ Protocol::SpectrumAnalyzerResult Averaging::process(Protocol::SpectrumAnalyzerRe
         // get correct queue
         auto deque = &avg[d.pointNum];
         // add newest sample to queue
-        array<complex<double>, 4> sample = {d.port1, d.port2, 0, 0};
+        vector<complex<double>> sample;
+        for(auto m : d.measurements) {
+            sample.push_back(m.second);
+        }
         deque->push_back(sample);
         if(deque->size() > averages) {
             deque->pop_front();
         }
 
+        deque<double> averagedResults;
+
         switch(mode) {
         case Mode::Mean: {
             // calculate average
-            complex<double> sum[2];
+            complex<double> sum[numMeasurements];
             for(auto s : *deque) {
-                sum[0] += s[0];
-                sum[1] += s[1];
+                for(int i=0;i<numMeasurements;i++) {
+                    sum[i] += s[i];
+                }
             }
-            d.port1 = abs(sum[0] / (double) (deque->size()));
-            d.port2 = abs(sum[1] / (double) (deque->size()));
+            for(auto s : sum) {
+                averagedResults.push_back(abs(s / (double) (deque->size())));
+            }
         }
             break;
         case Mode::Median: {
             auto size = deque->size();
-            // create sorted arrays
-            std::vector<double> port1, port2;
-            port1.reserve(size);
-            port2.reserve(size);
+            // create sorted vectors
+            array<vector<double>, numMeasurements> vectors;
+            for(auto &v : vectors) {
+                v.reserve(size);
+            }
             for(auto d : *deque) {
-                port1.insert(upper_bound(port1.begin(), port1.end(), abs(d[0])), abs(d[0]));
-                port2.insert(upper_bound(port2.begin(), port2.end(), abs(d[0])), abs(d[0]));
+                for(auto &v : vectors) {
+                    v.insert(upper_bound(v.begin(), v.end(), abs(d[0])), abs(d[0]));
+                }
             }
             if(size & 0x01) {
                 // odd number of samples
-                d.port1 = port1[size / 2];
-                d.port2 = port1[size / 2];
+                for(auto v : vectors) {
+                    averagedResults.push_back(v[size / 2]);
+                }
             } else {
                 // even number, use average of middle samples
-                d.port1 = (port1[size / 2 - 1] + port1[size / 2]) / 2;
-                d.port2 = (port2[size / 2 - 1] + port2[size / 2]) / 2;
+                for(auto v : vectors) {
+                    averagedResults.push_back((v[size / 2 - 1] + v[size / 2]) / 2);
+                }
             }
         }
             break;
+        }
+
+        for(auto &m : d.measurements) {
+            m.second = averagedResults.pop_front();
         }
     }
 

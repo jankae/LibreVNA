@@ -1,7 +1,7 @@
 #ifndef SIGNALGENERATOR_H
 #define SIGNALGENERATOR_H
 
-#include "Device/device.h"
+#include "Device/virtualdevice.h".h"
 #include "savable.h"
 
 #include <QWidget>
@@ -15,10 +15,10 @@ class SignalgeneratorWidget : public QWidget, public Savable
     Q_OBJECT
 
 public:
-    explicit SignalgeneratorWidget(Device*&dev, QWidget *parent = nullptr);
+    explicit SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent = nullptr);
     ~SignalgeneratorWidget();
 
-    Protocol::GeneratorSettings getDeviceStatus();
+    VirtualDevice::SGSettings getDeviceStatus();
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
@@ -36,7 +36,7 @@ protected:
 private:
     Ui::SignalgeneratorWidget *ui;
     int m_timerId;
-    Device*&dev;
+    VirtualDevice *dev;
 };
 
 #endif // SIGNALGENERATOR_H

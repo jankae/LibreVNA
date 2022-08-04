@@ -6,6 +6,7 @@
 #include "CustomWidgets/tilewidget.h"
 #include "scpi.h"
 #include "Traces/tracewidget.h"
+#include "Device/virtualdevice.h"
 
 #include <QObject>
 #include <QWidget>
@@ -32,29 +33,13 @@ public:
 
 
 private:
-    enum class Window {
-        None = 0,
-        Kaiser = 1,
-        Hann = 2,
-        FlatTop = 3,
-        Last
-    };
-    enum class Detector {
-        PPeak = 0,
-        NPeak = 1,
-        Sample = 2,
-        Normal = 3,
-        Average = 4,
-        Last
-    };
-
-    static QString WindowToString(Window w);
-    static Window WindowFromString(QString s);
-    static QString DetectorToString(Detector d);
-    static Detector DetectorFromString(QString s);
+    static QString WindowToString(VirtualDevice::SASettings::Window w);
+    static VirtualDevice::SASettings::Window WindowFromString(QString s);
+    static QString DetectorToString(VirtualDevice::SASettings::Detector d);
+    static VirtualDevice::SASettings::Detector DetectorFromString(QString s);
 
 private slots:
-    void NewDatapoint(Protocol::SpectrumAnalyzerResult d);
+    void NewDatapoint(const VirtualDevice::SAMeasurement &m);
     // Sweep control
     void SetStartFreq(double freq);
     void SetStopFreq(double freq);
@@ -67,8 +52,8 @@ private slots:
     void SetSingleSweep(bool single);
     // Acquisition control
     void SetRBW(double bandwidth);
-    void SetWindow(Window w);
-    void SetDetector(Detector d);
+    void SetWindow(VirtualDevice::SASettings::Window w);
+    void SetDetector(VirtualDevice::SASettings::Detector d);
     void SetAveraging(unsigned int averages);
     void SetSignalID(bool enabled);
     // TG control
@@ -89,7 +74,7 @@ private:
     void LoadSweepSettings();
     void StoreSweepSettings();
 
-    Protocol::SpectrumAnalyzerSettings  settings;
+    VirtualDevice::SASettings settings;
     bool changingSettings;
     unsigned int averages;
     bool singleSweep;
@@ -110,8 +95,7 @@ private:
         // settings when normalize was measured
         double f_start, f_stop, points;
         // correction values to get the ports to 0dBm
-        std::vector<double> port1Correction;
-        std::vector<double> port2Correction;
+        std::map<QString, std::vector<double>> portCorrection;
         // level to normalize to (additional correction factor)
         SIUnitEdit *Level;
 

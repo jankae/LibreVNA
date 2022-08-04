@@ -22,6 +22,7 @@ HEADERS += \
     Device/devicelog.h \
     Device/firmwareupdatedialog.h \
     Device/manualcontroldialog.h \
+    Device/virtualdevice.h \
     Generator/generator.h \
     Generator/signalgenwidget.h \
     SpectrumAnalyzer/spectrumanalyzer.h \
@@ -157,6 +158,7 @@ SOURCES += \
     Device/devicelog.cpp \
     Device/firmwareupdatedialog.cpp \
     Device/manualcontroldialog.cpp \
+    Device/virtualdevice.cpp \
     Generator/generator.cpp \
     Generator/signalgenwidget.cpp \
     SpectrumAnalyzer/spectrumanalyzer.cpp \
