@@ -3,6 +3,7 @@
 #include "ui_preferencesdialog.h"
 #include "CustomWidgets/informationbox.h"
 #include "appwindow.h"
+#include "Device/compounddeviceeditdialog.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -122,6 +123,52 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
 
     connect(ui->MarkerShowMarkerData, &QCheckBox::toggled, [=](bool enabled) {
          ui->MarkerShowAllMarkerData->setEnabled(enabled);
+    });
+
+    // Compound device page
+    connect(ui->compoundList, &QListWidget::currentRowChanged, [=](){
+        if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[ui->compoundList->currentRow()]) {
+            // can't remove the device we are connected to
+            ui->compoundDelete->setEnabled(false);
+        } else {
+            ui->compoundDelete->setEnabled(true);
+        }
+    });
+    connect(ui->compoundList, &QListWidget::doubleClicked, [=](){
+        auto index = ui->compoundList->currentRow();
+        if(index >= 0 && index < p->compoundDevices.size()) {
+            auto d = new CompoundDeviceEditDialog(p->compoundDevices[index]);
+            d->show();
+        }
+    });
+    connect(ui->compoundAdd, &QPushButton::clicked, [=](){
+        auto cd = new CompoundDevice;
+        auto d = new CompoundDeviceEditDialog(cd);
+        connect(d, &QDialog::accepted, [=](){
+            p->compoundDevices.push_back(cd);
+            ui->compoundList->addItem(cd->getDesription());
+            p->nonTrivialWriting();
+        });
+        connect(d, &QDialog::rejected, [=](){
+            delete cd;
+        });
+        d->show();
+    });
+    connect(ui->compoundDelete, &QPushButton::clicked, [=](){
+        auto index = ui->compoundList->currentRow();
+        if(index >= 0 && index < p->compoundDevices.size()) {
+            // delete the actual compound device
+            if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[index]) {
+                // can't remove the device we are currently connected to
+                return;
+            }
+            delete p->compoundDevices[index];
+            // delete the line in the GUI list
+            delete ui->compoundList->takeItem(index);
+            // remove compound device from list
+            p->compoundDevices.erase(p->compoundDevices.begin() + index);
+            p->nonTrivialWriting();
+        }
     });
 
     // Page selection
@@ -263,6 +310,10 @@ void PreferencesDialog::setInitialGUIState()
     ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
     ui->SCPIServerPort->setValue(p->SCPIServer.port);
 
+    for(auto cd : p->compoundDevices) {
+        ui->compoundList->addItem(cd->getDesription());
+    }
+
     QTreeWidgetItem *item = ui->treeWidget->topLevelItem(0);
     if (item != nullptr) {
         ui->treeWidget->setCurrentItem(item);     // visually select first item
@@ -344,10 +395,12 @@ void Preferences::load()
             qDebug() << "Setting" << d.name << "reset to default:" << d.def;
         }
     }
+    nonTrivialParsing();
 }
 
 void Preferences::store()
 {
+    nonTrivialWriting();
     QSettings settings;
     // store settings
     for(auto d : descr) {
@@ -373,9 +426,39 @@ void Preferences::setDefault()
 void Preferences::fromJSON(nlohmann::json j)
 {
     parseJSON(j, descr);
+    nonTrivialParsing();
 }
 
 nlohmann::json Preferences::toJSON()
 {
+    nonTrivialWriting();
     return createJSON(descr);
+}
+
+void Preferences::nonTrivialParsing()
+{
+    try {
+        compoundDevices.clear();
+        nlohmann::json jc = nlohmann::json::parse(compoundDeviceJSON.toStdString());
+        for(auto j : jc) {
+            auto cd = new CompoundDevice();
+            cd->fromJSON(j);
+            compoundDevices.push_back(cd);
+        }
+    } catch(const exception& e){
+        qDebug() << "Failed to parse compound device string: " << e.what();
+    }
+}
+
+void Preferences::nonTrivialWriting()
+{
+    if(compoundDevices.size() > 0) {
+        nlohmann::json j;
+        for(auto cd : compoundDevices) {
+            j.push_back(cd->toJSON());
+        }
+        compoundDeviceJSON = QString::fromStdString(j.dump());
+    } else {
+        compoundDeviceJSON = "[]";
+    }
 }

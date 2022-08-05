@@ -16,6 +16,9 @@ public:
     virtual nlohmann::json toJSON() = 0;
     virtual void fromJSON(nlohmann::json j) = 0;
 
+    bool openFromFileDialog(QString title, QString filetype);
+    bool saveToFileDialog(QString title, QString filetype, QString ending = "");
+
     using SettingDescription = struct {
         QPointerVariant var;
         QString name;

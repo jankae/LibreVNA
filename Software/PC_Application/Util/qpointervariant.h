@@ -7,7 +7,7 @@ class QPointerVariant {
 public:
     template <typename T> QPointerVariant(T *ptr)
         : ptr(static_cast<void*>(ptr)),
-          variant(QVariant(*ptr)){};
+          variant(QVariant(*ptr)){}
     void setValue(const QVariant &value) {
         auto destType = variant.type();
         if(!value.canConvert(destType)) {

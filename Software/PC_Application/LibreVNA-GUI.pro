@@ -18,6 +18,8 @@ HEADERS += \
     CustomWidgets/tilewidget.h \
     CustomWidgets/toggleswitch.h \
     CustomWidgets/touchstoneimport.h \
+    Device/compounddevice.h \
+    Device/compounddeviceeditdialog.h \
     Device/device.h \
     Device/devicelog.h \
     Device/firmwareupdatedialog.h \
@@ -153,6 +155,8 @@ SOURCES += \
     CustomWidgets/tilewidget.cpp \
     CustomWidgets/toggleswitch.cpp \
     CustomWidgets/touchstoneimport.cpp \
+    Device/compounddevice.cpp \
+    Device/compounddeviceeditdialog.cpp \
     Device/device.cpp \
     Device/devicelog.cpp \
     Device/firmwareupdatedialog.cpp \
@@ -249,6 +253,7 @@ SOURCES += \
     mode.cpp \
     modewindow.cpp \
     preferences.cpp \
+    savable.cpp \
     scpi.cpp \
     tcpserver.cpp \
     touchstone.cpp \
@@ -274,6 +279,7 @@ FORMS += \
     CustomWidgets/jsonpickerdialog.ui \
     CustomWidgets/tilewidget.ui \
     CustomWidgets/touchstoneimport.ui \
+    Device/compounddeviceeditdialog.ui \
     Device/devicelog.ui \
     Device/firmwareupdatedialog.ui \
     Device/manualcontroldialog.ui \

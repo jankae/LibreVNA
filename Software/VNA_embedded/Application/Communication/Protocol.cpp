@@ -112,6 +112,7 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::SetIdle:
     case PacketType::RequestFrequencyCorrection:
     case PacketType::RequestAcquisitionFrequencySettings:
+    case PacketType::RequestDeviceStatus:
         // no payload
         break;
     case PacketType::None:

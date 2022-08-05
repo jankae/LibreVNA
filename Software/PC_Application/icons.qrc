@@ -58,5 +58,14 @@
         <file>icons/parallelL.png</file>
         <file>icons/parallelC.png</file>
         <file>icons/definedThrough.png</file>
+        <file>icons/LibreVNAV1.svg</file>
+        <file>icons/compound_V1_Ref_Left.svg</file>
+        <file>icons/compound_V1_Ref_Middle.svg</file>
+        <file>icons/compound_V1_Ref_Right.svg</file>
+        <file>icons/compound_V1_USB.svg</file>
+        <file>icons/compound_V1_Ref_Left.png</file>
+        <file>icons/compound_V1_Ref_Middle.png</file>
+        <file>icons/compound_V1_Ref_Right.png</file>
+        <file>icons/compound_V1_USB.png</file>
     </qresource>
 </RCC>

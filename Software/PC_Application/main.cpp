@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationVersion(window->getAppVersion() + "-" +
                                             window->getAppGitHash().left(9));
 
+
 #ifdef Q_OS_UNIX
     signal(SIGINT, tryExitGracefully);
 #endif

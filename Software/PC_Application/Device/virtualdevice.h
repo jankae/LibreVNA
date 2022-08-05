@@ -3,6 +3,7 @@
 
 #include "device.h"
 #include "Tools/parameters.h"
+#include "compounddevice.h"
 
 #include <set>
 #include <complex>
@@ -52,6 +53,7 @@ public:
 
     bool isCompoundDevice() const;
     Device *getDevice();
+    CompoundDevice *getCompoundDevice();
     std::vector<Device*> getDevices();
     const Info& getInfo() const;
     static const VirtualDevice::Info &getInfo(VirtualDevice *vdev);
@@ -179,6 +181,8 @@ private:
     bool zerospan;
 
     std::map<Device*, Device::TransmissionResult> results;
+
+    CompoundDevice *cdev;
 };
 
 Q_DECLARE_METATYPE(VirtualDevice::Status)

@@ -66,6 +66,11 @@
          <string>SCPI Server</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Compound Devices</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>
@@ -79,7 +84,7 @@
           <x>0</x>
           <y>0</y>
           <width>687</width>
-          <height>938</height>
+          <height>884</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -98,7 +103,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>5</number>
            </property>
            <widget class="QWidget" name="Startup">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -1371,6 +1376,58 @@
              </item>
             </layout>
            </widget>
+           <widget class="QWidget" name="CompoundDevices">
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_13">
+               <item>
+                <widget class="QListWidget" name="compoundList"/>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_19">
+                 <item>
+                  <widget class="QPushButton" name="compoundAdd">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="list-add" resource="icons.qrc">
+                     <normaloff>:/icons/add.png</normaloff>
+                     <normalon>:/icons/add.png</normalon>:/icons/add.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="compoundDelete">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="list-remove" resource="icons.qrc">
+                     <normaloff>:/icons/remove.png</normaloff>
+                     <normalon>:/icons/remove.png</normalon>:/icons/remove.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_8">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -1406,7 +1463,9 @@
    <header>CustomWidgets/siunitedit.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
  <buttongroups>
   <buttongroup name="StartupSweepGroup"/>

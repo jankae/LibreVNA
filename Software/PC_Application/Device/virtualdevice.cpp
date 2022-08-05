@@ -136,6 +136,7 @@ VirtualDevice::VirtualDevice(QString serial)
       info{},
       status{}
 {
+    cdev = nullptr;
     isCompound = false;
     zerospan = false;
     auto dev = new Device(serial);
@@ -241,6 +242,11 @@ Device *VirtualDevice::getDevice()
     } else {
         return devices[0];
     }
+}
+
+CompoundDevice *VirtualDevice::getCompoundDevice()
+{
+    return cdev;
 }
 
 std::vector<Device *> VirtualDevice::getDevices()

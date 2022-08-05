@@ -4,6 +4,8 @@
 #include "Util/qpointervariant.h"
 #include "savable.h"
 
+#include "Device/compounddevice.h"
+
 #include <QDialog>
 #include <QVariant>
 #include <exception>
@@ -14,7 +16,7 @@ enum GraphDomainChangeBehavior {
     AdjustGrahpsIfOnlyTrace = 2,
 };
 
-Q_DECLARE_METATYPE(GraphDomainChangeBehavior);
+Q_DECLARE_METATYPE(GraphDomainChangeBehavior)
 
 enum GraphLimitIndication {
     DontShowAnything = 0,
@@ -22,7 +24,7 @@ enum GraphLimitIndication {
     Overlay = 2,
 };
 
-Q_DECLARE_METATYPE(GraphLimitIndication);
+Q_DECLARE_METATYPE(GraphLimitIndication)
 
 enum MarkerSortOrder {
     PrefMarkerSortXCoord = 0,
@@ -30,7 +32,7 @@ enum MarkerSortOrder {
     PrefMarkerSortTimestamp = 2,
 };
 
-Q_DECLARE_METATYPE(MarkerSortOrder);
+Q_DECLARE_METATYPE(MarkerSortOrder)
 
 
 class Preferences : public Savable {
@@ -132,12 +134,18 @@ public:
 
     bool TCPoverride; // in case of manual port specification via command line
 
+    QString compoundDeviceJSON;
+    std::vector<CompoundDevice*> compoundDevices;
+
     void fromJSON(nlohmann::json j) override;
     nlohmann::json toJSON() override;
 
+    void nonTrivialParsing();
+    void nonTrivialWriting();
+
 private:
     Preferences() :
-     TCPoverride(false) {};
+     TCPoverride(false) {}
     static Preferences instance;
 
     const std::vector<Savable::SettingDescription> descr = {{
@@ -196,6 +204,7 @@ private:
         {&Marker.sortOrder, "Marker.sortOrder", MarkerSortOrder::PrefMarkerSortXCoord},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
+        {&compoundDeviceJSON, "compoundDeviceJSON", "[]"},
     }};
 };
 
