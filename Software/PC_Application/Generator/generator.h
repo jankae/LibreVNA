@@ -7,6 +7,7 @@
 
 class Generator : public Mode
 {
+    Q_OBJECT
 public:
     Generator(AppWindow *window, QString name = "Signal Generator");
     void deactivate() override;

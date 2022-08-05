@@ -1,6 +1,7 @@
-#include "appwindow.h"
+﻿#include "appwindow.h"
 #include <QtWidgets/QApplication>
 #include "Device/device.h"
+#include "Device/virtualdevice.h"
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #endif
@@ -20,14 +21,15 @@ int main(int argc, char *argv[]) {
 
     qSetMessagePattern("%{time process}: [%{type}] %{message}");
 
+    Device::RegisterTypes();
+    VirtualDevice::RegisterTypes();
+
     app = new QApplication(argc, argv);
     QCoreApplication::setOrganizationName("LibreVNA");
     QCoreApplication::setApplicationName("LibreVNA-GUI");
     window = new AppWindow;
     QCoreApplication::setApplicationVersion(window->getAppVersion() + "-" +
                                             window->getAppGitHash().left(9));
-
-    Device::RegisterTypes();
 
 #ifdef Q_OS_UNIX
     signal(SIGINT, tryExitGracefully);

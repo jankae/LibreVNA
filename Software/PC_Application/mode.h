@@ -28,7 +28,7 @@ public:
     Mode(AppWindow *window, QString name, QString SCPIname);
     ~Mode();
 
-    virtual void shutdown(){}; // called when the application is about to exit
+    virtual void shutdown(){} // called when the application is about to exit
     QString getName() const;
     void setName(const QString &value);
     void updateGraphColors();
@@ -37,7 +37,7 @@ public:
     virtual Type getType() = 0;
 
     virtual void initializeDevice() = 0;
-    virtual void deviceDisconnected(){};
+    virtual void deviceDisconnected(){}
 
     virtual void saveSreenshot();
 

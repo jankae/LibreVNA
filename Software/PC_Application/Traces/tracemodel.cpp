@@ -70,7 +70,7 @@ void TraceModel::togglePause(unsigned int index)
             traces[index]->pause();
         }
         emit dataChanged(createIndex(index, ColIndexPlayPause), createIndex(index, ColIndexPlayPause));
-        emit requiredExcitation(PortExcitationRequired(1), PortExcitationRequired(2));
+        emit requiredExcitation();
     }
 }
 
@@ -252,7 +252,7 @@ void TraceModel::addSAData(const VirtualDevice::SAMeasurement& d, const VirtualD
         if (t->getSource() == Trace::Source::Live && !t->isPaused()) {
             int index = -1;
             Trace::Data td;
-            if(settings.f_start == settings.f_stop) {
+            if(settings.freqStart == settings.freqStop) {
                 // in zerospan mode, insert data by index
                 index = d.pointNum;
                 td.x = (double) d.us / 1000000.0;

@@ -211,6 +211,7 @@ void TraceWidget::SetupSCPI()
             auto d = t->sample(i);
             int precision = 0;
             switch(t->outputType()) {
+            case Trace::DataType::Invalid:
             case Trace::DataType::Frequency: precision = 0; break;
             case Trace::DataType::Time: precision = 12; break;
             case Trace::DataType::Power: precision = 3; break;

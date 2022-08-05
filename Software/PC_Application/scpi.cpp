@@ -85,6 +85,7 @@ QString SCPI::getResultName(SCPI::Result r)
     case Result::Empty:
         return "";
     case Result::Error:
+    default:
         return "ERROR";
     case Result::False:
         return "FALSE";

@@ -1,7 +1,7 @@
 ﻿#ifndef APPWINDOW_H
 #define APPWINDOW_H
 
-#include "Device/virtualdevice.h".h"
+#include "Device/virtualdevice.h"
 #include "Traces/traceplot.h"
 #include "Calibration/calibration.h"
 #include "Traces/tracemodel.h"
@@ -67,7 +67,8 @@ private slots:
     void UpdateAcquisitionFrequencies();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
-    void DeviceStatusUpdated(VirtualDevice::Status &status);
+    void DeviceStatusUpdated(VirtualDevice::Status status);
+    void DeviceInfoUpdated();
     void SourceCalibrationDialog();
     void ReceiverCalibrationDialog();
     void FrequencyCalibrationDialog();

@@ -211,6 +211,7 @@ Device::Device(QString serial)
     transmissionActive = false;
     // got a new connection, request info
     SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
+    SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceStatus);
 }
 
 Device::~Device()

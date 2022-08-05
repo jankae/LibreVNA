@@ -14,7 +14,7 @@
 #include "Tools/impedancematchdialog.h"
 #include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
-#include "Device/virtualdevice.h".h"
+#include "Device/virtualdevice.h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
 
@@ -438,7 +438,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
 
 using namespace std;
 
-void SpectrumAnalyzer::NewDatapoint(const VirtualDevice::SAMeasurement &m)
+void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
 {
     if(isActive != true) {
         return;
@@ -511,7 +511,7 @@ void SpectrumAnalyzer::NewDatapoint(const VirtualDevice::SAMeasurement &m)
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
-    static unsigned int lastPoint = 0;
+    static int lastPoint = 0;
     if(m_avg.pointNum > 0 && m_avg.pointNum != lastPoint + 1) {
         qWarning() << "Got point" << m_avg.pointNum << "but last received point was" << lastPoint << "("<<(m_avg.pointNum-lastPoint-1)<<"missed points)";
     }

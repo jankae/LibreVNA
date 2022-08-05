@@ -12,13 +12,13 @@
 #include <QQueue>
 #include <QTimer>
 
-Q_DECLARE_METATYPE(Protocol::Datapoint);
-Q_DECLARE_METATYPE(Protocol::ManualStatusV1);
-Q_DECLARE_METATYPE(Protocol::SpectrumAnalyzerResult);
-Q_DECLARE_METATYPE(Protocol::AmplitudeCorrectionPoint);
+Q_DECLARE_METATYPE(Protocol::Datapoint)
+Q_DECLARE_METATYPE(Protocol::ManualStatusV1)
+Q_DECLARE_METATYPE(Protocol::SpectrumAnalyzerResult)
+Q_DECLARE_METATYPE(Protocol::AmplitudeCorrectionPoint)
 
 class USBInBuffer : public QObject {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size);
     ~USBInBuffer();

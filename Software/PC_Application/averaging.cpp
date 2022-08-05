@@ -88,7 +88,7 @@ void Averaging::setMode(const Mode &value)
     mode = value;
 }
 
-void Averaging::process(int pointNum, std::vector<std::complex<double>> &data)
+void Averaging::process(unsigned int pointNum, std::vector<std::complex<double>> &data)
 {
     if(data.size() != numMeasurements) {
         numMeasurements = data.size();
@@ -119,12 +119,12 @@ void Averaging::process(int pointNum, std::vector<std::complex<double>> &data)
             // calculate average
             complex<double> sum[numMeasurements];
             for(auto s : *deque) {
-                for(int i=0;i<numMeasurements;i++) {
+                for(unsigned int i=0;i<numMeasurements;i++) {
                     sum[i] += s[i];
                 }
             }
             for(auto s : sum) {
-                averagedResults.push_back(abs(s / (double) (deque->size())));
+                averagedResults.push_back(s / (double) (deque->size()));
             }
         }
             break;

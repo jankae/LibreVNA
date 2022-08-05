@@ -1,7 +1,7 @@
 #ifndef SIGNALGENERATOR_H
 #define SIGNALGENERATOR_H
 
-#include "Device/virtualdevice.h".h"
+#include "Device/virtualdevice.h"
 #include "savable.h"
 
 #include <QWidget>

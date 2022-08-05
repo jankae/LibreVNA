@@ -31,6 +31,7 @@ TraceCSVExport::TraceCSVExport(TraceModel &traceModel, QWidget *parent) :
             auto domain = t->outputType();
             auto Xaxis = XAxis::Type::Last;
             switch(domain) {
+            case Trace::DataType::Invalid:
             case Trace::DataType::Frequency: Xaxis = XAxis::Type::Frequency; break;
             case Trace::DataType::Power: Xaxis = XAxis::Type::Power; break;
             case Trace::DataType::Time: Xaxis = XAxis::Type::Time; break;
@@ -109,7 +110,7 @@ void TraceCSVExport::on_buttonBox_accepted()
 std::vector<YAxis::Type> TraceCSVExport::getSelectedYAxisTypes()
 {
     std::vector<YAxis::Type> ret;
-    for(unsigned int i=0;i<ui->listColumns->count();i++) {
+    for(int i=0;i<ui->listColumns->count();i++) {
         auto item = ui->listColumns->item(i);
         if(item->checkState() == Qt::Checked) {
             auto type = YAxis::TypeFromName(item->text());

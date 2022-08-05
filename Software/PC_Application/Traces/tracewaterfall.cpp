@@ -133,18 +133,12 @@ bool TraceWaterfall::configureForTrace(Trace *t)
         xAxis.set(XAxis::Type::Frequency, false, true, 0, 1, 0.1);
         yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
         break;
-//    case Trace::DataType::Time:
-//        xAxis.set(XAxis::Type::Time, false, true, 0, 1, 0.1);
-//        yAxis.set(YAxis::Type::ImpulseMag, false, true, 0, 1, 1.0);
-//        break;
     case Trace::DataType::Power:
         xAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
         yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
         break;
-//    case Trace::DataType::TimeZeroSpan:
-//        xAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
-//        yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
-//        break;
+    case Trace::DataType::Time:
+    case Trace::DataType::TimeZeroSpan:
     case Trace::DataType::Invalid:
         // unable to add
         return false;

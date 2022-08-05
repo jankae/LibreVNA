@@ -18,8 +18,8 @@
 Mode::Mode(AppWindow *window, QString name, QString SCPIname)
     : QObject(window),
       SCPINode(SCPIname),
-      window(window),
       isActive(false),
+      window(window),
       name(name),
       central(nullptr)
 {    

@@ -30,11 +30,11 @@ public:
     void setMode(const Mode &value);
 
 private:
-    void process(int pointNum, std::vector<std::complex<double> > &data);
+    void process(unsigned int pointNum, std::vector<std::complex<double> > &data);
 
     std::vector<std::deque<std::vector<std::complex<double>>>> avg;
     int maxPoints;
-    int numMeasurements;
+    unsigned int numMeasurements;
     unsigned int averages;
     Mode mode;
 };

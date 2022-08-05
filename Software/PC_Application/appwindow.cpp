@@ -325,6 +325,7 @@ bool AppWindow::ConnectToDevice(QString serial)
         qDebug() << "Attempting to connect to device...";
         vdevice = new VirtualDevice(serial);
         UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
+        connect(vdevice, &VirtualDevice::InfoUpdated, this, &AppWindow::DeviceInfoUpdated);
         connect(vdevice, &VirtualDevice::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(vdevice, &VirtualDevice::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
         connect(vdevice, &VirtualDevice::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
@@ -339,11 +340,6 @@ bool AppWindow::ConnectToDevice(QString serial)
         }
 
         UpdateAcquisitionFrequencies();
-        if (modeHandler->getActiveMode()) {
-            modeHandler->getActiveMode()->initializeDevice();
-        }
-        UpdateReferenceToolbar();
-        UpdateReference();
 
         for(auto d : deviceActionGroup->actions()) {
             if(d->text() == vdevice->serial()) {
@@ -453,49 +449,59 @@ void AppWindow::SetupSCPI()
         if(params.size() != 1) {
             return SCPI::getResultName(SCPI::Result::Error);
         } else if(params[0] == "0" || params[0] == "OFF") {
-            int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::Off);
-            toolbars.reference.outFreq->setCurrentIndex(index);
-        } else if(params[0] == "10") {
-            int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::MHZ10);
-            toolbars.reference.outFreq->setCurrentIndex(index);
-        } else if(params[0] == "100") {
-            int index = toolbars.reference.outFreq->findData((int)Reference::OutFreq::MHZ100);
-            toolbars.reference.outFreq->setCurrentIndex(index);
+            int index = toolbars.reference.outFreq->findText("Off");
+            if(index >= 0) {
+                toolbars.reference.outFreq->setCurrentIndex(index);
+            } else {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
         } else {
-            return SCPI::getResultName(SCPI::Result::Error);
+            bool isInt;
+            params[0].toInt(&isInt);
+            if(isInt) {
+                params[0].append(" MHz");
+                int index = toolbars.reference.outFreq->findText(params[0]);
+                if(index >= 0) {
+                    toolbars.reference.outFreq->setCurrentIndex(index);
+                } else {
+                    return SCPI::getResultName(SCPI::Result::Error);
+                }
+            } else {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        Reference::OutFreq f = static_cast<Reference::OutFreq>(toolbars.reference.outFreq->currentData().toInt());
-        switch(f) {
-        case Reference::OutFreq::Off: return "OFF";
-        case Reference::OutFreq::MHZ10: return "10";
-        case Reference::OutFreq::MHZ100: return "100";
-        default: return SCPI::getResultName(SCPI::Result::Error);
+        auto fOutString = toolbars.reference.outFreq->currentText().toUpper();
+        if(fOutString.endsWith(" MHZ")) {
+            fOutString.chop(4);
+        }
+        if(fOutString.isEmpty()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            return fOutString;
         }
     }));
     scpi_ref->add(new SCPICommand("IN", [=](QStringList params) -> QString {
-        if(params.size() != 1) {
+        // reference settings translation
+        map<QString, QString> translation {
+            make_pair("INT", "Internal"),
+            make_pair("EXT", "External"),
+            make_pair("AUTO", "Auto"),
+        };
+        if(params.size() != 1 || translation.count(params[0]) == 0) {
             return SCPI::getResultName(SCPI::Result::Error);
-        } else if(params[0] == "INT") {
-            int index = toolbars.reference.type->findData((int)Reference::TypeIn::Internal);
-            toolbars.reference.type->setCurrentIndex(index);
-        } else if(params[0] == "EXT") {
-            int index = toolbars.reference.type->findData((int)Reference::TypeIn::External);
-            toolbars.reference.type->setCurrentIndex(index);
-        } else if(params[0] == "AUTO") {
-            int index = toolbars.reference.type->findData((int)Reference::TypeIn::Auto);
-            toolbars.reference.type->setCurrentIndex(index);
         } else {
-            return SCPI::getResultName(SCPI::Result::Error);
+            int index = toolbars.reference.type->findText(translation[params[0]]);
+            if(index >= 0) {
+                toolbars.reference.type->setCurrentIndex(index);
+            } else {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        switch(Device::StatusV1(getDevice()).extRefInUse) {
-        case 0: return "INT";
-        case 1: return "EXT";
-        default: return SCPI::getResultName(SCPI::Result::Error);
-        }
+        return VirtualDevice::getStatus(getDevice()).extRef ? "EXT" : "INT";
     }));
     scpi_dev->add(new SCPICommand("MODE", [=](QStringList params) -> QString {
         if (params.size() != 1) {
@@ -525,6 +531,7 @@ void AppWindow::SetupSCPI()
             case Mode::Type::VNA: return "VNA";
             case Mode::Type::SG: return "SG";
             case Mode::Type::SA: return "SA";
+            case Mode::Type::Last: return SCPI::getResultName(SCPI::Result::Error);
             }
         }
         return SCPI::getResultName(SCPI::Result::Error);
@@ -903,6 +910,9 @@ void AppWindow::UpdateReferenceToolbar()
     if(!vdevice || !vdevice->getInfo().supportsExtRef) {
         toolbars.reference.type->setEnabled(false);
         toolbars.reference.outFreq->setEnabled(false);
+    } else {
+        toolbars.reference.type->setEnabled(true);
+        toolbars.reference.outFreq->setEnabled(true);
     }
     // save current setting
     auto refInBuf = toolbars.reference.type->currentText();
@@ -913,7 +923,7 @@ void AppWindow::UpdateReferenceToolbar()
     }
     toolbars.reference.outFreq->clear();
     for(auto out : vdevice->availableExtRefOutSettings()) {
-        toolbars.reference.outFreq->addItem(in);
+        toolbars.reference.outFreq->addItem(out);
     }
     // restore previous setting if still available
     if(toolbars.reference.type->findText(refInBuf) >= 0) {
@@ -982,12 +992,21 @@ void AppWindow::DeviceNeedsUpdate(int reported, int expected)
     }
 }
 
-void AppWindow::DeviceStatusUpdated(VirtualDevice::Status &status)
+void AppWindow::DeviceStatusUpdated(VirtualDevice::Status status)
 {
     lDeviceInfo.setText(status.statusString);
     lADCOverload.setVisible(status.overload);
     lUnlevel.setVisible(status.unlevel);
     lUnlock.setVisible(status.unlocked);
+}
+
+void AppWindow::DeviceInfoUpdated()
+{
+    if (modeHandler->getActiveMode()) {
+        modeHandler->getActiveMode()->initializeDevice();
+    }
+    UpdateReferenceToolbar();
+    UpdateReference();
 }
 
 void AppWindow::SourceCalibrationDialog()

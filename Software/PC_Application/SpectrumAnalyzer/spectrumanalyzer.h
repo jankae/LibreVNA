@@ -39,7 +39,7 @@ private:
     static VirtualDevice::SASettings::Detector DetectorFromString(QString s);
 
 private slots:
-    void NewDatapoint(const VirtualDevice::SAMeasurement &m);
+    void NewDatapoint(VirtualDevice::SAMeasurement m);
     // Sweep control
     void SetStartFreq(double freq);
     void SetStopFreq(double freq);

@@ -48,7 +48,7 @@ public:
             : sweepType(SweepType::Frequency)
             , Freq({.start=1000000, .stop=6000000000, .excitation_power=-10, .logSweep=false})
             , Power({.start=-40, .stop=-10, .frequency=1000000000})
-            , npoints(501), bandwidth(1000), excitingPort1(true), excitingPort2(true)
+            , npoints(501), bandwidth(1000)
             , segments(1), activeSegment(0){}
         SweepType sweepType;
         struct {
@@ -62,10 +62,9 @@ public:
             double stop;
             double frequency;
         } Power;
-        int npoints;
+        unsigned int npoints;
         double bandwidth;
-        bool excitingPort1;
-        bool excitingPort2;
+        std::vector<int> excitedPorts;
         // if the number of points is higher than supported by the hardware, the sweep has to be segmented into multiple parts
         int segments;
         int activeSegment;
@@ -77,7 +76,7 @@ public slots:
     bool LoadCalibration(QString filename);
 
 private slots:
-    void NewDatapoint(Protocol::Datapoint d);
+    void NewDatapoint(VirtualDevice::VNAMeasurement m);
     void StartImpedanceMatching();
     // Sweep control
     void SetSweepType(SweepType sw);
@@ -101,7 +100,7 @@ private slots:
     void SetPoints(unsigned int points);
     void SetIFBandwidth(double bandwidth);
     void SetAveraging(unsigned int averages);
-    void ExcitationRequired(bool port1, bool port2);
+    void ExcitationRequired();
     // Calibration
     void DisableCalibration(bool force = false);
     void ApplyCalibration(Calibration::Type type);
@@ -115,7 +114,7 @@ private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
     void SetupSCPI();
     void UpdateAverageCount();
-    void SettingsChanged(bool resetTraces = true, std::function<void (Device::TransmissionResult)> cb = nullptr);
+    void SettingsChanged(bool resetTraces = true, std::function<void(bool)> cb = nullptr);
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();

@@ -107,7 +107,6 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
         } else {
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-            auto touchstone = ui->touchstoneImport->getTouchstone();
         }
         if(!(ui->touchstoneImport->getFilename().endsWith(".csv"))) {
             // switch to touchstone import dialog
@@ -125,6 +124,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 
     VNAtrace = Trace::isVNAParameter(t.liveParameter());
     if(VirtualDevice::getConnected()) {
+        qDebug() << VirtualDevice::getConnected();
         if(VNAtrace) {
             ui->CLiveParam->addItems(VirtualDevice::getConnected()->availableVNAMeasurements());
         } else {
@@ -132,6 +132,9 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         }
     }
 
+    if(ui->CLiveParam->findText(t.liveParameter()) < 0) {
+        ui->CLiveParam->addItem(t.liveParameter());
+    }
     ui->CLiveParam->setCurrentText(t.liveParameter());
 
     connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, updateTouchstoneFileStatus);

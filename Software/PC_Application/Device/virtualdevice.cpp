@@ -108,6 +108,7 @@ static constexpr VirtualDevice::Info defaultInfo = {
     .supportsVNAmode = true,
     .supportsSAmode = true,
     .supportsSGmode = true,
+    .supportsExtRef = true,
     .Limits = {
         .minFreq = 0,
         .maxFreq = 6000000000,
@@ -127,22 +128,24 @@ static const VirtualDevice::Status defaultStatus = {
     .overload = false,
     .unlocked = false,
     .unlevel = false,
+    .extRef = false,
 };
 
 VirtualDevice::VirtualDevice(QString serial)
     : QObject(),
-      info{}
+      info{},
+      status{}
 {
     isCompound = false;
     zerospan = false;
     auto dev = new Device(serial);
     devices.push_back(dev);
 
-    if(!isCompoundDevice()) {
+    if(!isCompoundDevice()) {      
         // just acting as a wrapper for device, pass on signals
         connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost);
         connect(dev, &Device::DeviceInfoUpdated, [&](){
-            auto i = dev->Info();
+            auto i = devices[0]->Info();
             info.ProtocolVersion = i.ProtocolVersion;
             info.FW_major = i.FW_major;
             info.FW_minor = i.FW_minor;
@@ -153,11 +156,12 @@ VirtualDevice::VirtualDevice(QString serial)
             info.supportsVNAmode = true;
             info.supportsSAmode = true;
             info.supportsSGmode = true;
+            info.supportsExtRef = true;
             info.Limits.minFreq = i.limits_minFreq;
             info.Limits.maxFreq = i.limits_maxFreq;
             info.Limits.maxFreqHarmonic = i.limits_maxFreqHarmonic;
             info.Limits.minIFBW = i.limits_minIFBW;
-            info.Limits.maxIFBW = i.limits_minIFBW;
+            info.Limits.maxIFBW = i.limits_maxIFBW;
             info.Limits.maxPoints = i.limits_maxPoints;
             info.Limits.mindBm = (double) i.limits_cdbm_min / 100;
             info.Limits.maxdBm = (double) i.limits_cdbm_max / 100;
@@ -167,10 +171,11 @@ VirtualDevice::VirtualDevice(QString serial)
         });
         connect(dev, &Device::LogLineReceived, this, &VirtualDevice::LogLineReceived);
         connect(dev, &Device::DeviceStatusUpdated, [&](){
-            status.statusString = dev->getLastDeviceInfoString();
-            status.overload = dev->StatusV1().ADC_overload;
-            status.unlevel = dev->StatusV1().unlevel;
-            status.unlocked = !dev->StatusV1().LO1_locked || !dev->StatusV1().source_locked;
+            status.statusString = devices[0]->getLastDeviceInfoString();
+            status.overload = devices[0]->StatusV1().ADC_overload;
+            status.unlevel = devices[0]->StatusV1().unlevel;
+            status.unlocked = !devices[0]->StatusV1().LO1_locked || !devices[0]->StatusV1().source_locked;
+            status.extRef = devices[0]->StatusV1().extRefInUse;
             emit StatusUpdated(status);
         });
         connect(dev, &Device::NeedsFirmwareUpdate, this, &VirtualDevice::NeedsFirmwareUpdate);
@@ -215,6 +220,13 @@ VirtualDevice::~VirtualDevice()
     for(auto dev : devices) {
         delete dev;
     }
+}
+
+void VirtualDevice::RegisterTypes()
+{
+    qRegisterMetaType<VirtualDevice::Status>("Status");
+    qRegisterMetaType<VirtualDevice::VNAMeasurement>("VNAMeasurement");
+    qRegisterMetaType<VirtualDevice::SAMeasurement>("SAMeasurement");
 }
 
 bool VirtualDevice::isCompoundDevice() const
@@ -267,8 +279,8 @@ const VirtualDevice::Status &VirtualDevice::getStatus(VirtualDevice *vdev)
 QStringList VirtualDevice::availableVNAMeasurements()
 {
     QStringList ret;
-    for(int i=1;i<info.ports;i++) {
-        for(int j=1;j<info.ports;i++) {
+    for(int i=1;i<=info.ports;i++) {
+        for(int j=1;j<=info.ports;j++) {
             ret.push_back("S"+QString::number(i)+QString::number(j));
         }
     }
@@ -279,6 +291,9 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
 {
     if(!info.supportsVNAmode) {
         return false;
+    }
+    if(s.excitedPorts.size() == 0) {
+        return setIdle(cb);
     }
     zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
     auto pref = Preferences::getInstance();
@@ -293,7 +308,7 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
         sd.excitePort1 = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) != s.excitedPorts.end() ? 1 : 0;
         sd.excitePort2 = find(s.excitedPorts.begin(), s.excitedPorts.end(), 2) != s.excitedPorts.end() ? 1 : 0;
         sd.suppressPeaks = pref.Acquisition.suppressPeaks ? 1 : 0;
-        sd.fixedPowerSetting = pref.Acquisition.adjustPowerLevel ? 0 : 1;
+        sd.fixedPowerSetting = pref.Acquisition.adjustPowerLevel || s.dBmStart != s.dBmStop ? 0 : 1;
         sd.logSweep = s.logSweep ? 1 : 0;
         return devices[0]->Configure(sd, [=](Device::TransmissionResult r){
             if(cb) {
@@ -303,7 +318,7 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
     } else {
         // TODO
         return false;
-}
+    }
 }
 
 QString VirtualDevice::serial()
@@ -319,7 +334,7 @@ QString VirtualDevice::serial()
 QStringList VirtualDevice::availableSAMeasurements()
 {
     QStringList ret;
-    for(int i=1;i<info.ports;i++) {
+    for(int i=1;i<=info.ports;i++) {
         ret.push_back("PORT"+QString::number(i));
     }
     return ret;
@@ -394,9 +409,10 @@ bool VirtualDevice::setSG(const SGSettings &s)
 
 bool VirtualDevice::setIdle(std::function<void (bool)> cb)
 {
+    auto success = true;
     results.clear();
     for(auto dev : devices) {
-        dev->SetIdle([&](Device::TransmissionResult r){
+        success &= dev->SetIdle([=](Device::TransmissionResult r){
             if(cb) {
                 results[dev] = r;
                 if(results.size() == devices.size()) {
@@ -413,6 +429,7 @@ bool VirtualDevice::setIdle(std::function<void (bool)> cb)
             }
         });
     }
+    return success;
 }
 
 QStringList VirtualDevice::availableExtRefInSettings()
@@ -451,6 +468,7 @@ bool VirtualDevice::setExtRef(QString option_in, QString option_out)
     p.type = Protocol::PacketType::Reference;
     switch(refIn) {
     case Reference::TypeIn::Internal:
+    case Reference::TypeIn::None:
         p.reference.UseExternalRef = 0;
         p.reference.AutomaticSwitch = 0;
         break;
@@ -464,6 +482,7 @@ bool VirtualDevice::setExtRef(QString option_in, QString option_out)
         break;
     }
     switch(refOut) {
+    case Reference::OutFreq::None:
     case Reference::OutFreq::Off: p.reference.ExtRefOuputFreq = 0; break;
     case Reference::OutFreq::MHZ10: p.reference.ExtRefOuputFreq = 10000000; break;
     case Reference::OutFreq::MHZ100: p.reference.ExtRefOuputFreq = 100000000; break;

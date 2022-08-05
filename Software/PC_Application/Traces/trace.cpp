@@ -81,7 +81,7 @@ void Trace::addData(const Trace::Data& d, DataType domain, double reference_impe
     }
     if(index >= 0) {
         // index position specified
-        if(data.size() <= index) {
+        if(data.size() <= (unsigned int) index) {
             data.resize(index + 1);
         }
         data[index] = d;
@@ -189,7 +189,6 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     int traceNum = -1;
     unsigned int i=1;
     QString lastTraceName = "";
-    bool hasImagValues;
     std::map<YAxis::Type, int> columnMapping;
     for(;i<csv.columns();i++) {
         auto header = csv.getHeader(i);
@@ -202,13 +201,13 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
         auto yaxistype = header.right(header.size() - splitIndex - 1);
         if(traceName != lastTraceName) {
             traceNum++;
-            if(traceNum > parameter) {
+            if(traceNum > (int) parameter) {
                 // got all columns for the trace we are interested in
                 break;
             }
             lastTraceName = traceName;
         }
-        if(traceNum == parameter) {
+        if(traceNum == (int) parameter) {
             // this is the trace we are looking for, get axistype and add to mapping
 
             // handle legacy column naming, translate to new naming
@@ -221,7 +220,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
             columnMapping[YAxis::TypeFromName(yaxistype)] = i;
         }
     }
-    if(traceNum < parameter) {
+    if(traceNum < (int) parameter) {
         throw runtime_error("Not enough traces in CSV file");
     }
     if(columnMapping.size() == 0) {
@@ -330,6 +329,7 @@ void Trace::removeMarker(Marker *m)
 
 void Trace::markerVisibilityChanged(Marker *m)
 {
+    Q_UNUSED(m);
     // trigger replot by pretending that trace visibility also changed
     emit visibilityChanged(this);
 }
@@ -710,6 +710,11 @@ nlohmann::json Trace::toJSON()
         }
         j["sources"] = jsources;
     }
+        break;
+    case Source::Calibration:
+        // Skip for now, TODO?
+        break;
+    case Source::Last:
         break;
     }
     j["velocityFactor"] = vFactor;

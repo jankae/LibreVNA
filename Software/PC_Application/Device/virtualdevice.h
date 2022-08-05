@@ -32,7 +32,7 @@ public:
         struct {
             double minFreq, maxFreq, maxFreqHarmonic;
             double minIFBW, maxIFBW;
-            int maxPoints;
+            unsigned int maxPoints;
             double mindBm;
             double maxdBm;
             double minRBW, maxRBW;
@@ -45,7 +45,10 @@ public:
         bool overload;
         bool unlocked;
         bool unlevel;
+        bool extRef;
     };
+
+    static void RegisterTypes();
 
     bool isCompoundDevice() const;
     Device *getDevice();
@@ -66,7 +69,7 @@ public:
     };
     class VNAMeasurement {
     public:
-        int pointNum;
+        unsigned int pointNum;
         double Z0;
         union {
             struct {
@@ -160,11 +163,11 @@ public:
     static VirtualDevice* getConnected();
 
 signals:
-    void VNAmeasurementReceived(const VNAMeasurement &m);
-    void SAmeasurementReceived(const SAMeasurement &m);
+    void VNAmeasurementReceived(VNAMeasurement m);
+    void SAmeasurementReceived(SAMeasurement m);
     void ConnectionLost();
     void InfoUpdated();
-    void StatusUpdated(const Status &status);
+    void StatusUpdated(Status status);
     void LogLineReceived(QString line);
     void NeedsFirmwareUpdate(int usedProtocol, int requiredProtocol);
 private:
@@ -177,5 +180,9 @@ private:
 
     std::map<Device*, Device::TransmissionResult> results;
 };
+
+Q_DECLARE_METATYPE(VirtualDevice::Status)
+Q_DECLARE_METATYPE(VirtualDevice::VNAMeasurement)
+Q_DECLARE_METATYPE(VirtualDevice::SAMeasurement)
 
 #endif // VIRTUALDEVICE_H
