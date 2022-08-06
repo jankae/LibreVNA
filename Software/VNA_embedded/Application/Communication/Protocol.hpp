@@ -1,12 +1,109 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
+#include <limits>
+#include <complex>
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 11;
+static constexpr uint16_t Version = 12;
 
 #pragma pack(push, 1)
+
+enum class Source : uint8_t {
+	Port1 = 0x01,
+	Port2 = 0x02,
+	Port3 = 0x04,
+	Port4 = 0x08,
+	Reference = 0x10,
+};
+
+template<int s> class VNADatapoint {
+public:
+	VNADatapoint() {
+		clear();
+	}
+
+	void clear() {
+		num_values = 0;
+		pointNum = 0;
+		cdBm = 0;
+		frequency = 0;
+	}
+	bool addValue(float real, float imag, uint8_t stage, int sourceMask) {
+		if(num_values >= s) {
+			return false;
+		}
+		real_values[num_values] = real;
+		imag_values[num_values] = imag;
+		descr_values[num_values] = stage << 5 | sourceMask;
+		num_values++;
+		return true;
+	}
+
+	bool encode(uint8_t *dest, uint16_t destSize) {
+		if(requiredBufferSize() > destSize) {
+			return false;
+		}
+		memcpy(dest, &frequency, 8);
+		memcpy(dest+8, &cdBm, 2);
+		memcpy(dest+10, &pointNum, 2);
+        dest += 12;
+		memcpy(dest, real_values, num_values * 4);
+		dest += num_values * 4;
+		memcpy(dest, imag_values, num_values * 4);
+		dest += num_values * 4;
+		memcpy(dest, descr_values, num_values);
+		return true;
+	}
+    void decode(const uint8_t *buffer, uint16_t size) {
+        num_values = (size - (8+2+2)) / (1+4+4);
+        memcpy(&frequency, buffer, 8);
+        memcpy(&cdBm, buffer+8, 2);
+        memcpy(&pointNum, buffer+10, 2);
+        buffer += 12;
+        memcpy(real_values, buffer, num_values * 4);
+        buffer += num_values * 4;
+        memcpy(imag_values, buffer, num_values * 4);
+        buffer += num_values * 4;
+        memcpy(descr_values, buffer, num_values);
+	}
+
+	std::complex<double> getValue(uint8_t stage, uint8_t port, bool reference) {
+		uint8_t sourceMask = 0;
+		sourceMask |= 0x01 << port;
+		if(reference) {
+			sourceMask |= (int) Source::Reference;
+		}
+		for(int i=0;i<num_values;i++) {
+			if(descr_values[i] >> 5 != stage) {
+				continue;
+			}
+			if((descr_values[i] & sourceMask) != sourceMask) {
+				continue;
+			}
+			return std::complex<double>(real_values[i], imag_values[i]);
+		}
+		return std::numeric_limits<std::complex<double>>::quiet_NaN();
+	}
+
+	uint16_t requiredBufferSize() {
+		return 8+2+2+ num_values * (4+4+1);
+	}
+
+	union {
+		uint64_t frequency;
+		uint64_t us;
+	};
+	int16_t cdBm;
+	uint16_t pointNum;
+private:
+	float real_values[s];
+	float imag_values[s];
+	uint8_t descr_values[s];
+	uint8_t num_values;
+};
 
 using Datapoint = struct _datapoint {
 	float real_S11, imag_S11;
@@ -33,11 +130,20 @@ using SweepSettings = struct _sweepSettings {
     uint16_t points;
     uint32_t if_bandwidth;
     int16_t cdbm_excitation_start; // in 1/100 dbm
-	uint8_t excitePort1:1;
-	uint8_t excitePort2:1;
-	uint8_t suppressPeaks:1;
-	uint8_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
-	uint8_t logSweep:1;
+	uint16_t unused:2;
+	uint16_t suppressPeaks:1;
+	uint16_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
+	uint16_t logSweep:1;
+	uint16_t stages:3;
+	uint16_t port1Stage:3;
+	uint16_t port2Stage:3;
+	/*
+	 * 0: no synchronization
+	 * 1: USB synchronization
+	 * 2: External reference synchronization
+	 * 3: Trigger synchronization (not supported yet by hardware)
+	 */
+	uint16_t syncMode:2;
     int16_t cdbm_excitation_stop; // in 1/100 dbm
 };
 
@@ -145,6 +251,13 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
     uint8_t trackingGenerator :1;
     uint8_t applySourceCorrection :1;
     uint8_t trackingGeneratorPort :1; // 0 for port1, 1 for port2
+	/*
+	 * 0: no synchronization
+	 * 1: USB synchronization
+	 * 2: External reference synchronization
+	 * 3: Trigger synchronization (not supported yet by hardware)
+	 */
+    uint8_t syncMode :2;
     int64_t trackingGeneratorOffset;
     int16_t trackingPower;
 };
@@ -191,7 +304,7 @@ using AcquisitionFrequencySettings = struct _acquisitionfrequencysettigns {
 
 enum class PacketType : uint8_t {
 	None = 0,
-	Datapoint = 1,
+	//Datapoint = 1, // Deprecated, replaced by VNADatapoint
 	SweepSettings = 2,
     ManualStatusV1 = 3,
     ManualControlV1 = 4,
@@ -217,12 +330,13 @@ enum class PacketType : uint8_t {
 	AcquisitionFrequencySettings = 24,
 	DeviceStatusV1 = 25,
 	RequestDeviceStatus = 26,
+	VNADatapoint = 27,
 };
 
 using PacketInfo = struct _packetinfo {
 	PacketType type;
 	union {
-		Datapoint datapoint;
+//		Datapoint datapoint; // Deprecated, use VNADatapoint instead
 		SweepSettings settings;
 		ReferenceSettings reference;
 		GeneratorSettings generator;
@@ -236,6 +350,11 @@ using PacketInfo = struct _packetinfo {
         AmplitudeCorrectionPoint amplitudePoint;
         FrequencyCorrection frequencyCorrection;
         AcquisitionFrequencySettings acquisitionFrequencySettings;
+        /*
+         * When encoding: Pointer may go invalid after call to EncodePacket
+         * When decoding: VNADatapoint is created on heap by DecodeBuffer, freeing is up to the caller
+         */
+        VNADatapoint<32> *VNAdatapoint;
 	};
 };
 

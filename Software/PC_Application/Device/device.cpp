@@ -463,8 +463,8 @@ void Device::ReceivedData()
         handled_len = Protocol::DecodeBuffer(dataBuffer->getBuffer(), dataBuffer->getReceived(), &packet);
         dataBuffer->removeBytes(handled_len);
         switch(packet.type) {
-        case Protocol::PacketType::Datapoint:
-            emit DatapointReceived(packet.datapoint);
+        case Protocol::PacketType::VNADatapoint:
+            emit DatapointReceived(packet.VNAdatapoint);
             break;
         case Protocol::PacketType::ManualStatusV1:
             emit ManualStatusReceived(packet.manualStatusV1);

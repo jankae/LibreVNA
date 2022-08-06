@@ -62,7 +62,7 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 	/* The complete frame has been received, check checksum */
 	auto type = (PacketType) data[3];
 	uint32_t crc = *(uint32_t*) &data[length - 4];
-	if(type != PacketType::Datapoint) {
+	if(type != PacketType::VNADatapoint) {
 		uint32_t compare = CRC32(0, data, length - 4);
 		if(crc != compare) {
 			// CRC mismatch, remove header
@@ -70,6 +70,8 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 			info->type = PacketType::None;
 			return data - buf;
 		}
+		// Valid packet, copy packet type and payload
+		memcpy(info, &data[3], length - 7);
 	} else {
 		// Datapoint has the CRC set to zero
 		if(crc != 0x00000000) {
@@ -77,17 +79,19 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 			info->type = PacketType::None;
 			return data - buf;
 		}
+		// Create the datapoint
+		info->type = (PacketType) data[3];
+		info->VNAdatapoint = new VNADatapoint<32>;
+		info->VNAdatapoint->decode(&data[4], length - 8);
 	}
 
-	// Valid packet, copy packet type and payload
-	memcpy(info, &data[3], length - 7);
 	return data - buf + length;
 }
 
 uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_t destsize) {
    int16_t payload_size = 0;
 	switch (packet.type) {
-	case PacketType::Datapoint: payload_size = sizeof(packet.datapoint); break;
+//	case PacketType::Datapoint: payload_size = sizeof(packet.datapoint); break;
 	case PacketType::SweepSettings: payload_size = sizeof(packet.settings); break;
 	case PacketType::Reference:	payload_size = sizeof(packet.reference); break;
     case PacketType::DeviceInfo: payload_size = sizeof(packet.info); break;
@@ -115,6 +119,7 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::RequestDeviceStatus:
         // no payload
         break;
+    case PacketType::VNADatapoint: payload_size = packet.VNAdatapoint->requiredBufferSize(); break;
     case PacketType::None:
         break;
     }
@@ -126,14 +131,18 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
 	dest[0] = header;
 	uint16_t overall_size = payload_size + 8;
 	memcpy(&dest[1], &overall_size, 2);
-	memcpy(&dest[3], &packet, payload_size + 1); // one additional byte for the packet type
-	// Calculate checksum
+	// Further encoding uses a special case for VNADatapoint packettype
 	uint32_t crc = 0x00000000;
-	if(packet.type == PacketType::Datapoint) {
+	if(packet.type == PacketType::VNADatapoint) {
 		// CRC calculation takes about 18us which is the bulk of the time required to encode and transmit a datapoint.
 		// Skip CRC for data points to optimize throughput
+		dest[3] = (uint8_t) packet.type;
+		packet.VNAdatapoint->encode(&dest[4], destsize - 8);
 		crc = 0x00000000;
 	} else {
+		// Copy rest of the packet
+		memcpy(&dest[3], &packet, payload_size + 1); // one additional byte for the packet type
+		// Calculate the CRC
 		crc = CRC32(0, dest, overall_size - 4);
 	}
 	memcpy(&dest[overall_size - 4], &crc, 4);

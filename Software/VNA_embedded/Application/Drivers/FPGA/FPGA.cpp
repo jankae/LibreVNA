@@ -130,10 +130,10 @@ void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
 	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
 
-void FPGA::SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool individual_halt) {
+void FPGA::SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool synchronize) {
 	uint16_t value = 0x0000;
 	value |= (uint16_t) (stages & 0x07) << 13;
-	if(individual_halt) {
+	if(synchronize) {
 		value |= 0x1000;
 	}
 	value |= (port1_stage & 0x07) << 3;

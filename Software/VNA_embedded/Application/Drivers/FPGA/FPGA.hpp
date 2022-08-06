@@ -114,7 +114,7 @@ bool Init(HaltedCallback cb = nullptr);
 void WriteRegister(FPGA::Reg reg, uint16_t value);
 void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
-void SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool individual_halt = false);
+void SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool synchronize = false);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
 bool IsEnabled(Periphery p);

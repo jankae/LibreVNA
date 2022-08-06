@@ -67,7 +67,7 @@ public:
         double IFBW;
         int points;
         bool logSweep;
-        std::vector<int> excitedPorts;
+        std::vector<int> excitedPorts; // port count starts at one
     };
     class VNAMeasurement {
     public:
@@ -177,12 +177,15 @@ private:
     Status status;
     bool isCompound;
     std::vector<Device*> devices;
-    std::vector<int> portMapping;
     bool zerospan;
 
     std::map<Device*, Device::TransmissionResult> results;
 
     CompoundDevice *cdev;
+
+    std::map<int, std::vector<Protocol::VNADatapoint<32>*>> compoundDataBuffer;
+
+    std::map<int, int> portStageMapping; // maps from excitedPort (count starts at zero) to stage (count starts at zero)
 };
 
 Q_DECLARE_METATYPE(VirtualDevice::Status)

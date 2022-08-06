@@ -3,6 +3,8 @@
 #include "preferences.h"
 #include "../VNA_embedded/Application/Communication/Protocol.hpp"
 
+#include <cmath>
+
 static VirtualDevice *connected = nullptr;
 
 using namespace std;
@@ -193,20 +195,30 @@ VirtualDevice::VirtualDevice(QString serial)
             m.measurements["PORT2"] = res.port2;
             emit SAmeasurementReceived(m);
         });
-        connect(dev, &Device::DatapointReceived, [&](Protocol::Datapoint res){
+        connect(dev, &Device::DatapointReceived, [&](Protocol::VNADatapoint<32> *res){
             VNAMeasurement m;
-            m.pointNum = res.pointNum;
+            m.pointNum = res->pointNum;
             m.Z0 = 50.0;
             if(zerospan) {
-                m.us = res.us;
+                m.us = res->us;
             } else {
-                m.frequency = res.frequency;
-                m.dBm = (double) res.cdbm / 100;
+                m.frequency = res->frequency;
+                m.dBm = (double) res->cdBm / 100;
             }
-            m.measurements["S11"] = complex<double>(res.real_S11, res.imag_S11);
-            m.measurements["S21"] = complex<double>(res.real_S21, res.imag_S21);
-            m.measurements["S12"] = complex<double>(res.real_S12, res.imag_S12);
-            m.measurements["S22"] = complex<double>(res.real_S22, res.imag_S22);
+            for(auto map : portStageMapping) {
+                // map.first is the port (starts at zero)
+                // map.second is the stage at which this port had the stimulus (starts at zero)
+                complex<double> ref = res->getValue(map.second, map.first, true);
+                for(int i=0;i<2;i++) {
+                    complex<double> input = res->getValue(map.second, i, false);
+                    if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
+                        // got both required measurements
+                        QString name = "S"+QString::number(i+1)+QString::number(map.first+1);
+                        m.measurements[name] = input / ref;
+                    }
+                }
+            }
+            delete res;
             emit VNAmeasurementReceived(m);
         });
     } else {
@@ -301,6 +313,13 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
     if(s.excitedPorts.size() == 0) {
         return setIdle(cb);
     }
+
+    // create port->stage mapping
+    portStageMapping.clear();
+    for(int i=0;i<s.excitedPorts.size();i++) {
+        portStageMapping[s.excitedPorts[i]] = i;
+    }
+
     zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
     auto pref = Preferences::getInstance();
     if(!isCompoundDevice()) {
@@ -311,11 +330,13 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
         sd.if_bandwidth = s.IFBW;
         sd.cdbm_excitation_start = s.dBmStart * 100;
         sd.cdbm_excitation_stop = s.dBmStop * 100;
-        sd.excitePort1 = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) != s.excitedPorts.end() ? 1 : 0;
-        sd.excitePort2 = find(s.excitedPorts.begin(), s.excitedPorts.end(), 2) != s.excitedPorts.end() ? 1 : 0;
+        sd.stages = s.excitedPorts.size() - 1;
+        sd.port1Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 0) - s.excitedPorts.begin();
+        sd.port2Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) - s.excitedPorts.begin();
         sd.suppressPeaks = pref.Acquisition.suppressPeaks ? 1 : 0;
         sd.fixedPowerSetting = pref.Acquisition.adjustPowerLevel || s.dBmStart != s.dBmStop ? 0 : 1;
         sd.logSweep = s.logSweep ? 1 : 0;
+        sd.syncMode = 0;
         return devices[0]->Configure(sd, [=](Device::TransmissionResult r){
             if(cb) {
                 cb(r == Device::TransmissionResult::Ack);
@@ -372,6 +393,7 @@ bool VirtualDevice::setSA(const VirtualDevice::SASettings &s, std::function<void
         sd.trackingGeneratorPort = s.trackingPort;
         sd.trackingGeneratorOffset = s.trackingOffset;
         sd.trackingPower = s.trackingPower;
+        sd.syncMode = 0;
         return devices[0]->Configure(sd, [=](Device::TransmissionResult r){
             if(cb) {
                 cb(r == Device::TransmissionResult::Ack);

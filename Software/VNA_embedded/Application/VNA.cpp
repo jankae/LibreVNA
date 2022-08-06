@@ -22,9 +22,8 @@
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
 static uint8_t stageCnt;
-static uint8_t stages;
 static double logMultiplier, logFrequency;
-static Protocol::Datapoint data;
+static Protocol::VNADatapoint<32> data;
 static bool active = false;
 static Si5351C::DriveStrength fixedPowerLowband;
 static bool adcShifted;
@@ -81,12 +80,6 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	VNA::Stop();
 	vTaskDelay(5);
 	HW::SetMode(HW::Mode::VNA);
-	if(s.excitePort1 == 0 && s.excitePort2 == 0) {
-		// both ports disabled, nothing to do
-		HW::SetIdle();
-		active = false;
-		return false;
-	}
 	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
@@ -285,19 +278,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::Enable(FPGA::Periphery::SourceRF);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	if(s.excitePort1 && s.excitePort2) {
-		// two stages, port 1 first, followed by port 2
-		FPGA::SetupSweep(1, 0, 1);
-		stages = 2;
-	} else if(s.excitePort1) {
-		// one stage, port 1 only
-		FPGA::SetupSweep(0, 0, 1);
-		stages = 1;
-	} else {
-		// one stage, port 2 only
-		FPGA::SetupSweep(0, 1, 0);
-		stages = 1;
-	}
+	FPGA::SetupSweep(s.stages, s.port1Stage, s.port2Stage, s.syncMode != 0);
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 	pointCnt = 0;
 	stageCnt = 0;
@@ -315,9 +296,10 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 
 static void PassOnData() {
 	Protocol::PacketInfo info;
-	info.type = Protocol::PacketType::Datapoint;
-	info.datapoint = data;
+	info.type = Protocol::PacketType::VNADatapoint;
+	info.VNAdatapoint = &data;
 	Communication::Send(info);
+	data.clear();
 }
 
 bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
@@ -330,11 +312,9 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 		return false;
 	}
 	// normal sweep mode
-	auto port1_raw = std::complex<float>(result.P1I, result.P1Q);
-	auto port2_raw = std::complex<float>(result.P2I, result.P2Q);
-	auto ref = std::complex<float>(result.RefI, result.RefQ);
-	auto port1 = port1_raw / ref;
-	auto port2 = port2_raw / ref;
+	data.addValue(result.P1I, result.P1Q, stageCnt, (int) Protocol::Source::Port1);
+	data.addValue(result.P2I, result.P2Q, stageCnt, (int) Protocol::Source::Port2);
+	data.addValue(result.RefI, result.RefQ, stageCnt, (int) Protocol::Source::Port1 | (int) Protocol::Source::Port2 | (int) Protocol::Source::Reference);
 	data.pointNum = pointCnt;
 	if(zerospan) {
 		uint64_t timestamp = HW::getLastISRTimestamp();
@@ -348,24 +328,11 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 	} else {
 		// non-zero span, set frequency/power
 		data.frequency = getPointFrequency(pointCnt);
-		data.cdbm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
-	}
-	if(stageCnt == 0 && settings.excitePort1) {
-		// stimulus is present at port 1
-		data.real_S11 = port1.real();
-		data.imag_S11 = port1.imag();
-		data.real_S21 = port2.real();
-		data.imag_S21 = port2.imag();
-	} else {
-		// stimulus is present at port 2
-		data.real_S12 = port1.real();
-		data.imag_S12 = port1.imag();
-		data.real_S22 = port2.real();
-		data.imag_S22 = port2.imag();
+		data.cdBm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * pointCnt / (settings.points - 1);
 	}
 	// figure out whether this sweep point is complete
 	stageCnt++;
-	if(stageCnt == stages) {
+	if(stageCnt > settings.stages) {
 		// point is complete
 		stageCnt = 0;
 		STM::DispatchToInterrupt(PassOnData);
@@ -507,7 +474,7 @@ void VNA::PrintStatus() {
 	HAL_Delay(10);
 	LOG_INFO("Points: %d/%d", pointCnt, settings.points);
 	HAL_Delay(10);
-	LOG_INFO("Stages: %d/%d", stageCnt, stages);
+	LOG_INFO("Stages: %d/%d", stageCnt, settings.stages);
 	HAL_Delay(10);
 	LOG_INFO("FPGA status: 0x%04x", FPGA::GetStatus());
 }

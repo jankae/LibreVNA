@@ -925,11 +925,11 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (bool)> cb)
     VirtualDevice::VNASettings s = {};
     s.IFBW = settings.bandwidth;
     if(Preferences::getInstance().Acquisition.alwaysExciteBothPorts) {
-        for(int i=1;i<=VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        for(int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
             s.excitedPorts.push_back(i);
         }
     } else {
-        for(int i=1;i<=VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        for(int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
             if(traceModel.PortExcitationRequired(i))
             s.excitedPorts.push_back(i);
         }

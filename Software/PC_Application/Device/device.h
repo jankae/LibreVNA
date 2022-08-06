@@ -77,7 +77,7 @@ public:
     // Returns serial numbers of all connected devices
     static std::set<QString> GetDevices();
 signals:
-    void DatapointReceived(Protocol::Datapoint);
+    void DatapointReceived(Protocol::VNADatapoint<32>*);
     void ManualStatusReceived(Protocol::ManualStatusV1);
     void SpectrumResultReceived(Protocol::SpectrumAnalyzerResult);
     void AmplitudeCorrectionPointReceived(Protocol::AmplitudeCorrectionPoint);
