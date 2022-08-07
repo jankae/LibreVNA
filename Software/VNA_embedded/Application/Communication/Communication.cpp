@@ -8,8 +8,8 @@
 static uint8_t inputBuffer[1024];
 uint16_t inputCnt = 0;
 static uint8_t outputBuffer[1024];
-
 static Communication::Callback callback = nullptr;
+static uint8_t blockAcks = 0;
 
 void Communication::SetCallback(Callback cb) {
 	callback = cb;
@@ -66,7 +66,15 @@ void communication_usb_input(const uint8_t *buf, uint16_t len) {
 }
 
 bool Communication::SendWithoutPayload(Protocol::PacketType type) {
+	if(type == Protocol::PacketType::Ack && blockAcks) {
+		blockAcks--;
+		return true;
+	}
 	Protocol::PacketInfo p;
 	p.type = type;
 	return Send(p);
+}
+
+void Communication::BlockNextAck() {
+	blockAcks++;
 }

@@ -11,6 +11,7 @@
 #include <set>
 #include <QQueue>
 #include <QTimer>
+#include <mutex>
 
 Q_DECLARE_METATYPE(Protocol::Datapoint)
 Q_DECLARE_METATYPE(Protocol::ManualStatusV1)
@@ -87,8 +88,11 @@ signals:
     void ConnectionLost();
     void AckReceived();
     void NackReceived();
+    void TriggerReceived(bool set);
     void LogLineReceived(QString line);
     void NeedsFirmwareUpdate(int usedProtocol, int requiredProtocol);
+public slots:
+    void SetTrigger(bool set);
 private slots:
     void ReceivedData();
     void ReceivedLog();
@@ -120,6 +124,7 @@ private:
         std::function<void(TransmissionResult)> callback;
     };
 
+    std::mutex transmissionMutex;
     QQueue<Transmission> transmissionQueue;
     bool startNextTransmission();
     QTimer transmissionTimer;

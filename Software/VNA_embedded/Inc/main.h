@@ -89,6 +89,10 @@ void Error_Handler(void);
 #define FPGA_PROGRAM_B_GPIO_Port GPIOB
 #define EN_6V_Pin GPIO_PIN_12
 #define EN_6V_GPIO_Port GPIOB
+#define FPGA_TRIGGER_OUT_Pin GPIO_PIN_11
+#define FPGA_TRIGGER_OUT_GPIO_Port GPIOC
+#define FPGA_TRIGGER_IN_Pin GPIO_PIN_3
+#define FPGA_TRIGGER_IN_GPIO_Port GPIOB
 #define FPGA_RESET_Pin GPIO_PIN_5
 #define FPGA_RESET_GPIO_Port GPIOB
 #define FPGA_DONE_Pin GPIO_PIN_9

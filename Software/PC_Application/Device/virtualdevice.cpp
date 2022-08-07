@@ -1,6 +1,7 @@
 #include "virtualdevice.h"
 
 #include "preferences.h"
+#include "CustomWidgets/informationbox.h"
 #include "../VNA_embedded/Application/Communication/Protocol.hpp"
 
 #include <cmath>
@@ -99,130 +100,74 @@ public:
     }
 };
 
-static constexpr VirtualDevice::Info defaultInfo = {
-    .ProtocolVersion = Protocol::Version,
-    .FW_major = 0,
-    .FW_minor = 0,
-    .FW_patch = 0,
-    .hardware_version = 1,
-    .HW_Revision = '0',
-    .ports = 2,
-    .supportsVNAmode = true,
-    .supportsSAmode = true,
-    .supportsSGmode = true,
-    .supportsExtRef = true,
-    .Limits = {
-        .minFreq = 0,
-        .maxFreq = 6000000000,
-        .maxFreqHarmonic = 18000000000,
-        .minIFBW = 10,
-        .maxIFBW = 1000000,
-        .maxPoints = 10000,
-        .mindBm = -100,
-        .maxdBm = 100,
-        .minRBW = 1,
-        .maxRBW = 1000000,
-    }
-};
-
-static const VirtualDevice::Status defaultStatus = {
-    .statusString = "",
-    .overload = false,
-    .unlocked = false,
-    .unlevel = false,
-    .extRef = false,
-};
-
 VirtualDevice::VirtualDevice(QString serial)
     : QObject(),
       info{},
       status{}
 {
     cdev = nullptr;
-    isCompound = false;
+    cdev = nullptr;
     zerospan = false;
-    auto dev = new Device(serial);
-    devices.push_back(dev);
+
+    // Check if this is a compound device
+    auto pref = Preferences::getInstance();
+    for(auto cd : pref.compoundDevices) {
+        if(cd->name == serial) {
+            // connect request to this compound device
+            cdev = cd;
+            break;
+        }
+    }
 
     if(!isCompoundDevice()) {      
         // just acting as a wrapper for device, pass on signals
+        auto dev = new Device(serial);
+        devices.push_back(dev);
         connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost);
-        connect(dev, &Device::DeviceInfoUpdated, [&](){
-            auto i = devices[0]->Info();
-            info.ProtocolVersion = i.ProtocolVersion;
-            info.FW_major = i.FW_major;
-            info.FW_minor = i.FW_minor;
-            info.FW_patch = i.FW_patch;
-            info.hardware_version = i.hardware_version;
-            info.HW_Revision = i.HW_Revision;
-            info.ports = 2;
-            info.supportsVNAmode = true;
-            info.supportsSAmode = true;
-            info.supportsSGmode = true;
-            info.supportsExtRef = true;
-            info.Limits.minFreq = i.limits_minFreq;
-            info.Limits.maxFreq = i.limits_maxFreq;
-            info.Limits.maxFreqHarmonic = i.limits_maxFreqHarmonic;
-            info.Limits.minIFBW = i.limits_minIFBW;
-            info.Limits.maxIFBW = i.limits_maxIFBW;
-            info.Limits.maxPoints = i.limits_maxPoints;
-            info.Limits.mindBm = (double) i.limits_cdbm_min / 100;
-            info.Limits.maxdBm = (double) i.limits_cdbm_max / 100;
-            info.Limits.minRBW = i.limits_minRBW;
-            info.Limits.maxRBW = i.limits_minRBW;
+        connect(dev, &Device::DeviceInfoUpdated, [=](){
+            info = Info(devices[0]);
             emit InfoUpdated();
         });
         connect(dev, &Device::LogLineReceived, this, &VirtualDevice::LogLineReceived);
-        connect(dev, &Device::DeviceStatusUpdated, [&](){
-            status.statusString = devices[0]->getLastDeviceInfoString();
-            status.overload = devices[0]->StatusV1().ADC_overload;
-            status.unlevel = devices[0]->StatusV1().unlevel;
-            status.unlocked = !devices[0]->StatusV1().LO1_locked || !devices[0]->StatusV1().source_locked;
-            status.extRef = devices[0]->StatusV1().extRefInUse;
+        connect(dev, &Device::DeviceStatusUpdated, [=](){
+            status = Status(devices[0]);
             emit StatusUpdated(status);
         });
         connect(dev, &Device::NeedsFirmwareUpdate, this, &VirtualDevice::NeedsFirmwareUpdate);
-
-        connect(dev, &Device::SpectrumResultReceived, [&](Protocol::SpectrumAnalyzerResult res){
-            SAMeasurement m;
-            m.pointNum = res.pointNum;
-            if(zerospan) {
-                m.us = res.us;
-            } else {
-                m.frequency = res.frequency;
-            }
-            m.measurements["PORT1"] = res.port1;
-            m.measurements["PORT2"] = res.port2;
-            emit SAmeasurementReceived(m);
-        });
-        connect(dev, &Device::DatapointReceived, [&](Protocol::VNADatapoint<32> *res){
-            VNAMeasurement m;
-            m.pointNum = res->pointNum;
-            m.Z0 = 50.0;
-            if(zerospan) {
-                m.us = res->us;
-            } else {
-                m.frequency = res->frequency;
-                m.dBm = (double) res->cdBm / 100;
-            }
-            for(auto map : portStageMapping) {
-                // map.first is the port (starts at zero)
-                // map.second is the stage at which this port had the stimulus (starts at zero)
-                complex<double> ref = res->getValue(map.second, map.first, true);
-                for(int i=0;i<2;i++) {
-                    complex<double> input = res->getValue(map.second, i, false);
-                    if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
-                        // got both required measurements
-                        QString name = "S"+QString::number(i+1)+QString::number(map.first+1);
-                        m.measurements[name] = input / ref;
-                    }
-                }
-            }
-            delete res;
-            emit VNAmeasurementReceived(m);
-        });
+        connect(dev, &Device::SpectrumResultReceived, this, &VirtualDevice::singleSpectrumResultReceived);
+        connect(dev, &Device::DatapointReceived, this, &VirtualDevice::singleDatapointReceived);
     } else {
-        // TODO
+        // Connect to the actual devices
+        for(auto devSerial : cdev->deviceSerials) {
+            auto dev = new Device(devSerial);
+            devices.push_back(dev);
+            // Create device connections
+            connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost);
+            connect(dev, &Device::NeedsFirmwareUpdate, this, &VirtualDevice::NeedsFirmwareUpdate);
+            connect(dev, &Device::LogLineReceived, [=](QString line){
+                emit LogLineReceived(line.prepend(dev->serial()+": "));
+            });
+            connect(dev, &Device::DeviceInfoUpdated, [=](){
+                compoundInfoUpdated(dev);
+            });
+            connect(dev, &Device::DeviceStatusUpdated, [=](){
+                compoundStatusUpdated(dev);
+            });
+            connect(dev, &Device::DatapointReceived, [=](Protocol::VNADatapoint<32> *data){
+                compoundDatapointReceivecd(data, dev);
+            });
+            connect(dev, &Device::SpectrumResultReceived, [=](Protocol::SpectrumAnalyzerResult res) {
+                compoundSpectrumResultReceived(res, dev);
+            });
+        }
+        if(cdev->sync == CompoundDevice::Synchronization::USB) {
+            // create trigger connections for USB synchronization
+            for(int i=0;i<devices.size() - 1;i++) {
+                connect(devices[i], &Device::TriggerReceived, devices[i+1], &Device::SetTrigger, Qt::QueuedConnection);
+            }
+            connect(devices.back(), &Device::TriggerReceived, devices.front(), &Device::SetTrigger, Qt::QueuedConnection);
+        }
+
     }
     connected = this;
 }
@@ -244,12 +189,12 @@ void VirtualDevice::RegisterTypes()
 
 bool VirtualDevice::isCompoundDevice() const
 {
-    return isCompound;
+    return cdev != nullptr;
 }
 
 Device *VirtualDevice::getDevice()
 {
-    if(isCompound || devices.size() < 1) {
+    if(isCompoundDevice() || devices.size() < 1) {
         return nullptr;
     } else {
         return devices[0];
@@ -271,12 +216,12 @@ const VirtualDevice::Info &VirtualDevice::getInfo() const
     return info;
 }
 
-const VirtualDevice::Info &VirtualDevice::getInfo(VirtualDevice *vdev)
+VirtualDevice::Info VirtualDevice::getInfo(VirtualDevice *vdev)
 {
     if(vdev) {
         return vdev->info;
     } else {
-        return defaultInfo;
+        return Info();
     }
 }
 
@@ -285,12 +230,12 @@ const VirtualDevice::Status &VirtualDevice::getStatus() const
     return status;
 }
 
-const VirtualDevice::Status &VirtualDevice::getStatus(VirtualDevice *vdev)
+VirtualDevice::Status VirtualDevice::getStatus(VirtualDevice *vdev)
 {
     if(vdev) {
         return vdev->status;
     } else {
-        return defaultStatus;
+        return Status();
     }
 }
 
@@ -316,26 +261,27 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
 
     // create port->stage mapping
     portStageMapping.clear();
-    for(int i=0;i<s.excitedPorts.size();i++) {
+    for(unsigned int i=0;i<s.excitedPorts.size();i++) {
         portStageMapping[s.excitedPorts[i]] = i;
     }
 
-    zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
     auto pref = Preferences::getInstance();
+    Protocol::SweepSettings sd;
+    sd.f_start = s.freqStart;
+    sd.f_stop = s.freqStop;
+    sd.points = s.points;
+    sd.if_bandwidth = s.IFBW;
+    sd.cdbm_excitation_start = s.dBmStart * 100;
+    sd.cdbm_excitation_stop = s.dBmStop * 100;
+    sd.stages = s.excitedPorts.size() - 1;
+    sd.suppressPeaks = pref.Acquisition.suppressPeaks ? 1 : 0;
+    sd.fixedPowerSetting = pref.Acquisition.adjustPowerLevel || s.dBmStart != s.dBmStop ? 0 : 1;
+    sd.logSweep = s.logSweep ? 1 : 0;
+
+    zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
     if(!isCompoundDevice()) {
-        Protocol::SweepSettings sd;
-        sd.f_start = s.freqStart;
-        sd.f_stop = s.freqStop;
-        sd.points = s.points;
-        sd.if_bandwidth = s.IFBW;
-        sd.cdbm_excitation_start = s.dBmStart * 100;
-        sd.cdbm_excitation_stop = s.dBmStop * 100;
-        sd.stages = s.excitedPorts.size() - 1;
         sd.port1Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 0) - s.excitedPorts.begin();
         sd.port2Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) - s.excitedPorts.begin();
-        sd.suppressPeaks = pref.Acquisition.suppressPeaks ? 1 : 0;
-        sd.fixedPowerSetting = pref.Acquisition.adjustPowerLevel || s.dBmStart != s.dBmStop ? 0 : 1;
-        sd.logSweep = s.logSweep ? 1 : 0;
         sd.syncMode = 0;
         return devices[0]->Configure(sd, [=](Device::TransmissionResult r){
             if(cb) {
@@ -343,8 +289,31 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
             }
         });
     } else {
-        // TODO
-        return false;
+        // set the synchronization mode
+        switch(cdev->sync) {
+            case CompoundDevice::Synchronization::USB: sd.syncMode = 1; break;
+            case CompoundDevice::Synchronization::ExtRef: sd.syncMode = 2; break;
+            case CompoundDevice::Synchronization::Trigger: sd.syncMode = 3; break;
+        }
+        // create vector of currently used stimulus ports
+        vector<CompoundDevice::PortMapping> activeMapping;
+        for(auto p : s.excitedPorts) {
+            activeMapping.push_back(cdev->portMapping[p]);
+        }
+        // Configure the devices
+        results.clear();
+        bool success = true;
+        for(unsigned int i=0;i<devices.size();i++) {
+            sd.port1Stage = CompoundDevice::PortMapping::findActiveStage(activeMapping, i, 0);
+            sd.port2Stage = CompoundDevice::PortMapping::findActiveStage(activeMapping, i, 1);
+            success &= devices[i]->Configure(sd, [=](Device::TransmissionResult r){
+                if(cb) {
+                    results[devices[i]] = r;
+                    checkIfAllTransmissionsComplete(cb);
+                }
+            });
+        }
+        return success;
     }
 }
 
@@ -353,8 +322,7 @@ QString VirtualDevice::serial()
     if(!isCompoundDevice()) {
         return devices[0]->serial();
     } else {
-        // TODO
-        return "";
+        return cdev->name;
     }
 }
 
@@ -420,18 +388,30 @@ bool VirtualDevice::setSG(const SGSettings &s)
         return false;
     }
     auto pref = Preferences::getInstance();
+    Protocol::PacketInfo packet;
+    packet.type = Protocol::PacketType::Generator;
+    Protocol::GeneratorSettings &sd = packet.generator;
+    sd.frequency = s.freq;
+    sd.cdbm_level = s.dBm * 100;
+    sd.applyAmplitudeCorrection = 1;
+
     if(!isCompoundDevice()) {
-        Protocol::PacketInfo packet;
-        packet.type = Protocol::PacketType::Generator;
-        Protocol::GeneratorSettings &sd = packet.generator;
-        sd.frequency = s.freq;
-        sd.cdbm_level = s.dBm * 100;
         sd.activePort = s.port;
-        sd.applyAmplitudeCorrection = 1;
         return devices[0]->SendPacket(packet);
     } else {
-        // TODO
-        return false;
+        // configure all devices
+        bool success = true;
+        for(unsigned int i=0;i<devices.size();i++) {
+            sd.activePort = 0;
+            if(s.port > 0) {
+                if(cdev->portMapping[s.port-1].device == i) {
+                    // this device has the active port
+                    sd.activePort = cdev->portMapping[s.port-1].port+1;
+                }
+            }
+            success &= devices[i]->SendPacket(packet);
+        }
+        return success;
     }
 }
 
@@ -443,17 +423,7 @@ bool VirtualDevice::setIdle(std::function<void (bool)> cb)
         success &= dev->SetIdle([=](Device::TransmissionResult r){
             if(cb) {
                 results[dev] = r;
-                if(results.size() == devices.size()) {
-                    // got all responses
-                    bool success = true;
-                    for(auto res : results) {
-                        if(res.second != Device::TransmissionResult::Ack) {
-                            success = false;
-                            break;
-                        }
-                    }
-                    cb(success);
-                }
+                checkIfAllTransmissionsComplete(cb);
             }
         });
     }
@@ -523,16 +493,189 @@ bool VirtualDevice::setExtRef(QString option_in, QString option_out)
     return success;
 }
 
-std::set<QString> VirtualDevice::GetDevices()
+std::set<QString> VirtualDevice::GetAvailableVirtualDevices()
 {
+    auto pref = Preferences::getInstance();
     auto ret = Device::GetDevices();
-    // TODO check if compound devices are configured and add them if all sub-devices are available
+    // Add compound devices as well
+    for(auto vdev : pref.compoundDevices) {
+        // check if all serial number required for this compound device are available
+        bool serialMissing = false;
+        for(auto s : vdev->deviceSerials) {
+            if(ret.count(s) == 0) {
+                serialMissing = true;
+                break;
+            }
+        }
+        if(!serialMissing) {
+            // this compound device is available
+            ret.insert(vdev->name);
+        }
+    }
     return ret;
 }
 
 VirtualDevice *VirtualDevice::getConnected()
 {
     return connected;
+}
+
+void VirtualDevice::singleDatapointReceived(Protocol::VNADatapoint<32> *res)
+{
+    VNAMeasurement m;
+    m.pointNum = res->pointNum;
+    m.Z0 = 50.0;
+    if(zerospan) {
+        m.us = res->us;
+    } else {
+        m.frequency = res->frequency;
+        m.dBm = (double) res->cdBm / 100;
+    }
+    for(auto map : portStageMapping) {
+        // map.first is the port (starts at zero)
+        // map.second is the stage at which this port had the stimulus (starts at zero)
+        complex<double> ref = res->getValue(map.second, map.first, true);
+        for(int i=0;i<2;i++) {
+            complex<double> input = res->getValue(map.second, i, false);
+            if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
+                // got both required measurements
+                QString name = "S"+QString::number(i+1)+QString::number(map.first+1);
+                m.measurements[name] = input / ref;
+            }
+        }
+    }
+    delete res;
+    emit VNAmeasurementReceived(m);
+}
+
+void VirtualDevice::compoundDatapointReceivecd(Protocol::VNADatapoint<32> *data, Device *dev)
+{
+    if(!compoundVNABuffer.count(data->pointNum)) {
+        compoundVNABuffer[data->pointNum] = std::map<Device*, Protocol::VNADatapoint<32>*>();
+    }
+    auto &buf = compoundVNABuffer[data->pointNum];
+    buf[dev] = data;
+    if(buf.size() == devices.size()) {
+        // Got datapoints from all devices, can create merged VNA result
+        VNAMeasurement m;
+        m.pointNum = data->pointNum;
+        m.Z0 = 50.0;
+        if(zerospan) {
+            m.us = data->us;
+        } else {
+            m.frequency = data->frequency;
+            m.dBm = (double) data->cdBm / 100;
+        }
+        // assemble data
+        for(auto map : portStageMapping) {
+            // map.first is the port (starts at zero)
+            // map.second is the stage at which this port had the stimulus (starts at zero)
+
+            // figure out which device had the stimulus for the port...
+            auto stimulusDev = devices[cdev->portMapping[map.first].device];
+            // ...and which device port was used for the stimulus...
+            auto stimulusDevPort = cdev->portMapping[map.first].port;
+            // ...grab the reference receiver data
+            complex<double> ref = buf[stimulusDev]->getValue(map.second, stimulusDevPort, true);
+
+            // for all ports of the compound device...
+            for(unsigned int i=0;i<cdev->portMapping.size();i++) {
+                // ...figure out which physical device and port was used for this input...
+                auto inputDevice = devices[cdev->portMapping[i].device];
+                // ...and grab the data
+                auto inputPort = cdev->portMapping[i].port;
+                complex<double> input = buf[inputDevice]->getValue(map.second, inputPort, false);
+                if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
+                    // got both required measurements
+                    QString name = "S"+QString::number(i+1)+QString::number(map.first+1);
+                    m.measurements[name] = input / ref;
+                }
+            }
+        }
+
+        emit VNAmeasurementReceived(m);
+
+        // Clear this and all incomplete older datapoint buffers
+        for(auto p : compoundVNABuffer) {
+            for(auto d : p.second) {
+                delete d.second;
+            }
+        }
+        compoundVNABuffer.clear();
+    }
+}
+
+void VirtualDevice::singleSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res)
+{
+    SAMeasurement m;
+    m.pointNum = res.pointNum;
+    if(zerospan) {
+        m.us = res.us;
+    } else {
+        m.frequency = res.frequency;
+    }
+    m.measurements["PORT1"] = res.port1;
+    m.measurements["PORT2"] = res.port2;
+    emit SAmeasurementReceived(m);
+}
+
+void VirtualDevice::compoundSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res, Device *dev)
+{
+
+}
+
+void VirtualDevice::compoundInfoUpdated(Device *dev)
+{
+    compoundInfoBuffer[dev] = dev->Info();
+    if(compoundInfoBuffer.size() == devices.size()) {
+        // got information of all devices
+        info = Info(devices[0]);
+        for(int i=1;i<devices.size();i++) {
+            try {
+                info.subset(Info(devices[i]));
+            } catch (exception &e) {
+                InformationBox::ShowError("Failed to get device information", e.what());
+                emit ConnectionLost();
+                return;
+            }
+        }
+        if(cdev->sync == CompoundDevice::Synchronization::ExtRef) {
+            // can't use the external reference if it is used for synchronization
+            info.supportsExtRef = false;
+        }
+        info.ports = cdev->portMapping.size();
+        emit InfoUpdated();
+    }
+}
+
+void VirtualDevice::compoundStatusUpdated(Device *dev)
+{
+    compoundStatusBuffer[dev] = dev->StatusV1();
+    if(compoundStatusBuffer.size() == devices.size()) {
+        // got status of all devices
+        status = Status(devices[0]);
+        for(int i=1;i<devices.size();i++) {
+            status.merge(Status(devices[i]));
+        }
+        emit StatusUpdated(status);
+    }
+}
+
+void VirtualDevice::checkIfAllTransmissionsComplete(std::function<void (bool)> cb)
+{
+    if(results.size() == devices.size()) {
+        // got all responses
+        bool success = true;
+        for(auto res : results) {
+            if(res.second != Device::TransmissionResult::Ack) {
+                success = false;
+                break;
+            }
+        }
+        if(cb) {
+            cb(success);
+        }
+    }
 }
 
 Sparam VirtualDevice::VNAMeasurement::toSparam(int port1, int port2)
@@ -578,4 +721,110 @@ VirtualDevice::VNAMeasurement VirtualDevice::VNAMeasurement::interpolateTo(const
         ret.measurements[m.first] = measurements[m.first] * (1.0 - a) + to.measurements.at(m.first) * a;
     }
     return ret;
+}
+
+VirtualDevice::Info::Info()
+{
+    ProtocolVersion = Protocol::Version;
+    FW_major = 0;
+    FW_minor = 0;
+    FW_patch = 0;
+    hardware_version = 1;
+    HW_Revision = '0';
+    ports = 2;
+    supportsVNAmode = true;
+    supportsSAmode = true;
+    supportsSGmode = true;
+    supportsExtRef = true;
+    Limits = {
+            .minFreq = 0,
+            .maxFreq = 6000000000,
+            .maxFreqHarmonic = 18000000000,
+            .minIFBW = 10,
+            .maxIFBW = 1000000,
+            .maxPoints = 10000,
+            .mindBm = -100,
+            .maxdBm = 100,
+            .minRBW = 1,
+            .maxRBW = 1000000,
+    };
+}
+
+VirtualDevice::Info::Info(Device *dev)
+{
+    auto info = dev->Info();
+    ProtocolVersion = info.ProtocolVersion;
+    FW_major = info.FW_major;
+    FW_minor = info.FW_minor;
+    FW_patch = info.FW_patch;
+    hardware_version = info.hardware_version;
+    HW_Revision = info.HW_Revision;
+    ports = 2;
+    supportsVNAmode = true;
+    supportsSAmode = true;
+    supportsSGmode = true;
+    supportsExtRef = true;
+    Limits.minFreq = info.limits_minFreq;
+    Limits.maxFreq = info.limits_maxFreq;
+    Limits.maxFreqHarmonic = info.limits_maxFreqHarmonic;
+    Limits.minIFBW = info.limits_minIFBW;
+    Limits.maxIFBW = info.limits_maxIFBW;
+    Limits.maxPoints = info.limits_maxPoints;
+    Limits.mindBm = (double) info.limits_cdbm_min / 100;
+    Limits.maxdBm = (double) info.limits_cdbm_max / 100;
+    Limits.minRBW = info.limits_minRBW;
+    Limits.maxRBW = info.limits_minRBW;
+}
+
+void VirtualDevice::Info::subset(const VirtualDevice::Info &merge)
+{
+    if((merge.ProtocolVersion != ProtocolVersion)
+            || (merge.FW_major != FW_major)
+            || (merge.FW_minor != FW_minor)
+            || (merge.FW_patch != FW_patch)) {
+        throw runtime_error("Incompatible device, unable to create compound device. All devices must run the same firmware version.");
+    }
+    ports += merge.ports;
+    supportsVNAmode &= merge.supportsVNAmode;
+    supportsSGmode &= merge.supportsSGmode;
+    supportsSAmode &= merge.supportsSAmode;
+    supportsExtRef &= merge.supportsExtRef;
+    Limits.minFreq = max(Limits.minFreq, merge.Limits.minFreq);
+    Limits.maxFreq = min(Limits.maxFreq, merge.Limits.maxFreq);
+    Limits.maxFreqHarmonic = min(Limits.maxFreqHarmonic, merge.Limits.maxFreqHarmonic);
+    Limits.minIFBW = max(Limits.minIFBW, merge.Limits.minIFBW);
+    Limits.maxIFBW = min(Limits.maxIFBW, merge.Limits.maxIFBW);
+    Limits.maxPoints = min(Limits.maxPoints, merge.Limits.maxPoints);
+    Limits.mindBm = max(Limits.mindBm, merge.Limits.mindBm);
+    Limits.maxdBm = min(Limits.maxdBm, merge.Limits.maxdBm);
+    Limits.minRBW = max(Limits.minRBW, merge.Limits.minRBW);
+    Limits.maxRBW = min(Limits.maxRBW, merge.Limits.maxRBW);
+}
+
+VirtualDevice::Status::Status()
+{
+    statusString = "";
+    overload = false;
+    unlocked = false;
+    unlevel = false;
+    extRef = false;
+}
+
+VirtualDevice::Status::Status(Device *dev)
+{
+    auto status = dev->StatusV1();
+    statusString = dev->getLastDeviceInfoString();
+    overload = status.ADC_overload;
+    unlevel = status.unlevel;
+    unlocked = !status.LO1_locked || !status.source_locked;
+    extRef = status.extRefInUse;
+}
+
+void VirtualDevice::Status::merge(const VirtualDevice::Status &merge)
+{
+    statusString += " / "+merge.statusString;
+    overload |= merge.overload;
+    unlevel |= merge.unlevel;
+    unlocked |= merge.unlocked;
+    extRef &= merge.extRef;
 }

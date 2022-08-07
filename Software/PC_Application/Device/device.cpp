@@ -26,7 +26,7 @@ USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, i
 {
     buffer = new unsigned char[buffer_size];
     transfer = libusb_alloc_transfer(0);
-    libusb_fill_bulk_transfer(transfer, handle, endpoint, buffer, buffer_size, CallbackTrampoline, this, 100);
+    libusb_fill_bulk_transfer(transfer, handle, endpoint, buffer, buffer_size, CallbackTrampoline, this, 0);
     libusb_submit_transfer(transfer);
 }
 
@@ -66,9 +66,11 @@ int USBInBuffer::getReceived() const
 
 void USBInBuffer::Callback(libusb_transfer *transfer)
 {
+//    qDebug() << libusb_error_name(transfer->status);
     switch(transfer->status) {
     case LIBUSB_TRANSFER_COMPLETED:
         received_size += transfer->actual_length;
+//        qDebug() << transfer->actual_length <<"total:" << received_size;
         inCallback = true;
         emit DataReceived();
         inCallback = false;
@@ -249,6 +251,7 @@ bool Device::SendPacket(const Protocol::PacketInfo& packet, std::function<void(T
     t.packet = packet;
     t.timeout = timeout;
     t.callback = cb;
+    lock_guard<mutex> lock(transmissionMutex);
     transmissionQueue.enqueue(t);
 //    qDebug() << "Enqueued packet, queue at " << transmissionQueue.size();
     if(!transmissionActive) {
@@ -319,6 +322,16 @@ std::set<QString> Device::GetDevices()
     libusb_exit(ctx);
 
     return serials;
+}
+
+void Device::SetTrigger(bool set)
+{
+    qDebug() << "Trigger" << set << "to" << this;
+    if(set) {
+        SendCommandWithoutPayload(Protocol::PacketType::SetTrigger);
+    } else {
+        SendCommandWithoutPayload(Protocol::PacketType::ClearTrigger);
+    }
 }
 
 void Device::USBHandleThread()
@@ -460,7 +473,9 @@ void Device::ReceivedData()
     uint16_t handled_len;
 //    qDebug() << "Received data";
     do {
+//        qDebug() << "Decoding" << dataBuffer->getReceived() << "Bytes";
         handled_len = Protocol::DecodeBuffer(dataBuffer->getBuffer(), dataBuffer->getReceived(), &packet);
+//        qDebug() << "Handled" << handled_len << "Bytes, type:" << (int) packet.type;
         dataBuffer->removeBytes(handled_len);
         switch(packet.type) {
         case Protocol::PacketType::VNADatapoint:
@@ -501,6 +516,14 @@ void Device::ReceivedData()
             break;
         case Protocol::PacketType::FrequencyCorrection:
             emit FrequencyCorrectionReceived(packet.frequencyCorrection.ppm);
+            break;
+        case Protocol::PacketType::SetTrigger:
+            qDebug() << "Trigger" << true << "from" << this;
+            emit TriggerReceived(true);
+            break;
+        case Protocol::PacketType::ClearTrigger:
+            qDebug() << "Trigger" << false << "from" << this;
+            emit TriggerReceived(false);
             break;
        default:
             break;
@@ -557,8 +580,9 @@ bool Device::startNextTransmission()
 
 void Device::transmissionFinished(TransmissionResult result)
 {
+    lock_guard<mutex> lock(transmissionMutex);
     // remove transmitted packet
-//    qDebug() << "Transmission finsished (" << result << "), queue at " << transmissionQueue.size();
+//    qDebug() << "Transmission finsished (" << result << "), queue at " << transmissionQueue.size() << " Outstanding ACKs:"<<outstandingAckCount;
     if(transmissionQueue.empty()) {
         qWarning() << "transmissionFinished with empty transmission queue, stray Ack?";
         return;

@@ -61,13 +61,16 @@ entity Sweep is
 			  SWEEP_HALTED : out STD_LOGIC;
 			  SWEEP_RESUME : in STD_LOGIC;
 			  
+			  SYNC_ENABLED : in STD_LOGIC;
+			  TRIGGER_IN : in STD_LOGIC;
+			  TRIGGER_OUT : out STD_LOGIC;
+			  
 			  ATTENUATOR : out STD_LOGIC_VECTOR(6 downto 0);
 			  SOURCE_FILTER : out STD_LOGIC_VECTOR(1 downto 0);
 			  
 			  --SETTLING_TIME : in STD_LOGIC_VECTOR (15 downto 0);
 			  
 			  STAGES : in STD_LOGIC_VECTOR (2 downto 0);
-			  INDIVIDUAL_HALT : in STD_LOGIC;
 			  PORT1_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
 			  PORT2_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
 			  
@@ -82,12 +85,13 @@ end Sweep;
 
 architecture Behavioral of Sweep is
 	signal point_cnt : unsigned(12 downto 0);
-	type Point_states is (TriggerSetup, SettingUp, Settling, Exciting, NextPoint, Done);
+	type Point_states is (TriggerSetup, SettingUp, Settling, WaitTriggerHigh, Exciting, WaitTriggerLow, SamplingDone, NextPoint, Done);
 	signal state : Point_states;
 	signal settling_cnt : unsigned(15 downto 0);
 	signal settling_time : unsigned(15 downto 0);
 	signal stage_cnt : unsigned (2 downto 0);
 	signal config_reg : std_logic_vector(95 downto 0);
+	signal source_active : std_logic;
 begin
 	
 	CONFIG_ADDRESS <= std_logic_vector(point_cnt);
@@ -124,16 +128,22 @@ begin
 					std_logic_vector(to_unsigned(1904, 13)) when config_reg(92 downto 90) = "110" else
 					std_logic_vector(to_unsigned(5712, 13));
 	
-	DEBUG_STATUS(10 downto 8) <= "000" when state = TriggerSetup else
-											"001" when state = SettingUp else
-											"010" when state = Settling else
-											"011" when state = Exciting else
-											"110" when state = Done else
-											"111";
-	DEBUG_STATUS(7) <= PLL_RELOAD_DONE;
-	DEBUG_STATUS(6) <= PLL_RELOAD_DONE and PLL_LOCKED;
-	DEBUG_STATUS(5) <= SAMPLING_BUSY;
-	DEBUG_STATUS(4 downto 0) <= (others => '1');
+	DEBUG_STATUS(10 downto 7) <= "0000" when state = TriggerSetup else
+											"0001" when state = SettingUp else
+											"0010" when state = Settling else
+											"0011" when state = WaitTriggerHigh else
+											"0100" when state = Exciting else
+											"0101" when state = WaitTriggerLow else 
+											"0110" when state = SamplingDone else
+											"0111" when state = NextPoint else
+											"1000" when state = Done else
+											"1001";
+	DEBUG_STATUS(6) <= PLL_RELOAD_DONE;
+	DEBUG_STATUS(5) <= PLL_RELOAD_DONE and PLL_LOCKED;
+	DEBUG_STATUS(4) <= SAMPLING_BUSY;
+	DEBUG_STATUS(3) <= TRIGGER_IN;
+	DEBUG_STATUS(2) <= source_active;
+	DEBUG_STATUS(1 downto 0) <= (others => '1');
 
 	config_reg <= CONFIG_DATA;
 
@@ -150,6 +160,8 @@ begin
 				RESULT_INDEX <= (others => '1');
 				PORT1_ACTIVE <= '0';
 				PORT2_ACTIVE <= '0';
+				TRIGGER_OUT <= '0';
+				source_active <= '0';
 			else
 				case state is
 					when TriggerSetup =>
@@ -177,13 +189,16 @@ begin
 							end if;
 						end if;
 					when Settling =>
+						source_active <= '0';
 						if std_logic_vector(stage_cnt) = PORT1_STAGE then
 							PORT1_ACTIVE <= '1';
+							source_active <= '1';
 						else
 							PORT1_ACTIVE <= '0';
 						end if;
 						if std_logic_vector(stage_cnt) = PORT2_STAGE then
 							PORT2_ACTIVE <= '1';
+							source_active <= '1';
 						else
 							PORT2_ACTIVE <= '0';
 						end if;
@@ -191,6 +206,24 @@ begin
 						if settling_cnt > 0 then
 							settling_cnt <= settling_cnt - 1;
 						else
+							if SYNC_ENABLED = '1' then
+								-- need to wait for the trigger
+								state <= WaitTriggerHigh;
+								if source_active = '1' then
+									-- this device generates the stimulus signal, it needs start the trigger itself
+									TRIGGER_OUT <= '1';
+								end if;
+							else
+								-- can start sampling directly
+								START_SAMPLING <= '1';
+								if SAMPLING_BUSY = '1' then
+									state <= Exciting;
+								end if;
+							end if;
+						end if;
+					when WaitTriggerHigh =>
+						if TRIGGER_IN = '1' then 
+							TRIGGER_OUT <= '1'; -- pass on trigger signal
 							START_SAMPLING <= '1';
 							if SAMPLING_BUSY = '1' then
 								state <= Exciting;
@@ -201,20 +234,30 @@ begin
 						START_SAMPLING <= '0';
 						if SAMPLING_BUSY = '0' then
 							RESULT_INDEX <= std_logic_vector(stage_cnt) & std_logic_vector(point_cnt);
-							if stage_cnt < unsigned(STAGES) then
-								stage_cnt <= stage_cnt + 1;
-								if INDIVIDUAL_HALT = '1' then
-									-- wait for HALT SWEEP bit again if set
-									state <= SettingUp;
-								else
-									-- no need to halt again, can go directly to settling
-									state <= Settling;
+							if SYNC_ENABLED = '1' then
+								state <= WaitTriggerLow;
+								if source_active = '1' then
+									-- this device generated the stimulus signal, it needs to reset the trigger itself
+									TRIGGER_OUT <= '0';
 								end if;
 							else
-								state <= NextPoint;
+								state <= SamplingDone;
 							end if;
-							settling_cnt <= settling_time;
 						end if;
+					when WaitTriggerLow =>
+						if TRIGGER_IN = '0' then
+							TRIGGER_OUT <= '0';
+							state <= SamplingDone;
+						end if;
+					when SamplingDone =>
+						if stage_cnt < unsigned(STAGES) then
+							stage_cnt <= stage_cnt + 1;
+							-- can go directly to settling
+							state <= Settling;
+						else
+							state <= NextPoint;
+						end if;
+						settling_cnt <= settling_time;
 					when NextPoint =>
 						if point_cnt < unsigned(NPOINTS) then
 							point_cnt <= point_cnt + 1;

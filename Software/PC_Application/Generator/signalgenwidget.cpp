@@ -94,18 +94,10 @@ SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent
     connect(ui->levelSlider, &QSlider::valueChanged, [=](int value) {
         setLevel((double) value / 100.0);
     });
-    connect(ui->EnablePort1, &QCheckBox::toggled, [=](){
-        if(ui->EnablePort1->isChecked() && ui->EnablePort2->isChecked()) {
-           ui->EnablePort2->setCheckState(Qt::CheckState::Unchecked);
-        }
-        emit SettingsChanged();
-    });
-    connect(ui->EnablePort2, &QCheckBox::toggled, [=](){
-        if(ui->EnablePort1->isChecked() && ui->EnablePort2->isChecked()) {
-           ui->EnablePort1->setCheckState(Qt::CheckState::Unchecked);
-        }
-        emit SettingsChanged();
-    });
+    connect(ui->EnablePort1, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
+    connect(ui->EnablePort2, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
+    connect(ui->EnablePort3, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
+    connect(ui->EnablePort4, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
     connect(ui->EnabledSweep, &QCheckBox::toggled, [=](bool enabled){
         ui->current->setEnabled(enabled);
         if(enabled) {
@@ -152,6 +144,10 @@ VirtualDevice::SGSettings SignalgeneratorWidget::getDeviceStatus()
         s.port = 1;
     } else if(ui->EnablePort2->isChecked()) {
         s.port = 2;
+    } else if(ui->EnablePort3->isChecked()) {
+        s.port = 3;
+    } else if(ui->EnablePort4->isChecked()) {
+        s.port = 4;
     } else {
         s.port = 0;
     }

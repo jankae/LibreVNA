@@ -19,6 +19,11 @@ public:
 
     class Info {
     public:
+        Info();
+        Info(Device *dev);
+
+        void subset(const Info &merge);
+
         uint16_t ProtocolVersion;
         uint8_t FW_major;
         uint8_t FW_minor;
@@ -42,6 +47,11 @@ public:
 
     class Status {
     public:
+        Status();
+        Status(Device *dev);
+
+        void merge(const Status &merge);
+
         QString statusString;
         bool overload;
         bool unlocked;
@@ -56,9 +66,9 @@ public:
     CompoundDevice *getCompoundDevice();
     std::vector<Device*> getDevices();
     const Info& getInfo() const;
-    static const VirtualDevice::Info &getInfo(VirtualDevice *vdev);
+    static VirtualDevice::Info getInfo(VirtualDevice *vdev);
     const Status &getStatus() const;
-    static const VirtualDevice::Status &getStatus(VirtualDevice *vdev);
+    static VirtualDevice::Status getStatus(VirtualDevice *vdev);
 
     class VNASettings {
     public:
@@ -148,7 +158,7 @@ public:
     public:
         double freq;
         double dBm;
-        int port;
+        int port; // starts at one, set to zero to disable all ports
     };
 
     QStringList availableSGPorts();
@@ -161,7 +171,7 @@ public:
 
     bool setExtRef(QString option_in, QString option_out);
 
-    static std::set<QString> GetDevices();
+    static std::set<QString> GetAvailableVirtualDevices();
     static VirtualDevice* getConnected();
 
 signals:
@@ -172,10 +182,19 @@ signals:
     void StatusUpdated(Status status);
     void LogLineReceived(QString line);
     void NeedsFirmwareUpdate(int usedProtocol, int requiredProtocol);
+
+private slots:
+    void singleDatapointReceived(Protocol::VNADatapoint<32> *res);
+    void compoundDatapointReceivecd(Protocol::VNADatapoint<32> *data, Device *dev);
+    void singleSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res);
+    void compoundSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res, Device *dev);
+    void compoundInfoUpdated(Device *dev);
+    void compoundStatusUpdated(Device *dev);
 private:
+    void checkIfAllTransmissionsComplete(std::function<void(bool)> cb = nullptr);
+
     Info info;
     Status status;
-    bool isCompound;
     std::vector<Device*> devices;
     bool zerospan;
 
@@ -183,7 +202,10 @@ private:
 
     CompoundDevice *cdev;
 
-    std::map<int, std::vector<Protocol::VNADatapoint<32>*>> compoundDataBuffer;
+    std::map<int, std::map<Device*, Protocol::VNADatapoint<32>*>> compoundVNABuffer;
+    std::map<int, std::map<Device*, Protocol::SpectrumAnalyzerResult>> compoundSABuffer;
+    std::map<Device*, Protocol::DeviceInfo> compoundInfoBuffer;
+    std::map<Device*, Protocol::DeviceStatusV1> compoundStatusBuffer;
 
     std::map<int, int> portStageMapping; // maps from excitedPort (count starts at zero) to stage (count starts at zero)
 };

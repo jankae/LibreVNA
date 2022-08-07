@@ -436,7 +436,7 @@ void AppWindow::SetupSCPI()
     }));
     scpi_dev->add(new SCPICommand("LIST", nullptr, [=](QStringList) -> QString {
         QString ret;
-        for(auto d : Device::GetDevices()) {
+        for(auto d : VirtualDevice::GetAvailableVirtualDevices()) {
             ret += d + ",";
         }
         // remove last comma
@@ -854,7 +854,7 @@ int AppWindow::UpdateDeviceList()
 {
     deviceActionGroup->setExclusive(true);
     ui->menuConnect_to->clear();
-    auto devices = Device::GetDevices();
+    auto devices = VirtualDevice::GetAvailableVirtualDevices();
     if(vdevice) {
         devices.insert(vdevice->serial());
     }

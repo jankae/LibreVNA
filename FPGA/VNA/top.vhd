@@ -40,6 +40,8 @@ entity top is
            MCU_AUX1 : in  STD_LOGIC;
            MCU_AUX2 : in  STD_LOGIC;
            MCU_AUX3 : in  STD_LOGIC;
+			  TRIGGER_IN : in STD_LOGIC;
+			  TRIGGER_OUT : out STD_LOGIC;
            PORT2_CONVSTART : out  STD_LOGIC;
            PORT2_SDO : in  STD_LOGIC;
            PORT2_SCLK : out  STD_LOGIC;
@@ -136,10 +138,12 @@ architecture Behavioral of top is
 		RELOAD_PLL_REGS : OUT std_logic;
 		SWEEP_HALTED : out STD_LOGIC;
 		SWEEP_RESUME : in STD_LOGIC;
+		SYNC_ENABLED : in STD_LOGIC;
+		TRIGGER_IN : in STD_LOGIC;
+		TRIGGER_OUT : out STD_LOGIC;
 		ATTENUATOR : OUT std_logic_vector(6 downto 0);
 		SOURCE_FILTER : OUT std_logic_vector(1 downto 0);
 		STAGES : in STD_LOGIC_VECTOR (2 downto 0);
-		INDIVIDUAL_HALT : in STD_LOGIC;
 		PORT1_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
 		PORT2_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
 
@@ -248,7 +252,7 @@ architecture Behavioral of top is
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
 		NSAMPLES : OUT std_logic_vector(12 downto 0);
 	   STAGES : out STD_LOGIC_VECTOR (2 downto 0);
-	   INDIVIDUAL_HALT : out STD_LOGIC;
+	   SYNC_ENABLED : out STD_LOGIC;
 	   PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 	   PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 		PORT1_EN : out STD_LOGIC;
@@ -371,7 +375,7 @@ architecture Behavioral of top is
 	-- Sweep signals
 	signal sweep_points : std_logic_vector(12 downto 0);
 	signal sweep_stages : STD_LOGIC_VECTOR (2 downto 0);
-	signal sweep_individual_halt : STD_LOGIC;
+	signal sweep_sync_enabled: STD_LOGIC;
 	signal sweep_port1_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_port2_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_config_data : std_logic_vector(95 downto 0);
@@ -684,10 +688,12 @@ begin
 		PLL_LOCKED => plls_locked,
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
+		SYNC_ENABLED => sweep_sync_enabled,
+		TRIGGER_IN => TRIGGER_IN,
+		TRIGGER_OUT => TRIGGER_OUT,
 		ATTENUATOR => sweep_attenuator,
 		SOURCE_FILTER => sweep_source_filter,
 		STAGES => sweep_stages,
-		INDIVIDUAL_HALT => sweep_individual_halt,
 		PORT1_STAGE => sweep_port1_stage,
 		PORT2_STAGE => sweep_port2_stage,
 
@@ -765,7 +771,7 @@ begin
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
 		STAGES => sweep_stages,
-		INDIVIDUAL_HALT => sweep_individual_halt,
+		SYNC_ENABLED => sweep_sync_enabled,
 		PORT1_STAGE => sweep_port1_stage,
 		PORT2_STAGE => sweep_port2_stage,
 		SPI_OVERWRITE_ENABLED => HW_overwrite_enabled,

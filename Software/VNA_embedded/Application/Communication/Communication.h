@@ -13,6 +13,7 @@ using Callback = void(*)(const Protocol::PacketInfo&);
 void SetCallback(Callback cb);
 void Input(const uint8_t *buf, uint16_t len);
 bool Send(const Protocol::PacketInfo &packet);
+void BlockNextAck();
 bool SendWithoutPayload(Protocol::PacketType type);
 
 }

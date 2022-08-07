@@ -13,6 +13,7 @@
 #include "task.h"
 #include "Util.hpp"
 #include "usb.h"
+#include "Trigger.hpp"
 #include <cmath>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
@@ -279,6 +280,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
 	FPGA::SetupSweep(s.stages, s.port1Stage, s.port2Stage, s.syncMode != 0);
+	Trigger::SetMode((Trigger::Mode) s.syncMode);
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 	pointCnt = 0;
 	stageCnt = 0;
@@ -350,7 +352,9 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 
 void VNA::Work() {
 	// end of sweep
-	HW::Ref::update();
+	if(Trigger::GetMode() != Trigger::Mode::ExtRef) {
+		HW::Ref::update();
+	}
 	// Compile info packet
 	Protocol::PacketInfo packet;
 	packet.type = Protocol::PacketType::DeviceStatusV1;
@@ -365,86 +369,87 @@ void VNA::SweepHalted() {
 	if(!active) {
 		return;
 	}
-	LOG_DEBUG("Halted before point %d", pointCnt);
-	// Check if IF table has entry at this point
-	if (IFTableIndexCnt < IFTableNumEntries && IFTable[IFTableIndexCnt].pointCnt == pointCnt) {
-		Si5351.WriteRawCLKConfig(SiChannel::Port1LO2, IFTable[IFTableIndexCnt].clkconfig);
-		Si5351.WriteRawCLKConfig(SiChannel::Port2LO2, IFTable[IFTableIndexCnt].clkconfig);
-		Si5351.WriteRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);
-		Si5351.ResetPLL(Si5351C::PLL::B);
-		IFTableIndexCnt++;
-		// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
-		Delay::us(1300);
-	}
-	uint64_t frequency = getPointFrequency(pointCnt);
-	int16_t power = settings.cdbm_excitation_start
-			+ (settings.cdbm_excitation_stop - settings.cdbm_excitation_start)
-					* pointCnt / (settings.points - 1);
-	bool adcShiftRequired = false;
-	if (frequency < HW::BandSwitchFrequency) {
-		auto driveStrength = fixedPowerLowband;
-		if(!settings.fixedPowerSetting) {
-			auto amplitude = HW::GetAmplitudeSettings(power, frequency, true, false);
-			// attenuator value has already been set in sweep setup
-			driveStrength = amplitude.lowBandPower;
-		}
-
-		// need the Si5351 as Source
-		bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B, driveStrength);
-		static bool lowbandDisabled = false;
-		if (pointCnt == 0) {
-			// First point in sweep, switch to correct source
-			FPGA::Disable(FPGA::Periphery::SourceRF);
-			lowbandDisabled = true;
-		}
-		if(lowbandDisabled && freqSuccess) {
-			// frequency is valid, can enable lowband source now
-			Si5351.Enable(SiChannel::LowbandSource);
+	// Resuming the halted sweep requires I2C bus operations to the Si5355. When trigger synchronization is enabled
+	// in the external reference mode, this might collide with the trigger input check. Instead both these actions
+	// are handled through the STM::DispatchToInterrupt functionality, ensuring that they do not interrupt each other
+	STM::DispatchToInterrupt([](){
+		LOG_DEBUG("Halted before point %d", pointCnt);
+		// Check if IF table has entry at this point
+		if (IFTableIndexCnt < IFTableNumEntries && IFTable[IFTableIndexCnt].pointCnt == pointCnt) {
+			Si5351.WriteRawCLKConfig(SiChannel::Port1LO2, IFTable[IFTableIndexCnt].clkconfig);
+			Si5351.WriteRawCLKConfig(SiChannel::Port2LO2, IFTable[IFTableIndexCnt].clkconfig);
+			Si5351.WriteRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);
+			Si5351.ResetPLL(Si5351C::PLL::B);
+			IFTableIndexCnt++;
+			// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
 			Delay::us(1300);
-			lowbandDisabled = false;
 		}
-
-		// At low frequencies the 1.LO feedthrough mixes with the 2.LO in the second mixer.
-		// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
-		// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
-
-		uint32_t LO_mixing = (HW::getIF1() + frequency) - (HW::getIF1() - HW::getIF2());
-		if(abs(Util::Alias(LO_mixing, HW::getADCRate()) - HW::getIF2()) <= actualBandwidth * 2) {
-			// the image is in or near the IF bandwidth and would cause a peak
-			// Use a slightly different ADC sample rate if possible
-			if(HW::getIF2() == HW::DefaultIF2) {
-				adcShiftRequired = true;
+		uint64_t frequency = getPointFrequency(pointCnt);
+		int16_t power = settings.cdbm_excitation_start
+				+ (settings.cdbm_excitation_stop - settings.cdbm_excitation_start)
+						* pointCnt / (settings.points - 1);
+		bool adcShiftRequired = false;
+		if (frequency < HW::BandSwitchFrequency) {
+			auto driveStrength = fixedPowerLowband;
+			if(!settings.fixedPowerSetting) {
+				auto amplitude = HW::GetAmplitudeSettings(power, frequency, true, false);
+				// attenuator value has already been set in sweep setup
+				driveStrength = amplitude.lowBandPower;
 			}
+
+			// need the Si5351 as Source
+			bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B, driveStrength);
+			static bool lowbandDisabled = false;
+			if (pointCnt == 0) {
+				// First point in sweep, switch to correct source
+				FPGA::Disable(FPGA::Periphery::SourceRF);
+				lowbandDisabled = true;
+			}
+			if(lowbandDisabled && freqSuccess) {
+				// frequency is valid, can enable lowband source now
+				Si5351.Enable(SiChannel::LowbandSource);
+				Delay::us(1300);
+				lowbandDisabled = false;
+			}
+
+			// At low frequencies the 1.LO feedthrough mixes with the 2.LO in the second mixer.
+			// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
+			// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
+
+			uint32_t LO_mixing = (HW::getIF1() + frequency) - (HW::getIF1() - HW::getIF2());
+			if(abs(Util::Alias(LO_mixing, HW::getADCRate()) - HW::getIF2()) <= actualBandwidth * 2) {
+				// the image is in or near the IF bandwidth and would cause a peak
+				// Use a slightly different ADC sample rate if possible
+				if(HW::getIF2() == HW::DefaultIF2) {
+					adcShiftRequired = true;
+				}
+			}
+		} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
+			// first sweep point in highband is also halted, disable lowband source
+			Si5351.Disable(SiChannel::LowbandSource);
+			FPGA::Enable(FPGA::Periphery::SourceRF);
 		}
-	} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
-		// first sweep point in highband is also halted, disable lowband source
-		Si5351.Disable(SiChannel::LowbandSource);
-		FPGA::Enable(FPGA::Periphery::SourceRF);
-	}
 
-	if (pointCnt == 0) {
-		HAL_Delay(2);
-	}
+		if (pointCnt == 0) {
+			HAL_Delay(2);
+		}
 
-	if(adcShiftRequired) {
-		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, alternativePrescaler);
-		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, alternativePhaseInc);
-		adcShifted = true;
-	} else if(adcShifted) {
-		// reset to default value
-		FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
-		FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
-		adcShifted = false;
-	}
+		if(adcShiftRequired) {
+			FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, alternativePrescaler);
+			FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, alternativePhaseInc);
+			adcShifted = true;
+		} else if(adcShifted) {
+			// reset to default value
+			FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+			FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
+			adcShifted = false;
+		}
 
-	if(usb_available_buffer() >= reservedUSBbuffer) {
-		// enough space available, can resume immediately
-		FPGA::ResumeHaltedSweep();
-	} else {
-		// USB buffer could potentially overflow before next halted point, wait until more space is available.
-		// This function is called from a low level interrupt, need to dispatch to lower priority to allow USB
-		// handling to continue
-		STM::DispatchToInterrupt([](){
+		if(usb_available_buffer() >= reservedUSBbuffer) {
+			// enough space available, can resume immediately
+			FPGA::ResumeHaltedSweep();
+		} else {
+			// USB buffer could potentially overflow before next halted point, wait until more space is available.
 			uint32_t start = HAL_GetTick();
 			while(usb_available_buffer() < reservedUSBbuffer) {
 				if(HAL_GetTick() - start > 100) {
@@ -457,8 +462,8 @@ void VNA::SweepHalted() {
 				}
 			}
 			FPGA::ResumeHaltedSweep();
-		});
-	}
+		}
+	});
 }
 
 void VNA::Stop() {

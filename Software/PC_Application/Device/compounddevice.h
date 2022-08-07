@@ -20,6 +20,7 @@ public:
     public:
         unsigned int device;
         unsigned int port;
+        static int findActiveStage(std::vector<PortMapping> map, int device, int port);
     };
 
     enum class Synchronization {

@@ -51,7 +51,7 @@ entity SPICommands is
            SWEEP_POINTS : out  STD_LOGIC_VECTOR (12 downto 0);
            NSAMPLES : out  STD_LOGIC_VECTOR (12 downto 0);
 			  STAGES : out STD_LOGIC_VECTOR (2 downto 0);
-			  INDIVIDUAL_HALT : out STD_LOGIC;
+			  SYNC_ENABLED : out STD_LOGIC;
 			  PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 			  PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 			  PORT1_EN : out STD_LOGIC;
@@ -253,7 +253,7 @@ begin
 							when 4 => ADC_PRESCALER <= spi_buf_out(7 downto 0);
 							when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
 							when 6 => STAGES <= spi_buf_out(15 downto 13);
-										INDIVIDUAL_HALT <= spi_buf_out(12);
+										SYNC_ENABLED <= spi_buf_out(12);
 										PORT1_STAGE <= spi_buf_out(5 downto 3);
 										PORT2_STAGE <= spi_buf_out(2 downto 0);
 							when 7 => SPI_OVERWRITE_ENABLED <= spi_buf_out(15);

@@ -325,7 +325,6 @@ bool Si5351C::WriteRegisterRange(Reg start, const uint8_t *data, uint8_t len) {
 bool Si5351C::ExtCLKAvailable() {
 	uint8_t value;
 	ReadRegister(Reg::DeviceStatus, &value);
-	LOG_DEBUG("Device status: 0x%02x", value);
 	if (value & 0x10) {
 		return false;
 	} else {

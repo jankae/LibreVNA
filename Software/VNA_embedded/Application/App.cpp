@@ -19,6 +19,7 @@
 #include "Generator.hpp"
 #include "SpectrumAnalyzer.hpp"
 #include "HW_HAL.hpp"
+#include "Trigger.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"App"
@@ -37,12 +38,21 @@ static bool sweepActive;
 
 extern ADC_HandleTypeDef hadc1;
 
-#define FLAG_USB_PACKET		0x01
+#define FLAG_USB_PACKET			0x01
+#define FLAG_TRIGGER_OUT_ISR	0x02
+
+static bool lastReportedTrigger;
 
 static void USBPacketReceived(const Protocol::PacketInfo &p) {
 	recv_packet = p;
 	BaseType_t woken = false;
 	xTaskNotifyFromISR(handle, FLAG_USB_PACKET, eSetBits, &woken);
+	portYIELD_FROM_ISR(woken);
+}
+
+static void TriggerOutISR() {
+	BaseType_t woken = false;
+	xTaskNotifyFromISR(handle, FLAG_TRIGGER_OUT_ISR, eSetBits, &woken);
 	portYIELD_FROM_ISR(woken);
 }
 
@@ -60,6 +70,7 @@ inline void App_Init() {
 	Log_SetRedirect(usb_log);
 	LOG_INFO("Start");
 	Exti::Init();
+	Trigger::Init(TriggerOutISR);
 #ifdef HAS_FLASH
 	if(!HWHAL::flash.isPresent()) {
 		LOG_CRIT("Failed to detect onboard FLASH");
@@ -247,16 +258,60 @@ inline void App_Process() {
 					HW::setAcquisitionFrequencies(recv_packet.acquisitionFrequencySettings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
+				case Protocol::PacketType::SetTrigger:
+					if(Trigger::GetMode() == Trigger::Mode::USB_GUI) {
+						Trigger::SetInput(true);
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					} else {
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
+					}
+					break;
+				case Protocol::PacketType::ClearTrigger:
+					if(Trigger::GetMode() == Trigger::Mode::USB_GUI) {
+						Trigger::SetInput(false);
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					} else {
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
+					}
+					break;
 				default:
 					// this packet type is not supported
 					Communication::SendWithoutPayload(Protocol::PacketType::Nack);
 					break;
 				}
 			}
+			if(notification & FLAG_TRIGGER_OUT_ISR) {
+				// trigger output (from FPGA) changed level
+				bool set = Trigger::GetOutput();
+				switch(Trigger::GetMode()) {
+				case Trigger::Mode::Off:
+					// nothing to do
+					break;
+				case Trigger::Mode::USB_GUI:
+					lastReportedTrigger = set;
+					Communication::SendWithoutPayload(set ? Protocol::PacketType::SetTrigger : Protocol::PacketType::ClearTrigger);
+					break;
+				case Trigger::Mode::ExtRef:
+					if(set) {
+						HWHAL::Si5351.Enable(HWHAL::SiChannel::ReferenceOut);
+					} else {
+						HWHAL::Si5351.Disable(HWHAL::SiChannel::ReferenceOut);
+					}
+					break;
+				case Trigger::Mode::Trigger:
+					// not supported by the hardware, nothing to do
+					break;
+				}
+			}
 		}
 		if(HW::TimedOut()) {
+			vTaskDelay(1000);
+			LOG_WARN("Timed out, FPGA status: 0x%04x", FPGA::GetStatus());
+			vTaskDelay(1000);
+			LOG_WARN("Trigger out: %d (last reported: %d), in: %d", (uint8_t) Trigger::GetOutput(), (uint8_t) lastReportedTrigger, (uint8_t) Trigger::GetInput());
 			HW::SetMode(HW::Mode::Idle);
 			// insert the last received packet (restarts the timed out operation)
+			Communication::BlockNextAck();
 			USBPacketReceived(last_measure_packet);
 		}
 		HW::updateDeviceStatus();

@@ -7,6 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "Util.hpp"
+#include "Trigger.hpp"
 #include <array>
 
 #define LOG_LEVEL	LOG_LEVEL_DEBUG
@@ -229,6 +230,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	FPGA::Enable(FPGA::Periphery::Amplifier, s.trackingGenerator);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
 	FPGA::Enable(FPGA::Periphery::Port2Mixer);
+	Trigger::SetMode((Trigger::Mode) s.syncMode);
 
 	if(s.SignalID) {
 		// use different ADC prescalers depending on RBW: For small RBWs, images with the shifted ADC samplerate can be closer to the IF
@@ -431,7 +433,9 @@ void SA::Work() {
 		// more measurements required for signal ID
 		signalIDstep++;
 	}
-	HW::Ref::update();
+	if(Trigger::GetMode() != Trigger::Mode::ExtRef) {
+		HW::Ref::update();
+	}
 	StartNextSample();
 }
 
