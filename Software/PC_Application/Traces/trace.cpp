@@ -143,7 +143,7 @@ void Trace::addData(const Trace::Data &d, const VirtualDevice::SASettings &s, in
 }
 
 void Trace::setName(QString name) {
-    name = name;
+    _name = name;
     emit nameChanged();
 }
 
@@ -305,8 +305,8 @@ void Trace::fromMath()
 }
 
 void Trace::setColor(QColor color) {
-    if(color != color) {
-        color = color;
+    if(_color != color) {
+        _color = color;
         emit colorChanged(this);
     }
 }

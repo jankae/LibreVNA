@@ -588,7 +588,12 @@ void VirtualDevice::compoundDatapointReceivecd(Protocol::VNADatapoint<32> *data,
                 if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
                     // got both required measurements
                     QString name = "S"+QString::number(i+1)+QString::number(map.first+1);
-                    m.measurements[name] = input / ref;
+                    auto S = input / ref;
+                    if(inputDevice != stimulusDev) {
+                        // can't use phase information when measuring across devices
+                        S = abs(S);
+                    }
+                    m.measurements[name] = S;
                 }
             }
         }

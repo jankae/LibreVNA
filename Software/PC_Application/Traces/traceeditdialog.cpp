@@ -323,6 +323,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         t.swapMathOrder(index.row());
         ui->view->setCurrentIndex(index.sibling(index.row() + 1, 0));
     });
+    connect(ui->buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &TraceEditDialog::okClicked);
 }
 
 TraceEditDialog::~TraceEditDialog()
@@ -330,7 +331,7 @@ TraceEditDialog::~TraceEditDialog()
     delete ui;
 }
 
-void TraceEditDialog::on_buttonBox_accepted()
+void TraceEditDialog::okClicked()
 {
     trace.setName(ui->name->text());
     trace.setVelocityFactor(ui->vFactor->value());

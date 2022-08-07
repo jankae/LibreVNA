@@ -46,7 +46,7 @@ public:
     ~TraceEditDialog();
 
 private slots:
-    void on_buttonBox_accepted();
+    void okClicked();
 
 private:
     Ui::TraceEditDialog *ui;
