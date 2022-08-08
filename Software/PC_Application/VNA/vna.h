@@ -33,6 +33,8 @@ public:
     void updateGraphColors();
     void setAveragingMode(Averaging::Mode mode) override;
 
+    void preset() override;
+
     enum class SweepType {
         Frequency = 0,
         Power = 1,
@@ -121,6 +123,8 @@ private:
     void StopSweep();
     void StartCalibrationDialog(Calibration::Type type = Calibration::Type::None);
     void UpdateCalWidget();
+
+    void createDefaultTracesAndGraphs(int ports);
 private slots:
     void EnableDeembedding(bool enable);
     void UpdateStatusbar();

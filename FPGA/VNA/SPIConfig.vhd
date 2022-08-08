@@ -52,6 +52,7 @@ entity SPICommands is
            NSAMPLES : out  STD_LOGIC_VECTOR (12 downto 0);
 			  STAGES : out STD_LOGIC_VECTOR (2 downto 0);
 			  SYNC_ENABLED : out STD_LOGIC;
+			  SYNC_MASTER : out STD_LOGIC;
 			  PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 			  PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 			  PORT1_EN : out STD_LOGIC;
@@ -250,6 +251,7 @@ begin
 										WINDOW_SETTING <= spi_buf_out(6 downto 5);
 										SOURCE_CE_EN <= spi_buf_out(4);
 										LO_CE_EN <= spi_buf_out(3);
+										SYNC_MASTER <= spi_buf_out(1);
 							when 4 => ADC_PRESCALER <= spi_buf_out(7 downto 0);
 							when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
 							when 6 => STAGES <= spi_buf_out(15 downto 13);

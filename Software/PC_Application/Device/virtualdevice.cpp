@@ -147,18 +147,10 @@ VirtualDevice::VirtualDevice(QString serial)
             connect(dev, &Device::LogLineReceived, [=](QString line){
                 emit LogLineReceived(line.prepend(dev->serial()+": "));
             });
-            connect(dev, &Device::DeviceInfoUpdated, [=](){
-                compoundInfoUpdated(dev);
-            });
-            connect(dev, &Device::DeviceStatusUpdated, [=](){
-                compoundStatusUpdated(dev);
-            });
-            connect(dev, &Device::DatapointReceived, [=](Protocol::VNADatapoint<32> *data){
-                compoundDatapointReceivecd(data, dev);
-            });
-            connect(dev, &Device::SpectrumResultReceived, [=](Protocol::SpectrumAnalyzerResult res) {
-                compoundSpectrumResultReceived(res, dev);
-            });
+            connect(dev, &Device::DeviceInfoUpdated, this, &VirtualDevice::compoundInfoUpdated, Qt::QueuedConnection);
+            connect(dev, &Device::DeviceStatusUpdated, this, &VirtualDevice::compoundStatusUpdated, Qt::QueuedConnection);
+            connect(dev, &Device::DatapointReceived, this, &VirtualDevice::compoundDatapointReceivecd, Qt::QueuedConnection);
+            connect(dev, &Device::SpectrumResultReceived, this, &VirtualDevice::compoundSpectrumResultReceived, Qt::QueuedConnection);
         }
         if(cdev->sync == CompoundDevice::Synchronization::USB) {
             // create trigger connections for USB synchronization
@@ -283,6 +275,7 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
         sd.port1Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 0) - s.excitedPorts.begin();
         sd.port2Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) - s.excitedPorts.begin();
         sd.syncMode = 0;
+        sd.syncMaster = 0;
         return devices[0]->Configure(sd, [=](Device::TransmissionResult r){
             if(cb) {
                 cb(r == Device::TransmissionResult::Ack);
@@ -306,6 +299,7 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
         for(unsigned int i=0;i<devices.size();i++) {
             sd.port1Stage = CompoundDevice::PortMapping::findActiveStage(activeMapping, i, 0);
             sd.port2Stage = CompoundDevice::PortMapping::findActiveStage(activeMapping, i, 1);
+            sd.syncMaster = i == 0 ? 1 : 0;
             success &= devices[i]->Configure(sd, [=](Device::TransmissionResult r){
                 if(cb) {
                     results[devices[i]] = r;
@@ -342,34 +336,65 @@ bool VirtualDevice::setSA(const VirtualDevice::SASettings &s, std::function<void
     }
     zerospan = s.freqStart == s.freqStop;
     auto pref = Preferences::getInstance();
+    Protocol::SpectrumAnalyzerSettings sd;
+    sd.f_start = s.freqStart;
+    sd.f_stop = s.freqStop;
+    sd.pointNum = s.points;
+    sd.RBW = s.RBW;
+    sd.WindowType = (int) s.window;
+    sd.SignalID = s.signalID ? 1 : 0;
+    sd.Detector = (int) s.detector;
+    sd.UseDFT = 0;
+    if(!s.trackingGenerator && pref.Acquisition.useDFTinSAmode && s.RBW <= pref.Acquisition.RBWLimitForDFT) {
+        sd.UseDFT = 1;
+    }
+    sd.applyReceiverCorrection = 1;
+    sd.trackingGeneratorOffset = s.trackingOffset;
+    sd.trackingPower = s.trackingPower;
+
     if(!isCompoundDevice()) {
-        Protocol::SpectrumAnalyzerSettings sd;
-        sd.f_start = s.freqStart;
-        sd.f_stop = s.freqStop;
-        sd.pointNum = s.points;
-        sd.RBW = s.RBW;
-        sd.WindowType = (int) s.window;
-        sd.SignalID = s.signalID ? 1 : 0;
-        sd.Detector = (int) s.detector;
-        sd.UseDFT = 0;
-        if(!s.trackingGenerator && pref.Acquisition.useDFTinSAmode && s.RBW <= pref.Acquisition.RBWLimitForDFT) {
-            sd.UseDFT = 1;
-        }
-        sd.applyReceiverCorrection = 1;
         sd.trackingGenerator = s.trackingGenerator ? 1 : 0;
-        sd.applySourceCorrection = 1;
         sd.trackingGeneratorPort = s.trackingPort;
-        sd.trackingGeneratorOffset = s.trackingOffset;
-        sd.trackingPower = s.trackingPower;
         sd.syncMode = 0;
+        sd.syncMaster = 0;
         return devices[0]->Configure(sd, [=](Device::TransmissionResult r){
             if(cb) {
                 cb(r == Device::TransmissionResult::Ack);
             }
         });
     } else {
-        // TODO
-        return false;
+        // set the synchronization mode
+        switch(cdev->sync) {
+            case CompoundDevice::Synchronization::USB: sd.syncMode = 1; break;
+            case CompoundDevice::Synchronization::ExtRef: sd.syncMode = 2; break;
+            case CompoundDevice::Synchronization::Trigger: sd.syncMode = 3; break;
+        }
+        // Configure the devices
+        results.clear();
+        bool success = true;
+        for(unsigned int i=0;i<devices.size();i++) {
+            if(s.trackingGenerator) {
+                if(CompoundDevice::PortMapping::findActiveStage(cdev->portMapping, i, 0) == s.trackingPort) {
+                    sd.trackingGenerator = 1;
+                    sd.trackingGeneratorPort = 0;
+                } else if(CompoundDevice::PortMapping::findActiveStage(cdev->portMapping, i, 1) == s.trackingPort) {
+                    sd.trackingGenerator = 1;
+                    sd.trackingGeneratorPort = 1;
+                }
+            } else {
+                // not used
+                sd.trackingGenerator = 0;
+                sd.trackingGeneratorPort = 0;
+            }
+            sd.syncMaster = i == 0 ? 1 : 0;
+            success &= devices[i]->Configure(sd, [=](Device::TransmissionResult r){
+                if(cb) {
+                    results[devices[i]] = r;
+                    checkIfAllTransmissionsComplete(cb);
+                }
+            });
+        }
+        return success;
     }
 }
 
@@ -520,8 +545,9 @@ VirtualDevice *VirtualDevice::getConnected()
     return connected;
 }
 
-void VirtualDevice::singleDatapointReceived(Protocol::VNADatapoint<32> *res)
+void VirtualDevice::singleDatapointReceived(Device *dev, Protocol::VNADatapoint<32> *res)
 {
+    Q_UNUSED(dev)
     VNAMeasurement m;
     m.pointNum = res->pointNum;
     m.Z0 = 50.0;
@@ -548,7 +574,7 @@ void VirtualDevice::singleDatapointReceived(Protocol::VNADatapoint<32> *res)
     emit VNAmeasurementReceived(m);
 }
 
-void VirtualDevice::compoundDatapointReceivecd(Protocol::VNADatapoint<32> *data, Device *dev)
+void VirtualDevice::compoundDatapointReceivecd(Device *dev, Protocol::VNADatapoint<32> *data)
 {
     if(!compoundVNABuffer.count(data->pointNum)) {
         compoundVNABuffer[data->pointNum] = std::map<Device*, Protocol::VNADatapoint<32>*>();
@@ -600,18 +626,25 @@ void VirtualDevice::compoundDatapointReceivecd(Protocol::VNADatapoint<32> *data,
 
         emit VNAmeasurementReceived(m);
 
-        // Clear this and all incomplete older datapoint buffers
-        for(auto p : compoundVNABuffer) {
-            for(auto d : p.second) {
-                delete d.second;
+        // Clear this and all (incomplete) older datapoint buffers
+        int pointNum = data->pointNum;
+        auto it = compoundVNABuffer.begin();
+        while(it != compoundVNABuffer.end()) {
+            if(it->first <= pointNum) {
+                for(auto d : it->second) {
+                    delete d.second;
+                }
+                it = compoundVNABuffer.erase(it);
+            } else {
+                it++;
             }
         }
-        compoundVNABuffer.clear();
     }
 }
 
-void VirtualDevice::singleSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res)
+void VirtualDevice::singleSpectrumResultReceived(Device *dev, Protocol::SpectrumAnalyzerResult res)
 {
+    Q_UNUSED(dev)
     SAMeasurement m;
     m.pointNum = res.pointNum;
     if(zerospan) {
@@ -624,9 +657,47 @@ void VirtualDevice::singleSpectrumResultReceived(Protocol::SpectrumAnalyzerResul
     emit SAmeasurementReceived(m);
 }
 
-void VirtualDevice::compoundSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res, Device *dev)
+void VirtualDevice::compoundSpectrumResultReceived(Device *dev, Protocol::SpectrumAnalyzerResult res)
 {
+    if(!compoundSABuffer.count(res.pointNum)) {
+        compoundSABuffer[res.pointNum] = std::map<Device*, Protocol::SpectrumAnalyzerResult>();
+    }
+    auto &buf = compoundSABuffer[res.pointNum];
+    buf[dev] = res;
+    if(buf.size() == devices.size()) {
+        // Got datapoints from all devices, can create merged VNA result
+        SAMeasurement m;
+        m.pointNum = res.pointNum;
+        if(zerospan) {
+            m.us = res.us;
+        } else {
+            m.frequency = res.frequency;
+        }
+        // assemble data
+        for(unsigned int port=0;port<cdev->portMapping.size();port++) {
+            auto device = devices[cdev->portMapping[port].device];
+            auto devicePort = cdev->portMapping[port].port;
 
+            QString name = "PORT"+QString::number(port+1);
+            if(devicePort == 0) {
+                m.measurements[name] = buf[device].port1;
+            } else {
+                m.measurements[name] = buf[device].port2;
+            }
+        }
+
+        emit SAmeasurementReceived(m);
+
+        // Clear this and all (incomplete) older datapoint buffers
+        auto it = compoundSABuffer.begin();
+        while(it != compoundSABuffer.end()) {
+            if(it->first <= res.pointNum) {
+                it = compoundSABuffer.erase(it);
+            } else {
+                it++;
+            }
+        }
+    }
 }
 
 void VirtualDevice::compoundInfoUpdated(Device *dev)
@@ -778,7 +849,7 @@ VirtualDevice::Info::Info(Device *dev)
     Limits.mindBm = (double) info.limits_cdbm_min / 100;
     Limits.maxdBm = (double) info.limits_cdbm_max / 100;
     Limits.minRBW = info.limits_minRBW;
-    Limits.maxRBW = info.limits_minRBW;
+    Limits.maxRBW = info.limits_maxRBW;
 }
 
 void VirtualDevice::Info::subset(const VirtualDevice::Info &merge)

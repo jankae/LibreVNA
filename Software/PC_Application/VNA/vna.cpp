@@ -71,39 +71,9 @@ VNA::VNA(AppWindow *window, QString name)
     traceModel.setSource(TraceModel::DataSource::VNA);
 
     // Create default traces
-    auto tS11 = new Trace("S11", Qt::yellow);
-    tS11->fromLivedata(Trace::LivedataType::Overwrite, "S11");
-    traceModel.addTrace(tS11);
-    auto tS12 = new Trace("S12", Qt::blue);
-    tS12->fromLivedata(Trace::LivedataType::Overwrite, "S12");
-    traceModel.addTrace(tS12);
-    auto tS21 = new Trace("S21", Qt::green);
-    tS21->fromLivedata(Trace::LivedataType::Overwrite, "S21");
-    traceModel.addTrace(tS21);
-    auto tS22 = new Trace("S22", Qt::red);
-    tS22->fromLivedata(Trace::LivedataType::Overwrite, "S22");
-    traceModel.addTrace(tS22);
-
-    auto tracesmith1 = new TraceSmithChart(traceModel);
-    tracesmith1->enableTrace(tS11, true);
-
-    auto tracesmith2 = new TraceSmithChart(traceModel);
-    tracesmith2->enableTrace(tS22, true);
-
-    auto traceXY1 = new TraceXYPlot(traceModel);
-    traceXY1->enableTrace(tS12, true);
-    auto traceXY2 = new TraceXYPlot(traceModel);
-    traceXY2->enableTrace(tS21, true);
+    createDefaultTracesAndGraphs(2);
 
     connect(&traceModel, &TraceModel::requiredExcitation, this, &VNA::ExcitationRequired);
-
-    central->splitVertically();
-    central->Child1()->splitHorizontally();
-    central->Child2()->splitHorizontally();
-    central->Child1()->Child1()->setPlot(tracesmith1);
-    central->Child1()->Child2()->setPlot(traceXY1);
-    central->Child2()->Child1()->setPlot(traceXY2);
-    central->Child2()->Child2()->setPlot(tracesmith2);
 
     // Create menu entries and connections
     auto calMenu = new QMenu("Calibration", window);
@@ -924,7 +894,7 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (bool)> cb)
     // assemble VNA protocol settings
     VirtualDevice::VNASettings s = {};
     s.IFBW = settings.bandwidth;
-    if(Preferences::getInstance().Acquisition.alwaysExciteBothPorts) {
+    if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
         for(int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
             s.excitedPorts.push_back(i);
         }
@@ -1183,7 +1153,7 @@ void VNA::SetAveraging(unsigned int averages)
 
 void VNA::ExcitationRequired()
 {
-    if(!Preferences::getInstance().Acquisition.alwaysExciteBothPorts) {
+    if(!Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
         for(int i=1;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
             auto required = traceModel.PortExcitationRequired(i);
             auto set = find(settings.excitedPorts.begin(), settings.excitedPorts.end(), i) != settings.excitedPorts.end();
@@ -1624,6 +1594,92 @@ void VNA::UpdateCalWidget()
     calLabel->setToolTip(getCalToolTip());
 }
 
+void VNA::createDefaultTracesAndGraphs(int ports)
+{
+    auto getDefaultColor = [](int ports, int i, int j)->QColor {
+        // Default colors for up to four ports, ensures that e.g. S21 always has the same color
+        const array<vector<QColor>, 4> defaultColors = {{
+            {Qt::yellow},
+            {Qt::yellow, Qt::blue, Qt::green, Qt::red},
+            {Qt::yellow, Qt::blue, Qt::cyan, Qt::green, Qt::red, Qt::darkGreen, Qt::darkBlue, Qt::darkYellow, Qt::magenta},
+            {Qt::yellow, Qt::blue, Qt::cyan, Qt::darkCyan, Qt::green, Qt::red, Qt::darkGreen, Qt::gray, Qt::darkBlue, Qt::darkYellow, Qt::magenta, Qt::darkMagenta, Qt::cyan, Qt::darkGray, Qt::lightGray, Qt::darkRed},
+        }};
+
+        if(ports >= 1 && ports <= 4) {
+            return defaultColors[ports-1][i*ports+j];
+        } else {
+            // not enough predefined colors available for all ports, just cycle through list
+            const array<QColor, 16> list = {{
+                Qt::yellow, Qt::blue, Qt::green, Qt::red, Qt::cyan, Qt::magenta, Qt::yellow, Qt::darkRed, Qt::darkGreen, Qt::darkBlue, Qt::gray, Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow, Qt::darkGray, Qt::lightGray
+            }};
+            auto index = (i*ports+j) % list.size();
+            return list[index];
+        }
+    };
+
+    vector<vector<TracePlot*>> plots;
+    for(int i=0;i<ports;i++) {
+        plots.push_back(vector<TracePlot*>());
+        for(int j=0;j<ports;j++) {
+            QString param = "S"+QString::number(i+1)+QString::number(j+1);
+            auto trace = new Trace(param, getDefaultColor(ports, i, j), param);
+            traceModel.addTrace(trace);
+            TracePlot *plot;
+            if(i == j) {
+                plot = new TraceSmithChart(traceModel);
+            } else {
+                plot = new TraceXYPlot(traceModel);
+            }
+            plot->updateSpan(settings.Freq.start, settings.Freq.stop);
+            plot->enableTrace(trace, true);
+            plots[i].push_back(plot);
+        }
+    }
+    // Add created graphs to tiles
+    central->clear();
+    TileWidget *tile = central;
+    for(int i=0;i<ports;i++) {
+        TileWidget *row;
+        if(i != ports - 1) {
+            // this is not the last row, split tile
+            tile->splitVertically();
+            row = tile->Child1();
+            tile = tile->Child2();
+        } else {
+            row = tile;
+        }
+        for(int j=0;j<ports;j++) {
+            TileWidget *graphTile;
+            if(j != ports - 1) {
+                row->splitHorizontally();
+                graphTile = row->Child1();
+                row = row->Child2();
+            } else {
+                graphTile = row;
+            }
+            graphTile->setPlot(plots[i][j]);
+        }
+    }
+    if(ports >= 3) {
+        // default split at the middle does not result in all plots being the same size, adjust
+        tile = central;
+        for(int i=0;i<ports;i++) {
+            TileWidget *rowTile;
+            if(i < ports - 1) {
+                tile->setSplitPercentage(100 / (ports - i));
+                rowTile = tile->Child1();
+            } else {
+                rowTile = tile;
+            }
+            for(int j=0;j<ports-1;j++) {
+                rowTile->setSplitPercentage(100 / (ports - j));
+                rowTile = rowTile->Child2();
+            }
+            tile = tile->Child2();
+        }
+    }
+}
+
 void VNA::EnableDeembedding(bool enable)
 {
     deembedding_active = enable;
@@ -1635,6 +1691,17 @@ void VNA::EnableDeembedding(bool enable)
 void VNA::setAveragingMode(Averaging::Mode mode)
 {
     average.setMode(mode);
+}
+
+void VNA::preset()
+{
+    for(auto t : traceModel.getTraces()) {
+        if(Trace::isVNAParameter(t->name())) {
+            traceModel.removeTrace(t);
+        }
+    }
+    // Create default traces
+    createDefaultTracesAndGraphs(VirtualDevice::getInfo(window->getDevice()).ports);
 }
 
 QString VNA::SweepTypeToString(VNA::SweepType sw)

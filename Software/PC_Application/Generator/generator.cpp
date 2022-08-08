@@ -53,6 +53,11 @@ void Generator::fromJSON(nlohmann::json j)
     central->fromJSON(j);
 }
 
+void Generator::preset()
+{
+
+}
+
 void Generator::updateDevice()
 {
     if(!window->getDevice() || isActive != true) {

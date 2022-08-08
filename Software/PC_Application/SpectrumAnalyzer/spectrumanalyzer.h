@@ -31,6 +31,7 @@ public:
     void updateGraphColors();
     void setAveragingMode(Averaging::Mode mode) override;
 
+    void preset() override;
 
 private:
     static QString WindowToString(VirtualDevice::SASettings::Window w);
@@ -73,6 +74,8 @@ private:
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();
+
+    void createDefaultTracesAndGraphs(int ports);
 
     VirtualDevice::SASettings settings;
     bool changingSettings;

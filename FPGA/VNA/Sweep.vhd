@@ -62,8 +62,11 @@ entity Sweep is
 			  SWEEP_RESUME : in STD_LOGIC;
 			  
 			  SYNC_ENABLED : in STD_LOGIC;
+			  SYNC_MASTER : in STD_LOGIC;
 			  TRIGGER_IN : in STD_LOGIC;
 			  TRIGGER_OUT : out STD_LOGIC;
+			  
+			  NEW_DATA : out STD_LOGIC;
 			  
 			  ATTENUATOR : out STD_LOGIC_VECTOR(6 downto 0);
 			  SOURCE_FILTER : out STD_LOGIC_VECTOR(1 downto 0);
@@ -85,7 +88,7 @@ end Sweep;
 
 architecture Behavioral of Sweep is
 	signal point_cnt : unsigned(12 downto 0);
-	type Point_states is (TriggerSetup, SettingUp, Settling, WaitTriggerHigh, Exciting, WaitTriggerLow, SamplingDone, NextPoint, Done);
+	type Point_states is (WaitInitialLow, TriggerSetup, SettingUp, Settling, WaitTriggerHigh, Exciting, WaitTriggerLow, SamplingDone, NextPoint, Done);
 	signal state : Point_states;
 	signal settling_cnt : unsigned(15 downto 0);
 	signal settling_time : unsigned(15 downto 0);
@@ -153,7 +156,7 @@ begin
 			if RESET = '1' then
 				point_cnt <= (others => '0');
 				stage_cnt <= (others => '0');
-				state <= WaitTriggerLow;
+				state <= WaitInitialLow;
 				START_SAMPLING <= '0';
 				RELOAD_PLL_REGS <= '0';
 				SWEEP_HALTED <= '0';
@@ -164,19 +167,10 @@ begin
 				source_active <= '0';
 			else
 				case state is
-					when WaitTriggerLow =>
-						if SYNC_ENABLED = '1' and (std_logic_vector(stage_cnt) = PORT1_STAGE  or std_logic_vector(stage_cnt) = PORT2_STAGE) then
-							TRIGGER_OUT <= '0';
-						end if;
+					when WaitInitialLow =>
+						TRIGGER_OUT <= '0';
 						if TRIGGER_IN = '0' or SYNC_ENABLED = '0' then
-							TRIGGER_OUT <= '0';
-							if stage_cnt = 0 then
-								-- first stage in point, need to trigger PLL setup
-								state <= TriggerSetup;
-							else
-								-- PLLs already configured correctly
-								state <= SettingUp;
-							end if;
+							state <= TriggerSetup;
 						end if;
 					when TriggerSetup =>
 						RELOAD_PLL_REGS <= '1';
@@ -221,7 +215,7 @@ begin
 						else
 							-- need to wait for the trigger
 							state <= WaitTriggerHigh;
-							if SYNC_ENABLED = '1' and (std_logic_vector(stage_cnt) = PORT1_STAGE  or std_logic_vector(stage_cnt) = PORT2_STAGE) then
+							if SYNC_MASTER = '1' then
 								-- this device generates the stimulus signal, it needs start the trigger itself
 								TRIGGER_OUT <= '1';
 							end if;
@@ -238,14 +232,25 @@ begin
 						-- wait for sampling to finish
 						START_SAMPLING <= '0';
 						if SAMPLING_BUSY = '0' then
+							NEW_DATA <= '1';
 							RESULT_INDEX <= std_logic_vector(stage_cnt) & std_logic_vector(point_cnt);
+							state <= WaitTriggerLow;
+						end if;
+					when WaitTriggerLow =>
+						NEW_DATA <= '0';
+						if SYNC_MASTER = '1' then
+							TRIGGER_OUT <= '0';
+						end if;
+						if TRIGGER_IN = '0' or SYNC_ENABLED = '0' then
+							TRIGGER_OUT <= '0';
 							state <= SamplingDone;
 						end if;
 					when SamplingDone =>
+						NEW_DATA <= '0';
 						if stage_cnt < unsigned(STAGES) then
 							stage_cnt <= stage_cnt + 1;
 							-- can go directly to preperation for next stage
-							state <= WaitTriggerLow;
+							state <= Settling;
 						else
 							state <= NextPoint;
 						end if;
@@ -254,7 +259,7 @@ begin
 						if point_cnt < unsigned(NPOINTS) then
 							point_cnt <= point_cnt + 1;
 							stage_cnt <= (others => '0');
-							state <= WaitTriggerLow;
+							state <= TriggerSetup;
 						else 
 							point_cnt <= (others => '0');
 							state <= Done;

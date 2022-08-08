@@ -84,7 +84,7 @@
           <x>0</x>
           <y>0</y>
           <width>687</width>
-          <height>884</height>
+          <height>938</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -103,7 +103,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>5</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="Startup">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -714,7 +714,7 @@
                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If only S11/S21 or S22/S12 are enabled, faster sweeps are possible by only exciting one port. Checking this option forces the device to always excite both ports even when the measurements from one port will not be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
-                   <string>Always perform full 2-port measurement</string>
+                   <string>Always create the stimulus signal at all ports</string>
                   </property>
                  </widget>
                 </item>

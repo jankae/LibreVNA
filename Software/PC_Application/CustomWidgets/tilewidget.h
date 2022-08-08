@@ -32,6 +32,8 @@ public:
     // check potential trace limits on graphs, only returns true if all traces in all graphs are within limits
     bool allLimitsPassing();
 
+    void setSplitPercentage(int percentage);
+
 public slots:
     void splitVertically(bool moveContentToSecondChild = false);
     void splitHorizontally(bool moveContentToSecondChild = false);

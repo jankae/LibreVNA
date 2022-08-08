@@ -21,6 +21,7 @@ public:
     QVariant value() {
         return QVariant(variant.type(), ptr);
     }
+    void* getPtr(){return ptr;}
 private:
     void *ptr;
     QVariant variant;

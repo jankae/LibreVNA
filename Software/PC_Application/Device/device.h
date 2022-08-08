@@ -78,13 +78,13 @@ public:
     // Returns serial numbers of all connected devices
     static std::set<QString> GetDevices();
 signals:
-    void DatapointReceived(Protocol::VNADatapoint<32>*);
+    void DatapointReceived(Device*, Protocol::VNADatapoint<32>*);
     void ManualStatusReceived(Protocol::ManualStatusV1);
-    void SpectrumResultReceived(Protocol::SpectrumAnalyzerResult);
+    void SpectrumResultReceived(Device*, Protocol::SpectrumAnalyzerResult);
     void AmplitudeCorrectionPointReceived(Protocol::AmplitudeCorrectionPoint);
     void FrequencyCorrectionReceived(float ppm);
-    void DeviceInfoUpdated();
-    void DeviceStatusUpdated();
+    void DeviceInfoUpdated(Device*);
+    void DeviceStatusUpdated(Device*);
     void ConnectionLost();
     void AckReceived();
     void NackReceived();

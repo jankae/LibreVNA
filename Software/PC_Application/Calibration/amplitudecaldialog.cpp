@@ -423,8 +423,9 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
     }
 }
 
-void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res)
+void AmplitudeCalDialog::ReceivedMeasurement(Device *dev, Protocol::SpectrumAnalyzerResult res)
 {
+    Q_UNUSED(dev)
     MeasurementResult m = {.port1 = Util::SparamTodB(res.port1), .port2 = Util::SparamTodB(res.port2)};
     sweepMeasurements.push_back(m);
     if(res.pointNum == automaticSweepPoints - 1) {
@@ -529,8 +530,9 @@ void AmplitudeCalDialog::SetupNextAutomaticPoint(bool isSourceCal)
     sweepMeasurements.reserve(automaticSweepPoints);
 }
 
-void AmplitudeCalDialog::ReceivedAutomaticMeasurementResult(Protocol::SpectrumAnalyzerResult res)
+void AmplitudeCalDialog::ReceivedAutomaticMeasurementResult(Device *dev, Protocol::SpectrumAnalyzerResult res)
 {
+    Q_UNUSED(dev)
     if(res.pointNum != automaticSweepPoints - 1) {
         // ignore everything except end of sweep
         return;

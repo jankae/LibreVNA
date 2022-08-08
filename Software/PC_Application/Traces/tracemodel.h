@@ -33,7 +33,9 @@ public:
 
     void addTrace(Trace *t);
     void removeTrace(unsigned int index);
+    void removeTrace(Trace *t);
     Trace *trace(unsigned int index);
+    int findIndex(Trace *t);
     void toggleVisibility(unsigned int index);
     void togglePause(unsigned int index);
     void toggleMath(unsigned int index);

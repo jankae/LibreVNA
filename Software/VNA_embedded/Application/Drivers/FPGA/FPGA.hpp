@@ -61,7 +61,7 @@ enum class Periphery {
 	DebugLED = 0x0080,
 	SourceChip = 0x0010,
 	LO1Chip = 0x0008,
-
+	SyncMaster = 0x0002,
 	PortSwitch = 0x0001,
 };
 
@@ -114,7 +114,7 @@ bool Init(HaltedCallback cb = nullptr);
 void WriteRegister(FPGA::Reg reg, uint16_t value);
 void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
-void SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool synchronize = false);
+void SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool synchronize = false, bool syncMaster = false);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
 bool IsEnabled(Periphery p);

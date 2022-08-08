@@ -60,20 +60,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     traceModel.setSource(TraceModel::DataSource::SA);
 
     // Create default traces
-    auto tPort1 = new Trace("Port1", Qt::yellow);
-    tPort1->fromLivedata(Trace::LivedataType::Overwrite, "PORT1");
-    traceModel.addTrace(tPort1);
-    auto tPort2 = new Trace("Port2", Qt::blue);
-    tPort2->fromLivedata(Trace::LivedataType::Overwrite, "PORT2");
-    traceModel.addTrace(tPort2);
-
-    auto traceXY = new TraceXYPlot(traceModel);
-    traceXY->enableTrace(tPort1, true);
-    traceXY->enableTrace(tPort2, true);
-    traceXY->setYAxis(0, YAxis::Type::Magnitude, false, false, -120,0,10);
-    traceXY->setYAxis(1, YAxis::Type::Disabled, false, true, 0,0,1);
-
-    central->setPlot(traceXY);
+    preset();
 
     // Create menu entries and connections
     // Sweep toolbar
@@ -1153,9 +1140,40 @@ void SpectrumAnalyzer::StoreSweepSettings()
     s.setValue("SASignalID", static_cast<bool>(settings.signalID));
 }
 
+void SpectrumAnalyzer::createDefaultTracesAndGraphs(int ports)
+{
+    central->clear();
+    auto traceXY = new TraceXYPlot(traceModel);
+    traceXY->setYAxis(0, YAxis::Type::Magnitude, false, false, -120,0,10);
+    traceXY->setYAxis(1, YAxis::Type::Disabled, false, true, 0,0,1);
+    traceXY->updateSpan(settings.freqStart, settings.freqStop);
+
+    central->setPlot(traceXY);
+
+    QColor defaultColors[] = {Qt::yellow, Qt::blue, Qt::red, Qt::green, Qt::gray, Qt::cyan, Qt::magenta, Qt::white};
+
+    for(int i=0;i<ports;i++) {
+        QString param = "PORT"+QString::number(i+1);
+        auto trace = new Trace(param, defaultColors[i], param);
+        traceModel.addTrace(trace);
+        traceXY->enableTrace(trace, true);
+    }
+}
+
 void SpectrumAnalyzer::setAveragingMode(Averaging::Mode mode)
 {
     average.setMode(mode);
+}
+
+void SpectrumAnalyzer::preset()
+{
+    for(auto t : traceModel.getTraces()) {
+        if(Trace::isSAParameter(t->name())) {
+            traceModel.removeTrace(t);
+        }
+    }
+    // Create default traces
+    createDefaultTracesAndGraphs(VirtualDevice::getInfo(window->getDevice()).ports);
 }
 
 QString SpectrumAnalyzer::WindowToString(VirtualDevice::SASettings::Window w)

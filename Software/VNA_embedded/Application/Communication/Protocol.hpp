@@ -130,7 +130,8 @@ using SweepSettings = struct _sweepSettings {
     uint16_t points;
     uint32_t if_bandwidth;
     int16_t cdbm_excitation_start; // in 1/100 dbm
-	uint16_t unused:2;
+	uint16_t unused:1;
+	uint16_t syncMaster:1;
 	uint16_t suppressPeaks:1;
 	uint16_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
 	uint16_t logSweep:1;
@@ -258,6 +259,7 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 	 * 3: Trigger synchronization (not supported yet by hardware)
 	 */
     uint8_t syncMode :2;
+    uint8_t syncMaster :1;
     int64_t trackingGeneratorOffset;
     int16_t trackingPower;
 };

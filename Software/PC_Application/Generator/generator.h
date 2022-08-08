@@ -21,6 +21,8 @@ public:
 
     void setAveragingMode(Averaging::Mode mode) override {Q_UNUSED(mode)}
 
+    void preset() override;
+
 private slots:
     void updateDevice();
 

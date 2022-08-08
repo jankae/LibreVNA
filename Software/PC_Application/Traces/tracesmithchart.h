@@ -105,7 +105,7 @@ class TraceSmithChart : public TracePlot
 public:
     TraceSmithChart(TraceModel &model, QWidget *parent = 0);
 
-    virtual Type getType() override { return Type::SmithChart;};
+    virtual Type getType() override { return Type::SmithChart;}
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;

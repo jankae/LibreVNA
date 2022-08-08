@@ -305,10 +305,6 @@ inline void App_Process() {
 			}
 		}
 		if(HW::TimedOut()) {
-			vTaskDelay(1000);
-			LOG_WARN("Timed out, FPGA status: 0x%04x", FPGA::GetStatus());
-			vTaskDelay(1000);
-			LOG_WARN("Trigger out: %d (last reported: %d), in: %d", (uint8_t) Trigger::GetOutput(), (uint8_t) lastReportedTrigger, (uint8_t) Trigger::GetInput());
 			HW::SetMode(HW::Mode::Idle);
 			// insert the last received packet (restarts the timed out operation)
 			Communication::BlockNextAck();

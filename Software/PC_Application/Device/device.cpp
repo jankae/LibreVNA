@@ -326,7 +326,6 @@ std::set<QString> Device::GetDevices()
 
 void Device::SetTrigger(bool set)
 {
-    qDebug() << "Trigger" << set << "to" << this;
     if(set) {
         SendCommandWithoutPayload(Protocol::PacketType::SetTrigger);
     } else {
@@ -479,13 +478,13 @@ void Device::ReceivedData()
         dataBuffer->removeBytes(handled_len);
         switch(packet.type) {
         case Protocol::PacketType::VNADatapoint:
-            emit DatapointReceived(packet.VNAdatapoint);
+            emit DatapointReceived(this, packet.VNAdatapoint);
             break;
         case Protocol::PacketType::ManualStatusV1:
             emit ManualStatusReceived(packet.manualStatusV1);
             break;
         case Protocol::PacketType::SpectrumAnalyzerResult:
-            emit SpectrumResultReceived(packet.spectrumResult);
+            emit SpectrumResultReceived(this, packet.spectrumResult);
             break;
         case Protocol::PacketType::SourceCalPoint:
         case Protocol::PacketType::ReceiverCalPoint:
@@ -500,11 +499,11 @@ void Device::ReceivedData()
                 info = packet.info;
             }
             infoValid = true;
-            emit DeviceInfoUpdated();
+            emit DeviceInfoUpdated(this);
             break;
         case Protocol::PacketType::DeviceStatusV1:
             status.v1 = packet.statusV1;
-            emit DeviceStatusUpdated();
+            emit DeviceStatusUpdated(this);
             break;
         case Protocol::PacketType::Ack:
             emit AckReceived();
@@ -518,11 +517,9 @@ void Device::ReceivedData()
             emit FrequencyCorrectionReceived(packet.frequencyCorrection.ppm);
             break;
         case Protocol::PacketType::SetTrigger:
-            qDebug() << "Trigger" << true << "from" << this;
             emit TriggerReceived(true);
             break;
         case Protocol::PacketType::ClearTrigger:
-            qDebug() << "Trigger" << false << "from" << this;
             emit TriggerReceived(false);
             break;
        default:

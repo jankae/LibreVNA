@@ -9,6 +9,7 @@
 #include "delay.hpp"
 #include "SpectrumAnalyzer.hpp"
 #include "Communication.h"
+#include "Trigger.hpp"
 #include <cstring>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
@@ -230,6 +231,7 @@ bool HW::GetTemps(uint8_t *source, uint8_t *lo) {
 
 void HW::SetIdle() {
 	unlevel = false;
+	Trigger::SetInput(false);
 	FPGA::AbortSweep();
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	FPGA::DisableHardwareOverwrite();

@@ -83,7 +83,7 @@ public:
         } SA;
     } Startup;
     struct {
-        bool alwaysExciteBothPorts;
+        bool alwaysExciteAllPorts;
         bool suppressPeaks;
         bool adjustPowerLevel;
         bool harmonicMixing;
@@ -145,7 +145,9 @@ public:
 
 private:
     Preferences() :
-     TCPoverride(false) {}
+     TCPoverride(false) {
+        qDebug() << "Pref constructor: " << &compoundDeviceJSON;
+    }
     static Preferences instance;
 
     const std::vector<Savable::SettingDescription> descr = {{
@@ -174,7 +176,7 @@ private:
         {&Startup.SA.detector, "Startup.SA.detector", 0},
         {&Startup.SA.averaging, "Startup.SA.averaging", 1},
         {&Startup.SA.signalID, "Startup.SA.signalID", true},
-        {&Acquisition.alwaysExciteBothPorts, "Acquisition.alwaysExciteBothPorts", true},
+        {&Acquisition.alwaysExciteAllPorts, "Acquisition.alwaysExciteBothPorts", true},
         {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
         {&Acquisition.adjustPowerLevel, "Acquisition.adjustPowerLevel", false},
         {&Acquisition.harmonicMixing, "Acquisition.harmonicMixing", false},

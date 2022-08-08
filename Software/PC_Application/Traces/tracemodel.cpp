@@ -48,9 +48,27 @@ void TraceModel::removeTrace(unsigned int index)
     }
 }
 
+void TraceModel::removeTrace(Trace *t)
+{
+    auto index = findIndex(t);
+    if(index >= 0) {
+        removeTrace(index);
+    }
+}
+
 Trace *TraceModel::trace(unsigned int index)
 {
     return traces.at(index);
+}
+
+int TraceModel::findIndex(Trace *t)
+{
+    for(int i=0;i<traces.size();i++) {
+        if(traces[i] == t) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void TraceModel::toggleVisibility(unsigned int index)
@@ -184,7 +202,7 @@ void TraceModel::fromJSON(nlohmann::json j)
 {
     // clear old traces
     while(traces.size()) {
-        removeTrace(0);
+        removeTrace((int) 0);
     }
     for(auto jt : j) {
         auto trace = new Trace();

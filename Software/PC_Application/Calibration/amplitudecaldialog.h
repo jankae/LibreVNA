@@ -78,7 +78,7 @@ protected slots:
     bool AddPoint(double frequency);
     void AddPointDialog();
     void AutomaticMeasurementDialog();
-    void ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res);
+    void ReceivedMeasurement(Device *dev, Protocol::SpectrumAnalyzerResult res);
 signals:
     void pointsUpdated();
     void newPointCreated(CorrectionPoint& p);
@@ -108,7 +108,7 @@ protected:
     CalibrationMode mode;
 
     void SetupNextAutomaticPoint(bool isSourceCal);
-    void ReceivedAutomaticMeasurementResult(Protocol::SpectrumAnalyzerResult res);
+    void ReceivedAutomaticMeasurementResult(Device *dev, Protocol::SpectrumAnalyzerResult res);
     struct {
         QDialog *dialog;
         std::vector<CorrectionPoint> points;

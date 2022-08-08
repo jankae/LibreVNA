@@ -138,6 +138,10 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         auto index = ui->compoundList->currentRow();
         if(index >= 0 && index < p->compoundDevices.size()) {
             auto d = new CompoundDeviceEditDialog(p->compoundDevices[index]);
+            connect(d, &QDialog::accepted, [=](){
+                ui->compoundList->item(index)->setText(p->compoundDevices[index]->getDesription());
+                p->nonTrivialWriting();
+            });
             d->show();
         }
     });
@@ -276,7 +280,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupSAAveraging->setValue(p->Startup.SA.averaging);
     ui->StartupSASignalID->setChecked(p->Startup.SA.signalID);
 
-    ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteBothPorts);
+    ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteAllPorts);
     ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
     ui->AcquisitionAdjustPowerLevel->setChecked(p->Acquisition.adjustPowerLevel);
     ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
@@ -346,7 +350,7 @@ void PreferencesDialog::updateFromGUI()
     p->Startup.SA.detector = ui->StartupSADetector->currentIndex();
     p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
 
-    p->Acquisition.alwaysExciteBothPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
+    p->Acquisition.alwaysExciteAllPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
     p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
     p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
     p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
@@ -379,6 +383,8 @@ void PreferencesDialog::updateFromGUI()
 
     p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
     p->SCPIServer.port = ui->SCPIServerPort->value();
+
+    p->nonTrivialWriting();
 }
 
 void Preferences::load()

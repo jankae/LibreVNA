@@ -122,6 +122,15 @@ bool TileWidget::allLimitsPassing()
     }
 }
 
+void TileWidget::setSplitPercentage(int percentage)
+{
+    if(!isSplit) {
+        return;
+    }
+    splitter->setStretchFactor(0, percentage);
+    splitter->setStretchFactor(1, 100 - percentage);
+}
+
 void TileWidget::splitVertically(bool moveContentToSecondChild)
 {
     if(isSplit) {

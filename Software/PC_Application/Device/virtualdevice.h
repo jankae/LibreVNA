@@ -141,7 +141,6 @@ public:
             struct {
                 // for non-zero span
                 double frequency;
-                double cdbm;
             };
             struct {
                 // for zero span
@@ -184,10 +183,10 @@ signals:
     void NeedsFirmwareUpdate(int usedProtocol, int requiredProtocol);
 
 private slots:
-    void singleDatapointReceived(Protocol::VNADatapoint<32> *res);
-    void compoundDatapointReceivecd(Protocol::VNADatapoint<32> *data, Device *dev);
-    void singleSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res);
-    void compoundSpectrumResultReceived(Protocol::SpectrumAnalyzerResult res, Device *dev);
+    void singleDatapointReceived(Device *dev, Protocol::VNADatapoint<32> *res);
+    void compoundDatapointReceivecd(Device *dev, Protocol::VNADatapoint<32> *data);
+    void singleSpectrumResultReceived(Device *dev, Protocol::SpectrumAnalyzerResult res);
+    void compoundSpectrumResultReceived(Device *dev, Protocol::SpectrumAnalyzerResult res);
     void compoundInfoUpdated(Device *dev);
     void compoundStatusUpdated(Device *dev);
 private:

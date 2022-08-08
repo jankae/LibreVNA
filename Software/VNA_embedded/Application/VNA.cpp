@@ -279,7 +279,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::Enable(FPGA::Periphery::SourceRF);
 	FPGA::Enable(FPGA::Periphery::LO1Chip);
 	FPGA::Enable(FPGA::Periphery::LO1RF);
-	FPGA::SetupSweep(s.stages, s.port1Stage, s.port2Stage, s.syncMode != 0);
+	FPGA::SetupSweep(s.stages, s.port1Stage, s.port2Stage, s.syncMode != 0, s.syncMaster);
 	Trigger::SetMode((Trigger::Mode) s.syncMode);
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 	pointCnt = 0;

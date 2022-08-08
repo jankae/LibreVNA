@@ -139,8 +139,10 @@ architecture Behavioral of top is
 		SWEEP_HALTED : out STD_LOGIC;
 		SWEEP_RESUME : in STD_LOGIC;
 		SYNC_ENABLED : in STD_LOGIC;
+		SYNC_MASTER : in STD_LOGIC;
 		TRIGGER_IN : in STD_LOGIC;
 		TRIGGER_OUT : out STD_LOGIC;
+		NEW_DATA : out STD_LOGIC;
 		ATTENUATOR : OUT std_logic_vector(6 downto 0);
 		SOURCE_FILTER : OUT std_logic_vector(1 downto 0);
 		STAGES : in STD_LOGIC_VECTOR (2 downto 0);
@@ -253,6 +255,7 @@ architecture Behavioral of top is
 		NSAMPLES : OUT std_logic_vector(12 downto 0);
 	   STAGES : out STD_LOGIC_VECTOR (2 downto 0);
 	   SYNC_ENABLED : out STD_LOGIC;
+		SYNC_MASTER : out STD_LOGIC;
 	   PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 	   PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 		PORT1_EN : out STD_LOGIC;
@@ -376,6 +379,7 @@ architecture Behavioral of top is
 	signal sweep_points : std_logic_vector(12 downto 0);
 	signal sweep_stages : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_sync_enabled: STD_LOGIC;
+	signal sweep_sync_master : STD_LOGIC;
 	signal sweep_port1_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_port2_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_config_data : std_logic_vector(95 downto 0);
@@ -394,6 +398,9 @@ architecture Behavioral of top is
 	
 	signal sweep_excite_port1 : std_logic;
 	signal sweep_excite_port2 : std_logic;
+	
+	signal sweep_trigger_in : std_logic;
+	signal sweep_trigger_out : std_logic;
 	
 	-- Configuration signals
 	signal settling_time : std_logic_vector(15 downto 0);
@@ -531,7 +538,21 @@ begin
 		CLK => clk_pll,
 		SYNC_IN => MCU_NSS,
 		SYNC_OUT => nss_sync
-	);	
+	);
+	Sync_TRIGGER_IN : Synchronizer
+	GENERIC MAP(stages => 2)
+	PORT MAP(
+		CLK => clk_pll,
+		SYNC_IN => TRIGGER_IN,
+		SYNC_OUT => sweep_trigger_in
+	);
+	Sync_TRIGGER_OUT : Synchronizer
+	GENERIC MAP(stages => 2)
+	PORT MAP(
+		CLK => clk_pll,
+		SYNC_IN => sweep_trigger_out,
+		SYNC_OUT => TRIGGER_OUT
+	);
 	
 
 	Source: MAX2871
@@ -644,7 +665,7 @@ begin
 		REF => ref_windowed,
 		ADC_START => adc_trigger_sample,
 		NEW_SAMPLE => windowing_ready,
-		DONE => sampling_done,
+		DONE => open,
 		PRE_DONE => open,
 		START => sampling_start,
 		SAMPLES => sampling_samples,
@@ -689,8 +710,10 @@ begin
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
 		SYNC_ENABLED => sweep_sync_enabled,
-		TRIGGER_IN => TRIGGER_IN,
-		TRIGGER_OUT => TRIGGER_OUT,
+		SYNC_MASTER => sweep_sync_master,
+		TRIGGER_IN => sweep_trigger_in,
+		TRIGGER_OUT => sweep_trigger_out,
+		NEW_DATA => sampling_done,
 		ATTENUATOR => sweep_attenuator,
 		SOURCE_FILTER => sweep_source_filter,
 		STAGES => sweep_stages,
@@ -772,6 +795,7 @@ begin
 		SWEEP_RESUME => sweep_resume,
 		STAGES => sweep_stages,
 		SYNC_ENABLED => sweep_sync_enabled,
+		SYNC_MASTER => sweep_sync_master,
 		PORT1_STAGE => sweep_port1_stage,
 		PORT2_STAGE => sweep_port2_stage,
 		SPI_OVERWRITE_ENABLED => HW_overwrite_enabled,
