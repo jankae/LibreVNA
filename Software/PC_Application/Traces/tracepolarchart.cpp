@@ -2,10 +2,7 @@
 
 #include "ui_polarchartdialog.h"
 #include "preferences.h"
-#include "tracesmithchart.h"
 #include "unit.h"
-#include "Marker/marker.h"
-#include "Util/util.h"
 #include "appwindow.h"
 
 #include <QFileDialog>
@@ -14,29 +11,8 @@
 using namespace std;
 
 TracePolarChart::TracePolarChart(TraceModel &model, QWidget *parent)
-    : TracePlot(model, parent)
+    : TracePolar(model, parent)
 {
-    limitToSpan = true;
-    limitToEdge = true;
-    edgeReflection = 1.0;
-    dx = 0.0;
-    initializeTraceInfo();
-}
-
-void TracePolarChart::wheelEvent(QWheelEvent *event)
-{
-    // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
-    auto increment = event->angleDelta().y() / 120.0;
-    // round toward bigger step in case of special higher resolution mousewheel
-    int steps = increment > 0 ? ceil(increment) : floor(increment);
-
-    constexpr double zoomfactor = 1.1;
-    auto zoom = pow(zoomfactor, steps);
-    edgeReflection /= zoom;
-
-    auto incrementX = event->angleDelta().x() / 120.0;
-    dx += incrementX/10;
-    triggerReplot();
 }
 
 void TracePolarChart::axisSetupDialog()
@@ -82,35 +58,6 @@ void TracePolarChart::axisSetupDialog()
     }
 }
 
-QPoint TracePolarChart::dataToPixel(std::complex<double> d)
-{
-    return transform.map(QPoint(d.real() * polarCoordMax * (1.0 / edgeReflection), -d.imag() * polarCoordMax * (1.0 / edgeReflection)));
-}
-
-QPoint TracePolarChart::dataToPixel(Trace::Data d)
-{
-    return dataToPixel(d.y);
-}
-
-std::complex<double> TracePolarChart::dataAddDx(std::complex<double> d)
-{
-    auto dataShift = complex<double>(dx, 0);
-    d = d + dataShift;
-    return d;
-}
-
-Trace::Data TracePolarChart::dataAddDx(Trace::Data d)
-{
-    d.y = dataAddDx(d.y);
-    return d;
-}
-
-std::complex<double> TracePolarChart::pixelToData(QPoint p)
-{
-    auto data = transform.inverted().map(QPointF(p));
-    return complex<double>(data.x() / polarCoordMax * edgeReflection, -data.y() / polarCoordMax * edgeReflection);
-}
-
 void TracePolarChart::draw(QPainter &p) {
     auto pref = Preferences::getInstance();
 
@@ -124,7 +71,7 @@ void TracePolarChart::draw(QPainter &p) {
     transform = p.transform();
     p.restore();
 
-    auto drawArc = [&](SmithChartArc a) {
+    auto drawArc = [&](PolarArc a) {
         a.constrainToCircle(QPointF(0,0), edgeReflection);
         auto topleft = dataToPixel(complex<double>(a.center.x() - a.radius, a.center.y() - a.radius));
         auto bottomright = dataToPixel(complex<double>(a.center.x() + a.radius, a.center.y() + a.radius));
@@ -137,7 +84,7 @@ void TracePolarChart::draw(QPainter &p) {
     auto pen = QPen(pref.Graphs.Color.axis);
     pen.setCosmetic(true);
     p.setPen(pen);
-    drawArc(SmithChartArc(QPointF(0.0, 0.0), edgeReflection, 0, 2*M_PI));
+    drawArc(PolarArc(QPointF(0.0, 0.0), edgeReflection, 0, 2*M_PI));
 
     constexpr int Circles = 6;
     pen = QPen(pref.Graphs.Color.Ticks.divisions, 0.5, Qt::DashLine);
@@ -145,10 +92,10 @@ void TracePolarChart::draw(QPainter &p) {
     p.setPen(pen);
     for(int i=1;i<Circles;i++) {
         auto radius = (double) i / Circles;
-        drawArc(SmithChartArc(QPointF(0.0 + dx,0), radius, 0, 2*M_PI));
+        drawArc(PolarArc(QPointF(0.0 + dx,0), radius, 0, 2*M_PI));
     }
 
-    auto constraintLineToCircle = [&](PolarChartCircle cir) {
+    auto constraintLineToCircle = [&](PolarArc cir) { // PolarArc
         if ( (cir.spanAngle == 90 )&& (dx != 0.0)) {
             auto angle = acos(dx/cir.radius);
             auto p1 = complex<double>(dx, cir.center.y() + cir.radius*sin(angle));
@@ -180,7 +127,7 @@ void TracePolarChart::draw(QPainter &p) {
     constexpr int Lines = 6;
     for(int i=0;i<Lines;i++) {
         auto angle = (double) i * 30;
-        constraintLineToCircle(PolarChartCircle(QPointF(0,0), edgeReflection, 0, angle));
+        constraintLineToCircle(PolarArc(QPointF(0,0), edgeReflection, 0, angle)); // PolarArc
     }
 
     for(auto t : traces) {
@@ -214,7 +161,7 @@ void TracePolarChart::draw(QPainter &p) {
                 // outside of visible area
                 continue;
             }
-            // scale to size of smith diagram
+            // scale to size of diagram
             auto p1 = dataToPixel(last);
             auto p2 = dataToPixel(now);
             // draw line
@@ -266,95 +213,6 @@ void TracePolarChart::draw(QPainter &p) {
 
 }
 
-void TracePolarChart::fromJSON(nlohmann::json j)
-{
-    limitToSpan = j.value("limit_to_span", true);
-    limitToEdge = j.value("limit_to_edge", false);
-    edgeReflection = j.value("edge_reflection", 1.0);
-    dx = j.value("offset_axis_x", 0.0);
-    for(unsigned int hash : j["traces"]) {
-        // attempt to find the traces with this hash
-        bool found = false;
-        for(auto t : model.getTraces()) {
-            if(t->toHash() == hash) {
-                enableTrace(t, true);
-                found = true;
-                break;
-            }
-        }
-        if(!found) {
-            qWarning() << "Unable to find trace with hash" << hash;
-        }
-    }
-}
-
-nlohmann::json TracePolarChart::toJSON()
-{
-    nlohmann::json j;
-    j["limit_to_span"] = limitToSpan;
-    j["limit_to_edge"] = limitToEdge;
-    j["edge_reflection"] = edgeReflection;
-    j["offset_axis_x"] = dx;
-    nlohmann::json jtraces;
-    for(auto t : traces) {
-        if(t.second) {
-            jtraces.push_back(t.first->toHash());
-        }
-    }
-    j["traces"] = jtraces;
-    return j;
-}
-
-double TracePolarChart::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
-{
-    double closestDistance = numeric_limits<double>::max();
-    double closestXpos = 0;
-    unsigned int closestIndex = 0;
-    auto samples = t->size();
-    for(unsigned int i=0;i<samples;i++) {
-        auto data = t->sample(i);
-        data = dataAddDx(data);
-        auto plotPoint = dataToPixel(data);
-        if (plotPoint.isNull()) {
-            // destination point outside of currently displayed range
-            continue;
-        }
-        auto diff = plotPoint - pixel;
-        unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
-        if(distance < closestDistance) {
-            closestDistance = distance;
-            closestXpos = t->sample(i).x;
-            closestIndex = i;
-        }
-    }
-    closestDistance = sqrt(closestDistance);
-
-    if(closestIndex > 0) {
-        auto l1 = dataToPixel(dataAddDx(t->sample(closestIndex-1)));
-        auto l2 = dataToPixel(dataAddDx(t->sample(closestIndex)));
-        double ratio;
-        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
-        if(distance < closestDistance) {
-            closestDistance = distance;
-            closestXpos = t->sample(closestIndex-1).x + (t->sample(closestIndex).x - t->sample(closestIndex-1).x) * ratio;
-        }
-    }
-    if(closestIndex < t->size() - 1) {
-        auto l1 = dataToPixel(dataAddDx(t->sample(closestIndex)));
-        auto l2 = dataToPixel(dataAddDx(t->sample(closestIndex+1)));
-        double ratio;
-        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
-        if(distance < closestDistance) {
-            closestDistance = distance;
-            closestXpos = t->sample(closestIndex).x + (t->sample(closestIndex+1).x - t->sample(closestIndex).x) * ratio;
-        }
-    }
-    if(distance) {
-        *distance = closestDistance;
-    }
-    return closestXpos;
-}
-
 bool TracePolarChart::dropSupported(Trace *t)
 {
     if(!t->isReflection()) {
@@ -368,93 +226,9 @@ bool TracePolarChart::dropSupported(Trace *t)
     }
 }
 
-bool TracePolarChart::markerVisible(double x)
-{
-    if(limitToSpan) {
-        if(x >= sweep_fmin && x <= sweep_fmax) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        // complete traces visible
-        return true;
-    }
-}
-
 bool TracePolarChart::supported(Trace *t)
 {
     return dropSupported(t);
-}
-
-void TracePolarChart::updateContextMenu()
-{
-    contextmenu->clear();
-    auto setup = new QAction("Setup...", contextmenu);
-    connect(setup, &QAction::triggered, this, &TracePolarChart::axisSetupDialog);
-    contextmenu->addAction(setup);
-
-    contextmenu->addSeparator();
-    auto image = new QAction("Save image...", contextmenu);
-    contextmenu->addAction(image);
-    connect(image, &QAction::triggered, [=]() {
-        auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, QFileDialog::DontUseNativeDialog);
-        if(filename.isEmpty()) {
-            // aborted selection
-            return;
-        }
-        if(filename.endsWith(".png")) {
-            filename.chop(4);
-        }
-        filename += ".png";
-        grab().save(filename);
-    });
-
-    auto createMarker = contextmenu->addAction("Add marker here");
-    bool activeTraces = false;
-    for(auto t : traces) {
-        if(t.second) {
-            activeTraces = true;
-            break;
-        }
-    }
-    if(!activeTraces) {
-        createMarker->setEnabled(false);
-    }
-
-    connect(createMarker, &QAction::triggered, [=](){
-        createMarkerAtPosition(contextmenuClickpoint);
-    });
-
-    contextmenu->addSection("Traces");
-    // Populate context menu
-    for(auto t : orderedTraces()) {
-        if(!supported(t)) {
-            continue;
-        }
-        auto action = new QAction(t->name(), contextmenu);
-        action->setCheckable(true);
-        if(traces[t]) {
-            action->setChecked(true);
-        }
-        connect(action, &QAction::toggled, [=](bool active) {
-            enableTrace(t, active);
-        });
-        contextmenu->addAction(action);
-    }
-
-    finishContextMenu();
-}
-
-QPoint TracePolarChart::markerToPixel(Marker *m)
-{
-    QPoint ret = QPoint();
-    if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
-        auto d = m->getData();
-        d = dataAddDx(d);
-        ret = dataToPixel(d);
-    }
-    return ret;
 }
 
 QString TracePolarChart::mouseText(QPoint pos)
@@ -479,13 +253,4 @@ QString TracePolarChart::mouseText(QPoint pos)
     } else {
         return QString();
     }
-}
-
-PolarChartCircle::PolarChartCircle(QPointF center, double radius,  double startAngle, double spanAngle)
-    : center(center),
-      radius(radius),
-      startAngle(startAngle),
-      spanAngle(spanAngle)
-{
-
 }

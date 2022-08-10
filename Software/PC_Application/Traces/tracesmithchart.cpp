@@ -1,11 +1,9 @@
 ﻿#include "tracesmithchart.h"
 
-#include "Marker/marker.h"
 #include "preferences.h"
 #include "ui_smithchartdialog.h"
 #include "unit.h"
 #include "QFileDialog"
-#include "Util/util.h"
 #include "appwindow.h"
 #include "CustomWidgets/informationbox.h"
 
@@ -18,29 +16,16 @@
 using namespace std;
 
 TraceSmithChart::TraceSmithChart(TraceModel &model, QWidget *parent)
-    : TracePlot(model, parent)
+    : TracePolar(model, parent)
 {
-    limitToSpan = true;
-    limitToEdge = true;
-    edgeReflection = 1.0;
     Z0 = 50.0;
-    initializeTraceInfo();
 }
 
 nlohmann::json TraceSmithChart::toJSON()
 {
     nlohmann::json j;
-    j["limit_to_span"] = limitToSpan;
-    j["limit_to_edge"] = limitToEdge;
-    j["edge_reflection"] = edgeReflection;
+    j = TracePolar::toJSON();
     j["Z0"] = Z0;
-    nlohmann::json jtraces;
-    for(auto t : traces) {
-        if(t.second) {
-            jtraces.push_back(t.first->toHash());
-        }
-    }
-    j["traces"] = jtraces;
     nlohmann::json jlines;
     for(auto line : constantLines) {
         jlines.push_back(line.toJSON());
@@ -51,24 +36,8 @@ nlohmann::json TraceSmithChart::toJSON()
 
 void TraceSmithChart::fromJSON(nlohmann::json j)
 {
-    limitToSpan = j.value("limit_to_span", true);
-    limitToEdge = j.value("limit_to_edge", false);
-    edgeReflection = j.value("edge_reflection", 1.0);
+    TracePolar::fromJSON(j);
     Z0 = j.value("Z0", 50.0);
-    for(unsigned int hash : j["traces"]) {
-        // attempt to find the traces with this hash
-        bool found = false;
-        for(auto t : model.getTraces()) {
-            if(t->toHash() == hash) {
-                enableTrace(t, true);
-                found = true;
-                break;
-            }
-        }
-        if(!found) {
-            qWarning() << "Unable to find trace with hash" << hash;
-        }
-    }
     if(j.contains("constantLines")) {
         for(auto jline : j["constantLines"]) {
             SmithChartConstantLine line;
@@ -76,19 +45,6 @@ void TraceSmithChart::fromJSON(nlohmann::json j)
             constantLines.push_back(line);
         }
     }
-}
-
-void TraceSmithChart::wheelEvent(QWheelEvent *event)
-{
-    // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
-    auto increment = event->angleDelta().y() / 120.0;
-    // round toward bigger step in case of special higher resolution mousewheel
-    int steps = increment > 0 ? ceil(increment) : floor(increment);
-
-    constexpr double zoomfactor = 1.1;
-    auto zoom = pow(zoomfactor, steps);
-    edgeReflection /= zoom;
-    triggerReplot();
 }
 
 void TraceSmithChart::axisSetupDialog()
@@ -110,6 +66,7 @@ void TraceSmithChart::axisSetupDialog()
     ui->zoomFactor->setPrecision(3);
     ui->zoomReflection->setValue(edgeReflection);
     ui->zoomFactor->setValue(1.0/edgeReflection);
+    ui->offsetRealAxis->setValue(dx);
 
     ui->impedance->setUnit("Ω");
     ui->impedance->setPrecision(3);
@@ -132,6 +89,9 @@ void TraceSmithChart::axisSetupDialog()
     connect(ui->zoomReflection, &SIUnitEdit::valueChanged, [=](){
         edgeReflection = ui->zoomReflection->value();
         ui->zoomFactor->setValueQuiet(1.0 / edgeReflection);
+    });
+    connect(ui->offsetRealAxis, &SIUnitEdit::valueChanged, [=](){
+        dx = ui->offsetRealAxis->value();
     });
     connect(ui->impedance, &SIUnitEdit::valueChanged, [=](){
         Z0 = ui->impedance->value();
@@ -189,95 +149,6 @@ void TraceSmithChart::axisSetupDialog()
     }
 }
 
-QPoint TraceSmithChart::dataToPixel(std::complex<double> d)
-{
-    return transform.map(QPoint(d.real() * smithCoordMax * (1.0 / edgeReflection), -d.imag() * smithCoordMax * (1.0 / edgeReflection)));
-}
-
-QPoint TraceSmithChart::dataToPixel(Trace::Data d)
-{
-    return dataToPixel(d.y);}
-
-std::complex<double> TraceSmithChart::pixelToData(QPoint p)
-{
-    auto data = transform.inverted().map(QPointF(p));
-    return complex<double>(data.x() / smithCoordMax * edgeReflection, -data.y() / smithCoordMax * edgeReflection);
-}
-
-QPoint TraceSmithChart::markerToPixel(Marker *m)
-{
-    QPoint ret = QPoint();
-//    if(!m->isTimeDomain()) {
-        if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
-            auto d = m->getData();
-            ret = dataToPixel(d);
-        }
-//    }
-    return ret;
-}
-
-double TraceSmithChart::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
-{
-    double closestDistance = numeric_limits<double>::max();
-    double closestXpos = 0;
-    unsigned int closestIndex = 0;
-    auto samples = t->size();
-    for(unsigned int i=0;i<samples;i++) {
-        auto data = t->sample(i);
-        auto plotPoint = dataToPixel(data);
-        if (plotPoint.isNull()) {
-            // destination point outside of currently displayed range
-            continue;
-        }
-        auto diff = plotPoint - pixel;
-        unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
-        if(distance < closestDistance) {
-            closestDistance = distance;
-            closestXpos = t->sample(i).x;
-            closestIndex = i;
-        }
-    }
-    closestDistance = sqrt(closestDistance);
-    if(closestIndex > 0) {
-        auto l1 = dataToPixel(t->sample(closestIndex-1));
-        auto l2 = dataToPixel(t->sample(closestIndex));
-        double ratio;
-        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
-        if(distance < closestDistance) {
-            closestDistance = distance;
-            closestXpos = t->sample(closestIndex-1).x + (t->sample(closestIndex).x - t->sample(closestIndex-1).x) * ratio;
-        }
-    }
-    if(closestIndex < t->size() - 1) {
-        auto l1 = dataToPixel(t->sample(closestIndex));
-        auto l2 = dataToPixel(t->sample(closestIndex+1));
-        double ratio;
-        auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
-        if(distance < closestDistance) {
-            closestDistance = distance;
-            closestXpos = t->sample(closestIndex).x + (t->sample(closestIndex+1).x - t->sample(closestIndex).x) * ratio;
-        }
-    }
-    if(distance) {
-        *distance = closestDistance;
-    }
-    return closestXpos;
-}
-
-bool TraceSmithChart::markerVisible(double x)
-{
-    if(limitToSpan) {
-        if(x >= sweep_fmin && x <= sweep_fmax) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        // complete traces visible
-        return true;
-    }
-}
-
 bool TraceSmithChart::configureForTrace(Trace *t)
 {
     if(dropSupported(t)) {
@@ -299,7 +170,7 @@ void TraceSmithChart::draw(QPainter &p) {
     auto w = p.window();
     p.save();
     p.translate(w.width()/2, w.height()/2);
-    auto scale = qMin(w.height(), w.width()) / (2.0 * smithCoordMax);
+    auto scale = qMin(w.height(), w.width()) / (2.0 * polarCoordMax);
     p.scale(scale, scale);
 
     transform = p.transform();
@@ -326,8 +197,8 @@ void TraceSmithChart::draw(QPainter &p) {
     p.setPen(pen);
     for(int i=1;i<Circles * 2;i++) {
         auto radius = (double) i / Circles;
-        drawArc(SmithChartArc(QPointF(1.0 - radius, 0.0), radius, 0, 2*M_PI));
-        drawArc(SmithChartArc(QPointF(1.0 + radius, 0.0), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0 - radius+dx, 0.0), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0 + radius+dx, 0.0), radius, 0, 2*M_PI));
     }
 
       p.drawLine(dataToPixel(complex<double>(edgeReflection,0)),dataToPixel(complex<double>(-edgeReflection,0)));
@@ -335,8 +206,8 @@ void TraceSmithChart::draw(QPainter &p) {
     for(auto z : impedanceLines) {
         z /= Z0;
         auto radius = 1.0/z;
-        drawArc(SmithChartArc(QPointF(1.0, radius), radius, 0, 2*M_PI));
-        drawArc(SmithChartArc(QPointF(1.0, -radius), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0+dx, radius), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0+dx, -radius), radius, 0, 2*M_PI));
     }
 
     // draw custom constant parameter lines
@@ -372,6 +243,10 @@ void TraceSmithChart::draw(QPainter &p) {
             if(isnan(now.y.real())) {
                 break;
             }
+
+            last = dataAddDx(last);
+            now = dataAddDx(now);
+
             if (limitToEdge && (abs(last.y) > edgeReflection || abs(now.y) > edgeReflection)) {
                 // outside of visible area
                 continue;
@@ -400,6 +275,8 @@ void TraceSmithChart::draw(QPainter &p) {
                     continue;
                 }
                 auto coords = m->getData();
+                coords = dataAddDx(coords);
+
                 if (limitToEdge && abs(coords) > edgeReflection) {
                     // outside of visible area
                     continue;
@@ -415,7 +292,7 @@ void TraceSmithChart::draw(QPainter &p) {
         p.setOpacity(0.5);
         p.setBrush(Qt::white);
         p.setPen(Qt::white);
-        p.drawEllipse(-smithCoordMax, -smithCoordMax, 2*smithCoordMax, 2*smithCoordMax);
+        p.drawEllipse(-polarCoordMax, -polarCoordMax, 2*polarCoordMax, 2*polarCoordMax);
         auto font = p.font();
         font.setPixelSize(20);
         p.setFont(font);
@@ -459,8 +336,9 @@ bool TraceSmithChart::dropSupported(Trace *t)
 
 QString TraceSmithChart::mouseText(QPoint pos)
 {
-    auto data = pixelToData(pos);
-    if(abs(data) <= edgeReflection) {
+    auto dataDx = pixelToData(pos);
+    if(abs(dataDx) <= edgeReflection) {
+        auto data = complex<double>(dataDx.real()-dx, dataDx.imag());
         data = Z0 * (1.0 + data) / (1.0 - data);
         auto ret = Unit::ToString(data.real(), "", " ", 3);
         if(data.imag() >= 0) {
@@ -471,64 +349,6 @@ QString TraceSmithChart::mouseText(QPoint pos)
     } else {
         return QString();
     }
-}
-
-void TraceSmithChart::updateContextMenu()
-{
-    contextmenu->clear();
-    auto setup = new QAction("Setup...", contextmenu);
-    connect(setup, &QAction::triggered, this, &TraceSmithChart::axisSetupDialog);
-    contextmenu->addAction(setup);
-
-    contextmenu->addSeparator();
-    auto image = new QAction("Save image...", contextmenu);
-    contextmenu->addAction(image);
-    connect(image, &QAction::triggered, [=]() {
-        auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, QFileDialog::DontUseNativeDialog);
-        if(filename.isEmpty()) {
-            // aborted selection
-            return;
-        }
-        if(filename.endsWith(".png")) {
-            filename.chop(4);
-        }
-        filename += ".png";
-        grab().save(filename);
-    });
-
-    auto createMarker = contextmenu->addAction("Add marker here");
-    bool activeTraces = false;
-    for(auto t : traces) {
-        if(t.second) {
-            activeTraces = true;
-            break;
-        }
-    }
-    if(!activeTraces) {
-        createMarker->setEnabled(false);
-    }
-    connect(createMarker, &QAction::triggered, [=](){
-        createMarkerAtPosition(contextmenuClickpoint);
-    });
-
-    contextmenu->addSection("Traces");
-    // Populate context menu
-    for(auto t : orderedTraces()) {
-        if(!supported(t)) {
-            continue;
-        }
-        auto action = new QAction(t->name(), contextmenu);
-        action->setCheckable(true);
-        if(traces[t]) {
-            action->setChecked(true);
-        }
-        connect(action, &QAction::toggled, [=](bool active) {
-            enableTrace(t, active);
-        });
-        contextmenu->addAction(action);
-    }
-
-    finishContextMenu();
 }
 
 bool TraceSmithChart::supported(Trace *t)

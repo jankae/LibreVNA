@@ -102,6 +102,7 @@ HEADERS += \
     Traces/tracewaterfall.h \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
+    Traces/tracepolar.h \
     Traces/waterfallaxisdialog.h \
     Traces/xyplotaxisdialog.h \
     Traces/tracepolarchart.h \
@@ -228,6 +229,7 @@ SOURCES += \
     Traces/tracewaterfall.cpp \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
+    Traces/tracepolar.cpp \
     Traces/waterfallaxisdialog.cpp \
     Traces/xyplotaxisdialog.cpp \
     Util/util.cpp \
