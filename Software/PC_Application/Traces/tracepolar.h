@@ -50,6 +50,9 @@ protected:
 
     bool limitToSpan;
     bool limitToEdge;
+    bool manualFrequencyRange;
+    double fmin, fmax; // frequency range when manual range is selected
+
     double edgeReflection; // magnitude of reflection coefficient at the edge of the polar chart (zoom factor)
     double dx;
     QTransform transform;

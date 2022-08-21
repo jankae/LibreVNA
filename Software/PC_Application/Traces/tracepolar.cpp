@@ -12,6 +12,9 @@ TracePolar::TracePolar(TraceModel &model, QWidget *parent)
 {
     limitToSpan = true;
     limitToEdge = true;
+    manualFrequencyRange = false;
+    fmin = 0;
+    fmax = 6000000000;
     edgeReflection = 1.0;
     dx = 0;
     initializeTraceInfo();
@@ -24,6 +27,9 @@ nlohmann::json TracePolar::toJSON()
     j["limit_to_edge"] = limitToEdge;
     j["edge_reflection"] = edgeReflection;
     j["offset_axis_x"] = dx;
+    j["frequency_override"] = manualFrequencyRange;
+    j["override_min"] = fmin;
+    j["override_max"] = fmax;
     nlohmann::json jtraces;
     for(auto t : traces) {
         if(t.second) {
@@ -39,6 +45,9 @@ void TracePolar::fromJSON(nlohmann::json j)
     limitToSpan = j.value("limit_to_span", true);
     limitToEdge = j.value("limit_to_edge", false);
     edgeReflection = j.value("edge_reflection", 1.0);
+    manualFrequencyRange = j.value("frequency_override", false);
+    fmin = j.value("override_min", 0.0);
+    fmax = j.value("override_max", 6000000000.0);
     dx = j.value("offset_axis_x", 0.0);
     for(unsigned int hash : j["traces"]) {
         // attempt to find the traces with this hash

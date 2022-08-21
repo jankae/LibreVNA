@@ -30,6 +30,24 @@ void TracePolarChart::axisSetupDialog()
     } else {
         ui->displayModeRefl->setCurrentIndex(0);
     }
+
+    ui->displayStartFreq->setUnit("Hz");
+    ui->displayStartFreq->setPrefixes(" kMG");
+    ui->displayStartFreq->setPrecision(6);
+    ui->displayStartFreq->setValue(fmin);
+    ui->displayStopFreq->setUnit("Hz");
+    ui->displayStopFreq->setPrefixes(" kMG");
+    ui->displayStopFreq->setPrecision(6);
+    ui->displayStopFreq->setValue(fmax);
+
+    connect(ui->displayFreqOverride, &QCheckBox::toggled, [=](bool active){
+        ui->displayModeFreq->setEnabled(!active);
+        ui->displayStartFreq->setEnabled(active);
+        ui->displayStopFreq->setEnabled(active);
+    });
+    ui->displayFreqOverride->setChecked(manualFrequencyRange);
+    emit ui->displayFreqOverride->toggled(manualFrequencyRange);
+
     ui->zoomReflection->setPrecision(3);
     ui->zoomFactor->setPrecision(3);
     ui->offsetRealAxis->setPrecision(3);
@@ -40,6 +58,9 @@ void TracePolarChart::axisSetupDialog()
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
        limitToSpan = ui->displayModeFreq->currentIndex() == 1;
        limitToEdge = ui->displayModeRefl->currentIndex() == 1;
+       manualFrequencyRange = ui->displayFreqOverride->isChecked();
+       fmin = ui->displayStartFreq->value();
+       fmax = ui->displayStopFreq->value();
        triggerReplot();
     });
     connect(ui->zoomFactor, &SIUnitEdit::valueChanged, [=](){
@@ -70,6 +91,16 @@ void TracePolarChart::draw(QPainter &p) {
 
     transform = p.transform();
     p.restore();
+
+    auto minimumVisibleFrequency = std::numeric_limits<double>::lowest();
+    auto maximumVisibleFrequency = std::numeric_limits<double>::max();
+    if(manualFrequencyRange) {
+        minimumVisibleFrequency = fmin;
+        maximumVisibleFrequency = fmax;
+    } else if(limitToSpan) {
+        minimumVisibleFrequency = sweep_fmin;
+        maximumVisibleFrequency = sweep_fmax;
+    }
 
     auto drawArc = [&](PolarArc a) {
         a.constrainToCircle(QPointF(0,0), edgeReflection);
@@ -147,7 +178,7 @@ void TracePolarChart::draw(QPainter &p) {
         for(int i=1;i<nPoints;i++) {
             auto last = trace->sample(i-1);
             auto now = trace->sample(i);
-            if (limitToSpan && (trace->getDataType() == Trace::DataType::Frequency) && (last.x < sweep_fmin || now.x > sweep_fmax)) {
+            if ((trace->getDataType() == Trace::DataType::Frequency) && (last.x < minimumVisibleFrequency || now.x > maximumVisibleFrequency)) {
                 continue;
             }
             if(isnan(now.y.real())) {
@@ -179,7 +210,7 @@ void TracePolarChart::draw(QPainter &p) {
                 if(!m->isVisible()) {
                     continue;
                 }
-                if (limitToSpan && (m->getPosition() < sweep_fmin || m->getPosition() > sweep_fmax)) {
+                if (m->getPosition() < minimumVisibleFrequency || m->getPosition() > maximumVisibleFrequency) {
                     continue;
                 }
                 if(m->getPosition() < trace->minX() || m->getPosition() > trace->maxX()) {
