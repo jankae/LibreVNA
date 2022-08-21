@@ -295,6 +295,11 @@ bool TracePolar::constrainLineToCircle(QPointF &a, QPointF &b, QPointF center, d
         // adjust both points, order does not matter
         a = inter1;
         b = inter2;
+    } else if(!inter1betweenPoints && !inter2betweenPoints) {
+        // the line intersect the circle but outside of the segment defined by the points -> ignore
+        a += center;
+        b += center;
+        return false;
     } else {
         // exactly one intersection point must lie between the two line points, otherwise we would have returned already
         auto inter = inter1betweenPoints ? inter1 : inter2;
