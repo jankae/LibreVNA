@@ -119,6 +119,7 @@ inline void App_Init() {
 inline void App_Process() {
 	while(1) {
 		uint32_t notification;
+		LED::Toggle();
 		if(xTaskNotifyWait(0x00, UINT32_MAX, &notification, 100) == pdPASS) {
 			// something happened
 			if(notification & FLAG_USB_PACKET) {

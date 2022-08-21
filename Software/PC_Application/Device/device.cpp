@@ -581,16 +581,16 @@ void Device::transmissionFinished(TransmissionResult result)
     // remove transmitted packet
 //    qDebug() << "Transmission finsished (" << result << "), queue at " << transmissionQueue.size() << " Outstanding ACKs:"<<outstandingAckCount;
     if(transmissionQueue.empty()) {
-        qWarning() << "transmissionFinished with empty transmission queue, stray Ack?";
+        qWarning() << "transmissionFinished with empty transmission queue, stray Ack? Result:" << result;
         return;
     }
+    auto t = transmissionQueue.dequeue();
     if(result == TransmissionResult::Timeout) {
-        qWarning() << "transmissionFinished with timeout";
+        qWarning() << "transmissionFinished with timeout, packettype:" << (int) t.packet.type << "Device:" << serial();
     }
     if(result == TransmissionResult::Nack) {
         qWarning() << "transmissionFinished with NACK";
     }
-    auto t = transmissionQueue.dequeue();
     if(t.callback) {
         t.callback(result);
     }

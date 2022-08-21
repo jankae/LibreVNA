@@ -118,7 +118,8 @@ private:
     USBInBuffer *dataBuffer;
     USBInBuffer *logBuffer;
 
-    using Transmission = struct {
+    class Transmission {
+    public:
         Protocol::PacketInfo packet;
         unsigned int timeout;
         std::function<void(TransmissionResult)> callback;

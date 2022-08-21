@@ -230,7 +230,6 @@ bool usb_transmit(const uint8_t *data, uint16_t length) {
 	// grab pointer to write position
 	__disable_irq();
 	uint16_t write_index = usb_transmit_read_index + usb_transmit_fifo_level;
-	__enable_irq();
 	write_index %= sizeof(usb_transmit_fifo);
 	// copy the data to the fifo
 	uint16_t continous_length = sizeof(usb_transmit_fifo) - write_index;
@@ -243,21 +242,19 @@ bool usb_transmit(const uint8_t *data, uint16_t length) {
 		memcpy(&usb_transmit_fifo[0], data + continous_length, length - continous_length);
 	}
 	// increment fifo level
-	__disable_irq();
 	usb_transmit_fifo_level += length;
-	__enable_irq();
 
 	static bool first = true;
 	if(first) {
 		log_transmission_active = false;
 		first = false;
 	}
+	bool ret = true;
 	if(!data_transmission_active) {
-		return trigger_next_fifo_transmission();
-	} else {
-		// still transmitting, no need to trigger
-		return true;
+		ret = trigger_next_fifo_transmission();
 	}
+	__enable_irq();
+	return ret;
 }
 
 void usb_log(const char *log, uint16_t length) {

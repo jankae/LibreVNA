@@ -196,6 +196,7 @@ begin
 							end if;
 						end if;
 					when Settling =>
+						NEW_DATA <= '0';
 						source_active <= '0';
 						if std_logic_vector(stage_cnt) = PORT1_STAGE then
 							PORT1_ACTIVE <= '1';
@@ -232,7 +233,6 @@ begin
 						-- wait for sampling to finish
 						START_SAMPLING <= '0';
 						if SAMPLING_BUSY = '0' then
-							NEW_DATA <= '1';
 							RESULT_INDEX <= std_logic_vector(stage_cnt) & std_logic_vector(point_cnt);
 							state <= WaitTriggerLow;
 						end if;
@@ -246,7 +246,7 @@ begin
 							state <= SamplingDone;
 						end if;
 					when SamplingDone =>
-						NEW_DATA <= '0';
+						NEW_DATA <= '1';
 						if stage_cnt < unsigned(STAGES) then
 							stage_cnt <= stage_cnt + 1;
 							-- can go directly to preperation for next stage
@@ -256,6 +256,7 @@ begin
 						end if;
 						settling_cnt <= settling_time;
 					when NextPoint =>
+						NEW_DATA <= '0';
 						if point_cnt < unsigned(NPOINTS) then
 							point_cnt <= point_cnt + 1;
 							stage_cnt <= (others => '0');

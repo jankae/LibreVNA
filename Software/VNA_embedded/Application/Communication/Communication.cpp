@@ -7,7 +7,6 @@
 
 static uint8_t inputBuffer[1024];
 uint16_t inputCnt = 0;
-static uint8_t outputBuffer[1024];
 static Communication::Callback callback = nullptr;
 static uint8_t blockAcks = 0;
 
@@ -45,6 +44,7 @@ void Communication::Input(const uint8_t *buf, uint16_t len) {
 #include "Hardware.hpp"
 bool Communication::Send(const Protocol::PacketInfo &packet) {
 //	DEBUG1_HIGH();
+	uint8_t outputBuffer[512];
 	uint16_t len = Protocol::EncodePacket(packet, outputBuffer,
 					sizeof(outputBuffer));
 //	DEBUG1_LOW();
