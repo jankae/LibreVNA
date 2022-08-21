@@ -136,6 +136,7 @@ void TileWidget::splitVertically(bool moveContentToSecondChild)
     isSplit = true;
     splitter = new QSplitter(Qt::Vertical);
     split(moveContentToSecondChild);
+    tryMinimize();
 }
 
 void TileWidget::splitHorizontally(bool moveContentToSecondChild)
@@ -146,6 +147,7 @@ void TileWidget::splitHorizontally(bool moveContentToSecondChild)
     isSplit = true;
     splitter = new QSplitter(Qt::Horizontal);
     split(moveContentToSecondChild);
+    tryMinimize();
 }
 
 void TileWidget::closeTile()
@@ -301,15 +303,20 @@ void TileWidget::on_bXYplot_clicked()
 
 void TileWidget::plotDeleted()
 {
+    tryMinimize();
+
+    ui->stack->setCurrentWidget(ui->TilePage);
+    hasContent = false;
+    content = nullptr;
+}
+
+void TileWidget::tryMinimize()
+{
     if (isFullScreen)
     {
         auto rootTile = findRootTile();
         rootTile->ui->stack->setCurrentWidget(rootTile->ui->ContentPage);
     }
-
-    ui->stack->setCurrentWidget(ui->TilePage);
-    hasContent = false;
-    content = nullptr;
 }
 
 void TileWidget::on_bWaterfall_clicked()
@@ -321,4 +328,3 @@ void TileWidget::on_bPolarchart_clicked()
 {
     setContent(new TracePolarChart(model));
 }
-

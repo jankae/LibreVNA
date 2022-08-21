@@ -55,6 +55,7 @@ private:
     void setChild();
     TileWidget* findRootTile();
     void setFullScreen();
+    void tryMinimize();
     TracePlot *fullScreenPlot;
     Ui::TileWidget *ui;
     QSplitter *splitter;
