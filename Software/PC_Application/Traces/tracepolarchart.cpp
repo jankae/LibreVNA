@@ -157,13 +157,18 @@ void TracePolarChart::draw(QPainter &p) {
             last = dataAddDx(last);
             now = dataAddDx(now);
 
-            if (limitToEdge && (abs(last.y) > edgeReflection || abs(now.y) > edgeReflection)) {
-                // outside of visible area
-                continue;
+            // scale to size of smith diagram
+            QPointF p1 = dataToPixel(last);
+            QPointF p2 = dataToPixel(now);
+
+            if(limitToEdge && (abs(last.y) > edgeReflection || abs(now.y) > edgeReflection)) {
+                // partially outside of visible area, constrain
+                if(!TracePolar::constrainLineToCircle(p1, p2, transform.map(QPointF(0,0)), polarCoordMax * scale)) {
+                    // completely out of visible area
+                    continue;
+                }
             }
-            // scale to size of diagram
-            auto p1 = dataToPixel(last);
-            auto p2 = dataToPixel(now);
+
             // draw line
             p.drawLine(p1, p2);
         }
@@ -215,9 +220,6 @@ void TracePolarChart::draw(QPainter &p) {
 
 bool TracePolarChart::dropSupported(Trace *t)
 {
-    if(!t->isReflection()) {
-        return false;
-    }
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
         return true;

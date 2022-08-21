@@ -247,13 +247,18 @@ void TraceSmithChart::draw(QPainter &p) {
             last = dataAddDx(last);
             now = dataAddDx(now);
 
-            if (limitToEdge && (abs(last.y) > edgeReflection || abs(now.y) > edgeReflection)) {
-                // outside of visible area
-                continue;
-            }
             // scale to size of smith diagram
-            auto p1 = dataToPixel(last);
-            auto p2 = dataToPixel(now);
+            QPointF p1 = dataToPixel(last);
+            QPointF p2 = dataToPixel(now);
+
+            if(limitToEdge && (abs(last.y) > edgeReflection || abs(now.y) > edgeReflection)) {
+                // partially outside of visible area, constrain
+                if(!TracePolar::constrainLineToCircle(p1, p2, transform.map(QPointF(0,0)), polarCoordMax * scale)) {
+                    // completely out of visible area
+                    continue;
+                }
+            }
+
             // draw line
             p.drawLine(p1, p2);
         }

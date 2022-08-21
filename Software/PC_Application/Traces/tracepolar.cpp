@@ -13,6 +13,7 @@ TracePolar::TracePolar(TraceModel &model, QWidget *parent)
     limitToSpan = true;
     limitToEdge = true;
     edgeReflection = 1.0;
+    dx = 0;
     initializeTraceInfo();
 }
 
@@ -77,7 +78,7 @@ QPoint TracePolar::dataToPixel(std::complex<double> d)
     return transform.map(QPoint(d.real() * polarCoordMax * (1.0 / edgeReflection), -d.imag() * polarCoordMax * (1.0 / edgeReflection)));
 }
 
-QPoint TracePolar::dataToPixel(Trace::Data d)
+QPoint TracePolar:: dataToPixel(Trace::Data d)
 {
     return dataToPixel(d.y);
 }
@@ -234,6 +235,71 @@ void TracePolar::updateContextMenu()
     }
 
     finishContextMenu();
+}
+
+bool TracePolar::constrainLineToCircle(QPointF &a, QPointF &b, QPointF center, double radius)
+{
+    auto distance = [](const QPointF &a, const QPointF &b) {
+        auto dx = b.x() - a.x();
+        auto dy = b.y() - a.y();
+        return sqrt(dx*dx + dy*dy);
+    };
+
+    if(distance(a, center) <= radius && distance(b, center) <= radius) {
+        // both points are completely contained within the circle, no adjustment necessary
+        return true;
+    }
+
+    // shift points, the formulas assume center = (0,0)
+    a -= center;
+    b -= center;
+
+    // according to https://mathworld.wolfram.com/Circle-LineIntersection.html
+    auto dx = b.x() - a.x();
+    auto dy = b.y() - a.y();
+    auto dr = sqrt(dx*dx+dy*dy);
+    auto D = a.x()*b.y() - b.x()*a.y();
+    // check intersection
+    auto delta = radius*radius * dr*dr - D*D;
+    if(delta <= 0) {
+        // line does not intersect the circle
+        return false;
+    }
+    // line intersects the circle, calculate intersection points
+    auto x1 = (D*dy+copysign(1.0, dy) * dx*sqrt(delta)) / (dr*dr);
+    auto x2 = (D*dy-copysign(1.0, dy) * dx*sqrt(delta)) / (dr*dr);
+    auto y1 = (-D*dx+abs(dy)*sqrt(delta)) / (dr*dr);
+    auto y2 = (-D*dx-abs(dy)*sqrt(delta)) / (dr*dr);
+
+    auto inter1 = QPointF(x1, y1);
+    auto inter2 = QPointF(x2, y2);
+
+    bool inter1betweenPoints = false;
+    bool inter2betweenPoints = false;
+    if(abs(distance(a, inter1) + distance(b, inter1) - distance(a, b)) < 0.000001) {
+        inter1betweenPoints = true;
+    }
+    if(abs(distance(a, inter2) + distance(b, inter2) - distance(a, b)) < 0.000001) {
+        inter2betweenPoints = true;
+    }
+    if(inter1betweenPoints && inter2betweenPoints) {
+        // adjust both points, order does not matter
+        a = inter1;
+        b = inter2;
+    } else {
+        // exactly one intersection point must lie between the two line points, otherwise we would have returned already
+        auto inter = inter1betweenPoints ? inter1 : inter2;
+        if(distance(a, QPointF(0,0)) < radius) {
+            // point is in the circle and can remain unchanged. Use inter as new point b
+            b = inter;
+        } else {
+            // the other way around
+            a = inter;
+        }
+    }
+    a += center;
+    b += center;
+    return true;
 }
 
 PolarArc::PolarArc(QPointF center, double radius,  double startAngle, double spanAngle)

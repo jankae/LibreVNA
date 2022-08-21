@@ -43,6 +43,11 @@ protected:
     virtual void updateContextMenu() override;
     virtual bool supported(Trace *t) override {Q_UNUSED(t) return false;};
 
+    // given two points and a circle, the two points are adjusted in such a way that the line they describe
+    // is constrained within the circle. Returns true if there is a remaining line segment in the circle, false
+    // if the line lies completely outside of the circle (or is tangent to the circle)
+    static bool constrainLineToCircle(QPointF &a, QPointF &b, QPointF center, double radius);
+
     bool limitToSpan;
     bool limitToEdge;
     double edgeReflection; // magnitude of reflection coefficient at the edge of the polar chart (zoom factor)
