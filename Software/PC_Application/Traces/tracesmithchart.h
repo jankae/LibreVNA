@@ -1,7 +1,7 @@
 #ifndef TRACESMITHCHART_H
 #define TRACESMITHCHART_H
 
-#include "traceplot.h"
+#include "tracepolar.h"
 
 #include <QPen>
 #include <QPainterPath>
@@ -98,7 +98,7 @@ private:
     TraceSmithChart &chart;
 };
 
-class TraceSmithChart : public TracePlot
+class TraceSmithChart : public TracePolar
 {
     Q_OBJECT
     friend class SmithChartContantLineModel;
@@ -110,34 +110,17 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
-    void wheelEvent(QWheelEvent *event) override;
 public slots:
-    void axisSetupDialog();
+    virtual void axisSetupDialog() override;
 
 protected:
-    static constexpr double screenUsage = 0.9;
-    static constexpr double smithCoordMax = 4096;
-
-    QPoint dataToPixel(std::complex<double> d);
-    QPoint dataToPixel(Trace::Data d);
-    std::complex<double> pixelToData(QPoint p);
-    QPoint markerToPixel(Marker *m) override;
-    double nearestTracePoint(Trace *t, QPoint pixel, double *distance = nullptr) override;
-    virtual bool markerVisible(double x);
-
-    //void paintEvent(QPaintEvent *event) override;
-    virtual bool configureForTrace(Trace *t);
-    virtual void updateContextMenu() override;
+    virtual bool configureForTrace(Trace *t) override;
     bool supported(Trace *t) override;
     virtual void draw(QPainter& painter) override;
     virtual void traceDropped(Trace *t, QPoint position) override;
     virtual bool dropSupported(Trace *t) override;
     QString mouseText(QPoint pos) override;
-    bool limitToSpan;
-    bool limitToEdge;
-    double edgeReflection; // magnitude of reflection coefficient at the edge of the smith chart (zoom factor)
     double Z0;
-    QTransform transform;
     std::vector<SmithChartConstantLine> constantLines;
 };
 

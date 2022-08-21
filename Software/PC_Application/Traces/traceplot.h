@@ -20,6 +20,7 @@ public:
         SmithChart,
         XYPlot,
         Waterfall,
+        PolarChart,
     };
 
     TracePlot(TraceModel &model, QWidget *parent = nullptr);
