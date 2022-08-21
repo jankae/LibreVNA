@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SmithChartDialog</class>
- <widget class="QDialog" name="SmithChartDialog">
+ <class>PolarChartDialog</class>
+ <widget class="QDialog" name="PolarChartDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>976</width>
-    <height>460</height>
+    <width>381</width>
+    <height>385</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Smithchart Setup</string>
+   <string>Polart Chart Setup</string>
   </property>
   <property name="modal">
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -26,7 +26,7 @@
          <property name="title">
           <string>Display mode</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <layout class="QFormLayout" name="formLayout_2">
             <item row="0" column="0">
@@ -60,13 +60,16 @@
            </widget>
           </item>
           <item>
-           <layout class="QFormLayout" name="formLayout_4">
+           <layout class="QFormLayout" name="formLayout_3">
             <item row="0" column="0">
              <widget class="QLabel" name="label_7">
               <property name="text">
                <string>Start:</string>
               </property>
              </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="SIUnitEdit" name="displayStartFreq"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_8">
@@ -75,15 +78,18 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <widget class="SIUnitEdit" name="displayStopFreq"/>
+            </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_5">
               <property name="text">
-               <string>Impedance:</string>
+               <string>Γ</string>
               </property>
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QComboBox" name="displayModeImp">
+             <widget class="QComboBox" name="displayModeRefl">
               <item>
                <property name="text">
                 <string>Show complete traces</string>
@@ -96,32 +102,7 @@
               </item>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="SIUnitEdit" name="displayStartFreq"/>
-            </item>
-            <item row="1" column="1">
-             <widget class="SIUnitEdit" name="displayStopFreq"/>
-            </item>
            </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="title">
-          <string>Reference Impedance</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_3">
-          <item row="0" column="1">
-           <widget class="SIUnitEdit" name="impedance"/>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Impedance:</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -153,9 +134,9 @@
            <widget class="SIUnitEdit" name="zoomReflection"/>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_6">
+           <widget class="QLabel" name="label">
             <property name="text">
-             <string>Offset real axis</string>
+             <string>Offset real axis:</string>
             </property>
            </widget>
           </item>
@@ -166,76 +147,6 @@
         </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox_3">
-       <property name="title">
-        <string>Constant Lines</string>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QTableView" name="lineTable">
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
-          </property>
-          <attribute name="horizontalHeaderMinimumSectionSize">
-           <number>20</number>
-          </attribute>
-          <attribute name="horizontalHeaderStretchLastSection">
-           <bool>true</bool>
-          </attribute>
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
-          <attribute name="verticalHeaderDefaultSectionSize">
-           <number>21</number>
-          </attribute>
-         </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QPushButton" name="addLine">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset theme="list-add" resource="../icons.qrc">
-              <normaloff>:/icons/add.png</normaloff>:/icons/add.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="removeLine">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset theme="list-remove" resource="../icons.qrc">
-              <normaloff>:/icons/remove.png</normaloff>:/icons/remove.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
      </item>
     </layout>
    </item>
@@ -258,14 +169,12 @@
    <header>CustomWidgets/siunitedit.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>SmithChartDialog</receiver>
+   <receiver>PolarChartDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -281,7 +190,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>SmithChartDialog</receiver>
+   <receiver>PolarChartDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

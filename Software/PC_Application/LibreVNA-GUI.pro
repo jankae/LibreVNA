@@ -105,8 +105,10 @@ HEADERS += \
     Traces/tracewaterfall.h \
     Traces/tracewidget.h \
     Traces/tracexyplot.h \
+    Traces/tracepolar.h \
     Traces/waterfallaxisdialog.h \
     Traces/xyplotaxisdialog.h \
+    Traces/tracepolarchart.h \
     Util/qpointervariant.h \
     Util/util.h \
     Util/app_common.h \
@@ -227,10 +229,12 @@ SOURCES += \
     Traces/tracemodel.cpp \
     Traces/traceplot.cpp \
     Traces/tracesmithchart.cpp \
+    Traces/tracepolarchart.cpp \
     Traces/tracetouchstoneexport.cpp \
     Traces/tracewaterfall.cpp \
     Traces/tracewidget.cpp \
     Traces/tracexyplot.cpp \
+    Traces/tracepolar.cpp \
     Traces/waterfallaxisdialog.cpp \
     Traces/xyplotaxisdialog.cpp \
     Util/util.cpp \
@@ -300,6 +304,7 @@ FORMS += \
     Traces/Math/timegateexplanationwidget.ui \
     Traces/XYPlotConstantLineEditDialog.ui \
     Traces/smithchartdialog.ui \
+    Traces/polarchartdialog.ui \
     Traces/tracecsvexport.ui \
     Traces/traceeditdialog.ui \
     Traces/traceimportdialog.ui \
