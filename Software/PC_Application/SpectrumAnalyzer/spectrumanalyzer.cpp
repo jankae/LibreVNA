@@ -193,7 +193,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     connect(this, &SpectrumAnalyzer::TGStateChanged, cbTrackGenEnable, &QCheckBox::setChecked);
     tb_trackgen->addWidget(cbTrackGenEnable);
 
-    auto cbTrackGenPort = new QComboBox();
+    cbTrackGenPort = new QComboBox();
     cbTrackGenPort->addItem("Port 1");
     cbTrackGenPort->addItem("Port 2");
     cbTrackGenPort->setCurrentIndex(0);
@@ -253,6 +253,9 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     markerDock->setWidget(markerWidget);
     window->addDockWidget(Qt::BottomDockWidgetArea, markerDock);
     docks.insert(markerDock);
+
+    // Set initial GUI state
+    deviceInfoUpdated();
 
     SetupSCPI();
 
@@ -464,7 +467,7 @@ void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
     if(normalize.measuring) {
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for normalization
-            if(normalize.portCorrection[0].size() > 0 || m_avg.pointNum == 0) {
+            if(normalize.portCorrection.size() > 0 || m_avg.pointNum == 0) {
                 // add measurement
                 for(auto m : m_avg.measurements) {
                     normalize.portCorrection[m.first].push_back(m.second);
@@ -719,7 +722,7 @@ void SpectrumAnalyzer::SetTGEnabled(bool enabled)
 
 void SpectrumAnalyzer::SetTGPort(int port)
 {
-    if(port < 0 || port > 1) {
+    if(port < 0 || port >= cbTrackGenPort->count()) {
         return;
     }
     if(port != settings.trackingPort) {
@@ -733,10 +736,10 @@ void SpectrumAnalyzer::SetTGPort(int port)
 
 void SpectrumAnalyzer::SetTGLevel(double level)
 {
-    if(level > VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm / 100.0) {
-        level = VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm / 100.0;
-    } else if(level < VirtualDevice::getInfo(window->getDevice()).Limits.mindBm / 100.0) {
-        level = VirtualDevice::getInfo(window->getDevice()).Limits.mindBm / 100.0;
+    if(level > VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm) {
+        level = VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm;
+    } else if(level < VirtualDevice::getInfo(window->getDevice()).Limits.mindBm) {
+        level = VirtualDevice::getInfo(window->getDevice()).Limits.mindBm;
     }
     emit TGLevelChanged(level);
     settings.trackingPower = level * 100;
@@ -781,8 +784,7 @@ void SpectrumAnalyzer::MeasureNormalization()
 void SpectrumAnalyzer::AbortNormalization()
 {
     EnableNormalization(false);
-    normalize.measuring = false;
-    normalize.points = 0;
+    ClearNormalization();
     normalize.dialog.reset();
 }
 
@@ -806,6 +808,17 @@ void SpectrumAnalyzer::EnableNormalization(bool enabled)
     normalize.enable->blockSignals(true);
     normalize.enable->setChecked(normalize.active);
     normalize.enable->blockSignals(false);
+}
+
+void SpectrumAnalyzer::ClearNormalization()
+{
+    EnableNormalization(false);
+    normalize.active = false;
+    normalize.measuring = false;
+    normalize.points = 0;
+    normalize.portCorrection.clear();
+    normalize.f_start = 0;
+    normalize.f_stop = 0;
 }
 
 void SpectrumAnalyzer::SetNormalizationLevel(double level)
@@ -1005,11 +1018,14 @@ void SpectrumAnalyzer::SetupSCPI()
         if (params.size() != 1) {
             return SCPI::getResultName(SCPI::Result::Error);
         }
-        if(params[0] == "1") {
-            SetTGPort(0);
-        } else if(params[0] == "2") {
-            SetTGPort(1);
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else if(newval >= 0 && newval <= VirtualDevice::getInfo(window->getDevice()).ports){
+            SetTGPort(newval);
+            return SCPI::getResultName(SCPI::Result::Empty);
         } else {
+            // invalid port number
             return SCPI::getResultName(SCPI::Result::Error);
         }
         return SCPI::getResultName(SCPI::Result::Empty);
@@ -1019,7 +1035,6 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_tg->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
-
             return SCPI::getResultName(SCPI::Result::Error);
         } else {
             SetTGLevel(newval);
@@ -1174,6 +1189,18 @@ void SpectrumAnalyzer::preset()
     }
     // Create default traces
     createDefaultTracesAndGraphs(VirtualDevice::getInfo(window->getDevice()).ports);
+}
+
+void SpectrumAnalyzer::deviceInfoUpdated()
+{
+    // new device connected, throw away normalization
+    ClearNormalization();
+    auto tgPort = cbTrackGenPort->currentIndex();
+    cbTrackGenPort->clear();
+    for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        cbTrackGenPort->addItem("Port "+QString::number(i+1));
+    }
+    SetTGPort(tgPort);
 }
 
 QString SpectrumAnalyzer::WindowToString(VirtualDevice::SASettings::Window w)

@@ -1,8 +1,8 @@
 #ifndef SIGNALGENERATOR_H
 #define SIGNALGENERATOR_H
 
-#include "Device/virtualdevice.h"
 #include "savable.h"
+#include "appwindow.h"
 
 #include <QWidget>
 
@@ -15,13 +15,14 @@ class SignalgeneratorWidget : public QWidget, public Savable
     Q_OBJECT
 
 public:
-    explicit SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent = nullptr);
+    explicit SignalgeneratorWidget(AppWindow *window, QWidget *parent = nullptr);
     ~SignalgeneratorWidget();
 
     VirtualDevice::SGSettings getDeviceStatus();
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    void deviceInfoUpdated();
 signals:
     void SettingsChanged();
 
@@ -36,7 +37,8 @@ protected:
 private:
     Ui::SignalgeneratorWidget *ui;
     int m_timerId;
-    VirtualDevice *dev;
+    AppWindow *window;
+    std::vector<QCheckBox*> portCheckboxes;
 };
 
 #endif // SIGNALGENERATOR_H

@@ -33,6 +33,8 @@ public:
 
     void preset() override;
 
+    virtual void deviceInfoUpdated() override;
+
 private:
     static QString WindowToString(VirtualDevice::SASettings::Window w);
     static VirtualDevice::SASettings::Window WindowFromString(QString s);
@@ -65,6 +67,7 @@ private slots:
     void MeasureNormalization();
     void AbortNormalization();
     void EnableNormalization(bool enabled);
+    void ClearNormalization();
     void SetNormalizationLevel(double level);
 
 private:
@@ -90,6 +93,7 @@ private:
     TileWidget *central;
     QCheckBox *cbSignalID;
     QComboBox *cbWindowType, *cbDetector;
+    QComboBox *cbTrackGenPort;
     QLabel *lAverages;
 
     struct {

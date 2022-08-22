@@ -373,6 +373,8 @@ bool VirtualDevice::setSA(const VirtualDevice::SASettings &s, std::function<void
         results.clear();
         bool success = true;
         for(unsigned int i=0;i<devices.size();i++) {
+            sd.trackingGenerator = 0;
+            sd.trackingGeneratorPort = 0;
             if(s.trackingGenerator) {
                 if(CompoundDevice::PortMapping::findActiveStage(cdev->portMapping, i, 0) == s.trackingPort) {
                     sd.trackingGenerator = 1;
@@ -381,10 +383,6 @@ bool VirtualDevice::setSA(const VirtualDevice::SASettings &s, std::function<void
                     sd.trackingGenerator = 1;
                     sd.trackingGeneratorPort = 1;
                 }
-            } else {
-                // not used
-                sd.trackingGenerator = 0;
-                sd.trackingGeneratorPort = 0;
             }
             sd.syncMaster = i == 0 ? 1 : 0;
             success &= devices[i]->Configure(sd, [=](Device::TransmissionResult r){

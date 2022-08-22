@@ -5,7 +5,7 @@
 Generator::Generator(AppWindow *window, QString name)
     : Mode(window, name, "GENerator")
 {
-    central = new SignalgeneratorWidget(window->getDevice(), window);
+    central = new SignalgeneratorWidget(window, window);
 
     auto pref = Preferences::getInstance();
 
@@ -58,6 +58,11 @@ void Generator::preset()
 
 }
 
+void Generator::deviceInfoUpdated()
+{
+    central->deviceInfoUpdated();
+}
+
 void Generator::updateDevice()
 {
     if(!window->getDevice() || isActive != true) {
@@ -83,7 +88,6 @@ void Generator::setupSCPI()
     add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;
         if(!SCPI::paramToDouble(params, 0, newval)) {
-
             return SCPI::getResultName(SCPI::Result::Error);
         } else {
             central->setLevel(newval);
@@ -94,7 +98,7 @@ void Generator::setupSCPI()
     }));
     add(new SCPICommand("PORT", [=](QStringList params) -> QString {
         unsigned long long newval;
-        if(!SCPI::paramToULongLong(params, 0, newval) || newval > 2) {
+        if(!SCPI::paramToULongLong(params, 0, newval) || newval > VirtualDevice::getInfo(window->getDevice()).ports) {
             return SCPI::getResultName(SCPI::Result::Error);
         } else {
             central->setPort(newval);

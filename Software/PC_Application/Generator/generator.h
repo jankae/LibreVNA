@@ -23,6 +23,8 @@ public:
 
     void preset() override;
 
+    virtual void deviceInfoUpdated() override;
+
 private slots:
     void updateDevice();
 

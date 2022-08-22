@@ -355,6 +355,13 @@ bool AppWindow::ConnectToDevice(QString serial)
                 break;
             }
         }
+        for(auto m : modeHandler->getModes()) {
+            connect(vdevice, &VirtualDevice::InfoUpdated, m, &Mode::deviceInfoUpdated);
+        }
+
+        if (modeHandler->getActiveMode()) {
+            modeHandler->getActiveMode()->initializeDevice();
+        }
         return true;
     } catch (const runtime_error &e) {
         qWarning() << "Failed to connect:" << e.what();

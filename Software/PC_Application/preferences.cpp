@@ -253,7 +253,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupAutoconnect->setChecked(p->Startup.ConnectToFirstDevice);
     if(p->Startup.RememberSweepSettings) {
         ui->StartupSweepLastUsed->click();
-    } if(p->Startup.UseSetupFile) {
+    } else if(p->Startup.UseSetupFile) {
         ui->StartupUseSetupFile->click();
     } else {
         ui->StartupSweepDefault->click();

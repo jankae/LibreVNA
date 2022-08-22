@@ -47,6 +47,9 @@ public:
 
 signals:
     void statusbarMessage(QString msg);
+public slots:
+    virtual void deviceInfoUpdated() {} // If the mode has settings that depend on the device capabilites, it should update these in here
+
 protected:
 
     virtual void activate(); // derived classes must call Mode::activate before doing anything

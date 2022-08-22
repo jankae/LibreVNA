@@ -2,10 +2,10 @@
 
 #include "ui_signalgenwidget.h"
 
-SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent) :
+SignalgeneratorWidget::SignalgeneratorWidget(AppWindow *window, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SignalgeneratorWidget),
-    dev(dev)
+    window(window)
 {
     ui->setupUi(this);
     ui->frequency->setUnit("Hz");
@@ -32,16 +32,16 @@ SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent
     ui->steps->setPrecision(0);
 
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
-       if(newval < VirtualDevice::getInfo(dev).Limits.minFreq) {
-           newval = VirtualDevice::getInfo(dev).Limits.minFreq;
-       } else if (newval > VirtualDevice::getInfo(dev).Limits.maxFreq) {
-           newval = VirtualDevice::getInfo(dev).Limits.maxFreq;
+       if(newval < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
+           newval = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+       } else if (newval > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
+           newval = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
        }
        ui->frequency->setValueQuiet(newval);
        if (newval < ui->span->value()/2)
            ui->span->setValueQuiet(newval/2);
-       if (newval + ui->span->value()/2 > VirtualDevice::getInfo(dev).Limits.maxFreq)
-           ui->span->setValueQuiet((VirtualDevice::getInfo(dev).Limits.maxFreq - newval)*2);
+       if (newval + ui->span->value()/2 > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq)
+           ui->span->setValueQuiet((VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - newval)*2);
        newval = ui->frequency->value() - ui->span->value()/2;
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -50,8 +50,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent
     connect(ui->span, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq) {
-           newval = VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq;
+       } else if (newval > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
+           newval = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
        }
        ui->span->setValueQuiet(newval);
 
@@ -60,8 +60,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent
            ui->frequency->setValueQuiet(ui->span->value()/2);
        }
        newF = ui->frequency->value() + ui->span->value()/2;
-       if (newF  > VirtualDevice::getInfo(dev).Limits.maxFreq) {
-           ui->frequency->setValueQuiet(VirtualDevice::getInfo(dev).Limits.maxFreq - ui->span->value()/2);
+       if (newF  > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
+           ui->frequency->setValueQuiet(VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - ui->span->value()/2);
        }
 
        newval = ui->frequency->value() - ui->span->value()/2;
@@ -72,8 +72,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent
     connect(ui->current, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq) {
-           newval = VirtualDevice::getInfo(dev).Limits.maxFreq - VirtualDevice::getInfo(dev).Limits.minFreq;
+       } else if (newval > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
+           newval = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
        }
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -94,10 +94,9 @@ SignalgeneratorWidget::SignalgeneratorWidget(VirtualDevice *dev, QWidget *parent
     connect(ui->levelSlider, &QSlider::valueChanged, [=](int value) {
         setLevel((double) value / 100.0);
     });
-    connect(ui->EnablePort1, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
-    connect(ui->EnablePort2, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
-    connect(ui->EnablePort3, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
-    connect(ui->EnablePort4, &QCheckBox::toggled, this, &SignalgeneratorWidget::SettingsChanged);
+
+    deviceInfoUpdated();
+
     connect(ui->EnabledSweep, &QCheckBox::toggled, [=](bool enabled){
         ui->current->setEnabled(enabled);
         if(enabled) {
@@ -140,32 +139,22 @@ VirtualDevice::SGSettings SignalgeneratorWidget::getDeviceStatus()
     else
         s.freq = ui->frequency->value();
     s.dBm = ui->levelSpin->value();
-    if(ui->EnablePort1->isChecked()) {
-        s.port = 1;
-    } else if(ui->EnablePort2->isChecked()) {
-        s.port = 2;
-    } else if(ui->EnablePort3->isChecked()) {
-        s.port = 3;
-    } else if(ui->EnablePort4->isChecked()) {
-        s.port = 4;
-    } else {
-        s.port = 0;
+    s.port = 0;
+    for(unsigned int i=0;i<portCheckboxes.size();i++) {
+        if(portCheckboxes[i]->isChecked()) {
+            s.port = i+1;
+        }
     }
     return s;
 }
 
 nlohmann::json SignalgeneratorWidget::toJSON()
 {
+    auto s = getDeviceStatus();
     nlohmann::json j;
-    j["frequency"] = ui->frequency->value();
-    j["power"] = ui->levelSpin->value();
-    if(ui->EnablePort1->isChecked()) {
-        j["port"] = 1;
-    } else if(ui->EnablePort2->isChecked()) {
-        j["port"] = 2;
-    } else {
-        j["port"] = 0;
-    }
+    j["frequency"] = s.freq;
+    j["power"] = s.dBm;
+    j["port"] = s.port;
     nlohmann::json sweep;
     sweep["span"] = ui->span->value();
     sweep["steps"] = ui->steps->value();
@@ -192,6 +181,33 @@ void SignalgeneratorWidget::fromJSON(nlohmann::json j)
     }
 }
 
+void SignalgeneratorWidget::deviceInfoUpdated()
+{
+    auto port = getDeviceStatus().port;
+    for(auto cb : portCheckboxes) {
+        delete cb;
+    }
+    portCheckboxes.clear();
+    for(unsigned int i=1;i<=VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        auto cb = new QCheckBox("Port "+QString::number(i));
+        ui->portBox->layout()->addWidget(cb);
+        portCheckboxes.push_back(cb);
+        connect(cb, &QCheckBox::toggled, [=](bool enabled){
+            if(enabled) {
+                for(auto other : portCheckboxes) {
+                    if(other != cb) {
+                        other->blockSignals(true);
+                        other->setChecked(false);
+                        other->blockSignals(false);
+                    }
+                }
+            }
+            emit SettingsChanged();
+        });
+    }
+    setPort(port);
+}
+
 void SignalgeneratorWidget::setLevel(double level)
 {
     // TODO constrain to frequency dependent levels
@@ -211,22 +227,15 @@ void SignalgeneratorWidget::setFrequency(double frequency)
 
 void SignalgeneratorWidget::setPort(int port)
 {
-    if(port < 0 || port > 2) {
+    if(port < 0 || port > portCheckboxes.size()) {
         return;
     }
-    switch(port) {
-    case 0:
-        ui->EnablePort1->setChecked(false);
-        ui->EnablePort2->setChecked(false);
-        break;
-    case 1:
-        ui->EnablePort1->setChecked(true);
-        ui->EnablePort2->setChecked(false);
-        break;
-    case 2:
-        ui->EnablePort1->setChecked(false);
-        ui->EnablePort2->setChecked(true);
-        break;
+    if(port == 0) {
+        for(auto cb : portCheckboxes) {
+            cb->setChecked(false);
+        }
+    } else {
+        portCheckboxes[port-1]->setChecked(true);
     }
 }
 

@@ -376,7 +376,7 @@ void TraceWidget::SetupSCPI()
         }
         auto newparam = params[1];
         if((Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))
-                || (Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))) {
+                || (Trace::isSAParameter(t->liveParameter()) && Trace::isSAParameter(newparam))) {
             t->fromLivedata(t->liveType(), newparam);
             return "";
         } else {
