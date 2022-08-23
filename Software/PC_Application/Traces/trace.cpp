@@ -753,7 +753,21 @@ void Trace::fromJSON(nlohmann::json j)
     visible = j.value("visible", true);
     auto type = QString::fromStdString(j.value("type", "Live"));
     if(type == "Live") {
-        liveParam = QString::fromStdString(j.value("parameter", "S11"));
+        if(j.contains("parameter")) {
+            if(j["parameter"].type() == nlohmann::json::value_t::string) {
+                liveParam = QString::fromStdString(j.value("parameter", "S11"));
+            } else {
+                // old parameter setting is stored as a number
+                auto index = j.value("parameter", 0);
+                const QString parameterList[] = {"S11", "S12", "S21", "S22", "PORT1", "PORT2"};
+                if(index < 6) {
+                    liveParam = parameterList[index];
+                } else {
+                    liveParam = "S11";
+                }
+            }
+        }
+
         _liveType = j.value("livetype", LivedataType::Overwrite);
         paused = j.value("paused", false);
     } else if(type == "Touchstone" || type == "File") {
