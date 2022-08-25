@@ -6,6 +6,7 @@
 #include "Tools/parameters.h"
 
 #include <complex>
+#include <functional>
 
 namespace CalStandard
 {
@@ -28,6 +29,7 @@ public:
 
     static Virtual* create(Type type);
 
+    static std::vector<Type> availableTypes();
     static QString TypeToString(Type type);
     static Type TypeFromString(QString s);
 
@@ -35,7 +37,7 @@ public:
     double minFrequency() {return minFreq;}
     double maxFrequency() {return maxFreq;}
 
-    virtual void edit() = 0;
+    virtual void edit(std::function<void(void)> finishedCallback) = 0;
     virtual QString getDescription();
 
     virtual nlohmann::json toJSON() override;
@@ -74,7 +76,7 @@ public:
     Open();
 
     virtual std::complex<double> toS11(double freq) override;
-    virtual void edit() override;
+    virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
     virtual Type getType() override {return Type::Open;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
@@ -88,7 +90,7 @@ public:
     Short();
 
     virtual std::complex<double> toS11(double freq) override;
-    virtual void edit() override;
+    virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
     virtual Type getType() override {return Type::Short;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
@@ -102,7 +104,7 @@ public:
     Load();
 
     virtual std::complex<double> toS11(double freq) override;
-    virtual void edit() override;
+    virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
     virtual Type getType() override {return Type::Load;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
@@ -135,6 +137,7 @@ public:
     Through();
 
     virtual Sparam toSparam(double freq) override;
+    virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
     virtual Type getType() override {return Type::Through;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;

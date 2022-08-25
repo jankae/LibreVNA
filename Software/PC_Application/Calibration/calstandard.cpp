@@ -2,10 +2,32 @@
 #include "ui_CalStandardOpenEditDialog.h"
 #include "ui_CalStandardShortEditDialog.h"
 #include "ui_CalStandardLoadEditDialog.h"
+#include "ui_CalStandardThroughEditDialog.h"
 #include "unit.h"
 
 using namespace std;
 using namespace CalStandard;
+
+Virtual *Virtual::create(Virtual::Type type)
+{
+    Virtual *ret = nullptr;
+    switch(type) {
+    case Type::Open: ret = new Open; break;
+    case Type::Short: ret = new Short; break;
+    case Type::Load: ret = new Load; break;
+    case Type::Through: ret = new Through; break;
+    }
+    return ret;
+}
+
+std::vector<Virtual::Type> Virtual::availableTypes()
+{
+    std::vector<Type> ret;
+    for(int i=0;i<(int) Type::Last;i++) {
+        ret.push_back((Type) i);
+    }
+    return ret;
+}
 
 QString Virtual::TypeToString(Virtual::Type type)
 {
@@ -134,7 +156,7 @@ std::complex<double> Open::toS11(double freq)
     }
 }
 
-void Open::edit()
+void Open::edit(std::function<void(void)> finishedCallback)
 {
     auto d = new QDialog;
     auto ui = new Ui::CalStandardOpenEditDialog;
@@ -196,6 +218,9 @@ void Open::edit()
         C1 = ui->C1->value();
         C2 = ui->C2->value();
         C3 = ui->C3->value();
+        if(finishedCallback) {
+            finishedCallback();
+        }
     });
 
     d->show();
@@ -246,7 +271,7 @@ std::complex<double> Short::toS11(double freq)
     }
 }
 
-void Short::edit()
+void Short::edit(std::function<void(void)> finishedCallback)
 {
     auto d = new QDialog;
     auto ui = new Ui::CalStandardShortEditDialog;
@@ -308,6 +333,9 @@ void Short::edit()
         L1 = ui->L1->value();
         L2 = ui->L2->value();
         L3 = ui->L3->value();
+        if(finishedCallback) {
+            finishedCallback();
+        }
     });
 
     d->show();
@@ -371,7 +399,7 @@ std::complex<double> Load::toS11(double freq)
     }
 }
 
-void Load::edit()
+void Load::edit(std::function<void(void)> finishedCallback)
 {
     auto d = new QDialog;
     auto ui = new Ui::CalStandardLoadEditDialog;
@@ -444,6 +472,9 @@ void Load::edit()
         Cparallel = ui->parC->value();
         Lseries = ui->serL->value();
         Cfirst = ui->C_first->isChecked();
+        if(finishedCallback) {
+            finishedCallback();
+        }
     });
 
     d->show();
@@ -513,6 +544,13 @@ void TwoPort::fromJSON(nlohmann::json j)
     }
 }
 
+Through::Through()
+{
+    Z0 = 50.0;
+    delay = 0.0;
+    loss = 0.0;
+}
+
 Sparam Through::toSparam(double freq)
 {
     if(touchstone) {
@@ -529,12 +567,81 @@ Sparam Through::toSparam(double freq)
     }
 }
 
+void Through::edit(std::function<void(void)> finishedCallback)
+{
+    auto d = new QDialog;
+    auto ui = new Ui::CalStandardThroughEditDialog;
+    ui->setupUi(d);
+
+    ui->name->setText(name);
+    ui->Z0->setUnit("Ω");
+    ui->Z0->setPrecision(2);
+    ui->Z0->setValue(Z0);
+    ui->delay->setValue(delay);
+    ui->loss->setValue(loss);
+
+    auto updateMeasurementLabel = [=](){
+        QString label;
+        if(touchstone) {
+            label = QString::number(touchstone->points())+" points from "+Unit::ToString(touchstone->minFreq(), "Hz", " kMG")+" to "+Unit::ToString(touchstone->maxFreq(), "Hz", " kMG");
+        } else {
+            label = "No measurements stored yet";
+        }
+        ui->measurementLabel->setText(label);
+    };
+
+    QObject::connect(ui->coefficients, &QRadioButton::toggled, [=](bool checked) {
+        if(checked) {
+            clearMeasurement();
+        }
+        ui->stackedWidget->setCurrentIndex(checked ? 0 : 1);
+    });
+    QObject::connect(ui->measurement, &QRadioButton::toggled, [=](bool checked) {
+        updateMeasurementLabel();
+        ui->stackedWidget->setCurrentIndex(checked ? 1 : 0);
+    });
+
+    QObject::connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, ui->updateFile, &QPushButton::setEnabled);
+
+    ui->touchstoneImport->setPorts(1);
+    if(touchstone) {
+        ui->measurement->setChecked(true);
+        ui->touchstoneImport->setFile(touchstone->getFilename());
+    } else {
+        ui->coefficients->setChecked(true);
+    }
+
+    QObject::connect(ui->updateFile, &QPushButton::clicked, [=](){
+        setMeasurement(ui->touchstoneImport->getTouchstone(), ui->touchstoneImport->getPorts()[0]);
+        updateMeasurementLabel();
+    });
+
+    QObject::connect(d, &QDialog::accepted, [=](){
+        name = ui->name->text();
+        Z0 = ui->Z0->value();
+        delay = ui->delay->value();
+        loss = ui->loss->value();
+        if(finishedCallback) {
+            finishedCallback();
+        }
+    });
+
+    d->show();
+}
+
 nlohmann::json Through::toJSON()
 {
-
+    auto j = TwoPort::toJSON();
+    j["Z0"] = Z0;
+    j["delay"] = delay;
+    j["loss"] = loss;
+    return j;
 }
 
 void Through::fromJSON(nlohmann::json j)
 {
-
+    TwoPort::fromJSON(j);
+    Z0 = j.value("Z0", 50.0);
+    delay = j.value("delay", 0.0);
+    loss = j.value("loss", 0.0);
 }

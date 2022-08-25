@@ -277,6 +277,7 @@ FORMS += \
     Calibration/CalStandardLoadEditDialog.ui \
     Calibration/CalStandardOpenEditDialog.ui \
     Calibration/CalStandardShortEditDialog.ui \
+    Calibration/CalStandardThroughEditDialog.ui \
     Calibration/addamplitudepointsdialog.ui \
     Calibration/amplitudecaldialog.ui \
     Calibration/automaticamplitudedialog.ui \

@@ -22,15 +22,15 @@ public:
 
 signals:
     void settingsChanged();
-private:  
+private slots:
+    void updateListEditButtons();
+private:
     void parseEntries();
     void updateEntries();
+    void updateStandardList();
     Ui::CalkitDialog *ui;
 
-    bool open_ok, short_ok, load_ok, through_ok;
-
-    Calkit ownKit;
-    Calkit &editKit;
+    Calkit &kit;
 };
 
 #endif // CALKITDIALOG_H
