@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1213</width>
-    <height>626</height>
+    <height>637</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1505,14 +1505,14 @@
   </connection>
  </connections>
  <buttongroups>
+  <buttongroup name="ShortType_f"/>
   <buttongroup name="LoadType_f"/>
-  <buttongroup name="ShortType"/>
+  <buttongroup name="LoadModel"/>
+  <buttongroup name="LoadType"/>
   <buttongroup name="OpenType_f"/>
   <buttongroup name="TRL_Rtype"/>
-  <buttongroup name="LoadType"/>
-  <buttongroup name="ShortType_f"/>
   <buttongroup name="OpenType"/>
+  <buttongroup name="ShortType"/>
   <buttongroup name="ThroughType"/>
-  <buttongroup name="LoadModel"/>
  </buttongroups>
 </ui>

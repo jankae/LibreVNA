@@ -8,8 +8,8 @@ using Type = std::complex<double>;
 class Parameters {
 public:
     Parameters(Type m11, Type m12, Type m21, Type m22)
-        : m11(m11), m12(m12), m21(m21), m22(m22){};
-    Parameters(){};
+        : m11(m11), m12(m12), m21(m21), m22(m22){}
+    Parameters(){}
 
     Type m11, m12, m21, m22;
 };

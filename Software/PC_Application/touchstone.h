@@ -31,15 +31,15 @@ public:
     };
 
     Touchstone(unsigned int m_ports);
-    virtual ~Touchstone(){};
+    virtual ~Touchstone(){}
     void AddDatapoint(Datapoint p);
     void toFile(QString filename, Scale unit = Scale::GHz, Format format = Format::RealImaginary);
     std::stringstream toString(Scale unit = Scale::GHz, Format format = Format::RealImaginary);
     static Touchstone fromFile(std::string filename);
     double minFreq();
     double maxFreq();
-    unsigned int points() { return m_datapoints.size(); };
-    Datapoint point(int index) { return m_datapoints.at(index); };
+    unsigned int points() { return m_datapoints.size(); }
+    Datapoint point(int index) { return m_datapoints.at(index); }
     Datapoint interpolate(double frequency);
     // remove all paramaters except the ones regarding port1 and port2 (port cnt starts at 0)
     void reduceTo2Port(unsigned int port1, unsigned int port2);

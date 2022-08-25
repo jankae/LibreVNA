@@ -5,6 +5,7 @@ HEADERS += \
     Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
+    Calibration/calstandard.h \
     Calibration/frequencycaldialog.h \
     Calibration/manualcalibrationdialog.h \
     Calibration/measurementmodel.h \
@@ -144,6 +145,7 @@ SOURCES += \
     Calibration/calibrationtracedialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
+    Calibration/calstandard.cpp \
     Calibration/frequencycaldialog.cpp \
     Calibration/manualcalibrationdialog.cpp \
     Calibration/measurementmodel.cpp \
@@ -272,6 +274,9 @@ osx:LIBS += $(shell pkg-config --libs libusb-1.0)
 QT += widgets network
 
 FORMS += \
+    Calibration/CalStandardLoadEditDialog.ui \
+    Calibration/CalStandardOpenEditDialog.ui \
+    Calibration/CalStandardShortEditDialog.ui \
     Calibration/addamplitudepointsdialog.ui \
     Calibration/amplitudecaldialog.ui \
     Calibration/automaticamplitudedialog.ui \
