@@ -4,6 +4,7 @@
 #include "json.hpp"
 #include "CustomWidgets/informationbox.h"
 #include "appwindow.h"
+#include "Util/app_common.h"
 
 #include <fstream>
 #include <iomanip>
@@ -32,6 +33,15 @@ void Calkit::toFile(QString filename)
     qDebug() << "Saving calkit to file" << filename;
 
     json j = Savable::createJSON(descr);
+    nlohmann::json jstandards;
+    for(auto s : standards) {
+        nlohmann::json jstandard;
+        jstandard["type"] = CalStandard::Virtual::TypeToString(s->getType()).toStdString();
+        jstandard["params"] = s->toJSON();
+        jstandards.push_back(jstandard);
+    }
+    j["standards"] = jstandards;
+    j["version"] = qlibrevnaApp->applicationVersion().toStdString();
     ofstream file;
     file.open(filename.toStdString());
     file << setw(4) << j << endl;
@@ -61,86 +71,282 @@ Calkit Calkit::fromFile(QString filename)
     } catch (exception &e) {
         throw runtime_error("JSON parsing error: " + string(e.what()));
     }
-    if(j.contains("SOLT")) {
-//        // older file versions specify Z0 for resistance. Set resistance to Nan to detect missing values later
-//        c.SOLT.load_m.resistance = std::numeric_limits<double>::quiet_NaN();
-//        c.SOLT.load_f.resistance = std::numeric_limits<double>::quiet_NaN();
-
-//        qDebug() << "JSON format detected";
-//        // calkit file uses json format, parse
-//        Savable::parseJSON(j, c.descr);
-//        auto jSOLT = j["SOLT"];
-//        if (!jSOLT.contains("loadModelCFirst")) {
-//            // older version which did not allow the user to choose the load model. CFirst seems to be the more
-//            // used standard so it is the default for newer calkits. However, old calkits used LFirst so we need
-//            // to keep that to not mess with older calkit files
-//            c.SOLT.loadModelCFirst = false;
-//        }
-//        // adjust Z0/resistance in case of older calkit file version with missing resistance entries
-//        if(isnan(c.SOLT.load_f.resistance)) {
-//            c.SOLT.load_f.resistance = c.SOLT.load_f.Z0;
-//            c.SOLT.load_f.Z0 = 50.0;
-//        }
-//        if(isnan(c.SOLT.load_m.resistance)) {
-//            c.SOLT.load_m.resistance = c.SOLT.load_m.Z0;
-//            c.SOLT.load_m.Z0 = 50.0;
-//        }
+    c.clearStandards();
+    if(j.contains("standards")) {
+        qDebug() << "new JSON format detected";
+        Savable::parseJSON(j, c.descr);
+        for(auto js : j["standards"]) {
+            if(!js.contains("type") || !js.contains("params")) {
+                // missing fields
+                continue;
+            }
+            auto type = CalStandard::Virtual::TypeFromString(QString::fromStdString(js.value("type", "")));
+            if(type == CalStandard::Virtual::Type::Last) {
+                // failed to parse type
+                continue;
+            }
+            auto s = CalStandard::Virtual::create(type);
+            s->fromJSON(js["params"]);
+            c.standards.push_back(s);
+        }
     } else {
-//        qDebug() << "Legacy format detected";
-//        // legacy file format, return to beginning of file
-//        file.clear();
-//        file.seekg(0);
-//        c.SOLT.open_m.useMeasurements = readLine(file).toInt();
-//        c.SOLT.short_m.useMeasurements = readLine(file).toInt();
-//        c.SOLT.load_m.useMeasurements = readLine(file).toInt();
-//        c.SOLT.Through.useMeasurements = readLine(file).toInt();
-//        c.SOLT.open_m.Z0 = readLine(file).toDouble();
-//        c.SOLT.open_m.delay = readLine(file).toDouble();
-//        c.SOLT.open_m.loss = readLine(file).toDouble();
-//        c.SOLT.open_m.C0 = readLine(file).toDouble();
-//        c.SOLT.open_m.C1 = readLine(file).toDouble();
-//        c.SOLT.open_m.C2 = readLine(file).toDouble();
-//        c.SOLT.open_m.C3 = readLine(file).toDouble();
-//        c.SOLT.short_m.Z0 = readLine(file).toDouble();
-//        c.SOLT.short_m.delay = readLine(file).toDouble();
-//        c.SOLT.short_m.loss = readLine(file).toDouble();
-//        c.SOLT.short_m.L0 = readLine(file).toDouble();
-//        c.SOLT.short_m.L1 = readLine(file).toDouble();
-//        c.SOLT.short_m.L2 = readLine(file).toDouble();
-//        c.SOLT.short_m.L3 = readLine(file).toDouble();
-//        c.SOLT.load_m.resistance = readLine(file).toDouble();
-//        c.SOLT.Through.Z0 = readLine(file).toDouble();
-//        c.SOLT.Through.delay = readLine(file).toDouble();
-//        c.SOLT.Through.loss = readLine(file).toDouble();
-//        if(c.SOLT.open_m.useMeasurements) {
-//            c.SOLT.open_m.file = readLine(file);
-//            c.SOLT.open_m.Sparam = readLine(file).toInt();
-//        }
-//        if(c.SOLT.short_m.useMeasurements) {
-//            c.SOLT.short_m.file = readLine(file);
-//            c.SOLT.short_m.Sparam = readLine(file).toInt();
-//        }
-//        if(c.SOLT.load_m.useMeasurements) {
-//            c.SOLT.load_m.file = readLine(file);
-//            c.SOLT.load_m.Sparam = readLine(file).toInt();
-//        }
-//        if(c.SOLT.Through.useMeasurements) {
-//            c.SOLT.Through.file = readLine(file);
-//            c.SOLT.Through.Sparam1 = readLine(file).toInt();
-//            c.SOLT.Through.Sparam2 = readLine(file).toInt();
-//        }
-//        c.TRL.Through.Z0 = readLine(file).toDouble();
-//        c.TRL.Reflection.isShort = readLine(file).toDouble();
-//        c.TRL.Line.delay = readLine(file).toDouble();
-//        c.TRL.Line.minFreq = readLine(file).toDouble();
-//        c.TRL.Line.maxFreq = readLine(file).toDouble();
+        // older format is used
+        struct {
+            using Open = struct {
+                double Z0, delay, loss, C0, C1, C2, C3;
+                QString file;
+                bool useMeasurements;
+                int Sparam;
+            };
+            Open open_m, open_f;
+            using Short = struct {
+                double Z0, delay, loss, L0, L1, L2, L3;
+                QString file;
+                bool useMeasurements;
+                int Sparam;
+            };
+            Short short_m, short_f;
+            using Load = struct {
+                double resistance, Z0, delay, Cparallel, Lseries;
+                QString file;
+                bool useMeasurements;
+                int Sparam;
+            };
+            Load load_m, load_f;
+            bool loadModelCFirst;
+            struct {
+                double Z0, delay, loss;
+                QString file;
+                bool useMeasurements;
+                int Sparam1, Sparam2;
+            } Through;
+            bool separate_male_female;
+        } SOLT;
+        struct {
+            struct {
+                double Z0;
+            } Through;
+            struct {
+                bool isShort;
+            } Reflection;
+            struct {
+                double delay, minFreq, maxFreq;
+            } Line;
+        } TRL;
+        if(j.contains("SOLT")) {
+            qDebug() << "old JSON format detected";
+            // calkit file uses json format, parse
+            Savable::parseJSON(j, c.descr);
+            const std::vector<Savable::SettingDescription> descr_deprecated = {{
+                {&SOLT.open_m.Z0, "SOLT.Open.Param.Z0", 50.0},
+                {&SOLT.open_m.delay, "SOLT.Open.Param.Delay", 0.0},
+                {&SOLT.open_m.loss, "SOLT.Open.Param.Loss", 0.0},
+                {&SOLT.open_m.C0, "SOLT.Open.Param.C0", 0.0},
+                {&SOLT.open_m.C1, "SOLT.Open.Param.C1", 0.0},
+                {&SOLT.open_m.C2, "SOLT.Open.Param.C2", 0.0},
+                {&SOLT.open_m.C3, "SOLT.Open.Param.C3", 0.0},
+                {&SOLT.open_m.useMeasurements, "SOLT.Open.Measurements.Use", false},
+                {&SOLT.open_m.file, "SOLT.Open.Measurements.File", ""},
+                {&SOLT.open_m.Sparam, "SOLT.Open.Measurements.Port", 0},
+                {&SOLT.open_f.Z0, "SOLT.Open.Param.Z0_Female", 50.0},
+                {&SOLT.open_f.delay, "SOLT.Open.Param.Delay_Female", 0.0},
+                {&SOLT.open_f.loss, "SOLT.Open.Param.Loss_Female", 0.0},
+                {&SOLT.open_f.C0, "SOLT.Open.Param.C0_Female", 0.0},
+                {&SOLT.open_f.C1, "SOLT.Open.Param.C1_Female", 0.0},
+                {&SOLT.open_f.C2, "SOLT.Open.Param.C2_Female", 0.0},
+                {&SOLT.open_f.C3, "SOLT.Open.Param.C3_Female", 0.0},
+                {&SOLT.open_f.useMeasurements, "SOLT.Open.Measurements.Use_Female", false},
+                {&SOLT.open_f.file, "SOLT.Open.Measurements.File_Female", ""},
+                {&SOLT.open_f.Sparam, "SOLT.Open.Measurements.Port_Female", 0},
 
-//        c.SOLT.separate_male_female = false;
+                {&SOLT.short_m.Z0, "SOLT.Short.Param.Z0", 50.0},
+                {&SOLT.short_m.delay, "SOLT.Short.Param.Delay", 0.0},
+                {&SOLT.short_m.loss, "SOLT.Short.Param.Loss", 0.0},
+                {&SOLT.short_m.L0, "SOLT.Short.Param.L0", 0.0},
+                {&SOLT.short_m.L1, "SOLT.Short.Param.L1", 0.0},
+                {&SOLT.short_m.L2, "SOLT.Short.Param.L2", 0.0},
+                {&SOLT.short_m.L3, "SOLT.Short.Param.L3", 0.0},
+                {&SOLT.short_m.useMeasurements, "SOLT.Short.Measurements.Use", false},
+                {&SOLT.short_m.file, "SOLT.Short.Measurements.File", ""},
+                {&SOLT.short_m.Sparam, "SOLT.Short.Measurements.Port", 0},
+                {&SOLT.short_f.Z0, "SOLT.Short.Param.Z0_Female", 50.0},
+                {&SOLT.short_f.delay, "SOLT.Short.Param.Delay_Female", 0.0},
+                {&SOLT.short_f.loss, "SOLT.Short.Param.Loss_Female", 0.0},
+                {&SOLT.short_f.L0, "SOLT.Short.Param.L0_Female", 0.0},
+                {&SOLT.short_f.L1, "SOLT.Short.Param.L1_Female", 0.0},
+                {&SOLT.short_f.L2, "SOLT.Short.Param.L2_Female", 0.0},
+                {&SOLT.short_f.L3, "SOLT.Short.Param.L3_Female", 0.0},
+                {&SOLT.short_f.useMeasurements, "SOLT.Short.Measurements.Use_Female", false},
+                {&SOLT.short_f.file, "SOLT.Short.Measurements.File_Female", ""},
+                {&SOLT.short_f.Sparam, "SOLT.Short.Measurements.Port_Female", 0},
 
-//        InformationBox::ShowMessage("Loading calkit file", "The file \"" + filename + "\" is stored in a deprecated"
-//                     " calibration kit format. Future versions of this application might not support"
-//                     " it anymore. Please save the calibration kit to update to the new format");
+                {&SOLT.loadModelCFirst, "SOLT.loadModelCFirst", true},
+                {&SOLT.load_m.resistance, "SOLT.Load.Param.Resistance", 50.0},
+                {&SOLT.load_m.Z0, "SOLT.Load.Param.Z0", 50.0},
+                {&SOLT.load_m.delay, "SOLT.Load.Param.Delay", 0.0},
+                {&SOLT.load_m.Cparallel, "SOLT.Load.Param.C", 0.0},
+                {&SOLT.load_m.Lseries, "SOLT.Load.Param.L", 0.0},
+                {&SOLT.load_m.useMeasurements, "SOLT.Load.Measurements.Use", false},
+                {&SOLT.load_m.file, "SOLT.Load.Measurements.File", ""},
+                {&SOLT.load_m.Sparam, "SOLT.Load.Measurements.Port", 0},
+                {&SOLT.load_f.resistance, "SOLT.Load.Param.Resistance_Female", 50.0},
+                {&SOLT.load_f.Z0, "SOLT.Load.Param.Z0_Female", 50.0},
+                {&SOLT.load_f.delay, "SOLT.Load.Param.Delay_Female", 0.0},
+                {&SOLT.load_f.Cparallel, "SOLT.Load.Param.C_Female", 0.0},
+                {&SOLT.load_f.Lseries, "SOLT.Load.Param.L_Female", 0.0},
+                {&SOLT.load_f.useMeasurements, "SOLT.Load.Measurements.Use_Female", false},
+                {&SOLT.load_f.file, "SOLT.Load.Measurements.File_Female", ""},
+                {&SOLT.load_f.Sparam, "SOLT.Load.Measurements.Port_Female", 0},
+
+                {&SOLT.Through.Z0, "SOLT.Through.Param.Z0", 50.0},
+                {&SOLT.Through.delay, "SOLT.Through.Param.Delay", 0.0},
+                {&SOLT.Through.loss, "SOLT.Through.Param.Loss", 0.0},
+                {&SOLT.Through.useMeasurements, "SOLT.Through.Measurements.Use", false},
+                {&SOLT.Through.file, "SOLT.Through.Measurements.File", ""},
+                {&SOLT.Through.Sparam1, "SOLT.Through.Measurements.Port1", 0},
+                {&SOLT.Through.Sparam2, "SOLT.Through.Measurements.Port2", 1},
+
+                {&SOLT.separate_male_female, "SOLT.SeparateMaleFemale", false},
+
+                {&TRL.Through.Z0, "TRL.Through.Z0", 50.0},
+                {&TRL.Reflection.isShort, "TRL.Reflect.isShort", false},
+                {&TRL.Line.delay, "TRL.Line.Delay", 74.0},
+                {&TRL.Line.minFreq, "TRL.Line.minFreq", 751000000.0},
+                {&TRL.Line.maxFreq, "TRL.Line.maxFreq", 6000000000.0},
+            }};
+            Savable::parseJSON(j, descr_deprecated);
+        } else {
+            qDebug() << "Legacy format detected";
+            // legacy file format, return to beginning of file
+            file.clear();
+            file.seekg(0);
+            SOLT.open_m.useMeasurements = readLine(file).toInt();
+            SOLT.short_m.useMeasurements = readLine(file).toInt();
+            SOLT.load_m.useMeasurements = readLine(file).toInt();
+            SOLT.Through.useMeasurements = readLine(file).toInt();
+            SOLT.open_m.Z0 = readLine(file).toDouble();
+            SOLT.open_m.delay = readLine(file).toDouble();
+            SOLT.open_m.loss = readLine(file).toDouble();
+            SOLT.open_m.C0 = readLine(file).toDouble();
+            SOLT.open_m.C1 = readLine(file).toDouble();
+            SOLT.open_m.C2 = readLine(file).toDouble();
+            SOLT.open_m.C3 = readLine(file).toDouble();
+            SOLT.short_m.Z0 = readLine(file).toDouble();
+            SOLT.short_m.delay = readLine(file).toDouble();
+            SOLT.short_m.loss = readLine(file).toDouble();
+            SOLT.short_m.L0 = readLine(file).toDouble();
+            SOLT.short_m.L1 = readLine(file).toDouble();
+            SOLT.short_m.L2 = readLine(file).toDouble();
+            SOLT.short_m.L3 = readLine(file).toDouble();
+            SOLT.load_m.resistance = readLine(file).toDouble();
+            SOLT.Through.Z0 = readLine(file).toDouble();
+            SOLT.Through.delay = readLine(file).toDouble();
+            SOLT.Through.loss = readLine(file).toDouble();
+            if(SOLT.open_m.useMeasurements) {
+                SOLT.open_m.file = readLine(file);
+                SOLT.open_m.Sparam = readLine(file).toInt();
+            }
+            if(SOLT.short_m.useMeasurements) {
+                SOLT.short_m.file = readLine(file);
+                SOLT.short_m.Sparam = readLine(file).toInt();
+            }
+            if(SOLT.load_m.useMeasurements) {
+                SOLT.load_m.file = readLine(file);
+                SOLT.load_m.Sparam = readLine(file).toInt();
+            }
+            if(SOLT.Through.useMeasurements) {
+                SOLT.Through.file = readLine(file);
+                SOLT.Through.Sparam1 = readLine(file).toInt();
+                SOLT.Through.Sparam2 = readLine(file).toInt();
+            }
+            TRL.Through.Z0 = readLine(file).toDouble();
+            TRL.Reflection.isShort = readLine(file).toDouble();
+            TRL.Line.delay = readLine(file).toDouble();
+            TRL.Line.minFreq = readLine(file).toDouble();
+            TRL.Line.maxFreq = readLine(file).toDouble();
+
+            SOLT.separate_male_female = false;
+            SOLT.loadModelCFirst = false;
+        }
+
+        vector<QString*> filenames = {&SOLT.short_m.file, &SOLT.open_m.file, &SOLT.load_m.file, &SOLT.short_f.file, &SOLT.open_f.file, &SOLT.load_f.file, &SOLT.Through.file};
+        QFileInfo d(filename);
+        for(auto f : filenames) {
+            if(f->isEmpty()) {
+                continue;
+            }
+            if(QFileInfo(*f).isRelative()) {
+                auto absDir = QDir(d.dir().path() + "/" + *f);
+                QString buf = *f;
+                *f = absDir.absolutePath();
+            }
+        }
+
+        // create standards from old calkit forma
+        auto open_m = new CalStandard::Open(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.open_m.Z0, SOLT.open_m.delay, SOLT.open_m.loss, SOLT.open_m.C0, SOLT.open_m.C1, SOLT.open_m.C2, SOLT.open_m.C3);
+        if(SOLT.open_m.useMeasurements) {
+            auto ts = Touchstone(1);
+            ts.fromFile(SOLT.open_m.file.toStdString());
+            open_m->setMeasurement(ts, SOLT.open_m.Sparam);
+        }
+        c.standards.push_back(open_m);
+        if(SOLT.separate_male_female) {
+            auto open_f = new CalStandard::Open("Default female standard", SOLT.open_f.Z0, SOLT.open_f.delay, SOLT.open_f.loss, SOLT.open_f.C0, SOLT.open_f.C1, SOLT.open_f.C2, SOLT.open_f.C3);
+            if(SOLT.open_f.useMeasurements) {
+                auto ts = Touchstone(1);
+                ts.fromFile(SOLT.open_f.file.toStdString());
+                open_m->setMeasurement(ts, SOLT.open_f.Sparam);
+            }
+            c.standards.push_back(open_f);
+        }
+
+        auto short_m = new CalStandard::Short(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.short_m.Z0, SOLT.short_m.delay, SOLT.short_m.loss, SOLT.short_m.L0, SOLT.short_m.L1, SOLT.short_m.L2, SOLT.short_m.L3);
+        if(SOLT.short_m.useMeasurements) {
+            auto ts = Touchstone(1);
+            ts.fromFile(SOLT.short_m.file.toStdString());
+            short_m->setMeasurement(ts, SOLT.short_m.Sparam);
+        }
+        c.standards.push_back(short_m);
+        if(SOLT.separate_male_female) {
+            auto short_f = new CalStandard::Short("Default female standard", SOLT.short_f.Z0, SOLT.short_f.delay, SOLT.short_f.loss, SOLT.short_f.L0, SOLT.short_f.L1, SOLT.short_f.L2, SOLT.short_f.L3);
+            if(SOLT.short_f.useMeasurements) {
+                auto ts = Touchstone(1);
+                ts.fromFile(SOLT.short_f.file.toStdString());
+                short_m->setMeasurement(ts, SOLT.short_f.Sparam);
+            }
+            c.standards.push_back(short_f);
+        }
+
+        auto load_m = new CalStandard::Load(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.load_m.Z0, SOLT.load_m.delay, SOLT.load_m.resistance, SOLT.load_m.Cparallel, SOLT.load_m.Lseries, SOLT.loadModelCFirst);
+        if(SOLT.load_m.useMeasurements) {
+            auto ts = Touchstone(1);
+            ts.fromFile(SOLT.load_m.file.toStdString());
+            load_m->setMeasurement(ts, SOLT.load_m.Sparam);
+        }
+        c.standards.push_back(load_m);
+        if(SOLT.separate_male_female) {
+            auto load_f = new CalStandard::Load("Default female standard", SOLT.load_m.Z0, SOLT.load_f.delay, SOLT.load_f.resistance, SOLT.load_f.Cparallel, SOLT.load_f.Lseries, SOLT.loadModelCFirst);
+            if(SOLT.load_f.useMeasurements) {
+                auto ts = Touchstone(1);
+                ts.fromFile(SOLT.load_f.file.toStdString());
+                load_m->setMeasurement(ts, SOLT.load_f.Sparam);
+            }
+            c.standards.push_back(load_f);
+        }
+
+        auto through = new CalStandard::Through("Default standard", SOLT.Through.Z0, SOLT.Through.delay, SOLT.Through.loss);
+        if(SOLT.Through.useMeasurements) {
+            auto ts = Touchstone(2);
+            ts.fromFile(SOLT.Through.file.toStdString());
+            through->setMeasurement(ts, SOLT.Through.Sparam1, SOLT.Through.Sparam2);
+        }
+        c.standards.push_back(through);
+
+        InformationBox::ShowMessage("Loading calkit file", "The file \"" + filename + "\" is stored in a deprecated"
+                     " calibration kit format. Future versions of this application might not support"
+                     " it anymore. Please save the calibration kit to update to the new format");
     }
+
     file.close();
 
     return c;
@@ -202,4 +408,12 @@ bool Calkit::checkIfValid(double min_freq, double max_freq, bool isTRL, bool inc
 bool Calkit::isTRLReflectionShort() const
 {
     return true; // TODO delete function
+}
+
+void Calkit::clearStandards()
+{
+    for(auto s : standards) {
+        delete s;
+    }
+    standards.clear();
 }

@@ -52,6 +52,7 @@ public:
     bool isTRLReflectionShort() const;
 
 private:
+    void clearStandards();
     QString manufacturer, serialnumber, description;
     std::vector<CalStandard::Virtual*> standards;
 

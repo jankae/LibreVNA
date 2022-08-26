@@ -41,6 +41,7 @@ public:
             if(!entry_exists) {
                 // missing entry in json file, nothing to do (default values already set in constructor)
                 qWarning() << "Entry" << e.name << "not present in file";
+                e.var.setValue(e.def);
                 continue;
             }
             // json library does not now about QVariant, handle used cases

@@ -69,6 +69,8 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
 
     ui->bAdd->setMenu(addMenu);
 
+    updateStandardList();
+
     connect(ui->list, &QListWidget::doubleClicked, [=](const QModelIndex &index){
         if(!index.isValid()) {
             return;
@@ -95,6 +97,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
                 qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
             }
             updateEntries();
+            updateStandardList();
         }
     });
 

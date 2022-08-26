@@ -14,7 +14,8 @@ namespace CalStandard
 class Virtual : public Savable
 {
 public:
-    Virtual() :
+    Virtual(QString name = "") :
+        name(name),
         minFreq(std::numeric_limits<double>::lowest()),
         maxFreq(std::numeric_limits<double>::max()){}
 
@@ -52,7 +53,8 @@ protected:
 class OnePort : public Virtual
 {
 public:
-    OnePort() :
+    OnePort(QString name = "") :
+        Virtual(name),
         touchstone(nullptr){}
 
     virtual std::complex<double> toS11(double freq) = 0;
@@ -70,10 +72,14 @@ protected:
     Touchstone *touchstone;
 };
 
+class Calkit;
+
 class Open : public OnePort
 {
 public:
     Open();
+    Open(QString name, double Z0, double delay, double loss, double C0, double C1, double C2, double C3)
+        : OnePort(name), Z0(Z0), delay(delay), loss(loss), C0(C0), C1(C1), C2(C2), C3(C3){}
 
     virtual std::complex<double> toS11(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -88,6 +94,8 @@ class Short : public OnePort
 {
 public:
     Short();
+    Short(QString name, double Z0, double delay, double loss, double L0, double L1, double L2, double L3)
+        : OnePort(name), Z0(Z0), delay(delay), loss(loss), L0(L0), L1(L1), L2(L2), L3(L3){}
 
     virtual std::complex<double> toS11(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -102,6 +110,8 @@ class Load : public OnePort
 {
 public:
     Load();
+    Load(QString name, double Z0, double delay, double resistance, double Cparallel, double Lseries, bool Cfirst = true)
+        : OnePort(name), Z0(Z0), delay(delay), resistance(resistance), Cparallel(Cparallel), Lseries(Lseries), Cfirst(Cfirst){}
 
     virtual std::complex<double> toS11(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -116,7 +126,8 @@ private:
 class TwoPort : public Virtual
 {
 public:
-    TwoPort() :
+    TwoPort(QString name = "") :
+        Virtual(name),
         touchstone(nullptr){}
 
     virtual Sparam toSparam(double freq) = 0;
@@ -135,6 +146,8 @@ class Through : public TwoPort
 {
 public:
     Through();
+    Through(QString name, double Z0, double delay, double loss)
+        : TwoPort(name), Z0(Z0), delay(delay), loss(loss){}
 
     virtual Sparam toSparam(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
