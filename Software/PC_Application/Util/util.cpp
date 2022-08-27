@@ -2,6 +2,7 @@
 
 #include "preferences.h"
 
+#include <random>
 #include <QVector2D>
 
 void Util::unwrapPhase(std::vector<double> &phase, unsigned int start_index)
@@ -78,4 +79,14 @@ double Util::dBuVTodBm(double dBuV)
     double uVpower = 0.000001*0.000001/50.0;
     double dBdiff = 10*log10(uVpower*1000);
     return dBuV + dBdiff;
+}
+
+unsigned long long Util::random(unsigned long long max)
+{
+    static std::random_device os_seed;
+    static const unsigned long long seed = os_seed();
+    static std::mt19937_64 generator(seed);
+
+    std::uniform_int_distribution<unsigned long long> distribute(0, max);
+    return distribute(generator);
 }

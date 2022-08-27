@@ -4,20 +4,31 @@
 #include "ui_CalStandardLoadEditDialog.h"
 #include "ui_CalStandardThroughEditDialog.h"
 #include "unit.h"
+#include "Util/util.h"
 
 using namespace std;
 using namespace CalStandard;
 
+Virtual::Virtual(QString name) :
+    name(name),
+    minFreq(std::numeric_limits<double>::lowest()),
+    maxFreq(std::numeric_limits<double>::max())
+{
+    id = Util::random(numeric_limits<unsigned long long>::max());
+}
+
 Virtual *Virtual::create(Virtual::Type type)
 {
-    Virtual *ret = nullptr;
     switch(type) {
-    case Type::Open: ret = new Open; break;
-    case Type::Short: ret = new Short; break;
-    case Type::Load: ret = new Load; break;
-    case Type::Through: ret = new Through; break;
+    case Type::Open: return new Open;
+    case Type::Short: return new Short;
+    case Type::Load: return new Load;
+    case Type::Through: return new Through;
+    case Type::Line: // TODO
+    case Type::Last:
+        break;
     }
-    return ret;
+    return nullptr;
 }
 
 std::vector<Virtual::Type> Virtual::availableTypes()
@@ -60,12 +71,19 @@ nlohmann::json Virtual::toJSON()
 {
     nlohmann::json j;
     j["name"] = name.toStdString();
+    j["id"] = id;
     return j;
 }
 
 void Virtual::fromJSON(nlohmann::json j)
 {
     name = QString::fromStdString(j.value("name", ""));
+    id = j.value("id", id);
+}
+
+unsigned long long Virtual::getID()
+{
+    return id;
 }
 
 void OnePort::setMeasurement(const Touchstone &ts, int port)

@@ -752,13 +752,13 @@ void VirtualDevice::checkIfAllTransmissionsComplete(std::function<void (bool)> c
     }
 }
 
-Sparam VirtualDevice::VNAMeasurement::toSparam(int port1, int port2)
+Sparam VirtualDevice::VNAMeasurement::toSparam(int port1, int port2) const
 {
     Sparam S;
-    S.m11 = measurements["S"+QString::number(port1)+QString::number(port1)];
-    S.m12 = measurements["S"+QString::number(port1)+QString::number(port2)];
-    S.m21 = measurements["S"+QString::number(port2)+QString::number(port1)];
-    S.m22 = measurements["S"+QString::number(port2)+QString::number(port2)];
+    S.m11 = measurements.at("S"+QString::number(port1)+QString::number(port1));
+    S.m12 = measurements.at("S"+QString::number(port1)+QString::number(port2));
+    S.m21 = measurements.at("S"+QString::number(port2)+QString::number(port1));
+    S.m22 = measurements.at("S"+QString::number(port2)+QString::number(port2));
     return S;
 }
 

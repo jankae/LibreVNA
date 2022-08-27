@@ -1,17 +1,22 @@
 #ifndef TPARAM_H
 #define TPARAM_H
 
+#include "savable.h"
+
 #include <complex>
 
 using Type = std::complex<double>;
 
-class Parameters {
+class Parameters : public Savable {
 public:
     Parameters(Type m11, Type m12, Type m21, Type m22)
         : m11(m11), m12(m12), m21(m21), m22(m22){}
     Parameters(){}
 
     Type m11, m12, m21, m22;
+
+    nlohmann::json toJSON() override;
+    void fromJSON(nlohmann::json j) override;
 };
 
 // forward declaration of parameter classes

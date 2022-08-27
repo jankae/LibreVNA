@@ -417,3 +417,8 @@ void Calkit::clearStandards()
     }
     standards.clear();
 }
+
+std::vector<CalStandard::Virtual *> Calkit::getStandards() const
+{
+    return standards;
+}

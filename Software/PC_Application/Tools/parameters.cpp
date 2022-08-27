@@ -1,5 +1,7 @@
 #include "parameters.h"
 
+using namespace std;
+
 Sparam::Sparam(const Tparam &t) {
     m11 = t.m12 / t.m22;
     m21 = Type(1) / t.m22;
@@ -40,4 +42,26 @@ Tparam::Tparam(const Sparam &s)
 ABCDparam::ABCDparam(const Sparam &s, Type Z0)
     : ABCDparam(s, Z0, Z0)
 {
+}
+
+nlohmann::json Parameters::toJSON()
+{
+    nlohmann::json j;
+    j["m11_real"] = m11.real();
+    j["m11_imag"] = m11.imag();
+    j["m12_real"] = m12.real();
+    j["m12_imag"] = m12.imag();
+    j["m21_real"] = m21.real();
+    j["m21_imag"] = m21.imag();
+    j["m22_real"] = m22.real();
+    j["m22_imag"] = m22.imag();
+    return j;
+}
+
+void Parameters::fromJSON(nlohmann::json j)
+{
+    m11 = complex<double>(j.value("m11_real", 0.0), j.value("m11_imag", 0.0));
+    m12 = complex<double>(j.value("m12_real", 0.0), j.value("m12_imag", 0.0));
+    m21 = complex<double>(j.value("m21_real", 0.0), j.value("m21_imag", 0.0));
+    m22 = complex<double>(j.value("m22_real", 0.0), j.value("m22_imag", 0.0));
 }

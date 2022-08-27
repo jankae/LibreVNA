@@ -51,6 +51,8 @@ public:
     bool checkIfValid(double min_freq, double max_freq, bool isTRL, bool include_male, bool include_female);
     bool isTRLReflectionShort() const;
 
+    std::vector<CalStandard::Virtual *> getStandards() const;
+
 private:
     void clearStandards();
     QString manufacturer, serialnumber, description;

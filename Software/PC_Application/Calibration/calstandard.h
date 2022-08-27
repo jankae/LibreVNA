@@ -14,10 +14,7 @@ namespace CalStandard
 class Virtual : public Savable
 {
 public:
-    Virtual(QString name = "") :
-        name(name),
-        minFreq(std::numeric_limits<double>::lowest()),
-        maxFreq(std::numeric_limits<double>::max()){}
+    Virtual(QString name = "");
 
     enum class Type {
         Open,
@@ -44,10 +41,13 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    unsigned long long getID();
+
 protected:
     QString name;
     double minFreq;
     double maxFreq;
+    unsigned long long id;
 };
 
 class OnePort : public Virtual
