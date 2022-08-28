@@ -32,19 +32,9 @@ void Calkit::toFile(QString filename)
 
     qDebug() << "Saving calkit to file" << filename;
 
-    json j = Savable::createJSON(descr);
-    nlohmann::json jstandards;
-    for(auto s : standards) {
-        nlohmann::json jstandard;
-        jstandard["type"] = CalStandard::Virtual::TypeToString(s->getType()).toStdString();
-        jstandard["params"] = s->toJSON();
-        jstandards.push_back(jstandard);
-    }
-    j["standards"] = jstandards;
-    j["version"] = qlibrevnaApp->applicationVersion().toStdString();
     ofstream file;
     file.open(filename.toStdString());
-    file << setw(4) << j << endl;
+    file << setw(4) << toJSON() << endl;
     file.close();
 }
 
@@ -74,21 +64,7 @@ Calkit Calkit::fromFile(QString filename)
     c.clearStandards();
     if(j.contains("standards")) {
         qDebug() << "new JSON format detected";
-        Savable::parseJSON(j, c.descr);
-        for(auto js : j["standards"]) {
-            if(!js.contains("type") || !js.contains("params")) {
-                // missing fields
-                continue;
-            }
-            auto type = CalStandard::Virtual::TypeFromString(QString::fromStdString(js.value("type", "")));
-            if(type == CalStandard::Virtual::Type::Last) {
-                // failed to parse type
-                continue;
-            }
-            auto s = CalStandard::Virtual::create(type);
-            s->fromJSON(js["params"]);
-            c.standards.push_back(s);
-        }
+        c.fromJSON(j);
     } else {
         // older format is used
         struct {
@@ -421,4 +397,38 @@ void Calkit::clearStandards()
 std::vector<CalStandard::Virtual *> Calkit::getStandards() const
 {
     return standards;
+}
+
+nlohmann::json Calkit::toJSON()
+{
+    json j = Savable::createJSON(descr);
+    nlohmann::json jstandards;
+    for(auto s : standards) {
+        nlohmann::json jstandard;
+        jstandard["type"] = CalStandard::Virtual::TypeToString(s->getType()).toStdString();
+        jstandard["params"] = s->toJSON();
+        jstandards.push_back(jstandard);
+    }
+    j["standards"] = jstandards;
+    j["version"] = qlibrevnaApp->applicationVersion().toStdString();
+    return j;
+}
+
+void Calkit::fromJSON(nlohmann::json j)
+{
+    Savable::parseJSON(j, descr);
+    for(auto js : j["standards"]) {
+        if(!js.contains("type") || !js.contains("params")) {
+            // missing fields
+            continue;
+        }
+        auto type = CalStandard::Virtual::TypeFromString(QString::fromStdString(js.value("type", "")));
+        if(type == CalStandard::Virtual::Type::Last) {
+            // failed to parse type
+            continue;
+        }
+        auto s = CalStandard::Virtual::create(type);
+        s->fromJSON(js["params"]);
+        standards.push_back(s);
+    }
 }

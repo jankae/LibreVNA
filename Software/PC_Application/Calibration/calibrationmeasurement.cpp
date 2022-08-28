@@ -114,7 +114,7 @@ QWidget *CalibrationMeasurement::Base::createStandardWidget()
         auto s = (CalStandard::Virtual*) cbStandard->itemData(cbStandard->currentIndex(), Qt::UserRole).value<void*>();
         setStandard(s);
     });
-    connect(this, &CalibrationMeasurement::Base::standardChanged, [=](){
+    connect(this, &CalibrationMeasurement::Base::standardChanged, cbStandard, [=](){
         for(int i=0;i<cbStandard->count();i++) {
             if((CalStandard::Virtual*) cbStandard->itemData(i, Qt::UserRole).value<void*>() == standard) {
                 cbStandard->setCurrentIndex(i);
@@ -142,7 +142,7 @@ void CalibrationMeasurement::Base::fromJSON(nlohmann::json j)
     timestamp = QDateTime::fromSecsSinceEpoch(j.value("timestamp", 0));
 }
 
-bool CalibrationMeasurement::Base::canMeasureSimultaneously(std::vector<CalibrationMeasurement::Base *> measurements)
+bool CalibrationMeasurement::Base::canMeasureSimultaneously(std::set<CalibrationMeasurement::Base *> measurements)
 {
     std::set<int> usedPorts;
     for(auto m : measurements) {
@@ -171,6 +171,11 @@ bool CalibrationMeasurement::Base::canMeasureSimultaneously(std::vector<Calibrat
     }
     // if we get here, no port collisions occurred
     return true;
+}
+
+QDateTime CalibrationMeasurement::Base::getTimestamp() const
+{
+    return timestamp;
 }
 
 double CalibrationMeasurement::OnePort::minFreq()
@@ -222,10 +227,15 @@ QWidget *CalibrationMeasurement::OnePort::createSettingsWidget()
             }
         }
     }
+    if(port > 0 && cbPort->findText(QString::number(port)) < 0) {
+        // set already selected port, even if device is not connected or does not have this port
+        cbPort->addItem(QString::number(port));
+        cbPort->setCurrentText(QString::number(port));
+    }
     connect(cbPort, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         setPort(cbPort->currentText().toInt());
     });
-    connect(this, &OnePort::portChanged, [=](){
+    connect(this, &OnePort::portChanged, cbPort, [=](){
         auto string = QString::number(port);
         if(cbPort->findText(string) < 0) {
             // setting does not exist yet, create (should not happen)
@@ -234,9 +244,12 @@ QWidget *CalibrationMeasurement::OnePort::createSettingsWidget()
         cbPort->setCurrentText(string);
     });
     auto ret = new QWidget();
-    ret->setLayout(new QHBoxLayout);
-    ret->layout()->addWidget(label);
-    ret->layout()->addWidget(cbPort);
+    auto layout = new QHBoxLayout;
+    layout->setContentsMargins(0,0,0,0);
+    layout->addWidget(label);
+    layout->addWidget(cbPort);
+    layout->setStretch(1, 1);
+    ret->setLayout(layout);
     return ret;
 }
 
@@ -280,9 +293,8 @@ std::complex<double> CalibrationMeasurement::OnePort::getMeasured(double frequen
     auto lower = lower_bound(points.begin(), points.end(), frequency, [](const Point &lhs, double rhs) -> bool {
         return lhs.frequency < rhs;
     });
-    auto lowPoint = *lower;
-    advance(lower, 1);
     auto highPoint = *lower;
+    auto lowPoint = *prev(lower);
     double alpha = (frequency - lowPoint.frequency) / (highPoint.frequency - lowPoint.frequency);
     complex<double> ret;
     return lowPoint.S * (1.0 - alpha) + highPoint.S * alpha;
@@ -298,7 +310,7 @@ int CalibrationMeasurement::OnePort::getPort() const
     return port;
 }
 
-int CalibrationMeasurement::OnePort::setPort(int p)
+void CalibrationMeasurement::OnePort::setPort(int p)
 {
     if(port != p) {
         port = p;
@@ -341,9 +353,9 @@ void CalibrationMeasurement::TwoPort::addPoint(const VirtualDevice::VNAMeasureme
 
 QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
 {
-    auto label1 = new QLabel("From port ");
+    auto label1 = new QLabel("From ");
     auto cbPort1 = new QComboBox();
-    auto label2 = new QLabel(" to port ");
+    auto label2 = new QLabel(" to ");
     auto cbPort2 = new QComboBox();
     auto dev = VirtualDevice::getConnected();
     if(dev) {
@@ -358,13 +370,23 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
             }
         }
     }
+    if(port1 > 0 && cbPort1->findText(QString::number(port1)) < 0) {
+        // set already selected port, even if device is not connected or does not have this port
+        cbPort1->addItem(QString::number(port1));
+        cbPort1->setCurrentText(QString::number(port1));
+    }
+    if(port2 > 0 && cbPort2->findText(QString::number(port2)) < 0) {
+        // set already selected port, even if device is not connected or does not have this port
+        cbPort2->addItem(QString::number(port2));
+        cbPort2->setCurrentText(QString::number(port2));
+    }
     connect(cbPort1, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         setPort1(cbPort1->currentText().toInt());
     });
     connect(cbPort2, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         setPort2(cbPort2->currentText().toInt());
     });
-    connect(this, &TwoPort::port1Changed, [=](){
+    connect(this, &TwoPort::port1Changed, cbPort1, [=](){
         auto string = QString::number(port1);
         if(cbPort1->findText(string) < 0) {
             // setting does not exist yet, create (should not happen)
@@ -372,7 +394,7 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
         }
         cbPort1->setCurrentText(string);
     });
-    connect(this, &TwoPort::port2Changed, [=](){
+    connect(this, &TwoPort::port2Changed, cbPort2, [=](){
         auto string = QString::number(port2);
         if(cbPort2->findText(string) < 0) {
             // setting does not exist yet, create (should not happen)
@@ -381,11 +403,15 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
         cbPort2->setCurrentText(string);
     });
     auto ret = new QWidget();
-    ret->setLayout(new QHBoxLayout);
-    ret->layout()->addWidget(label1);
-    ret->layout()->addWidget(cbPort1);
-    ret->layout()->addWidget(label2);
-    ret->layout()->addWidget(cbPort2);
+    auto layout = new QHBoxLayout;
+    layout->setContentsMargins(0,0,0,0);
+    layout->addWidget(label1);
+    layout->addWidget(cbPort1);
+    layout->addWidget(label2);
+    layout->addWidget(cbPort2);
+    layout->setStretch(1, 1);
+    layout->setStretch(3, 1);
+    ret->setLayout(layout);
     return ret;
 }
 
@@ -452,19 +478,19 @@ int CalibrationMeasurement::TwoPort::getPort2() const
     return port2;
 }
 
-int CalibrationMeasurement::TwoPort::setPort1(int p)
+void CalibrationMeasurement::TwoPort::setPort1(int p)
 {
-    if(port1 = p) {
+    if(port1 != p) {
         port1 = p;
         emit port1Changed(p);
     }
 }
 
-int CalibrationMeasurement::TwoPort::setPort2(int p)
+void CalibrationMeasurement::TwoPort::setPort2(int p)
 {
-    if(port1 = p) {
-        port1 = p;
-        emit port1Changed(p);
+    if(port2 != p) {
+        port2 = p;
+        emit port2Changed(p);
     }
 }
 

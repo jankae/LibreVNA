@@ -8,6 +8,7 @@
 #include "Deembedding/deembedding.h"
 #include "scpi.h"
 #include "Traces/tracewidget.h"
+#include "Calibration/calibration2.h"
 
 #include <QObject>
 #include <QWidget>
@@ -106,11 +107,10 @@ private slots:
     // Calibration
     void DisableCalibration(bool force = false);
     void ApplyCalibration(Calibration::Type type);
-    void StartCalibrationMeasurements(std::set<Calibration::Measurement> m);
+    void StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m);
 
 
 signals:
-    void CalibrationMeasurementsComplete(std::set<Calibration::Measurement> m);
 
 private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
@@ -140,10 +140,11 @@ private:
 
     // Calibration
     Calibration cal;
+    Calibration2 cal2;
     bool changingSettings;
     bool calValid;
     bool calEdited;
-    std::set<Calibration::Measurement> calMeasurements;
+    std::set<CalibrationMeasurement::Base*> calMeasurements;
     bool calMeasuring;
     bool calWaitFirst;
     QProgressDialog calDialog;

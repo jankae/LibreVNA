@@ -4,12 +4,13 @@
 #include "touchstone.h"
 #include "Util/qpointervariant.h"
 #include "calstandard.h"
+#include "savable.h"
 
 #include <string>
 #include <complex>
 #include <QDir>
 
-class Calkit
+class Calkit : public Savable
 {
     friend class CalkitDialog;
 public:
@@ -52,6 +53,9 @@ public:
     bool isTRLReflectionShort() const;
 
     std::vector<CalStandard::Virtual *> getStandards() const;
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
 
 private:
     void clearStandards();

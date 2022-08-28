@@ -50,7 +50,9 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
-    static bool canMeasureSimultaneously(std::vector<Base*> measurements);
+    static bool canMeasureSimultaneously(std::set<Base *> measurements);
+    QDateTime getTimestamp() const;
+
 protected:
 signals:
     void standardChanged(CalStandard::Virtual* newStandard);
@@ -86,7 +88,7 @@ public:
     int getPort() const;
 
 public slots:
-    int setPort(int p);
+    void setPort(int p);
 protected:
 signals:
     void portChanged(int p);
@@ -159,8 +161,8 @@ public:
     int getPort2() const;
 
 public slots:
-    int setPort1(int p);
-    int setPort2(int p);
+    void setPort1(int p);
+    void setPort2(int p);
 protected:
 signals:
     void port1Changed(int p);

@@ -322,9 +322,8 @@ Touchstone::Datapoint Touchstone::interpolate(double frequency)
     auto lower = lower_bound(m_datapoints.begin(), m_datapoints.end(), frequency, [](const Datapoint &lhs, double rhs) -> bool {
         return lhs.frequency < rhs;
     });
-    auto lowPoint = *lower;
-    advance(lower, 1);
     auto highPoint = *lower;
+    auto lowPoint = *prev(lower);
     double alpha = (frequency - lowPoint.frequency) / (highPoint.frequency - lowPoint.frequency);
     Datapoint ret;
     ret.frequency = frequency;
