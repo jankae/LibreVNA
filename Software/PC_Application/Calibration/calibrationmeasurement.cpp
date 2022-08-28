@@ -3,6 +3,9 @@
 #include "calibration2.h"
 
 #include <QDateTime>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLabel>
 
 using namespace std;
 
@@ -13,23 +16,33 @@ CalibrationMeasurement::Base::Base(Calibration2 *cal)
     timestamp = QDateTime();
 }
 
+std::vector<CalStandard::Virtual *> CalibrationMeasurement::Base::supportedStandards()
+{
+    vector<CalStandard::Virtual*> ret;
+    for(auto s : cal->getKit().getStandards()) {
+        if(supportedStandardTypes().count(s->getType())) {
+            ret.push_back(s);
+        }
+    }
+    return ret;
+}
+
 bool CalibrationMeasurement::Base::setFirstSupportedStandard()
 {
     // assign first valid standard
-    for(auto s : cal->getKit().getStandards()) {
-        if(supportedStandards().count(s->getType())) {
-            setStandard(s);
-            break;
-        }
+    auto supported = supportedStandards();
+    if(supported.size() > 0) {
+        setStandard(supported[0]);
     }
 }
 
 bool CalibrationMeasurement::Base::setStandard(CalStandard::Virtual *standard)
 {
     if(standard) {
-        if(supportedStandards().count(standard->getType())) {
+        if(supportedStandardTypes().count(standard->getType())) {
             // can use this standard
             this->standard = standard;
+            emit standardChanged(standard);
             return true;
         } else {
             // can't use this standard, leave unchanged
@@ -38,6 +51,7 @@ bool CalibrationMeasurement::Base::setStandard(CalStandard::Virtual *standard)
     } else {
         // nullptr passed, remove currently used standard
         this->standard = nullptr;
+        emit standardChanged(nullptr);
         return true;
     }
 }
@@ -84,6 +98,30 @@ CalibrationMeasurement::Base::Type CalibrationMeasurement::Base::TypeFromString(
         }
     }
     return Type::Last;
+}
+
+QWidget *CalibrationMeasurement::Base::createStandardWidget()
+{
+    auto cbStandard = new QComboBox();
+    for(auto s : supportedStandards()) {
+        cbStandard->addItem(s->getDescription(), qVariantFromValue((void*) s));
+        if(standard == s) {
+            cbStandard->setCurrentText(s->getDescription());
+        }
+    }
+
+    connect(cbStandard, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        auto s = (CalStandard::Virtual*) cbStandard->itemData(cbStandard->currentIndex(), Qt::UserRole).value<void*>();
+        setStandard(s);
+    });
+    connect(this, &CalibrationMeasurement::Base::standardChanged, [=](){
+        for(int i=0;i<cbStandard->count();i++) {
+            if((CalStandard::Virtual*) cbStandard->itemData(i, Qt::UserRole).value<void*>() == standard) {
+                cbStandard->setCurrentIndex(i);
+            }
+        }
+    });
+    return cbStandard;
 }
 
 nlohmann::json CalibrationMeasurement::Base::toJSON()
@@ -171,6 +209,37 @@ void CalibrationMeasurement::OnePort::addPoint(const VirtualDevice::VNAMeasureme
     }
 }
 
+QWidget *CalibrationMeasurement::OnePort::createSettingsWidget()
+{
+    auto label = new QLabel("Port:");
+    auto cbPort = new QComboBox();
+    auto dev = VirtualDevice::getConnected();
+    if(dev) {
+        for(int i=1;i<=dev->getInfo().ports;i++) {
+            cbPort->addItem(QString::number(i));
+            if(port == i) {
+                cbPort->setCurrentText(QString::number(i));
+            }
+        }
+    }
+    connect(cbPort, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        setPort(cbPort->currentText().toInt());
+    });
+    connect(this, &OnePort::portChanged, [=](){
+        auto string = QString::number(port);
+        if(cbPort->findText(string) < 0) {
+            // setting does not exist yet, create (should not happen)
+            cbPort->addItem(string);
+        }
+        cbPort->setCurrentText(string);
+    });
+    auto ret = new QWidget();
+    ret->setLayout(new QHBoxLayout);
+    ret->layout()->addWidget(label);
+    ret->layout()->addWidget(cbPort);
+    return ret;
+}
+
 nlohmann::json CalibrationMeasurement::OnePort::toJSON()
 {
     auto j = Base::toJSON();
@@ -229,6 +298,14 @@ int CalibrationMeasurement::OnePort::getPort() const
     return port;
 }
 
+int CalibrationMeasurement::OnePort::setPort(int p)
+{
+    if(port != p) {
+        port = p;
+        emit portChanged(p);
+    }
+}
+
 double CalibrationMeasurement::TwoPort::minFreq()
 {
     if(points.size() > 0) {
@@ -260,6 +337,56 @@ void CalibrationMeasurement::TwoPort::addPoint(const VirtualDevice::VNAMeasureme
     p.S = m.toSparam(port1, port2);
     points.push_back(p);
     timestamp = QDateTime::currentDateTimeUtc();
+}
+
+QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
+{
+    auto label1 = new QLabel("From port ");
+    auto cbPort1 = new QComboBox();
+    auto label2 = new QLabel(" to port ");
+    auto cbPort2 = new QComboBox();
+    auto dev = VirtualDevice::getConnected();
+    if(dev) {
+        for(int i=1;i<=dev->getInfo().ports;i++) {
+            cbPort1->addItem(QString::number(i));
+            cbPort2->addItem(QString::number(i));
+            if(port1 == i) {
+                cbPort1->setCurrentText(QString::number(i));
+            }
+            if(port2 == i) {
+                cbPort2->setCurrentText(QString::number(i));
+            }
+        }
+    }
+    connect(cbPort1, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        setPort1(cbPort1->currentText().toInt());
+    });
+    connect(cbPort2, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        setPort2(cbPort2->currentText().toInt());
+    });
+    connect(this, &TwoPort::port1Changed, [=](){
+        auto string = QString::number(port1);
+        if(cbPort1->findText(string) < 0) {
+            // setting does not exist yet, create (should not happen)
+            cbPort1->addItem(string);
+        }
+        cbPort1->setCurrentText(string);
+    });
+    connect(this, &TwoPort::port2Changed, [=](){
+        auto string = QString::number(port2);
+        if(cbPort2->findText(string) < 0) {
+            // setting does not exist yet, create (should not happen)
+            cbPort2->addItem(string);
+        }
+        cbPort2->setCurrentText(string);
+    });
+    auto ret = new QWidget();
+    ret->setLayout(new QHBoxLayout);
+    ret->layout()->addWidget(label1);
+    ret->layout()->addWidget(cbPort1);
+    ret->layout()->addWidget(label2);
+    ret->layout()->addWidget(cbPort2);
+    return ret;
 }
 
 nlohmann::json CalibrationMeasurement::TwoPort::toJSON()
@@ -323,6 +450,22 @@ Sparam CalibrationMeasurement::TwoPort::getActual(double frequency)
 int CalibrationMeasurement::TwoPort::getPort2() const
 {
     return port2;
+}
+
+int CalibrationMeasurement::TwoPort::setPort1(int p)
+{
+    if(port1 = p) {
+        port1 = p;
+        emit port1Changed(p);
+    }
+}
+
+int CalibrationMeasurement::TwoPort::setPort2(int p)
+{
+    if(port1 = p) {
+        port1 = p;
+        emit port1Changed(p);
+    }
 }
 
 int CalibrationMeasurement::TwoPort::getPort1() const
