@@ -211,13 +211,14 @@ void PortExtension::measurementCompleted(std::vector<VirtualDevice::VNAMeasureme
             }
             // remove calkit if specified
             if(!isIdeal) {
-                complex<double> calStandard;
-                auto standards = kit->toSOLT(p.frequency);
-                if(isOpen) {
-                    calStandard = standards.Open;
-                } else {
-                    calStandard = standards.Short;
-                }
+                complex<double> calStandard = 1.0;
+                // TODO
+//                auto standards = kit->toSOLT(p.frequency);
+//                if(isOpen) {
+//                    calStandard = standards.Open;
+//                } else {
+//                    calStandard = standards.Short;
+//                }
                 // remove effect of calibration standard
                 reflection /= calStandard;
             }

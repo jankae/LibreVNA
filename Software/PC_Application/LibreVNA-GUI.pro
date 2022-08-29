@@ -2,15 +2,12 @@ HEADERS += \
     ../VNA_embedded/Application/Communication/Protocol.hpp \
     Calibration/amplitudecaldialog.h \
     Calibration/calibration.h \
-    Calibration/calibration2.h \
     Calibration/calibrationmeasurement.h \
-    Calibration/calibrationtracedialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
     Calibration/calstandard.h \
     Calibration/frequencycaldialog.h \
     Calibration/manualcalibrationdialog.h \
-    Calibration/measurementmodel.h \
     Calibration/receivercaldialog.h \
     Calibration/sourcecaldialog.h \
     CustomWidgets/colorpickerbutton.h \
@@ -144,15 +141,12 @@ SOURCES += \
     ../VNA_embedded/Application/Communication/Protocol.cpp \
     Calibration/amplitudecaldialog.cpp \
     Calibration/calibration.cpp \
-    Calibration/calibration2.cpp \
     Calibration/calibrationmeasurement.cpp \
-    Calibration/calibrationtracedialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
     Calibration/calstandard.cpp \
     Calibration/frequencycaldialog.cpp \
     Calibration/manualcalibrationdialog.cpp \
-    Calibration/measurementmodel.cpp \
     Calibration/receivercaldialog.cpp \
     Calibration/sourcecaldialog.cpp \
     CustomWidgets/colorpickerbutton.cpp \
@@ -286,7 +280,6 @@ FORMS += \
     Calibration/amplitudecaldialog.ui \
     Calibration/automaticamplitudedialog.ui \
     Calibration/calibrationdialogui.ui \
-    Calibration/calibrationtracedialog.ui \
     Calibration/calkitdialog.ui \
     Calibration/frequencycaldialog.ui \
     Calibration/manualcalibrationdialog.ui \

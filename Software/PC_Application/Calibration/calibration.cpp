@@ -1,481 +1,456 @@
 #include "calibration.h"
-
-#include "unit.h"
-#include "Tools/parameters.h"
+#include "ui_calibrationdialogui.h"
 #include "CustomWidgets/informationbox.h"
+#include "Util/app_common.h"
+#include "unit.h"
 
-#include <QDebug>
-#include <algorithm>
-#include <QMessageBox>
-#include <QFileDialog>
+#include "Eigen/Dense"
+
 #include <fstream>
+#include <iomanip>
+
+#include <QDialog>
+#include <QMenu>
+#include <QStyle>
+#include <QDebug>
+#include <QFileDialog>
 
 using namespace std;
+using Eigen::MatrixXcd;
 
-Calibration::Calibration()
-{
-    // Create vectors for measurements
-    measurements[Measurement::Port1Open].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Port1Short].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Port1Load].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Port2Open].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Port2Short].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Port2Load].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Isolation].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Through].datapoints = vector<VirtualDevice::VNAMeasurement>();
-    measurements[Measurement::Line].datapoints = vector<VirtualDevice::VNAMeasurement>();
-
-    type = Type::None;
-    port1Standard = port2Standard = PortStandard::Male;
-    throughZeroLength = false;
-}
-
-Calibration::Standard Calibration::getPort1Standard(Calibration::Measurement m)
-{
-    switch(m) {
-    case Measurement::Port1Open: return Standard::Open;
-    case Measurement::Port1Short: return Standard::Short;
-    case Measurement::Port1Load: return Standard::Load;
-    case Measurement::Port2Open: return Standard::Any;
-    case Measurement::Port2Short: return Standard::Any;
-    case Measurement::Port2Load: return Standard::Any;
-    case Measurement::Through: return Standard::Through;
-    case Measurement::Isolation: return Standard::Load;
-    case Measurement::Line: return Standard::Through;
-    default: return Standard::Any;
-    }
-}
-
-Calibration::Standard Calibration::getPort2Standard(Calibration::Measurement m)
-{
-    switch(m) {
-    case Measurement::Port1Open: return Standard::Any;
-    case Measurement::Port1Short: return Standard::Any;
-    case Measurement::Port1Load: return Standard::Any;
-    case Measurement::Port2Open: return Standard::Open;
-    case Measurement::Port2Short: return Standard::Short;
-    case Measurement::Port2Load: return Standard::Load;
-    case Measurement::Through: return Standard::Through;
-    case Measurement::Isolation: return Standard::Load;
-    case Measurement::Line: return Standard::Through;
-    default: return Standard::Any;
-    }
-}
-
-void Calibration::clearMeasurements()
-{
-    qDebug() << "Clearing all calibration measurements...";
-    for(auto m : measurements) {
-        clearMeasurement(m.first);
-    }
-}
-
-void Calibration::clearMeasurements(std::set<Calibration::Measurement> types)
-{
-    for(auto t : types) {
-        clearMeasurement(t);
-    }
-}
-
-void Calibration::clearMeasurement(Calibration::Measurement type)
-{
-    measurements[type].datapoints.clear();
-    measurements[type].timestamp = QDateTime();
-    qDebug() << "Deleted" << MeasurementToString(type) << "measurement";
-}
-
-void Calibration::addMeasurement(Calibration::Measurement type, VirtualDevice::VNAMeasurement &d)
-{
-    measurements[type].datapoints.push_back(d);
-    measurements[type].timestamp = QDateTime::currentDateTime();
-}
-
-void Calibration::addMeasurements(std::set<Calibration::Measurement> types, VirtualDevice::VNAMeasurement &d)
-{
-    for(auto t : types) {
-        addMeasurement(t, d);
-    }
-}
-
-bool Calibration::calculationPossible(Calibration::Type type)
-{
-    if(type == Type::None) {
-        // always possible to reset to None
-        return true;
-    }
-    qDebug() << "Checking if" << TypeToString(type) << "calibration is possible...";
-    auto ret = SanityCheckSamples(Measurements(type, false));
-    if(ret) {
-        qDebug() << "...calibration possible";
-    } else {
-        qDebug() << "...calibration not possible";
-    }
-    return SanityCheckSamples(Measurements(type, false));
-}
-
-bool Calibration::constructErrorTerms(Calibration::Type type)
-{
-    if(type == Type::None) {
-        resetErrorTerms();
-        return true;
-    }
-    if(!calculationPossible(type)) {
+bool operator==(const Calibration::CalType &lhs, const Calibration::CalType &rhs) {
+    if(lhs.type != rhs.type) {
         return false;
     }
-    qDebug() << "Constructing error terms for" << TypeToString(type) << "calibration";
-    bool isTRL = type == Type::TRL;
-    bool uses_male = true;
-    bool uses_female = true;
-    if(!kit.checkIfValid(minFreq, maxFreq, isTRL, uses_male, uses_female)) {
-        // TODO adjust for male/female standards
-        // Calkit does not support complete calibration range
-        QString msg = QString("The calibration kit does not support the complete span.\n\n")
-                + "The measured calibration data covers " + Unit::ToString(minFreq, "Hz", " kMG", 4) + " to " + Unit::ToString(maxFreq, "Hz", " kMG", 4)
-                + ", however the calibration kit does not support the whole frequency range.\n\n"
-                + "Please adjust the calibration kit or the span and take the calibration measurements again.";
-        InformationBox::ShowError("Unable to perform calibration", msg);
-        qWarning() << msg;
+    if(lhs.usedPorts.size() != rhs.usedPorts.size()) {
         return false;
     }
-    // check calkit standards and adjust if necessary
-    if(!kit.hasSeparateMaleFemaleStandards()) {
-        port1Standard = PortStandard::Male;
-        port2Standard = PortStandard::Male;
+    for(unsigned int i=0;i<lhs.usedPorts.size();i++) {
+        if(lhs.usedPorts[i] != rhs.usedPorts[i]) {
+            return false;
+        }
     }
-    if(port1Standard == port2Standard) {
-        // unable to use zero-length through
-        throughZeroLength = false;
-    }
-    switch(type) {
-    case Type::Port1SOL: constructPort1SOL(); break;
-    case Type::Port2SOL: constructPort2SOL(); break;
-    case Type::FullSOLT: construct12TermPoints(); break;
-    case Type::TransmissionNormalization: constructTransmissionNormalization(); break;
-    case Type::TRL: constructTRL(); break;
-    default: break;
-    }
-    this->type = type;
+    // all fields are equal
     return true;
 }
 
-void Calibration::resetErrorTerms()
+Calibration::Calibration()
 {
-    type = Type::None;
-    points.clear();
-    qDebug() << "Error terms reset";
+    caltype.type = Type::None;
 }
 
-void Calibration::construct12TermPoints()
+QString Calibration::TypeToString(Calibration::Type type)
 {
-    std::vector<Measurement> requiredMeasurements = Measurements(Type::FullSOLT);
-    requiredMeasurements.push_back(Measurement::Isolation);
-    bool isolation_measured = SanityCheckSamples(requiredMeasurements);
-
-    points.clear();
-    for(unsigned int i = 0;i<measurements[Measurement::Port1Open].datapoints.size();i++) {
-        Point p;
-        p.frequency = measurements[Measurement::Port1Open].datapoints[i].frequency;
-        // extract required complex reflection/transmission factors from datapoints
-        auto S11_open = measurements[Measurement::Port1Open].datapoints[i].measurements["S11"];
-        auto S11_short = measurements[Measurement::Port1Short].datapoints[i].measurements["S11"];
-        auto S11_load = measurements[Measurement::Port1Load].datapoints[i].measurements["S11"];
-        auto S22_open = measurements[Measurement::Port2Open].datapoints[i].measurements["S22"];
-        auto S22_short = measurements[Measurement::Port2Short].datapoints[i].measurements["S22"];
-        auto S22_load = measurements[Measurement::Port2Load].datapoints[i].measurements["S22"];
-        auto S21_isolation = complex<double>(0,0);
-        auto S12_isolation = complex<double>(0,0);
-        if(isolation_measured) {
-            S21_isolation = measurements[Measurement::Isolation].datapoints[i].measurements["S21"];
-            S12_isolation = measurements[Measurement::Isolation].datapoints[i].measurements["S12"];
-        }
-        auto S11_through = measurements[Measurement::Through].datapoints[i].measurements["S11"];
-        auto S21_through = measurements[Measurement::Through].datapoints[i].measurements["S21"];
-        auto S22_through = measurements[Measurement::Through].datapoints[i].measurements["S22"];
-        auto S12_through = measurements[Measurement::Through].datapoints[i].measurements["S12"];
-
-        auto actual = kit.toSOLT(p.frequency, port1Standard == PortStandard::Male);
-        // Forward calibration
-        computeSOL(S11_short, S11_open, S11_load, p.fe00, p.fe11, p.fe10e01, actual.Open, actual.Short, actual.Load);
-        p.fe30 = S21_isolation;
-        // See page 18 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
-        // Formulas for S11M and S21M solved for e22 and e10e32
-        if (throughZeroLength) {
-            // use ideal through
-            actual.ThroughS11 = 0.0;
-            actual.ThroughS12 = 1.0;
-            actual.ThroughS21 = 1.0;
-            actual.ThroughS22 = 0.0;
-        }
-
-        auto deltaS = actual.ThroughS11*actual.ThroughS22 - actual.ThroughS21 * actual.ThroughS12;
-        p.fe22 = ((S11_through - p.fe00)*(1.0 - p.fe11 * actual.ThroughS11)-actual.ThroughS11*p.fe10e01)
-                / ((S11_through - p.fe00)*(actual.ThroughS22-p.fe11*deltaS)-deltaS*p.fe10e01);
-        p.fe10e32 = (S21_through - p.fe30)*(1.0 - p.fe11*actual.ThroughS11 - p.fe22*actual.ThroughS22 + p.fe11*p.fe22*deltaS) / actual.ThroughS21;
-        // Reverse calibration
-        actual = kit.toSOLT(p.frequency, port2Standard == PortStandard::Male);
-        computeSOL(S22_short, S22_open, S22_load, p.re33, p.re22, p.re23e32, actual.Open, actual.Short, actual.Load);
-        p.re03 = S12_isolation;
-        p.re11 = ((S22_through - p.re33)*(1.0 - p.re22 * actual.ThroughS22)-actual.ThroughS22*p.re23e32)
-                / ((S22_through - p.re33)*(actual.ThroughS11-p.re22*deltaS)-deltaS*p.re23e32);
-        p.re23e01 = (S12_through - p.re03)*(1.0 - p.re11*actual.ThroughS11 - p.re22*actual.ThroughS22 + p.re11*p.re22*deltaS) / actual.ThroughS12;
-
-
-
-        points.push_back(p);
+    switch(type) {
+    case Type::None: return "None";
+    case Type::SOLT: return "SOLT";
+    case Type::Last: return "Invalid";
     }
 }
 
-void Calibration::constructPort1SOL()
+Calibration::Type Calibration::TypeFromString(QString s)
 {
-    points.clear();
-    for(unsigned int i = 0;i<measurements[Measurement::Port1Open].datapoints.size();i++) {
-        Point p;
-        p.frequency = measurements[Measurement::Port1Open].datapoints[i].frequency;
-        // extract required complex reflection/transmission factors from datapoints
-        auto S11_open = measurements[Measurement::Port1Open].datapoints[i].measurements["S11"];
-        auto S11_short = measurements[Measurement::Port1Short].datapoints[i].measurements["S11"];
-        auto S11_load = measurements[Measurement::Port1Load].datapoints[i].measurements["S11"];
-        // OSL port1
-        auto actual = kit.toSOLT(p.frequency, port1Standard == PortStandard::Male);
-        // See page 13 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
-        computeSOL(S11_short, S11_open, S11_load, p.fe00, p.fe11, p.fe10e01, actual.Open, actual.Short, actual.Load);
-        // All other calibration coefficients to ideal values
-        p.fex = 0.0;
-        p.fe30 = 0.0;
-        p.fe22 = 0.0;
-        p.fe10e32 = 1.0;
-        p.re33 = 0.0;
-        p.re22 = 0.0;
-        p.re23e32 = 1.0;
-        p.re03 = 0.0;
-        p.rex = 0.0;
-        p.re11 = 0.0;
-        p.re23e01 = 1.0;
-        points.push_back(p);
-    }
-}
-
-void Calibration::constructPort2SOL()
-{
-    points.clear();
-    for(unsigned int i = 0;i<measurements[Measurement::Port2Open].datapoints.size();i++) {
-        Point p;
-        p.frequency = measurements[Measurement::Port2Open].datapoints[i].frequency;
-        // extract required complex reflection/transmission factors from datapoints
-        auto S22_open = measurements[Measurement::Port2Open].datapoints[i].measurements["S22"];
-        auto S22_short = measurements[Measurement::Port2Short].datapoints[i].measurements["S22"];
-        auto S22_load = measurements[Measurement::Port2Load].datapoints[i].measurements["S22"];
-        // OSL port2
-        auto actual = kit.toSOLT(p.frequency, port1Standard == PortStandard::Male);
-        // See page 19 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
-        computeSOL(S22_short, S22_open, S22_load, p.re33, p.re22, p.re23e32, actual.Open, actual.Short, actual.Load);
-        // All other calibration coefficients to ideal values
-        p.fex = 0.0;
-        p.fe30 = 0.0;
-        p.fe22 = 0.0;
-        p.fe10e32 = 1.0;
-        p.fe00 = 0.0;
-        p.fe11 = 0.0;
-        p.fe10e01 = 1.0;
-        p.re03 = 0.0;
-        p.rex = 0.0;
-        p.re11 = 0.0;
-        p.re23e01 = 1.0;
-        points.push_back(p);
-    }
-}
-
-void Calibration::constructTransmissionNormalization()
-{
-    points.clear();
-    for(unsigned int i = 0;i<measurements[Measurement::Through].datapoints.size();i++) {
-        Point p;
-        p.frequency = measurements[Measurement::Through].datapoints[i].frequency;
-        // extract required complex reflection/transmission factors from datapoints
-        auto S21_through = measurements[Measurement::Through].datapoints[i].measurements["S21"];
-        auto S12_through = measurements[Measurement::Through].datapoints[i].measurements["S12"];
-        auto actual = kit.toSOLT(p.frequency);
-        p.fe10e32 = S21_through / actual.ThroughS21;
-        p.re23e01 = S12_through / actual.ThroughS12;
-        // All other calibration coefficients to ideal values
-        p.fe30 = 0.0;
-        p.fex = 0.0;
-        p.fe22 = 0.0;
-        p.fe00 = 0.0;
-        p.fe11 = 0.0;
-        p.fe10e01 = 1.0;
-        p.re03 = 0.0;
-        p.rex = 0.0;
-        p.re11 = 0.0;
-        p.re33 = 0.0;
-        p.re22 = 0.0;
-        p.re23e32 = 1.0;
-        points.push_back(p);
-    }
-}
-
-template<typename T> void solveQuadratic(T a, T b, T c, T &result1, T &result2)
-{
-    T root = sqrt(b * b - T(4) * a * c);
-    result1 = (-b + root) / (T(2) * a);
-    result2 = (-b - root) / (T(2) * a);
-}
-
-void Calibration::constructTRL()
-{
-    points.clear();
-    for(unsigned int i = 0;i<measurements[Measurement::Through].datapoints.size();i++) {
-        Point p;
-        p.frequency = measurements[Measurement::Through].datapoints[i].frequency;
-
-        // grab raw measurements
-        auto S11_through = measurements[Measurement::Through].datapoints[i].measurements["S11"];
-        auto S21_through = measurements[Measurement::Through].datapoints[i].measurements["S21"];
-        auto S22_through = measurements[Measurement::Through].datapoints[i].measurements["S22"];
-        auto S12_through = measurements[Measurement::Through].datapoints[i].measurements["S12"];
-        auto S11_line = measurements[Measurement::Line].datapoints[i].measurements["S11"];
-        auto S21_line = measurements[Measurement::Line].datapoints[i].measurements["S21"];
-        auto S22_line = measurements[Measurement::Line].datapoints[i].measurements["S22"];
-        auto S12_line = measurements[Measurement::Line].datapoints[i].measurements["S12"];
-        auto trl = kit.toTRL(p.frequency);
-        complex<double> S11_reflection, S22_reflection;
-        if(trl.reflectionIsNegative) {
-            // used short
-            S11_reflection = measurements[Measurement::Port1Short].datapoints[i].measurements["S11"];
-            S22_reflection = measurements[Measurement::Port2Short].datapoints[i].measurements["S22"];
-        } else {
-            // used open
-            S11_reflection = measurements[Measurement::Port1Open].datapoints[i].measurements["S11"];
-            S22_reflection = measurements[Measurement::Port2Open].datapoints[i].measurements["S22"];
+    for(int i=0;i<(int) Type::Last;i++) {
+        if(TypeToString((Type) i) == s) {
+            return (Type) i;
         }
-        // calculate TRL calibration
-        // variable names and formulas according to http://emlab.uiuc.edu/ece451/notes/new_TRL.pdf
-        // page 19
-        Sparam Sthrough(S11_through, S12_through, S21_through, S22_through);
-        Sparam Sline(S11_line, S12_line, S21_line, S22_line);
-        auto R_T = Tparam(Sthrough);
-        auto R_D = Tparam(Sline);
-        auto T = R_D*R_T.inverse();
-        complex<double> a_over_c, b;
-        // page 21-22
-        solveQuadratic(T.m21, T.m22 - T.m11, -T.m12, b, a_over_c);
-        // ensure correct root selection
-        // page 23
-        if(abs(b) >= abs(a_over_c)) {
-            swap(b, a_over_c);
-        }
-        // page 24
-        auto g = R_T.m22;
-        auto d = R_T.m11 / g;
-        auto e = R_T.m12 / g;
-        auto f = R_T.m21 / g;
-
-        // page 25
-        auto r22_rho22 = g * (1.0 - e / a_over_c) / (1.0 - b / a_over_c);
-        auto gamma = (f - d / a_over_c) / (1.0 - e / a_over_c);
-        auto beta_over_alpha = (e - b) / (d - b * f);
-        // page 26
-        auto alpha_a = (d - b * f) / (1.0 - e / a_over_c);
-        auto w1 = S11_reflection;
-        auto w2 = S22_reflection;
-        // page 28
-        auto a = sqrt((w1 - b) / (w2 + gamma) * (1.0 + w2 * beta_over_alpha) / (1.0 - w1 / a_over_c) * alpha_a);
-        // page 29, check sign of a
-        auto reflection = (w1 - b) / (a * (1.0 - w1 / a_over_c));
-        if((reflection.real() > 0 && trl.reflectionIsNegative) || (reflection.real() < 0 && !trl.reflectionIsNegative)) {
-            // wrong sign for a
-            a = -a;
-        }
-        // Revert back from error boxes with T parameters to S paramaters,
-        // page 17 + formulas for calculating S parameters from T parameters.
-        // Forward coefficients, normalize for S21 = 1.0 -> r22 = 1.0
-        auto r22 = complex<double>(1.0);
-        auto rho22 = r22_rho22 / r22;
-        auto alpha = alpha_a / a;
-        auto beta = beta_over_alpha * alpha;
-        auto c = a / a_over_c;
-        auto Box_A = Tparam(r22 * a, r22 * b, r22 * c, r22);
-        auto Box_B = Tparam(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
-        auto S_A = Sparam(Box_A);
-        p.fe00 = S_A.m11;
-        p.fe10e01 = S_A.m12;
-        p.fe11 = S_A.m22;
-        auto S_B = Sparam(Box_B);
-        p.fe22 = S_B.m11;
-        p.fe10e32 = S_B.m21;
-        // no isolation measurement available
-        p.fe30 = 0.0;
-        p.fex = 0.0;
-
-        // Reverse coefficients, normalize for S12 = 1.0
-        // => det(T)/T22 = 1.0
-        // => (rho22*alpa*rho22 - rho22*beta*rho*gamma)/rho22 = 1.0
-        // => rho22*alpha - rho22*beta*gamma = 1.0
-        // => rho22 = 1.0/(alpha - beta * gamma)
-        rho22 = 1.0/(alpha - beta * gamma);
-        r22 = r22_rho22 / rho22;
-
-        Box_A = Tparam(r22 * a, r22 * b, r22 * c, r22);
-        Box_B = Tparam(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
-        S_A = Sparam(Box_A);
-        p.re23e01 = S_A.m12;
-        p.re11 = S_A.m22;
-        S_B = Sparam(Box_B);
-        p.re22 = S_B.m11;
-        p.re23e32 = S_B.m21;
-        p.re33 = S_B.m22;
-        // no isolation measurement available
-        p.re03 = 0.0;
-        p.rex = 0.0;
-
-        points.push_back(p);
     }
+    return Type::None;
 }
 
 void Calibration::correctMeasurement(VirtualDevice::VNAMeasurement &d)
 {
-    if(type == Type::None) {
-        // No calibration data, do nothing
+    if(caltype.type == Type::None) {
+        // no calibration active, nothing to do
         return;
     }
-    // Extract measurement S parameters
-    auto S11m = d.measurements["S11"];
-    auto S21m = d.measurements["S21"];
-    auto S22m = d.measurements["S22"];
-    auto S12m = d.measurements["S12"];
+    // formulas from "Multi-Port Calibration Techniques for Differential Parameter Measurements with Network Analyzers", variable names also losely follow this document
+    MatrixXcd S(caltype.usedPorts.size(), caltype.usedPorts.size());
+    MatrixXcd a(caltype.usedPorts.size(), caltype.usedPorts.size());
+    MatrixXcd b(caltype.usedPorts.size(), caltype.usedPorts.size());
 
-    // find correct entry
-    auto p = getCalibrationPoint(d);
+    // gab point and interpolate
+    Point p;
+    if(d.frequency <= points.front().frequency) {
+        p = points.front();
+    } else if(d.frequency >= points.back().frequency) {
+        p = points.back();
+    } else {
+        // needs to interpolate
+        auto lower = lower_bound(points.begin(), points.end(), d.frequency, [](const Point &lhs, double rhs) -> bool {
+            return lhs.frequency < rhs;
+        });
+        auto highPoint = *lower;
+        auto lowPoint = *prev(lower);
+        double alpha = (d.frequency - lowPoint.frequency) / (highPoint.frequency - lowPoint.frequency);
 
-    complex<double> S11, S12, S21, S22;
+        p = lowPoint.interpolate(highPoint, alpha);
+    }
 
-    // equations from page 19 of https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf
-    auto denom = (1.0 + (S11m - p.fe00) / p.fe10e01 * p.fe11) * (1.0 + (S22m - p.re33) / p.re23e32 * p.re22)
-            - (S21m - p.fe30) / p.fe10e32 * (S12m - p.re03) / p.re23e01 * p.fe22 * p.re11;
-    S11 = ((S11m - p.fe00) / p.fe10e01 * (1.0 + (S22m - p.re33) / p.re23e32 * p.re22)
-            - p.fe22 * (S21m - p.fe30) / p.fe10e32 * (S12m - p.re03) / p.re23e01) / denom;
-    S21 = ((S21m - p.fe30) / p.fe10e32 * (1.0 + (S22m - p.re33) / p.re23e32 * (p.re22 - p.fe22))) / denom;
-    S22 = ((S22m - p.re33) / p.re23e32 * (1.0 + (S11m - p.fe00) / p.fe10e01 * p.fe11)
-            - p.re11 * (S21m - p.fe30) / p.fe10e32 * (S12m - p.re03) / p.re23e01) / denom;
-    S12 = ((S12m - p.re03) / p.re23e01 * (1.0 + (S11m - p.fe00) / p.fe10e01 * (p.fe11 - p.re11))) / denom;
+    // Grab measurements (easier to access by index later)
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
+            auto pSrc = caltype.usedPorts[i];
+            auto pRcv = caltype.usedPorts[j];
+            auto name = "S"+QString::number(pRcv)+QString::number(pSrc);
+            if(d.measurements.count(name) == 0) {
+                qWarning() << "Missing measurement for calibration:" << name;
+                return;
+            } else {
+                // grab measurement and remove isolation here
+                S(j,i) = d.measurements[name];
+                if(j != i) {
+                    S(j,i) -= p.I[i][j];
+                }
+            }
+        }
+    }
 
-    auto S = Sparam(S11, S12, S21, S22);
-    d.measurements["S11"] = S.m11;
-    d.measurements["S12"] = S.m12;
-    d.measurements["S21"] = S.m21;
-    d.measurements["S22"] = S.m22;
+    // assemble a (L) and b (K) matrices
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
+            if(i == j) {
+                // calculate incident and reflected wave at the exciting port
+                a(j,i) = 1.0 + p.S[i]/p.R[i]*(S(j,i) - p.D[i]*1.0);
+                b(j,i) = (1.0 / p.R[i]) * (S(j,i) - p.D[i]*1.0);
+            } else {
+                // calculate incident and reflected wave at the receiving port
+                a(j,i) = p.L[i][j]*S(j,i) / p.T[i][j];
+                b(j,i) = S(j,i) / p.T[i][j];
+            }
+        }
+    }
+    S = b * a.inverse();
+
+    // extract measurement from matrix and store back into VNAMeasurement
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
+            auto pSrc = caltype.usedPorts[i];
+            auto pRcv = caltype.usedPorts[j];
+            auto name = "S"+QString::number(pRcv)+QString::number(pSrc);
+            d.measurements[name] = S(j,i);
+        }
+    }
 }
 
-void Calibration::correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22)
+void Calibration::edit()
 {
-    auto points = Trace::assembleDatapoints(S11, S12, S21, S22);
-    if(points.size()) {
-        // succeeded in assembling datapoints
-        for(auto &p : points) {
-            correctMeasurement(p);
-        }
-        Trace::fillFromDatapoints(S11, S12, S21, S22, points);
+    auto d = new QDialog();
+    d->setAttribute(Qt::WA_DeleteOnClose);
+    auto ui = new Ui::CalibrationDialog;
+    ui->setupUi(d);
+
+    ui->calMinFreq->setUnit("Hz");
+    ui->calMinFreq->setPrecision(4);
+    ui->calMinFreq->setPrefixes(" kMG");
+    ui->calMaxFreq->setUnit("Hz");
+    ui->calMaxFreq->setPrecision(4);
+    ui->calMaxFreq->setPrefixes(" kMG");
+
+    // generate all possible calibration with the connected device
+    vector<CalType> availableCals = getAvailableCalibrations();
+
+    for(auto c : availableCals) {
+        ui->calibrationList->addItem(c.getReadableDescription());
     }
+
+    auto updateCalStatistics = [=](){
+        ui->activeCalibration->setText(caltype.getReadableDescription());
+        ui->calPoints->setValue(points.size());
+        if(points.size() > 0) {
+            ui->calMinFreq->setValue(points.front().frequency);
+            ui->calMaxFreq->setValue(points.back().frequency);
+        } else {
+            ui->calMinFreq->setValue(0);
+            ui->calMaxFreq->setValue(0);
+        }
+    };
+
+    auto updateCalButtons = [=](){
+        auto row = ui->calibrationList->currentRow();
+        if(row < 0) {
+            ui->activate->setEnabled(false);
+            ui->deactivate->setEnabled(false);
+        } else {
+            if(caltype == availableCals[row]) {
+                ui->deactivate->setEnabled(true);
+                ui->activate->setEnabled(false);
+            } else {
+                ui->deactivate->setEnabled(false);
+                ui->activate->setEnabled(canCompute(availableCals[row]));
+            }
+        }
+    };
+
+    auto updateCalibrationList = [=](){
+        auto style = QApplication::style();
+        for(int i=0;i<availableCals.size();i++) {
+            QIcon icon;
+            if(canCompute(availableCals[i])) {
+                icon = style->standardIcon(QStyle::SP_DialogApplyButton);
+            } else {
+                icon = style->standardIcon(QStyle::SP_MessageBoxCritical);
+            }
+            ui->calibrationList->item(i)->setIcon(icon);
+        }
+        updateCalButtons();
+    };
+
+    updateCalibrationList();
+    updateCalStatistics();
+    updateCalButtons();
+
+    connect(ui->calibrationList, &QListWidget::doubleClicked, [=](const QModelIndex &index) {
+        ui->activate->clicked();
+    });
+
+    connect(ui->calibrationList, &QListWidget::currentRowChanged, [=](){
+        updateCalButtons();
+    });
+
+    connect(ui->activate, &QPushButton::clicked, [=](){
+        auto cal = availableCals[ui->calibrationList->currentRow()];
+        if(compute(cal)) {
+            updateCalibrationList();
+            updateCalStatistics();
+            updateCalButtons();
+        }
+    });
+
+    connect(ui->deactivate, &QPushButton::clicked, [=](){
+        deactivate();
+        updateCalibrationList();
+        updateCalStatistics();
+        updateCalButtons();
+    });
+
+    ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    auto updateTableEditButtons = [=](){
+        ui->bDelete->setEnabled(ui->table->currentRow() >= 0);
+        ui->bMoveUp->setEnabled(ui->table->currentRow() >= 1);
+        ui->bMoveDown->setEnabled(ui->table->currentRow() >= 0 && ui->table->currentRow() < ui->table->rowCount() - 1);
+    };
+
+    auto updateMeasurementTable = [=](){
+        int row = ui->table->currentRow();
+        ui->table->clear();
+        ui->table->setColumnCount(5);
+        ui->table->setHorizontalHeaderItem(0, new QTableWidgetItem("Type"));
+        ui->table->setHorizontalHeaderItem(1, new QTableWidgetItem("Calkit Standard"));
+        ui->table->setHorizontalHeaderItem(2, new QTableWidgetItem("Settings"));
+        ui->table->setHorizontalHeaderItem(3, new QTableWidgetItem("Statistics"));
+        ui->table->setHorizontalHeaderItem(4, new QTableWidgetItem("Timestamp"));
+        ui->table->setRowCount(measurements.size());
+        for(unsigned int i=0;i<measurements.size();i++){
+            ui->table->setItem(i, 0, new QTableWidgetItem(CalibrationMeasurement::Base::TypeToString(measurements[i]->getType())));
+            ui->table->setCellWidget(i, 1, measurements[i]->createStandardWidget());
+            ui->table->setCellWidget(i, 2, measurements[i]->createSettingsWidget());
+            ui->table->setItem(i, 3, new QTableWidgetItem(measurements[i]->getStatistics()));
+            ui->table->setItem(i, 4, new QTableWidgetItem(measurements[i]->getTimestamp().toString()));
+        }
+        ui->table->selectRow(row);
+        updateTableEditButtons();
+    };
+
+    ui->createDefault->addItem(" ");
+    for(unsigned int i=0;i<(int) DefaultMeasurements::Last;i++) {
+        ui->createDefault->addItem(DefaultMeasurementsToString((DefaultMeasurements) i));
+    }
+
+    QObject::connect(ui->createDefault, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        if(measurements.size() > 0) {
+            if(!InformationBox::AskQuestion("Create default entries?", "Do you want to remove all existing entries and create default calibration measurements instead?", true)) {
+                // user aborted
+                return;
+            }
+            measurements.clear();
+        }
+        createDefaultMeasurements((DefaultMeasurements) (ui->createDefault->currentIndex() - 1));
+        updateMeasurementTable();
+        updateCalibrationList();
+        ui->createDefault->blockSignals(true);
+        ui->createDefault->setCurrentIndex(0);
+        ui->createDefault->blockSignals(false);
+    });
+
+    QObject::connect(ui->bDelete, &QPushButton::clicked, [=](){
+        auto selected = ui->table->selectionModel()->selectedRows();
+        set<CalibrationMeasurement::Base*> toDelete;
+        for(auto s : selected) {
+            toDelete.insert(measurements[s.row()]);
+        }
+        while(toDelete.size() > 0) {
+            for(unsigned int i=0;i<measurements.size();i++) {
+                if(toDelete.count(measurements[i])) {
+                    // this measurement should be deleted
+                    delete measurements[i];
+                    toDelete.erase(measurements[i]);
+                    measurements.erase(measurements.begin() + i);
+                }
+            }
+        }
+        updateMeasurementTable();
+        updateCalibrationList();
+    });
+
+    QObject::connect(ui->bMoveUp, &QPushButton::clicked, [=](){
+        auto row = ui->table->currentRow();
+        if(row >= 1) {
+            swap(measurements[row], measurements[row-1]);
+            ui->table->selectRow(row-1);
+            updateMeasurementTable();
+        }
+    });
+
+    QObject::connect(ui->bMoveDown, &QPushButton::clicked, [=](){
+        auto row = ui->table->currentRow();
+        if(row >= 0) {
+            swap(measurements[row], measurements[row+1]);
+            ui->table->selectRow(row+1);
+            updateMeasurementTable();
+        }
+    });
+
+    connect(ui->measure, &QPushButton::clicked, [=](){
+        std::set<CalibrationMeasurement::Base*> m;
+        auto selected = ui->table->selectionModel()->selectedRows();
+        for(auto s : selected) {
+            m.insert(measurements[s.row()]);
+        }
+        if(!CalibrationMeasurement::Base::canMeasureSimultaneously(m)) {
+            InformationBox::ShowError("Unable to measure", "Different selected measurements require the same port, unable to perform measurement");
+            return;
+        }
+        emit startMeasurements(m);
+    });
+
+    connect(this, &Calibration::measurementsUpdated, d, [=](){
+        updateMeasurementTable();
+        updateCalibrationList();
+    });
+
+    connect(ui->clearMeasurement, &QPushButton::clicked, [=](){
+        auto selected = ui->table->selectionModel()->selectedRows();
+        for(auto s : selected) {
+            measurements[s.row()]->clearPoints();
+        }
+        updateMeasurementTable();
+        updateCalibrationList();
+    });
+
+    QObject::connect(ui->table, &QTableWidget::currentCellChanged, updateTableEditButtons);
+
+    auto addMenu = new QMenu();
+    for(auto t : CalibrationMeasurement::Base::availableTypes()) {
+        auto action = new QAction(CalibrationMeasurement::Base::TypeToString(t));
+        QObject::connect(action, &QAction::triggered, [=](){
+            auto newMeas = newMeasurement(t);
+            if(newMeas) {
+                measurements.push_back(newMeas);
+                updateMeasurementTable();
+            }
+        });
+        addMenu->addAction(action);
+    }
+
+    ui->bAdd->setMenu(addMenu);
+
+    updateMeasurementTable();
+
+    d->show();
+}
+
+CalibrationMeasurement::Base *Calibration::newMeasurement(CalibrationMeasurement::Base::Type type)
+{
+    CalibrationMeasurement::Base *m = nullptr;
+    switch(type) {
+    case CalibrationMeasurement::Base::Type::Open: m = new CalibrationMeasurement::Open(this); break;
+    case CalibrationMeasurement::Base::Type::Short: m = new CalibrationMeasurement::Short(this); break;
+    case CalibrationMeasurement::Base::Type::Load: m = new CalibrationMeasurement::Load(this); break;
+    case CalibrationMeasurement::Base::Type::Through: m = new CalibrationMeasurement::Through(this); break;
+    case CalibrationMeasurement::Base::Type::Isolation: m = new CalibrationMeasurement::Isolation(this); break;
+    }
+    return m;
+}
+
+Calibration::Point Calibration::computeSOLT(double f)
+{
+    Point point;
+    point.frequency = f;
+    // resize vectors
+    point.D.resize(caltype.usedPorts.size());
+    point.R.resize(caltype.usedPorts.size());
+    point.S.resize(caltype.usedPorts.size());
+
+    point.L.resize(caltype.usedPorts.size());
+    point.T.resize(caltype.usedPorts.size());
+    point.I.resize(caltype.usedPorts.size());
+    fill(point.L.begin(), point.L.end(), vector<complex<double>>(caltype.usedPorts.size()));
+    fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size()));
+    fill(point.I.begin(), point.I.end(), vector<complex<double>>(caltype.usedPorts.size()));
+
+    // Calculate SOL coefficients
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        auto p = caltype.usedPorts[i];
+        auto _short = static_cast<CalibrationMeasurement::Short*>(findMeasurement(CalibrationMeasurement::Base::Type::Short, p));
+        auto open = static_cast<CalibrationMeasurement::Open*>(findMeasurement(CalibrationMeasurement::Base::Type::Open, p));
+        auto load = static_cast<CalibrationMeasurement::Load*>(findMeasurement(CalibrationMeasurement::Base::Type::Load, p));
+        auto s_m = _short->getMeasured(f);
+        auto o_m = open->getMeasured(f);
+        auto l_m = load->getMeasured(f);
+        auto s_c = _short->getActual(f);
+        auto o_c = open->getActual(f);
+        auto l_c = load->getActual(f);
+        auto denom = l_c * o_c * (o_m - l_m) + l_c * s_c * (l_m - s_m) + o_c * s_c * (s_m - o_m);
+        point.D[i] = (l_c * o_m * (s_m * (o_c - s_c) + l_m * s_c) - l_c * o_c * l_m * s_m + o_c * l_m * s_c * (s_m - o_m)) / denom;
+        point.S[i] = (l_c * (o_m - s_m) + o_c * (s_m - l_m) + s_c * (l_m - o_m)) / denom;
+        auto delta = (l_c * l_m * (o_m - s_m) + o_c * o_m * (s_m - l_m) + s_c * s_m * (l_m - o_m)) / denom;
+        point.R[i] = point.D[i] * point.S[i] - delta;
+    }
+    // calculate forward match and transmission
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
+            if(i == j) {
+                // this is the exciting port, SOL error box used here
+                continue;
+            }
+            auto p1 = caltype.usedPorts[i];
+            auto p2 = caltype.usedPorts[j];
+            // grab measurement and calkit through definitions
+            auto throughForward = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p1, p2));
+            auto throughReverse = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p2, p1));
+            complex<double> S11, S21;
+            Sparam Sideal;
+            if(throughForward) {
+                S11 = throughForward->getMeasured(f).m11;
+                S21 = throughForward->getMeasured(f).m21;
+                Sideal = throughForward->getActual(f);
+            } else if(throughReverse) {
+                S11 = throughReverse->getMeasured(f).m22;
+                S21 = throughReverse->getMeasured(f).m12;
+                Sideal = throughReverse->getActual(f);
+                swap(Sideal.m11, Sideal.m22);
+                swap(Sideal.m12, Sideal.m21);
+            }
+            auto isoMeas = static_cast<CalibrationMeasurement::Isolation*>(findMeasurement(CalibrationMeasurement::Base::Type::Isolation));
+            auto isolation = complex<double>(0.0,0.0);
+            if(isoMeas) {
+                isolation = isoMeas->getMeasured(f, p2, p1);
+            }
+            auto deltaS = Sideal.m11*Sideal.m22 - Sideal.m21 * Sideal.m12;
+            point.L[i][j] = ((S11 - point.D[i])*(1.0 - point.S[i] * Sideal.m11)-Sideal.m11*point.R[i])
+                    / ((S11 - point.D[i])*(Sideal.m22-point.S[i]*deltaS)-deltaS*point.R[i]);
+            point.T[i][j] = (S21 - isolation)*(1.0 - point.S[i]*Sideal.m11 - point.L[i][j]*Sideal.m22 + point.S[i]*point.L[i][j]*deltaS) / Sideal.m21;
+            point.I[i][j] = isolation;
+        }
+    }
+    return point;
+}
+
+Calibration::CalType Calibration::getCaltype() const
+{
+    return caltype;
 }
 
 Calibration::InterpolationType Calibration::getInterpolation(double f_start, double f_stop, int npoints)
@@ -511,304 +486,128 @@ Calibration::InterpolationType Calibration::getInterpolation(double f_start, dou
     }
 }
 
-Calibration::Measurement Calibration::MeasurementFromString(QString s)
-{
-    for(unsigned int i=0;i<(int)Measurement::Last;i++) {
-        auto m = (Measurement) i;
-        if(s.compare(MeasurementToString(m), Qt::CaseInsensitive)==0) {
-            return m;
-        }
-    }
-    return Measurement::Last;
-}
-
-QString Calibration::MeasurementToString(Calibration::Measurement m)
-{
-    switch(m) {
-    case Measurement::Port1Open:
-        return "Port 1 Open";
-    case Measurement::Port1Short:
-        return "Port 1 Short";
-    case Measurement::Port1Load:
-        return "Port 1 Load";
-    case Measurement::Port2Open:
-        return "Port 2 Open";
-    case Measurement::Port2Short:
-        return "Port 2 Short";
-    case Measurement::Port2Load:
-        return "Port 2 Load";
-    case Measurement::Through:
-        return "Through";
-    case Measurement::Isolation:
-        return "Isolation";
-    case Measurement::Line:
-        return "Line";
-    default:
-        return "Unknown";
-    }
-}
-
-Calibration::Type Calibration::TypeFromString(QString s)
-{
-    for(unsigned int i=0;i<(int)Type::Last;i++) {
-        auto t = (Type) i;
-        if(s.compare(TypeToString(t), Qt::CaseInsensitive)==0) {
-            return t;
-        }
-    }
-    return Type::Last;
-}
-
-QString Calibration::TypeToString(Calibration::Type t)
-{
-    switch(t) {
-    case Type::Port1SOL: return "Port 1"; break;
-    case Type::Port2SOL: return "Port 2"; break;
-    case Type::FullSOLT: return "SOLT"; break;
-    case Type::TransmissionNormalization: return "Normalize"; break;
-    case Type::TRL: return "TRL"; break;
-    default: return "None"; break;
-    }
-}
-
-const std::vector<Calibration::Type> Calibration::Types()
-{
-    const std::vector<Calibration::Type> ret = {Type::Port1SOL, Type::Port2SOL, Type::FullSOLT, Type::TransmissionNormalization, Type::TRL};
-    return ret;
-}
-
-const std::vector<Calibration::Measurement> Calibration::Measurements(Calibration::Type type, bool optional_included)
-{
-    switch(type) {
-    case Type::None:
-        // all possible measurements
-        return {Measurement::Port1Short, Measurement::Port1Open, Measurement::Port1Load,
-                    Measurement::Port2Short, Measurement::Port2Open, Measurement::Port2Load,
-                    Measurement::Through, Measurement::Isolation, Measurement::Line};
-    case Type::FullSOLT:
-        if(optional_included) {
-            return {Measurement::Port1Short, Measurement::Port1Open, Measurement::Port1Load, Measurement::Port2Short, Measurement::Port2Open, Measurement::Port2Load, Measurement::Through, Measurement::Isolation};
-        } else {
-            return {Measurement::Port1Short, Measurement::Port1Open, Measurement::Port1Load, Measurement::Port2Short, Measurement::Port2Open, Measurement::Port2Load, Measurement::Through};
-        }
-        break;
-    case Type::Port1SOL:
-        return {Measurement::Port1Short, Measurement::Port1Open, Measurement::Port1Load};
-        break;
-    case Type::Port2SOL:
-        return {Measurement::Port2Short, Measurement::Port2Open, Measurement::Port2Load};
-        break;
-    case Type::TransmissionNormalization:
-        return {Measurement::Through};
-        break;
-    case Type::TRL:
-        if(kit.isTRLReflectionShort()) {
-            return {Measurement::Through, Measurement::Port1Short, Measurement::Port2Short, Measurement::Line};
-        } else {
-            return {Measurement::Through, Measurement::Port1Open, Measurement::Port2Open, Measurement::Line};
-        }
-        break;
-    default:
-        return {};
-        break;
-    }
-}
-
-Calibration::MeasurementInfo Calibration::getMeasurementInfo(Calibration::Measurement m)
-{
-    MeasurementInfo info;
-    switch(m) {
-    case Measurement::Port1Short:
-        info.name = "Port 1 short";
-        info.prerequisites = "Short standard connected to port 1, port 2 open";
-        break;
-    case Measurement::Port1Open:
-        info.name = "Port 1 open";
-        info.prerequisites = "Open standard connected to port 1, port 2 open";
-        break;
-    case Measurement::Port1Load:
-        info.name = "Port 1 load";
-        info.prerequisites = "Load standard connected to port 1, port 2 open";
-        break;
-    case Measurement::Port2Short:
-        info.name = "Port 2 short";
-        info.prerequisites = "Port 1 open, short standard connected to port 2";
-        break;
-    case Measurement::Port2Open:
-        info.name = "Port 2 open";
-        info.prerequisites = "Port 1 open, open standard connected to port 2";
-        break;
-    case Measurement::Port2Load:
-        info.name = "Port 2 load";
-        info.prerequisites = "Port 1 open, load standard connected to port 2";
-        break;
-    case Measurement::Through:
-        info.name = "Through";
-        info.prerequisites = "Port 1 connected to port 2 via through standard";
-        break;
-    case Measurement::Isolation:
-        info.name = "Isolation";
-        info.prerequisites = "Both ports terminated into 50 ohm";
-        break;
-    case Measurement::Line:
-        info.name = "Line";
-        info.prerequisites = "Port 1 connected to port 2 via line standard";
-        break;
-    default:
-        info.name = "Invalid";
-        info.prerequisites = "Invalid";
-        break;
-    }
-    info.points = measurements[m].datapoints.size();
-    if(info.points > 0) {
-        info.fmin = measurements[m].datapoints.front().frequency;
-        info.fmax = measurements[m].datapoints.back().frequency;
-        info.points = measurements[m].datapoints.size();
-    }
-    info.timestamp = measurements[m].timestamp;
-    return info;
-}
-
 std::vector<Trace *> Calibration::getErrorTermTraces()
 {
-    std::vector<Trace*> traces;
-    const QString traceNames[12] = {"e00", "F_e11", "e10e01", "e10e32", "F_e22", "e30", "e33", "R_e11", "e23e32", "e23e01", "R_e22", "e03"};
-    constexpr bool reflection[12] = {true, true, false, false, true, false, true, true, false, false, true, false};
-    for(int i=0;i<12;i++) {
-        auto t = new Trace(traceNames[i], Qt::red);
-        t->setCalibration();
-        t->setReflection(reflection[i]);
-        traces.push_back(t);
-    }
-    for(auto p : points) {
-        Trace::Data d;
-        d.x = p.frequency;
-        for(int i=0;i<12;i++) {
-            switch(i) {
-            case 0: d.y = p.fe00; break;
-            case 1: d.y = p.fe11; break;
-            case 2: d.y = p.fe10e01; break;
-            case 3: d.y = p.fe10e32; break;
-            case 4: d.y = p.fe22; break;
-            case 5: d.y = p.fe30; break;
-            case 6: d.y = p.re33; break;
-            case 7: d.y = p.re11; break;
-            case 8: d.y = p.re23e32; break;
-            case 9: d.y = p.re23e01; break;
-            case 10: d.y = p.re22; break;
-            case 11: d.y = p.re03; break;
-            }
-            traces[i]->addData(d, TraceMath::DataType::Frequency);
-        }
-    }
-    return traces;
+    return vector<Trace*>(); // TODO
 }
 
 std::vector<Trace *> Calibration::getMeasurementTraces()
 {
-    std::vector<Trace*> traces;
-    for(auto m : measurements) {
-        auto info = getMeasurementInfo(m.first);
-        if(info.points > 0) {
-            vector<QString> usedPrefixes;
-            switch(m.first) {
-            case Measurement::Port1Load:
-            case Measurement::Port1Open:
-            case Measurement::Port1Short:
-                usedPrefixes = {"S11"};
-                break;
-            case Measurement::Port2Load:
-            case Measurement::Port2Open:
-            case Measurement::Port2Short:
-                usedPrefixes = {"S22"};
-                break;
-            case Measurement::Through:
-            case Measurement::Line:
-            case Measurement::Isolation:
-                usedPrefixes = {"S11", "S12", "S21", "S22"};
-                break;
-            default:
-                break;
-            }
-            for(auto prefix : usedPrefixes) {
-                auto t = new Trace(prefix + " " + info.name);
-                t->setCalibration();
-                t->setReflection(prefix == "S11" || prefix == "S22");
-                for(auto p : m.second.datapoints) {
-                    Trace::Data d;
-                    d.x = p.frequency;
-                    d.y = p.measurements[prefix];
-                    t->addData(d, TraceMath::DataType::Frequency);
-                }
-                traces.push_back(t);
-            }
-        }
-    }
-    return traces;
+    return vector<Trace*>(); // TODO
 }
 
-bool Calibration::openFromFile(QString filename)
+QString Calibration::getCurrentCalibrationFile()
 {
-    if(filename.isEmpty()) {
-        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", "", "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
-        if(filename.isEmpty()) {
-            // aborted selection
-            return false;
+    return currentCalFile;
+}
+
+double Calibration::getMinFreq()
+{
+    if(points.size() > 0) {
+        return points.front().frequency;
+    } else {
+        return numeric_limits<double>::quiet_NaN();
+    }
+}
+
+double Calibration::getMaxFreq()
+{
+    if(points.size() > 0) {
+        return points.back().frequency;
+    } else {
+        return numeric_limits<double>::quiet_NaN();
+    }
+}
+
+int Calibration::getNumPoints()
+{
+    return points.size();
+}
+
+QString Calibration::descriptiveCalName()
+{
+    if(points.size() == 0) {
+        return QString();
+    }
+    int precision = 3;
+    QString lo = Unit::ToString(points.front().frequency, "", " kMG", precision);
+    QString hi = Unit::ToString(points.back().frequency, "", " kMG", precision);
+    // due to rounding up 123.66M and 123.99M -> we get lo="124M" and hi="124M"
+    // so let's add some precision
+    if (lo == hi) {
+        // Only in case of 123.66M and 123.69M we would need 5 digits, but that kind of narrow cal. is very unlikely.
+        precision = 4;
+        lo = Unit::ToString(points.front().frequency, "", " kMG", precision);
+        hi = Unit::ToString(points.back().frequency, "", " kMG", precision);
+    }
+
+    QString tmp =
+            caltype.getReadableDescription()
+            + " "
+            + lo + "-" + hi
+            + " "
+            + QString::number(this->points.size()) + "pt";
+    return tmp;
+}
+
+Calkit &Calibration::getKit()
+{
+    return kit;
+}
+
+nlohmann::json Calibration::toJSON()
+{
+    nlohmann::json j;
+    nlohmann::json jmeasurements;
+    for(auto m : measurements) {
+        nlohmann::json jmeas;
+        jmeas["type"] = CalibrationMeasurement::Base::TypeToString(m->getType()).toStdString();
+        jmeas["data"] = m->toJSON();
+        jmeasurements.push_back(jmeas);
+    }
+    j["measurements"] = jmeasurements;
+    j["calkit"] = kit.toJSON();
+    j["type"] = TypeToString(caltype.type).toStdString();
+    nlohmann::json jports;
+    for(auto p : caltype.usedPorts) {
+        jports.push_back(p);
+    }
+    j["ports"] = jports;
+    j["version"] = qlibrevnaApp->applicationVersion().toStdString();
+    if(VirtualDevice::getConnected()) {
+        j["device"] = VirtualDevice::getConnected()->serial().toStdString();
+    }
+    return j;
+}
+
+void Calibration::fromJSON(nlohmann::json j)
+{
+    reset();
+    if(j.contains("calkit")) {
+        kit.fromJSON(j["calkit"]);
+    }
+    if(j.contains("measurements")) {
+        for(auto jm : j["measurements"]) {
+            auto type = CalibrationMeasurement::Base::TypeFromString(QString::fromStdString(jm.value("type", "")));
+            auto m = newMeasurement(type);
+            m->fromJSON(jm["data"]);
+            measurements.push_back(m);
         }
     }
 
-    // force correct file ending
-    if(filename.toLower().endsWith(".cal")) {
-        filename.chop(4);
-        filename += ".cal";
+    CalType ct;
+    ct.type = TypeFromString(QString::fromStdString(j.value("type", "")));
+    if(j.contains("ports")) {
+        for(auto jp : j["ports"]) {
+            ct.usedPorts.push_back(jp);
+        }
     }
-
-    qDebug() << "Attempting to open calibration from file" << filename;
-
-    // reset all data before loading new calibration
-    clearMeasurements();
-    resetErrorTerms();
-
-    // attempt to load associated calibration kit first (needs to be available when performing calibration)
-    auto calkit_file = filename;
-    auto dotPos = calkit_file.lastIndexOf('.');
-    if(dotPos >= 0) {
-        calkit_file.truncate(dotPos);
+    if(ct.type != Type::None) {
+        compute(ct);
     }
-    calkit_file.append(".calkit");
-    qDebug() << "Associated calibration kit expected in" << calkit_file;
-    try {
-        kit = Calkit::fromFile(calkit_file);
-    } catch (runtime_error &e) {
-        InformationBox::ShowError("Missing calibration kit", "The calibration kit file associated with the selected calibration could not be parsed. The calibration might not be accurate. (" + QString(e.what()) + ")");
-        qWarning() << "Parsing of calibration kit failed while opening calibration file: " << e.what();
-    }
-
-    ifstream file;
-
-    file.open(filename.toStdString());
-    if(!file.good()) {
-        QString msg = "Unable to open file: "+filename;
-        InformationBox::ShowError("Error", msg);
-        qWarning() << msg;
-        return false;
-    }
-
-    try {
-        nlohmann::json j;
-        file >> j;
-        fromJSON(j);
-    } catch(exception &e) {
-        InformationBox::ShowError("File parsing error", e.what());
-        qWarning() << "Calibration file parsing failed: " << e.what();
-        return false;
-    }
-    this->currentCalFile = filename;    // if all ok, remember this
-
-    return true;
 }
 
-bool Calibration::saveToFile(QString filename)
+bool Calibration::toFile(QString filename)
 {
     if(filename.isEmpty()) {
         QString fn = descriptiveCalName();
@@ -835,277 +634,404 @@ bool Calibration::saveToFile(QString filename)
     return true;
 }
 
-/**
- * @brief Calibration::hzToString
- * @param freqHz - input frequency in Hz
- * @return descriptive name ie. "SOLT 40M-700M 1000pt"
- */
-QString Calibration::descriptiveCalName(){
-    int precision = 3;
-    QString lo = Unit::ToString(this->minFreq, "", " kMG", precision);
-    QString hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
-    // due to rounding up 123.66M and 123.99M -> we get lo="124M" and hi="124M"
-    // so let's add some precision
-    if (lo == hi) {
-        // Only in case of 123.66M and 123.69M we would need 5 digits, but that kind of narrow cal. is very unlikely.
-        precision = 4;
-        lo = Unit::ToString(this->minFreq, "", " kMG", precision);
-        hi = Unit::ToString(this->maxFreq, "", " kMG", precision);
-    }
-
-    QString tmp =
-            Calibration::TypeToString(this->getType())
-            + " "
-            + lo + "-" + hi
-            + " "
-            + QString::number(this->points.size()) + "pt";
-    return tmp;
-}
-
-bool Calibration::getThroughZeroLength() const
+bool Calibration::fromFile(QString filename)
 {
-    return throughZeroLength;
-}
-
-void Calibration::setThroughZeroLength(bool value)
-{
-    throughZeroLength = value;
-}
-
-double Calibration::getMinFreq(){
-    return this->minFreq;
-}
-double Calibration::getMaxFreq(){
-    return this->maxFreq;
-}
-int Calibration::getNumPoints(){
-    return this->points.size();
-}
-
-nlohmann::json Calibration::toJSON()
-{
-    nlohmann::json j;
-    nlohmann::json j_measurements;
-    for(auto m : measurements) {
-        if(m.second.datapoints.size() > 0) {
-            nlohmann::json j_measurement;
-            j_measurement["name"] = MeasurementToString(m.first).toStdString();
-            j_measurement["timestamp"] = m.second.timestamp.toSecsSinceEpoch();
-            nlohmann::json j_points;
-            for(auto p : m.second.datapoints) {
-                nlohmann::json j_point;
-                j_point["frequency"] = p.frequency;
-                j_point["S11_real"] = p.measurements["S11"].real();
-                j_point["S11_imag"] = p.measurements["S11"].imag();
-                j_point["S12_real"] = p.measurements["S12"].real();
-                j_point["S12_imag"] = p.measurements["S12"].imag();
-                j_point["S21_real"] = p.measurements["S21"].real();
-                j_point["S21_imag"] = p.measurements["S21"].imag();
-                j_point["S22_real"] = p.measurements["S22"].real();
-                j_point["S22_imag"] = p.measurements["S22"].imag();
-                j_points.push_back(j_point);
-            }
-            j_measurement["points"] = j_points;
-            j_measurements.push_back(j_measurement);
-        }
-    }
-    j["measurements"] = j_measurements;
-    j["type"] = TypeToString(getType()).toStdString();
-    j["port1StandardMale"] = port1Standard == PortStandard::Male;
-    j["port2StandardMale"] = port2Standard == PortStandard::Male;
-    j["throughZeroLength"] = throughZeroLength;
-
-    return j;
-}
-
-void Calibration::fromJSON(nlohmann::json j)
-{
-    clearMeasurements();
-    resetErrorTerms();
-    port1Standard = j.value("port1StandardMale", true) ? PortStandard::Male : PortStandard::Female;
-    port2Standard = j.value("port2StandardMale", true) ? PortStandard::Male : PortStandard::Female;
-    throughZeroLength = j.value("throughZeroLength", false);
-    if(j.contains("measurements")) {
-        // grab measurements
-        for(auto j_m : j["measurements"]) {
-            if(!j_m.contains("name")) {
-                throw runtime_error("Measurement without name given");
-            }
-            auto m = MeasurementFromString(QString::fromStdString(j_m["name"]));
-            if(m == Measurement::Last) {
-                throw runtime_error("Measurement name unknown: "+std::string(j_m["name"]));
-            }
-            // get timestamp
-            measurements[m].timestamp = QDateTime::fromSecsSinceEpoch(j_m.value("timestamp", 0));
-            // extract points
-            if(!j_m.contains("points")) {
-                throw runtime_error("Measurement "+MeasurementToString(m).toStdString()+" does not contain any points");
-            }
-            int pointNum = 0;
-            for(auto j_p : j_m["points"]) {
-                VirtualDevice::VNAMeasurement p;
-                p.pointNum = pointNum++;
-                p.frequency = j_p.value("frequency", 0.0);
-                p.Z0 = 50.0;
-                p.measurements["S11"] = complex<double>(j_p.value("S11_real", 0.0), j_p.value("S11_imag", 0.0));
-                p.measurements["S12"] = complex<double>(j_p.value("S12_real", 0.0), j_p.value("S12_imag", 0.0));
-                p.measurements["S21"] = complex<double>(j_p.value("S21_real", 0.0), j_p.value("S21_imag", 0.0));
-                p.measurements["S22"] = complex<double>(j_p.value("S22_real", 0.0), j_p.value("S22_imag", 0.0));
-                measurements[m].datapoints.push_back(p);
-            }
-        }
-    }
-    // got all measurements, construct calibration according to type
-    if(j.contains("type")) {
-        auto t = TypeFromString(QString::fromStdString(j["type"]));
-        if(t == Type::Last) {
-            throw runtime_error("Calibration type unknown: "+std::string(j["type"]));
-        }
-        if(calculationPossible(t)) {
-            constructErrorTerms(t);
-        } else {
-            throw runtime_error("Incomplete calibration data, the requested calibration could not be performed.");
-        }
-    }
-}
-
-QString Calibration::getCurrentCalibrationFile(){
-    return this->currentCalFile;
-}
-
-bool Calibration::SanityCheckSamples(const std::vector<Calibration::Measurement> &requiredMeasurements)
-{
-    // sanity check measurements, all need to be of the same size with the same frequencies (except for isolation which may be empty)
-    vector<uint64_t> freqs;
-    for(auto type : requiredMeasurements) {
-        auto m = measurements[type];
-        if(m.datapoints.size() == 0) {
-            // empty required measurement
+    if(filename.isEmpty()) {
+        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", "", "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
+        if(filename.isEmpty()) {
+            // aborted selection
             return false;
         }
-        if(freqs.size() == 0) {
-            // this is the first measurement, create frequency vector
-            for(auto p : m.datapoints) {
-                freqs.push_back(p.frequency);
-            }
-        } else {
-            // compare with already assembled frequency vector
-            if(m.datapoints.size() != freqs.size()) {
-                return false;
-            }
-            for(unsigned int i=0;i<freqs.size();i++) {
-                if(m.datapoints[i].frequency != freqs[i]) {
-                    return false;
-                }
-            }
-        }
     }
-    minFreq = freqs.front();
-    maxFreq = freqs.back();
+
+    // force correct file ending
+    if(filename.toLower().endsWith(".cal")) {
+        filename.chop(4);
+        filename += ".cal";
+    }
+
+    qDebug() << "Attempting to open calibration from file" << filename;
+
+    ifstream file;
+
+    file.open(filename.toStdString());
+    if(!file.good()) {
+        QString msg = "Unable to open file: "+filename;
+        InformationBox::ShowError("Error", msg);
+        qWarning() << msg;
+        return false;
+    }
+
+    try {
+        nlohmann::json j;
+        file >> j;
+        currentCalFile = filename;    // if all ok, remember this
+        fromJSON(j);
+    } catch(exception &e) {
+        currentCalFile.clear();
+        InformationBox::ShowError("File parsing error", e.what());
+        qWarning() << "Calibration file parsing failed: " << e.what();
+        return false;
+    }
+
     return true;
 }
 
-Calibration::Point Calibration::getCalibrationPoint(VirtualDevice::VNAMeasurement &d)
+std::vector<Calibration::CalType> Calibration::getAvailableCalibrations()
 {
-    if(!points.size()) {
-        throw runtime_error("No calibration points available");
+    int ports = 2;
+    if(VirtualDevice::getConnected()) {
+        ports = VirtualDevice::getConnected()->getInfo().ports;
     }
-    if(d.frequency <= points.front().frequency) {
-        // use first point even for lower frequencies
-        return points.front();
+    vector<CalType> ret;
+    for(auto t : getTypes()) {
+        CalType cal;
+        cal.type = t;
+        auto minPorts = minimumPorts(t);
+        for(int pnum = minPorts;pnum <= ports;pnum++) {
+            std::string bitmask(pnum, 1);
+            bitmask.resize(ports, 0);
+            // assemble selected ports and permute bitmask
+            do {
+                vector<int> usedPorts;
+                for (int i = 0; i < ports; ++i) {
+                    if (bitmask[i]) {
+                        usedPorts.push_back(i+1);
+                    }
+                }
+                cal.usedPorts = usedPorts;
+                ret.push_back(cal);
+            } while (std::prev_permutation(bitmask.begin(), bitmask.end()));
+        }
     }
-    if(d.frequency >= points.back().frequency) {
-        // use last point even for higher frequencies
-        return points.back();
-    }
-    auto p = lower_bound(points.begin(), points.end(), d.frequency, [](Point p, uint64_t freq) -> bool {
-        return p.frequency < freq;
-    });
-    if(p->frequency == d.frequency) {
-        // Exact match, return point
-        return *p;
-    }
-    // need to interpolate
-    auto high = p;
-    p--;
-    auto low = p;
-    double alpha = (d.frequency - low->frequency) / (high->frequency - low->frequency);
-    Point ret;
-    ret.frequency = d.frequency;
-    ret.fe00 = low->fe00 * (1 - alpha) + high->fe00 * alpha;
-    ret.fe11 = low->fe11 * (1 - alpha) + high->fe11 * alpha;
-    ret.fe22 = low->fe22 * (1 - alpha) + high->fe22 * alpha;
-    ret.fe30 = low->fe30 * (1 - alpha) + high->fe30 * alpha;
-    ret.fex = low->fex * (1 - alpha) + high->fex * alpha;
-    ret.re03 = low->re03 * (1 - alpha) + high->re03 * alpha;
-    ret.rex = low->rex * (1 - alpha) + high->rex * alpha;
-    ret.re11 = low->re11 * (1 - alpha) + high->re11 * alpha;
-    ret.re22 = low->re22 * (1 - alpha) + high->re22 * alpha;
-    ret.re33 = low->re33 * (1 - alpha) + high->re33 * alpha;
-    ret.fe10e01 = low->fe10e01 * (1 - alpha) + high->fe10e01 * alpha;
-    ret.fe10e32 = low->fe10e32 * (1 - alpha) + high->fe10e32 * alpha;
-    ret.re23e01 = low->re23e01 * (1 - alpha) + high->re23e01 * alpha;
-    ret.re23e32 = low->re23e32 * (1 - alpha) + high->re23e32 * alpha;
     return ret;
 }
 
-void Calibration::computeSOL(std::complex<double> s_m, std::complex<double> o_m, std::complex<double> l_m,
-                             std::complex<double> &directivity, std::complex<double> &match, std::complex<double> &tracking,
-                             std::complex<double> o_c, std::complex<double> s_c, std::complex<double> l_c)
+std::vector<Calibration::Type> Calibration::getTypes()
 {
-    // equations from page 13 of http://www2.electron.frba.utn.edu.ar/~jcecconi/Bibliografia/04%20-%20Param_S_y_VNA/Network_Analyzer_Error_Models_and_Calibration_Methods.pdf
-    // solved while taking non ideal o/s/l standards into account
-    auto denom = l_c * o_c * (o_m - l_m) + l_c * s_c * (l_m - s_m) + o_c * s_c * (s_m - o_m);
-    directivity = (l_c * o_m * (s_m * (o_c - s_c) + l_m * s_c) - l_c * o_c * l_m * s_m + o_c * l_m * s_c * (s_m - o_m)) / denom;
-    match = (l_c * (o_m - s_m) + o_c * (s_m - l_m) + s_c * (l_m - o_m)) / denom;
-    auto delta = (l_c * l_m * (o_m - s_m) + o_c * o_m * (s_m - l_m) + s_c * s_m * (l_m - o_m)) / denom;
-    tracking = directivity * match - delta;
+    vector<Type> types;
+    // Start at index 1, skip Type::None
+    for(int i=1;i<(int) Type::Last;i++) {
+        types.push_back((Type) i);
+    }
+    return types;
 }
 
-void Calibration::computeIsolation(std::complex<double> x0_m, std::complex<double> x1_m, std::complex<double> reverse_match, std::complex<double> reverse_tracking, std::complex<double> reverse_directivity, std::complex<double> x0, std::complex<double> x1, std::complex<double> &internal_isolation, std::complex<double> &external_isolation)
+bool Calibration::canCompute(Calibration::CalType type, double *startFreq, double *stopFreq, int *points)
 {
-    external_isolation = (x1_m - x0_m)*(1.0 - reverse_match * (x1 - x0) + x1*x0*reverse_match*reverse_match) / (reverse_tracking * (x1 - x0));
-    internal_isolation = x0_m - external_isolation*(reverse_directivity + reverse_tracking*x0 / (1.0 - x0*reverse_match));
+    switch(type.type) {
+    case Type::None:
+        return true; // Always possible to reset the calibration
+    case Type::SOLT: {
+        using RequiredMeasurements = struct {
+            CalibrationMeasurement::Base::Type type;
+            int port1, port2;
+        };
+        vector<RequiredMeasurements> required;
+        // SOL measurements for every port
+        for(auto p : type.usedPorts) {
+            required.push_back({.type = CalibrationMeasurement::Base::Type::Short, .port1 = p});
+            required.push_back({.type = CalibrationMeasurement::Base::Type::Open, .port1 = p});
+            required.push_back({.type = CalibrationMeasurement::Base::Type::Load, .port1 = p});
+        }
+        // through measurements between all ports
+        for(int i=1;i<=type.usedPorts.size();i++) {
+            for(int j=i+1;j<=type.usedPorts.size();j++) {
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
+            }
+        }
+        vector<CalibrationMeasurement::Base*> foundMeasurements;
+        for(auto m : required) {
+            auto meas = findMeasurement(m.type, m.port1, m.port2);
+            if(!meas) {
+                // missing measurement
+                return false;
+            } else {
+                foundMeasurements.push_back(meas);
+            }
+        }
+        return hasFrequencyOverlap(foundMeasurements, startFreq, stopFreq, points);
+    }
+        break;
+    }
+    return false;
 }
 
-std::complex<double> Calibration::correctSOL(std::complex<double> measured, std::complex<double> directivity, std::complex<double> match, std::complex<double> tracking)
+bool Calibration::compute(Calibration::CalType type)
 {
-    return (measured - directivity) / (measured * match - directivity * match + tracking);
+    if(type.type == Type::None) {
+        deactivate();
+        return true;
+    }
+    double start, stop;
+    int numPoints;
+    if(!canCompute(type, &start, &stop, &numPoints)) {
+        return false;
+    }
+    caltype = type;
+    try {
+        points.clear();
+        for(int i=0;i<numPoints;i++) {
+            double f = start + (stop - start) * i / (numPoints - 1);
+            Point p;
+            switch(type.type) {
+            case Type::SOLT: p = computeSOLT(f); break;
+            }
+            points.push_back(p);
+        }
+    } catch (exception &e) {
+        points.clear();
+        caltype.usedPorts.clear();
+    }
+    emit activated(caltype);
+    return true;
 }
 
-Calkit &Calibration::getCalibrationKit()
+void Calibration::reset()
 {
-    return kit;
+    for(auto m : measurements) {
+        delete m;
+    }
+    measurements.clear();
+    deactivate();
 }
 
-void Calibration::setCalibrationKit(const Calkit &value)
+int Calibration::minimumPorts(Calibration::Type type)
 {
-    kit = value;
+    switch(type) {
+    case Type::SOLT: return 1;
+    }
+    return -1;
 }
 
-void Calibration::setPortStandard(int port, Calibration::PortStandard standard)
+void Calibration::addMeasurements(std::set<CalibrationMeasurement::Base *> m, const VirtualDevice::VNAMeasurement &data)
 {
-    if(port == 1) {
-        port1Standard = standard;
-    } else if(port == 2) {
-        port2Standard = standard;
+    for(auto meas : m) {
+        meas->addPoint(data);
     }
 }
 
-Calibration::PortStandard Calibration::getPortStandard(int port)
+void Calibration::clearMeasurements(std::set<CalibrationMeasurement::Base *> m)
 {
-    if(port == 1) {
-        return port1Standard;
-    } else if(port == 2) {
-        return port2Standard;
+    for(auto meas : m) {
+        meas->clearPoints();
+    }
+}
+
+void Calibration::measurementsComplete()
+{
+    emit measurementsUpdated();
+}
+
+void Calibration::deactivate()
+{
+    points.clear();
+    caltype.type = Type::None;
+    caltype.usedPorts.clear();
+    emit deactivated();
+}
+
+QString Calibration::DefaultMeasurementsToString(Calibration::DefaultMeasurements dm)
+{
+    switch(dm) {
+    case DefaultMeasurements::SOL1Port: return "1 Port SOL";
+    case DefaultMeasurements::SOLT2Port: return "2 Port SOLT";
+    case DefaultMeasurements::SOLT3Port: return "3 Port SOLT";
+    case DefaultMeasurements::SOLT4Port: return "4 Port SOLT";
+    }
+}
+
+void Calibration::createDefaultMeasurements(Calibration::DefaultMeasurements dm)
+{
+    auto createSOL = [=](int port) {
+        auto _short = new CalibrationMeasurement::Short(this);
+        _short->setPort(port);
+        measurements.push_back(_short);
+        auto open = new CalibrationMeasurement::Open(this);
+        open->setPort(port);
+        measurements.push_back(open);
+        auto load = new CalibrationMeasurement::Load(this);
+        load->setPort(port);
+        measurements.push_back(load);
+    };
+    auto createThrough = [=](int port1, int port2) {
+        auto through = new CalibrationMeasurement::Through(this);
+        through->setPort1(port1);
+        through->setPort2(port2);
+        measurements.push_back(through);
+    };
+    switch(dm) {
+    case DefaultMeasurements::SOL1Port:
+        createSOL(1);
+        break;
+    case DefaultMeasurements::SOLT2Port:
+        createSOL(1);
+        createSOL(2);
+        createThrough(1, 2);
+        break;
+    case DefaultMeasurements::SOLT3Port:
+        createSOL(1);
+        createSOL(2);
+        createSOL(3);
+        createThrough(1, 2);
+        createThrough(1, 3);
+        createThrough(2, 3);
+        break;
+    case DefaultMeasurements::SOLT4Port:
+        createSOL(1);
+        createSOL(2);
+        createSOL(3);
+        createSOL(4);
+        createThrough(1, 2);
+        createThrough(1, 3);
+        createThrough(1, 4);
+        createThrough(2, 3);
+        createThrough(2, 4);
+        createThrough(3, 4);
+        break;
+    }
+}
+
+bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *> m, double *startFreq, double *stopFreq, int *points)
+{
+    double minResolution = std::numeric_limits<double>::max();
+    double minFreq = 0;
+    double maxFreq = std::numeric_limits<double>::max();
+    for(auto meas : m) {
+        if(meas->numPoints() < 2) {
+            return false;
+        }
+        auto resolution = (meas->maxFreq() - meas->minFreq()) / (meas->numPoints() - 1);
+        if(meas->maxFreq() < maxFreq) {
+            maxFreq = meas->maxFreq();
+        }
+        if(meas->minFreq() > minFreq) {
+            minFreq = meas->minFreq();
+        }
+        if(resolution < minResolution) {
+            minResolution = resolution;
+        }
+    }
+    if(startFreq) {
+        *startFreq = minFreq;
+    }
+    if(stopFreq) {
+        *stopFreq = maxFreq;
+    }
+    if(points) {
+        *points = (maxFreq - minFreq) / minResolution + 1;
+    }
+    if(maxFreq > minFreq) {
+        return true;
     } else {
-        return PortStandard::Male;
+        return false;
     }
 }
 
-Calibration::Type Calibration::getType() const
+CalibrationMeasurement::Base *Calibration::findMeasurement(CalibrationMeasurement::Base::Type type, int port1, int port2)
 {
-    return type;
+    for(auto m : measurements) {
+        if(m->getType() != type) {
+            continue;
+        }
+        auto onePort = dynamic_cast<CalibrationMeasurement::OnePort*>(m);
+        if(onePort) {
+            if(onePort->getPort() != port1) {
+                continue;
+            }
+        }
+        auto twoPort = dynamic_cast<CalibrationMeasurement::TwoPort*>(m);
+        if(twoPort) {
+            if(twoPort->getPort1() != port1 || twoPort->getPort2() != port2) {
+                continue;
+            }
+        }
+        // if we get here, we have a match
+        return m;
+    }
+    return nullptr;
 }
 
+QString Calibration::CalType::getReadableDescription()
+{
+    QString ret = TypeToString(this->type);
+    if(usedPorts.size() == 1) {
+        ret += ", Port: "+QString::number(usedPorts[0]);
+    } else if(usedPorts.size() > 0) {
+        ret += ", Ports: [";
+        for(auto p : usedPorts) {
+            ret += QString::number(p)+",";
+        }
+        // remove the last trailing comma
+        ret.chop(1);
+        ret += "]";
+    }
+    return ret;
+}
 
+QString Calibration::CalType::getShortString()
+{
+    QString ret = TypeToString(this->type);
+    if(usedPorts.size() > 0) {
+        ret += "_";
+    }
+    for(auto p : usedPorts) {
+        ret += QString::number(p);
+    }
+    return ret;
+}
+
+Calibration::CalType Calibration::CalType::fromShortString(QString s)
+{
+    CalType ret;
+    auto list = s.split("_");
+    if(list.size() != 2) {
+        ret.type = Type::None;
+    } else {
+        ret.type = TypeFromString(list[0]);
+        for(auto c : list[1]) {
+            ret.usedPorts.push_back(QString(c).toInt());
+        }
+    }
+    return ret;
+}
+
+Calibration::Point Calibration::Point::interpolate(const Calibration::Point &to, double alpha)
+{
+    Point ret;
+    ret.frequency = frequency * (1.0-alpha) + to.frequency * alpha;
+    ret.D.resize(D.size());
+    for(unsigned int i=0;i<D.size();i++) {
+        ret.D[i] = D[i] * (1.0-alpha) + to.D[i] * alpha;
+    }
+    ret.R.resize(R.size());
+    for(unsigned int i=0;i<R.size();i++) {
+        ret.R[i] = R[i] * (1.0-alpha) + to.R[i] * alpha;
+    }
+    ret.S.resize(S.size());
+    for(unsigned int i=0;i<S.size();i++) {
+        ret.S[i] = S[i] * (1.0-alpha) + to.S[i] * alpha;
+    }
+    ret.T.resize(T.size());
+    for(unsigned int i=0;i<T.size();i++) {
+        ret.T[i].resize(T[i].size());
+        for(unsigned int j=0;j<T[i].size();j++) {
+            ret.T[i][j] = T[i][j] * (1.0 - alpha) + to.T[i][j] * alpha;
+        }
+    }
+    ret.L.resize(L.size());
+    for(unsigned int i=0;i<L.size();i++) {
+        ret.L[i].resize(L[i].size());
+        for(unsigned int j=0;j<L[i].size();j++) {
+            ret.L[i][j] = L[i][j] * (1.0 - alpha) + to.L[i][j] * alpha;
+        }
+    }
+    ret.I.resize(I.size());
+    for(unsigned int i=0;i<I.size();i++) {
+        ret.I[i].resize(I[i].size());
+        for(unsigned int j=0;j<I[i].size();j++) {
+            ret.I[i][j] = I[i][j] * (1.0 - alpha) + to.I[i][j] * alpha;
+        }
+    }
+    return ret;
+}

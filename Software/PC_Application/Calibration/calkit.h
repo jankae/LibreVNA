@@ -42,15 +42,6 @@ public:
     void toFile(QString filename);
     static Calkit fromFile(QString filename);
     void edit(std::function<void(void)> updateCal = nullptr);
-    bool hasSeparateMaleFemaleStandards();
-    SOLT toSOLT(double frequency, bool male_standards = true);
-    TRL toTRL(double frequency);
-    double minFreqTRL();
-    double maxFreqTRL();
-    double minFreqSOLT(bool male_standards = true);
-    double maxFreqSOLT(bool male_standards = true);
-    bool checkIfValid(double min_freq, double max_freq, bool isTRL, bool include_male, bool include_female);
-    bool isTRLReflectionShort() const;
 
     std::vector<CalStandard::Virtual *> getStandards() const;
 

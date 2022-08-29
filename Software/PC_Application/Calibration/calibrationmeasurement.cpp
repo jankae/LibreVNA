@@ -1,6 +1,6 @@
 #include "calibrationmeasurement.h"
 #include "unit.h"
-#include "calibration2.h"
+#include "calibration.h"
 
 #include <QDateTime>
 #include <QComboBox>
@@ -9,7 +9,7 @@
 
 using namespace std;
 
-CalibrationMeasurement::Base::Base(Calibration2 *cal)
+CalibrationMeasurement::Base::Base(Calibration *cal)
     : cal(cal)
 {
     standard = nullptr;
@@ -86,6 +86,7 @@ QString CalibrationMeasurement::Base::TypeToString(CalibrationMeasurement::Base:
     case Type::Short: return "Short";
     case Type::Load: return "Load";
     case Type::Through: return "Through";
+    case Type::Isolation: return "Isolation";
     case Type::Last: return "Invalid";
     }
 }
@@ -137,7 +138,15 @@ nlohmann::json CalibrationMeasurement::Base::toJSON()
 void CalibrationMeasurement::Base::fromJSON(nlohmann::json j)
 {
     if(j.contains("standard")) {
-        // TODO find standard from ID
+        auto standards = cal->getKit().getStandards();
+        standard = nullptr;
+        unsigned long long id = j.value("standard", 0ULL);
+        for(auto s : standards) {
+            if(s->getID() == id) {
+                setStandard(s);
+                break;
+            }
+        }
     }
     timestamp = QDateTime::fromSecsSinceEpoch(j.value("timestamp", 0));
 }
@@ -441,7 +450,7 @@ void CalibrationMeasurement::TwoPort::fromJSON(nlohmann::json j)
         for(auto jpoint : j["points"]) {
             Point p;
             p.frequency = jpoint.value("frequency", 0.0);
-            p.S.fromJSON(j["Sparam"]);
+            p.S.fromJSON(jpoint["Sparam"]);
             points.push_back(p);
         }
     }
@@ -497,4 +506,129 @@ void CalibrationMeasurement::TwoPort::setPort2(int p)
 int CalibrationMeasurement::TwoPort::getPort1() const
 {
     return port1;
+}
+
+double CalibrationMeasurement::Isolation::minFreq()
+{
+    if(points.size() > 0) {
+        return points.front().frequency;
+    } else {
+        return numeric_limits<double>::max();
+    }
+}
+
+double CalibrationMeasurement::Isolation::maxFreq()
+{
+    if(points.size() > 0) {
+        return points.back().frequency;
+    } else {
+        return 0;
+    }
+}
+
+unsigned int CalibrationMeasurement::Isolation::numPoints()
+{
+    return points.size();
+}
+
+void CalibrationMeasurement::Isolation::clearPoints()
+{
+    points.clear();
+    timestamp = QDateTime();
+}
+
+void CalibrationMeasurement::Isolation::addPoint(const VirtualDevice::VNAMeasurement &m)
+{
+    Point p;
+    p.frequency = m.frequency;
+    for(auto &meas : m.measurements) {
+        QString name = meas.first;
+        unsigned int rcv = name.mid(1, 1).toInt() - 1;
+        unsigned int src = name.mid(2, 1).toInt() - 1;
+        if(rcv >= p.S.size()) {
+            p.S.resize(rcv + 1);
+        }
+        if(src >= p.S[rcv].size()) {
+            p.S[rcv].resize(src + 1);
+        }
+        p.S[rcv][src] = meas.second;
+    }
+    points.push_back(p);
+    timestamp = QDateTime::currentDateTimeUtc();
+}
+
+QWidget *CalibrationMeasurement::Isolation::createStandardWidget()
+{
+    return new QLabel("Terminate all ports");
+}
+
+QWidget *CalibrationMeasurement::Isolation::createSettingsWidget()
+{
+    return new QLabel("No settings available");
+}
+
+nlohmann::json CalibrationMeasurement::Isolation::toJSON()
+{
+    auto j = Base::toJSON();
+    nlohmann::json jpoints;
+    for(auto &p : points) {
+        nlohmann::json jpoint;
+        jpoint["frequency"] = p.frequency;
+        nlohmann::json jdest;
+        for(auto dst : p.S) {
+            nlohmann::json jsrc;
+            for(auto src : dst) {
+                nlohmann::json jiso;
+                jiso["real"] = src.real();
+                jiso["imag"] = src.imag();
+                jsrc.push_back(jiso);
+            }
+            jdest.push_back(jsrc);
+        }
+        jpoint["S"] = jdest;
+        jpoints.push_back(jpoint);
+    }
+    j["points"] = jpoints;
+    return j;
+}
+
+void CalibrationMeasurement::Isolation::fromJSON(nlohmann::json j)
+{
+    clearPoints();
+    Base::fromJSON(j);
+    if(j.contains("points")) {
+        for(auto jpoint : j["points"]) {
+            Point p;
+            p.frequency = jpoint.value("frequency", 0.0);
+            if(jpoint.contains("S")) {
+                for(auto jdest : jpoint["S"]) {
+                    p.S.push_back(vector<complex<double>>());
+                    for(auto jsrc : jdest) {
+                        auto S = complex<double>(jsrc.value("real", 0.0), jsrc.value("imag", 0.0));
+                        p.S.back().push_back(S);
+                    }
+                }
+            }
+            points.push_back(p);
+        }
+    }
+}
+
+std::complex<double> CalibrationMeasurement::Isolation::getMeasured(double frequency, unsigned int portRcv, unsigned int portSrc)
+{
+    if(points.size() == 0 || frequency < points.front().frequency || frequency > points.back().frequency) {
+        return numeric_limits<complex<double>>::quiet_NaN();
+    }
+    portRcv--;
+    portSrc--;
+    // find correct point, no interpolation yet
+    auto lower = lower_bound(points.begin(), points.end(), frequency, [](const Point &lhs, double rhs) -> bool {
+        return lhs.frequency < rhs;
+    });
+    Point p = *lower;
+    if(portRcv >= p.S.size() || portSrc >= p.S[portRcv].size()) {
+        return numeric_limits<complex<double>>::quiet_NaN();
+    } else {
+        return p.S[portRcv][portSrc];
+    }
 }

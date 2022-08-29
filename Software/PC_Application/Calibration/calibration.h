@@ -1,70 +1,71 @@
-#ifndef CALIBRATION_H
-#define CALIBRATION_H
+#ifndef CALIBRATION2_H
+#define CALIBRATION2_H
 
-#include "Device/device.h"
+#include "savable.h"
+#include "calibrationmeasurement.h"
 #include "calkit.h"
-#include "Traces/tracemodel.h"
+#include "Traces/trace.h"
 
-#include <complex>
-#include <vector>
-#include <map>
-#include <iostream>
-#include <iomanip>
-#include <QDateTime>
-#include <savable.h>
-
-class Calibration : public Savable
+class Calibration : public QObject, public Savable
 {
+    Q_OBJECT
 public:
     Calibration();
 
-    enum class Measurement {
-        Port1Open,
-        Port1Short,
-        Port1Load,
-        Port2Open,
-        Port2Short,
-        Port2Load,
-        Isolation,
-        Through,
-        Line,
-        Last,
-    };
-
-    enum class Standard {
-        Open,
-        Short,
-        Load,
-        Through,
-        Any,
-    };
-
-    static Standard getPort1Standard(Measurement m);
-    static Standard getPort2Standard(Measurement m);
-
-    void clearMeasurements();
-    void clearMeasurements(std::set<Measurement> types);
-    void clearMeasurement(Measurement type);
-    void addMeasurement(Measurement type, VirtualDevice::VNAMeasurement &d);
-    void addMeasurements(std::set<Measurement> types, VirtualDevice::VNAMeasurement &d);
-
     enum class Type {
-        Port1SOL,
-        Port2SOL,
-        FullSOLT,
-        TransmissionNormalization,
-        TRL,
         None,
+        SOLT,
         Last,
     };
+    class CalType {
+    public:
+        Type type;
+        std::vector<int> usedPorts;
+        QString getReadableDescription();
+        QString getShortString();
 
+        static CalType fromShortString(QString s);
 
-    bool calculationPossible(Type type);
-    bool constructErrorTerms(Type type);
-    void resetErrorTerms();
+        friend bool operator==(const CalType &lhs, const CalType &rhs);
+    };
 
+    static QString TypeToString(Type type);
+    static Type TypeFromString(QString s);
+
+    // Applies calculated calibration coefficients to measurement data
     void correctMeasurement(VirtualDevice::VNAMeasurement &d);
-    void correctTraces(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
+
+    // Starts the calibration edit dialog, allowing the user to make/delete measurements
+    void edit();
+
+    Calkit& getKit();
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+
+    bool toFile(QString filename = QString());
+    bool fromFile(QString filename = QString());
+
+    // Returns all possible calibration types/port permutations for the currently connected device.
+    // If no device is connected, a two-port device is assumed
+    static std::vector<CalType> getAvailableCalibrations();
+
+    // Returns vector of all calibration types (without 'Last')
+    static std::vector<Type> getTypes();
+    // Checks whether all measurements for a specific calibration are available.
+    // If pointer to the frequency/points variables are given, the start/stop frequency and number of points the calibration will have after the calculation is stored there
+    bool canCompute(CalType type, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr);
+    // Resets the calibration (deletes all measurements and calculated coefficients)
+    void reset();
+    // Returns the minimum number of ports for a given calibration type.
+    // E.g. the SOL(T) calibration can work with only one port, a through normalization requires at least two
+    static int minimumPorts(Type type);
+
+    // Adds a new measurement point (data) to all calibration measurements (m)
+    void addMeasurements(std::set<CalibrationMeasurement::Base*> m, const VirtualDevice::VNAMeasurement &data);
+    // Deletes all datapoints in the calibration measurements (m)
+    void clearMeasurements(std::set<CalibrationMeasurement::Base*> m);
+    CalType getCaltype() const;
 
     enum class InterpolationType {
         Unchanged, // Nothing has changed, settings and calibration points match
@@ -74,119 +75,70 @@ public:
         NoCalibration, // No calibration available
     };
 
-    InterpolationType getInterpolation(double f_start, double f_stop, int points);
-
-    static Measurement MeasurementFromString(QString s);
-    static QString MeasurementToString(Measurement m);
-    static Type TypeFromString(QString s);
-    static QString TypeToString(Type t);
-
-    class MeasurementInfo {
-    public:
-        QString name, prerequisites;
-        double fmin, fmax;
-        unsigned int points;
-        QDateTime timestamp;
-    };
-
-    static const std::vector<Type> Types();
-    const std::vector<Measurement> Measurements(Type type = Type::None, bool optional_included = true);
-    MeasurementInfo getMeasurementInfo(Measurement m);
-
-    friend std::istream& operator >> (std::istream &in, Calibration& c);
-    int nPoints() {
-        return points.size();
-    }
+    InterpolationType getInterpolation(double f_start, double f_stop, int npoints);
 
     std::vector<Trace*> getErrorTermTraces();
     std::vector<Trace*> getMeasurementTraces();
-
-    bool openFromFile(QString filename = QString());
-    bool saveToFile(QString filename = QString());
-    Type getType() const;
-
-    Calkit& getCalibrationKit();
-    void setCalibrationKit(const Calkit &value);
-
-    enum class PortStandard {
-        Male,
-        Female,
-    };
-    void setPortStandard(int port, PortStandard standard);
-    PortStandard getPortStandard(int port);
-    bool getThroughZeroLength() const;
-    void setThroughZeroLength(bool value);
 
     QString getCurrentCalibrationFile();
     double getMinFreq();
     double getMaxFreq();
     int getNumPoints();
 
-    nlohmann::json toJSON() override;
-    void fromJSON(nlohmann::json j) override;
-
+public slots:
+    // Call once all datapoints of the current span have been added
+    void measurementsComplete();
+    // Attempts to calculate the calibration coefficients. If not enough measurements are available, false is returned and the currently used coefficients are not changed
+    bool compute(CalType type);
+    // Deactivates the calibration, resets the calibration coefficients. Calibration measurements are NOT deleted.
+    void deactivate();
+signals:
+    // emitted when the measurement of a set of calibration measurements should be started
+    void startMeasurements(std::set<CalibrationMeasurement::Base*> m);
+    // emitted whenever a measurement is complete (triggered by calling measurementsComplete())
+    void measurementsUpdated();
+    // emitted when calibration coefficients were calculated/updated successfully
+    void activated(CalType type);
+    // emitted when the calibrationo coefficients were reset
+    void deactivated();
 private:
-    void construct12TermPoints();
-    void constructPort1SOL();
-    void constructPort2SOL();
-    void constructTransmissionNormalization();
-    void constructTRL();
-    bool SanityCheckSamples(const std::vector<Measurement> &requiredMeasurements);
-    class Point
-    {
+    enum class DefaultMeasurements {
+        SOL1Port,
+        SOLT2Port,
+        SOLT3Port,
+        SOLT4Port,
+        Last
+    };
+    static QString DefaultMeasurementsToString(DefaultMeasurements dm);
+    void createDefaultMeasurements(DefaultMeasurements dm);
+
+    bool hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base*> m, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr);
+    CalibrationMeasurement::Base* findMeasurement(CalibrationMeasurement::Base::Type type, int port1 = 0, int port2 = 0);
+
+    CalibrationMeasurement::Base *newMeasurement(CalibrationMeasurement::Base::Type type);
+
+    class Point {
     public:
         double frequency;
-        // Forward error terms
-        std::complex<double> fe00, fe11, fe10e01, fe10e32, fe22, fe30, fex;
-        // Reverse error terms
-        std::complex<double> re33, re11, re23e32, re23e01, re22, re03, rex;
+        std::vector<std::complex<double>> D; // Directivity
+        std::vector<std::complex<double>> R; // Source Match
+        std::vector<std::complex<double>> S; // Reflection tracking
+        std::vector<std::vector<std::complex<double>>> L; // Receiver Match
+        std::vector<std::vector<std::complex<double>>> T; // Transmission tracking
+        std::vector<std::vector<std::complex<double>>> I; // Transmission isolation
+        Point interpolate(const Point &to, double alpha);
     };
-    Point getCalibrationPoint(VirtualDevice::VNAMeasurement &d);
-    /*
-     * Constructs directivity, match and tracking correction factors from measurements of three distinct impedances
-     * Normally, an open, short and load are used (with ideal reflection coefficients of 1, -1 and 0 respectively).
-     * The actual reflection coefficients can be passed on as optional arguments to take into account the non-ideal
-     * calibration kit.
-     */
-    void computeSOL(std::complex<double> s_m,
-                    std::complex<double> o_m,
-                    std::complex<double> l_m,
-                    std::complex<double> &directivity,
-                    std::complex<double> &match,
-                    std::complex<double> &tracking,
-                    std::complex<double> o_c = std::complex<double>(1.0, 0),
-                    std::complex<double> s_c = std::complex<double>(-1.0, 0),
-                    std::complex<double> l_c = std::complex<double>(0, 0));
-    void computeIsolation(std::complex<double> x0_m,
-                          std::complex<double> x1_m,
-                          std::complex<double> reverse_match,
-                          std::complex<double> reverse_tracking,
-                          std::complex<double> reverse_directivity,
-                          std::complex<double> x0,
-                          std::complex<double> x1,
-                          std::complex<double> &internal_isolation,
-                          std::complex<double> &external_isolation);
-    std::complex<double> correctSOL(std::complex<double> measured,
-                                    std::complex<double> directivity,
-                                    std::complex<double> match,
-                                    std::complex<double> tracking);
-    class MeasurementData {
-    public:
-        QDateTime timestamp;
-        std::vector<VirtualDevice::VNAMeasurement> datapoints;
-    };
-    Type type;
-
-    std::map<Measurement, MeasurementData> measurements;
-    double minFreq, maxFreq;
     std::vector<Point> points;
 
+    Point computeSOLT(double f);
+
+    std::vector<CalibrationMeasurement::Base*> measurements;
+
     Calkit kit;
+    CalType caltype;
+
     QString descriptiveCalName();
     QString currentCalFile;
-
-    PortStandard port1Standard, port2Standard;
-    bool throughZeroLength;
 };
 
-#endif // CALIBRATION_H
+#endif // CALIBRATION2_H

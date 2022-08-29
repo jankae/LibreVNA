@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <fstream>
+#include <iomanip>
 #include <CustomWidgets/informationbox.h>
 
 using namespace std;

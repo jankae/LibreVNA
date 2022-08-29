@@ -13,7 +13,7 @@ ManualCalibrationDialog::ManualCalibrationDialog(const TraceModel &model, Calibr
     connect(traceSelector, &SparamTraceSelector::selectionValid, ui->buttonBox, &QDialogButtonBox::setEnabled);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=]() {
         auto t = traceSelector->getTraces();
-        cal->correctTraces(*t[0], *t[1], *t[2], *t[3]);
+//        cal->correctTraces(*t[0], *t[1], *t[2], *t[3]); // TODO
         accept();
     });
 }

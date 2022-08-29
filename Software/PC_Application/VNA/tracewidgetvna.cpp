@@ -83,7 +83,7 @@ void TraceWidgetVNA::importDialog()
                 connect(i, &TraceImportDialog::importFinsished, [=](const std::vector<Trace*> &traces) {
                     if(traces.size() == 4) {
                         // all traces imported, can calculate calibration/de-embedding
-                        bool calAvailable = cal.nPoints() > 0;
+                        bool calAvailable = cal.getNumPoints() > 0;
                         bool deembedAvailable = deembed.getOptions().size() > 0;
                         if(calAvailable || deembedAvailable) {
                             // check if user wants to apply either one to the imported traces
@@ -107,7 +107,7 @@ void TraceWidgetVNA::importDialog()
                                 dialog->exec();
                             }
                             if(applyCal) {
-                                cal.correctTraces(*traces[0], *traces[1], *traces[2], *traces[3]);
+//                                cal.correctTraces(*traces[0], *traces[1], *traces[2], *traces[3]); // TODO
                             }
                             if(applyDeembed) {
                                 deembed.Deembed(*traces[0], *traces[1], *traces[2], *traces[3]);

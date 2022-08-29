@@ -12,7 +12,6 @@
 #include "CustomWidgets/siunitedit.h"
 #include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
-#include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
 #include "Device/virtualdevice.h"
 #include "preferences.h"

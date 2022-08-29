@@ -341,51 +341,6 @@ void Calkit::edit(std::function<void (void)> updateCal)
     }
 }
 
-bool Calkit::hasSeparateMaleFemaleStandards()
-{
-    return true; // TODO delete function
-}
-
-class Calkit::SOLT Calkit::toSOLT(double frequency, bool male_standards)
-{
-    return SOLT(); // TODO delete function
-}
-
-class Calkit::TRL Calkit::toTRL(double)
-{
-    return TRL(); // TODO delete function
-}
-
-double Calkit::minFreqTRL()
-{
-    return 0; // TODO delete function
-}
-
-double Calkit::maxFreqTRL()
-{
-    return std::numeric_limits<double>::max(); // TODO delete function
-}
-
-double Calkit::minFreqSOLT(bool male_standards)
-{
-    return 0; // TODO delete function
-}
-
-double Calkit::maxFreqSOLT(bool male_standards)
-{
-    return std::numeric_limits<double>::max(); // TODO delete function
-}
-
-bool Calkit::checkIfValid(double min_freq, double max_freq, bool isTRL, bool include_male, bool include_female)
-{
-    return true; // TODO delete function
-}
-
-bool Calkit::isTRLReflectionShort() const
-{
-    return true; // TODO delete function
-}
-
 void Calkit::clearStandards()
 {
     for(auto s : standards) {
@@ -416,6 +371,7 @@ nlohmann::json Calkit::toJSON()
 
 void Calkit::fromJSON(nlohmann::json j)
 {
+    clearStandards();
     Savable::parseJSON(j, descr);
     for(auto js : j["standards"]) {
         if(!js.contains("type") || !js.contains("params")) {

@@ -8,7 +8,7 @@
 #include "Deembedding/deembedding.h"
 #include "scpi.h"
 #include "Traces/tracewidget.h"
-#include "Calibration/calibration2.h"
+#include "Calibration/calibration.h"
 
 #include <QObject>
 #include <QWidget>
@@ -105,8 +105,8 @@ private slots:
     void SetAveraging(unsigned int averages);
     void ExcitationRequired();
     // Calibration
-    void DisableCalibration(bool force = false);
-    void ApplyCalibration(Calibration::Type type);
+    void DisableCalibration();
+    void ApplyCalibration(Calibration::CalType type);
     void StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m);
 
 
@@ -121,7 +121,6 @@ private:
     void LoadSweepSettings();
     void StoreSweepSettings();
     void StopSweep();
-    void StartCalibrationDialog(Calibration::Type type = Calibration::Type::None);
     void UpdateCalWidget();
 
     void createDefaultTracesAndGraphs(int ports);
@@ -140,9 +139,8 @@ private:
 
     // Calibration
     Calibration cal;
-    Calibration2 cal2;
     bool changingSettings;
-    bool calValid;
+//    bool calValid;
     bool calEdited;
     std::set<CalibrationMeasurement::Base*> calMeasurements;
     bool calMeasuring;
@@ -168,6 +166,7 @@ private:
     TileWidget *central;
 
 signals:
+    void deviceInitialized();
     void dataChanged();
     void sweepTypeChanged(SweepType sw);
     void startFreqChanged(double freq);
@@ -185,9 +184,6 @@ signals:
     void startPowerChanged(double level);
     void stopPowerChanged(double level);
     void powerSweepFrequencyChanged(double freq);
-
-    void CalibrationDisabled();
-    void CalibrationApplied(Calibration::Type type);
 };
 
 #endif // VNA_H

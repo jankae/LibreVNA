@@ -12,7 +12,6 @@
 #include "CustomWidgets/siunitedit.h"
 #include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
-#include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
 #include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
@@ -59,7 +58,6 @@ VNA::VNA(AppWindow *window, QString name)
 {
     averages = 1;
     singleSweep = false;
-    calValid = false;
     calMeasuring = false;
     calWaitFirst = false;
     calDialog.reset();
@@ -89,27 +87,23 @@ VNA::VNA(AppWindow *window, QString name)
     });
 
     connect(saveCal, &QAction::triggered, [=](){
-        if(cal.saveToFile()) {
+        if(cal.toFile()) {
             calEdited = false;
             UpdateStatusbar();
         }
     });
 
-    connect(&cal2, &Calibration2::startMeasurements, this, &VNA::StartCalibrationMeasurements);
+    connect(&cal, &Calibration::startMeasurements, this, &VNA::StartCalibrationMeasurements);
 
-    auto calDisable = calMenu->addAction("Disabled");
-    calDisable->setCheckable(true);
-    calDisable->setChecked(true);
-    calMenu->addSeparator();
     auto calData = calMenu->addAction("Calibration Measurements");
     connect(calData, &QAction::triggered, [=](){
-        cal2.edit();
+        cal.edit();
 //       StartCalibrationDialog();
     });
 
     auto calEditKit = calMenu->addAction("Edit Calibration Kit");
     connect(calEditKit, &QAction::triggered, [=](){
-        cal2.getKit().edit();
+        cal.getKit().edit();
 //        cal.getCalibrationKit().edit([=](){
 //            if(calValid) {
 //                ApplyCalibration(cal.getType());
@@ -394,42 +388,42 @@ VNA::VNA(AppWindow *window, QString name)
     auto cbEnableCal = new QCheckBox;
     tb_cal->addWidget(cbEnableCal);
     auto cbType = new QComboBox();
-    auto calMenuGroup = new QActionGroup(this);
-    calMenuGroup->addAction(calDisable);
-    for(auto type : Calibration::Types()) {
-        cbType->addItem(Calibration::TypeToString(type), (int) type);
-        auto menuAction = new QAction(Calibration::TypeToString(type), calMenu);
-        calMenuGroup->addAction(menuAction);
-        connect(menuAction, &QAction::triggered, [=](){
-            ApplyCalibration(type);
-        });
-        connect(this, &VNA::CalibrationApplied, [=](Calibration::Type applied){
-             if(type == applied) {
-                 menuAction->setChecked(true);
-             }
-        });
-        menuAction->setCheckable(true);
-        calMenu->insertAction(calDisable, menuAction);
-    }
+
+    auto updateCalComboBox = [=](){
+        auto cals = cal.getAvailableCalibrations();
+        cbType->blockSignals(true);
+        cbType->clear();
+        for(auto c : cals) {
+            if(c.type == Calibration::Type::None) {
+                continue;
+            }
+            cbType->addItem(c.getShortString());
+        }
+        cbType->setCurrentText(cal.getCaltype().getShortString());
+        cbType->blockSignals(false);
+    };
+
+    connect(this, &VNA::deviceInitialized, updateCalComboBox);
+
+    updateCalComboBox();
 
     auto calToolbarLambda = [=]() {
         if(cbEnableCal->isChecked()) {
             // Get requested calibration type from combobox
-            ApplyCalibration((Calibration::Type) cbType->itemData(cbType->currentIndex()).toInt());
+            ApplyCalibration(Calibration::CalType::fromShortString(cbType->currentText()));
         } else {
             DisableCalibration();
         }
     };
 
     // Calibration connections
-    connect(this, &VNA::CalibrationApplied, this, &VNA::UpdateStatusbar);
-    connect(this, &VNA::CalibrationDisabled, this, &VNA::UpdateStatusbar);
+    connect(&cal, &Calibration::activated, this, &VNA::UpdateStatusbar);
+    connect(&cal, &Calibration::deactivated, this, &VNA::UpdateStatusbar);
     connect(cbEnableCal, &QCheckBox::stateChanged, calToolbarLambda);
     connect(cbType, qOverload<int>(&QComboBox::currentIndexChanged), calToolbarLambda);
-    connect(this, &VNA::CalibrationDisabled, [=](){
+    connect(&cal, &Calibration::deactivated, [=](){
         cbType->blockSignals(true);
         cbEnableCal->blockSignals(true);
-        calDisable->setChecked(true);
         cbEnableCal->setCheckState(Qt::CheckState::Unchecked);
         // visually indicate loss of calibration
         // cal. file unknown at this moment
@@ -441,16 +435,10 @@ VNA::VNA(AppWindow *window, QString name)
         calApplyToTraces->setEnabled(false);
         saveCal->setEnabled(false);
     });
-    connect(calDisable, &QAction::triggered, this, &VNA::DisableCalibration);
-    connect(this, &VNA::CalibrationApplied, [=](Calibration::Type applied){
+    connect(&cal, &Calibration::activated, [=](Calibration::CalType applied){
         cbType->blockSignals(true);
         cbEnableCal->blockSignals(true);
-        for(int i=0;i<cbType->count();i++) {
-            if(cbType->itemData(i).toInt() == (int) applied) {
-                cbType->setCurrentIndex(i);
-                break;
-            }
-        }
+        cbType->setCurrentText(applied.getShortString());
         cbEnableCal->setCheckState(Qt::CheckState::Checked);
         // restore default look of widget
         // on hover, show name of active cal. file
@@ -505,11 +493,6 @@ VNA::VNA(AppWindow *window, QString name)
     SetSweepType(SweepType::Frequency);
 
     toolbars.insert(tb_cal);
-
-//    auto tb_portExtension = portExtension.createToolbar();
-//    window->addToolBar(tb_portExtension);
-//    toolbars.insert(tb_portExtension);
-
 
     markerModel = new MarkerModel(traceModel, this);
 
@@ -590,7 +573,7 @@ Calibration::InterpolationType VNA::getCalInterpolation()
 
 QString VNA::getCalStyle()
 {
-    Calibration::InterpolationType interpol = getCalInterpolation();
+    auto interpol = getCalInterpolation();
     QString style = "";
     switch (interpol)
     {
@@ -612,7 +595,7 @@ QString VNA::getCalStyle()
 
 QString VNA::getCalToolTip()
 {
-    Calibration::InterpolationType interpol = getCalInterpolation();
+    auto interpol = getCalInterpolation();
     QString txt = "";
     switch (interpol)
     {
@@ -657,9 +640,7 @@ void VNA::initializeDevice()
         auto filename = s.value(key).toString();
         qDebug() << "Attempting to load default calibration file " << filename;
         if(QFile::exists(filename)) {
-            if(cal.openFromFile(filename)) {
-                ApplyCalibration(cal.getType());
-//                portExtension.setCalkit(&cal.getCalibrationKit());
+            if(cal.fromFile(filename)) {
                 qDebug() << "Calibration successful from " << filename;
             } else {
                 qDebug() << "Calibration not successfull from: " << filename;
@@ -674,6 +655,7 @@ void VNA::initializeDevice()
     }
     // Configure initial state of device
     SettingsChanged();
+    emit deviceInitialized();
 }
 
 void VNA::deviceDisconnected()
@@ -683,10 +665,10 @@ void VNA::deviceDisconnected()
 
 void VNA::shutdown()
 {
-    if(calEdited && calValid) {
+    if(calEdited && cal.getCaltype().type != Calibration::Type::None) {
         auto save = InformationBox::AskQuestion("Save calibration?", "The calibration contains data that has not been saved yet. Do you want to save it before exiting?", false);
         if(save) {
-            cal.saveToFile();
+            cal.toFile();
         }
     }
 }
@@ -820,19 +802,18 @@ void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
             // this is the last averaging sweep, use values for calibration
             if(!calWaitFirst || m_avg.pointNum == 0) {
                 calWaitFirst = false;
-                cal2.addMeasurements(calMeasurements, m_avg);
+                cal.addMeasurements(calMeasurements, m_avg);
                 if(m_avg.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
-                    cal2.measurementsComplete();
+                    cal.measurementsComplete();
                 }
             }
         }
         int percentage = (((average.currentSweep() - 1) * 100) + (m_avg.pointNum + 1) * 100 / settings.npoints) / averages;
         calDialog.setValue(percentage);
     }
-//    if(calValid) {
-        cal2.correctMeasurement(m_avg);
-//    }
+
+    cal.correctMeasurement(m_avg);
 
     if(deembedding_active) {
         deembedding.Deembed(m_avg);
@@ -1170,39 +1151,30 @@ void VNA::ExcitationRequired()
     }
 }
 
-void VNA::DisableCalibration(bool force)
+void VNA::DisableCalibration()
 {
-    if(calValid || force) {
-        calValid = false;
-        cal.resetErrorTerms();
-        emit CalibrationDisabled();
-    }
+    cal.deactivate();
 }
 
-void VNA::ApplyCalibration(Calibration::Type type)
+void VNA::ApplyCalibration(Calibration::CalType type)
 {
-    if(cal.calculationPossible(type)) {
+    if(cal.canCompute(type)) {
         try {
-            if(cal.constructErrorTerms(type)) {
-                calValid = true;
-                emit CalibrationApplied(type);
-            } else {
-                DisableCalibration(true);
-            }
+            cal.compute(type);
         } catch (runtime_error &e) {
             InformationBox::ShowError("Calibration failure", e.what());
-            DisableCalibration(true);
+            DisableCalibration();
         }
     } else {
         if(settings.sweepType == SweepType::Frequency) {
             // Not all required traces available
             InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. The calibration can be enabled after the missing measurements have been acquired.");
-            DisableCalibration(true);
-            StartCalibrationDialog(type);
+            DisableCalibration();
+            cal.edit();
         } else {
             // Not all required traces available
             InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. Please switch to frequency sweep to take these measurements.");
-            DisableCalibration(true);
+            DisableCalibration();
         }
     }
 }
@@ -1216,7 +1188,7 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
     StopSweep();
     calMeasurements = m;
     // Delete any already captured data of this measurement
-    cal2.clearMeasurements(m);
+    cal.clearMeasurements(m);
     calWaitFirst = true;
     // show messagebox
     QString text = "Measuring ";
@@ -1237,7 +1209,7 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
     connect(&calDialog, &QProgressDialog::canceled, [=]() {
         // the user aborted the calibration measurement
         calMeasuring = false;
-        cal2.clearMeasurements(calMeasurements);
+        cal.clearMeasurements(calMeasurements);
     });
     // Trigger sweep to start from beginning
     SettingsChanged(true, [=](bool){
@@ -1430,25 +1402,24 @@ void VNA::SetupSCPI()
         if(params.size() != 1) {
             return SCPI::getResultName(SCPI::Result::Error);
         } else {
-            auto type = Calibration::TypeFromString(params[0].replace('_', ' '));
-            if(type == Calibration::Type::Last) {
-                // failed to parse string
-                return SCPI::getResultName(SCPI::Result::Error);
-            } else if(type == Calibration::Type::None) {
-                DisableCalibration();
-            } else {
-                // check if calibration can be activated
-                if(cal.calculationPossible(type)) {
-                    ApplyCalibration(type);
-                } else {
-                    return SCPI::getResultName(SCPI::Result::Error);
+            auto availableCals = cal.getAvailableCalibrations();
+            for(auto caltype : availableCals) {
+                if(caltype.getShortString().compare(params[0], Qt::CaseInsensitive) == 0) {
+                    // found a match
+                    // check if calibration can be activated
+                    if(cal.canCompute(caltype)) {
+                        ApplyCalibration(caltype);
+                    } else {
+                        return SCPI::getResultName(SCPI::Result::Error);
+                    }
                 }
             }
+            // if we get here, the supplied parameter did not match any of the available calibrations
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        auto ret = Calibration::TypeToString(cal.getType());
-        ret.replace(' ', '_');
+        auto ret = cal.getCaltype().getShortString();
         return ret;
     }));
     scpi_cal->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
@@ -1456,15 +1427,16 @@ void VNA::SetupSCPI()
             // no measurement specified, still busy or invalid mode
             return SCPI::getResultName(SCPI::Result::Error);
         } else {
-            auto meas = Calibration::MeasurementFromString(params[0].replace('_', ' '));
-            if(meas == Calibration::Measurement::Last) {
-                // failed to parse string
-                return SCPI::getResultName(SCPI::Result::Error);
-            } else {
-                std::set<Calibration::Measurement> m;
-                m.insert(meas);
-//                StartCalibrationMeasurements(m); // TODO
-            }
+            // TODO
+//            auto meas = Calibration::MeasurementFromString(params[0].replace('_', ' '));
+//            if(meas == Calibration::Measurement::Last) {
+//                // failed to parse string
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            } else {
+//                std::set<Calibration::Measurement> m;
+//                m.insert(meas);
+////                StartCalibrationMeasurements(m);
+//            }
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
@@ -1472,11 +1444,11 @@ void VNA::SetupSCPI()
         return CalibrationMeasurementActive() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_cal->add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
-        if(params.size() != 1 || !calValid) {
+        if(params.size() != 1 || cal.getCaltype().type == Calibration::Type::None) {
             // no filename given or no calibration active
             return SCPI::getResultName(SCPI::Result::Error);
         }
-        if(!cal.saveToFile(params[0])) {
+        if(!cal.toFile(params[0])) {
             // some error when writing the calibration file
             return SCPI::getResultName(SCPI::Result::Error);
         }
@@ -1488,14 +1460,9 @@ void VNA::SetupSCPI()
             // no filename given or no calibration active
             return SCPI::getResultName(SCPI::Result::False);
         }
-        if(!cal.openFromFile(params[0])) {
+        if(!cal.fromFile(params[0])) {
             // some error when loading the calibration file
             return SCPI::getResultName(SCPI::Result::False);
-        }
-        if(cal.getType() == Calibration::Type::None) {
-            DisableCalibration();
-        } else {
-            ApplyCalibration(cal.getType());
         }
         calEdited = false;
         return SCPI::getResultName(SCPI::Result::True);
@@ -1574,20 +1541,6 @@ void VNA::StopSweep()
 {
     if(window->getDevice()) {
         window->getDevice()->setIdle();
-    }
-}
-
-void VNA::StartCalibrationDialog(Calibration::Type type)
-{
-    auto traceDialog = new CalibrationTraceDialog(&cal, settings.Freq.start, settings.Freq.stop, type);
-//    connect(traceDialog, &CalibrationTraceDialog::triggerMeasurements, this, &VNA::StartCalibrationMeasurements);
-    connect(traceDialog, &CalibrationTraceDialog::applyCalibration, this, &VNA::ApplyCalibration);
-    connect(traceDialog, &CalibrationTraceDialog::calibrationInvalidated, [=](){
-       DisableCalibration(true);
-       InformationBox::ShowMessageBlocking("Calibration disabled", "The currently active calibration is no longer supported by the available measurements and was disabled.");
-    });
-    if(AppWindow::showGUI()) {
-        traceDialog->show();
     }
 }
 
@@ -1730,7 +1683,7 @@ VNA::SweepType VNA::SweepTypeFromString(QString s)
 
 void VNA::UpdateStatusbar()
 {
-    if(calValid) {
+    if(cal.getCaltype().type != Calibration::Type::None) {
         QFileInfo fi(cal.getCurrentCalibrationFile());
         auto filename = fi.fileName();
         if(filename.isEmpty()) {
@@ -1753,13 +1706,6 @@ void VNA::SetSingleSweep(bool single)
 
 bool VNA::LoadCalibration(QString filename)
 {
-    cal.openFromFile(filename);
+    cal.fromFile(filename);
     calEdited = false;
-    if(cal.getType() == Calibration::Type::None) {
-        DisableCalibration();
-        return false;
-    } else {
-        ApplyCalibration(cal.getType());
-        return true;
-    }
 }

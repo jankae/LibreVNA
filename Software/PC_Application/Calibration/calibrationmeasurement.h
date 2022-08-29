@@ -1,4 +1,4 @@
-#ifndef CALIBRATIONMEASUREMENT_H
+﻿#ifndef CALIBRATIONMEASUREMENT_H
 #define CALIBRATIONMEASUREMENT_H
 
 #include "calstandard.h"
@@ -7,7 +7,7 @@
 #include <QDateTime>
 #include <QObject>
 
-class Calibration2;
+class Calibration;
 
 namespace CalibrationMeasurement {
 
@@ -15,19 +15,20 @@ class Base : public QObject, public Savable
 {
     Q_OBJECT
 public:
-    Base(Calibration2 *cal);
+    Base(Calibration *cal);
 
     enum class Type {
         Open,
         Short,
         Load,
         Through,
+        Isolation,
         Last,
     };
 
     std::vector<CalStandard::Virtual*> supportedStandards();
-    bool setFirstSupportedStandard();
-    bool setStandard(CalStandard::Virtual *standard);
+    virtual bool setFirstSupportedStandard();
+    virtual bool setStandard(CalStandard::Virtual *standard);
 
     QString getStatistics();
 
@@ -59,14 +60,14 @@ signals:
 protected:
     CalStandard::Virtual *standard;
     QDateTime timestamp;
-    Calibration2 *cal;
+    Calibration *cal;
 };
 
 class OnePort : public Base
 {
     Q_OBJECT
 public:
-    OnePort(Calibration2 *cal) :
+    OnePort(Calibration *cal) :
         Base(cal),
         port(0) {}
 
@@ -106,7 +107,7 @@ class Open : public OnePort
 {
     Q_OBJECT
 public:
-    Open(Calibration2 *cal) :
+    Open(Calibration *cal) :
         OnePort(cal){setFirstSupportedStandard();}
 
     virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {CalStandard::Virtual::Type::Open};}
@@ -117,7 +118,7 @@ class Short : public OnePort
 {
     Q_OBJECT
 public:
-    Short(Calibration2 *cal) :
+    Short(Calibration *cal) :
         OnePort(cal){setFirstSupportedStandard();}
     virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {CalStandard::Virtual::Type::Short};}
     virtual Type getType() override {return Type::Short;}
@@ -127,7 +128,7 @@ class Load : public OnePort
 {
     Q_OBJECT
 public:
-    Load(Calibration2 *cal) :
+    Load(Calibration *cal) :
         OnePort(cal){setFirstSupportedStandard();}
     virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {CalStandard::Virtual::Type::Load};}
     virtual Type getType() override {return Type::Load;}
@@ -137,7 +138,7 @@ class TwoPort : public Base
 {
     Q_OBJECT
 public:
-    TwoPort(Calibration2 *cal) :
+    TwoPort(Calibration *cal) :
         Base(cal),
         port1(0),
         port2(0){}
@@ -181,10 +182,43 @@ class Through : public TwoPort
 {
     Q_OBJECT
 public:
-    Through(Calibration2 *cal) :
+    Through(Calibration *cal) :
         TwoPort(cal){setFirstSupportedStandard();}
     virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {CalStandard::Virtual::Type::Through};}
     virtual Type getType() override {return Type::Through;}
+};
+
+class Isolation : public Base
+{
+public:
+    Isolation(Calibration *cal) :
+        Base(cal){}
+
+    virtual double minFreq() override;
+    virtual double maxFreq() override;
+    virtual unsigned int numPoints() override;
+
+    virtual void clearPoints();
+    virtual void addPoint(const VirtualDevice::VNAMeasurement &m);
+
+    virtual QWidget* createStandardWidget() override;
+    virtual QWidget* createSettingsWidget() override;
+
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+
+    std::complex<double> getMeasured(double frequency, unsigned int portRcv, unsigned int portSrc);
+
+    virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {};}
+    virtual Type getType() override {return Type::Isolation;}
+
+protected:
+    class Point {
+    public:
+        double frequency;
+        std::vector<std::vector<std::complex<double>>> S;
+    };
+    std::vector<Point> points;
 };
 
 }

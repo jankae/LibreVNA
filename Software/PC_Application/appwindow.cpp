@@ -12,7 +12,6 @@
 #include "CustomWidgets/siunitedit.h"
 #include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
-#include "Calibration/calibrationtracedialog.h"
 #include "ui_main.h"
 #include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
@@ -55,6 +54,7 @@
 #include <QFile>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <QDateTime>
 #include <QCommandLineParser>
 

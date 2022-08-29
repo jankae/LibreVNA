@@ -3,7 +3,6 @@
 
 #include "Device/virtualdevice.h"
 #include "Traces/traceplot.h"
-#include "Calibration/calibration.h"
 #include "Traces/tracemodel.h"
 #include "Traces/Marker/markermodel.h"
 #include "averaging.h"
