@@ -24,6 +24,7 @@ MatchingNetwork::MatchingNetwork()
     dragComponent = nullptr;
     dropComponent = nullptr;
     addNetwork = true;
+    port = 1;
 }
 
 void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
@@ -34,26 +35,40 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
         // this point is not calculated yet
         MatchingPoint m;
         // start with identiy matrix
-        m.p1 = ABCDparam(1.0,0.0,0.0,1.0);
-        for(auto c : p1Network) {
-            m.p1 = m.p1 * c->parameters(p.frequency);
-        }
-        // same for network at port 2
-        m.p2 = ABCDparam(1.0,0.0,0.0,1.0);
-        for(auto c : p2Network) {
-            m.p2 = m.p2 * c->parameters(p.frequency);
+        m.p = ABCDparam(1.0,0.0,0.0,1.0);
+        for(auto c : network) {
+            m.p = m.p * c->parameters(p.frequency);
         }
         if(!addNetwork) {
-            // need to remove the effect of the networks, invert matrices
-            m.p1 = m.p1.inverse();
-            m.p2 = m.p2.inverse();
+            // need to remove the effect of the network, invert matrix
+            m.p = m.p.inverse();
         }
         matching[p.frequency] = m;
     }
     // at this point the map contains the matching network effect
     auto m = matching[p.frequency];
-    auto corrected = m.p1 * measurement * m.p2;
-    p.fromSparam(Sparam(corrected, p.Z0), 1, 2);
+    VirtualDevice::VNAMeasurement uncorrected = p;
+    // correct reflection measurement (in case no two-port measurement is complete
+    QString name = "S"+QString::number(port)+QString::number(port);
+    if(uncorrected.measurements.count(name) > 0) {
+        auto S = Sparam(uncorrected.measurements[name], 0.0, 0.0, 1.0);
+        auto corrected = Sparam(m.p * ABCDparam(S, p.Z0), p.Z0);
+        p.measurements[name] = corrected.m11;
+    }
+    // handle the rest of the measurements
+    for(int i=0;i<VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
+        for(int j=i+1;j<VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;j++) {
+            if(i == port) {
+                auto S = uncorrected.toSparam(i, j);
+                auto corrected = Sparam(m.p * ABCDparam(S, p.Z0), p.Z0);
+                p.fromSparam(corrected, i, j);
+            } else if(j == port) {
+                auto S = uncorrected.toSparam(i, j);
+                auto corrected = Sparam(ABCDparam(S, p.Z0) * m.p, p.Z0);
+                p.fromSparam(corrected, i, j);
+            }
+        }
+    }
 }
 
 void MatchingNetwork::edit()
@@ -80,6 +95,10 @@ void MatchingNetwork::edit()
     ui->lParallelL->installEventFilter(this);
     ui->lParallelR->installEventFilter(this);
     ui->lDefinedThrough->installEventFilter(this);
+
+    ui->port->setValue(port);
+    ui->port->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
+
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
     layout->addStretch(1);
@@ -93,26 +112,15 @@ void MatchingNetwork::edit()
     DUT->setMaximumSize(DUTWidth, 151);
     DUT->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     DUT->setStyleSheet("image: url(:/icons/DUT.png);");
-    auto p2 = new QWidget();
-    p2->setMinimumSize(portWidth, 151);
-    p2->setMaximumSize(portWidth, 151);
-    p2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    p2->setStyleSheet("image: url(:/icons/port2.png);");
+
     layout->addWidget(p1);
-    for(auto w : p1Network) {
+    for(auto w : network) {
         layout->addWidget(w);
         connect(w, &MatchingComponent::MatchingComponent::valueChanged, [=](){
            matching.clear();
         });
     }
     layout->addWidget(DUT);
-    for(auto w : p2Network) {
-        layout->addWidget(w);
-        connect(w, &MatchingComponent::MatchingComponent::valueChanged, [=](){
-           matching.clear();
-        });
-    }
-    layout->addWidget(p2);
 
     layout->addStretch(1);
 
@@ -129,37 +137,34 @@ void MatchingNetwork::edit()
         // network changed, need to recalculate matching
         matching.clear();
     });
+    connect(ui->port, qOverload<int>(&QSpinBox::valueChanged), [=](){
+        port = ui->port->value();
+    });
     connect(ui->buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
 }
 
 nlohmann::json MatchingNetwork::toJSON()
 {
     nlohmann::json j;
-    nlohmann::json jn1, jn2;
-    for(auto c : p1Network) {
+    nlohmann::json jn;
+    for(auto c : network) {
         nlohmann::json jc;
         jc["component"] = c->getName().toStdString();
         jc["params"] = c->toJSON();
-        jn1.push_back(jc);
+        jn.push_back(jc);
     }
-    for(auto c : p2Network) {
-        nlohmann::json jc;
-        jc["component"] = c->getName().toStdString();
-        jc["params"] = c->toJSON();
-        jn2.push_back(jc);
-    }
-    j["port1"] = jn1;
-    j["port2"] = jn2;
+    j["port"] = port;
+    j["network"] = jn;
     j["addNetwork"] = addNetwork;
     return j;
 }
 
 void MatchingNetwork::fromJSON(nlohmann::json j)
 {
-    p1Network.clear();
-    p2Network.clear();
-    if(j.contains("port1")) {
-        for(auto jc : j["port1"]) {
+    network.clear();
+    port = j.value("port", 1);
+    if(j.contains("network")) {
+        for(auto jc : j["network"]) {
             if(!jc.contains("component")) {
                 continue;
             }
@@ -168,20 +173,7 @@ void MatchingNetwork::fromJSON(nlohmann::json j)
                 continue;
             }
             c->fromJSON(jc["params"]);
-            p1Network.push_back(c);
-        }
-    }
-    if(j.contains("port2")) {
-        for(auto jc : j["port2"]) {
-            if(!jc.contains("component")) {
-                continue;
-            }
-            auto c = MatchingComponent::createFromName(QString::fromStdString(jc["component"]));
-            if(!c) {
-                continue;
-            }
-            c->fromJSON(jc["params"]);
-            p2Network.push_back(c);
+            network.push_back(c);
         }
     }
     addNetwork = j.value("addNetwork", true);
@@ -192,15 +184,9 @@ MatchingComponent *MatchingNetwork::componentAtPosition(int pos)
 {
     pos -= graph->layout()->itemAt(0)->geometry().width();
     pos -= portWidth;
-    if(pos > 0 && pos <= (int) p1Network.size() * componentWidth) {
+    if(pos > 0 && pos <= (int) network.size() * componentWidth) {
         // position is in port 1 network
-        return p1Network[pos / componentWidth];
-    } else if(pos > (int) p1Network.size() * componentWidth + DUTWidth) {
-        pos -= (int) p1Network.size() * componentWidth + DUTWidth;
-        if(pos <= (int) p2Network.size() * componentWidth) {
-                // position is in port 2 network
-                return p2Network[pos / componentWidth];
-        }
+        return network[pos / componentWidth];
     }
     return nullptr;
 }
@@ -209,28 +195,15 @@ unsigned int MatchingNetwork::findInsertPosition(int xcoord)
 {
     xcoord -= graph->layout()->itemAt(0)->geometry().width();
     xcoord -= portWidth;
-    if(xcoord <= (int) p1Network.size() * componentWidth + DUTWidth/2) {
-        // added in port 1 network
-        int index = (xcoord + componentWidth / 2) / componentWidth;
-        if(index < 0) {
-            index = 0;
-        } else if(index > (int) p1Network.size()) {
-            index = p1Network.size();
-        }
-        // add 2 (first two widgets are always the stretch and port 1 widget)
-        return index + 2;
-    } else {
-        // added in port 2 network
-        xcoord -= (int) p1Network.size() * componentWidth + DUTWidth;
-        int index = (xcoord + componentWidth / 2) / componentWidth;
-        if(index < 0) {
-            index = 0;
-        } else if(index > (int) p2Network.size()) {
-            index = p2Network.size();
-        }
-        // add 3 (same two widgets as in port 1 + DUT) and the size of the port 1 network
-        return index + 3 + p1Network.size();
+    // added in port 1 network
+    int index = (xcoord + componentWidth / 2) / componentWidth;
+    if(index < 0) {
+        index = 0;
+    } else if(index > (int) network.size()) {
+        index = network.size();
     }
+    // add 2 (first two widgets are always the stretch and port 1 widget)
+    return index + 2;
 }
 
 void MatchingNetwork::addComponentAtPosition(int pos, MatchingComponent *c)
@@ -242,12 +215,7 @@ void MatchingNetwork::addComponentAtPosition(int pos, MatchingComponent *c)
 
     // add component to correct matching network
     index -= 2; // first two widgets are fixed
-    if(index <= p1Network.size()) {
-        addComponent(true, index, c);
-    } else {
-        index -= 1 + p1Network.size();
-        addComponent(false, index, c);
-    }
+    addComponent(index, c);
 
     // network changed, need to recalculate matching
     matching.clear();
@@ -256,22 +224,13 @@ void MatchingNetwork::addComponentAtPosition(int pos, MatchingComponent *c)
     });
 }
 
-void MatchingNetwork::addComponent(bool port1, int index, MatchingComponent *c)
+void MatchingNetwork::addComponent(int index, MatchingComponent *c)
 {
-    if(port1) {
-        p1Network.insert(p1Network.begin() + index, c);
-        // remove from list when the component deletes itself
-        connect(c, &MatchingComponent::deleted, [=](){
-             p1Network.erase(remove(p1Network.begin(), p1Network.end(), c), p1Network.end());
-        });
-    } else {
-        // same procedure for port 2 network
-        p2Network.insert(p2Network.begin() + index, c);
-        // remove from list when the component deletes itself
-        connect(c, &MatchingComponent::deleted, [=](){
-             p2Network.erase(remove(p2Network.begin(), p2Network.end(), c), p2Network.end());
-        });
-    }
+    network.insert(network.begin() + index, c);
+    // remove from list when the component deletes itself
+    connect(c, &MatchingComponent::deleted, [=](){
+         network.erase(remove(network.begin(), network.end(), c), network.end());
+    });
 }
 
 void MatchingNetwork::createDragComponent(MatchingComponent *c)
@@ -326,8 +285,7 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
             // remove and hide component while it is being dragged
             graph->layout()->removeWidget(dragComponent);
             dragComponent->hide();
-            p1Network.erase(remove(p1Network.begin(), p1Network.end(), dragComponent), p1Network.end());
-            p2Network.erase(remove(p2Network.begin(), p2Network.end(), dragComponent), p2Network.end());
+            network.erase(remove(network.begin(), network.end(), dragComponent), network.end());
             graph->update();
 
             // network changed, need to recalculate matching

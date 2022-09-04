@@ -33,12 +33,13 @@ private:
     };
 
     static std::vector<VirtualDevice::VNAMeasurement> interpolateEvenFrequencySteps(std::vector<VirtualDevice::VNAMeasurement> input);
-    static std::vector<Point> calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru);
-    static std::vector<Point> calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru, std::vector<VirtualDevice::VNAMeasurement> data_fix_dut_fix, double z0);
+    std::vector<Point> calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru);
+    std::vector<Point> calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru, std::vector<VirtualDevice::VNAMeasurement> data_fix_dut_fix, double z0);
 
     std::vector<VirtualDevice::VNAMeasurement> measurements2xthru;
     std::vector<VirtualDevice::VNAMeasurement> measurementsDUT;
     double Z0;
+    int port1, port2;
     std::vector<Point> points;
     bool measuring2xthru;
     bool measuringDUT;

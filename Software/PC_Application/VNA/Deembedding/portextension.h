@@ -31,18 +31,17 @@ private:
     void startMeasurement();
     class Extension {
     public:
-        bool enabled;
         double delay;
         double velocityFactor;
         double DCloss;
         double loss;
         double frequency;
     };
-    Extension port1, port2;
+    Extension ext;
 
     // status variables for automatic measurements
     Calkit *kit;
-    bool isPort1;
+    int port;
     bool isOpen;
     bool isIdeal;
 

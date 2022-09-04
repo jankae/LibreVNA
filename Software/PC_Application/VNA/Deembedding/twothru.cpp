@@ -13,13 +13,15 @@ using namespace std;
 TwoThru::TwoThru()
 {
     Z0 = 50.0;
+    port1 = 1;
+    port2 = 2;
 }
 
 void TwoThru::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
     // correct measurement
     if(points.size() > 0) {
-        Tparam meas(p.toSparam(1,2));
+        Tparam meas(p.toSparam(port1,port2));
 
         Tparam inv1, inv2;
         if(p.frequency < points.front().freq) {
@@ -49,7 +51,7 @@ void TwoThru::transformDatapoint(VirtualDevice::VNAMeasurement &p)
         // perform correction
         Tparam corrected = inv1*meas*inv2;
         // transform back into S parameters
-        p.fromSparam(Sparam(corrected), 1, 2);
+        p.fromSparam(Sparam(corrected), port1, port2);
     }
 }
 
@@ -125,6 +127,27 @@ void TwoThru::edit()
     ui->Z0->setVisible(false);
     ui->lZ0->setVisible(false);
 
+    ui->port1->setValue(port1);
+    ui->port1->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
+    ui->port2->setValue(port2);
+    ui->port2->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
+
+    auto portChanged = [=](){
+        port1 = ui->port1->value();
+        port2 = ui->port2->value();
+        // clear all points
+        points.clear();
+        measurements2xthru.clear();
+        measurementsDUT.clear();
+        // enable taking of new measurements only if ports are different
+        ui->bMeasure->setEnabled(port1 != port2);
+        ui->bMeasureDUT->setEnabled(port1 != port2);
+        updateGUI();
+    };
+
+    connect(ui->port1, qOverload<int>(&QSpinBox::valueChanged), portChanged);
+    connect(ui->port2, qOverload<int>(&QSpinBox::valueChanged), portChanged);
+
     connect(ui->bMeasure, &QPushButton::clicked, [=](){
         measuringDUT = false;
         measuring2xthru = true;
@@ -168,6 +191,8 @@ void TwoThru::edit()
 nlohmann::json TwoThru::toJSON()
 {
     nlohmann::json j;
+    j["port1"] = port1;
+    j["port2"] = port2;
     for(auto p : points) {
         nlohmann::json jp;
         jp["frequency"] = p.freq;
@@ -194,6 +219,8 @@ nlohmann::json TwoThru::toJSON()
 
 void TwoThru::fromJSON(nlohmann::json j)
 {
+    port1 = j.value("port1", 1);
+    port2 = j.value("port2", 2);
     points.clear();
     for(auto jp : j) {
         Point p;
@@ -229,10 +256,11 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VirtualDevi
             // ignore possible DC point
             continue;
         }
-        S11.push_back(m.measurements["S11"]);
-        S12.push_back(m.measurements["S12"]);
-        S21.push_back(m.measurements["S21"]);
-        S22.push_back(m.measurements["S22"]);
+        auto S = m.toSparam(port1, port2);
+        S11.push_back(S.m11);
+        S12.push_back(S.m12);
+        S21.push_back(S.m21);
+        S22.push_back(S.m22);
         f.push_back(m.frequency);
     }
     auto n = f.size();

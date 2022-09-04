@@ -77,11 +77,13 @@ private:
     MatchingComponent *componentAtPosition(int pos);
     unsigned int findInsertPosition(int xcoord);
     void addComponentAtPosition(int pos, MatchingComponent *c);
-    void addComponent(bool port1, int index, MatchingComponent *c);
+    void addComponent(int index, MatchingComponent *c);
     void createDragComponent(MatchingComponent *c);
     void updateInsertIndicator(int xcoord);
     bool eventFilter(QObject *object, QEvent *event) override;
-    std::vector<MatchingComponent*> p1Network, p2Network;
+
+    std::vector<MatchingComponent*> network;
+    int port;
 
     QWidget *graph, *insertIndicator;
     QPoint dragStartPosition;
@@ -91,7 +93,7 @@ private:
 
     class MatchingPoint {
     public:
-        ABCDparam p1, p2;
+        ABCDparam p;
     };
     std::map<double, MatchingPoint> matching;
 
