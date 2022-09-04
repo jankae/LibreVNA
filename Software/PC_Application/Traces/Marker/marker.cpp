@@ -684,18 +684,51 @@ void Marker::traceDataChanged()
 void Marker::updateSymbol()
 {
     if(isDisplayedMarker()) {
-        constexpr int width = 15, height = 15;
-        symbol = QPixmap(width, height);
-        symbol.fill(Qt::transparent);
-        QPainter p(&symbol);
-        p.setRenderHint(QPainter::Antialiasing);
-        QPointF points[] = {QPointF(0,0),QPointF(width,0),QPointF(width/2,height)};
-        auto traceColor = parentTrace->color();
-        p.setPen(traceColor);
-        p.setBrush(traceColor);
-        p.drawConvexPolygon(points, 3);
-        p.setPen(Util::getFontColorFromBackground(traceColor));
-        p.drawText(QRectF(0,0,width, height*2.0/3.0), Qt::AlignCenter, QString::number(number) + suffix);
+        auto style = Preferences::getInstance().Marker.symbolStyle;
+        switch(style) {
+        case MarkerSymbolStyle::FilledNumberInside: {
+            constexpr int width = 15, height = 15;
+            symbol = QPixmap(width, height);
+            symbol.fill(Qt::transparent);
+            QPainter p(&symbol);
+            p.setRenderHint(QPainter::Antialiasing);
+            QPointF points[] = {QPointF(0,0),QPointF(width,0),QPointF(width/2,height)};
+            auto traceColor = parentTrace->color();
+            p.setPen(traceColor);
+            p.setBrush(traceColor);
+            p.drawConvexPolygon(points, 3);
+            p.setPen(Util::getFontColorFromBackground(traceColor));
+            p.drawText(QRectF(0,0,width, height * 2.0 / 3.0), Qt::AlignCenter, QString::number(number) + suffix);
+        }
+            break;
+        case MarkerSymbolStyle::FilledNumberAbove: {
+            constexpr int width = 15, height = 30;
+            symbol = QPixmap(width, height);
+            symbol.fill(Qt::transparent);
+            QPainter p(&symbol);
+            p.setRenderHint(QPainter::Antialiasing);
+            QPointF points[] = {QPointF(0,height/2),QPointF(width,height/2),QPointF(width/2,height)};
+            auto traceColor = parentTrace->color();
+            p.setPen(traceColor);
+            p.setBrush(traceColor);
+            p.drawConvexPolygon(points, 3);
+            p.drawText(QRectF(0,0,width, height * 0.45), Qt::AlignCenter, QString::number(number) + suffix);
+        }
+            break;
+        case MarkerSymbolStyle::EmptyNumberAbove: {
+            constexpr int width = 15, height = 30;
+            symbol = QPixmap(width, height);
+            symbol.fill(Qt::transparent);
+            QPainter p(&symbol);
+            p.setRenderHint(QPainter::Antialiasing);
+            QPointF points[] = {QPointF(0,height/2),QPointF(width,height/2),QPointF(width/2,height)};
+            auto traceColor = parentTrace->color();
+            p.setPen(traceColor);
+            p.drawConvexPolygon(points, 3);
+            p.drawText(QRectF(0,0,width, height * 0.45), Qt::AlignCenter, QString::number(number) + suffix);
+        }
+            break;
+        }
     } else {
         symbol = QPixmap(1,1);
     }

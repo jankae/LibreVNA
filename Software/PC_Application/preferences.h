@@ -32,6 +32,14 @@ enum MarkerSortOrder {
 
 Q_DECLARE_METATYPE(MarkerSortOrder);
 
+enum MarkerSymbolStyle {
+    FilledNumberInside = 0,
+    FilledNumberAbove = 1,
+    EmptyNumberAbove = 2,
+};
+
+Q_DECLARE_METATYPE(MarkerSymbolStyle);
+
 
 class Preferences : public Savable {
 public:
@@ -124,6 +132,7 @@ public:
         } defaultBehavior;
         bool interpolatePoints;
         MarkerSortOrder sortOrder;
+        MarkerSymbolStyle symbolStyle;
     } Marker;
     struct {
         bool enabled;
@@ -194,6 +203,7 @@ private:
         {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
         {&Marker.sortOrder, "Marker.sortOrder", MarkerSortOrder::PrefMarkerSortXCoord},
+        {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::EmptyNumberAbove},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
     }};
