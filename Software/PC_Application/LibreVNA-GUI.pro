@@ -1,5 +1,8 @@
 HEADERS += \
     ../VNA_embedded/Application/Communication/Protocol.hpp \
+    Calibration/LibreCAL/caldevice.h \
+    Calibration/LibreCAL/librecaldialog.h \
+    Calibration/LibreCAL/usbdevice.h \
     Calibration/amplitudecaldialog.h \
     Calibration/calibration.h \
     Calibration/calibrationmeasurement.h \
@@ -139,6 +142,9 @@ HEADERS += \
 
 SOURCES += \
     ../VNA_embedded/Application/Communication/Protocol.cpp \
+    Calibration/LibreCAL/caldevice.cpp \
+    Calibration/LibreCAL/librecaldialog.cpp \
+    Calibration/LibreCAL/usbdevice.cpp \
     Calibration/amplitudecaldialog.cpp \
     Calibration/calibration.cpp \
     Calibration/calibrationmeasurement.cpp \
@@ -276,6 +282,7 @@ FORMS += \
     Calibration/CalStandardOpenEditDialog.ui \
     Calibration/CalStandardShortEditDialog.ui \
     Calibration/CalStandardThroughEditDialog.ui \
+    Calibration/LibreCAL/librecaldialog.ui \
     Calibration/addamplitudepointsdialog.ui \
     Calibration/amplitudecaldialog.ui \
     Calibration/automaticamplitudedialog.ui \

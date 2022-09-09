@@ -6,6 +6,8 @@
 #include "calstandard.h"
 #include "savable.h"
 
+#include "LibreCAL/caldevice.h"
+
 #include <string>
 #include <complex>
 #include <QDir>
@@ -41,6 +43,7 @@ public:
 
     void toFile(QString filename);
     static Calkit fromFile(QString filename);
+    static Calkit fromLibreCAL(CalDevice *device, CalDevice::CoefficientSet s);
     void edit(std::function<void(void)> updateCal = nullptr);
 
     std::vector<CalStandard::Virtual *> getStandards() const;

@@ -86,6 +86,16 @@ unsigned long long Virtual::getID()
     return id;
 }
 
+QString Virtual::getName() const
+{
+    return name;
+}
+
+void Virtual::setName(const QString &value)
+{
+    name = value;
+}
+
 void OnePort::setMeasurement(const Touchstone &ts, int port)
 {
     if(!touchstone) {

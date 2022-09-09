@@ -42,6 +42,8 @@ Trace::Trace(QString name, QColor color, QString live)
     mathCalcTimer.setSingleShot(true);
     connect(&mathCalcTimer, &QTimer::timeout, this, &Trace::calculateMath);
 
+    fromLivedata(LivedataType::Overwrite, live);
+
     self.enabled = false;
     dataType = DataType::Frequency;
     connect(this, &Trace::typeChanged, [=](){

@@ -3,6 +3,7 @@
 #include "CustomWidgets/informationbox.h"
 #include "Util/app_common.h"
 #include "unit.h"
+#include "LibreCAL/librecaldialog.h"
 
 #include "Eigen/Dense"
 
@@ -337,6 +338,11 @@ void Calibration::edit()
         }
         updateMeasurementTable();
         updateCalibrationList();
+    });
+
+    connect(ui->eCal, &QPushButton::clicked, [=](){
+        auto d = new LibreCALDialog(this);
+        d->show();
     });
 
     QObject::connect(ui->table, &QTableWidget::currentCellChanged, updateTableEditButtons);

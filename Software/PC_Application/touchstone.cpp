@@ -445,3 +445,8 @@ void Touchstone::setReferenceImpedance(double value)
 {
     referenceImpedance = value;
 }
+
+void Touchstone::setFilename(const QString &value)
+{
+    filename = value;
+}

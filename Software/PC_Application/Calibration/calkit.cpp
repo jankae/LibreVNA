@@ -328,6 +328,47 @@ Calkit Calkit::fromFile(QString filename)
     return c;
 }
 
+Calkit Calkit::fromLibreCAL(CalDevice *device, CalDevice::CoefficientSet s)
+{
+    Calkit ret;
+    ret.manufacturer = "LibreCAL ("+s.name+")";
+    ret.serialnumber = device->serial();
+    ret.description = "Automatically created from LibreCAL module";
+    for(int i=1;i<=device->getNumPorts();i++) {
+        if(s.opens[i-1]->t.points() > 0) {
+            auto o = new CalStandard::Open();
+            o->setName("Port "+QString::number(i)+" Open");
+            o->setMeasurement(s.opens[i-1]->t);
+            ret.standards.push_back(o);
+        }
+        if(s.shorts[i-1]->t.points() > 0) {
+            auto o = new CalStandard::Short();
+            o->setName("Port "+QString::number(i)+" Short");
+            o->setMeasurement(s.shorts[i-1]->t);
+            ret.standards.push_back(o);
+        }
+        if(s.loads[i-1]->t.points() > 0) {
+            auto o = new CalStandard::Load();
+            o->setName("Port "+QString::number(i)+" Load");
+            o->setMeasurement(s.loads[i-1]->t);
+            ret.standards.push_back(o);
+        }
+        for(int j=i+1;j<=device->getNumPorts();j++) {
+            auto c = s.getThrough(i,j);
+            if(!c) {
+                continue;
+            }
+            if(c->t.points() > 0) {
+                auto o = new CalStandard::Through();
+                o->setName("Port "+QString::number(i)+" to "+QString::number(j)+" Through");
+                o->setMeasurement(c->t);
+                ret.standards.push_back(o);
+            }
+        }
+    }
+    return ret;
+}
+
 void Calkit::edit(std::function<void (void)> updateCal)
 {
     auto dialog = new CalkitDialog(*this);

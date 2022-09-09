@@ -43,6 +43,9 @@ public:
 
     unsigned long long getID();
 
+    QString getName() const;
+    void setName(const QString &value);
+
 protected:
     QString name;
     double minFreq;

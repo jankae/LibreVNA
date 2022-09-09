@@ -47,12 +47,14 @@ public:
     void reduceTo1Port(unsigned int port);
     unsigned int ports() { return m_ports; }
     QString getFilename() const;
+    void setFilename(const QString &value);
 
     virtual nlohmann::json toJSON();
     virtual void fromJSON(nlohmann::json j);
 
     double getReferenceImpedance() const;
     void setReferenceImpedance(double value);
+
 
 private:
     unsigned int m_ports;
