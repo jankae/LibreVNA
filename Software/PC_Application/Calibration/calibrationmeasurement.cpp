@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QCheckBox>
 
 using namespace std;
 
@@ -366,6 +367,8 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
     auto cbPort1 = new QComboBox();
     auto label2 = new QLabel(" to ");
     auto cbPort2 = new QComboBox();
+    auto cbReverse = new QCheckBox("Reversed");
+    cbReverse->setToolTip("Enable this option if the calibration standard is defined with the port order swapped");
     auto dev = VirtualDevice::getConnected();
     if(dev) {
         for(int i=1;i<=dev->getInfo().ports;i++) {
@@ -389,11 +392,15 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
         cbPort2->addItem(QString::number(port2));
         cbPort2->setCurrentText(QString::number(port2));
     }
+    cbReverse->setChecked(reverseStandard);
     connect(cbPort1, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         setPort1(cbPort1->currentText().toInt());
     });
     connect(cbPort2, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         setPort2(cbPort2->currentText().toInt());
+    });
+    connect(cbReverse, &QCheckBox::toggled, [=](){
+        setReverseStandard(cbReverse->isChecked());
     });
     connect(this, &TwoPort::port1Changed, cbPort1, [=](){
         auto string = QString::number(port1);
@@ -411,6 +418,9 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
         }
         cbPort2->setCurrentText(string);
     });
+    connect(this, &TwoPort::reverseStandardChanged, cbReverse, [=](){
+        cbReverse->setChecked(reverseStandard);
+    });
     auto ret = new QWidget();
     auto layout = new QHBoxLayout;
     layout->setContentsMargins(0,0,0,0);
@@ -418,6 +428,7 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
     layout->addWidget(cbPort1);
     layout->addWidget(label2);
     layout->addWidget(cbPort2);
+    layout->addWidget(cbReverse);
     layout->setStretch(1, 1);
     layout->setStretch(3, 1);
     ret->setLayout(layout);
@@ -429,6 +440,7 @@ nlohmann::json CalibrationMeasurement::TwoPort::toJSON()
     auto j = Base::toJSON();
     j["port1"] = port1;
     j["port2"] = port2;
+    j["reverseStandard"] = reverseStandard;
     nlohmann::json jpoints;
     for(auto &p : points) {
         nlohmann::json jpoint;
@@ -446,6 +458,7 @@ void CalibrationMeasurement::TwoPort::fromJSON(nlohmann::json j)
     Base::fromJSON(j);
     port1 = j.value("port1", 0);
     port2 = j.value("port2", 0);
+    reverseStandard = j.value("reverseStandard", false);
     if(j.contains("points")) {
         for(auto jpoint : j["points"]) {
             Point p;
@@ -479,7 +492,12 @@ Sparam CalibrationMeasurement::TwoPort::getMeasured(double frequency)
 
 Sparam CalibrationMeasurement::TwoPort::getActual(double frequency)
 {
-    return static_cast<CalStandard::TwoPort*>(standard)->toSparam(frequency);
+    auto param = static_cast<CalStandard::TwoPort*>(standard)->toSparam(frequency);
+    if(reverseStandard) {
+        swap(param.m11, param.m22);
+        swap(param.m12, param.m21);
+    }
+    return param;
 }
 
 int CalibrationMeasurement::TwoPort::getPort2() const
@@ -500,6 +518,14 @@ void CalibrationMeasurement::TwoPort::setPort2(int p)
     if(port2 != p) {
         port2 = p;
         emit port2Changed(p);
+    }
+}
+
+void CalibrationMeasurement::TwoPort::setReverseStandard(bool reverse)
+{
+    if(reverseStandard != reverse) {
+        reverseStandard = reverse;
+        emit reverseStandardChanged(reverse);
     }
 }
 

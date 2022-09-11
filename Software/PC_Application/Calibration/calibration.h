@@ -9,6 +9,8 @@
 class Calibration : public QObject, public Savable
 {
     Q_OBJECT
+
+    friend class LibreCALDialog;
 public:
     Calibration();
 
@@ -20,7 +22,7 @@ public:
     class CalType {
     public:
         Type type;
-        std::vector<int> usedPorts;
+        std::vector<int> usedPorts; // port count starts at 1
         QString getReadableDescription();
         QString getShortString();
 

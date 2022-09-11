@@ -15,6 +15,7 @@
 class Calkit : public Savable
 {
     friend class CalkitDialog;
+    friend class LibreCALDialog;
 public:
     Calkit();
     Calkit(const Calkit&) = default;
@@ -43,7 +44,6 @@ public:
 
     void toFile(QString filename);
     static Calkit fromFile(QString filename);
-    static Calkit fromLibreCAL(CalDevice *device, CalDevice::CoefficientSet s);
     void edit(std::function<void(void)> updateCal = nullptr);
 
     std::vector<CalStandard::Virtual *> getStandards() const;

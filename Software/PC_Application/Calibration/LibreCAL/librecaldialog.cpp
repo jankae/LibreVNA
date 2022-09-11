@@ -219,13 +219,202 @@ void LibreCALDialog::updateDeviceStatus()
 
 void LibreCALDialog::startCalibration()
 {
+    disableUI();
+
+    ui->progressCal->setValue(0);
+    ui->lCalibrationStatus->setText("Creating calibration kit from coefficients...");
+    ui->lCalibrationStatus->setStyleSheet("QLabel { color : black; }");
+    auto& kit = cal->getKit();
+    kit.clearStandards();
+    kit.manufacturer = "LibreCAL ("+coeffSet.name+")";
+    kit.serialnumber = device->serial();
+    kit.description = "Automatically created from LibreCAL module";
+    std::vector<CalStandard::Virtual*> openStandards;
+    std::vector<CalStandard::Virtual*> shortStandards;
+    std::vector<CalStandard::Virtual*> loadStandards;
+    std::vector<CalStandard::Virtual*> throughStandards;
+    for(int i=1;i<=device->getNumPorts();i++) {
+        if(coeffSet.opens[i-1]->t.points() > 0) {
+            auto o = new CalStandard::Open();
+            o->setName("Port "+QString::number(i));
+            o->setMeasurement(coeffSet.opens[i-1]->t);
+            openStandards.push_back(o);
+            kit.standards.push_back(o);
+        }
+        if(coeffSet.shorts[i-1]->t.points() > 0) {
+            auto o = new CalStandard::Short();
+            o->setName("Port "+QString::number(i));
+            o->setMeasurement(coeffSet.shorts[i-1]->t);
+            shortStandards.push_back(o);
+            kit.standards.push_back(o);
+        }
+        if(coeffSet.loads[i-1]->t.points() > 0) {
+            auto o = new CalStandard::Load();
+            o->setName("Port "+QString::number(i));
+            o->setMeasurement(coeffSet.loads[i-1]->t);
+            loadStandards.push_back(o);
+            kit.standards.push_back(o);
+        }
+        for(int j=i+1;j<=device->getNumPorts();j++) {
+            auto c = coeffSet.getThrough(i,j);
+            if(!c) {
+                continue;
+            }
+            if(c->t.points() > 0) {
+                auto o = new CalStandard::Through();
+                o->setName("Port "+QString::number(i)+" to "+QString::number(j));
+                o->setMeasurement(c->t);
+                throughStandards.push_back(o);
+                kit.standards.push_back(o);
+            }
+        }
+    }
+    ui->lCalibrationStatus->setText("Creating calibration measurements...");
+    cal->reset();
+    auto vnaPorts = VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;
+    set<CalibrationMeasurement::Base*> openMeasurements;
+    set<CalibrationMeasurement::Base*> shortMeasurements;
+    set<CalibrationMeasurement::Base*> loadMeasurements;
+    vector<CalibrationMeasurement::TwoPort*> throughMeasurements;
+    for(int p=0;p<vnaPorts;p++) {
+        if(portAssignment[p] == 0) {
+            continue;
+        }
+        // Create SOL measurements with correct port of calkit
+        auto open = new CalibrationMeasurement::Open(cal);
+        open->setPort(p+1);
+        open->setStandard(openStandards[portAssignment[p]-1]);
+        openMeasurements.insert(open);
+        cal->measurements.push_back(open);
+
+        auto _short = new CalibrationMeasurement::Short(cal);
+        _short->setPort(p+1);
+        _short->setStandard(shortStandards[portAssignment[p]-1]);
+        shortMeasurements.insert(_short);
+        cal->measurements.push_back(_short);
+
+        auto load = new CalibrationMeasurement::Load(cal);
+        load->setPort(p+1);
+        load->setStandard(loadStandards[portAssignment[p]-1]);
+        loadMeasurements.insert(load);
+        cal->measurements.push_back(load);
+        for(int p2=p+1;p2<vnaPorts;p2++) {
+            if(portAssignment[p2] == 0) {
+                continue;
+            }
+            auto through = new CalibrationMeasurement::Through(cal);
+            through->setPort1(p+1);
+            through->setPort2(p2+1);
+            // find correct through standard
+            int libreCALp1 = portAssignment[p];
+            int libreCALp2 = portAssignment[p2];
+            QString forwardName = "Port "+QString::number(libreCALp1)+" to "+QString::number(libreCALp2);
+            QString reverseName = "Port "+QString::number(libreCALp2)+" to "+QString::number(libreCALp1);
+            for(auto ts : throughStandards) {
+                if(ts->getName() == forwardName) {
+                    through->setStandard(ts);
+                    through->setReverseStandard(false);
+                } else if(ts->getName() == reverseName) {
+                    through->setStandard(ts);
+                    through->setReverseStandard(true);
+                }
+            }
+            throughMeasurements.push_back(through);
+            cal->measurements.push_back(through);
+        }
+    }
+
+    ui->lCalibrationStatus->setText("Taking calibration measurements...");
+
+    measurementsTaken = 0;
+
+    auto setTerminationOnAllUsedPorts = [=](CalDevice::Standard s) {
+        for(auto p : portAssignment) {
+            if(p > 0) {
+                device->setStandard(p, s);
+            }
+        }
+    };
+
+    auto startNextCalibrationStep = [=]() {
+        // indicate calibration percentage
+        auto totalMeasurements = 3 + throughMeasurements.size();
+        ui->progressCal->setValue(measurementsTaken * 100 / totalMeasurements);
+        switch(measurementsTaken) {
+        case 0:
+            setTerminationOnAllUsedPorts(CalDevice::Standard::Open);
+            emit cal->startMeasurements(openMeasurements);
+            break;
+        case 1:
+            setTerminationOnAllUsedPorts(CalDevice::Standard::Short);
+            emit cal->startMeasurements(shortMeasurements);
+            break;
+        case 2:
+            setTerminationOnAllUsedPorts(CalDevice::Standard::Load);
+            emit cal->startMeasurements(loadMeasurements);
+            break;
+        default: {
+            // into through measurements now
+            int throughIndex = measurementsTaken - 3;
+            if(throughIndex >= throughMeasurements.size()) {
+                // this was the last measurement
+                // Try to apply the calibration
+                Calibration::CalType type;
+                type.type = Calibration::Type::SOLT;
+                for(int i=0;i<vnaPorts;i++) {
+                    if(portAssignment[i] > 0) {
+                        // this VNA port was used in the calibration
+                       type.usedPorts.push_back(i+1);
+                    }
+                }
+                auto res = cal->compute(type);
+                if(res) {
+                    ui->progressCal->setValue(100);
+                    ui->lCalibrationStatus->setText("Calibration activated.");
+                } else {
+                    ui->progressCal->setValue(0);
+                    ui->lCalibrationStatus->setText("Failed to activate calibration.");
+                    ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
+                }
+                // severe connection to this function
+                disconnect(cal, &Calibration::measurementsUpdated, this, nullptr);
+                enableUI();
+                break;
+            }
+            setTerminationOnAllUsedPorts(CalDevice::Standard::None);
+            auto m = throughMeasurements[throughIndex];
+            device->setStandard(m->getPort1(), CalDevice::Standard::Through);
+            device->setStandard(m->getPort2(), CalDevice::Standard::Through);
+            emit cal->startMeasurements({m});
+        }
+            break;
+        }
+        measurementsTaken++;
+    };
+
+    connect(cal, &Calibration::measurementsUpdated, this, startNextCalibrationStep);
+
+    startNextCalibrationStep();
+}
+
+void LibreCALDialog::disableUI()
+{
     ui->cbDevice->setEnabled(false);
     ui->cbCoefficients->setEnabled(false);
     ui->start->setEnabled(false);
+    for(auto cb : portAssignmentComboBoxes) {
+        cb->setEnabled(false);
+    }
+}
 
-    ui->lCalibrationStatus->setText("Creating calibration kit from coefficients...");
-    auto& kit = cal->getKit();
-    kit = Calkit::fromLibreCAL(device, coeffSet);
+void LibreCALDialog::enableUI()
+{
+    ui->cbDevice->setEnabled(true);
+    ui->cbCoefficients->setEnabled(true);
+    ui->start->setEnabled(true);
+    for(auto cb : portAssignmentComboBoxes) {
+        cb->setEnabled(true);
+    }
 }
 
 void LibreCALDialog::createPortAssignmentUI()
@@ -233,6 +422,7 @@ void LibreCALDialog::createPortAssignmentUI()
     auto layout = static_cast<QFormLayout*>(ui->assignmentBox->layout());
     // Clear any possible previous elements
     portAssignment.clear();
+    portAssignmentComboBoxes.clear();
     while(layout->rowCount() > 1) {
         layout->removeRow(1);
     }
@@ -255,7 +445,13 @@ void LibreCALDialog::createPortAssignmentUI()
             emit portAssignmentChanged();
         });
         // try to set the default
-        comboBox->setCurrentIndex(p);
+        if(comboBox->count() > p) {
+            comboBox->setCurrentIndex(p);
+        } else {
+            // port not available, set to unused
+            comboBox->setCurrentIndex(0);
+        }
         layout->addRow(label, comboBox);
+        portAssignmentComboBoxes.push_back(comboBox);
     }
 }

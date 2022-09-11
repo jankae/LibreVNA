@@ -6,6 +6,7 @@
 
 #include <QDialog>
 #include <QTimer>
+#include <QComboBox>
 
 namespace Ui {
 class LibreCALDialog;
@@ -27,6 +28,8 @@ private slots:
     void updateDeviceStatus();
     void startCalibration();
 private:
+    void disableUI();
+    void enableUI();
     void createPortAssignmentUI();
     Ui::LibreCALDialog *ui;
     Calibration *cal;
@@ -35,6 +38,9 @@ private:
     QTimer updateTimer;
     bool busy;
     std::vector<int> portAssignment;
+    std::vector<QComboBox*> portAssignmentComboBoxes;
+
+    int measurementsTaken;
 };
 
 #endif // LIBRECALDIALOG_H

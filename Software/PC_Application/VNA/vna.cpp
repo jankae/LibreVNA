@@ -19,6 +19,7 @@
 #include "CustomWidgets/informationbox.h"
 #include "Deembedding/manualdeembeddingdialog.h"
 #include "Calibration/manualcalibrationdialog.h"
+#include "Calibration/LibreCAL/librecaldialog.h"
 #include "Util/util.h"
 #include "Tools/parameters.h"
 
@@ -109,6 +110,12 @@ VNA::VNA(AppWindow *window, QString name)
 //                ApplyCalibration(cal.getType());
 //            }
 //        });
+    });
+
+    auto calElectronic = calMenu->addAction("Electronic Calibration");
+    connect(calElectronic, &QAction::triggered, [=](){
+        auto d = new LibreCALDialog(&cal);
+        d->show();
     });
 
     calMenu->addSeparator();

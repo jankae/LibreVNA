@@ -141,7 +141,8 @@ public:
     TwoPort(Calibration *cal) :
         Base(cal),
         port1(0),
-        port2(0){}
+        port2(0),
+        reverseStandard(false){}
 
     virtual double minFreq() override;
     virtual double maxFreq() override;
@@ -164,12 +165,15 @@ public:
 public slots:
     void setPort1(int p);
     void setPort2(int p);
+    void setReverseStandard(bool reverse);
 protected:
 signals:
     void port1Changed(int p);
     void port2Changed(int p);
+    void reverseStandardChanged(bool r);
 protected:
     int port1, port2;
+    bool reverseStandard; // Set to true if standard is defined with ports swapped
     class Point {
     public:
         double frequency;

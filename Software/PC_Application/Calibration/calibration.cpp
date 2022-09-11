@@ -209,21 +209,24 @@ void Calibration::edit()
         updateCalButtons();
     });
 
-    connect(ui->activate, &QPushButton::clicked, [=](){
-        auto cal = availableCals[ui->calibrationList->currentRow()];
-        if(compute(cal)) {
-            updateCalibrationList();
-            updateCalStatistics();
-            updateCalButtons();
-        }
-    });
-
-    connect(ui->deactivate, &QPushButton::clicked, [=](){
-        deactivate();
+    connect(this, &Calibration::activated, d, [=](){
         updateCalibrationList();
         updateCalStatistics();
         updateCalButtons();
     });
+
+    connect(this, &Calibration::deactivated, d, [=](){
+        updateCalibrationList();
+        updateCalStatistics();
+        updateCalButtons();
+    });
+
+    connect(ui->activate, &QPushButton::clicked, [=](){
+        auto cal = availableCals[ui->calibrationList->currentRow()];
+        compute(cal);
+    });
+
+    connect(ui->deactivate, &QPushButton::clicked, this, &Calibration::deactivate);
 
     ui->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -263,6 +266,9 @@ void Calibration::edit()
         if(measurements.size() > 0) {
             if(!InformationBox::AskQuestion("Create default entries?", "Do you want to remove all existing entries and create default calibration measurements instead?", true)) {
                 // user aborted
+                ui->createDefault->blockSignals(true);
+                ui->createDefault->setCurrentIndex(0);
+                ui->createDefault->blockSignals(false);
                 return;
             }
             measurements.clear();
@@ -343,6 +349,10 @@ void Calibration::edit()
     connect(ui->eCal, &QPushButton::clicked, [=](){
         auto d = new LibreCALDialog(this);
         d->show();
+    });
+
+    connect(ui->editCalkit, &QPushButton::clicked, [=](){
+        kit.edit();
     });
 
     QObject::connect(ui->table, &QTableWidget::currentCellChanged, updateTableEditButtons);
