@@ -328,6 +328,11 @@ void CalibrationMeasurement::OnePort::setPort(int p)
     }
 }
 
+std::vector<CalibrationMeasurement::OnePort::Point> CalibrationMeasurement::OnePort::getPoints() const
+{
+    return points;
+}
+
 double CalibrationMeasurement::TwoPort::minFreq()
 {
     if(points.size() > 0) {
@@ -529,6 +534,11 @@ void CalibrationMeasurement::TwoPort::setReverseStandard(bool reverse)
     }
 }
 
+std::vector<CalibrationMeasurement::TwoPort::Point> CalibrationMeasurement::TwoPort::getPoints() const
+{
+    return points;
+}
+
 int CalibrationMeasurement::TwoPort::getPort1() const
 {
     return port1;
@@ -657,4 +667,9 @@ std::complex<double> CalibrationMeasurement::Isolation::getMeasured(double frequ
     } else {
         return p.S[portRcv][portSrc];
     }
+}
+
+std::vector<CalibrationMeasurement::Isolation::Point> CalibrationMeasurement::Isolation::getPoints() const
+{
+    return points;
 }

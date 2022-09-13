@@ -24,6 +24,11 @@ PortExtension::PortExtension()
     kit = nullptr;
 }
 
+std::set<int> PortExtension::getAffectedPorts()
+{
+    return {port};
+}
+
 void PortExtension::transformDatapoint(VirtualDevice::VNAMeasurement &d)
 {
     auto phase = -2 * M_PI * ext.delay * d.frequency;
@@ -72,6 +77,8 @@ void PortExtension::edit()
     ui->DCloss->setValue(ext.DCloss);
     ui->Loss->setValue(ext.loss);
     ui->Frequency->setValue(ext.frequency);
+    ui->port->setValue(port);
+    ui->port->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
     if(!kit) {
         ui->calkit->setEnabled(false);
     }
@@ -96,6 +103,9 @@ void PortExtension::edit()
     connect(ui->Velocity, &SIUnitEdit::valueChanged, [=](double newval) {
         ui->Time->setValueQuiet(ui->Distance->value() / (newval * c));
         updateValuesFromUI();
+    });
+    connect(ui->port, qOverload<int>(&QSpinBox::valueChanged), [=](){
+        port = ui->port->value();
     });
     connect(ui->DCloss, &SIUnitEdit::valueChanged, updateValuesFromUI);
     connect(ui->Loss, &SIUnitEdit::valueChanged, updateValuesFromUI);

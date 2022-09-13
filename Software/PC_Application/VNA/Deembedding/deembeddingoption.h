@@ -23,6 +23,7 @@ public:
     static DeembeddingOption *create(Type type);
     static QString getName(Type type);
 
+    virtual std::set<int> getAffectedPorts() = 0;
     virtual void transformDatapoint(VirtualDevice::VNAMeasurement &p) = 0;
     virtual void edit(){}
     virtual Type getType() = 0;
@@ -33,7 +34,7 @@ signals:
     // Deembedding option may selfdestruct if not applicable with current settings. It should emit this signal before deleting itself
     void deleted(DeembeddingOption *option);
 
-   void triggerMeasurement(bool S11 = true, bool S12 = true, bool S21 = true, bool S22 = true);
+   void triggerMeasurement();
 };
 
 #endif // DEEMBEDDING_H

@@ -64,6 +64,7 @@ public:
 
     // DeembeddingOption interface
 public:
+    std::set<int> getAffectedPorts() override;
     void transformDatapoint(VirtualDevice::VNAMeasurement &p) override;
     void edit() override;
     Type getType() override {return Type::MatchingNetwork;}

@@ -17,6 +17,11 @@ TwoThru::TwoThru()
     port2 = 2;
 }
 
+std::set<int> TwoThru::getAffectedPorts()
+{
+    return {port1, port2};
+}
+
 void TwoThru::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
     // correct measurement

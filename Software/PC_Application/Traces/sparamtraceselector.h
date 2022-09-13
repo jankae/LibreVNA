@@ -3,6 +3,8 @@
 
 #include "tracemodel.h"
 
+#include <vector>
+#include <map>
 #include <QWidget>
 #include <QComboBox>
 
@@ -11,12 +13,13 @@ class SparamTraceSelector : public QWidget
     Q_OBJECT
 
 public:
-    SparamTraceSelector(const TraceModel &model, unsigned int num_ports, bool empty_allowed = false, std::set<unsigned int> skip = {});
+    SparamTraceSelector(const TraceModel &model, std::vector<int> used_ports, bool empty_allowed = false);
+    SparamTraceSelector(const TraceModel &model, std::set<int> used_ports, bool empty_allowed = false);
 
     bool isValid();
 
-    std::vector<Trace*> getTraces();
-    unsigned int getPoints() { return points;};
+    std::map<QString, Trace*> getTraces();
+    unsigned int getPoints() { return points;}
 
 signals:
     void selectionValid(bool valid);
@@ -24,12 +27,13 @@ signals:
 private:
     void setInitialChoices();
     void traceSelectionChanged(QComboBox *cb);
+    void createGUI();
 
     const TraceModel &model;
     std::vector<QComboBox*> boxes;
-    unsigned int num_ports;
     bool empty_allowed;
 
+    std::vector<int> used_ports;
     unsigned int points;
     double minFreq, maxFreq;
     bool valid;

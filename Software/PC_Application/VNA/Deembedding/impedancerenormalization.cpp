@@ -15,6 +15,15 @@ ImpedanceRenormalization::ImpedanceRenormalization()
 
 }
 
+std::set<int> ImpedanceRenormalization::getAffectedPorts()
+{
+    set<int> ret;
+    for(int i=1;i<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
+        ret.insert(i);
+    }
+    return ret;
+}
+
 void ImpedanceRenormalization::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
     std::map<QString, std::complex<double>> transformed;

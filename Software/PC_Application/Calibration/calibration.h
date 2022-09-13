@@ -17,6 +17,7 @@ public:
     enum class Type {
         None,
         SOLT,
+        ThroughNormalization,
         Last,
     };
     class CalType {
@@ -36,6 +37,7 @@ public:
 
     // Applies calculated calibration coefficients to measurement data
     void correctMeasurement(VirtualDevice::VNAMeasurement &d);
+    void correctTraces(std::map<QString, Trace*> traceSet);
 
     // Starts the calibration edit dialog, allowing the user to make/delete measurements
     void edit();
@@ -123,8 +125,8 @@ private:
     public:
         double frequency;
         std::vector<std::complex<double>> D; // Directivity
-        std::vector<std::complex<double>> R; // Source Match
-        std::vector<std::complex<double>> S; // Reflection tracking
+        std::vector<std::complex<double>> R; // Reflection tracking
+        std::vector<std::complex<double>> S; // Source Match
         std::vector<std::vector<std::complex<double>>> L; // Receiver Match
         std::vector<std::vector<std::complex<double>>> T; // Transmission tracking
         std::vector<std::vector<std::complex<double>>> I; // Transmission isolation
@@ -132,7 +134,9 @@ private:
     };
     std::vector<Point> points;
 
+    Point createInitializedPoint(double f);
     Point computeSOLT(double f);
+    Point computeThroughNormalization(double f);
 
     std::vector<CalibrationMeasurement::Base*> measurements;
 

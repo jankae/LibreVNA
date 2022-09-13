@@ -30,7 +30,7 @@ void Deembedding::measurementCompleted()
     measurementUI = nullptr;
 }
 
-void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
+void Deembedding::startMeasurementDialog(DeembeddingOption *option)
 {
     measurements.clear();
     measurementDialog = new QDialog;
@@ -42,20 +42,7 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
     });
 
     // add the trace selector
-    set<unsigned int> skip;
-    if(!S11) {
-        skip.insert(0);
-    }
-    if(!S12) {
-        skip.insert(1);
-    }
-    if(!S21) {
-        skip.insert(2);
-    }
-    if(!S22) {
-        skip.insert(3);
-    }
-    auto traceChooser = new SparamTraceSelector(tm, 2, false, skip);
+    auto traceChooser = new SparamTraceSelector(tm, option->getAffectedPorts());
     ui->horizontalLayout_2->insertWidget(0, traceChooser, 1);
 
     connect(traceChooser, &SparamTraceSelector::selectionValid, ui->buttonBox, &QDialogButtonBox::setEnabled);
@@ -70,33 +57,8 @@ void Deembedding::startMeasurementDialog(bool S11, bool S12, bool S21, bool S22)
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
         // create datapoints from individual traces
         measurements.clear();
-        auto t = traceChooser->getTraces();
-        auto S11 = t[0];
-        auto S12 = t[1];
-        auto S21 = t[2];
-        auto S22 = t[3];
-        for(unsigned int i=0;i<traceChooser->getPoints();i++) {
-            VirtualDevice::VNAMeasurement p;
-            p.pointNum = i;
-            p.Z0 = 0;
-            p.dBm = 0;
-            Sparam S;
-            if(S11) {
-                S.m11 = S11->sample(i).y;
-                p.frequency = S11->sample(i).x;
-            }
-            if(S12) {
-                S.m12 = S12->sample(i).y;
-                p.frequency = S11->sample(i).x;
-            }
-            if(S21) {
-                S.m21 = S21->sample(i).y;
-                p.frequency = S11->sample(i).x;
-            }
-            if(S22) {
-                S.m22 = S22->sample(i).y;
-                p.frequency = S11->sample(i).x;
-            }
+        auto points = Trace::assembleDatapoints(traceChooser->getTraces());
+        for(auto p : points) {
             measurements.push_back(p);
         }
         measurementCompleted();
@@ -151,15 +113,15 @@ void Deembedding::Deembed(VirtualDevice::VNAMeasurement &d)
     }
 }
 
-void Deembedding::Deembed(Trace &S11, Trace &S12, Trace &S21, Trace &S22)
+void Deembedding::Deembed(std::map<QString, Trace *> traceSet)
 {
-    auto points = Trace::assembleDatapoints(S11, S12, S21, S22);
+    auto points = Trace::assembleDatapoints(traceSet);
     if(points.size()) {
         // succeeded in assembling datapoints
         for(auto &p : points) {
             Deembed(p);
         }
-        Trace::fillFromDatapoints(S11, S12, S21, S22, points);
+        Trace::fillFromDatapoints(traceSet, points);
     }
 }
 
@@ -184,9 +146,9 @@ void Deembedding::addOption(DeembeddingOption *option)
             options.erase(pos);
         }
     });
-    connect(option, &DeembeddingOption::triggerMeasurement, [=](bool S11, bool S12, bool S21, bool S22) {
+    connect(option, &DeembeddingOption::triggerMeasurement, [=]() {
         measuringOption = option;
-        startMeasurementDialog(S11, S12, S21, S22);
+        startMeasurementDialog(option);
     });
     emit optionAdded();
 }
@@ -197,6 +159,16 @@ void Deembedding::swapOptions(unsigned int index)
         return;
     }
     std::swap(options[index], options[index+1]);
+}
+
+std::set<int> Deembedding::getAffectedPorts()
+{
+    set<int> ret;
+    for(auto o : options) {
+        auto affected = o->getAffectedPorts();
+        ret.insert(affected.begin(), affected.end());
+    }
+    return ret;
 }
 
 nlohmann::json Deembedding::toJSON()

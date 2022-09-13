@@ -45,6 +45,7 @@ QString Calibration::TypeToString(Calibration::Type type)
     switch(type) {
     case Type::None: return "None";
     case Type::SOLT: return "SOLT";
+    case Type::ThroughNormalization: return "ThroughNormalization";
     case Type::Last: return "Invalid";
     }
 }
@@ -131,6 +132,18 @@ void Calibration::correctMeasurement(VirtualDevice::VNAMeasurement &d)
             auto name = "S"+QString::number(pRcv)+QString::number(pSrc);
             d.measurements[name] = S(j,i);
         }
+    }
+}
+
+void Calibration::correctTraces(std::map<QString, Trace *> traceSet)
+{
+    auto points = Trace::assembleDatapoints(traceSet);
+    if(points.size()) {
+        // succeeded in assembling datapoints
+        for(auto &p : points) {
+            correctMeasurement(p);
+        }
+        Trace::fillFromDatapoints(traceSet, points);
     }
 }
 
@@ -390,8 +403,7 @@ CalibrationMeasurement::Base *Calibration::newMeasurement(CalibrationMeasurement
     return m;
 }
 
-Calibration::Point Calibration::computeSOLT(double f)
-{
+Calibration::Point Calibration::createInitializedPoint(double f) {
     Point point;
     point.frequency = f;
     // resize vectors
@@ -405,6 +417,12 @@ Calibration::Point Calibration::computeSOLT(double f)
     fill(point.L.begin(), point.L.end(), vector<complex<double>>(caltype.usedPorts.size()));
     fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size()));
     fill(point.I.begin(), point.I.end(), vector<complex<double>>(caltype.usedPorts.size()));
+    return point;
+}
+
+Calibration::Point Calibration::computeSOLT(double f)
+{
+    Point point = createInitializedPoint(f);
 
     // Calculate SOL coefficients
     for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
@@ -464,6 +482,47 @@ Calibration::Point Calibration::computeSOLT(double f)
     return point;
 }
 
+Calibration::Point Calibration::computeThroughNormalization(double f)
+{
+    Point point = createInitializedPoint(f);
+
+    // Calculate SOL coefficients
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        // use ideal coefficients
+        point.D[i] = 0.0;
+        point.S[i] = 0.0;
+        point.R[i] = 1.0;
+    }
+    // calculate forward match and transmission
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
+            if(i == j) {
+                // this is the exciting port, SOL error box used here
+                continue;
+            }
+            auto p1 = caltype.usedPorts[i];
+            auto p2 = caltype.usedPorts[j];
+            // grab measurement and calkit through definitions
+            auto throughForward = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p1, p2));
+            auto throughReverse = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p2, p1));
+            complex<double> S11, S21;
+            Sparam Sideal;
+            if(throughForward) {
+                S21 = throughForward->getMeasured(f).m21;
+                Sideal = throughForward->getActual(f);
+            } else if(throughReverse) {
+                S21 = throughReverse->getMeasured(f).m12;
+                Sideal = throughReverse->getActual(f);
+                swap(Sideal.m12, Sideal.m21);
+            }
+            point.L[i][j] = 0.0;
+            point.T[i][j] = S21 / Sideal.m21;
+            point.I[i][j] = 0.0;
+        }
+    }
+    return point;
+}
+
 Calibration::CalType Calibration::getCaltype() const
 {
     return caltype;
@@ -504,12 +563,151 @@ Calibration::InterpolationType Calibration::getInterpolation(double f_start, dou
 
 std::vector<Trace *> Calibration::getErrorTermTraces()
 {
-    return vector<Trace*>(); // TODO
+    vector<Trace*> ret;
+    if(points.size() == 0) {
+        return ret;
+    }
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        auto p = caltype.usedPorts[i];
+        auto tDir = new Trace("Directivity_Port"+QString::number(p));
+        tDir->setReflection(true);
+        tDir->setCalibration();
+        auto tSM = new Trace("SourceMatch_Port"+QString::number(p));
+        tSM->setReflection(true);
+        tSM->setCalibration();
+        auto tRT = new Trace("ReflectionTracking_Port"+QString::number(p));
+        tRT->setReflection(false);
+        tRT->setCalibration();
+        for(auto p : points) {
+            Trace::Data td;
+            td.x = p.frequency;
+            td.y = p.D[i];
+            tDir->addData(td, Trace::DataType::Frequency);
+            td.y = p.S[i];
+            tSM->addData(td, Trace::DataType::Frequency);
+            td.y = p.R[i];
+            tRT->addData(td, Trace::DataType::Frequency);
+        }
+        ret.push_back(tDir);
+        ret.push_back(tSM);
+        ret.push_back(tRT);
+        for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
+            if(i==j) {
+                continue;
+            }
+            auto p2 = caltype.usedPorts[j];
+            auto tRM = new Trace("ReceiverMatch_"+QString::number(p)+QString::number(p2));
+            tRM->setReflection(true);
+            tRM->setCalibration();
+            auto tTT = new Trace("TransmissionTracking_"+QString::number(p)+QString::number(p2));
+            tTT->setReflection(false);
+            tTT->setCalibration();
+            auto tTI = new Trace("TransmissionIsolation_"+QString::number(p)+QString::number(p2));
+            tTI->setReflection(false);
+            tTI->setCalibration();
+            for(auto p : points) {
+                Trace::Data td;
+                td.x = p.frequency;
+                td.y = p.L[i][j];
+                tRM->addData(td, Trace::DataType::Frequency);
+                td.y = p.T[i][j];
+                tTT->addData(td, Trace::DataType::Frequency);
+                td.y = p.I[i][j];
+                tTI->addData(td, Trace::DataType::Frequency);
+            }
+            ret.push_back(tRM);
+            ret.push_back(tTT);
+            ret.push_back(tTI);
+        }
+    }
+    return ret;
 }
 
 std::vector<Trace *> Calibration::getMeasurementTraces()
 {
-    return vector<Trace*>(); // TODO
+    vector<Trace*> ret;
+    for(auto m : measurements) {
+        switch(m->getType()) {
+        case CalibrationMeasurement::Base::Type::Open:
+        case CalibrationMeasurement::Base::Type::Short:
+        case CalibrationMeasurement::Base::Type::Load: {
+            auto onePort = static_cast<CalibrationMeasurement::OnePort*>(m);
+            auto t = new Trace(CalibrationMeasurement::Base::TypeToString(onePort->getType())+"_Port"+QString::number(onePort->getPort()));
+            t->setCalibration();
+            t->setReflection(true);
+            for(auto d : onePort->getPoints()) {
+                Trace::Data td;
+                td.x = d.frequency;
+                td.y = d.S;
+                t->addData(td, Trace::DataType::Frequency);
+            }
+            ret.push_back(t);
+        }
+            break;
+        case CalibrationMeasurement::Base::Type::Through: {
+            auto twoPort = static_cast<CalibrationMeasurement::TwoPort*>(m);
+            auto ts11 = new Trace(CalibrationMeasurement::Base::TypeToString(twoPort->getType())+"_Port"+QString::number(twoPort->getPort1())+QString::number(twoPort->getPort2())+"_S11");
+            auto ts12 = new Trace(CalibrationMeasurement::Base::TypeToString(twoPort->getType())+"_Port"+QString::number(twoPort->getPort1())+QString::number(twoPort->getPort2())+"_S12");
+            auto ts21 = new Trace(CalibrationMeasurement::Base::TypeToString(twoPort->getType())+"_Port"+QString::number(twoPort->getPort1())+QString::number(twoPort->getPort2())+"_S21");
+            auto ts22 = new Trace(CalibrationMeasurement::Base::TypeToString(twoPort->getType())+"_Port"+QString::number(twoPort->getPort1())+QString::number(twoPort->getPort2())+"_S22");
+            ts11->setCalibration();
+            ts11->setReflection(true);
+            ts12->setCalibration();
+            ts12->setReflection(false);
+            ts21->setCalibration();
+            ts21->setReflection(false);
+            ts22->setCalibration();
+            ts22->setReflection(true);
+            for(auto d : twoPort->getPoints()) {
+                Trace::Data td;
+                td.x = d.frequency;
+                td.y = d.S.m11;
+                ts11->addData(td, Trace::DataType::Frequency);
+                td.y = d.S.m12;
+                ts12->addData(td, Trace::DataType::Frequency);
+                td.y = d.S.m21;
+                ts21->addData(td, Trace::DataType::Frequency);
+                td.y = d.S.m22;
+                ts22->addData(td, Trace::DataType::Frequency);
+            }
+            ret.push_back(ts11);
+            ret.push_back(ts12);
+            ret.push_back(ts21);
+            ret.push_back(ts22);
+        }
+            break;
+        case CalibrationMeasurement::Base::Type::Isolation: {
+            auto iso = static_cast<CalibrationMeasurement::Isolation*>(m);
+            int ports = iso->getPoints()[0].S.size();
+            // Create the traces
+            vector<vector<Trace*>> traces;
+            traces.resize(ports);
+            for(int i=0;i<ports;i++) {
+                for(int j=0;j<ports;j++) {
+                    auto t = new Trace(CalibrationMeasurement::Base::TypeToString(iso->getType())+"_S"+QString::number(i+1)+QString::number(j+1));
+                    t->setCalibration();
+                    t->setReflection(i==j);
+                    traces[i].push_back(t);
+                    // also add to main return vector
+                    ret.push_back(t);
+                }
+            }
+            // Fill the traces
+            for(auto p : iso->getPoints()) {
+                Trace::Data td;
+                td.x = p.frequency;
+                for(int i=0;i<p.S.size();i++) {
+                    for(int j=0;j<p.S[i].size();j++) {
+                        td.y = p.S[i][j];
+                        traces[i][j]->addData(td, Trace::DataType::Frequency);
+                    }
+                }
+            }
+        }
+            break;
+        }
+    }
+    return ret;
 }
 
 QString Calibration::getCurrentCalibrationFile()
@@ -735,15 +933,15 @@ std::vector<Calibration::Type> Calibration::getTypes()
 
 bool Calibration::canCompute(Calibration::CalType type, double *startFreq, double *stopFreq, int *points)
 {
+    using RequiredMeasurements = struct {
+        CalibrationMeasurement::Base::Type type;
+        int port1, port2;
+    };
+    vector<RequiredMeasurements> required;
     switch(type.type) {
     case Type::None:
         return true; // Always possible to reset the calibration
-    case Type::SOLT: {
-        using RequiredMeasurements = struct {
-            CalibrationMeasurement::Base::Type type;
-            int port1, port2;
-        };
-        vector<RequiredMeasurements> required;
+    case Type::SOLT:
         // SOL measurements for every port
         for(auto p : type.usedPorts) {
             required.push_back({.type = CalibrationMeasurement::Base::Type::Short, .port1 = p});
@@ -756,6 +954,17 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
             }
         }
+        break;
+    case Type::ThroughNormalization:
+        // through measurements between all ports
+        for(int i=1;i<=type.usedPorts.size();i++) {
+            for(int j=i+1;j<=type.usedPorts.size();j++) {
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
+            }
+        }
+        break;
+    }
+    if(required.size() > 0) {
         vector<CalibrationMeasurement::Base*> foundMeasurements;
         for(auto m : required) {
             auto meas = findMeasurement(m.type, m.port1, m.port2);
@@ -767,8 +976,6 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
             }
         }
         return hasFrequencyOverlap(foundMeasurements, startFreq, stopFreq, points);
-    }
-        break;
     }
     return false;
 }
@@ -816,6 +1023,7 @@ int Calibration::minimumPorts(Calibration::Type type)
 {
     switch(type) {
     case Type::SOLT: return 1;
+    case Type::ThroughNormalization: return 2;
     }
     return -1;
 }

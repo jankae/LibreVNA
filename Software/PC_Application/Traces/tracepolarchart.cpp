@@ -232,7 +232,7 @@ void TracePolarChart::draw(QPainter &p) {
     }
 
     if(dropPending) {
-        // TODO adjust coords due to shifted restore
+        // adjust coords due to shifted restore
         p.setOpacity(0.5);
         p.setBrush(Qt::white);
         p.setPen(Qt::white);

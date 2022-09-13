@@ -27,6 +27,11 @@ MatchingNetwork::MatchingNetwork()
     port = 1;
 }
 
+std::set<int> MatchingNetwork::getAffectedPorts()
+{
+    return {port};
+}
+
 void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
     auto S = p.toSparam(1, 2);
@@ -106,12 +111,12 @@ void MatchingNetwork::edit()
     p1->setMinimumSize(portWidth, 151);
     p1->setMaximumSize(portWidth, 151);
     p1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    p1->setStyleSheet("image: url(:/icons/port1.png);");
+    p1->setStyleSheet("image: url(:/icons/port.png);");
     auto DUT = new QWidget();
     DUT->setMinimumSize(DUTWidth, 151);
     DUT->setMaximumSize(DUTWidth, 151);
     DUT->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    DUT->setStyleSheet("image: url(:/icons/DUT.png);");
+    DUT->setStyleSheet("image: url(:/icons/DUT_onePort.png);");
 
     layout->addWidget(p1);
     for(auto w : network) {

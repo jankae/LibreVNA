@@ -5,42 +5,39 @@
 
 using namespace std;
 
-SparamTraceSelector::SparamTraceSelector(const TraceModel &model, unsigned int num_ports, bool empty_allowed, std::set<unsigned int> skip)
+SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::vector<int> used_ports, bool empty_allowed)
     : model(model),
-      num_ports(num_ports),
+      used_ports(used_ports),
       empty_allowed(empty_allowed)
 {
-    // Create comboboxes
-    auto layout = new QFormLayout;
-    setLayout(layout);
-    for(unsigned int i=0;i<num_ports;i++) {
-        for(unsigned int j=0;j<num_ports;j++) {
-            auto label = new QLabel("S"+QString::number(i+1)+QString::number(j+1)+":");
-            auto box = new QComboBox();
-            connect(box, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) {
-               traceSelectionChanged(box);
-            });
-            boxes.push_back(box);
-            layout->addRow(label, box);
-            if(skip.count(i*num_ports + j)) {
-                label->setVisible(false);
-                box->setVisible(false);
-            }
-        }
-    }
-
+    createGUI();
     setInitialChoices();
 }
 
-std::vector<Trace*> SparamTraceSelector::getTraces()
+SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::set<int> used_ports, bool empty_allowed)
+    : model(model),
+      empty_allowed(empty_allowed)
 {
-    vector<Trace*> ret;
-    for(auto b : boxes) {
-        if(b->currentIndex() == 0) {
-            ret.push_back(nullptr);
-        } else {
-            auto trace = qvariant_cast<Trace*>(b->itemData(b->currentIndex()));
-            ret.push_back(trace);
+    // create vector from set
+    std::copy(used_ports.begin(), used_ports.end(), std::back_inserter(this->used_ports));
+    createGUI();
+    setInitialChoices();
+}
+
+std::map<QString, Trace*> SparamTraceSelector::getTraces()
+{
+    std::map<QString, Trace*> ret;
+    for(unsigned int i=0;i<used_ports.size();i++) {
+        for(unsigned int j=0;j<used_ports.size();j++) {
+            auto b = boxes[i*used_ports.size()+j];
+            Trace *t;
+            if(b->currentIndex() == 0) {
+                t = nullptr;
+            } else {
+                t = qvariant_cast<Trace*>(b->itemData(b->currentIndex()));
+            }
+            QString name = "S"+QString::number(used_ports[i])+QString::number(used_ports[j]);
+            ret[name] = t;
         }
     }
     return ret;
@@ -48,7 +45,7 @@ std::vector<Trace*> SparamTraceSelector::getTraces()
 
 void SparamTraceSelector::setInitialChoices()
 {
-    for(unsigned int i=0;i<num_ports*num_ports;i++) {
+    for(unsigned int i=0;i<used_ports.size()*used_ports.size();i++) {
         boxes[i]->blockSignals(true);
         boxes[i]->clear();
         boxes[i]->addItem("None");
@@ -61,7 +58,7 @@ void SparamTraceSelector::setInitialChoices()
                 // can't select empty traces
                 continue;
             }
-            bool reflectionRequired = i%(num_ports+1) == 0 ? true : false;
+            bool reflectionRequired = i%(used_ports.size()+1) == 0 ? true : false;
             if(reflectionRequired != t->isReflection()) {
                 // invalid S parameter
                 continue;
@@ -106,7 +103,7 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
         text.chop(2);
         if(text.endsWith("S")) {
             // tracename ended in Sxx, probably other traces with matching prefix available
-            for(unsigned int i=0;i<num_ports*num_ports;i++) {
+            for(unsigned int i=0;i<used_ports.size()*used_ports.size();i++) {
                 auto b = boxes[i];
                 if(b == cb) {
                     // skip this box
@@ -115,7 +112,7 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
                 for(int j=0;j<b->count();j++) {
                     auto candidate = b->itemText(j);
                     // check if correct parameter
-                    QString expectedSparam = QString::number(i/num_ports+1)+QString::number(i%num_ports+1);
+                    QString expectedSparam = QString::number(i/used_ports.size()+1)+QString::number(i%used_ports.size()+1);
                     if(!candidate.endsWith(expectedSparam)) {
                         // wrong S parameter, skip
                         continue;
@@ -168,5 +165,23 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
             }
         }
         emit selectionValid(valid);
+    }
+}
+
+void SparamTraceSelector::createGUI()
+{
+    // Create comboboxes
+    auto layout = new QFormLayout;
+    setLayout(layout);
+    for(unsigned int i=0;i<used_ports.size();i++) {
+        for(unsigned int j=0;j<used_ports.size();j++) {
+            auto label = new QLabel("S"+QString::number(used_ports[i])+QString::number(used_ports[j])+":");
+            auto box = new QComboBox();
+            connect(box, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) {
+               traceSelectionChanged(box);
+            });
+            boxes.push_back(box);
+            layout->addRow(label, box);
+        }
     }
 }

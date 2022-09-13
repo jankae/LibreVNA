@@ -20,7 +20,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>You imported a two-port touchstone file, do you want to apply the currently active calibration or de-embed the data?</string>
+      <string>You imported a touchstone file, do you want to apply the currently active calibration or de-embed the data?</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

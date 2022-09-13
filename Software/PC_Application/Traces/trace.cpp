@@ -260,24 +260,24 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     return lastTraceName;
 }
 
-void Trace::fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VirtualDevice::VNAMeasurement> &data)
+void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data)
 {
-    S11.clear();
-    S12.clear();
-    S21.clear();
-    S22.clear();
+    // remove all previous points
+    for(auto m : traceSet) {
+        m.second->clear();
+    }
+    // add new points to traces
     for(auto d : data) {
         Trace::Data td;
         auto S = d.toSparam(1, 2);
         td.x = d.frequency;
-        td.y = S.m11;
-        S11.addData(td, DataType::Frequency);
-        td.y = S.m12;
-        S12.addData(td, DataType::Frequency);
-        td.y = S.m21;
-        S21.addData(td, DataType::Frequency);
-        td.y = S.m22;
-        S22.addData(td, DataType::Frequency);
+        for(auto m : d.measurements) {
+            td.y = m.second;
+            QString measurement = m.first;
+            if(traceSet.count(measurement)) {
+                traceSet[measurement]->addData(td, DataType::Frequency);
+            }
+        }
     }
 }
 
@@ -894,20 +894,16 @@ std::vector<Trace *> Trace::createFromCSV(CSV &csv)
     return traces;
 }
 
-std::vector<VirtualDevice::VNAMeasurement> Trace::assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22)
+std::vector<VirtualDevice::VNAMeasurement> Trace::assembleDatapoints(std::map<QString, Trace *> traceSet)
 {
     vector<VirtualDevice::VNAMeasurement> ret;
 
     // Sanity check traces
-    unsigned int samples = S11.size();
-    auto impedance = S11.getReferenceImpedance();
-    vector<const Trace*> traces;
-    traces.push_back(&S11);
-    traces.push_back(&S12);
-    traces.push_back(&S21);
-    traces.push_back(&S22);
+    unsigned int samples = traceSet.begin()->second->size();
+    auto impedance = traceSet.begin()->second->getReferenceImpedance();
     vector<double> freqs;
-    for(const auto t : traces) {
+    for(auto m : traceSet) {
+        const Trace *t = m.second;
         if(t->size() != samples) {
             qWarning() << "Selected traces do not have the same size";
             return ret;
@@ -939,10 +935,11 @@ std::vector<VirtualDevice::VNAMeasurement> Trace::assembleDatapoints(const Trace
     // Checks passed, assemble datapoints
     for(unsigned int i=0;i<samples;i++) {
         VirtualDevice::VNAMeasurement d;
-        d.measurements["S11"] = S11.sample(i).y;
-        d.measurements["S12"] = S12.sample(i).y;
-        d.measurements["S21"] = S21.sample(i).y;
-        d.measurements["S22"] = S22.sample(i).y;
+        for(auto m : traceSet) {
+            QString measurement = m.first;
+            const Trace *t = m.second;
+            d.measurements[measurement] = t->sample(i).y;
+        }
         d.pointNum = i;
         d.frequency = freqs[i];
         ret.push_back(d);

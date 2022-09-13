@@ -573,8 +573,23 @@ void AppWindow::SetupSCPI()
         if(!vdevice) {
             return QString("0/0/0");
         } else if(vdevice->isCompoundDevice()) {
-            // TODO
-            return QString();
+            // show highest temperature of all devices
+            int maxTempSource = 0;
+            int maxTempLO = 0;
+            int maxTempMCU = 0;
+            for(auto dev : vdevice->getDevices()) {
+                auto status = dev->StatusV1();
+                if(status.temp_source > maxTempSource) {
+                    maxTempSource = status.temp_source;
+                }
+                if(status.temp_LO1 > maxTempLO) {
+                    maxTempLO = status.temp_LO1;
+                }
+                if(status.temp_MCU > maxTempMCU) {
+                    maxTempMCU = status.temp_MCU;
+                }
+            }
+            return QString::number(maxTempSource)+"/"+QString::number(maxTempLO)+"/"+QString::number(maxTempMCU);
         } else {
             auto dev = vdevice->getDevice();
             return QString::number(dev->StatusV1().temp_source)+"/"+QString::number(dev->StatusV1().temp_LO1)+"/"+QString::number(dev->StatusV1().temp_MCU);

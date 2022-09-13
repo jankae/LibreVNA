@@ -6,6 +6,8 @@
 #include "Traces/tracemodel.h"
 
 #include <vector>
+#include <map>
+
 #include <QObject>
 #include <QDialog>
 #include <QComboBox>
@@ -20,11 +22,14 @@ public:
     ~Deembedding(){}
 
     void Deembed(VirtualDevice::VNAMeasurement &d);
-    void Deembed(Trace &S11, Trace &S12, Trace &S21, Trace &S22);
+    void Deembed(std::map<QString, Trace*> traceSet);
 
     void removeOption(unsigned int index);
     void addOption(DeembeddingOption* option);
     void swapOptions(unsigned int index);
+
+    std::set<int> getAffectedPorts();
+
     std::vector<DeembeddingOption*>& getOptions() {return options;}
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;
@@ -36,7 +41,7 @@ signals:
     void allOptionsCleared();
 private:
     void measurementCompleted();
-    void startMeasurementDialog(bool S11, bool S12, bool S21, bool S22);
+    void startMeasurementDialog(DeembeddingOption *option);
     std::vector<DeembeddingOption*> options;
     DeembeddingOption *measuringOption;
     TraceModel &tm;

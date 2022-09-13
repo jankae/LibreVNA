@@ -67,5 +67,7 @@
         <file>icons/compound_V1_Ref_Middle.png</file>
         <file>icons/compound_V1_Ref_Right.png</file>
         <file>icons/compound_V1_USB.png</file>
+        <file>icons/DUT_onePort.png</file>
+        <file>icons/port.png</file>
     </qresource>
 </RCC>

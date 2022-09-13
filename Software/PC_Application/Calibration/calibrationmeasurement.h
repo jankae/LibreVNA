@@ -1,4 +1,4 @@
-﻿#ifndef CALIBRATIONMEASUREMENT_H
+#ifndef CALIBRATIONMEASUREMENT_H
 #define CALIBRATIONMEASUREMENT_H
 
 #include "calstandard.h"
@@ -83,6 +83,13 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    class Point {
+    public:
+        double frequency;
+        std::complex<double> S;
+    };
+    std::vector<Point> getPoints() const;
+
     std::complex<double> getMeasured(double frequency);
     std::complex<double> getActual(double frequency);
 
@@ -95,11 +102,6 @@ signals:
     void portChanged(int p);
 protected:
     int port;
-    class Point {
-    public:
-        double frequency;
-        std::complex<double> S;
-    };
     std::vector<Point> points;
 };
 
@@ -156,11 +158,19 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    class Point {
+    public:
+        double frequency;
+        Sparam S;
+    };
+    std::vector<Point> getPoints() const;
+
     Sparam getMeasured(double frequency);
     Sparam getActual(double frequency);
 
     int getPort1() const;
     int getPort2() const;
+
 
 public slots:
     void setPort1(int p);
@@ -174,11 +184,6 @@ signals:
 protected:
     int port1, port2;
     bool reverseStandard; // Set to true if standard is defined with ports swapped
-    class Point {
-    public:
-        double frequency;
-        Sparam S;
-    };
     std::vector<Point> points;
 };
 
@@ -211,17 +216,19 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    class Point {
+    public:
+        double frequency;
+        std::vector<std::vector<std::complex<double>>> S;
+    };
+    std::vector<Point> getPoints() const;
+
     std::complex<double> getMeasured(double frequency, unsigned int portRcv, unsigned int portSrc);
 
     virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {};}
     virtual Type getType() override {return Type::Isolation;}
 
 protected:
-    class Point {
-    public:
-        double frequency;
-        std::vector<std::vector<std::complex<double>>> S;
-    };
     std::vector<Point> points;
 };
 

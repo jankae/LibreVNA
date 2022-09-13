@@ -18,6 +18,7 @@ class PortExtension : public DeembeddingOption
     Q_OBJECT
 public:
     PortExtension();
+    std::set<int> getAffectedPorts() override;
     void transformDatapoint(VirtualDevice::VNAMeasurement& d) override;
     void setCalkit(Calkit *kit);
     Type getType() override {return Type::PortExtension;}

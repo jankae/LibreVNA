@@ -49,7 +49,7 @@ public:
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
-    static void fillFromDatapoints(Trace &S11, Trace &S12, Trace &S21, Trace &S22, const std::vector<VirtualDevice::VNAMeasurement> &data);
+    static void fillFromDatapoints(std::map<QString, Trace*> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data);
     void fromLivedata(LivedataType type, QString param);
     void fromMath();
     QString name() { return _name; }
@@ -137,7 +137,7 @@ public:
 
     // Assembles datapoints as received from the VNA from four S parameter traces. Requires that all traces are in the frequency domain,
     // have the same number of samples and their samples must be at the same frequencies across all traces
-    static std::vector<VirtualDevice::VNAMeasurement> assembleDatapoints(const Trace &S11, const Trace &S12, const Trace &S21, const Trace &S22);
+    static std::vector<VirtualDevice::VNAMeasurement> assembleDatapoints(std::map<QString, Trace *> traceSet);
 
     static LivedataType TypeFromString(QString s);
     static QString TypeToString(LivedataType t);
