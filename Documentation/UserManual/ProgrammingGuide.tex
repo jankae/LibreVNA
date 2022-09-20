@@ -285,35 +285,35 @@ B
 45/51/31
 \end{example}
 
-\subsubsection{DEVice:INFo:MINFrequency}
-\query{Queries the lowest frequency the device can measure}{DEVice:INFo:MINFrequency?}{None}{lowest frequency in Hz}
+\subsubsection{DEVice:INFo:LIMits:MINFrequency}
+\query{Queries the lowest frequency the device can measure}{DEVice:INFo:LIMits:MINFrequency?}{None}{lowest frequency in Hz}
 
-\subsubsection{DEVice:INFo:MAXFrequency}
-\query{Queries the highest frequency the device can measure}{DEVice:INFo:MAXFrequency?}{None}{highest frequency in Hz}
+\subsubsection{DEVice:INFo:LIMits:MAXFrequency}
+\query{Queries the highest frequency the device can measure}{DEVice:INFo:LIMits:MAXFrequency?}{None}{highest frequency in Hz}
 
-\subsubsection{DEVice:INFo:MINIFBW}
-\query{Queries the lowest IF bandwidth setting}{DEVice:INFo:MINIFBW?}{None}{lowest possible IF bandwidth in Hz}
+\subsubsection{DEVice:INFo:LIMits:MINIFBW}
+\query{Queries the lowest IF bandwidth setting}{DEVice:INFo:LIMits:MINIFBW?}{None}{lowest possible IF bandwidth in Hz}
 
-\subsubsection{DEVice:INFo:MAXIFBW}
-\query{Queries the highest IF bandwidth setting}{DEVice:INFo:MAXIFBW?}{None}{highest possible IF bandwidth in Hz}
+\subsubsection{DEVice:INFo:LIMits:MAXIFBW}
+\query{Queries the highest IF bandwidth setting}{DEVice:INFo:LIMits:MAXIFBW?}{None}{highest possible IF bandwidth in Hz}
 
-\subsubsection{DEVice:INFo:MAXPoints}
-\query{Queries the maximum number of points per sweep}{DEVice:INFo:MAXPoints?}{None}{maximum number of points}
+\subsubsection{DEVice:INFo:LIMits:MAXPoints}
+\query{Queries the maximum number of points per sweep}{DEVice:INFo:LIMits:MAXPoints?}{None}{maximum number of points}
 
-\subsubsection{DEVice:INFo:MINPOWer}
-\query{Queries the minimum output power}{DEVice:INFo:MINPOWer?}{None}{minimum output power in dBm}
+\subsubsection{DEVice:INFo:LIMits:MINPOWer}
+\query{Queries the minimum output power}{DEVice:INFo:LIMits:MINPOWer?}{None}{minimum output power in dBm}
 
-\subsubsection{DEVice:INFo:MAXPOWer}
-\query{Queries the maximum output power}{DEVice:INFo:MAXPOWer?}{None}{maximum output power in dBm}
+\subsubsection{DEVice:INFo:LIMits:MAXPOWer}
+\query{Queries the maximum output power}{DEVice:INFo:LIMits:MAXPOWer?}{None}{maximum output power in dBm}
 
-\subsubsection{DEVice:INFo:MINRBW}
-\query{Queries the lowest resolution bandwidth setting}{DEVice:INFo:MINRBW?}{None}{lowest possible resolution bandwidth in Hz}
+\subsubsection{DEVice:INFo:LIMits:MINRBW}
+\query{Queries the lowest resolution bandwidth setting}{DEVice:INFo:LIMits:MINRBW?}{None}{lowest possible resolution bandwidth in Hz}
 
-\subsubsection{DEVice:INFo:MAXRBW}
-\query{Queries the highest resolution bandwidth setting}{DEVice:INFo:MAXRBW?}{None}{highest possible resolution bandwidth in Hz}
+\subsubsection{DEVice:INFo:LIMits:MAXRBW}
+\query{Queries the highest resolution bandwidth setting}{DEVice:INFo:LIMits:MAXRBW?}{None}{highest possible resolution bandwidth in Hz}
 
-\subsubsection{DEVice:INFo:MAXHARMonicfrequency}
-\query{Queries the (theoretical) maximum frequency when using harmonic mixing in VNA mode}{DEVice:INFo:MAXHARMonicfrequency?}{None}{maximum frequency in Hz}
+\subsubsection{DEVice:INFo:LIMits:MAXHARMonicfrequency}
+\query{Queries the (theoretical) maximum frequency when using harmonic mixing in VNA mode}{DEVice:INFo:LIMits:MAXHARMonicfrequency?}{None}{maximum frequency in Hz}
 
 \subsection{VNA Commands}
 These commands change or query VNA settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the VNA mode is active (e.g. it is possible to change the span while in signal generator mode but it does not effect the \vna{} until the mode is switched to VNA). Certain commands (like taking a calibration measurement) are only available in VNA mode and will return an error if another mode is active.
