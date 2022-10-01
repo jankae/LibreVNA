@@ -144,6 +144,7 @@ private:
     Point createInitializedPoint(double f);
     Point computeSOLT(double f);
     Point computeThroughNormalization(double f);
+    Point computeTRL(double f);
 
     std::vector<CalibrationMeasurement::Base*> measurements;
 

@@ -629,7 +629,15 @@ void Calibration::edit()
     });
 
     connect(ui->editCalkit, &QPushButton::clicked, [=](){
-        kit.edit();
+        kit.edit([=](){
+            updateMeasurementTable();
+            // update calibration (may have changed due to edited calibration standard)
+            if(canCompute(caltype)) {
+                compute(caltype);
+            } else {
+                deactivate();
+            }
+        });
     });
 
     QObject::connect(ui->table, &QTableWidget::currentCellChanged, updateTableEditButtons);
@@ -805,6 +813,172 @@ Calibration::Point Calibration::computeThroughNormalization(double f)
             point.L[i][j] = 0.0;
             point.T[i][j] = S21 / Sideal.m21;
             point.I[i][j] = 0.0;
+        }
+    }
+    return point;
+}
+
+Calibration::Point Calibration::computeTRL(double freq)
+{
+    Point point = createInitializedPoint(freq);
+
+    // calculate forward match and transmission
+    for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
+        for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
+            if(i == j) {
+                // calculation only possible with through measurements
+                continue;
+            }
+            auto p1 = caltype.usedPorts[i];
+            auto p2 = caltype.usedPorts[j];
+            // grab reflection measurements
+            auto S11_reflection = static_cast<CalibrationMeasurement::Reflect*>(findMeasurement(CalibrationMeasurement::Base::Type::Reflect, p1));
+            auto S22_reflection = static_cast<CalibrationMeasurement::Reflect*>(findMeasurement(CalibrationMeasurement::Base::Type::Reflect, p2));
+            bool S11_short, S22_short;
+            {
+                auto S11_short_standard = dynamic_cast<CalStandard::Short*>(S11_reflection->getStandard());
+                auto S11_open_standard = dynamic_cast<CalStandard::Open*>(S11_reflection->getStandard());
+                auto S11_reflect_standard = dynamic_cast<CalStandard::Reflect*>(S11_reflection->getStandard());
+                if(S11_short_standard) {
+                    S11_short = true;
+                } else if(S11_open_standard) {
+                    S11_short = false;
+                } else if(S11_reflect_standard) {
+                    S11_short = S11_reflect_standard->getIsShort();
+                } else {
+                    // invalid standard
+                    throw runtime_error("Invalid standard defined for reflection measurement");
+                }
+                auto S22_short_standard = dynamic_cast<CalStandard::Short*>(S22_reflection->getStandard());
+                auto S22_open_standard = dynamic_cast<CalStandard::Open*>(S22_reflection->getStandard());
+                auto S22_reflect_standard = dynamic_cast<CalStandard::Reflect*>(S22_reflection->getStandard());
+                if(S22_short_standard) {
+                    S22_short = true;
+                } else if(S22_open_standard) {
+                    S22_short = false;
+                } else if(S22_reflect_standard) {
+                    S22_short = S22_reflect_standard->getIsShort();
+                } else {
+                    // invalid standard
+                    throw runtime_error("Invalid standard defined for reflection measurement");
+                }
+            }
+            bool reflectionIsNegative;
+            if(S11_short && S22_short) {
+                reflectionIsNegative = true;
+            } else if(!S11_short && !S22_short) {
+                reflectionIsNegative = false;
+            } else {
+                throw runtime_error("Reflection measurements must all use the same standard (either open or short)");
+            }
+            // grab through measurement
+            auto throughForward = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p1, p2));
+            auto throughReverse = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p2, p1));
+            Sparam Sthrough;
+            if(throughForward) {
+                Sthrough = throughForward->getMeasured(freq);
+            } else if(throughReverse) {
+                Sthrough = throughReverse->getMeasured(freq);
+                swap(Sthrough.m11, Sthrough.m22);
+                swap(Sthrough.m12, Sthrough.m21);
+            }
+            // grab line measurement
+            auto forwardLines = findMeasurements(CalibrationMeasurement::Base::Type::Line, p1, p2);
+            auto reverseLines = findMeasurements(CalibrationMeasurement::Base::Type::Line, p2, p1);
+            // find the closest (geometric) match for the current frequency
+            double closestIdealFreqRatio = numeric_limits<double>::max();
+            bool closestLineIsReversed = false;
+            CalibrationMeasurement::Line* closestLine = nullptr;
+            CalStandard::Line* closestStandard = nullptr;
+            for(int i=0;i<2;i++) {
+                auto list = i ? reverseLines : forwardLines;
+                for(auto l : list) {
+                    auto line = static_cast<CalibrationMeasurement::Line*>(l);
+                    auto standard = static_cast<CalStandard::Line*>(line->getStandard());
+                    double idealFreq = (standard->minFrequency() + standard->maxFrequency()) / 2;
+                    double mismatch = idealFreq / freq;
+                    if(mismatch < 0) {
+                        mismatch = 1.0 / mismatch;
+                    }
+                    if(mismatch < closestIdealFreqRatio) {
+                        closestIdealFreqRatio = mismatch;
+                        closestLineIsReversed = i > 0;
+                        closestLine = line;
+                        closestStandard = standard;
+                    }
+                }
+            }
+            if(!closestLine) {
+                throw runtime_error("Unable to find required line measurement");
+            }
+            if(freq < closestStandard->minFrequency() || freq > closestStandard->maxFrequency()) {
+                throw runtime_error("No line standard supports the required frequency ("+QString::number(freq).toStdString()+")");
+            }
+
+            Sparam Sline = closestLine->getMeasured(freq);
+            if(closestLineIsReversed) {
+                swap(Sline.m11, Sline.m22);
+                swap(Sline.m12, Sline.m21);
+            }
+
+            // got all required measurements
+            // calculate TRL calibration
+            // variable names and formulas according to http://emlab.uiuc.edu/ece451/notes/new_TRL.pdf
+            // page 19
+            auto R_T = Tparam(Sthrough);
+            auto R_D = Tparam(Sline);
+            auto T = R_D*R_T.inverse();
+            complex<double> a_over_c, b;
+            // page 21-22
+            Util::solveQuadratic(T.m21, T.m22 - T.m11, -T.m12, b, a_over_c);
+            // ensure correct root selection
+            // page 23
+            if(abs(b) >= abs(a_over_c)) {
+                swap(b, a_over_c);
+            }
+            // page 24
+            auto g = R_T.m22;
+            auto d = R_T.m11 / g;
+            auto e = R_T.m12 / g;
+            auto f = R_T.m21 / g;
+
+            // page 25
+            auto r22_rho22 = g * (1.0 - e / a_over_c) / (1.0 - b / a_over_c);
+            auto gamma = (f - d / a_over_c) / (1.0 - e / a_over_c);
+            auto beta_over_alpha = (e - b) / (d - b * f);
+            // page 26
+            auto alpha_a = (d - b * f) / (1.0 - e / a_over_c);
+            auto w1 = S11_reflection->getMeasured(freq);
+            auto w2 = S22_reflection->getMeasured(freq);
+            // page 28
+            auto a = sqrt((w1 - b) / (w2 + gamma) * (1.0 + w2 * beta_over_alpha) / (1.0 - w1 / a_over_c) * alpha_a);
+            // page 29, check sign of a
+            auto reflection = (w1 - b) / (a * (1.0 - w1 / a_over_c));
+            if((reflection.real() > 0 && reflectionIsNegative) || (reflection.real() < 0 && !reflectionIsNegative)) {
+                // wrong sign for a
+                a = -a;
+            }
+            // Revert back from error boxes with T parameters to S paramaters,
+            // page 17 + formulas for calculating S parameters from T parameters.
+            // Forward coefficients, normalize for S21 = 1.0 -> r22 = 1.0
+            auto r22 = complex<double>(1.0);
+            auto rho22 = r22_rho22 / r22;
+            auto alpha = alpha_a / a;
+            auto beta = beta_over_alpha * alpha;
+            auto c = a / a_over_c;
+            auto Box_A = Tparam(r22 * a, r22 * b, r22 * c, r22);
+            auto Box_B = Tparam(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
+            auto S_A = Sparam(Box_A);
+            point.D[i] = S_A.m11;
+            point.R[i] = S_A.m12;
+            point.S[i] = S_A.m22;
+            auto S_B = Sparam(Box_B);
+            point.L[i][j] = S_B.m11;
+            point.T[i][j] = S_B.m21;
+            // no isolation measurement available
+            point.I[i][j] = 0.0;
+
+            // Reverse coefficients, will be handled in loop iteration where i=j and j=i
         }
     }
     return point;
@@ -1312,6 +1486,8 @@ bool Calibration::compute(Calibration::CalType type)
             Point p;
             switch(type.type) {
             case Type::SOLT: p = computeSOLT(f); break;
+            case Type::ThroughNormalization: p = computeThroughNormalization(f); break;
+            case Type::TRL: p = computeTRL(f); break;
             }
             points.push_back(p);
         }
@@ -1320,6 +1496,7 @@ bool Calibration::compute(Calibration::CalType type)
         caltype.usedPorts.clear();
     }
     emit activated(caltype);
+    unsavedChanges = true;
     return true;
 }
 
@@ -1352,6 +1529,7 @@ void Calibration::clearMeasurements(std::set<CalibrationMeasurement::Base *> m)
     for(auto meas : m) {
         meas->clearPoints();
     }
+    unsavedChanges = true;
 }
 
 void Calibration::measurementsComplete()
@@ -1364,6 +1542,7 @@ void Calibration::deactivate()
     points.clear();
     caltype.type = Type::None;
     caltype.usedPorts.clear();
+    unsavedChanges = true;
     emit deactivated();
 }
 

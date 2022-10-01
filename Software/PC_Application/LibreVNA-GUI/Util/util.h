@@ -81,6 +81,13 @@ namespace Util {
     std::complex<double> findCenterOfCircle(const std::vector<std::complex<double>> &points);
 
     std::complex<double> addTransmissionLine(std::complex<double> termination_reflection, double offset_impedance, double offset_delay, double offset_loss, double frequency);
+
+    template<typename T> void solveQuadratic(T a, T b, T c, T &result1, T &result2)
+    {
+        T root = sqrt(b * b - T(4) * a * c);
+        result1 = (-b + root) / (T(2) * a);
+        result2 = (-b - root) / (T(2) * a);
+    }
 }
 
 #endif // UTILH_H

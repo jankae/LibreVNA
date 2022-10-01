@@ -705,6 +705,11 @@ void Reflect::fromJSON(nlohmann::json j)
     isShort = j.value("isShort", true);
 }
 
+bool Reflect::getIsShort() const
+{
+    return isShort;
+}
+
 Line::Line()
 {
     Z0 = 50.0;

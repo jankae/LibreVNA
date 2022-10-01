@@ -80,7 +80,7 @@ VNA::VNA(AppWindow *window, QString name)
     auto calLoad = calMenu->addAction("Load");
     saveCal = calMenu->addAction("Save");
     calMenu->addSeparator();
-    saveCal->setEnabled(false);
+//    saveCal->setEnabled(false);
 
     connect(calLoad, &QAction::triggered, [=](){
         LoadCalibration("");
@@ -438,7 +438,7 @@ VNA::VNA(AppWindow *window, QString name)
         calImportTerms->setEnabled(false);
         calImportMeas->setEnabled(false);
         calApplyToTraces->setEnabled(false);
-        saveCal->setEnabled(false);
+//        saveCal->setEnabled(false);
     });
     connect(&cal, &Calibration::activated, [=](Calibration::CalType applied){
         cbType->blockSignals(true);

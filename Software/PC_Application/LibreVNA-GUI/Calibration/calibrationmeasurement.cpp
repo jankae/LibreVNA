@@ -238,6 +238,9 @@ QWidget *CalibrationMeasurement::OnePort::createSettingsWidget()
     auto cbPort = new QComboBox();
     auto dev = VirtualDevice::getConnected();
     if(dev) {
+        if(port == 0) {
+            setPort(1);
+        }
         for(int i=1;i<=dev->getInfo().ports;i++) {
             cbPort->addItem(QString::number(i));
             if(port == i) {
@@ -384,6 +387,12 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
     cbReverse->setToolTip("Enable this option if the calibration standard is defined with the port order swapped");
     auto dev = VirtualDevice::getConnected();
     if(dev) {
+        if(port1 == 0) {
+            setPort1(1);
+        }
+        if(port2 == 0) {
+            setPort2(2);
+        }
         for(int i=1;i<=dev->getInfo().ports;i++) {
             cbPort1->addItem(QString::number(i));
             cbPort2->addItem(QString::number(i));

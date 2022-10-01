@@ -136,6 +136,8 @@ public:
     virtual Type getType() override {return Type::Reflect;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+    bool getIsShort() const;
+
 private:
     bool isShort;
 };

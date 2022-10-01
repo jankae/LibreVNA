@@ -1,0 +1,34 @@
+{
+    "Description": "TRL test calibration kit",
+    "Manufacturer": "Hugen",
+    "Serialnumber": "-",
+    "standards": [
+        {
+            "params": {
+                "id": 5166523964218309461,
+                "isShort": true,
+                "name": "TRL"
+            },
+            "type": "Reflect"
+        },
+        {
+            "params": {
+                "Z0": 50.0,
+                "delay": 0.0,
+                "id": 4725361202400330854,
+                "loss": 0.0,
+                "name": "TRL"
+            },
+            "type": "Through"
+        },
+        {
+            "params": {
+                "delay": 1e-09,
+                "id": 10060287735088848795,
+                "name": "TRL"
+            },
+            "type": "Line"
+        }
+    ],
+    "version": "1.4.0-b20e5598b"
+}
