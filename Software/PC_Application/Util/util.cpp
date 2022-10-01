@@ -90,3 +90,82 @@ unsigned long long Util::random(unsigned long long max)
     std::uniform_int_distribution<unsigned long long> distribute(0, max);
     return distribute(generator);
 }
+
+std::complex<double> Util::findCenterOfCircle(const std::vector<std::complex<double> > &points)
+{
+    int i,iter,IterMAX=99;
+
+    double Xi,Yi,Zi;
+    double Mz,Mxy,Mxx,Myy,Mxz,Myz,Mzz,Cov_xy,Var_z;
+    double A0,A1,A2,A22;
+    double Dy,xnew,x,ynew,y;
+    double DET,Xcenter,Ycenter;
+
+    // find means
+    double meanX = 0.0, meanY = 0.0;
+    for(auto p : points) {
+        meanX += p.real();
+        meanY += p.imag();
+    }
+    meanX /= points.size();
+    meanY /= points.size();
+
+    //     computing moments
+
+    Mxx=Myy=Mxy=Mxz=Myz=Mzz=0.;
+
+    for (i=0; i<(int) points.size(); i++)
+    {
+        Xi = points[i].real() - meanX;   //  centered x-coordinates
+        Yi = points[i].imag() - meanY;   //  centered y-coordinates
+        Zi = Xi*Xi + Yi*Yi;
+
+        Mxy += Xi*Yi;
+        Mxx += Xi*Xi;
+        Myy += Yi*Yi;
+        Mxz += Xi*Zi;
+        Myz += Yi*Zi;
+        Mzz += Zi*Zi;
+    }
+    Mxx /= points.size();
+    Myy /= points.size();
+    Mxy /= points.size();
+    Mxz /= points.size();
+    Myz /= points.size();
+    Mzz /= points.size();
+
+    //    computing the coefficients of the characteristic polynomial
+
+    Mz = Mxx + Myy;
+    Cov_xy = Mxx*Myy - Mxy*Mxy;
+    Var_z = Mzz - Mz*Mz;
+
+    A2 = 4.0*Cov_xy - 3.0*Mz*Mz - Mzz;
+    A1 = Var_z*Mz + 4.0*Cov_xy*Mz - Mxz*Mxz - Myz*Myz;
+    A0 = Mxz*(Mxz*Myy - Myz*Mxy) + Myz*(Myz*Mxx - Mxz*Mxy) - Var_z*Cov_xy;
+    A22 = A2 + A2;
+
+    //    finding the root of the characteristic polynomial
+    //    using Newton's method starting at x=0
+    //     (it is guaranteed to converge to the right root)
+
+    for (x=0.,y=A0,iter=0; iter<IterMAX; iter++)  // usually, 4-6 iterations are enough
+    {
+        Dy = A1 + x*(A22 + 16.*x*x);
+        xnew = x - y/Dy;
+        if ((xnew == x)||(!isfinite(xnew))) break;
+        ynew = A0 + xnew*(A1 + xnew*(A2 + 4.0*xnew*xnew));
+        if (abs(ynew)>=abs(y))  break;
+        x = xnew;  y = ynew;
+    }
+
+    //    computing paramters of the fitting circle
+
+    DET = x*x - x*Mz + Cov_xy;
+    Xcenter = (Mxz*(Myy - x) - Myz*Mxy)/DET/2.0;
+    Ycenter = (Myz*(Mxx - x) - Mxz*Mxy)/DET/2.0;
+
+    //       assembling the output
+
+    return std::complex<double>(Xcenter + meanX, Ycenter + meanY);
+}

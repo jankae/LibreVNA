@@ -20,6 +20,7 @@ public:
         Open,
         Short,
         Load,
+        Reflect,
         Through,
         Line,
         Last
@@ -126,6 +127,23 @@ private:
     bool Cfirst;
 };
 
+class Reflect : public OnePort
+{
+public:
+    Reflect();
+    Reflect(QString name, bool isShort)
+        : OnePort(name), isShort(isShort){}
+
+    virtual std::complex<double> toS11(double freq) override;
+    virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
+    virtual Type getType() override {return Type::Reflect;}
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+private:
+    bool isShort;
+};
+
+
 class TwoPort : public Virtual
 {
 public:
@@ -159,6 +177,23 @@ public:
     virtual void fromJSON(nlohmann::json j) override;
 private:
     double Z0, delay, loss;
+};
+
+class Line : public TwoPort
+{
+public:
+    Line();
+    Line(QString name, double Z0, double delay)
+        : TwoPort(name), Z0(Z0), delay(delay){}
+
+    virtual Sparam toSparam(double freq) override;
+    virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
+    virtual Type getType() override {return Type::Line;}
+    virtual nlohmann::json toJSON() override;
+    virtual void fromJSON(nlohmann::json j) override;
+private:
+    void setDelay(double delay);
+    double Z0, delay;
 };
 
 }

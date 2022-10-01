@@ -86,8 +86,11 @@ QString CalibrationMeasurement::Base::TypeToString(CalibrationMeasurement::Base:
     case Type::Open: return "Open";
     case Type::Short: return "Short";
     case Type::Load: return "Load";
+    case Type::SlidingLoad: return "SlidingLoad";
+    case Type::Reflect: return "Reflect";
     case Type::Through: return "Through";
     case Type::Isolation: return "Isolation";
+    case Type::Line: return "Line";
     case Type::Last: return "Invalid";
     }
 }
@@ -677,4 +680,9 @@ std::complex<double> CalibrationMeasurement::Isolation::getMeasured(double frequ
 std::vector<CalibrationMeasurement::Isolation::Point> CalibrationMeasurement::Isolation::getPoints() const
 {
     return points;
+}
+
+QWidget *CalibrationMeasurement::SlidingLoad::createStandardWidget()
+{
+    return new QLabel("Connect sliding load");
 }

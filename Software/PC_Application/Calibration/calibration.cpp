@@ -3,6 +3,7 @@
 #include "CustomWidgets/informationbox.h"
 #include "Util/app_common.h"
 #include "unit.h"
+#include "Util/util.h"
 #include "LibreCAL/librecaldialog.h"
 
 #include "Eigen/Dense"
@@ -296,6 +297,7 @@ QString Calibration::TypeToString(Calibration::Type type)
     case Type::None: return "None";
     case Type::SOLT: return "SOLT";
     case Type::ThroughNormalization: return "ThroughNormalization";
+    case Type::TRL: return "TRL";
     case Type::Last: return "Invalid";
     }
 }
@@ -560,6 +562,12 @@ void Calibration::edit()
                 }
             }
         }
+        // update calibration (may have changed due to deleted measurement)
+        if(canCompute(caltype)) {
+            compute(caltype);
+        } else {
+            deactivate();
+        }
         updateMeasurementTable();
         updateCalibrationList();
     });
@@ -605,6 +613,12 @@ void Calibration::edit()
         for(auto s : selected) {
             measurements[s.row()]->clearPoints();
         }
+        // update calibration (may have changed due to deleted measurement)
+        if(canCompute(caltype)) {
+            compute(caltype);
+        } else {
+            deactivate();
+        }
         updateMeasurementTable();
         updateCalibrationList();
     });
@@ -647,8 +661,11 @@ CalibrationMeasurement::Base *Calibration::newMeasurement(CalibrationMeasurement
     case CalibrationMeasurement::Base::Type::Open: m = new CalibrationMeasurement::Open(this); break;
     case CalibrationMeasurement::Base::Type::Short: m = new CalibrationMeasurement::Short(this); break;
     case CalibrationMeasurement::Base::Type::Load: m = new CalibrationMeasurement::Load(this); break;
+    case CalibrationMeasurement::Base::Type::SlidingLoad: m = new CalibrationMeasurement::SlidingLoad(this); break;
+    case CalibrationMeasurement::Base::Type::Reflect: m = new CalibrationMeasurement::Reflect(this); break;
     case CalibrationMeasurement::Base::Type::Through: m = new CalibrationMeasurement::Through(this); break;
     case CalibrationMeasurement::Base::Type::Isolation: m = new CalibrationMeasurement::Isolation(this); break;
+    case CalibrationMeasurement::Base::Type::Line: m = new CalibrationMeasurement::Line(this); break;
     }
     return m;
 }
@@ -679,13 +696,33 @@ Calibration::Point Calibration::computeSOLT(double f)
         auto p = caltype.usedPorts[i];
         auto _short = static_cast<CalibrationMeasurement::Short*>(findMeasurement(CalibrationMeasurement::Base::Type::Short, p));
         auto open = static_cast<CalibrationMeasurement::Open*>(findMeasurement(CalibrationMeasurement::Base::Type::Open, p));
-        auto load = static_cast<CalibrationMeasurement::Load*>(findMeasurement(CalibrationMeasurement::Base::Type::Load, p));
         auto s_m = _short->getMeasured(f);
         auto o_m = open->getMeasured(f);
-        auto l_m = load->getMeasured(f);
         auto s_c = _short->getActual(f);
         auto o_c = open->getActual(f);
-        auto l_c = load->getActual(f);
+        complex<double> l_c, l_m;
+        auto slidingMeasurements = findMeasurements(CalibrationMeasurement::Base::Type::SlidingLoad, p);
+        if(slidingMeasurements.size() >= 3) {
+            // use sliding load
+            vector<complex<double>> slidingMeasured;
+            for(auto m : slidingMeasurements) {
+                auto slidingLoad = static_cast<CalibrationMeasurement::SlidingLoad*>(m);
+                auto value = slidingLoad->getMeasured(f);
+                if(isnan(abs(value))) {
+                    throw runtime_error("missing sliding load measurement");
+                }
+                slidingMeasured.push_back(value);
+            }
+            // use center of measurement for ideal load measurement
+            l_m = Util::findCenterOfCircle(slidingMeasured);
+            // assume perfect sliding load
+            l_c = 0.0;
+        } else {
+            // use normal load standard
+            auto load = static_cast<CalibrationMeasurement::Load*>(findMeasurement(CalibrationMeasurement::Base::Type::Load, p));
+            l_c = load->getActual(f);
+            l_m = load->getMeasured(f);
+        }
         auto denom = l_c * o_c * (o_m - l_m) + l_c * s_c * (l_m - s_m) + o_c * s_c * (s_m - o_m);
         point.D[i] = (l_c * o_m * (s_m * (o_c - s_c) + l_m * s_c) - l_c * o_c * l_m * s_m + o_c * l_m * s_c * (s_m - o_m)) / denom;
         point.S[i] = (l_c * (o_m - s_m) + o_c * (s_m - l_m) + s_c * (l_m - o_m)) / denom;
@@ -1203,7 +1240,13 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
         for(auto p : type.usedPorts) {
             required.push_back({.type = CalibrationMeasurement::Base::Type::Short, .port1 = p});
             required.push_back({.type = CalibrationMeasurement::Base::Type::Open, .port1 = p});
-            required.push_back({.type = CalibrationMeasurement::Base::Type::Load, .port1 = p});
+            if(findMeasurements(CalibrationMeasurement::Base::Type::SlidingLoad, p).size() >= 3) {
+                // got enough sliding load measurements, use these
+                required.push_back({.type = CalibrationMeasurement::Base::Type::SlidingLoad, .port1 = p});
+            } else {
+                // not enough sliding load measurement, use normal load
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Load, .port1 = p});
+            }
         }
         // through measurements between all ports
         for(int i=1;i<=type.usedPorts.size();i++) {
@@ -1217,6 +1260,19 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
         for(int i=1;i<=type.usedPorts.size();i++) {
             for(int j=i+1;j<=type.usedPorts.size();j++) {
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
+            }
+        }
+        break;
+    case Type::TRL:
+        // Reflect measurement for every port
+        for(auto p : type.usedPorts) {
+            required.push_back({.type = CalibrationMeasurement::Base::Type::Reflect, .port1 = p});
+        }
+        // through and line measurements between all ports
+        for(int i=1;i<=type.usedPorts.size();i++) {
+            for(int j=i+1;j<=type.usedPorts.size();j++) {
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Line, .port1 = i, .port2 = j});
             }
         }
         break;
@@ -1278,6 +1334,7 @@ int Calibration::minimumPorts(Calibration::Type type)
     switch(type) {
     case Type::SOLT: return 1;
     case Type::ThroughNormalization: return 2;
+    case Type::TRL: return 2;
     }
     return -1;
 }
@@ -1415,8 +1472,9 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
     }
 }
 
-CalibrationMeasurement::Base *Calibration::findMeasurement(CalibrationMeasurement::Base::Type type, int port1, int port2)
+std::vector<CalibrationMeasurement::Base *> Calibration::findMeasurements(CalibrationMeasurement::Base::Type type, int port1, int port2)
 {
+    vector<CalibrationMeasurement::Base*> ret;
     for(auto m : measurements) {
         if(m->getType() != type) {
             continue;
@@ -1434,9 +1492,19 @@ CalibrationMeasurement::Base *Calibration::findMeasurement(CalibrationMeasuremen
             }
         }
         // if we get here, we have a match
-        return m;
+        ret.push_back(m);
     }
-    return nullptr;
+    return ret;
+}
+
+CalibrationMeasurement::Base *Calibration::findMeasurement(CalibrationMeasurement::Base::Type type, int port1, int port2)
+{
+    auto meas = findMeasurements(type, port1, port2);
+    if(meas.size() > 0) {
+        return meas[0];
+    } else {
+        return nullptr;
+    }
 }
 
 QString Calibration::CalType::getReadableDescription()

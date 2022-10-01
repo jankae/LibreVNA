@@ -278,8 +278,10 @@ osx:LIBS += $(shell pkg-config --libs libusb-1.0)
 QT += widgets network
 
 FORMS += \
+    Calibration/CalStandardLineEditDialog.ui \
     Calibration/CalStandardLoadEditDialog.ui \
     Calibration/CalStandardOpenEditDialog.ui \
+    Calibration/CalStandardReflectEditDialog.ui \
     Calibration/CalStandardShortEditDialog.ui \
     Calibration/CalStandardThroughEditDialog.ui \
     Calibration/LibreCAL/librecaldialog.ui \

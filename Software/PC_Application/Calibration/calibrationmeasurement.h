@@ -21,8 +21,11 @@ public:
         Open,
         Short,
         Load,
+        SlidingLoad,
+        Reflect,
         Through,
         Isolation,
+        Line,
         Last,
     };
 
@@ -138,6 +141,31 @@ public:
     virtual Type getType() override {return Type::Load;}
 };
 
+class SlidingLoad : public OnePort
+{
+    Q_OBJECT
+public:
+    SlidingLoad(Calibration *cal) :
+        OnePort(cal){setFirstSupportedStandard();}
+
+    virtual QWidget* createStandardWidget() override;
+
+    virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {};}
+    virtual Type getType() override {return Type::SlidingLoad;}
+};
+
+class Reflect : public OnePort
+{
+    Q_OBJECT
+public:
+    Reflect(Calibration *cal) :
+        OnePort(cal){setFirstSupportedStandard();}
+
+    virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {CalStandard::Virtual::Type::Open,
+                    CalStandard::Virtual::Type::Short, CalStandard::Virtual::Type::Reflect};}
+    virtual Type getType() override {return Type::Reflect;}
+};
+
 class TwoPort : public Base
 {
     Q_OBJECT
@@ -232,6 +260,16 @@ public:
 
 protected:
     std::vector<Point> points;
+};
+
+class Line : public TwoPort
+{
+    Q_OBJECT
+public:
+    Line(Calibration *cal) :
+        TwoPort(cal){setFirstSupportedStandard();}
+    virtual std::set<CalStandard::Virtual::Type> supportedStandardTypes() override {return {CalStandard::Virtual::Type::Line};}
+    virtual Type getType() override {return Type::Line;}
 };
 
 }

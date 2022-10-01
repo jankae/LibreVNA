@@ -19,6 +19,7 @@ public:
         None,
         SOLT,
         ThroughNormalization,
+        TRL,
         Last,
     };
     class CalType {
@@ -121,8 +122,10 @@ private:
     void deleteMeasurements();
 
     bool hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base*> m, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr);
+    // returns all measurements that match the paramaters
+    std::vector<CalibrationMeasurement::Base*> findMeasurements(CalibrationMeasurement::Base::Type type, int port1 = 0, int port2 = 0);
+    // returns the first measurement in the list that matches the parameters
     CalibrationMeasurement::Base* findMeasurement(CalibrationMeasurement::Base::Type type, int port1 = 0, int port2 = 0);
-
     CalibrationMeasurement::Base *newMeasurement(CalibrationMeasurement::Base::Type type);
 
     class Point {

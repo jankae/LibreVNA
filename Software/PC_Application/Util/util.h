@@ -77,6 +77,8 @@ namespace Util {
     double distanceToLine(QPointF point, QPointF l1, QPointF l2, QPointF *closestLinePoint = nullptr, double *pointRatio = nullptr);
 
     unsigned long long random(unsigned long long max);
+
+    std::complex<double> findCenterOfCircle(const std::vector<std::complex<double>> &points);
 }
 
 #endif // UTILH_H

@@ -2,7 +2,9 @@
 #include "ui_CalStandardOpenEditDialog.h"
 #include "ui_CalStandardShortEditDialog.h"
 #include "ui_CalStandardLoadEditDialog.h"
+#include "ui_CalStandardReflectEditDialog.h"
 #include "ui_CalStandardThroughEditDialog.h"
+#include "ui_CalStandardLineEditDialog.h"
 #include "unit.h"
 #include "Util/util.h"
 
@@ -23,8 +25,9 @@ Virtual *Virtual::create(Virtual::Type type)
     case Type::Open: return new Open;
     case Type::Short: return new Short;
     case Type::Load: return new Load;
+    case Type::Reflect: return new Reflect;
     case Type::Through: return new Through;
-    case Type::Line: // TODO
+    case Type::Line: return new Line;
     case Type::Last:
         break;
     }
@@ -46,6 +49,7 @@ QString Virtual::TypeToString(Virtual::Type type)
     case Type::Open: return "Open";
     case Type::Short: return "Short";
     case Type::Load: return "Load";
+    case Type::Reflect: return "Reflect";
     case Type::Through: return "Through";
     case Type::Line: return "Line";
     case Type::Last: return "Invalid";
@@ -676,4 +680,124 @@ void Through::fromJSON(nlohmann::json j)
     Z0 = j.value("Z0", 50.0);
     delay = j.value("delay", 0.0);
     loss = j.value("loss", 0.0);
+}
+
+Reflect::Reflect()
+{
+    isShort = true;
+}
+
+std::complex<double> Reflect::toS11(double freq)
+{
+    Q_UNUSED(freq)
+    return std::numeric_limits<complex<double>>::quiet_NaN();
+}
+
+void Reflect::edit(std::function<void ()> finishedCallback)
+{
+    auto d = new QDialog;
+    auto ui = new Ui::CalStandardReflectEditDialog;
+    ui->setupUi(d);
+
+    ui->name->setText(name);
+    ui->type->setCurrentIndex(isShort ? 1 : 0);
+
+    QObject::connect(d, &QDialog::accepted, [=](){
+        name = ui->name->text();
+        isShort = ui->type->currentIndex() == 1;
+        if(finishedCallback) {
+            finishedCallback();
+        }
+    });
+
+    d->show();
+}
+
+nlohmann::json Reflect::toJSON()
+{
+    auto j = OnePort::toJSON();
+    j["isShort"] = isShort;
+    return j;
+}
+
+void Reflect::fromJSON(nlohmann::json j)
+{
+    OnePort::fromJSON(j);
+    isShort = j.value("isShort", true);
+}
+
+Line::Line()
+{
+    Z0 = 50.0;
+    setDelay(0.0);
+}
+
+Sparam Line::toSparam(double freq)
+{
+    Sparam ret;
+    ret.m11 = numeric_limits<complex<double>>::quiet_NaN();
+    ret.m12 = numeric_limits<complex<double>>::quiet_NaN();
+    ret.m21 = numeric_limits<complex<double>>::quiet_NaN();
+    ret.m22 = numeric_limits<complex<double>>::quiet_NaN();
+    return ret;
+}
+
+void Line::edit(std::function<void ()> finishedCallback)
+{
+    auto d = new QDialog;
+    auto ui = new Ui::CalStandardLineEditDialog;
+    ui->setupUi(d);
+
+    ui->name->setText(name);
+    ui->Z0->setUnit("Ω");
+    ui->Z0->setPrecision(2);
+    ui->Z0->setValue(Z0);
+    ui->delay->setValue(delay);
+    ui->delay->setUnit("s");
+    ui->delay->setPrefixes("pnum ");
+    ui->delay->setPrecision(4);
+    ui->minFreq->setUnit("Hz");
+    ui->minFreq->setPrecision(3);
+    ui->minFreq->setPrefixes(" kMG");
+    ui->minFreq->setValue(minFreq);
+    ui->maxFreq->setUnit("Hz");
+    ui->maxFreq->setPrecision(3);
+    ui->maxFreq->setPrefixes(" kMG");
+    ui->maxFreq->setValue(maxFreq);
+
+    QObject::connect(ui->delay, &SIUnitEdit::valueChanged, [=](double val){
+        ui->minFreq->setValue(1.0 / val * 20 / 360);
+        ui->maxFreq->setValue(1.0 / val * 160 / 360);
+    });
+
+    QObject::connect(d, &QDialog::accepted, [=](){
+        name = ui->name->text();
+        Z0 = ui->Z0->value();
+        setDelay(ui->delay->value());
+        if(finishedCallback) {
+            finishedCallback();
+        }
+    });
+
+    d->show();
+}
+
+nlohmann::json Line::toJSON()
+{
+    auto j = TwoPort::toJSON();
+    j["delay"] = delay;
+    return j;
+}
+
+void Line::fromJSON(nlohmann::json j)
+{
+    TwoPort::fromJSON(j);
+    setDelay(j.value("delay", 0.0));
+}
+
+void Line::setDelay(double delay)
+{
+    this->delay = delay;
+    minFreq = 1.0 / delay * 20 / 360;
+    maxFreq = 1.0 / delay * 160 / 360;
 }
