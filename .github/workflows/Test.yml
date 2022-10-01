@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+      - compoundDevice
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  Tests:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libusb-1.0-0-dev qt5-default qt5-qmake qtbase5-dev
+
+      - name: Build Tests
+        run: |
+          cd Software/PC_Application/LibreVNA-Test
+          qmake LibreVNA-Test.pro
+          make -j9
+        shell: bash
+        
+      - name: Run Tests
+        run: |
+          cd Software/PC_Application/LibreVNA-Test
+          ./LibreVNA-Test
+

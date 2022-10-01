@@ -10,28 +10,6 @@ on:
       - master
 
 jobs:
-  Tests:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libusb-1.0-0-dev qt5-default qt5-qmake qtbase5-dev
-
-      - name: Build Tests
-        run: |
-          cd Software/PC_Application/LibreVNA-Test
-          qmake LibreVNA-Test.pro
-          make -j9
-        shell: bash
-        
-      - name: Run Tests
-        run: |
-          cd Software/PC_Application/LibreVNA-Test
-          ./LibreVNA-Test
-
   PC_Application_Ubuntu:
     runs-on: ubuntu-18.04
     steps:
@@ -117,10 +95,10 @@ jobs:
           cd Software/PC_Application/LibreVNA-GUI/release
           del *.o *.cpp
           windeployqt.exe .
-          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
-          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libgcc_s_seh-1.dll .
-          copy "..\..\..\..\Qt\5.15.1\mingw81_64\bin\libstdc++-6.dll" .
-          copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\Qt5OpenGL.dll .
+          copy ..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
+          copy ..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\libgcc_s_seh-1.dll .
+          copy "..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\libstdc++-6.dll" .
+          copy ..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\Qt5OpenGL.dll .
         shell: cmd
         
       - name: Upload
