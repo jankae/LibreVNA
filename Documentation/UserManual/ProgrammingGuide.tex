@@ -501,22 +501,44 @@ $$ S_{11}...S_{1n},S_{21}...S_{2n},...,S_{n1}...S_{nn} $$
 \event{Sets the storage type of a trace}{VNA:TRACe:TYPE}{<trace>, either by name or by index\\<type>, options are OVERWRITE, MAXHOLD or MINHOLD}
 \query{Queries the storage type of a trace}{VNA:TRACe:TYPE?}{<trace>, either by name or by index}{OVERWRITE, MAXHOLD or MINHOLD}
 
-\subsubsection{VNA:CALibration:TYPE}
-\event{Sets the calibration type. This command fails if the required measurements have not been taken yet}{VNA:CALibration:TYPE}{<type>, options are NONE, PORT\_1, PORT\_2, SOLT, NORMALIZE or TRL}
-\query{Queries the currently active calibration type}{VNA:CALibration:TYPE?}{None}{NONE, PORT\_1, PORT\_2, SOLT, NORMALIZE or TRL}
+\subsubsection{VNA:CALibration:ACTivate}
+\event{Activates a specific calibration. This command fails if the required measurements have not been taken yet}{VNA:CALibration:ACTivate}{<type>}
+\query{Queries the currently available calibration types}{VNA:CALibration:ACTivate?}{None}{comma-separated list of available calibration types}
 
-\subsubsection{VNA:CALibration:MEASure}
-\event{Starts a calibration measurement. This command fails if no device is connected, the VNA mode is not active or a calibration measurement is already in progress.}{VNA:CALibration:MEASure}{<type>, options are:\\
-\hspace{1cm}PORT\_1\_OPEN\\
-\hspace{1cm}PORT\_1\_SHORT\\
-\hspace{1cm}PORT\_1\_LOAD\\
-\hspace{1cm}PORT\_2\_OPEN\\
-\hspace{1cm}PORT\_2\_SHORT\\
-\hspace{1cm}PORT\_2\_LOAD\\
+\subsubsection{VNA:CALibration:NUMber}
+\query{Queries the number of available calibration measurements}{VNA:CALibration:NUMber?}{None}{<number of configured measurements>}
+
+\subsubsection{VNA:CALibration:RESET}
+\event{Resets the calibration. Deactivates the calibration and deletes all measurements.}{VNA:CALibration:RESET}{None}
+
+\subsubsection{VNA:CALibration:ADD}
+\event{Adds a new empty calibration measurement.}{VNA:CALibration:ADD}{<type> Measurement type, one of:\\
+\hspace{1cm}OPEN\\
+\hspace{1cm}SHORT\\
+\hspace{1cm}LOAD\\
 \hspace{1cm}THROUGH\\
 \hspace{1cm}ISOLATION\\
-\hspace{1cm}LINE\\
-}
+{[<standard>]}, calibration kit standard name, optional\\}
+
+\subsubsection{VNA:CALibration:TYPE}
+\query{Returns the type of the specified measurement}{VNA:CALibration:TYPE?}{<measurement number>}{Measurement type, one of:\\
+\hspace{1cm}OPEN\\
+\hspace{1cm}SHORT\\
+\hspace{1cm}LOAD\\
+\hspace{1cm}THROUGH\\
+\hspace{1cm}ISOLATION\\}
+
+\subsubsection{VNA:CALibration:PORT}
+\event{Sets the port for the specified measurement}{VNA:CALibration:PORT}{<measurement number> <port number>}
+\query{Returns the port for the specified measurement}{VNA:CALibration:PORT?}{<measurement number>}{<port number>}
+
+\subsubsection{VNA:CALibration:STANDARD}
+\event{Sets the calibration standard which will be used for the specified measurement}{VNA:CALibration:STANDARD}{<measurement number> <standard name>}
+\query{Returns the standard name for the specified measurement}{VNA:CALibration:STANDARD?}{<measurement number>}{Name of used calibration standard (from calibration kit)}
+
+\subsubsection{VNA:CALibration:MEASure}
+\event{Starts a calibration measurement. This command fails if no device is connected, the VNA mode is not active or a calibration measurement is already in progress.}{VNA:CALibration:MEASure}{<measurement 1>,<measurement 2>,...}
+Any number of measurements can be specified (by their number). These measurements will be taken simultaneously. This only works if they are measuring different ports (e.g. measure SHORT on port 1 and OPEN on port 2). If colliding measurements are specified (e.g. SHORT on port 1 and LOAD on port 1), an error is returned and no measurements are started.
 
 \subsubsection{VNA:CALibration:BUSY}
 \query{Queries whether a calibration measurement is ongoing}{VNA:CALibration:BUSY?}{None}{TRUE or FALSE}

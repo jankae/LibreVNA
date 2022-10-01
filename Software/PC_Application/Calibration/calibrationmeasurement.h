@@ -54,6 +54,8 @@ public:
     static bool canMeasureSimultaneously(std::set<Base *> measurements);
     QDateTime getTimestamp() const;
 
+    CalStandard::Virtual *getStandard() const;
+
 protected:
 signals:
     void standardChanged(CalStandard::Virtual* newStandard);
@@ -101,7 +103,7 @@ protected:
 signals:
     void portChanged(int p);
 protected:
-    int port;
+    int port; // starts at 1
     std::vector<Point> points;
 };
 
@@ -182,7 +184,7 @@ signals:
     void port2Changed(int p);
     void reverseStandardChanged(bool r);
 protected:
-    int port1, port2;
+    int port1, port2; // starts at 1
     bool reverseStandard; // Set to true if standard is defined with ports swapped
     std::vector<Point> points;
 };

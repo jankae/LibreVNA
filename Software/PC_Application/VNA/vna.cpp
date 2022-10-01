@@ -1403,76 +1403,9 @@ void VNA::SetupSCPI()
         return QString::number(settings.Power.frequency, 'f', 0);
     }));
     SCPINode::add(traceWidget);
-    auto scpi_cal = new SCPINode("CALibration");
-    SCPINode::add(scpi_cal);
-    scpi_cal->add(new SCPICommand("TYPE", [=](QStringList params) -> QString {
-        if(params.size() != 1) {
-            return SCPI::getResultName(SCPI::Result::Error);
-        } else {
-            auto availableCals = cal.getAvailableCalibrations();
-            for(auto caltype : availableCals) {
-                if(caltype.getShortString().compare(params[0], Qt::CaseInsensitive) == 0) {
-                    // found a match
-                    // check if calibration can be activated
-                    if(cal.canCompute(caltype)) {
-                        ApplyCalibration(caltype);
-                    } else {
-                        return SCPI::getResultName(SCPI::Result::Error);
-                    }
-                }
-            }
-            // if we get here, the supplied parameter did not match any of the available calibrations
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, [=](QStringList) -> QString {
-        auto ret = cal.getCaltype().getShortString();
-        return ret;
-    }));
-    scpi_cal->add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
-        if(params.size() != 1 || CalibrationMeasurementActive() || !window->getDevice() || isActive != true) {
-            // no measurement specified, still busy or invalid mode
-            return SCPI::getResultName(SCPI::Result::Error);
-        } else {
-            // TODO
-//            auto meas = Calibration::MeasurementFromString(params[0].replace('_', ' '));
-//            if(meas == Calibration::Measurement::Last) {
-//                // failed to parse string
-//                return SCPI::getResultName(SCPI::Result::Error);
-//            } else {
-//                std::set<Calibration::Measurement> m;
-//                m.insert(meas);
-////                StartCalibrationMeasurements(m);
-//            }
-        }
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
-    scpi_cal->add(new SCPICommand("BUSy", nullptr, [=](QStringList) -> QString {
+    SCPINode::add(&cal);
+    cal.add(new SCPICommand("BUSy", nullptr, [=](QStringList) -> QString {
         return CalibrationMeasurementActive() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
-    }));
-    scpi_cal->add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
-        if(params.size() != 1 || cal.getCaltype().type == Calibration::Type::None) {
-            // no filename given or no calibration active
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        if(!cal.toFile(params[0])) {
-            // some error when writing the calibration file
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        calEdited = false;
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
-    scpi_cal->add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
-        if(params.size() != 1) {
-            // no filename given or no calibration active
-            return SCPI::getResultName(SCPI::Result::False);
-        }
-        if(!cal.fromFile(params[0])) {
-            // some error when loading the calibration file
-            return SCPI::getResultName(SCPI::Result::False);
-        }
-        calEdited = false;
-        return SCPI::getResultName(SCPI::Result::True);
     }));
 }
 

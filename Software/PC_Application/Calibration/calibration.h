@@ -5,8 +5,9 @@
 #include "calibrationmeasurement.h"
 #include "calkit.h"
 #include "Traces/trace.h"
+#include "scpi.h"
 
-class Calibration : public QObject, public Savable
+class Calibration : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
 
@@ -115,6 +116,7 @@ private:
     };
     static QString DefaultMeasurementsToString(DefaultMeasurements dm);
     void createDefaultMeasurements(DefaultMeasurements dm);
+    void deleteMeasurements();
 
     bool hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base*> m, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr);
     CalibrationMeasurement::Base* findMeasurement(CalibrationMeasurement::Base::Type type, int port1 = 0, int port2 = 0);
@@ -145,6 +147,8 @@ private:
 
     QString descriptiveCalName();
     QString currentCalFile;
+
+    bool unsavedChanges;
 };
 
 #endif // CALIBRATION2_H

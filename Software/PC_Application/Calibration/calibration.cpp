@@ -36,8 +36,258 @@ bool operator==(const Calibration::CalType &lhs, const Calibration::CalType &rhs
 }
 
 Calibration::Calibration()
+    : SCPINode("CALibration")
 {
     caltype.type = Type::None;
+    unsavedChanges = false;
+
+    // create SCPI commands
+    add(new SCPICommand("ACTivate", [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            auto availableCals = getAvailableCalibrations();
+            for(auto caltype : availableCals) {
+                if(caltype.getShortString().compare(params[0], Qt::CaseInsensitive) == 0) {
+                    // found a match
+                    // check if calibration can be activated
+                    if(canCompute(caltype)) {
+                        compute(caltype);
+                    } else {
+                        return SCPI::getResultName(SCPI::Result::Error);
+                    }
+                }
+            }
+            // if we get here, the supplied parameter did not match any of the available calibrations
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        auto availableCals = getAvailableCalibrations();
+        if(availableCals.size() == 0) {
+            return SCPI::getResultName(SCPI::Result::Empty);
+        }
+        auto ret = availableCals[0].getShortString();
+        for(unsigned int i=1;i<availableCals.size();i++) {
+            ret += ",";
+            ret += availableCals[i].getShortString();
+        }
+        return ret;
+    }));
+    add(new SCPICommand("NUMber", nullptr, [=](QStringList) -> QString {
+        return QString::number(measurements.size());
+    }));
+    add(new SCPICommand("RESET", [=](QStringList) -> QString {
+        reset();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    add(new SCPICommand("ADD", [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            // no measurement type specified
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            // parse measurement type
+            auto type = CalibrationMeasurement::Base::TypeFromString(params[0]);
+            auto newMeas = newMeasurement(type);
+            if(!newMeas) {
+                // failed to create this type of measurement
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            if(params.size() == 2) {
+                // standard name given
+                CalStandard::Virtual *standard = nullptr;
+                for(auto s : newMeas->supportedStandards()) {
+                    if(s->getName().compare(params[1], Qt::CaseInsensitive) == 0) {
+                        // use this standard
+                        standard = s;
+                    }
+                }
+                if(!standard) {
+                    // specified standard not available
+                    return SCPI::getResultName(SCPI::Result::Error);
+                }
+                newMeas->setStandard(standard);
+            }
+            measurements.push_back(newMeas);
+            return SCPI::getResultName(SCPI::Result::Empty);
+        }
+    }, nullptr));
+    add(new SCPICommand("TYPE", nullptr, [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            // no measurement number specified
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            bool okay;
+            unsigned int number = params[0].toUInt(&okay);
+            if(!okay || number >= measurements.size()) {
+                // invalid measurement specified
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            return CalibrationMeasurement::Base::TypeToString(measurements[number]->getType());
+        }
+    }));
+    add(new SCPICommand("PORT", [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            // invalid number of parameters
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            bool okay;
+            unsigned int number = params[0].toUInt(&okay);
+            if(!okay || number >= measurements.size()) {
+                // invalid measurement specified
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            auto meas = measurements[number];
+            auto onePort = dynamic_cast<CalibrationMeasurement::OnePort*>(meas);
+            if(onePort) {
+                if(params.size() != 2) {
+                    // invalid number of parameters
+                    return SCPI::getResultName(SCPI::Result::Error);
+                }
+                bool okay;
+                int number = params[1].toInt(&okay);
+                if(!okay || number < 1 || number > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports) {
+                    // invalid port specified
+                    return SCPI::getResultName(SCPI::Result::Error);
+                }
+                onePort->setPort(number);
+                return SCPI::getResultName(SCPI::Result::Empty);
+            }
+            auto twoPort = dynamic_cast<CalibrationMeasurement::TwoPort*>(meas);
+            if(twoPort) {
+                if(params.size() != 3) {
+                    // invalid number of parameters
+                    return SCPI::getResultName(SCPI::Result::Error);
+                }
+                bool okay1;
+                int port1 = params[1].toInt(&okay1);
+                bool okay2;
+                int port2 = params[2].toInt(&okay2);
+                if(!okay1 || !okay2 || port1 < 1 || port2 > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports
+                         || port2 < 1 || port2 > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports) {
+                    // invalid port specified
+                    return SCPI::getResultName(SCPI::Result::Error);
+                }
+                twoPort->setPort1(port1);
+                twoPort->setPort2(port2);
+                return SCPI::getResultName(SCPI::Result::Empty);
+            }
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    }, [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // invalid number of parameters
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            bool okay;
+            unsigned int number = params[0].toUInt(&okay);
+            if(!okay || number >= measurements.size()) {
+                // invalid measurement specified
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            auto meas = measurements[number];
+            auto onePort = dynamic_cast<CalibrationMeasurement::OnePort*>(meas);
+            if(onePort) {
+                return QString::number(onePort->getPort());
+            }
+            auto twoPort = dynamic_cast<CalibrationMeasurement::TwoPort*>(meas);
+            if(twoPort) {
+                return QString::number(twoPort->getPort1()) + " " + QString::number(twoPort->getPort2());
+            }
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    }));
+    add(new SCPICommand("STANDARD", [=](QStringList params) -> QString {
+        if(params.size() != 2) {
+            // invalid number of parameters
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            bool okay;
+            unsigned int number = params[0].toUInt(&okay);
+            if(!okay || number >= measurements.size()) {
+                // invalid measurement specified
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            auto meas = measurements[number];
+            for(auto s : meas->supportedStandards()) {
+                if(s->getName().compare(params[1], Qt::CaseInsensitive) == 0) {
+                    // use this standard
+                    meas->setStandard(s);
+                    return SCPI::getResultName(SCPI::Result::Empty);
+                }
+            }
+            // specified standard not available
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    }, [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // invalid number of parameters
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            bool okay;
+            unsigned int number = params[0].toUInt(&okay);
+            if(!okay || number >= measurements.size()) {
+                // invalid measurement specified
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            auto s = measurements[number]->getStandard();
+            if(s) {
+                s->getName();
+            } else {
+                // no standard set
+                return "None";
+            }
+        }
+    }));
+    add(new SCPICommand("MEASure", [=](QStringList params) -> QString {
+        if(params.size() < 1 ) {
+            // no measurement specified
+            // TODO check if measurement is already running
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            // assemble list of measurements to take
+            std::set<CalibrationMeasurement::Base*> m;
+            for(QString p : params) {
+                bool okay = false;
+                unsigned int number = p.toUInt(&okay);
+                if(!okay || number >= measurements.size()) {
+                    // invalid measurement specified
+                    return SCPI::getResultName(SCPI::Result::Error);
+                } else {
+                    m.insert(measurements[number]);
+                }
+            }
+            if(CalibrationMeasurement::Base::canMeasureSimultaneously(m)) {
+                emit startMeasurements(m);
+                return SCPI::getResultName(SCPI::Result::Empty);
+            } else {
+                // can't start these measurements simultaneously
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+        }
+    }, nullptr));
+    add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
+        if(params.size() != 1 || getCaltype().type == Calibration::Type::None) {
+            // no filename given or no calibration active
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(!toFile(params[0])) {
+            // some error when writing the calibration file
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // no filename given or no calibration active
+            return SCPI::getResultName(SCPI::Result::False);
+        }
+        if(!fromFile(params[0])) {
+            // some error when loading the calibration file
+            return SCPI::getResultName(SCPI::Result::False);
+        }
+        return SCPI::getResultName(SCPI::Result::True);
+    }));
 }
 
 QString Calibration::TypeToString(Calibration::Type type)
@@ -284,7 +534,7 @@ void Calibration::edit()
                 ui->createDefault->blockSignals(false);
                 return;
             }
-            measurements.clear();
+            deleteMeasurements();
         }
         createDefaultMeasurements((DefaultMeasurements) (ui->createDefault->currentIndex() - 1));
         updateMeasurementTable();
@@ -845,6 +1095,7 @@ bool Calibration::toFile(QString filename)
     kit.toFile(calkit_file);
     this->currentCalFile = calibration_file;    // if all ok, remember this
 
+    unsavedChanges = false;
     return true;
 }
 
@@ -888,6 +1139,7 @@ bool Calibration::fromFile(QString filename)
         return false;
     }
 
+    unsavedChanges = false;
     return true;
 }
 
@@ -1012,10 +1264,7 @@ bool Calibration::compute(Calibration::CalType type)
 
 void Calibration::reset()
 {
-    for(auto m : measurements) {
-        delete m;
-    }
-    measurements.clear();
+    deleteMeasurements();
     deactivate();
 }
 
@@ -1033,6 +1282,7 @@ void Calibration::addMeasurements(std::set<CalibrationMeasurement::Base *> m, co
     for(auto meas : m) {
         meas->addPoint(data);
     }
+    unsavedChanges = true;
 }
 
 void Calibration::clearMeasurements(std::set<CalibrationMeasurement::Base *> m)
@@ -1114,6 +1364,14 @@ void Calibration::createDefaultMeasurements(Calibration::DefaultMeasurements dm)
         createThrough(3, 4);
         break;
     }
+}
+
+void Calibration::deleteMeasurements()
+{
+    for(auto m : measurements) {
+        delete m;
+    }
+    measurements.clear();
 }
 
 bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *> m, double *startFreq, double *stopFreq, int *points)

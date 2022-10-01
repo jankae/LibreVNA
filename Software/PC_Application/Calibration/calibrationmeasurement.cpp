@@ -95,7 +95,7 @@ QString CalibrationMeasurement::Base::TypeToString(CalibrationMeasurement::Base:
 CalibrationMeasurement::Base::Type CalibrationMeasurement::Base::TypeFromString(QString s)
 {
     for(int i=0;i<(int) Type::Last;i++) {
-        if(TypeToString((Type) i) == s) {
+        if(TypeToString((Type) i).compare(s, Qt::CaseInsensitive) == 0) {
             return (Type) i;
         }
     }
@@ -186,6 +186,11 @@ bool CalibrationMeasurement::Base::canMeasureSimultaneously(std::set<Calibration
 QDateTime CalibrationMeasurement::Base::getTimestamp() const
 {
     return timestamp;
+}
+
+CalStandard::Virtual* CalibrationMeasurement::Base::getStandard() const
+{
+    return standard;
 }
 
 double CalibrationMeasurement::OnePort::minFreq()
