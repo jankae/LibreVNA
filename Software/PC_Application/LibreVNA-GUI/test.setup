@@ -1,0 +1,265 @@
+{
+    "Generator": null,
+    "SpectrumAnalyzer": {
+        "markers": null,
+        "tiles": {
+            "plot": "XY-plot",
+            "plotsettings": {
+                "XAxis": {
+                    "div": 200000.0,
+                    "log": false,
+                    "max": 405226753.0,
+                    "min": 402073243.0,
+                    "mode": "Use Span",
+                    "type": "Frequency"
+                },
+                "YPrimary": {
+                    "autorange": false,
+                    "div": 10.0,
+                    "log": false,
+                    "max": 0.0,
+                    "min": -120.0,
+                    "traces": [
+                        502445883,
+                        2060438610
+                    ],
+                    "type": "Magnitude"
+                },
+                "YSecondary": {
+                    "autorange": true,
+                    "div": 1.0,
+                    "log": false,
+                    "max": 0.0,
+                    "min": 0.0,
+                    "traces": null,
+                    "type": "Unknown"
+                }
+            },
+            "split": false
+        },
+        "traces": [
+            {
+                "color": "#ffff00",
+                "livetype": 0,
+                "math": null,
+                "math_enabled": false,
+                "name": "Port1",
+                "parameter": 4,
+                "paused": false,
+                "reflection": false,
+                "type": "Live",
+                "visible": true
+            },
+            {
+                "color": "#0000ff",
+                "livetype": 0,
+                "math": null,
+                "math_enabled": false,
+                "name": "Port2",
+                "parameter": 5,
+                "paused": false,
+                "reflection": false,
+                "type": "Live",
+                "visible": true
+            }
+        ]
+    },
+    "VNA": {
+        "de-embedding": [
+            {
+                "operation": "Matching Network",
+                "settings": [
+                    [
+                        {
+                            "component": "SeriesC",
+                            "params": {
+                                "value": 1.2e-11
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            "component": "SeriesR",
+                            "params": {
+                                "value": 44.0
+                            }
+                        },
+                        {
+                            "component": "ParallelL",
+                            "params": {
+                                "value": 5.3000000000000005e-08
+                            }
+                        }
+                    ]
+                ]
+            }
+        ],
+        "markers": null,
+        "tiles": {
+            "orientation": "vertical",
+            "sizes": [
+                381,
+                381
+            ],
+            "split": true,
+            "tile1": {
+                "orientation": "horizontal",
+                "sizes": [
+                    791,
+                    790
+                ],
+                "split": true,
+                "tile1": {
+                    "plot": "smithchart",
+                    "plotsettings": {
+                        "limit_to_span": true,
+                        "traces": [
+                            2459058830
+                        ]
+                    },
+                    "split": false
+                },
+                "tile2": {
+                    "plot": "XY-plot",
+                    "plotsettings": {
+                        "XAxis": {
+                            "div": 500000000.0,
+                            "log": false,
+                            "max": 6000000000.0,
+                            "min": 0.0,
+                            "mode": "Use Span",
+                            "type": "Frequency"
+                        },
+                        "YPrimary": {
+                            "autorange": false,
+                            "div": 10.0,
+                            "log": false,
+                            "max": 20.0,
+                            "min": -120.0,
+                            "traces": [
+                                2100767570
+                            ],
+                            "type": "Magnitude"
+                        },
+                        "YSecondary": {
+                            "autorange": false,
+                            "div": 30.0,
+                            "log": false,
+                            "max": 180.0,
+                            "min": -180.0,
+                            "traces": [
+                                2100767570
+                            ],
+                            "type": "Phase"
+                        }
+                    },
+                    "split": false
+                }
+            },
+            "tile2": {
+                "orientation": "horizontal",
+                "sizes": [
+                    791,
+                    790
+                ],
+                "split": true,
+                "tile1": {
+                    "plot": "XY-plot",
+                    "plotsettings": {
+                        "XAxis": {
+                            "div": 500000000.0,
+                            "log": false,
+                            "max": 6000000000.0,
+                            "min": 0.0,
+                            "mode": "Use Span",
+                            "type": "Frequency"
+                        },
+                        "YPrimary": {
+                            "autorange": false,
+                            "div": 10.0,
+                            "log": false,
+                            "max": 20.0,
+                            "min": -120.0,
+                            "traces": [
+                                572044863
+                            ],
+                            "type": "Magnitude"
+                        },
+                        "YSecondary": {
+                            "autorange": false,
+                            "div": 30.0,
+                            "log": false,
+                            "max": 180.0,
+                            "min": -180.0,
+                            "traces": [
+                                572044863
+                            ],
+                            "type": "Phase"
+                        }
+                    },
+                    "split": false
+                },
+                "tile2": {
+                    "plot": "smithchart",
+                    "plotsettings": {
+                        "limit_to_span": true,
+                        "traces": [
+                            783313651
+                        ]
+                    },
+                    "split": false
+                }
+            }
+        },
+        "traces": [
+            {
+                "color": "#ffff00",
+                "livetype": 0,
+                "math": null,
+                "math_enabled": false,
+                "name": "S11",
+                "parameter": 0,
+                "paused": false,
+                "reflection": true,
+                "type": "Live",
+                "visible": true
+            },
+            {
+                "color": "#0000ff",
+                "livetype": 0,
+                "math": null,
+                "math_enabled": false,
+                "name": "S12",
+                "parameter": 1,
+                "paused": false,
+                "reflection": false,
+                "type": "Live",
+                "visible": true
+            },
+            {
+                "color": "#00ff00",
+                "livetype": 0,
+                "math": null,
+                "math_enabled": false,
+                "name": "S21",
+                "parameter": 2,
+                "paused": false,
+                "reflection": false,
+                "type": "Live",
+                "visible": true
+            },
+            {
+                "color": "#ff0000",
+                "livetype": 0,
+                "math": null,
+                "math_enabled": false,
+                "name": "S22",
+                "parameter": 3,
+                "paused": false,
+                "reflection": true,
+                "type": "Live",
+                "visible": true
+            }
+        ]
+    }
+}

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionSave_setup"/>
+    <addaction name="actionLoad_setup"/>
+    <addaction name="actionSave_image"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuDevice">
+    <property name="title">
+     <string>Device</string>
+    </property>
+    <widget class="QMenu" name="menuConnect_to">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Connect to</string>
+     </property>
+     <addaction name="actionDummy"/>
+    </widget>
+    <addaction name="actionUpdate_Device_List"/>
+    <addaction name="menuConnect_to"/>
+    <addaction name="actionDisconnect"/>
+    <addaction name="separator"/>
+    <addaction name="actionManual_Control"/>
+    <addaction name="actionFirmware_Update"/>
+    <addaction name="separator"/>
+    <addaction name="actionSource_Calibration"/>
+    <addaction name="actionReceiver_Calibration"/>
+    <addaction name="actionFrequency_Calibration"/>
+   </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <widget class="QMenu" name="menuDocks">
+     <property name="title">
+      <string>Docks</string>
+     </property>
+     <addaction name="actionDummy_2"/>
+    </widget>
+    <widget class="QMenu" name="menuToolbars">
+     <property name="title">
+      <string>Toolbars</string>
+     </property>
+     <addaction name="actionDummy_3"/>
+    </widget>
+    <addaction name="menuDocks"/>
+    <addaction name="menuToolbars"/>
+    <addaction name="actionPreferences"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionPreset"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuDevice"/>
+   <addaction name="menuView"/>
+   <addaction name="menuWindow"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset theme="application-exit">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionUpdate_Device_List">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-refresh" resource="icons.qrc">
+     <normaloff>:/icons/refresh.png</normaloff>:/icons/refresh.png</iconset>
+   </property>
+   <property name="text">
+    <string>Update Device List</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="actionDummy">
+   <property name="text">
+    <string>Dummy</string>
+   </property>
+  </action>
+  <action name="actionManual_Control">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Manual Control</string>
+   </property>
+  </action>
+  <action name="actionDummy_2">
+   <property name="text">
+    <string>Dummy</string>
+   </property>
+  </action>
+  <action name="actionDummy_3">
+   <property name="text">
+    <string>Dummy</string>
+   </property>
+  </action>
+  <action name="actionFirmware_Update">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Firmware Update</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionSource_Calibration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Source Calibration</string>
+   </property>
+  </action>
+  <action name="actionReceiver_Calibration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Receiver Calibration</string>
+   </property>
+  </action>
+  <action name="actionSave_setup">
+   <property name="icon">
+    <iconset theme="document-save" resource="icons.qrc">
+     <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save setup</string>
+   </property>
+  </action>
+  <action name="actionLoad_setup">
+   <property name="icon">
+    <iconset theme="document-open" resource="icons.qrc">
+     <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load setup</string>
+   </property>
+  </action>
+  <action name="actionSave_image">
+   <property name="icon">
+    <iconset theme="camera-photo">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Save image...</string>
+   </property>
+  </action>
+  <action name="actionFrequency_Calibration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Frequency Calibration</string>
+   </property>
+  </action>
+  <action name="actionPreset">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Preset</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

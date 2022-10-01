@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AddAmplitudePointsDialog</class>
+ <widget class="QDialog" name="AddAmplitudePointsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>564</width>
+    <height>139</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Add points</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,1">
+     <item>
+      <widget class="QRadioButton" name="singlePoint">
+       <property name="text">
+        <string>Single Point at</string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">groupType</string>
+       </attribute>
+      </widget>
+     </item>
+     <item>
+      <widget class="SIUnitEdit" name="frequency"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,0,1">
+     <item>
+      <widget class="QRadioButton" name="array">
+       <property name="text">
+        <string>Array of </string>
+       </property>
+       <attribute name="buttonGroup">
+        <string notr="true">groupType</string>
+       </attribute>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="numPoints">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>64</number>
+       </property>
+       <property name="value">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>points from</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="SIUnitEdit" name="startFreq"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>to</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="SIUnitEdit" name="stopFreq"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="deleteExisting">
+     <property name="text">
+      <string>Delete already existing points</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="groupType"/>
+ </buttongroups>
+</ui>

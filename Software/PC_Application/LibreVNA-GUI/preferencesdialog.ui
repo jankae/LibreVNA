@@ -1,0 +1,1499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PreferencesDialog</class>
+ <widget class="QDialog" name="PreferencesDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>909</width>
+    <height>657</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Preferences</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_13">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QTreeWidget" name="treeWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>180</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>true</bool>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </column>
+       <item>
+        <property name="text">
+         <string>Startup</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Acquisition</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Graphs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Marker</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>SCPI Server</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Compound Devices</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QScrollArea" name="scrollArea">
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>687</width>
+          <height>884</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <item>
+          <widget class="QStackedWidget" name="pageWidget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="Startup">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <widget class="QGroupBox" name="groupBox">
+                 <property name="title">
+                  <string>When starting the application...</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_2">
+                  <item>
+                   <widget class="QCheckBox" name="StartupAutoconnect">
+                    <property name="text">
+                     <string>Autoconnect to the first device available</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label">
+                    <property name="text">
+                     <string>Set to...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_3">
+                    <item>
+                     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0">
+                      <item>
+                       <widget class="QRadioButton" name="StartupSweepLastUsed">
+                        <property name="text">
+                         <string>Last used</string>
+                        </property>
+                        <attribute name="buttonGroup">
+                         <string notr="true">StartupSweepGroup</string>
+                        </attribute>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QRadioButton" name="StartupSweepDefault">
+                        <property name="text">
+                         <string>Default values</string>
+                        </property>
+                        <attribute name="buttonGroup">
+                         <string notr="true">StartupSweepGroup</string>
+                        </attribute>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QRadioButton" name="StartupUseSetupFile">
+                        <property name="text">
+                         <string>Setup file</string>
+                        </property>
+                        <attribute name="buttonGroup">
+                         <string notr="true">StartupSweepGroup</string>
+                        </attribute>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QStackedWidget" name="StartupStack">
+                    <property name="currentIndex">
+                     <number>2</number>
+                    </property>
+                    <widget class="QWidget" name="StartupPageLastUsed">
+                     <layout class="QVBoxLayout" name="verticalLayout_18">
+                      <item>
+                       <widget class="QLabel" name="label_36">
+                        <property name="text">
+                         <string>The last used sweep settings (e.g. span, bandwidth,...) will be remembered. The graphs, traces and markers will not be remembered and the default configuration for them is used on startup.</string>
+                        </property>
+                        <property name="wordWrap">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="verticalSpacer_7">
+                        <property name="orientation">
+                         <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>20</width>
+                          <height>40</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </widget>
+                    <widget class="QWidget" name="StartupPageSetupFile">
+                     <layout class="QVBoxLayout" name="verticalLayout_17">
+                      <item>
+                       <widget class="QLabel" name="label_38">
+                        <property name="text">
+                         <string>All settings (sweep settings as well as graphs, markers and traces) will be taken from the specified file. If the autosave option is checked, the current state of the GUI is stored in this file during shutdown as well.</string>
+                        </property>
+                        <property name="wordWrap">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <layout class="QHBoxLayout" name="horizontalLayout_11">
+                        <item>
+                         <widget class="QLabel" name="label_35">
+                          <property name="text">
+                           <string>File location:</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLineEdit" name="StartupSetupFile"/>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="StartupBrowse">
+                          <property name="sizePolicy">
+                           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                           </sizepolicy>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>20</width>
+                            <height>16777215</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string>...</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </item>
+                      <item>
+                       <widget class="QCheckBox" name="StartupAutosaveSetupFile">
+                        <property name="text">
+                         <string>Autosave to this file on shutdown</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="verticalSpacer_6">
+                        <property name="orientation">
+                         <enum>Qt::Vertical</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>20</width>
+                          <height>545</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </widget>
+                    <widget class="QWidget" name="StartupPageDefaultValues">
+                     <layout class="QVBoxLayout" name="verticalLayout_16">
+                      <item>
+                       <widget class="QLabel" name="label_37">
+                        <property name="text">
+                         <string>These default values for the sweep settings will be used. The graphs, traces and markers will not be remembered and the default configuration for them is used on startup.</string>
+                        </property>
+                        <property name="wordWrap">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QGroupBox" name="groupBox_2">
+                        <property name="title">
+                         <string>Vector Network Analyzer</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="verticalLayout">
+                         <item>
+                          <layout class="QHBoxLayout" name="horizontalLayout_9">
+                           <item>
+                            <widget class="QLabel" name="label_24">
+                             <property name="text">
+                              <string>Type:</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QComboBox" name="StartupSweepType">
+                             <item>
+                              <property name="text">
+                               <string>Frequency Sweep</string>
+                              </property>
+                             </item>
+                             <item>
+                              <property name="text">
+                               <string>Power Sweep</string>
+                              </property>
+                             </item>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                         <item>
+                          <layout class="QHBoxLayout" name="horizontalLayout_8">
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_10">
+                             <property name="title">
+                              <string>Frequency Sweep:</string>
+                             </property>
+                             <layout class="QFormLayout" name="formLayout_6">
+                              <item row="0" column="0">
+                               <widget class="QLabel" name="label_2">
+                                <property name="text">
+                                 <string>Start:</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="0" column="1">
+                               <widget class="SIUnitEdit" name="StartupSweepStart"/>
+                              </item>
+                              <item row="1" column="0">
+                               <widget class="QLabel" name="label_3">
+                                <property name="text">
+                                 <string>Stop:</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="1" column="1">
+                               <widget class="SIUnitEdit" name="StartupSweepStop"/>
+                              </item>
+                              <item row="2" column="0">
+                               <widget class="QLabel" name="label_4">
+                                <property name="text">
+                                 <string>Simulus level:</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="1">
+                               <widget class="QDoubleSpinBox" name="StartupSweepLevel">
+                                <property name="suffix">
+                                 <string>dbm</string>
+                                </property>
+                                <property name="minimum">
+                                 <double>-42.000000000000000</double>
+                                </property>
+                                <property name="maximum">
+                                 <double>0.000000000000000</double>
+                                </property>
+                                <property name="singleStep">
+                                 <double>0.250000000000000</double>
+                                </property>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QGroupBox" name="groupBox_11">
+                             <property name="title">
+                              <string>Power Sweep:</string>
+                             </property>
+                             <layout class="QFormLayout" name="formLayout_7">
+                              <item row="0" column="0">
+                               <widget class="QLabel" name="label_21">
+                                <property name="text">
+                                 <string>Start:</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="0" column="1">
+                               <widget class="QDoubleSpinBox" name="StartupSweepPowerStart">
+                                <property name="suffix">
+                                 <string>dbm</string>
+                                </property>
+                                <property name="minimum">
+                                 <double>-42.000000000000000</double>
+                                </property>
+                                <property name="maximum">
+                                 <double>0.000000000000000</double>
+                                </property>
+                                <property name="singleStep">
+                                 <double>0.250000000000000</double>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="1" column="0">
+                               <widget class="QLabel" name="label_22">
+                                <property name="text">
+                                 <string>Stop:</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="1" column="1">
+                               <widget class="QDoubleSpinBox" name="StartupSweepPowerStop">
+                                <property name="suffix">
+                                 <string>dbm</string>
+                                </property>
+                                <property name="minimum">
+                                 <double>-42.000000000000000</double>
+                                </property>
+                                <property name="maximum">
+                                 <double>0.000000000000000</double>
+                                </property>
+                                <property name="singleStep">
+                                 <double>0.250000000000000</double>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="0">
+                               <widget class="QLabel" name="label_23">
+                                <property name="text">
+                                 <string>Frequency:</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item row="2" column="1">
+                               <widget class="SIUnitEdit" name="StartupSweepPowerFrequency"/>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                         <item>
+                          <layout class="QFormLayout" name="formLayout_8">
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="label_5">
+                             <property name="text">
+                              <string>Points:</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="0" column="1">
+                            <widget class="QSpinBox" name="StartupSweepPoints">
+                             <property name="minimum">
+                              <number>1</number>
+                             </property>
+                             <property name="maximum">
+                              <number>4501</number>
+                             </property>
+                             <property name="value">
+                              <number>501</number>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="0">
+                            <widget class="QLabel" name="label_6">
+                             <property name="text">
+                              <string>IF bandwitdh:</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="1">
+                            <widget class="SIUnitEdit" name="StartupSweepBandwidth"/>
+                           </item>
+                           <item row="2" column="0">
+                            <widget class="QLabel" name="label_18">
+                             <property name="text">
+                              <string>Averaging:</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="2" column="1">
+                            <widget class="QSpinBox" name="StartupSweepAveraging">
+                             <property name="minimum">
+                              <number>1</number>
+                             </property>
+                             <property name="maximum">
+                              <number>99</number>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QGroupBox" name="groupBox_3">
+                        <property name="title">
+                         <string>Signal Generator</string>
+                        </property>
+                        <layout class="QFormLayout" name="formLayout_2">
+                         <item row="0" column="0">
+                          <widget class="QLabel" name="label_7">
+                           <property name="text">
+                            <string>Frequency:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="1">
+                          <widget class="SIUnitEdit" name="StartupGeneratorFrequency"/>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QLabel" name="label_8">
+                           <property name="text">
+                            <string>Output level:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="1">
+                          <widget class="QDoubleSpinBox" name="StartupGeneratorLevel">
+                           <property name="suffix">
+                            <string>dbm</string>
+                           </property>
+                           <property name="minimum">
+                            <double>-42.000000000000000</double>
+                           </property>
+                           <property name="maximum">
+                            <double>0.000000000000000</double>
+                           </property>
+                           <property name="singleStep">
+                            <double>0.250000000000000</double>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QGroupBox" name="groupBox_4">
+                        <property name="title">
+                         <string>Spectrum Analyzer</string>
+                        </property>
+                        <layout class="QFormLayout" name="formLayout_3">
+                         <item row="0" column="0">
+                          <widget class="QLabel" name="label_9">
+                           <property name="text">
+                            <string>Start:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="1">
+                          <widget class="SIUnitEdit" name="StartupSAStart"/>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QLabel" name="label_10">
+                           <property name="text">
+                            <string>Stop:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="1">
+                          <widget class="SIUnitEdit" name="StartupSAStop"/>
+                         </item>
+                         <item row="2" column="0">
+                          <widget class="QLabel" name="label_11">
+                           <property name="text">
+                            <string>RBW:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="2" column="1">
+                          <widget class="SIUnitEdit" name="StartupSARBW"/>
+                         </item>
+                         <item row="3" column="0">
+                          <widget class="QLabel" name="label_12">
+                           <property name="text">
+                            <string>Window:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="3" column="1">
+                          <widget class="QComboBox" name="StartupSAWindow">
+                           <item>
+                            <property name="text">
+                             <string>None</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>Kaiser</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>Hann</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>Flat Top</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item row="4" column="0">
+                          <widget class="QLabel" name="label_13">
+                           <property name="text">
+                            <string>Detector:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="4" column="1">
+                          <widget class="QComboBox" name="StartupSADetector">
+                           <item>
+                            <property name="text">
+                             <string>+Peak</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>-Peak</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>Sample</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>Normal</string>
+                            </property>
+                           </item>
+                           <item>
+                            <property name="text">
+                             <string>Average</string>
+                            </property>
+                           </item>
+                          </widget>
+                         </item>
+                         <item row="6" column="0">
+                          <widget class="QLabel" name="label_14">
+                           <property name="text">
+                            <string>Signal Identification:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="6" column="1">
+                          <widget class="QCheckBox" name="StartupSASignalID">
+                           <property name="text">
+                            <string/>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="5" column="0">
+                          <widget class="QLabel" name="label_19">
+                           <property name="text">
+                            <string>Averaging:</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="5" column="1">
+                          <widget class="QSpinBox" name="StartupSAAveraging">
+                           <property name="minimum">
+                            <number>1</number>
+                           </property>
+                           <property name="maximum">
+                            <number>99</number>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>17</width>
+                   <height>37</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="Acquisition">
+            <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <widget class="QGroupBox" name="groupBox_6">
+               <property name="title">
+                <string>Vector Network Analyzer</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                 <widget class="QCheckBox" name="AcquisitionAlwaysExciteBoth">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If only S11/S21 or S22/S12 are enabled, faster sweeps are possible by only exciting one port. Checking this option forces the device to always excite both ports even when the measurements from one port will not be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Always create the stimulus signal at all ports</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="AcquisitionSuppressPeaks">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Due to limited fractional divider settings, the source and 1.LO PLLs are not able to reach every frequency exactly. At some specific frequencies this causes the final IF to shift. At these frequencies there will be a positive or negative peak in the trace measurement that is not actually there.&lt;br/&gt;&lt;br/&gt;Checking this option shifts the 2.LO for points where this could be an issue. This will remove the peaks but slows down the sweep slightly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Suppress invalid peaks</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="AcquisitionAdjustPowerLevel">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the step attenuator setting will be changed during the sweep to keep the selected output power across frequency as accurate as possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Adjust power level during sweep</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="AcquisitionUseHarmonic">
+                  <property name="text">
+                   <string>Use harmonic mixing</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="AcquisitionAllowSegmentedSweep">
+                  <property name="text">
+                   <string>Allow segmented sweep (increases maximum number of points)</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_7">
+               <property name="title">
+                <string>Spectrum Analyzer</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_7">
+                <item>
+                 <layout class="QFormLayout" name="formLayout_5">
+                  <item row="0" column="0">
+                   <widget class="QCheckBox" name="AcquisitionUseDFT">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Normally, the spectrum analyzer mode tunes the LO for each point and measures the final IF only at one frequency. When this option is enabled, a DFT of the final IF is calculated instead which covers multiple frequencies with one measurement.&lt;/p&gt;&lt;p&gt;This can speed up the measurement at low RBWs significantly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Use DFT when RBW is below</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="SIUnitEdit" name="AcquisitionDFTlimitRBW"/>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_14">
+               <property name="title">
+                <string>Common</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_14">
+                <item>
+                 <layout class="QFormLayout" name="formLayout_10">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_26">
+                    <property name="text">
+                     <string>Averaging mode:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="AcquisitionAveragingMode">
+                    <item>
+                     <property name="text">
+                      <string>Mean</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Median</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_15">
+                  <property name="title">
+                   <string>IF frequencies</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_5">
+                   <item>
+                    <widget class="QLabel" name="label_34">
+                     <property name="text">
+                      <string>This section contains advanced system settings. It is recommended to leave them at default values unless you know what you are doing. Slight changes of the IF frequencies can be used to shift possible spikes to less problematic frequencies. Large changes of these frequencies may severely impact device performance.</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QFormLayout" name="formLayout">
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_29">
+                       <property name="text">
+                        <string>IF 1:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="SIUnitEdit" name="AcquisitionIF1">
+                       <property name="toolTip">
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency of the first IF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_30">
+                       <property name="text">
+                        <string>ADC prescaler:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QSpinBox" name="AcquisitionADCpresc">
+                       <property name="toolTip">
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ADC prescaler in FPGA. The ADC sample rate is determined by 102.4MHz/prescaler&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       </property>
+                       <property name="minimum">
+                        <number>112</number>
+                       </property>
+                       <property name="maximum">
+                        <number>255</number>
+                       </property>
+                       <property name="value">
+                        <number>128</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_31">
+                       <property name="text">
+                        <string>ADC sample rate:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="SIUnitEdit" name="AcquisitionADCRate">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="label_32">
+                       <property name="text">
+                        <string>Phase increment:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="1">
+                      <widget class="QSpinBox" name="AcquisitionADCphaseInc">
+                       <property name="toolTip">
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Phase increment per ADC sample. Together with the ADC sample rate this determines the frequency of the second IF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       </property>
+                       <property name="minimum">
+                        <number>1</number>
+                       </property>
+                       <property name="maximum">
+                        <number>4095</number>
+                       </property>
+                       <property name="value">
+                        <number>1280</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_33">
+                       <property name="text">
+                        <string>IF 2:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="SIUnitEdit" name="AcquisitionIF2">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="Graphs">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_11">
+               <item>
+                <widget class="QCheckBox" name="GraphsShowUnit">
+                 <property name="text">
+                  <string>Show unit on graph axes</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_16">
+                 <property name="title">
+                  <string>Size</string>
+                 </property>
+                 <layout class="QFormLayout" name="formLayout_11">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_27">
+                    <property name="text">
+                     <string>Line Width:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="GraphsLineWidth">
+                    <property name="singleStep">
+                     <double>0.100000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_39">
+                    <property name="text">
+                     <string>Font (axes):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QSpinBox" name="GraphsFontSizeAxis">
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QSpinBox" name="GraphsFontSizeTraceNames">
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QSpinBox" name="GraphsFontSizeMarkerData">
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="1">
+                   <widget class="QSpinBox" name="GraphsFontSizeCursorOverlay">
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_40">
+                    <property name="text">
+                     <string>Font (trace names):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_41">
+                    <property name="text">
+                     <string>Font (marker data):</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <widget class="QLabel" name="label_42">
+                    <property name="text">
+                     <string>Font (cursor overlay):</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_5">
+                 <property name="title">
+                  <string>Colors</string>
+                 </property>
+                 <layout class="QFormLayout" name="formLayout_4">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_15">
+                    <property name="text">
+                     <string>Background:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="ColorPickerButton" name="GraphsColorBackground">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_16">
+                    <property name="text">
+                     <string>Axis:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="ColorPickerButton" name="GraphsColorAxis">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QGroupBox" name="groupBox_13">
+                    <property name="title">
+                     <string>Ticks</string>
+                    </property>
+                    <property name="checkable">
+                     <bool>false</bool>
+                    </property>
+                    <layout class="QGridLayout" name="gridLayout">
+                     <item row="1" column="1">
+                      <widget class="ColorPickerButton" name="GraphsColorTicksBackground">
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="checkable">
+                        <bool>false</bool>
+                       </property>
+                       <property name="checked">
+                        <bool>false</bool>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_17">
+                       <property name="text">
+                        <string>Tick lines:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="ColorPickerButton" name="GraphsColorTicksDivisions">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QCheckBox" name="GraphsColorTicksBackgroundEnabled">
+                       <property name="text">
+                        <string>Different background for every 2nd Y tick</string>
+                       </property>
+                       <property name="checked">
+                        <bool>true</bool>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_12">
+                 <property name="title">
+                  <string>Trace Domain Handling</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_4">
+                  <item>
+                   <widget class="QLabel" name="label_25">
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A trace may change its output format/domain if certain settings are changed (e.g. from frequency to time domain when enabling TDR). Depending on the type of change, the graphs settings also have to be adjusted. Select the the behavior of the graphs when this happens:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QComboBox" name="GraphsDomainChangeBehavior">
+                    <item>
+                     <property name="text">
+                      <string>Remove changed trace from all unsupported graphs</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Adjust graphs to support the changed trace (may remove other traces)</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Adjust graph only if it contains no other traces</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_17">
+                 <property name="title">
+                  <string>Limit checking</string>
+                 </property>
+                 <layout class="QFormLayout" name="formLayout_12">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_43">
+                    <property name="text">
+                     <string>Behavior:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QComboBox" name="GraphsLimitIndication">
+                    <item>
+                     <property name="text">
+                      <string>Don't show any indication</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>PASS/FAIL text in graph corner</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Overlay over whole graph on FAIL</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="Marker">
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <widget class="QGroupBox" name="groupBox_9">
+                 <property name="title">
+                  <string>Default Behavior</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_12">
+                  <item>
+                   <widget class="QCheckBox" name="MarkerShowMarkerData">
+                    <property name="text">
+                     <string>Show data on graphs</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="MarkerShowAllMarkerData">
+                    <property name="text">
+                     <string>Show data in all available formats</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <layout class="QFormLayout" name="formLayout_9">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_28">
+                   <property name="text">
+                    <string>Positioning:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QComboBox" name="MarkerInterpolate">
+                   <property name="sizeAdjustPolicy">
+                    <enum>QComboBox::AdjustToContents</enum>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>Snap to measurement points</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Interpolate between points</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_44">
+                   <property name="text">
+                    <string>Sort order on graphs:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QComboBox" name="MarkerSortOrder">
+                   <item>
+                    <property name="text">
+                     <string>X-Coordinate (Frequency/Time/Power)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Number</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Creation timestamp</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_45">
+                   <property name="text">
+                    <string>Symbol Style:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QComboBox" name="MarkerSymbolStyle">
+                   <item>
+                    <property name="text">
+                     <string>Filled triangle - Marker number inside</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Filled triangle - Marker number above</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Empty triangle - Marker number above</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_5">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="SCPIServer">
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QGroupBox" name="groupBox_8">
+                 <property name="title">
+                  <string>SCPI Control</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_8">
+                  <item>
+                   <widget class="QCheckBox" name="SCPIServerEnabled">
+                    <property name="text">
+                     <string>Enable server</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_7">
+                    <item>
+                     <widget class="QLabel" name="label_20">
+                      <property name="text">
+                       <string>Port:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QSpinBox" name="SCPIServerPort">
+                      <property name="minimum">
+                       <number>1</number>
+                      </property>
+                      <property name="maximum">
+                       <number>65535</number>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>471</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="CompoundDevices">
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_13">
+               <item>
+                <widget class="QListWidget" name="compoundList"/>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_19">
+                 <item>
+                  <widget class="QPushButton" name="compoundAdd">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="list-add" resource="icons.qrc">
+                     <normaloff>:/icons/add.png</normaloff>
+                     <normalon>:/icons/add.png</normalon>:/icons/add.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="compoundDelete">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="list-remove" resource="icons.qrc">
+                     <normaloff>:/icons/remove.png</normaloff>
+                     <normalon>:/icons/remove.png</normalon>:/icons/remove.png</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_8">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ColorPickerButton</class>
+   <extends>QPushButton</extends>
+   <header>CustomWidgets/colorpickerbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SIUnitEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="StartupSweepGroup"/>
+ </buttongroups>
+</ui>
