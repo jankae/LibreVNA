@@ -20,8 +20,10 @@ PortExtension::PortExtension()
     ext.velocityFactor = 0.66;
 
     port = 1;
+    isIdeal = true;
 
     kit = nullptr;
+    ui = nullptr;
 }
 
 std::set<int> PortExtension::getAffectedPorts()
@@ -60,6 +62,7 @@ void PortExtension::edit()
     ui->setupUi(dialog);
     connect(dialog, &QDialog::finished, [=](){
         delete ui;
+        ui = nullptr;
     });
 
     // set initial values
@@ -164,7 +167,6 @@ void PortExtension::measurementCompleted(std::vector<VirtualDevice::VNAMeasureme
                     phasediff += 2 * M_PI;
                 }
                 phasediff_sum += phasediff;
-                qDebug() << phasediff;
             }
 
             double x = sqrt(p.frequency / m.back().frequency);
@@ -230,6 +232,7 @@ void PortExtension::fromJSON(nlohmann::json j)
     if(j.contains("port")) {
         // new format
         jfrom = j;
+        port = j.value("port", 1);
     } else {
         jfrom = j[0];
         port = 1;

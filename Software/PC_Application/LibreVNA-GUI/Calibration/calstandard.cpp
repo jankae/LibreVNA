@@ -141,27 +141,6 @@ void OnePort::fromJSON(nlohmann::json j)
     }
 }
 
-std::complex<double> OnePort::addTransmissionLine(std::complex<double> termination_reflection, double offset_impedance, double offset_delay, double offset_loss, double frequency)
-{
-    // nomenclature and formulas from https://loco.lab.asu.edu/loco-memos/edges_reports/report_20130807.pdf
-    auto Gamma_T = termination_reflection;
-    auto f = frequency;
-    auto w = 2.0 * M_PI * frequency;
-    auto f_sqrt = sqrt(f / 1e9);
-
-    auto Z_c = complex<double>(offset_impedance + (offset_loss / (2*w)) * f_sqrt, -(offset_loss / (2*w)) * f_sqrt);
-    auto gamma_l = complex<double>(offset_loss*offset_delay/(2*offset_impedance)*f_sqrt, w*offset_delay+offset_loss*offset_delay/(2*offset_impedance)*f_sqrt);
-
-    auto Z_r = complex<double>(50.0);
-
-    auto Gamma_1 = (Z_c - Z_r) / (Z_c + Z_r);
-
-    auto Gamma_i = (Gamma_1*(1.0-exp(-2.0*gamma_l)-Gamma_1*Gamma_T)+exp(-2.0*gamma_l)*Gamma_T)
-            / (1.0-Gamma_1*(exp(-2.0*gamma_l)*Gamma_1+Gamma_T*(1.0-exp(-2.0*gamma_l))));
-
-    return Gamma_i;
-}
-
 Open::Open()
 {
     Z0 = 50.0;
@@ -184,7 +163,7 @@ std::complex<double> Open::toS11(double freq)
             auto imp_open = complex<double>(0, -1.0 / (freq * 2 * M_PI * Cfringing));
             open = (imp_open - complex<double>(50.0)) / (imp_open + complex<double>(50.0));
         }
-        return addTransmissionLine(open, Z0, delay*1e-12, loss*1e9, freq);
+        return Util::addTransmissionLine(open, Z0, delay*1e-12, loss*1e9, freq);
     }
 }
 
@@ -299,7 +278,7 @@ std::complex<double> Short::toS11(double freq)
         // convert to impedance
         auto imp_short = complex<double>(0, freq * 2 * M_PI * Lseries);
         complex<double> _short = (imp_short - complex<double>(50.0)) / (imp_short + complex<double>(50.0));
-        return addTransmissionLine(_short, Z0, delay*1e-12, loss*1e9, freq);
+        return Util::addTransmissionLine(_short, Z0, delay*1e-12, loss*1e9, freq);
     }
 }
 
@@ -427,7 +406,7 @@ std::complex<double> Load::toS11(double freq)
             imp_load += complex<double>(0, freq * 2 * M_PI * Lseries);
         }
         complex<double> load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
-        return addTransmissionLine(load, Z0, delay*1e-12, loss*1e9, freq);
+        return Util::addTransmissionLine(load, Z0, delay*1e-12, loss*1e9, freq);
     }
 }
 

@@ -79,6 +79,8 @@ namespace Util {
     unsigned long long random(unsigned long long max);
 
     std::complex<double> findCenterOfCircle(const std::vector<std::complex<double>> &points);
+
+    std::complex<double> addTransmissionLine(std::complex<double> termination_reflection, double offset_impedance, double offset_delay, double offset_loss, double frequency);
 }
 
 #endif // UTILH_H

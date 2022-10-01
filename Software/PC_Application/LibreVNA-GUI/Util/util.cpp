@@ -167,3 +167,24 @@ std::complex<double> Util::findCenterOfCircle(const std::vector<std::complex<dou
 
     return std::complex<double>(Xcenter + meanX, Ycenter + meanY);
 }
+
+std::complex<double> Util::addTransmissionLine(std::complex<double> termination_reflection, double offset_impedance, double offset_delay, double offset_loss, double frequency)
+{
+    // nomenclature and formulas from https://loco.lab.asu.edu/loco-memos/edges_reports/report_20130807.pdf
+    auto Gamma_T = termination_reflection;
+    auto f = frequency;
+    auto w = 2.0 * M_PI * frequency;
+    auto f_sqrt = sqrt(f / 1e9);
+
+    auto Z_c = std::complex<double>(offset_impedance + (offset_loss / (2*w)) * f_sqrt, -(offset_loss / (2*w)) * f_sqrt);
+    auto gamma_l = std::complex<double>(offset_loss*offset_delay/(2*offset_impedance)*f_sqrt, w*offset_delay+offset_loss*offset_delay/(2*offset_impedance)*f_sqrt);
+
+    auto Z_r = std::complex<double>(50.0);
+
+    auto Gamma_1 = (Z_c - Z_r) / (Z_c + Z_r);
+
+    auto Gamma_i = (Gamma_1*(1.0-exp(-2.0*gamma_l)-Gamma_1*Gamma_T)+exp(-2.0*gamma_l)*Gamma_T)
+            / (1.0-Gamma_1*(exp(-2.0*gamma_l)*Gamma_1+Gamma_T*(1.0-exp(-2.0*gamma_l))));
+
+    return Gamma_i;
+}

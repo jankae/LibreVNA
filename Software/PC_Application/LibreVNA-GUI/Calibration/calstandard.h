@@ -70,9 +70,6 @@ public:
     virtual void fromJSON(nlohmann::json j) override;
 
 protected:
-    std::complex<double> addTransmissionLine(std::complex<double> termination_reflection,
-                                             double offset_impedance, double offset_delay,
-                                             double offset_loss, double frequency);
     Touchstone *touchstone;
 };
 
