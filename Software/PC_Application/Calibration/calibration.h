@@ -88,7 +88,9 @@ public:
     QString getCurrentCalibrationFile();
     double getMinFreq();
     double getMaxFreq();
+
     int getNumPoints();
+    bool hasUnsavedChanges() const;
 
 public slots:
     // Call once all datapoints of the current span have been added

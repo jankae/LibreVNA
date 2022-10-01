@@ -1014,6 +1014,11 @@ QString Calibration::descriptiveCalName()
     return tmp;
 }
 
+bool Calibration::hasUnsavedChanges() const
+{
+    return unsavedChanges;
+}
+
 Calkit &Calibration::getKit()
 {
     return kit;

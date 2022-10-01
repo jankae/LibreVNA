@@ -293,7 +293,7 @@ Calkit Calkit::fromFile(QString filename)
             c.standards.push_back(short_f);
         }
 
-        auto load_m = new CalStandard::Load(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.load_m.Z0, SOLT.load_m.delay, SOLT.load_m.resistance, SOLT.load_m.Cparallel, SOLT.load_m.Lseries, SOLT.loadModelCFirst);
+        auto load_m = new CalStandard::Load(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.load_m.Z0, SOLT.load_m.delay, 0.0, SOLT.load_m.resistance, SOLT.load_m.Cparallel, SOLT.load_m.Lseries, SOLT.loadModelCFirst);
         if(SOLT.load_m.useMeasurements) {
             auto ts = Touchstone(1);
             ts.fromFile(SOLT.load_m.file.toStdString());
@@ -301,7 +301,7 @@ Calkit Calkit::fromFile(QString filename)
         }
         c.standards.push_back(load_m);
         if(SOLT.separate_male_female) {
-            auto load_f = new CalStandard::Load("Default female standard", SOLT.load_m.Z0, SOLT.load_f.delay, SOLT.load_f.resistance, SOLT.load_f.Cparallel, SOLT.load_f.Lseries, SOLT.loadModelCFirst);
+            auto load_f = new CalStandard::Load("Default female standard", SOLT.load_m.Z0, SOLT.load_f.delay, 0.0, SOLT.load_f.resistance, SOLT.load_f.Cparallel, SOLT.load_f.Lseries, SOLT.loadModelCFirst);
             if(SOLT.load_f.useMeasurements) {
                 auto ts = Touchstone(1);
                 ts.fromFile(SOLT.load_f.file.toStdString());

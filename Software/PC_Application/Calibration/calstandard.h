@@ -113,8 +113,8 @@ class Load : public OnePort
 {
 public:
     Load();
-    Load(QString name, double Z0, double delay, double resistance, double Cparallel, double Lseries, bool Cfirst = true)
-        : OnePort(name), Z0(Z0), delay(delay), resistance(resistance), Cparallel(Cparallel), Lseries(Lseries), Cfirst(Cfirst){}
+    Load(QString name, double Z0, double delay, double loss, double resistance, double Cparallel, double Lseries, bool Cfirst = true)
+        : OnePort(name), Z0(Z0), delay(delay), loss(loss), resistance(resistance), Cparallel(Cparallel), Lseries(Lseries), Cfirst(Cfirst){}
 
     virtual std::complex<double> toS11(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -122,7 +122,7 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 private:
-    double Z0, delay, resistance, Cparallel, Lseries;
+    double Z0, delay, loss, resistance, Cparallel, Lseries;
     bool Cfirst;
 };
 

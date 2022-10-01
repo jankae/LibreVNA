@@ -423,7 +423,7 @@ std::complex<double> Load::toS11(double freq)
             imp_load += complex<double>(0, freq * 2 * M_PI * Lseries);
         }
         complex<double> load = (imp_load - complex<double>(50.0)) / (imp_load + complex<double>(50.0));
-        return addTransmissionLine(load, Z0, delay*1e-12, 0, freq);
+        return addTransmissionLine(load, Z0, delay*1e-12, loss*1e9, freq);
     }
 }
 
@@ -441,6 +441,7 @@ void Load::edit(std::function<void(void)> finishedCallback)
     ui->Z0->setPrecision(2);
     ui->Z0->setValue(Z0);
     ui->delay->setValue(delay);
+    ui->loss->setValue(loss);
     ui->parC->setUnit("F");
     ui->parC->setPrefixes("pnum ");
     ui->parC->setPrecision(3);
@@ -497,6 +498,7 @@ void Load::edit(std::function<void(void)> finishedCallback)
         resistance = ui->resistance->value();
         Z0 = ui->Z0->value();
         delay = ui->delay->value();
+        loss = ui->loss->value();
         Cparallel = ui->parC->value();
         Lseries = ui->serL->value();
         Cfirst = ui->C_first->isChecked();
@@ -513,6 +515,7 @@ nlohmann::json Load::toJSON()
     auto j = OnePort::toJSON();
     j["Z0"] = Z0;
     j["delay"] = delay;
+    j["loss"] = loss;
     j["resistance"] = resistance;
     j["Cparallel"] = Cparallel;
     j["Lseries"] = Lseries;
@@ -525,6 +528,7 @@ void Load::fromJSON(nlohmann::json j)
     OnePort::fromJSON(j);
     Z0 = j.value("Z0", 50.0);
     delay = j.value("delay", 0.0);
+    loss = j.value("loss", 0.0);
     resistance = j.value("resistance", 0.0);
     Cparallel = j.value("Cparallel", 0.0);
     Lseries = j.value("Lseries", 0.0);
