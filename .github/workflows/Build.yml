@@ -4,12 +4,34 @@ on:
   push:
     branches:
       - master
-      - embedded_firmware_ci
+      - compoundDevice
   pull_request:
     branches:
       - master
 
 jobs:
+  Tests:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libusb-1.0-0-dev qt5-default qt5-qmake qtbase5-dev
+
+      - name: Build Tests
+        run: |
+          cd Software/PC_Application/LibreVNA-Test
+          qmake LibreVNA-Test.pro
+          make -j9
+        shell: bash
+        
+      - name: Run Tests
+        run: |
+          cd Software/PC_Application/LibreVNA-Test
+          ./LibreVNA-Test
+
   PC_Application_Ubuntu:
     runs-on: ubuntu-18.04
     steps:
@@ -27,7 +49,7 @@ jobs:
       - name: Get app version
         id: id_version
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
@@ -35,7 +57,7 @@ jobs:
 
       - name: Build application
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
         shell: bash
@@ -46,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: LibreVNA-GUI-Ubuntu-${{env.LIBREVNA_VERSION}}
-          path: Software/PC_Application/LibreVNA-GUI
+          path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI
           
   PC_Application_Windows:
     runs-on: windows-2019
@@ -65,7 +87,7 @@ jobs:
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
           7z x libusb.7z -r -olibusb
           Xcopy /E /I /Y libusb\include ..\Qt\5.15.1\mingw81_64\include
-          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application
+          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application\LibreVNA-GUI
         shell: cmd
 
       - name: Get build timestamp
@@ -77,7 +99,7 @@ jobs:
         id: id_version
         shell: msys2 {0}
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
@@ -85,14 +107,14 @@ jobs:
 
       - name: Build application
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
         shell: cmd
 
       - name: Deploy application
         run: |
-          cd Software/PC_Application/release
+          cd Software/PC_Application/LibreVNA-GUI/release
           del *.o *.cpp
           windeployqt.exe .
           copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
@@ -107,7 +129,7 @@ jobs:
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
         with:
           name: GUI_Windows-${{env.LIBREVNA_VERSION}}
-          path: Software/PC_Application/release
+          path: Software/PC_Application/LibreVNA-GUI/release
 
   PC_Application_OSX:
     runs-on: macos-10.15
@@ -129,7 +151,7 @@ jobs:
       - name: Get app version
         id: id_version
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           fw_major=`pcregrep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`pcregrep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`pcregrep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
@@ -137,7 +159,7 @@ jobs:
 
       - name: Build application
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
           macdeployqt LibreVNA-GUI.app
@@ -150,7 +172,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: LibreVNA-GUI-OSX-${{env.LIBREVNA_VERSION}}
-          path: Software/PC_Application/LibreVNA-GUI.zip
+          path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
           
   Embedded_Firmware:
     runs-on: ubuntu-20.04

@@ -1,5 +1,0 @@
-<RCC>
-	<qresource prefix="/app">
-	 	<file alias="logo.png">librevna.png</file>
-	</qresource>
-</RCC>
