@@ -1,4 +1,4 @@
-![LibreVNA](Software/PC_Application/resources/banner.png)
+![LibreVNA](Software/PC_Application/LibreVNA-GUI/resources/banner.png)
 
 **100kHz to 6GHz VNA**
 
