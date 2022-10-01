@@ -87,8 +87,8 @@ void LED::Init() {
 #if HW_REVISION == 'B'
 	led_ncnt = 0;
 	mode = Mode::Off;
-//	HAL_TIM_Base_Start(&htim2);
-//	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_Base_Start(&htim2);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 
 	LedStatusHandle = xTaskCreateStatic(LedStatus, "LedStatusTask", LED_STATUS_TASK_STACK_SIZE_WORDS,
 										NULL, 6, LedStatusStack, &LedStatusCB);

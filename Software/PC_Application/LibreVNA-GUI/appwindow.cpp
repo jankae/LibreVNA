@@ -63,7 +63,7 @@ using namespace std;
 
 static const QString APP_VERSION = QString::number(FW_MAJOR) + "." +
                                    QString::number(FW_MINOR) + "." +
-                                   QString::number(FW_PATCH);
+                                   QString::number(FW_PATCH) + QString(FW_SUFFIX);
 static const QString APP_GIT_HASH = QString(GITHASH);
 
 static bool noGUIset = false;
