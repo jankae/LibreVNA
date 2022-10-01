@@ -140,8 +140,6 @@ private:
     // Calibration
     Calibration cal;
     bool changingSettings;
-//    bool calValid;
-    bool calEdited;
     std::set<CalibrationMeasurement::Base*> calMeasurements;
     bool calMeasuring;
     bool calWaitFirst;

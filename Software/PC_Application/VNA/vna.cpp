@@ -62,7 +62,6 @@ VNA::VNA(AppWindow *window, QString name)
     calMeasuring = false;
     calWaitFirst = false;
     calDialog.reset();
-    calEdited = false;
     changingSettings = false;
     settings.sweepType = SweepType::Frequency;
     settings.zerospan = false;
@@ -89,7 +88,6 @@ VNA::VNA(AppWindow *window, QString name)
 
     connect(saveCal, &QAction::triggered, [=](){
         if(cal.toFile()) {
-            calEdited = false;
             UpdateStatusbar();
         }
     });
@@ -672,7 +670,7 @@ void VNA::deviceDisconnected()
 
 void VNA::shutdown()
 {
-    if(calEdited && cal.getCaltype().type != Calibration::Type::None) {
+    if(cal.hasUnsavedChanges() && cal.getCaltype().type != Calibration::Type::None) {
         auto save = InformationBox::AskQuestion("Save calibration?", "The calibration contains data that has not been saved yet. Do you want to save it before exiting?", false);
         if(save) {
             cal.toFile();
@@ -1223,7 +1221,6 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
         // enable calibration measurement only in transmission callback (prevents accidental sampling of data which was still being processed)
         calMeasuring = true;
     });
-    calEdited = true;
 }
 
 void VNA::SetupSCPI()
@@ -1647,5 +1644,4 @@ void VNA::SetSingleSweep(bool single)
 bool VNA::LoadCalibration(QString filename)
 {
     cal.fromFile(filename);
-    calEdited = false;
 }
