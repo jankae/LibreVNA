@@ -6,7 +6,7 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES +=  tst_unittests.cpp \
+SOURCES +=  \
     ../LibreVNA-GUI/Util/util.cpp \
     main.cpp \
     utiltests.cpp

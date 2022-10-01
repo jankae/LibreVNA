@@ -22,7 +22,7 @@ jobs:
       - name: Get app version
         id: id_version
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
@@ -30,7 +30,7 @@ jobs:
 
       - name: Build application
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
           zip LibreVNA-GUI.zip LibreVNA-GUI
@@ -57,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.bump_release.outputs.upload_url }}
-          asset_path: ./Software/PC_Application/LibreVNA-GUI.zip
+          asset_path: ./Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
           asset_name: LibreVNA-GUI-Ubuntu-${{env.LIBREVNA_VERSION}}.zip
           asset_content_type: application/tar+gzip
           
@@ -79,7 +79,7 @@ jobs:
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
           7z x libusb.7z -r -olibusb
           Xcopy /E /I /Y libusb\include ..\Qt\5.15.1\mingw81_64\include
-          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application
+          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application\LibreVNA-GUI
         shell: cmd
 
       - name: Get app version
@@ -94,14 +94,14 @@ jobs:
 
       - name: Build application
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
         shell: cmd
 
       - name: Deploy application
         run: |
-          cd Software/PC_Application/release
+          cd Software/PC_Application/LibreVNA-GUI/release
           del *.o *.cpp
           windeployqt.exe .
           copy ..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
@@ -115,7 +115,7 @@ jobs:
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
         run: |
-          7z a LibreVNA-GUI_Windows-${{env.LIBREVNA_VERSION}}.zip ./Software/PC_Application/release
+          7z a LibreVNA-GUI_Windows-${{env.LIBREVNA_VERSION}}.zip ./Software/PC_Application/LibreVNA-GUI/release
 
       - name: 'Upload release asset'
         uses: actions/upload-release-asset@v1
@@ -145,7 +145,7 @@ jobs:
       - name: Get app version
         id: id_version
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           fw_major=`pcregrep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`pcregrep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`pcregrep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
@@ -153,7 +153,7 @@ jobs:
 
       - name: Build application
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
           macdeployqt LibreVNA-GUI.app
@@ -167,7 +167,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.PC_Application_Ubuntu.outputs.upload_url }}
-          asset_path: ./Software/PC_Application/LibreVNA-GUI.zip
+          asset_path: ./Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
           asset_name: LibreVNA-GUI-OSX-${{env.LIBREVNA_VERSION}}.zip
           asset_content_type: application/tar+gzip
           

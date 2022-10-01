@@ -59,7 +59,7 @@ void UtilTests::NoisyCircleApproximation()
         points.push_back(center + offset + noise);
     }
     auto circCenter = Util::findCenterOfCircle(points);
-    constexpr double maxDelta = 0.0;
+    constexpr double maxDelta = 0.1;
     QVERIFY(abs(center.real() - circCenter.real()) <= maxDelta);
     QVERIFY(abs(center.imag() - circCenter.imag()) <= maxDelta);
 }
