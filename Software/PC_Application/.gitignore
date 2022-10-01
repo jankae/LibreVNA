@@ -73,8 +73,8 @@ Thumbs.db
 *.exe
 Application
 /build-*
-LibreVNA-GUI/LibreVNA-GUI
-LibreVNA-Test/LibreVNA-Test
+/LibreVNA-GUI/LibreVNA-GUI
+/LibreVNA-Test/LibreVNA-Test
 
 
 
