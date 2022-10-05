@@ -16,6 +16,7 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QDateTime>
+#include <QCheckBox>
 
 using namespace std;
 
@@ -24,6 +25,9 @@ Marker::Marker(MarkerModel *model, int number, Marker *parent, QString descr)
       model(model),
       parentTrace(nullptr),
       position(1000000000),
+      minPosition(0),
+      maxPosition(0),
+      restrictPosition(false),
       number(number),
       visible(true),
       data(0),
@@ -87,7 +91,7 @@ void Marker::assignTrace(Trace *t)
     if(firstAssignment) {
         // Marker was just created and this is the first assignment to a trace.
         // Use display format on graph from preferences
-        auto p = Preferences::getInstance();
+        auto& p = Preferences::getInstance();
         if(p.Marker.defaultBehavior.showDataOnGraphs) {
             if(p.Marker.defaultBehavior.showAllData) {
                 for(auto f : applicableFormats()) {
@@ -644,6 +648,22 @@ QString Marker::readableType()
     }
 }
 
+QString Marker::domainToUnit()
+{
+    return domainToUnit(getDomain());
+}
+
+QString Marker::domainToUnit(Trace::DataType domain)
+{
+    switch(domain) {
+    case Trace::DataType::Frequency: return "Hz";
+    case Trace::DataType::Power: return "dBm";
+    case Trace::DataType::Time: return "s";
+    case Trace::DataType::TimeZeroSpan: return "s";
+    }
+    return "";
+}
+
 void Marker::setPosition(double pos)
 {
     position = pos;
@@ -938,6 +958,14 @@ void Marker::constrainPosition()
 {
     if(parentTrace) {
         if(parentTrace->size() > 0)  {
+            if(restrictPosition) {
+                if(position > maxPosition) {
+                    position = maxPosition;
+                }
+                if(position < minPosition) {
+                    position = minPosition;
+                }
+            }
             if(position > parentTrace->maxX()) {
                 position = parentTrace->maxX();
             } else if(position < parentTrace->minX()) {
@@ -1166,6 +1194,9 @@ nlohmann::json Marker::toJSON()
     j["type"] = typeToString(type).toStdString();
     j["number"] = number;
     j["position"] = position;
+    j["minPosition"] = minPosition;
+    j["maxPosition"] = maxPosition;
+    j["restrictPosition"] = restrictPosition;
     if(group) {
         j["group"] = group->getNumber();
     }
@@ -1205,6 +1236,9 @@ void Marker::fromJSON(nlohmann::json j)
     creationTimestamp = j.value("creationTimestamp", QDateTime::currentSecsSinceEpoch());
     number = j.value("number", 1);
     position = j.value("position", 0.0);
+    minPosition = j.value("minPosition", 0.0);
+    maxPosition = j.value("maxPosition", 0.0);
+    restrictPosition = j.value("restrictPosition", false);
     visible = j.value("visible", true);
 
     unsigned int hash = j["trace"];
@@ -1458,6 +1492,59 @@ SIUnitEdit *Marker::getSettingsEditor()
     return ret;
 }
 
+QWidget *Marker::getRestrictEditor()
+{
+    auto w = new QWidget;
+    auto layout = new QHBoxLayout;
+    layout->setContentsMargins(0,0,0,0);
+    auto cb = new QCheckBox;
+    cb->setChecked(restrictPosition);
+    layout->addWidget(cb);
+    auto min = new SIUnitEdit;
+    min->setPrefixes("pnum kMG");
+    min->setUnit(domainToUnit());
+    min->setPrecision(5);
+    min->setValue(minPosition);
+    min->setEnabled(restrictPosition);
+    layout->addWidget(new QLabel("from"));
+    layout->addWidget(min);
+    auto max = new SIUnitEdit;
+    max->setPrefixes("pnum kMG");
+    max->setUnit(domainToUnit());
+    max->setPrecision(5);
+    max->setValue(maxPosition);
+    max->setEnabled(restrictPosition);
+    layout->addWidget(new QLabel("to"));
+    layout->addWidget(max);
+
+    connect(cb, &QCheckBox::toggled, this, [=](){
+        restrictPosition = cb->isChecked();
+        min->setEnabled(restrictPosition);
+        max->setEnabled(restrictPosition);
+        constrainPosition();
+        update();
+    });
+    connect(min, &SIUnitEdit::valueChanged, this, [=](){
+        minPosition = min->value();
+        if(maxPosition < minPosition) {
+            maxPosition = minPosition;
+            max->setValueQuiet(maxPosition);
+        }
+        constrainPosition();
+    });
+    connect(max, &SIUnitEdit::valueChanged, this, [=](){
+        maxPosition = max->value();
+        if(maxPosition < minPosition) {
+            minPosition = maxPosition;
+            min->setValueQuiet(minPosition);
+        }
+        constrainPosition();
+    });
+
+    w->setLayout(layout);
+    return w;
+}
+
 void Marker::adjustSettings(double value)
 {
     switch(getDomain()) {
@@ -1565,20 +1652,22 @@ void Marker::update()
         // empty trace, nothing to do
         return;
     }
+    auto xmin = restrictPosition ? minPosition : numeric_limits<double>::lowest();
+    auto xmax = restrictPosition ? maxPosition : numeric_limits<double>::max();
     switch(type) {
     case Type::Manual:
     case Type::Delta:
         // nothing to do
         break;
     case Type::Maximum:
-        setPosition(parentTrace->findExtremum(true));
+        setPosition(parentTrace->findExtremum(true, xmin, xmax));
         break;
     case Type::Minimum:
-        setPosition(parentTrace->findExtremum(false));
+        setPosition(parentTrace->findExtremum(false, xmin, xmax));
         break;
     case Type::PeakTable: {
         deleteHelperMarkers();
-        auto peaks = parentTrace->findPeakFrequencies(100, peakThreshold);
+        auto peaks = parentTrace->findPeakFrequencies(100, peakThreshold, 3.0, xmin, xmax);
         char suffix = 'a';
         for(auto p : peaks) {
             auto helper = new Marker(model, number, this);
@@ -1600,7 +1689,7 @@ void Marker::update()
             break;
         } else {
             // find the maximum
-            auto peakFreq = parentTrace->findExtremum(true);
+            auto peakFreq = parentTrace->findExtremum(true, xmin, xmax);
             // this marker shows the insertion loss
             setPosition(peakFreq);
             // find the cutoff frequency
@@ -1609,7 +1698,11 @@ void Marker::update()
             auto cutoff = peakAmplitude + cutoffAmplitude;
             int inc = type == Type::Lowpass ? 1 : -1;
             while(index >= 0 && index < (int) parentTrace->size()) {
-                auto amplitude = Util::SparamTodB(parentTrace->sample(index).y);
+                auto sample = parentTrace->sample(index);
+                if(sample.x > xmax) {
+                    break;
+                }
+                auto amplitude = Util::SparamTodB(sample.y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -1640,7 +1733,11 @@ void Marker::update()
 
             auto low_index = index;
             while(low_index >= 0) {
-                auto amplitude = Util::SparamTodB(parentTrace->sample(low_index).y);
+                auto sample = parentTrace->sample(low_index);
+                if(sample.x < xmin) {
+                    break;
+                }
+                auto amplitude = Util::SparamTodB(sample.y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -1654,7 +1751,11 @@ void Marker::update()
 
             auto high_index = index;
             while(high_index < (int) parentTrace->size()) {
-                auto amplitude = Util::SparamTodB(parentTrace->sample(high_index).y);
+                auto sample = parentTrace->sample(high_index);
+                if(sample.x > xmax) {
+                    break;
+                }
+                auto amplitude = Util::SparamTodB(sample.y);
                 if(amplitude <= cutoff) {
                     break;
                 }
@@ -1670,7 +1771,7 @@ void Marker::update()
         }
         break;
     case Type::TOI: {
-        auto peaks = parentTrace->findPeakFrequencies(2);
+        auto peaks = parentTrace->findPeakFrequencies(2, -100, 3.0, xmin, xmax);
         if(peaks.size() != 2) {
             // error finding peaks, do nothing
             break;
@@ -1691,13 +1792,16 @@ void Marker::update()
         break;
     case Type::P1dB: {
         // find maximum
-        auto maxpos = parentTrace->findExtremum(true);
+        auto maxpos = parentTrace->findExtremum(true, xmin, xmax);
         // starting at the maximum point, traverse trace data towards higher power levels until amplitude dropped by 1dB
         auto maxindex = parentTrace->index(maxpos);
         auto maxpower = abs(parentTrace->sample(maxindex).y);
-        double p1db = parentTrace->maxX();
+        double p1db = parentTrace->maxX() > xmax ? xmax : parentTrace->maxX();
         for(unsigned int i = maxindex; i < parentTrace->size(); i++) {
             auto sample = parentTrace->sample(i);
+            if(sample.x > xmax) {
+                break;
+            }
             if(Util::SparamTodB(maxpower) - Util::SparamTodB(sample.y) >= 1.0) {
                 p1db = sample.x;
                 break;

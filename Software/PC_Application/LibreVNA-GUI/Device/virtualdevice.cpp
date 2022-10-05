@@ -110,7 +110,7 @@ VirtualDevice::VirtualDevice(QString serial)
     zerospan = false;
 
     // Check if this is a compound device
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     for(auto cd : pref.compoundDevices) {
         if(cd->name == serial) {
             // connect request to this compound device
@@ -257,8 +257,8 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
         portStageMapping[s.excitedPorts[i]] = i;
     }
 
-    auto pref = Preferences::getInstance();
-    Protocol::SweepSettings sd;
+    auto& pref = Preferences::getInstance();
+    Protocol::SweepSettings sd = {};
     sd.f_start = s.freqStart;
     sd.f_stop = s.freqStop;
     sd.points = s.points;
@@ -335,8 +335,8 @@ bool VirtualDevice::setSA(const VirtualDevice::SASettings &s, std::function<void
         return false;
     }
     zerospan = s.freqStart == s.freqStop;
-    auto pref = Preferences::getInstance();
-    Protocol::SpectrumAnalyzerSettings sd;
+    auto& pref = Preferences::getInstance();
+    Protocol::SpectrumAnalyzerSettings sd = {};
     sd.f_start = s.freqStart;
     sd.f_stop = s.freqStop;
     sd.pointNum = s.points;
@@ -410,8 +410,8 @@ bool VirtualDevice::setSG(const SGSettings &s)
     if(!info.supportsSGmode) {
         return false;
     }
-    auto pref = Preferences::getInstance();
-    Protocol::PacketInfo packet;
+    auto& pref = Preferences::getInstance();
+    Protocol::PacketInfo packet = {};
     packet.type = Protocol::PacketType::Generator;
     Protocol::GeneratorSettings &sd = packet.generator;
     sd.frequency = s.freq;
@@ -485,7 +485,7 @@ bool VirtualDevice::setExtRef(QString option_in, QString option_out)
         refOut = Reference::OutFreq::Off;
     }
 
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::Reference;
     switch(refIn) {
     case Reference::TypeIn::Internal:
@@ -518,7 +518,7 @@ bool VirtualDevice::setExtRef(QString option_in, QString option_out)
 
 std::set<QString> VirtualDevice::GetAvailableVirtualDevices()
 {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     auto ret = Device::GetDevices();
     // Add compound devices as well
     for(auto vdev : pref.compoundDevices) {

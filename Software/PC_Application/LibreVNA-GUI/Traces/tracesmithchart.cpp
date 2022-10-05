@@ -189,7 +189,7 @@ bool TraceSmithChart::configureForTrace(Trace *t)
 }
 
 void TraceSmithChart::draw(QPainter &p) {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
 
     // translate coordinate system so that the smith chart sits in the origin and has a size of 1
     auto w = p.window();

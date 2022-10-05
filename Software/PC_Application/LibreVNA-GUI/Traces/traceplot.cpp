@@ -168,7 +168,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
     }
 
     Q_UNUSED(event)
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     QPainter p(this);
 //    p.setRenderHint(QPainter::Antialiasing);
     // fill background

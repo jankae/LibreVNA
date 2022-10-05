@@ -48,6 +48,8 @@ public:
     static Preferences& getInstance() {
         return instance;
     }
+    Preferences(const Preferences&) = delete;
+    ~Preferences();
     void load();
     void store();
     void edit();

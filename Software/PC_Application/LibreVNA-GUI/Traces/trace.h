@@ -67,13 +67,14 @@ public:
     unsigned int size() const;
     double minX();
     double maxX();
-    double findExtremum(bool max);
+    double findExtremum(bool max, double xmin = std::numeric_limits<double>::lowest(), double xmax = std::numeric_limits<double>::max());
     /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
      * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.
      * Only peaks with at least minLevel will be considered.
      * To detect the next peak, the signal first has to drop at least minValley below the peak level.
      */
-    std::vector<double> findPeakFrequencies(unsigned int maxPeaks = 100, double minLevel = -100.0, double minValley = 3.0);
+    std::vector<double> findPeakFrequencies(unsigned int maxPeaks = 100, double minLevel = -100.0, double minValley = 3.0,
+                                            double xmin = std::numeric_limits<double>::lowest(), double xmax = std::numeric_limits<double>::max());
     enum class SampleType {
         Frequency,
         TimeImpulse,

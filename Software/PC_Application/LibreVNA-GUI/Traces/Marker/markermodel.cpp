@@ -279,6 +279,7 @@ QVariant MarkerModel::headerData(int section, Qt::Orientation orientation, int r
             case ColIndexTrace: return "Trace";
             case ColIndexType: return "Type";
             case ColIndexSettings: return "Settings";
+            case ColIndexRestrict: return "Restrict";
             case ColIndexData: return "Data";
             }
             break;
@@ -291,6 +292,7 @@ QVariant MarkerModel::headerData(int section, Qt::Orientation orientation, int r
             case ColIndexTrace: return "The trace from which the marker gets its data";
             case ColIndexType: return "Depending on marker type, it can be positioned by the user or will be set automatically";
             case ColIndexSettings: return "Configurable marker parameter, depends on the marker type";
+            case ColIndexRestrict: return "Restrict the range available for this marker";
             case ColIndexData: return "Tracedata at the marker position";
             }
             break;
@@ -334,6 +336,7 @@ Qt::ItemFlags MarkerModel::flags(const QModelIndex &index) const
     case ColIndexTrace: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexType: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexSettings: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
+    case ColIndexRestrict: flags |= Qt::ItemIsEnabled | Qt::ItemIsEditable; break;
     case ColIndexData: flags |= Qt::ItemIsEnabled; break;
     }
     auto marker = markerFromIndex(index);
@@ -523,4 +526,23 @@ void MarkerTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *, con
 {
     auto marker = static_cast<const MarkerModel*>(index.model())->markerFromIndex(index);
     marker->updateTypeFromEditor(editor);
+}
+
+QSize MarkerRestrictDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    return QSize(0, rowHeight);
+}
+
+QWidget *MarkerRestrictDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    auto marker = static_cast<const MarkerModel*>(index.model())->markerFromIndex(index);
+    auto editor = marker->getRestrictEditor();
+    editor->setMaximumHeight(rowHeight);
+    editor->setParent(parent);
+    return editor;
+}
+
+void MarkerRestrictDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    // nothing to do
 }

@@ -15,7 +15,7 @@ class MarkerGroup;
 
 class Marker : public QObject, public Savable
 {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     Marker(MarkerModel *model, int number = 1, Marker *parent = nullptr, QString descr = QString());
     ~Marker();
@@ -61,6 +61,8 @@ public:
     QString readableSettings();
     QString tooltipSettings();
     QString readableType();
+    QString domainToUnit();
+    static QString domainToUnit(Trace::DataType domain);
 
     double getPosition() const;
     std::complex<double> getData() const;
@@ -96,6 +98,7 @@ public:
     QWidget *getTypeEditor(QAbstractItemDelegate *delegate = nullptr);
     void updateTypeFromEditor(QWidget *c);
     SIUnitEdit* getSettingsEditor();
+    QWidget *getRestrictEditor();
     void adjustSettings(double value);
     bool isVisible();
     void setVisible(bool visible);
@@ -184,6 +187,9 @@ private:
     Trace *parentTrace;
     unsigned long creationTimestamp;
     double position;
+    double minPosition;
+    double maxPosition;
+    bool restrictPosition;
     int number;
     bool visible;
     // Frequency domain: S parameter

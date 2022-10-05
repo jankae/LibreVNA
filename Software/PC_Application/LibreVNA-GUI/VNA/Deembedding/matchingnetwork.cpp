@@ -61,8 +61,8 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
         p.measurements[name] = corrected.m11;
     }
     // handle the rest of the measurements
-    for(int i=0;i<VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
-        for(int j=i+1;j<VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;j++) {
+    for(int i=1;i<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
+        for(int j=i+1;j<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;j++) {
             if(i == port) {
                 auto S = uncorrected.toSparam(i, j);
                 auto corrected = Sparam(m.p * ABCDparam(S, p.Z0), p.Z0);

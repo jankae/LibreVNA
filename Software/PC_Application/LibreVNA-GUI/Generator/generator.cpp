@@ -7,7 +7,7 @@ Generator::Generator(AppWindow *window, QString name)
 {
     central = new SignalgeneratorWidget(window, window);
 
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
 
     // set initial values
     if(pref.Startup.RememberSweepSettings) {

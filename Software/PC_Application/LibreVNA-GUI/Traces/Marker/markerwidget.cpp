@@ -27,6 +27,7 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
     ui->treeView->setItemDelegateForColumn(MarkerModel::ColIndexTrace, new MarkerTraceDelegate);
     ui->treeView->setItemDelegateForColumn(MarkerModel::ColIndexType, new MarkerTypeDelegate);
     ui->treeView->setItemDelegateForColumn(MarkerModel::ColIndexSettings, new MarkerSettingsDelegate);
+    ui->treeView->setItemDelegateForColumn(MarkerModel::ColIndexRestrict, new MarkerRestrictDelegate);
 
     ui->treeView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
     ui->treeView->installEventFilter(this);
@@ -36,6 +37,7 @@ MarkerWidget::MarkerWidget(MarkerModel &model, QWidget *parent) :
     ui->treeView->setColumnWidth(MarkerModel::ColIndexVisible, 20);
     ui->treeView->setColumnWidth(MarkerModel::ColIndexTrace, 60);
     ui->treeView->setColumnWidth(MarkerModel::ColIndexType, 120);
+    ui->treeView->setColumnWidth(MarkerModel::ColIndexRestrict, 200);
 
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->treeView, &QTreeView::customContextMenuRequested, [&](const QPoint &p){
@@ -175,7 +177,7 @@ bool MarkerWidget::eventFilter(QObject *, QEvent *event)
 void MarkerWidget::updatePersistentEditors()
 {
     for(int i=0;i<model.rowCount();i++) {
-        auto columns = {MarkerModel::ColIndexTrace, MarkerModel::ColIndexType};
+        auto columns = {MarkerModel::ColIndexTrace, MarkerModel::ColIndexType, MarkerModel::ColIndexRestrict};
         for(auto c : columns) {
             auto index = model.index(i, c);
             ui->treeView->closePersistentEditor(index);

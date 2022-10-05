@@ -171,7 +171,7 @@ AppWindow::AppWindow(QWidget *parent)
 
     SetupSCPI();
 
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     if(pref.Startup.UseSetupFile) {
         LoadSetup(pref.Startup.SetupFile);
     }
@@ -297,7 +297,7 @@ void AppWindow::SetupMenu()
 
 void AppWindow::closeEvent(QCloseEvent *event)
 {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     if(pref.Startup.UseSetupFile && pref.Startup.AutosaveSetupFile) {
         SaveSetup(pref.Startup.SetupFile);
     }
@@ -983,7 +983,7 @@ void AppWindow::UpdateAcquisitionFrequencies()
     }
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::AcquisitionFrequencySettings;
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     p.acquisitionFrequencySettings.IF1 = pref.Acquisition.IF1;
     p.acquisitionFrequencySettings.ADCprescaler = pref.Acquisition.ADCprescaler;
     p.acquisitionFrequencySettings.DFTphaseInc = pref.Acquisition.DFTPhaseInc;

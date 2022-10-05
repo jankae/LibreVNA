@@ -389,6 +389,13 @@ void PreferencesDialog::updateFromGUI()
     p->nonTrivialWriting();
 }
 
+Preferences::~Preferences()
+{
+    for(auto cd : compoundDevices) {
+        delete cd;
+    }
+}
+
 void Preferences::load()
 {
     QSettings settings;

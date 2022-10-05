@@ -348,7 +348,7 @@ bool TraceXYPlot::supported(Trace *t)
 
 void TraceXYPlot::draw(QPainter &p)
 {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
 
     limitPassing = true;
 

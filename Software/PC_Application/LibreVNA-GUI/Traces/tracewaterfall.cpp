@@ -210,7 +210,7 @@ void TraceWaterfall::updateContextMenu()
 
 void TraceWaterfall::draw(QPainter &p)
 {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
 
     int xAxisSpace = pref.Graphs.fontSizeAxis * 3;
     constexpr int topMargin = 10;

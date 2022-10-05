@@ -33,7 +33,6 @@ private:
     void process(unsigned int pointNum, std::vector<std::complex<double> > &data);
 
     std::vector<std::deque<std::vector<std::complex<double>>>> avg;
-    int maxPoints;
     unsigned int numMeasurements;
     unsigned int averages;
     Mode mode;

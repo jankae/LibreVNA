@@ -80,7 +80,7 @@ void TracePolarChart::axisSetupDialog()
 }
 
 void TracePolarChart::draw(QPainter &p) {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
 
     p.setRenderHint(QPainter::Antialiasing);
     auto w = p.window();

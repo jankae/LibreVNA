@@ -80,7 +80,6 @@ VNA::VNA(AppWindow *window, QString name)
     auto calLoad = calMenu->addAction("Load");
     saveCal = calMenu->addAction("Save");
     calMenu->addSeparator();
-//    saveCal->setEnabled(false);
 
     connect(calLoad, &QAction::triggered, [=](){
         LoadCalibration("");
@@ -97,17 +96,15 @@ VNA::VNA(AppWindow *window, QString name)
     auto calData = calMenu->addAction("Calibration Measurements");
     connect(calData, &QAction::triggered, [=](){
         cal.edit();
-//       StartCalibrationDialog();
     });
 
     auto calEditKit = calMenu->addAction("Edit Calibration Kit");
     connect(calEditKit, &QAction::triggered, [=](){
-        cal.getKit().edit();
-//        cal.getCalibrationKit().edit([=](){
-//            if(calValid) {
-//                ApplyCalibration(cal.getType());
-//            }
-//        });
+        cal.getKit().edit([=](){
+            if(cal.getCaltype().type != Calibration::Type::None) {
+                cal.compute(cal.getCaltype());
+            }
+        });
     });
 
     auto calElectronic = calMenu->addAction("Electronic Calibration");
@@ -518,7 +515,7 @@ VNA::VNA(AppWindow *window, QString name)
     SetupSCPI();
 
     // Set initial sweep settings
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
 
     if(pref.Acquisition.useMedianAveraging) {
         average.setMode(Averaging::Mode::Median);
@@ -1408,7 +1405,7 @@ void VNA::SetupSCPI()
 
 void VNA::ConstrainAndUpdateFrequencies()
 {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     double maxFreq;
     if(pref.Acquisition.harmonicMixing) {
         maxFreq = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreqHarmonic;
@@ -1435,7 +1432,7 @@ void VNA::ConstrainAndUpdateFrequencies()
 
 void VNA::LoadSweepSettings()
 {
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     QSettings s;
     // frequency sweep settings
     settings.Freq.start = s.value("SweepFreqStart", pref.Startup.DefaultSweep.f_start).toULongLong();

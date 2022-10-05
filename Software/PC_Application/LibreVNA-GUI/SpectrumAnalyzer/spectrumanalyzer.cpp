@@ -264,7 +264,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     SetTGEnabled(false);
 
     // Set initial sweep settings
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
 
     if(pref.Acquisition.useMedianAveraging) {
         average.setMode(Averaging::Mode::Median);
@@ -1130,7 +1130,7 @@ void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 void SpectrumAnalyzer::LoadSweepSettings()
 {
     QSettings s;
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     settings.freqStart = s.value("SAStart", pref.Startup.SA.start).toULongLong();
     settings.freqStop = s.value("SAStop", pref.Startup.SA.stop).toULongLong();
     ConstrainAndUpdateFrequencies();

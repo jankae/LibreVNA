@@ -334,7 +334,7 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     auto input = gate->getInput()->rData();
 
     Q_UNUSED(event)
-    auto pref = Preferences::getInstance();
+    auto& pref = Preferences::getInstance();
     QPainter p(this);
     // fill background
     p.setBackground(QBrush(pref.Graphs.Color.background));

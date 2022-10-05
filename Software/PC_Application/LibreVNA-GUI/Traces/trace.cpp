@@ -1206,11 +1206,14 @@ double Trace::maxX()
     }
 }
 
-double Trace::findExtremum(bool max)
+double Trace::findExtremum(bool max, double xmin, double xmax)
 {
     double compare = max ? numeric_limits<double>::min() : numeric_limits<double>::max();
     double freq = 0.0;
     for(auto sample : lastMath->rData()) {
+        if(sample.x < xmin || sample.x > xmax) {
+            continue;
+        }
         double amplitude = abs(sample.y);
         if((max && (amplitude > compare)) || (!max && (amplitude < compare))) {
             // higher/lower extremum found
@@ -1221,7 +1224,7 @@ double Trace::findExtremum(bool max)
     return freq;
 }
 
-std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double minLevel, double minValley)
+std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double minLevel, double minValley, double xmin, double xmax)
 {
     if(lastMath->getDataType() != DataType::Frequency) {
         // not in frequency domain
@@ -1236,6 +1239,9 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     double max_dbm = -200.0;
     double min_dbm = 200.0;
     for(auto d : lastMath->rData()) {
+        if(d.x < xmin || d.x > xmax) {
+            continue;
+        }
         double dbm = Util::SparamTodB(d.y);
         if((dbm >= max_dbm) && (min_dbm <= dbm - minValley)) {
             // potential peak frequency

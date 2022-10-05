@@ -5,6 +5,7 @@ using namespace std;
 Averaging::Averaging()
 {
     averages = 1;
+    numMeasurements = 0;
     mode = Mode::Mean;
 }
 

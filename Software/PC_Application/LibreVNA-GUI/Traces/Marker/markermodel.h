@@ -11,7 +11,7 @@
 
 class MarkerTraceDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT;
+    Q_OBJECT
     QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     void setEditorData(QWidget * editor, const QModelIndex & index) const override;
@@ -31,7 +31,7 @@ Q_DECLARE_METATYPE(MarkerWidgetTraceInfo)
 
 class MarkerTypeDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT;
+    Q_OBJECT
     QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
@@ -39,7 +39,15 @@ class MarkerTypeDelegate : public QStyledItemDelegate
 
 class MarkerSettingsDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT;
+    Q_OBJECT
+    QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
+    QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+    void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
+};
+
+class MarkerRestrictDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
     QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
@@ -59,6 +67,7 @@ public:
         ColIndexTrace,
         ColIndexType,
         ColIndexSettings,
+        ColIndexRestrict,
         ColIndexData,
         ColIndexLast,
     };
