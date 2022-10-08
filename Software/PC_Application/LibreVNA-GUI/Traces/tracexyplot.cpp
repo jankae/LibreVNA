@@ -627,7 +627,8 @@ void TraceXYPlot::draw(QPainter &p)
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             if(displayFullFreq) {
                 QRect bounding;
-                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
+                p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*2, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*4,
+                                 pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
                 lastTickLabelEnd = bounding.x() + bounding.width();
             } else {
                 // check if the same prefix was used as in the fullFreq string
