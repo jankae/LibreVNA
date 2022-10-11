@@ -375,10 +375,6 @@ FORMS += \
     ../LibreVNA-GUI/main.ui \
     ../LibreVNA-GUI/preferencesdialog.ui
 
-DISTFILES += \
-    ../LibreVNA-GUI/TraceSetup \
-    ../LibreVNA-GUI/test.setup
-
 CONFIG += c++17
 
 LIBS += -lusb-1.0
@@ -387,3 +383,4 @@ unix:LIBS += -L/usr/lib/
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
 DEFINES += FW_MAJOR=1 FW_MINOR=4 FW_PATCH=0 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
+DEFINES -= _UNICODE UNICODE
