@@ -648,7 +648,7 @@ void Calibration::edit()
         QObject::connect(action, &QAction::triggered, [=](){
             auto newMeas = newMeasurement(t);
             if(newMeas) {
-                measurements.push_back(newMeas);
+//                measurements.push_back(newMeas);
                 updateMeasurementTable();
             }
         });
