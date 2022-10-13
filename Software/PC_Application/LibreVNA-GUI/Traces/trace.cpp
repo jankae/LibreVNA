@@ -269,7 +269,6 @@ void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::v
     // add new points to traces
     for(auto d : data) {
         Trace::Data td;
-        auto S = d.toSparam(1, 2);
         td.x = d.frequency;
         for(auto m : d.measurements) {
             td.y = m.second;

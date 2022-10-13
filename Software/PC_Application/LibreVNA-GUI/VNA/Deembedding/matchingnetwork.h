@@ -64,7 +64,7 @@ public:
 
     // DeembeddingOption interface
 public:
-    std::set<int> getAffectedPorts() override;
+    std::set<unsigned int> getAffectedPorts() override;
     void transformDatapoint(VirtualDevice::VNAMeasurement &p) override;
     void edit() override;
     Type getType() override {return Type::MatchingNetwork;}
@@ -84,7 +84,7 @@ private:
     bool eventFilter(QObject *object, QEvent *event) override;
 
     std::vector<MatchingComponent*> network;
-    int port;
+    unsigned int port;
 
     QWidget *graph, *insertIndicator;
     QPoint dragStartPosition;

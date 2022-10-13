@@ -18,7 +18,7 @@ class PortExtension : public DeembeddingOption
     Q_OBJECT
 public:
     PortExtension();
-    std::set<int> getAffectedPorts() override;
+    std::set<unsigned int> getAffectedPorts() override;
     void transformDatapoint(VirtualDevice::VNAMeasurement& d) override;
     void setCalkit(Calkit *kit);
     Type getType() override {return Type::PortExtension;}
@@ -42,7 +42,7 @@ private:
 
     // status variables for automatic measurements
     Calkit *kit;
-    int port;
+    unsigned int port;
     bool isOpen;
     bool isIdeal;
 

@@ -14,7 +14,7 @@ class CompoundDeviceEditDialog;
 class DeviceFrame : public QFrame {
     Q_OBJECT
 public:
-    DeviceFrame(CompoundDevice *dev, int position);
+    DeviceFrame(CompoundDevice *dev, unsigned int position);
     ~DeviceFrame();
     void setPosition(int pos);
     void update();
@@ -30,7 +30,7 @@ private:
     QComboBox *port1, *port2;
     QLabel *image;
 
-    int position;
+    unsigned int position;
     CompoundDevice *dev;
 };
 

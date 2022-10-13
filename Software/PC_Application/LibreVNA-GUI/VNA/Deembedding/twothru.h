@@ -16,7 +16,7 @@ class TwoThru : public DeembeddingOption
 public:
     TwoThru();
 
-    std::set<int> getAffectedPorts() override;
+    std::set<unsigned int> getAffectedPorts() override;
     virtual void transformDatapoint(VirtualDevice::VNAMeasurement& p) override;
     virtual void edit() override;
     virtual Type getType() override {return DeembeddingOption::Type::TwoThru;}
@@ -40,7 +40,7 @@ private:
     std::vector<VirtualDevice::VNAMeasurement> measurements2xthru;
     std::vector<VirtualDevice::VNAMeasurement> measurementsDUT;
     double Z0;
-    int port1, port2;
+    unsigned int port1, port2;
     std::vector<Point> points;
     bool measuring2xthru;
     bool measuringDUT;

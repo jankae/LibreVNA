@@ -882,11 +882,11 @@ void VNA::SettingsChanged(bool resetTraces, std::function<void (bool)> cb)
     VirtualDevice::VNASettings s = {};
     s.IFBW = settings.bandwidth;
     if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-        for(int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
             s.excitedPorts.push_back(i);
         }
     } else {
-        for(int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
             if(traceModel.PortExcitationRequired(i))
             s.excitedPorts.push_back(i);
         }
@@ -1141,7 +1141,7 @@ void VNA::SetAveraging(unsigned int averages)
 void VNA::ExcitationRequired()
 {
     if(!Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-        for(int i=1;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        for(unsigned int i=1;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
             auto required = traceModel.PortExcitationRequired(i);
             auto set = find(settings.excitedPorts.begin(), settings.excitedPorts.end(), i) != settings.excitedPorts.end();
             if(required != set) {
@@ -1640,5 +1640,5 @@ void VNA::SetSingleSweep(bool single)
 
 bool VNA::LoadCalibration(QString filename)
 {
-    cal.fromFile(filename);
+    return cal.fromFile(filename);
 }

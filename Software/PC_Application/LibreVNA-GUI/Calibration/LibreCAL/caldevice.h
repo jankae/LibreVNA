@@ -35,7 +35,7 @@ public:
 
     QString serial();
     QString getFirmware() const;
-    int getNumPorts() const;
+    unsigned int getNumPorts() const;
 
     class CoefficientSet {
     public:

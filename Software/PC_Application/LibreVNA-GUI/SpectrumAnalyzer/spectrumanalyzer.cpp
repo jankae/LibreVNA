@@ -1020,7 +1020,7 @@ void SpectrumAnalyzer::SetupSCPI()
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
             return SCPI::getResultName(SCPI::Result::Error);
-        } else if(newval >= 0 && newval <= VirtualDevice::getInfo(window->getDevice()).ports){
+        } else if(newval <= VirtualDevice::getInfo(window->getDevice()).ports){
             SetTGPort(newval);
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {

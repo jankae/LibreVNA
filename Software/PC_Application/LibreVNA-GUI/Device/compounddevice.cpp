@@ -76,7 +76,7 @@ QString CompoundDevice::getDesription()
     return name + ", "+QString::number(deviceSerials.size())+" devices, "+QString::number(portMapping.size())+" ports in total";
 }
 
-int CompoundDevice::PortMapping::findActiveStage(std::vector<CompoundDevice::PortMapping> map, int device, int port)
+int CompoundDevice::PortMapping::findActiveStage(std::vector<CompoundDevice::PortMapping> map, unsigned int device, unsigned int port)
 {
     for(unsigned int i=0;i<map.size();i++) {
         if(map[i].device == device && map[i].port == port) {

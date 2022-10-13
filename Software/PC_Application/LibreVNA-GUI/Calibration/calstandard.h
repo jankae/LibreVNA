@@ -15,6 +15,7 @@ class Virtual : public Savable
 {
 public:
     Virtual(QString name = "");
+    virtual ~Virtual(){};
 
     enum class Type {
         Open,

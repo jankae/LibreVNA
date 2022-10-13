@@ -29,7 +29,7 @@ signals:
 public slots:
     void setLevel(double level);
     void setFrequency(double frequency);
-    void setPort(int port);
+    void setPort(unsigned int port);
 
 protected:
     void timerEvent(QTimerEvent *) override;

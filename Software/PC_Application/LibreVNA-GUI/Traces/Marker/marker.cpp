@@ -660,6 +660,7 @@ QString Marker::domainToUnit(Trace::DataType domain)
     case Trace::DataType::Power: return "dBm";
     case Trace::DataType::Time: return "s";
     case Trace::DataType::TimeZeroSpan: return "s";
+    case Trace::DataType::Invalid: return "";
     }
     return "";
 }

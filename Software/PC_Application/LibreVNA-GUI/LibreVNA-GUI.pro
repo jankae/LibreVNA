@@ -343,6 +343,8 @@ RESOURCES += \
     icons.qrc \
     resources/librevna.qrc
 
+QMAKE_CXXFLAGS += -Wno-deprecated -Wno-deprecated-declarations
+
 CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"

@@ -5,16 +5,16 @@
 
 using namespace std;
 
-SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::vector<int> used_ports, bool empty_allowed)
+SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::vector<unsigned int> used_ports, bool empty_allowed)
     : model(model),
-      used_ports(used_ports),
-      empty_allowed(empty_allowed)
+      empty_allowed(empty_allowed),
+      used_ports(used_ports)
 {
     createGUI();
     setInitialChoices();
 }
 
-SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::set<int> used_ports, bool empty_allowed)
+SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::set<unsigned int> used_ports, bool empty_allowed)
     : model(model),
       empty_allowed(empty_allowed)
 {

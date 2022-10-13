@@ -233,7 +233,7 @@ void LibreCALDialog::startCalibration()
     std::vector<CalStandard::Virtual*> shortStandards;
     std::vector<CalStandard::Virtual*> loadStandards;
     std::vector<CalStandard::Virtual*> throughStandards;
-    for(int i=1;i<=device->getNumPorts();i++) {
+    for(unsigned int i=1;i<=device->getNumPorts();i++) {
         if(coeffSet.opens[i-1]->t.points() > 0) {
             auto o = new CalStandard::Open();
             o->setName("Port "+QString::number(i));
@@ -255,7 +255,7 @@ void LibreCALDialog::startCalibration()
             loadStandards.push_back(o);
             kit.standards.push_back(o);
         }
-        for(int j=i+1;j<=device->getNumPorts();j++) {
+        for(unsigned int j=i+1;j<=device->getNumPorts();j++) {
             auto c = coeffSet.getThrough(i,j);
             if(!c) {
                 continue;
@@ -276,7 +276,7 @@ void LibreCALDialog::startCalibration()
     set<CalibrationMeasurement::Base*> shortMeasurements;
     set<CalibrationMeasurement::Base*> loadMeasurements;
     vector<CalibrationMeasurement::TwoPort*> throughMeasurements;
-    for(int p=0;p<vnaPorts;p++) {
+    for(unsigned int p=0;p<vnaPorts;p++) {
         if(portAssignment[p] == 0) {
             continue;
         }
@@ -298,7 +298,7 @@ void LibreCALDialog::startCalibration()
         load->setStandard(loadStandards[portAssignment[p]-1]);
         loadMeasurements.insert(load);
         cal->measurements.push_back(load);
-        for(int p2=p+1;p2<vnaPorts;p2++) {
+        for(unsigned int p2=p+1;p2<vnaPorts;p2++) {
             if(portAssignment[p2] == 0) {
                 continue;
             }
@@ -355,13 +355,13 @@ void LibreCALDialog::startCalibration()
             break;
         default: {
             // into through measurements now
-            int throughIndex = measurementsTaken - 3;
+            unsigned int throughIndex = measurementsTaken - 3;
             if(throughIndex >= throughMeasurements.size()) {
                 // this was the last measurement
                 // Try to apply the calibration
                 Calibration::CalType type;
                 type.type = Calibration::Type::SOLT;
-                for(int i=0;i<vnaPorts;i++) {
+                for(unsigned int i=0;i<vnaPorts;i++) {
                     if(portAssignment[i] > 0) {
                         // this VNA port was used in the calibration
                        type.usedPorts.push_back(i+1);
@@ -436,7 +436,7 @@ void LibreCALDialog::createPortAssignmentUI()
     for(int i=1;i<=calPorts;i++) {
         choices.push_back("Port "+QString::number(i));
     }
-    for(int p = 1;p<=vnaPorts;p++) {
+    for(unsigned int p = 1;p<=vnaPorts;p++) {
         auto label = new QLabel("Port "+QString::number(p)+":");
         auto comboBox = new QComboBox();
         comboBox->addItems(choices);
@@ -445,7 +445,7 @@ void LibreCALDialog::createPortAssignmentUI()
             emit portAssignmentChanged();
         });
         // try to set the default
-        if(comboBox->count() > p) {
+        if(comboBox->count() > (int) p) {
             comboBox->setCurrentIndex(p);
         } else {
             // port not available, set to unused

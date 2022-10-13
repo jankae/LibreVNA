@@ -25,7 +25,7 @@ public:
     class CalType {
     public:
         Type type;
-        std::vector<int> usedPorts; // port count starts at 1
+        std::vector<unsigned int> usedPorts; // port count starts at 1
         QString getReadableDescription();
         QString getShortString();
 

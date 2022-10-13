@@ -13,7 +13,7 @@ class ImpedanceRenormalization : public DeembeddingOption
 public:
     ImpedanceRenormalization();
 
-    std::set<int> getAffectedPorts() override;
+    std::set<unsigned int> getAffectedPorts() override;
     void transformDatapoint(VirtualDevice::VNAMeasurement &p) override;
     Type getType() override { return Type::ImpedanceRenormalization;}
     nlohmann::json toJSON() override;

@@ -146,7 +146,7 @@ Calibration::Calibration()
                     return SCPI::getResultName(SCPI::Result::Error);
                 }
                 bool okay;
-                int number = params[1].toInt(&okay);
+                unsigned int number = params[1].toInt(&okay);
                 if(!okay || number < 1 || number > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports) {
                     // invalid port specified
                     return SCPI::getResultName(SCPI::Result::Error);
@@ -161,9 +161,9 @@ Calibration::Calibration()
                     return SCPI::getResultName(SCPI::Result::Error);
                 }
                 bool okay1;
-                int port1 = params[1].toInt(&okay1);
+                unsigned int port1 = params[1].toInt(&okay1);
                 bool okay2;
-                int port2 = params[2].toInt(&okay2);
+                unsigned int port2 = params[2].toInt(&okay2);
                 if(!okay1 || !okay2 || port1 < 1 || port2 > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports
                          || port2 < 1 || port2 > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports) {
                     // invalid port specified
@@ -233,7 +233,7 @@ Calibration::Calibration()
             }
             auto s = measurements[number]->getStandard();
             if(s) {
-                s->getName();
+                return s->getName();
             } else {
                 // no standard set
                 return "None";
@@ -300,6 +300,7 @@ QString Calibration::TypeToString(Calibration::Type type)
     case Type::TRL: return "TRL";
     case Type::Last: return "Invalid";
     }
+    return "";
 }
 
 Calibration::Type Calibration::TypeFromString(QString s)
@@ -450,7 +451,7 @@ void Calibration::edit()
 
     auto updateCalibrationList = [=](){
         auto style = QApplication::style();
-        for(int i=0;i<availableCals.size();i++) {
+        for(unsigned int i=0;i<availableCals.size();i++) {
             QIcon icon;
             if(canCompute(availableCals[i])) {
                 icon = style->standardIcon(QStyle::SP_DialogApplyButton);
@@ -466,7 +467,7 @@ void Calibration::edit()
     updateCalStatistics();
     updateCalButtons();
 
-    connect(ui->calibrationList, &QListWidget::doubleClicked, [=](const QModelIndex &index) {
+    connect(ui->calibrationList, &QListWidget::doubleClicked, [=](const QModelIndex&) {
         ui->activate->clicked();
     });
 
@@ -648,7 +649,7 @@ void Calibration::edit()
         QObject::connect(action, &QAction::triggered, [=](){
             auto newMeas = newMeasurement(t);
             if(newMeas) {
-//                measurements.push_back(newMeas);
+                measurements.push_back(newMeas);
                 updateMeasurementTable();
             }
         });
@@ -674,6 +675,7 @@ CalibrationMeasurement::Base *Calibration::newMeasurement(CalibrationMeasurement
     case CalibrationMeasurement::Base::Type::Through: m = new CalibrationMeasurement::Through(this); break;
     case CalibrationMeasurement::Base::Type::Isolation: m = new CalibrationMeasurement::Isolation(this); break;
     case CalibrationMeasurement::Base::Type::Line: m = new CalibrationMeasurement::Line(this); break;
+    case CalibrationMeasurement::Base::Type::Last: break;
     }
     return m;
 }
@@ -800,7 +802,7 @@ Calibration::Point Calibration::computeThroughNormalization(double f)
             // grab measurement and calkit through definitions
             auto throughForward = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p1, p2));
             auto throughReverse = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p2, p1));
-            complex<double> S11, S21;
+            complex<double> S21;
             Sparam Sideal;
             if(throughForward) {
                 S21 = throughForward->getMeasured(f).m21;
@@ -1091,7 +1093,9 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
         switch(m->getType()) {
         case CalibrationMeasurement::Base::Type::Open:
         case CalibrationMeasurement::Base::Type::Short:
-        case CalibrationMeasurement::Base::Type::Load: {
+        case CalibrationMeasurement::Base::Type::Load:
+        case CalibrationMeasurement::Base::Type::SlidingLoad:
+        case CalibrationMeasurement::Base::Type::Reflect: {
             auto onePort = static_cast<CalibrationMeasurement::OnePort*>(m);
             auto t = new Trace(CalibrationMeasurement::Base::TypeToString(onePort->getType())+"_Port"+QString::number(onePort->getPort()));
             t->setCalibration();
@@ -1105,7 +1109,8 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
             ret.push_back(t);
         }
             break;
-        case CalibrationMeasurement::Base::Type::Through: {
+        case CalibrationMeasurement::Base::Type::Through:
+        case CalibrationMeasurement::Base::Type::Line: {
             auto twoPort = static_cast<CalibrationMeasurement::TwoPort*>(m);
             auto ts11 = new Trace(CalibrationMeasurement::Base::TypeToString(twoPort->getType())+"_Port"+QString::number(twoPort->getPort1())+QString::number(twoPort->getPort2())+"_S11");
             auto ts12 = new Trace(CalibrationMeasurement::Base::TypeToString(twoPort->getType())+"_Port"+QString::number(twoPort->getPort1())+QString::number(twoPort->getPort2())+"_S12");
@@ -1157,14 +1162,16 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
             for(auto p : iso->getPoints()) {
                 Trace::Data td;
                 td.x = p.frequency;
-                for(int i=0;i<p.S.size();i++) {
-                    for(int j=0;j<p.S[i].size();j++) {
+                for(unsigned int i=0;i<p.S.size();i++) {
+                    for(unsigned int j=0;j<p.S[i].size();j++) {
                         td.y = p.S[i][j];
                         traces[i][j]->addData(td, Trace::DataType::Frequency);
                     }
                 }
             }
         }
+            break;
+        case CalibrationMeasurement::Base::Type::Last:
             break;
         }
     }
@@ -1361,7 +1368,7 @@ bool Calibration::fromFile(QString filename)
 
 std::vector<Calibration::CalType> Calibration::getAvailableCalibrations()
 {
-    int ports = 2;
+    unsigned int ports = 2;
     if(VirtualDevice::getConnected()) {
         ports = VirtualDevice::getConnected()->getInfo().ports;
     }
@@ -1370,13 +1377,13 @@ std::vector<Calibration::CalType> Calibration::getAvailableCalibrations()
         CalType cal;
         cal.type = t;
         auto minPorts = minimumPorts(t);
-        for(int pnum = minPorts;pnum <= ports;pnum++) {
+        for(unsigned int pnum = minPorts;pnum <= ports;pnum++) {
             std::string bitmask(pnum, 1);
             bitmask.resize(ports, 0);
             // assemble selected ports and permute bitmask
             do {
-                vector<int> usedPorts;
-                for (int i = 0; i < ports; ++i) {
+                vector<unsigned int> usedPorts;
+                for (unsigned int i = 0; i < ports; ++i) {
                     if (bitmask[i]) {
                         usedPorts.push_back(i+1);
                     }
@@ -1403,7 +1410,7 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
 {
     using RequiredMeasurements = struct {
         CalibrationMeasurement::Base::Type type;
-        int port1, port2;
+        unsigned int port1, port2;
     };
     vector<RequiredMeasurements> required;
     switch(type.type) {
@@ -1412,27 +1419,27 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
     case Type::SOLT:
         // SOL measurements for every port
         for(auto p : type.usedPorts) {
-            required.push_back({.type = CalibrationMeasurement::Base::Type::Short, .port1 = p});
-            required.push_back({.type = CalibrationMeasurement::Base::Type::Open, .port1 = p});
+            required.push_back({.type = CalibrationMeasurement::Base::Type::Short, .port1 = p, .port2 = 0});
+            required.push_back({.type = CalibrationMeasurement::Base::Type::Open, .port1 = p, .port2 = 0});
             if(findMeasurements(CalibrationMeasurement::Base::Type::SlidingLoad, p).size() >= 3) {
                 // got enough sliding load measurements, use these
-                required.push_back({.type = CalibrationMeasurement::Base::Type::SlidingLoad, .port1 = p});
+                required.push_back({.type = CalibrationMeasurement::Base::Type::SlidingLoad, .port1 = p, .port2 = 0});
             } else {
                 // not enough sliding load measurement, use normal load
-                required.push_back({.type = CalibrationMeasurement::Base::Type::Load, .port1 = p});
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Load, .port1 = p, .port2 = 0});
             }
         }
         // through measurements between all ports
-        for(int i=1;i<=type.usedPorts.size();i++) {
-            for(int j=i+1;j<=type.usedPorts.size();j++) {
+        for(unsigned int i=1;i<=type.usedPorts.size();i++) {
+            for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
             }
         }
         break;
     case Type::ThroughNormalization:
         // through measurements between all ports
-        for(int i=1;i<=type.usedPorts.size();i++) {
-            for(int j=i+1;j<=type.usedPorts.size();j++) {
+        for(unsigned int i=1;i<=type.usedPorts.size();i++) {
+            for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
             }
         }
@@ -1440,16 +1447,20 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
     case Type::TRL:
         // Reflect measurement for every port
         for(auto p : type.usedPorts) {
-            required.push_back({.type = CalibrationMeasurement::Base::Type::Reflect, .port1 = p});
+            required.push_back({.type = CalibrationMeasurement::Base::Type::Reflect, .port1 = p, .port2 = 0});
         }
         // through and line measurements between all ports
-        for(int i=1;i<=type.usedPorts.size();i++) {
-            for(int j=i+1;j<=type.usedPorts.size();j++) {
+        for(unsigned int i=1;i<=type.usedPorts.size();i++) {
+            for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Line, .port1 = i, .port2 = j});
             }
         }
         break;
+    case Type::Last:
+        // Invalid selection
+        return false;
+
     }
     if(required.size() > 0) {
         vector<CalibrationMeasurement::Base*> foundMeasurements;
@@ -1488,6 +1499,10 @@ bool Calibration::compute(Calibration::CalType type)
             case Type::SOLT: p = computeSOLT(f); break;
             case Type::ThroughNormalization: p = computeThroughNormalization(f); break;
             case Type::TRL: p = computeTRL(f); break;
+            case Type::None:
+            case Type::Last:
+                // nothing to do, should never get here
+                break;
             }
             points.push_back(p);
         }
@@ -1512,6 +1527,9 @@ int Calibration::minimumPorts(Calibration::Type type)
     case Type::SOLT: return 1;
     case Type::ThroughNormalization: return 2;
     case Type::TRL: return 2;
+    case Type::None:
+    case Type::Last:
+        return -1;
     }
     return -1;
 }
@@ -1553,7 +1571,9 @@ QString Calibration::DefaultMeasurementsToString(Calibration::DefaultMeasurement
     case DefaultMeasurements::SOLT2Port: return "2 Port SOLT";
     case DefaultMeasurements::SOLT3Port: return "3 Port SOLT";
     case DefaultMeasurements::SOLT4Port: return "4 Port SOLT";
+    case DefaultMeasurements::Last: return "Invalid";
     }
+    return "";
 }
 
 void Calibration::createDefaultMeasurements(Calibration::DefaultMeasurements dm)
@@ -1603,6 +1623,8 @@ void Calibration::createDefaultMeasurements(Calibration::DefaultMeasurements dm)
         createThrough(2, 3);
         createThrough(2, 4);
         createThrough(3, 4);
+        break;
+    case DefaultMeasurements::Last:
         break;
     }
 }

@@ -528,21 +528,16 @@ void MarkerTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *, con
     marker->updateTypeFromEditor(editor);
 }
 
-QSize MarkerRestrictDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize MarkerRestrictDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const
 {
     return QSize(0, rowHeight);
 }
 
-QWidget *MarkerRestrictDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget *MarkerRestrictDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
 {
     auto marker = static_cast<const MarkerModel*>(index.model())->markerFromIndex(index);
     auto editor = marker->getRestrictEditor();
     editor->setMaximumHeight(rowHeight);
     editor->setParent(parent);
     return editor;
-}
-
-void MarkerRestrictDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
-{
-    // nothing to do
 }

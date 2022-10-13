@@ -13,14 +13,14 @@ class CompoundDevice : public Savable
 public:
     CompoundDevice();
 
-    virtual nlohmann::json toJSON();
-    virtual void fromJSON(nlohmann::json j);
+    nlohmann::json toJSON() override;
+    void fromJSON(nlohmann::json j) override;
 
     class PortMapping {
     public:
         unsigned int device;
         unsigned int port;
-        static int findActiveStage(std::vector<PortMapping> map, int device, int port);
+        static int findActiveStage(std::vector<PortMapping> map, unsigned int device, unsigned int port);
     };
 
     enum class Synchronization {

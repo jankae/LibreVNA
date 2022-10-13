@@ -27,15 +27,13 @@ MatchingNetwork::MatchingNetwork()
     port = 1;
 }
 
-std::set<int> MatchingNetwork::getAffectedPorts()
+std::set<unsigned int> MatchingNetwork::getAffectedPorts()
 {
     return {port};
 }
 
 void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
 {
-    auto S = p.toSparam(1, 2);
-    auto measurement = ABCDparam(S, p.Z0);
     if(matching.count(p.frequency) == 0) {
         // this point is not calculated yet
         MatchingPoint m;
@@ -61,8 +59,8 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
         p.measurements[name] = corrected.m11;
     }
     // handle the rest of the measurements
-    for(int i=1;i<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
-        for(int j=i+1;j<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;j++) {
+    for(unsigned int i=1;i<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
+        for(unsigned int j=i+1;j<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;j++) {
             if(i == port) {
                 auto S = uncorrected.toSparam(i, j);
                 auto corrected = Sparam(m.p * ABCDparam(S, p.Z0), p.Z0);

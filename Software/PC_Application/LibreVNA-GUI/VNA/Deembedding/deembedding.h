@@ -28,7 +28,7 @@ public:
     void addOption(DeembeddingOption* option);
     void swapOptions(unsigned int index);
 
-    std::set<int> getAffectedPorts();
+    std::set<unsigned int> getAffectedPorts();
 
     std::vector<DeembeddingOption*>& getOptions() {return options;}
     nlohmann::json toJSON() override;

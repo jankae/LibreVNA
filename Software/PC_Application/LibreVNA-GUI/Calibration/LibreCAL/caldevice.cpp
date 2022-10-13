@@ -39,6 +39,7 @@ QString CalDevice::StandardToString(CalDevice::Standard s)
     case Standard::Through: return "THROUGH";
     case Standard::None: return "NONE";
     }
+    return "Invalid";
 }
 
 CalDevice::Standard CalDevice::StandardFromString(QString s)
@@ -107,7 +108,7 @@ QString CalDevice::getFirmware() const
     return firmware;
 }
 
-int CalDevice::getNumPorts() const
+unsigned int CalDevice::getNumPorts() const
 {
     return numPorts;
 }
@@ -255,7 +256,7 @@ void CalDevice::saveCoefficientSetsThread()
                 if(!usb->Cmd(":COEFF:CREATE "+setName+" "+paramName)) {
                     return false;
                 }
-                for(unsigned int i=0;i<points;i++) {
+                for(int i=0;i<points;i++) {
                     auto point = t.point(i);
                     if(point.S.size() == 4) {
                         // S parameters in point are in S11 S12 S21 S22 order but the LibreCAL expects
@@ -338,6 +339,7 @@ bool CalDevice::hasModifiedCoefficients()
             }
         }
     }
+    return false;
 }
 
 CalDevice::CoefficientSet::Coefficient *CalDevice::CoefficientSet::getThrough(int port1, int port2) const

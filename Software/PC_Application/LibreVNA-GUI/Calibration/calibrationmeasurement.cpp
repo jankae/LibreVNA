@@ -34,7 +34,9 @@ bool CalibrationMeasurement::Base::setFirstSupportedStandard()
     auto supported = supportedStandards();
     if(supported.size() > 0) {
         setStandard(supported[0]);
+        return true;
     }
+    return false;
 }
 
 bool CalibrationMeasurement::Base::setStandard(CalStandard::Virtual *standard)
@@ -93,6 +95,7 @@ QString CalibrationMeasurement::Base::TypeToString(CalibrationMeasurement::Base:
     case Type::Line: return "Line";
     case Type::Last: return "Invalid";
     }
+    return "Invalid";
 }
 
 CalibrationMeasurement::Base::Type CalibrationMeasurement::Base::TypeFromString(QString s)
@@ -164,14 +167,23 @@ bool CalibrationMeasurement::Base::canMeasureSimultaneously(std::set<Calibration
         case Type::Open:
         case Type::Short:
         case Type::Load:
+        case Type::SlidingLoad:
+        case Type::Reflect:
             // Uses one port
             ports.push_back(static_cast<OnePort*>(m)->getPort());
             break;
         case Type::Through:
+        case Type::Line:
             // Uses two ports
             ports.push_back(static_cast<TwoPort*>(m)->getPort1());
             ports.push_back(static_cast<TwoPort*>(m)->getPort2());
             break;
+        case Type::Isolation:
+            // Uses all ports, unable to measure simultaneously
+            return false;
+        case Type::Last:
+            // invalid
+            return false;
         }
         for(auto p : ports) {
             if(usedPorts.count(p)) {
@@ -241,7 +253,7 @@ QWidget *CalibrationMeasurement::OnePort::createSettingsWidget()
         if(port == 0) {
             setPort(1);
         }
-        for(int i=1;i<=dev->getInfo().ports;i++) {
+        for(unsigned int i=1;i<=dev->getInfo().ports;i++) {
             cbPort->addItem(QString::number(i));
             if(port == i) {
                 cbPort->setCurrentText(QString::number(i));
@@ -331,7 +343,7 @@ int CalibrationMeasurement::OnePort::getPort() const
     return port;
 }
 
-void CalibrationMeasurement::OnePort::setPort(int p)
+void CalibrationMeasurement::OnePort::setPort(unsigned int p)
 {
     if(port != p) {
         port = p;
@@ -393,7 +405,7 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
         if(port2 == 0) {
             setPort2(2);
         }
-        for(int i=1;i<=dev->getInfo().ports;i++) {
+        for(unsigned int i=1;i<=dev->getInfo().ports;i++) {
             cbPort1->addItem(QString::number(i));
             cbPort2->addItem(QString::number(i));
             if(port1 == i) {
@@ -527,7 +539,7 @@ int CalibrationMeasurement::TwoPort::getPort2() const
     return port2;
 }
 
-void CalibrationMeasurement::TwoPort::setPort1(int p)
+void CalibrationMeasurement::TwoPort::setPort1(unsigned int p)
 {
     if(port1 != p) {
         port1 = p;
@@ -535,7 +547,7 @@ void CalibrationMeasurement::TwoPort::setPort1(int p)
     }
 }
 
-void CalibrationMeasurement::TwoPort::setPort2(int p)
+void CalibrationMeasurement::TwoPort::setPort2(unsigned int p)
 {
     if(port2 != p) {
         port2 = p;

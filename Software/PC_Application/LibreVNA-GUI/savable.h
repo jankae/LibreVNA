@@ -13,6 +13,8 @@
 
 class Savable {
 public:
+    virtual ~Savable(){}
+
     virtual nlohmann::json toJSON() = 0;
     virtual void fromJSON(nlohmann::json j) = 0;
 

@@ -13,8 +13,8 @@ class SparamTraceSelector : public QWidget
     Q_OBJECT
 
 public:
-    SparamTraceSelector(const TraceModel &model, std::vector<int> used_ports, bool empty_allowed = false);
-    SparamTraceSelector(const TraceModel &model, std::set<int> used_ports, bool empty_allowed = false);
+    SparamTraceSelector(const TraceModel &model, std::vector<unsigned int> used_ports, bool empty_allowed = false);
+    SparamTraceSelector(const TraceModel &model, std::set<unsigned int> used_ports, bool empty_allowed = false);
 
     bool isValid();
 
@@ -33,7 +33,7 @@ private:
     std::vector<QComboBox*> boxes;
     bool empty_allowed;
 
-    std::vector<int> used_ports;
+    std::vector<unsigned int> used_ports;
     unsigned int points;
     double minFreq, maxFreq;
     bool valid;

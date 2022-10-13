@@ -23,7 +23,7 @@ public:
     static DeembeddingOption *create(Type type);
     static QString getName(Type type);
 
-    virtual std::set<int> getAffectedPorts() = 0;
+    virtual std::set<unsigned int> getAffectedPorts() = 0;
     virtual void transformDatapoint(VirtualDevice::VNAMeasurement &p) = 0;
     virtual void edit(){}
     virtual Type getType() = 0;

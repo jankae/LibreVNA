@@ -30,7 +30,7 @@ public:
         uint8_t FW_patch;
         uint8_t hardware_version;
         char HW_Revision;
-        int ports;
+        unsigned int ports;
         bool supportsVNAmode;
         bool supportsSAmode;
         bool supportsSGmode;

@@ -154,7 +154,7 @@ VirtualDevice::VirtualDevice(QString serial)
         }
         if(cdev->sync == CompoundDevice::Synchronization::USB) {
             // create trigger connections for USB synchronization
-            for(int i=0;i<devices.size() - 1;i++) {
+            for(unsigned int i=0;i<devices.size() - 1;i++) {
                 connect(devices[i], &Device::TriggerReceived, devices[i+1], &Device::SetTrigger, Qt::QueuedConnection);
             }
             connect(devices.back(), &Device::TriggerReceived, devices.front(), &Device::SetTrigger, Qt::QueuedConnection);
@@ -234,8 +234,8 @@ VirtualDevice::Status VirtualDevice::getStatus(VirtualDevice *vdev)
 QStringList VirtualDevice::availableVNAMeasurements()
 {
     QStringList ret;
-    for(int i=1;i<=info.ports;i++) {
-        for(int j=1;j<=info.ports;j++) {
+    for(unsigned int i=1;i<=info.ports;i++) {
+        for(unsigned int j=1;j<=info.ports;j++) {
             ret.push_back("S"+QString::number(i)+QString::number(j));
         }
     }
@@ -287,6 +287,7 @@ bool VirtualDevice::setVNA(const VirtualDevice::VNASettings &s, std::function<vo
             case CompoundDevice::Synchronization::USB: sd.syncMode = 1; break;
             case CompoundDevice::Synchronization::ExtRef: sd.syncMode = 2; break;
             case CompoundDevice::Synchronization::Trigger: sd.syncMode = 3; break;
+            case CompoundDevice::Synchronization::Last: sd.syncMode = 1; break; // should never get here
         }
         // create vector of currently used stimulus ports
         vector<CompoundDevice::PortMapping> activeMapping;
@@ -323,7 +324,7 @@ QString VirtualDevice::serial()
 QStringList VirtualDevice::availableSAMeasurements()
 {
     QStringList ret;
-    for(int i=1;i<=info.ports;i++) {
+    for(unsigned int i=1;i<=info.ports;i++) {
         ret.push_back("PORT"+QString::number(i));
     }
     return ret;
@@ -368,6 +369,7 @@ bool VirtualDevice::setSA(const VirtualDevice::SASettings &s, std::function<void
             case CompoundDevice::Synchronization::USB: sd.syncMode = 1; break;
             case CompoundDevice::Synchronization::ExtRef: sd.syncMode = 2; break;
             case CompoundDevice::Synchronization::Trigger: sd.syncMode = 3; break;
+            case CompoundDevice::Synchronization::Last: sd.syncMode = 1; break; // should never get here
         }
         // Configure the devices
         results.clear();
@@ -399,7 +401,7 @@ bool VirtualDevice::setSA(const VirtualDevice::SASettings &s, std::function<void
 QStringList VirtualDevice::availableSGPorts()
 {
     QStringList ret;
-    for(int i=1;i<info.ports;i++) {
+    for(unsigned int i=1;i<info.ports;i++) {
         ret.push_back("PORT"+QString::number(i));
     }
     return ret;
@@ -410,7 +412,6 @@ bool VirtualDevice::setSG(const SGSettings &s)
     if(!info.supportsSGmode) {
         return false;
     }
-    auto& pref = Preferences::getInstance();
     Protocol::PacketInfo packet = {};
     packet.type = Protocol::PacketType::Generator;
     Protocol::GeneratorSettings &sd = packet.generator;
@@ -704,7 +705,7 @@ void VirtualDevice::compoundInfoUpdated(Device *dev)
     if(compoundInfoBuffer.size() == devices.size()) {
         // got information of all devices
         info = Info(devices[0]);
-        for(int i=1;i<devices.size();i++) {
+        for(unsigned int i=1;i<devices.size();i++) {
             try {
                 info.subset(Info(devices[i]));
             } catch (exception &e) {
@@ -728,7 +729,7 @@ void VirtualDevice::compoundStatusUpdated(Device *dev)
     if(compoundStatusBuffer.size() == devices.size()) {
         // got status of all devices
         status = Status(devices[0]);
-        for(int i=1;i<devices.size();i++) {
+        for(unsigned int i=1;i<devices.size();i++) {
             status.merge(Status(devices[i]));
         }
         emit StatusUpdated(status);

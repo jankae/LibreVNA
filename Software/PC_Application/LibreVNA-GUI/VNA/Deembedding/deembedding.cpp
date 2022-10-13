@@ -161,9 +161,9 @@ void Deembedding::swapOptions(unsigned int index)
     std::swap(options[index], options[index+1]);
 }
 
-std::set<int> Deembedding::getAffectedPorts()
+std::set<unsigned int> Deembedding::getAffectedPorts()
 {
-    set<int> ret;
+    set<unsigned int> ret;
     for(auto o : options) {
         auto affected = o->getAffectedPorts();
         ret.insert(affected.begin(), affected.end());

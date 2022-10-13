@@ -136,7 +136,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     });
     connect(ui->compoundList, &QListWidget::doubleClicked, [=](){
         auto index = ui->compoundList->currentRow();
-        if(index >= 0 && index < p->compoundDevices.size()) {
+        if(index >= 0 && index < (int) p->compoundDevices.size()) {
             auto d = new CompoundDeviceEditDialog(p->compoundDevices[index]);
             connect(d, &QDialog::accepted, [=](){
                 ui->compoundList->item(index)->setText(p->compoundDevices[index]->getDesription());
@@ -160,7 +160,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     });
     connect(ui->compoundDelete, &QPushButton::clicked, [=](){
         auto index = ui->compoundList->currentRow();
-        if(index >= 0 && index < p->compoundDevices.size()) {
+        if(index >= 0 && index < (int) p->compoundDevices.size()) {
             // delete the actual compound device
             if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[index]) {
                 // can't remove the device we are currently connected to

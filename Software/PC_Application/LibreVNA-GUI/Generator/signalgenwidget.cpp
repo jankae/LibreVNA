@@ -225,9 +225,9 @@ void SignalgeneratorWidget::setFrequency(double frequency)
     ui->frequency->setValue(frequency);
 }
 
-void SignalgeneratorWidget::setPort(int port)
+void SignalgeneratorWidget::setPort(unsigned int port)
 {
-    if(port < 0 || port > portCheckboxes.size()) {
+    if(port > portCheckboxes.size()) {
         return;
     }
     if(port == 0) {

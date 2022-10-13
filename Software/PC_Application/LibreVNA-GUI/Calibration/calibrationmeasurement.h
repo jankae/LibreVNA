@@ -101,12 +101,12 @@ public:
     int getPort() const;
 
 public slots:
-    void setPort(int p);
+    void setPort(unsigned int p);
 protected:
 signals:
     void portChanged(int p);
 protected:
-    int port; // starts at 1
+    unsigned int port; // starts at 1
     std::vector<Point> points;
 };
 
@@ -203,8 +203,8 @@ public:
 
 
 public slots:
-    void setPort1(int p);
-    void setPort2(int p);
+    void setPort1(unsigned int p);
+    void setPort2(unsigned int p);
     void setReverseStandard(bool reverse);
 protected:
 signals:
@@ -212,7 +212,7 @@ signals:
     void port2Changed(int p);
     void reverseStandardChanged(bool r);
 protected:
-    int port1, port2; // starts at 1
+    unsigned int port1, port2; // starts at 1
     bool reverseStandard; // Set to true if standard is defined with ports swapped
     std::vector<Point> points;
 };

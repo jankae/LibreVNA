@@ -63,7 +63,7 @@ Trace *TraceModel::trace(unsigned int index)
 
 int TraceModel::findIndex(Trace *t)
 {
-    for(int i=0;i<traces.size();i++) {
+    for(unsigned int i=0;i<traces.size();i++) {
         if(traces[i] == t) {
             return i;
         }

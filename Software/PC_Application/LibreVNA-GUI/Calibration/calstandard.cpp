@@ -54,6 +54,7 @@ QString Virtual::TypeToString(Virtual::Type type)
     case Type::Line: return "Line";
     case Type::Last: return "Invalid";
     }
+    return "Invalid";
 }
 
 Virtual::Type Virtual::TypeFromString(QString s)
@@ -718,6 +719,7 @@ Line::Line()
 
 Sparam Line::toSparam(double freq)
 {
+    Q_UNUSED(freq)
     Sparam ret;
     ret.m11 = numeric_limits<complex<double>>::quiet_NaN();
     ret.m12 = numeric_limits<complex<double>>::quiet_NaN();

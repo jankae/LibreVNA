@@ -98,7 +98,7 @@ void CompoundDeviceEditDialog::checkIfOkay()
         return;
     }
     // Check serials
-    for(int i=0;i<ldev.deviceSerials.size();i++) {
+    for(unsigned int i=0;i<ldev.deviceSerials.size();i++) {
         ldev.deviceSerials[i] = deviceFrames[i]->getSerial();
         if(ldev.deviceSerials[i].isEmpty()) {
             ui->status->setText("Device "+QString::number(i+1)+" has no serial number");
@@ -106,8 +106,8 @@ void CompoundDeviceEditDialog::checkIfOkay()
         }
     }
     // Check serials for duplicates
-    for(int i=0;i<ldev.deviceSerials.size();i++) {
-        for(int j=i+1;j<ldev.deviceSerials.size();j++) {
+    for(unsigned int i=0;i<ldev.deviceSerials.size();i++) {
+        for(unsigned int j=i+1;j<ldev.deviceSerials.size();j++) {
             if(ldev.deviceSerials[i] == ldev.deviceSerials[j]) {
                 ui->status->setText("Duplicate serial number ("+ldev.deviceSerials[i]+") in devices "+QString::number(i+1)+" and "+QString::number(j+1));
                 return;
@@ -117,14 +117,14 @@ void CompoundDeviceEditDialog::checkIfOkay()
     // Check port mapping
     // Looking for duplicate and missing ports
     bool highestPortFound = false;
-    int highestPort;
-    for(int port=0;port<2*ldev.deviceSerials.size();port++) {
+    unsigned int highestPort;
+    for(unsigned int port=0;port<2*ldev.deviceSerials.size();port++) {
         int num = 0;
-        for(int i=0;i<deviceFrames.size();i++) {
-            if(deviceFrames[i]->getPort1() == port) {
+        for(unsigned int i=0;i<deviceFrames.size();i++) {
+            if(deviceFrames[i]->getPort1() == (int) port) {
                 num++;
             }
-            if(deviceFrames[i]->getPort2() == port) {
+            if(deviceFrames[i]->getPort2() == (int) port) {
                 num++;
             }
         }
@@ -152,17 +152,17 @@ void CompoundDeviceEditDialog::checkIfOkay()
 
     // All good, actually create the port mapping
     ldev.portMapping.clear();
-    for(int port=0;port<highestPort;port++) {
+    for(unsigned int port=0;port<highestPort;port++) {
         CompoundDevice::PortMapping map;
         bool found = false;
-        for(int i=0;i<deviceFrames.size();i++) {
-            if(deviceFrames[i]->getPort1() == port) {
+        for(unsigned int i=0;i<deviceFrames.size();i++) {
+            if(deviceFrames[i]->getPort1() == (int) port) {
                 found = true;
                 map.device = i;
                 map.port = 0;
                 break;
             }
-            if(deviceFrames[i]->getPort2() == port) {
+            if(deviceFrames[i]->getPort2() == (int) port) {
                 found = true;
                 map.device = i;
                 map.port = 1;
@@ -203,7 +203,7 @@ void CompoundDeviceEditDialog::setInitialGUI()
     }
     deviceFrames.clear();
     layout->addStretch(1);
-    for(int i=0;i<ldev.deviceSerials.size();i++) {
+    for(unsigned int i=0;i<ldev.deviceSerials.size();i++) {
         auto frame = new DeviceFrame(&ldev, i);
         connect(frame, &DeviceFrame::settingChanged, this, &CompoundDeviceEditDialog::checkIfOkay);
         addFrame(i, frame);
@@ -402,7 +402,7 @@ void CompoundDeviceEditDialog::removeDeviceFrame(DeviceFrame *dev)
     bool mappingFound;
     do {
         mappingFound = false;
-        for(int i=0;i<ldev.portMapping.size();i++) {
+        for(unsigned int i=0;i<ldev.portMapping.size();i++) {
             if(ldev.portMapping[i].device == pos) {
                 mappingFound = true;
                 ldev.portMapping.erase(ldev.portMapping.begin() + i);
@@ -421,9 +421,9 @@ void CompoundDeviceEditDialog::updateDeviceFrames()
     }
 }
 
-DeviceFrame::DeviceFrame(CompoundDevice *dev, int position) :
-    dev(dev),
-    position(position)
+DeviceFrame::DeviceFrame(CompoundDevice *dev, unsigned int position) :
+    position(position),
+    dev(dev)
 {
     setMinimumSize(frameSize, frameSize);
     setMaximumSize(frameSize, frameSize);
@@ -459,7 +459,7 @@ DeviceFrame::DeviceFrame(CompoundDevice *dev, int position) :
     // Set initial state
     if(position < dev->deviceSerials.size()) {
         serial->setCurrentText(dev->deviceSerials[position]);
-        for(int i=0;i<dev->portMapping.size();i++) {
+        for(unsigned int i=0;i<dev->portMapping.size();i++) {
             if(dev->portMapping[i].device == position) {
                 if(dev->portMapping[i].port == 0) {
                     port1->setCurrentIndex(i + 1);
@@ -493,7 +493,7 @@ void DeviceFrame::update()
 
     port1->addItem("Unused");
     port2->addItem("Unused");
-    for(int i=0;i<dev->deviceSerials.size();i++) {
+    for(unsigned int i=0;i<dev->deviceSerials.size();i++) {
         port1->addItem("Port "+QString::number(i*2+1));
         port2->addItem("Port "+QString::number(i*2+1));
         port1->addItem("Port "+QString::number(i*2+2));

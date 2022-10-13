@@ -26,7 +26,7 @@ PortExtension::PortExtension()
     ui = nullptr;
 }
 
-std::set<int> PortExtension::getAffectedPorts()
+std::set<unsigned int> PortExtension::getAffectedPorts()
 {
     return {port};
 }
@@ -42,11 +42,11 @@ void PortExtension::transformDatapoint(VirtualDevice::VNAMeasurement &d)
     auto att = pow(10.0, -db_attennuation / 20.0);
     auto correction = polar<double>(att, phase);
     for(auto &m : d.measurements) {
-        if(m.first.mid(1, 1).toInt() == port) {
+        if(m.first.mid(1, 1).toUInt() == port) {
             // selected port is the destination of this S parameter
             m.second /= correction;
         }
-        if(m.first.mid(2, 1).toInt() == port) {
+        if(m.first.mid(2, 1).toUInt() == port) {
             // selected port is the source of this S parameter
             m.second /= correction;
         }
