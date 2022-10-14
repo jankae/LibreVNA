@@ -286,7 +286,7 @@ void TracePlot::finishContextMenu()
 {
     contextmenu->addSeparator();
     if(parentTile) {
-        auto add = new QMenu("Add graph...", contextmenu);
+        auto add = new QMenu("Add tile...", contextmenu);
         auto left = new QAction("to the left");
         connect(left, &QAction::triggered, [=](){
             // split, keep current graph on the right

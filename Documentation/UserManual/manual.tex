@@ -74,6 +74,8 @@
 \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \usepackage{tabularx} 
 
+\usepackage{multirow}
+
 \usepackage{stackengine}
 \usepackage{scalerel}
 \usepackage{xcolor,mdframed}
@@ -728,6 +730,242 @@ The following example shows the effect of signal ID. For both measurements the o
 A tracking generator at either port is available in the spectum analyzer. If the tracking generator is active at a port, measurements from that port are still available but meaningless. The tracking generator also includes an optional frequency offset. To get accurate results, a Source/Receiver Calibration (section~\ref{amplitude:calibration}) should have been performed when using the tracking generator.
 
 DFT acquisition is not available when the tracking generator is active. Also, due to hardware limitations, the tracking generator is unable to reach every frequency exactly. For narrow spans this could result in "drops" in the spectrum where the signal of the tracking generator is outside of the RBW filters passband. The frequency resolution is frequency dependent. A warning message appears if this could be a problem with the selected span and stop frequency.
+
+\section{Graphs}
+In VNA and spectrum analyzer mode, the trace data in displayed on graphs. Several different graph types are available and most can be customized as well.
+\subsection{General graph settings}
+Common settings for the behavior and appearance of all graphs can be found in \menu[,]{Window,Preferences,Graphs}:
+\screenshot{1.0}{GraphSettings.png}
+Most of the settings are related to graph colors and sizes, allowing adjustments to personal preferences and different monitor resolutions.
+
+Each graph type also has some specific settings. They can be reached by right-clicking on an existing graph and selecting \menu{Setup...} or \menu{Axis Setup...}.
+
+\subsection{Creating and positioning graphs}
+Graphs use an underlying tile system. Each tile can either:
+\begin{itemize}
+\item be empty
+\item contain one graph
+\item be split horizontally into two new empty tiles
+\item be split vertically into two new empty tiles
+\end{itemize}
+For split tiles, the position of the split can be adjusted manually by using the cursor.
+
+To create new graphs, an empty tile must be available. If all tiles are showing graphs (the default when starting the GUI), an empty one must be created first. This can be done by right-clicking a graph and either selecting \menu{close} to remove it from its tile or selecting \menu{Add tile...} and chosing in which direction the new tile should be added.
+
+From the empty tile, all graph types are available:
+\screenshot{0.5}{GraphEmptyTile.png}
+
+\begin{information}
+For a quick enlarged view of a graph, double-click it. The graph will take up the whole tile area. Another double-click returns the graph to its original size.
+\end{information}
+
+\subsection{Adding and removing traces}
+When a new graph is created, it is empty by default and traces must be added to show up. There are two ways to add traces:
+\begin{itemize}
+\item Drag-and-drop traces from the trace list onto the graph
+\item Right-click a graph and select the trace to add. Traces can also be removed be deselecting them in the context menu
+\end{itemize}
+
+\subsection{Smithchart}
+\screenshot{0.6}{GraphSmithchart.png}
+The smithchart is the default graph for reflection measurements (S11, S22,...). Adding through measurements (S12, S21,...) is not possible.
+
+There are a few smithchart specific settings in the setup dialog:
+\screenshot{1.0}{GraphSmithchartSetup.png}
+The left side of the dialog contains settings on how data is displayed:
+\begin{itemize}
+\item \textbf{Display mode (Frequency)} There are three options on how much of a trace is visible in the frequency range:
+\begin{itemize}
+\item \textbf{Limit to current span} Shows all traces only in the frequency range of the currently selected span, even when the trace contains data outside of the span
+\item \textbf{Show complete traces} Always shows the complete trace, regardless of the selected span
+\item \textbf{Manual frequency range} Allows selection of an abitrary frequency range to display
+\end{itemize}
+\item \textbf{Display mode (Impedance)} There are two options on how much of a trace impedance is visible:
+\begin{itemize}
+\item \textbf{Limit to visible are} Clips the trace data at the edge of the smithchart circle
+\item \textbf{Show complete traces} Always shows the complete trace, even when the trace data falls outside of the smithchart circle
+\end{itemize}
+\item \textbf{Zoom} Allows to change the center position and zoom factor of the smithchart. Zooming is also possible by using the mousewheel on the graph
+\end{itemize}
+
+The right side of the dialog allows the user to add lines of constant values to the smithchart for a quick visual comparisation of trace data to these values. Four types of lines are available:
+\begin{itemize}
+\item Constant VSWR
+\item Constant resistance
+\item Constant reactance
+\item Constant Q
+\end{itemize}
+For each line, the color and constant value must be manually selected.
+
+\subsection{XY-plot}
+\screenshot{1.0}{GraphXYplot.png}
+The XY-plot is the most versatile graph. It can display every trace type if configured correctly. The XY-plot consists of up to three axes:
+\begin{itemize}
+\item \textbf{X-axis} Always present
+\item \textbf{Primary Y-axis} Optional, on the left side of the graph
+\item \textbf{Secondary Y-axis} Optional, on the right side of the graph
+\end{itemize}
+Different types can be used for the X-axis and the selected type must match the output domain of all displayed traces. Available types are:
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{3cm}|X|L{7cm}}
+    \toprule
+    \textbf{X-axis type} & \textbf{Supported trace domains} & \textbf{Description} \\
+    \hline
+    Frequency & Frequency & S-parameter data plotted across frequency \\
+    \hline
+    Power & Power & S-parameter data plotted across stimulus power \\
+    \hline
+    Time (Zerospan) & Time (Zerospan) & S-parameter data plotted across time at a fixed frequency \\
+    \hline
+    Time & Time & Time-domain data (transformed S-parameter data) \\
+\hline
+    Distance & Time & Time-domain data (transformed S-parameter data), converted to distances according to the traces velocity factor \\
+      \bottomrule
+\end{tabularx}
+\end{threeparttable}
+\end{center}
+
+Different types are also available for the Y-axes. The Y-axis type determines how the trace data is plotted on the graph. The underlying trace data is not affected by the Y-axis type, the graph itself performs the required calculations to display the correct data. Available types are:
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{5cm}|X}
+    \toprule
+    \textbf{Y-axis type} & \textbf{Description} \\
+    \hline
+    Disabled & No Y-axis displayed \\
+    \hline
+    Magnitude & Magnitude in dB (or dBm in spectrum analyzer mode) \\
+    \hline
+    Magnitude (dBuV) & Magnitude in dBuV \\
+    \hline
+    Magnitude (linear) & Magnitude of the complex S-parameter\\
+    \hline
+    Phase & Phase in degrees, confined to $\pm$\SI{180}{\degree}\\
+    \hline
+    Unwrapped phase & Unwrapped phase in degrees\\
+    \hline
+    VSWR & Standing wave ratio\\
+    \hline
+    Real & Real part of the complex S-parameter\\
+    \hline
+    Imaginary & Imaginary part of the complex S-paramter\\
+    \hline
+    Series Resistance & Real part of the impedance from a reflection measurement\\
+    \hline
+    Reactance & Imaginary part of the impedance from a reflection measurement\\
+    \hline
+     Capacitance & Extracted capacitance from a reflection measurement\\ 
+ \hline
+        	 Inductance & Extracted inductance from a reflection measurement\\ 
+\hline
+        Quality Facotr	& Quality Factor of the impedance from a reflection measurement\\ 
+\hline
+        Group Delay & Group Delay of a transmission measurement\\ 
+\hline
+        Impulse Response (real)	& Real part of the impulse response from a TDR\\ 
+\hline
+        Impulse Response (magnitude) & Magnitude of the impulse response from a TDR\\ 
+\hline
+        Step Response &  Step response from a TDR\\ 
+\hline
+        Impedance	& Impedance as calculated from the step response from a TDR\\ 
+      \bottomrule
+\end{tabularx}
+\end{threeparttable}
+\end{center}
+
+Not every Y-axis type can be combined with every X-axis type. The possible combinations are:
+\textbf{In VNA mode:}
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{9cm}{L{3cm}|X}
+    \toprule
+    \textbf{X-axis} & \textbf{Y-axis} \\
+     \hline
+      \multirow{13}{*}{\makecell{Frequency\\Power\\Time (Zerospan)}}  	&    Magnitude\\ 
+    \cline{2-2}
+        	&    Magnitude (linear)\\ 
+    \cline{2-2}
+        	&   Phase \\ 
+    \cline{2-2}
+        	&   Unwrapped Phase \\ 
+    \cline{2-2}
+        	&    VSWR\\ 
+    \cline{2-2}
+        	&    Real\\ 
+    \cline{2-2}
+        	&    Imaginary\\ 
+    \cline{2-2}
+        	&    Series Resistance\\ 
+    \cline{2-2}
+        	&    Reactance\\ 
+    \cline{2-2}
+        	&    Capacitance\\ 
+    \cline{2-2}
+        	&   Inductance \\ 
+    \cline{2-2}
+        	&    Quality Factor\\ 
+    \cline{2-2}
+        	&    Group Delay\\ 
+    \hline
+      \multirow{4}{*}{\makecell{Time\\Distance}}  	&    Magnitude\\ 
+    \cline{2-2}
+        	&    Impulse Response (real)\\ 
+    \cline{2-2}
+        	&   Impulse Response (Magnitude) \\ 
+    \cline{2-2}
+        	&   Step Response \\ 
+    \cline{2-2}
+        	&    Impedance\\ 
+      \bottomrule
+\end{tabularx}
+\end{threeparttable}
+\end{center}
+\textbf{In spectrum analyzer mode:}
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{9cm}{L{3cm}|X}
+    \toprule
+    \textbf{X-axis} & \textbf{Y-axis} \\
+     \hline
+      \multirow{2}{*}{\makecell{Frequency}}  	&    Magnitude\\ 
+    \cline{2-2}
+        	&    Magnitude (dBuV)\\ 
+      \bottomrule
+\end{tabularx}
+\end{threeparttable}
+\end{center}
+
+The axes types can be selected in the setup dialog for the XY-plot:
+\screenshot{1.0}{GraphXYplotSetup.png}
+For every axis, the displayed range can either be determined automatically or manually. Additionally, the X-axis can be displayed either in linear or logarithmic mode. Logarithmic mode for the Y-axes is not supported yet.
+
+\subsubsection{Limit lines}
+The XY-plot also supports custom limit lines:
+\screenshot{1.0}{GraphXYplotLimit.png}
+Limit lines can be added and removed in the bottom part of the Axis Setup Dialog. Each line is a list of manually defined points, a selectable color and can be configured either as a high limit, low limit or just as a constant line without any limit checking:
+\screenshot{1.0}{GraphXYplotLine.png}
+
+\subsection{Waterfall}
+\screenshot{1.0}{GraphWaterfall.png}
+The waterfall graph can display the amplitude trend of a single trace over multiple sweeps. Its specific settings are mostly a subset of the XY-plot, the Y-axis configuration is almost identical.
+\screenshot{0.8}{GraphWaterfallSetup.png}
+Other settings include:
+\begin{itemize}
+\item \textbf{Direction:} Determines whether the waterfall graph is filled from the top or bottom
+\item \textbf{Pixels per line:} Provides a simple vertical zoom feature
+\item \textbf{Mode:} Determines whether sweep data that doesn't fit onto the graph anymore is kept or deleted (a resize of the graph would reveal kept data)
+\item \textbf{Number of sweeps:} The maximum number of sweeps kept if mode is set to "Keep offscreen data"
+\item \textbf{Alignment:} The waterfall can be aligned to a XY-plot of equal size and peaks in the trace data of both plots will line up.
+\begin{important}
+Both plots are still completely independent of each other. For the alignment to work, they must have the same width and one must be placed exactly below the other.
+\end{important}
+\end{itemize}
+\subsection{Polar Chart}
+\screenshot{0.6}{GraphPolarplot.png}
+The Polar Chart looks similar to the smithchart but doesn't perform the transformation from S-paramter to impedance. Furthermore, through measurements can be displayed as well. The available settings are identical to the smithchart but the Polar Chart does not support adding custom constant lines:
+\screenshot{0.6}{GraphPolarchartSetup.png}
 
 \section{Compound Device}
 The LibreVNA supports combining multiple hardware units to a "Compound Device". When used, the configured physical LibreVNAs are combined into a virtual device with more ports. When connected to such a device, additional measurement paramaters are available (e.g. measuring S23 in VNA mode or port 3 in spectrumanalyzer mode).
