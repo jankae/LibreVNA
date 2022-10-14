@@ -1224,11 +1224,16 @@ QString Calibration::descriptiveCalName()
     }
 
     QString tmp =
-            caltype.getReadableDescription()
-            + " "
+            caltype.getShortString()
+            + "_"
             + lo + "-" + hi
-            + " "
+            + "_"
             + QString::number(this->points.size()) + "pt";
+    tmp = tmp.replace(" ", "_");
+    tmp = tmp.replace("[", "");
+    tmp = tmp.replace("]", "");
+    tmp = tmp.replace(".", "_");
+    tmp = tmp.replace(",", "_");
     return tmp;
 }
 
@@ -1313,9 +1318,6 @@ bool Calibration::toFile(QString filename)
     file.open(calibration_file.toStdString());
     file << setw(1) << toJSON();
 
-    auto calkit_file = filename + ".calkit";
-    qDebug() << "Saving associated calibration kit to file" << calkit_file;
-    kit.toFile(calkit_file);
     this->currentCalFile = calibration_file;    // if all ok, remember this
 
     unsavedChanges = false;
