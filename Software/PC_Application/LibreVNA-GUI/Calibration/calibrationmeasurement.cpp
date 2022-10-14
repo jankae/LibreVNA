@@ -190,7 +190,10 @@ bool CalibrationMeasurement::Base::canMeasureSimultaneously(std::set<Calibration
             break;
         case Type::Isolation:
             // Uses all ports, unable to measure simultaneously
-            return false;
+            if(measurements.size() > 1) {
+                return false;
+            }
+            break;
         case Type::Last:
             // invalid
             return false;
