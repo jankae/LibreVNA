@@ -38,6 +38,7 @@ public:
     virtual double minFreq() = 0;
     virtual double maxFreq() = 0;
     virtual unsigned int numPoints() = 0;
+    virtual bool readyForCalculation() {return false;}
 
     static std::vector<Type> availableTypes();
     static QString TypeToString(Type type);
@@ -79,9 +80,10 @@ public:
     virtual double minFreq() override;
     virtual double maxFreq() override;
     virtual unsigned int numPoints() override {return points.size();}
+    virtual bool readyForCalculation() override {return standard && points.size() > 0;}
 
-    virtual void clearPoints();
-    virtual void addPoint(const VirtualDevice::VNAMeasurement &m);
+    virtual void clearPoints() override;
+    virtual void addPoint(const VirtualDevice::VNAMeasurement &m) override;
 
     virtual QWidget* createSettingsWidget() override;
 
@@ -179,9 +181,10 @@ public:
     virtual double minFreq() override;
     virtual double maxFreq() override;
     virtual unsigned int numPoints() override {return points.size();}
+    virtual bool readyForCalculation() override {return standard && points.size() > 0;}
 
-    virtual void clearPoints();
-    virtual void addPoint(const VirtualDevice::VNAMeasurement &m);
+    virtual void clearPoints() override;
+    virtual void addPoint(const VirtualDevice::VNAMeasurement &m) override;
 
     virtual QWidget* createSettingsWidget() override;
 
@@ -236,9 +239,10 @@ public:
     virtual double minFreq() override;
     virtual double maxFreq() override;
     virtual unsigned int numPoints() override;
+    virtual bool readyForCalculation() override {return points.size() > 0;}
 
-    virtual void clearPoints();
-    virtual void addPoint(const VirtualDevice::VNAMeasurement &m);
+    virtual void clearPoints() override;
+    virtual void addPoint(const VirtualDevice::VNAMeasurement &m) override;
 
     virtual QWidget* createStandardWidget() override;
     virtual QWidget* createSettingsWidget() override;

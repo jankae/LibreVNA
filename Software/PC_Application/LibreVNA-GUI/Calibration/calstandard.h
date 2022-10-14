@@ -11,11 +11,12 @@
 namespace CalStandard
 {
 
-class Virtual : public Savable
+class Virtual : public QObject, public Savable
 {
+    Q_OBJECT
 public:
     Virtual(QString name = "");
-    virtual ~Virtual(){};
+    virtual ~Virtual(){emit deleted();}
 
     enum class Type {
         Open,
@@ -47,6 +48,9 @@ public:
 
     QString getName() const;
     void setName(const QString &value);
+
+signals:
+    void deleted();
 
 protected:
     QString name;

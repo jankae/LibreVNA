@@ -45,6 +45,9 @@ bool CalibrationMeasurement::Base::setStandard(CalStandard::Virtual *standard)
         if(supportedStandardTypes().count(standard->getType())) {
             // can use this standard
             this->standard = standard;
+            connect(standard, &CalStandard::Virtual::deleted, this, [=](){
+                setStandard(nullptr);
+            });
             emit standardChanged(standard);
             return true;
         } else {
@@ -53,6 +56,9 @@ bool CalibrationMeasurement::Base::setStandard(CalStandard::Virtual *standard)
         }
     } else {
         // nullptr passed, remove currently used standard
+        if(this->standard) {
+            disconnect(this->standard, &CalStandard::Virtual::deleted, this, nullptr);
+        }
         this->standard = nullptr;
         emit standardChanged(nullptr);
         return true;
@@ -116,6 +122,10 @@ QWidget *CalibrationMeasurement::Base::createStandardWidget()
         if(standard == s) {
             cbStandard->setCurrentText(s->getDescription());
         }
+    }
+    if(standard == 0 && cbStandard->count() > 0) {
+        // no standard was selected but no there is one available
+        setStandard((CalStandard::Virtual*) cbStandard->itemData(0, Qt::UserRole).value<void*>());
     }
 
     connect(cbStandard, qOverload<int>(&QComboBox::currentIndexChanged), [=](){

@@ -1469,6 +1469,9 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
             if(!meas) {
                 // missing measurement
                 return false;
+            } else if (!meas->readyForCalculation()){
+                // measurement not ready (either not calkit standard definded or no measurements
+                return false;
             } else {
                 foundMeasurements.push_back(meas);
             }
