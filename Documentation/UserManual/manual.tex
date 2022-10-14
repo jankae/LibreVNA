@@ -1,5 +1,14 @@
 \documentclass[a4paper,11pt]{article}
 
+\usepackage{titlesec}
+
+\setcounter{secnumdepth}{4}
+
+\titleformat{\paragraph}
+{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc} % LY1 also works
 \usepackage[margin=1in]{geometry}
@@ -46,6 +55,7 @@
     
 \usepackage{enumitem}
 \setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+\setenumerate{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
 \setlist{leftmargin=*}
 \usepackage{listings}
 \lstset{
@@ -175,7 +185,7 @@
 \subsection{USB}
 The \vna{} uses a USB-C connector as the power supply and for data transmission. The hardware supports the USB power delivery standard\footnote{Work in progress, the device will not negotiate USB-PD yet}, requires \SI{5}{\volt} and draws up to \SI{1.2}{\ampere} of current.
 
-The implemented USB device is limited to USB 2.0 Fullspeed and data transmission will work with any USB 2.0 or 3.0 port (no USB-C required). However, the current consumption exceeds the specifications for USB 2.0 and 3.0 ports and the \vna{} may be unable to fully boot when no external power is applied USB host limits the current.
+The implemented USB device is limited to USB 2.0 Fullspeed and data transmission will work with any USB 2.0 or 3.0 port (no USB-C required). However, the current consumption exceeds the specifications for USB 2.0 and 3.0 ports and the \vna{} may be unable to fully boot when no external power is applied and the USB host limits the current.
 \subsection{External Power}
 Input jack for external DC power (\SI{5}{\volt}, \SI{1.5}{\ampere}, positive center pin). If a power source is connected, no current is drawn from the USB port anymore.
 \subsection{RF ports}
@@ -377,23 +387,51 @@ On the left side, additional trace parameters can be changed, while the right si
 \item \textbf{Name}
 \item \textbf{Color}
 \item \textbf{Velocity factor} (only relevant when transforming into the time domain)
-\item \textbf{Data source} (Live Capture/From File):
+\item \textbf{Data source} (Live Capture/From File/From Math)
+\end{itemize}
+
+\subsubsection{Trace Data Sources}
+Every trace can receive its data from one of three source:
 \begin{itemize}
-\item \textbf{Live Capture:} The trace is updated from the data measured by the \vna{}. Additional parameters are:
+\item \textbf{Live Capture:} Sampled data from the LibreVNA are added to the trace in real time
+\item \textbf{From File:} Import static data from an external touchstone or CSV file
+\item \textbf{From Math:} Combine data from other traces with math operations to create a new trace
+\end{itemize}
+
+\paragraph{Live Capture}
+\screenshot{0.5}{LiveCapture.png}
+The trace is constantly updated by the data received from a connected and sweeping LibreVNA. Available settings are the S parameter from which the data is updated and a simple Max Hold and Min Hold function (based on signal magnitude).
+
+\paragraph{From File}
+\screenshot{0.5}{FromFile.png}
+The trace data is extracted from a specified file. If the file contains data for multiple traces, the correct parameter must be specified as well.
+\begin{important}
+When saving a setup with traces created from files, the actual trace data is not saved. Instead, the path to the source file is added to the setup file. Opening the created setup file will result in empty traces if the original source file is no longer present.
+\end{important}
+
+\paragraph{From Math}
+\label{trace:fromMath}
+\begin{information}
+This section is about creating a trace based of data from other traces and combining them with math operations. If you are looking to change or transform the trace data itself without using any data from other traces, see section~\ref{trace:math}.
+\end{information}
+\screenshot{0.5}{FromMath.png}
+The trace is created from other traces and user-defined math operations. To create a trace from math, perform the following steps:
+\begin{enumerate}
+\item Select "From Math" as the trace source
+\item Check all traces on which the trace should depend. Not all traces can be used, there are the following limitations:
 \begin{itemize}
-\item \textbf{Type:} Overwrite/Max hold/Min hold
-\item \textbf{Parameter:} The S parameter data used for this trace
+\item All used traces must have the same output domain
+\item There can be no circular dependencies between "From Math" traces
 \end{itemize}
-\item \textbf{From File:} The trace data is created from a touchstone file. Additional parameters are:
-\begin{itemize}
-\item \textbf{Filename}
-\item \textbf{Parameter:} Select which S parameter the trace should use (in case of multi-port touchstone file)
-\end{itemize}
-\end{itemize}
-\end{itemize}
+\item (Optional) Change the variable name for the selected traces
+\item Enter the formula using the chosen variables
+\end{enumerate}
 
 \subsubsection{Math operations}
 \label{trace:math}
+\begin{information}
+This section is about transforming the already acquired trace data. If you are looking to create a trace by combining data from other traces and math operations, see section~\ref{trace:fromMath}.
+\end{information}
 The "math operations" section on the right contains the additional calculations that are performed on the trace data before it is displayed. Initially, it contains only one line (representing the measured data). New operations can be created using the buttons on the right. Each math operation adds a new line to the list, consisting of three columns:
 \begin{itemize}
 \item \textbf{Status:} Visual indication whether the calculation succeeded. On warnings or errors, a mouse-over text gives a hint about the problem.
@@ -419,80 +457,205 @@ Some general knowledge about the different calibration types is assumed, this ma
 \subsubsection{Introduction}
 This section contains some implementation details of the calibration. It can be skipped but understanding them can be helpful when using the calibration.
 
-To apply a calibration three things are required:
-\begin{enumerate}
+Section~\ref{vna:calibration} uses the following definitions:
+\begin{itemize}
+\item \textbf{Calibration standard:} A single calibration standard (e.g. an Open standard). Most standards can either be defined by coefficients or a measurement file.
 \item \textbf{Calibration kit:} It contains the definition of the calibration standards. When the calibration error terms are calculated, these definitions are taken into account.
-\item \textbf{Measurements:} Raw (uncorrected) measurements of the calibration standards. Depending on the type of desired calibration, different measurement are required.
+\item \textbf{Measurement:} Raw (uncorrected) measurement of a calibration standard. Depending on the type of desired calibration, different measurements are required.
 \item \textbf{Calibration type:} The calibration type determines which errors are corrected by the calibration and how the error terms are derived from the measurements.
-\end{enumerate}
-For the most accurate results, the calibration should be performed with the same settings (span, number of points, stimulus level, ...) as the intended measurement. However, it is possible to change these settings after the calibration. The calibration will be interpolated/extrapolated when a different span is used.
+
+The calibration type is followed by the ports for which the calibration corrects errors. For example, when using a SOLT calibration on ports 1 and 2, the calibration type will be shown as "SOLT\_12".
+\end{itemize}
+
+For the most accurate results, the calibration should be performed with the same settings (span, number of points, stimulus level, ...) as the intended measurement. However, it is possible to change these settings after the calibration. The calibration will be interpolated when a different span is used.
 
 \subsubsection{Types}
 Several different calibration types are available:
 \begin{center}
 \begin{threeparttable}
-\begin{tabularx}{\textwidth}{L{2cm}|X|L{3cm}}
+\begin{tabularx}{\textwidth}{L{2cm}|X|L{6cm}}
     \toprule
     \textbf{Type} & \textbf{Applied corrections} & \makecell{\textbf{Required}\\ \textbf{measurements}}\\
-     \hline
-      Port 1   	&    Removes influences of cables and setup at port 1 only & \makecell{Port 1 open\\ Port 1 short\\ Port 1 load}\\ 
     \hline
-      Port 2   	&    Removes influences of cables and setup at port 2 only & \makecell{Port 2 open\\ Port 2 short\\ Port 2 load}\\ 
+      SOLT   	&   Full SOLT calibration, removes influences at all ports and also corrects transmission measurements & \makecell{Open and Short for each port\\Load or SlidingLoad for each port\\Through between all of ports\\ Isolation(optional)}\\ 
     \hline
-      SOLT   	&   Full two-port calibration, removes influences at both ports and also corrects transmission measurement & \makecell{Port 1 open\\ Port 1 short\\ Port 1 load\\ Port 2 open\\ Port 2 short\\ Port 2 load\\ Through\\ Isolation(optional)}\\ 
+      ThroughNormalization   &  Only corrects for losses and phaseshift in through measurements. While this is not as accurate as SOLT, it is useful e.g. when measuring only the frequency response of a filter because it requires far less calibration measurements.  & \makecell{Through between all of ports}\\ 
     \hline
-      Normalize   &  Only corrects for losses and phaseshift in through measurements. While this is not as accurate as SOLT, it is useful e.g. when measuring only the frequency response of a filter because it requires far less calibration measurements.  & \makecell{Through}\\ 
-    \hline
-      TRL   	&   Full two-port calibration but with different (less accurately defined) standards than SOLT & \makecell{Port 1 open/short\\ Port 2 open/short\\Through\\ Line}\\ 
+      TRL   	&   Full two-port calibration but with different (less accurately defined) standards than SOLT & \makecell{Reflection for each port\\Through between all of ports\\Line between all of ports}\\ 
       \bottomrule
 \end{tabularx}
 \end{threeparttable}
 \end{center}
 
 \subsubsection{Calibration Kit}
-The calibration kit contains the calibration standard definitions used in the calibration. It can be edited through the menu: \menu[,]{Calibration,Edit Calibration Kit}
+The calibration kit contains the calibration standard definitions used in the calibration. It can be edited through the menu: \menu[,]{Calibration,Edit Calibration Kit} The same dialog can also be reached through the calibration measurement dialog: \menu[,]{Calibration,Calibration Measurements,Edit Calibration Kit} 
 
-The calibration kit coefficients are split into two tabs, one for the SOLT standards and one for the TRL standards. If a calibration kit is saved, all standard definitions (SOLT and TRL) are stored, regardless of which tab is currently active. The type of calibration selects which standard definitions are used in the actual calibration.
-\screenshot{1.0}{CalKitSolt.png}
-\screenshot{1.0}{CalKitTRL.png}
+The calibration kit can consist of an arbitrary number of calibration standards.
+\screenshot{0.5}{CalibrationKitDialog.png}
 
-SOLT standards can either be specified by parameters (preferred way, valid for all frequencies) or by providing measurement data of the standard, here shown as an example with the open standard:
-\screenshot{0.3}{CalKitOpenMeasurement.png}
-A touchstone file with the measurements is required. If the file contains data from more ports than required (for open, short and load 1-port measurements are needed, for the through 2-port measurements), the correct port(s) has to be selected. If any standard is defined by a measurement, the usable frequency range of the calibration kit is limited to the smallest common range of all measurement.
-\paragraph{Example:} The open standard is defined by a measurement file containing data from \SIrange{10}{500}{\mega\hertz}. The load standard is defined by a measurement file containing data from \SIrange{50}{800}{\mega\hertz}. In this case the calibration kit can only be used in the range of \SIrange{50}{500}{\mega\hertz}.
-\begin{important}
-When saving the calibration kit, only the (relative) filenames of any used measurements are saved. For future use, the measurement files have to be kept in the same folder relative to the calibration kit file.
-\end{important}
+The three text fields (Manufacturer, Serial number and Description) are meant for easy identification of the correct calibration kit. None of the contents are used anywhere by the GUI and the user is free to enter any text.
+
+Calibration standards can be added, deleted and sorted with the buttons to the right of the calibration standard list. Double-click a standard to edit its definition.
+
+\paragraph{Open Standard}
+\screenshot{0.5}{OpenStandardDialog.png}
+The Open standard can either be defined by its coefficients or by a touchstone measurement file. If defined by a touchstone file, the file limits the span of the calibration for which the standard can be used.
+
+\textbf{Coefficients:}
+\begin{itemize}
+\item \textbf{Z0:} Impedance of the transmission line from the reference plane to the open termination
+\item \textbf{Offset delay:} One-way length of the transmission line
+\item \textbf{Offset loss:} Loss/attenuation of the transmission line
+\item \textbf{C0--C3:} Parasitic capacitance of the open termination
+\end{itemize}
+
+\paragraph{Short Standard}
+\screenshot{0.5}{ShortStandardDialog.png}
+The Short standard can either be defined by its coefficients or by a touchstone measurement file. If defined by a touchstone file, the file limits the span of the calibration for which the standard can be used.
+
+\textbf{Coefficients:}
+\begin{itemize}
+\item \textbf{Z0:} Impedance of the transmission line from the reference plane to the short termination
+\item \textbf{Offset delay:} One-way length of the transmission line
+\item \textbf{Offset loss:} Loss/attenuation of the transmission line
+\item \textbf{L0--L3:} Parasitic inductance of the short termination
+\end{itemize}
+
+\paragraph{Load Standard}
+\screenshot{0.5}{LoadStandardDialog.png}
+The Load standard can either be defined by its coefficients or by a touchstone measurement file. If defined by a touchstone file, the file limits the span of the calibration for which the standard can be used.
+
+\textbf{Coefficients:}
+\begin{itemize}
+\item \textbf{Resistance:} Resistance of the termination resistor
+\item \textbf{Z0:} Impedance of the transmission line from the reference plane to the termination resistor
+\item \textbf{Offset delay:} One-way length of the transmission line
+\item \textbf{Offset loss:} Loss/attenuation of the transmission line
+\item \textbf{Parallel C:} Parasitic capacitance in parallel to the termination resistor
+\item \textbf{Series L:} Parasitic inductance in series to the termination resistor
+\item \textbf{Load Parameter Model:} Two different Load models are implemented, with the order of the parasitic elements swapped:
+\begin{itemize}
+\item Series L first: \screenshot{0.8}{Lfirst.pdf}
+\item Shunt C first: \screenshot{0.6}{Cfirst.pdf}
+\end{itemize}
+\end{itemize}
+
+\paragraph{Reflect Standard}
+\screenshot{0.5}{ReflectStandardDialog.png}
+The Reflect standard doesn't have any coefficients as it is an unknown standard. The only available choice is whether it is assumed to be a short or an open.
+
+\paragraph{Through Standard}
+\screenshot{0.5}{ThroughStandardDialog.png}
+The Through standard can either be defined by its coefficients or by a touchstone measurement file. If defined by a touchstone file, the file limits the span of the calibration for which the standard can be used.
+
+\textbf{Coefficients:}
+\begin{itemize}
+\item \textbf{Z0:} Characterisitc impedance of the Through standard (fixed to \SI{50}{\ohm} for now)
+\item \textbf{Delay:} One-way length of the transmission line
+\item \textbf{Loss:} Loss/attenuation of the transmission line
+\end{itemize}
+
+\paragraph{Line Standard}
+\screenshot{0.5}{LineStandardDialog.png}
+The Line standard is an unknown standard and is not accurately defined by coefficients. The only parameter is its delay to determine the usable span when using this standard in a TLR calibration. The delay mustn't be specified with high accuracy either.
+
 
 \subsubsection{Measurements}
 \label{vna:cal:meas}
-The calibration measurements can be found in \menu[,]{Calibration,Calibration Measurements}. It contains all possible measurements, regardless of the currently active calibration:
+The calibration measurements can be found in \menu[,]{Calibration,Calibration Measurements}. Initially, the list is empty. Measurements can be added and removed with the buttons on the right of the list. For convenience, the required measurements for common calibrations can also be created automatically (select the desired calibration type from the drop-down list on the top).
+
 \screenshot{1.0}{CalibrationMeasurements.png}
-To take a measurement, select the corresponding line and press \keys{Measure}.
+
+Each measurement has a few settings, depending on the measurement type:
+
+\paragraph{Open Measurement}
+\screenshot{1.0}{OpenMeasurement.png}
+\begin{itemize}
+\item Select the calibration standard to be used with this measurement.
+\item Select the port
+\end{itemize}
+
+\paragraph{Short Measurement}
+\screenshot{1.0}{ShortMeasurement.png}
+\begin{itemize}
+\item Select the calibration standard to be used with this measurement.
+\item Select the port
+\end{itemize}
+
+\paragraph{Load Measurement}
+\screenshot{1.0}{LoadMeasurement.png}
+\begin{itemize}
+\item Select the calibration standard to be used with this measurement.
+\item Select the port
+\end{itemize}
+
+\paragraph{Sliding Load Measurement}
+\screenshot{1.0}{SlidingLoadMeasurement.png}
+\begin{itemize}
+\item No calibration standard is required
+\item Select the port
+\item At least three Sliding Load measurements must be used per port, each with a different setting on the sliding load. More measurements may result in more accurate results and there is no upper limit on measurements
+\end{itemize}
+
+\paragraph{Reflect Measurement}
+\screenshot{1.0}{ReflectMeasurement.png}
+\begin{itemize}
+\item Any open, short or reflect standard can be selected
+\item Select the port
+\end{itemize}
+
+\paragraph{Through Measurement}
+\screenshot{1.0}{ThroughMeasurement.png}
+\begin{itemize}
+\item Select the calibration standard
+\item Select the ports
+\item When the Through standard is definded by a touchstone file and the port order in that file does not match the port order in the measurement, check the "Reversed" checkbox. Through standards defined by coefficients are always symmetrical and the checkbox has no effect
+\end{itemize}
+
+\paragraph{Line Measurement}
+\screenshot{1.0}{LineMeasurement.png}
+\begin{itemize}
+\item Select the calibration standard
+\item Select the ports
+\item As Line standards are always symmetrical, the checkbox has no effect
+\end{itemize}
+
+\paragraph{Isolation Measurement}
+\screenshot{1.0}{IsolationMeasurement.png}
+\begin{itemize}
+\item No settings available
+\end{itemize}
+
+\paragraph{Taking measurements}
+To take a measurement, select the corresponding measurement and press \keys{Measure}. Multiple measurements may be taken at the same time if they use different ports.
 \begin{information}
-All measurements required by a calibration type must have the same start and stop frequencies as well as number of points. Do not change the span inbetween measurements.
+All measurements required by a calibration type should have the same start and stop frequencies as well as number of points. Do not change the span inbetween measurements.
 \end{information}
 
 \subsubsection{Enabling a calibration}
-Either select the desired calibration type in the calibration menu or choose it in the calibration toolbar and enable the checkbox. If all required measurements have already been taken, the calibration is activated immediately. If some measurements are missing or have been taken with different span settings, applying the calibration is not possible. In that case, the calibration measurement dialog (see section~\ref{vna:cal:meas}) opens, this time only showing the necessary measurements required for the selected calibration type.
+After all required measurements have been taken, the calibration can be enabled. There are two different options available for this:
+\begin{itemize}
+\item Select the calibration type in the calibration toolbar and enable the checkbox. If all required measurements have already been taken, the calibration is activated immediately. If some measurements are missing or have been taken with different span settings, applying the calibration is not possible. In that case, the calibration measurement dialog (see section~\ref{vna:cal:meas}) opens instead.
+\item Select the calibration type in the calibration measurement dialog and click "Activate". Only calibration types for which all required measurements are available can be activated.
+\end{itemize}
 
-\paragraph{Example:} After starting the application, the following steps are necessary to perform a SOLT calibration.
-\begin{enumerate}
-\item Edit the calibration kit to match the standards used in the measurements or open a saved calibration kit file.
-\item Change the span and acquisition settings to match the intended measurement. At this point no calibration is active yet, the measured data (here with both port directly connected) is inaccurate:
-\screenshot{1.0}{VNAUncalibratedThrough.png}
-\item Select \menu[,]{Calibration,Calibration Measurements} and take the required measurements. In this case, the measurement "Isolation" (optional for SOLT) has not been taken, as well as the "Line" measurement (not required for SOLT)
-\screenshot{1.0}{CalibrationMeasurementsSOLT.png}
-\item Close the "Calibration Measurements" window and activate the SOLT calibration by selecting \menu[,]{Calibration,SOLT}:
-\screenshot{0.3}{MenuActivateSOLT.png}
-Alternatively, the calibration can be activated by choosing "SOLT" in the toolbar and enabling the calibration checkbox:
-\screenshot{0.3}{ToolbarActivateSOLT.png}
-\item The calibration is active and connecting both ports directly results in a corrected measurement:
-\screenshot{1.0}{VNACalibratedThrough.png}
-\end{enumerate}
+%\paragraph{Example:} After starting the application, the following steps are necessary to perform a SOLT calibration.
+%\begin{enumerate}
+%\item Edit the calibration kit to match the standards used in the measurements or open a saved calibration kit file.
+%\item Change the span and acquisition settings to match the intended measurement. At this point no calibration is active yet, the measured data (here with both port directly connected) is inaccurate:
+%\screenshot{1.0}{VNAUncalibratedThrough.png}
+%\item Select \menu[,]{Calibration,Calibration Measurements} and take the required measurements. In this case, the measurement "Isolation" (optional for SOLT) has not been taken, as well as the "Line" measurement (not required for SOLT)
+%\screenshot{1.0}{CalibrationMeasurementsSOLT.png}
+%\item Close the "Calibration Measurements" window and activate the SOLT calibration by selecting \menu[,]{Calibration,SOLT}:
+%\screenshot{0.3}{MenuActivateSOLT.png}
+%Alternatively, the calibration can be activated by choosing "SOLT" in the toolbar and enabling the calibration checkbox:
+%\screenshot{0.3}{ToolbarActivateSOLT.png}
+%\item The calibration is active and connecting both ports directly results in a corrected measurement:
+%\screenshot{1.0}{VNACalibratedThrough.png}
+%\end{enumerate}
 
 \subsubsection{Saving/Loading}
-Once a calibration is active, it can be saved by selecting \menu[,]{Calibration,Save}. All raw measurements are saved together with the calibration type and the calibration kit (saved in an additional file with same filename as the calibration).
+Once a calibration is active, it can be saved by selecting \menu[,]{Calibration,Save}. All raw measurements are saved together with the calibration type and the calibration kit.
 
 Similarly, a saved calibration can be opened by selecting \menu[,]{Calibration,Load}. It is applied immediately after opening.
 
@@ -500,7 +663,7 @@ Similarly, a saved calibration can be opened by selecting \menu[,]{Calibration,L
 Once a calibration has been saved, it can be selected as the default calibration for a specific device. To do so, first connect to the device and then select \menu[,]{Device,Default Calibration,Assign...}. Once a default calibration has been assigned, it will automatically be opened and applied every time the application connects to that specific device.
 
 \subsubsection{Viewing error terms/calibration measurements}
-The error terms calculated from the calibration measurements as well as the raw measurements used to derive these error terms can be imported by selecting \menu[,]{Calibration,Import error terms as traces} or \menu[,]{Calibration,Import measurements as traces}. This feature is mostly intended to debug calibration problems and is not normally required. The nomenclature follows \href{https://www.rfmentor.com/sites/default/files/NA_Error_Models_and_Cal_Methods.pdf}{"Network Analyzer Error Models and Calibration Methods"} by Doug Rytting.
+The error terms calculated from the calibration measurements as well as the raw measurements used to derive these error terms can be imported by selecting \menu[,]{Calibration,Import error terms as traces} or \menu[,]{Calibration,Import measurements as traces}. This feature is mostly intended to debug calibration problems and is not normally required.
 
 \subsection{De-embedding}
 The de-embedding options are available under \menu[,]{Tools,De-embedding}. The GUI works similar to the math operations for traces (see section~\ref{trace:math}) but the de-embedding is performed before the data reaches the traces (compare with section~\ref{vna:dsp}).
@@ -565,6 +728,55 @@ The following example shows the effect of signal ID. For both measurements the o
 A tracking generator at either port is available in the spectum analyzer. If the tracking generator is active at a port, measurements from that port are still available but meaningless. The tracking generator also includes an optional frequency offset. To get accurate results, a Source/Receiver Calibration (section~\ref{amplitude:calibration}) should have been performed when using the tracking generator.
 
 DFT acquisition is not available when the tracking generator is active. Also, due to hardware limitations, the tracking generator is unable to reach every frequency exactly. For narrow spans this could result in "drops" in the spectrum where the signal of the tracking generator is outside of the RBW filters passband. The frequency resolution is frequency dependent. A warning message appears if this could be a problem with the selected span and stop frequency.
+
+\section{Compound Device}
+The LibreVNA supports combining multiple hardware units to a "Compound Device". When used, the configured physical LibreVNAs are combined into a virtual device with more ports. When connected to such a device, additional measurement paramaters are available (e.g. measuring S23 in VNA mode or port 3 in spectrumanalyzer mode).
+
+\begin{important}
+When connected to a compound device and in VNA mode, there is no phase information for through measurements between different physical devices. This is a hardware limitation and the phase is set to zero in the software. Through measurements within a physical device and all reflection measurements retain their phase information.
+\end{important}
+
+\subsection{Creating a compound device}
+Compound devices must be configured in the preferences: \menu[,]{Window,Preferences,Compound Devices}
+\screenshot{1.0}{CompoundDeviceList.png}
+Create and remove compound devices with the buttons on the right. Edit an existing compound device by double-clicking it:
+\screenshot{1.0}{CompoundDeviceEdit.png}
+Required steps when creating a compound device:
+\begin{enumerate}
+\item Assign a name to the new compound device
+\item Select the synchronization method between devices. At the moment, only USB synchronization is supported but future hardware versions might support faster synchronization via dedicated trigger ports
+\item Drag-and-drop a LibreVNA symbol into the configuration area for every physical device in the compound device
+\begin{itemize}
+\item At least two physical devices must be used
+\item At most four physical devices can be combined with a maximum of eight virtual ports
+\end{itemize}
+\item Assign the serialnumbers for each physical device. Serialnumbers for all currently connected devices are available as suggestions but it is also possible to enter a different serialnumber manually
+\item Assign the virtual ports of the compound device:
+\begin{itemize}
+\item Each port number must appear only once
+\item Port numbers must start with port 1
+\item Port numbers must be consecutive, e.g. port 1,2 and 4 is not allowed because port 3 is missing
+\item Physical ports may be left unused
+\end{itemize}
+\end{enumerate}
+
+\subsection{Connecting to a compound device}
+Configured compound devices appear in the device list with their name when all required physical devices are connected. Once connected, new measurements or ports are available depending on the number of configured ports in the compound device.
+
+\begin{information}
+Through measurements between physical devices depend on precise matching of the stimulus frequency. Depending on the accuracy of the internal frequency source and the selected IF bandwidth, the stimulus signal from the generating device may fall outside of the IF bandwidth of the receiving device, resulting in a reported lower amplitude than actually present. Either align both internal oscillators precisely with the frequency calibration or (recommended) switch to using the external reference input when using a compound device.
+\end{information}
+
+\subsection{Limitations}
+Certain features are not available when connected to a compound device. To use them, disconnect from the compound device and connect directly to the individual physical devices:
+\begin{itemize}
+\item Firmware update
+\item Manual control
+\item Source calibration
+\item Receiver calibration
+\item Frequency calibration
+\end{itemize}
+
 
 \section{Amplitude Calibration}
 \label{amplitude:calibration}
