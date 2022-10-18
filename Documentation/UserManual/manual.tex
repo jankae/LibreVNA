@@ -451,6 +451,85 @@ In this example, time domain gating is performed:
 \item At last the time domain response is transformed back into the frequency domain with a DFT
 \end{itemize}
 
+\paragraph{Median Filter}
+\screenshot{0.4}{MathOpMedianFilter.png}
+The median filter filters values across frequency (or power or time, depending on acquisition settings and previous math operations). For every point in a trace it takes the point and several surrounding points, sorts them and uses the middle point of the sorted list as the filtered value. It is a great option to get rid of fixed spikes (e.g. due to LO feedthrough or unwanted external signals). In comparison, the averaging function from the toolbar will smooth captured traces over time but is not able to remove static spikes.
+
+Adjustable settings:
+\begin{itemize}
+\item \textbf{Kernel size:} Number of sample points that are used for the sorted list
+\item \textbf{Sorting method:} As most input values are complex, there are different options to sort the values:
+\begin{itemize}
+\item Absolute Value
+\item Phase
+\item Real part
+\item Imaginary part
+\end{itemize}
+\end{itemize}
+\paragraph{TDR}
+\screenshot{0.4}{MathOpTDR.png}
+The TDR takes frequency domain data and transforms it into time domain data. The number of output samples as well as the time span is determined by the number of input samples and the selected frequency span.
+
+Adjustable settings:
+\begin{itemize}
+\item \textbf{Mode:} A TDR can be performed in two different modes:
+\begin{itemize}
+\item \textbf{Lowpass:} Input samples should start at near DC, i.e. the start frequency must be small compared to the span. A step response can be calculated as the DC point can be extrapolated.
+\item \textbf{Bandpass:} Input samples may use any frequency and span. Only an impulse response can be calculated as the DC point is unknown.
+\item \textbf{Compute Step Response:} Enable calculation of step response as well (only available in lowpass mode)
+\item \textbf{DC point:} Chose between extrapolating the DC point from frequency data or specifying it manually (only available in lowpass mode)
+\end{itemize}
+\item \textbf{Window:} A window is applied before performing the transformation. Available windows are:
+\begin{itemize}
+\item Rectangular
+\item Gaussion
+\item Hann
+\item Hamming
+\item Blackman
+\end{itemize}
+\end{itemize}
+\paragraph{DFT}
+\screenshot{0.4}{MathOpDFT.png}
+The DFT is the inverse operation to the TDR and is used to transform time domain data back into the frequency domain.
+
+Adjustable settings:
+\begin{itemize}
+\item \textbf{DC frequency:} Depending on the original source data of the input time domain data, it may have been calculated from a frequency range that does not start at DC. Transforming the time domain data back into the frequency domain will result in frequency data at and around DC. This setting allows to move the transformed frequency data to the correct frequency.
+\begin{itemize}
+\item \textbf{Automatic:} The DC frequency is determined automatically by looking at the last TDR operation that resulted in the time domain data and extracting the correct frequency from that. Usually, this results in the correct frequencies.
+\item \textbf{Automatic:} If for any reason a different frequency range must be used, the actual frequency of the DC bin can be specified manually.
+\end{itemize}
+\item \textbf{Window:} A window is applied before performing the transformation. Available windows are:
+\begin{itemize}
+\item Rectangular
+\item Gaussion
+\item Hann
+\item Hamming
+\item Blackman
+\end{itemize}
+\end{itemize}
+\paragraph{Custom Expression}
+\screenshot{1.0}{MathOpCustomExpression.png}
+The custom expression allows user-specific calculations on the trace data. It can only use a single data point as the input value. Access to other data points (e.g. at a lower/higher frequency or from an earlier sweep) is not possible. Custom expressions can work with input data of any domain and result in output data of the same domain. Depending on the input data domain, different variables are available and shown in the dialog.
+
+If the expression contains syntax errors, check the mouse-over text in the status column of the trace edit dialog.
+\paragraph{Time Gate}
+\screenshot{1.0}{MathOpTimeGate.png}
+The time gate allows filtering data in the time domain. It can either be used as a bandpass (only passing time domain data within a specified window) or as a bandstop (blocking time domain data in a specified window). The displayed graph allows for easier adjustments. The green trace is the time domain input data and is updated live. The red line is the currently selected gate filter.
+
+The gate filter can be adjusted by manually specifying the start/stop or center/span times. As an alternative, the filter edges can also be moved on the graph with the mouse.
+Adjustable settings:
+\begin{itemize}
+\item \textbf{Window:} The window function influences the filters pass- and stopband. The filter is constructed by first calculating the ideal filter coefficients in the frequency domain. Afterward, the coefficients are windowed to limit spectral leakage and finally transformed into the time domain (which is displayed in the graph).
+\begin{itemize}
+\item Rectangular
+\item Gaussion
+\item Hann
+\item Hamming
+\item Blackman
+\end{itemize}
+\end{itemize}
+
 \subsection{Calibration}
 \label{vna:calibration}
 This section is about the VNA calibration which is used to remove the effect of connectors and cables (as well as imperfections from the \vna{} itself). For the amplitude calibration see section~\ref{amplitude:calibration}.
