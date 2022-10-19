@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>909</width>
-    <height>544</height>
+    <width>897</width>
+    <height>575</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,54 +74,54 @@
         <item row="2" column="1">
          <widget class="SIUnitEdit" name="falltime"/>
         </item>
-        <item row="3" column="0">
+        <item row="4" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>High level:</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="1">
          <widget class="SIUnitEdit" name="highLevel"/>
         </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QLabel" name="label_5">
           <property name="text">
            <string>Low level:</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="5" column="1">
          <widget class="SIUnitEdit" name="lowLevel"/>
         </item>
-        <item row="5" column="0">
+        <item row="6" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
            <string>Noise (RMS):</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <widget class="SIUnitEdit" name="noise"/>
         </item>
-        <item row="6" column="0">
+        <item row="7" column="0">
          <widget class="QLabel" name="label_7">
           <property name="text">
            <string>Jitter (RMS):</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
+        <item row="7" column="1">
          <widget class="SIUnitEdit" name="jitter"/>
         </item>
-        <item row="7" column="0">
+        <item row="8" column="0">
          <widget class="QLabel" name="label_8">
           <property name="text">
            <string>Pattern length:</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="1">
+        <item row="8" column="1">
          <widget class="QComboBox" name="patternLength">
           <property name="currentIndex">
            <number>7</number>
@@ -178,6 +178,27 @@
           </item>
          </widget>
         </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>Rise/Fall type:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QComboBox" name="fallrisetype">
+          <item>
+           <property name="text">
+            <string>Linear</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Exponential</string>
+           </property>
+          </item>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -230,9 +251,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QProgressBar" name="progress">
-          <property name="value">
-           <number>0</number>
+         <widget class="QLabel" name="status">
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </item>

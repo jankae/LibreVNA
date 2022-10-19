@@ -2,6 +2,7 @@
 #define EYEDIAGRAMDIALOG_H
 
 #include "Traces/tracemodel.h"
+#include "Traces/Math/tdr.h"
 
 #include <vector>
 
@@ -21,7 +22,13 @@ public:
 
     void setDialog(EyeDiagramDialog *dialog);
 
+    unsigned int eyeWidth();
+    unsigned int eyeHeight();
 private:
+    unsigned int leftSpace();
+    unsigned int rightSpace() {return 10;}
+    unsigned int topSpace() {return 10;}
+    unsigned int bottomSpace();
     void paintEvent(QPaintEvent *event) override;
 
     EyeDiagramDialog *dialog;
@@ -35,7 +42,13 @@ public:
     explicit EyeDiagramDialog(TraceModel &model);
     ~EyeDiagramDialog();
 
+    unsigned int getCalculatedPixelsX();
+    unsigned int getCalculatedPixelsY();
     double getIntensity(unsigned int x, unsigned int y);
+
+    double displayedTime();
+    double minGraphVoltage();
+    double maxGraphVoltage();
 
 public slots:
     bool triggerUpdate();
@@ -46,7 +59,7 @@ signals:
 
 private:
 signals:
-    void updatePercent(int percent);
+    void calculationStatus(QString s);
 
 private:
     static constexpr double yOverrange = 0.2;
@@ -60,7 +73,10 @@ private:
     std::vector<std::vector<double>> *workingBuffer;
     std::vector<std::vector<double>> *finishedBuffer;
 
+    Math::TDR *tdr;
+
     bool updating;
+    bool firstUpdate;
 };
 
 #endif // EYEDIAGRAMDIALOG_H
