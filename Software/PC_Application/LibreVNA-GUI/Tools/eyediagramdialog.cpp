@@ -119,6 +119,9 @@ EyeDiagramDialog::EyeDiagramDialog(TraceModel &model) :
 
 EyeDiagramDialog::~EyeDiagramDialog()
 {
+    while(updating) {
+        std::this_thread::sleep_for(20ms);
+    }
     delete tdr;
     delete ui;
 }
