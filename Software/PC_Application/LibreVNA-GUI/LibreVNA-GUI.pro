@@ -33,6 +33,7 @@ HEADERS += \
     SpectrumAnalyzer/spectrumanalyzer.h \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
+    Tools/eyediagramdialog.h \
     Tools/impedancematchdialog.h \
     Tools/parameters.h \
     Traces/Marker/marker.h \
@@ -112,6 +113,7 @@ HEADERS += \
     Traces/waterfallaxisdialog.h \
     Traces/xyplotaxisdialog.h \
     Traces/tracepolarchart.h \
+    Util/prbs.h \
     Util/qpointervariant.h \
     Util/util.h \
     Util/app_common.h \
@@ -175,6 +177,7 @@ SOURCES += \
     SpectrumAnalyzer/spectrumanalyzer.cpp \
     SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
+    Tools/eyediagramdialog.cpp \
     Tools/impedancematchdialog.cpp \
     Tools/parameters.cpp \
     Traces/Marker/marker.cpp \
@@ -243,6 +246,7 @@ SOURCES += \
     Traces/tracepolar.cpp \
     Traces/waterfallaxisdialog.cpp \
     Traces/xyplotaxisdialog.cpp \
+    Util/prbs.cpp \
     Util/util.cpp \
     VNA/Deembedding/deembedding.cpp \
     VNA/Deembedding/deembeddingdialog.cpp \
@@ -301,6 +305,7 @@ FORMS += \
     Device/firmwareupdatedialog.ui \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
+    Tools/eyediagramdialog.ui \
     Tools/impedancematchdialog.ui \
     Traces/Marker/markerwidget.ui \
     Traces/Math/dftdialog.ui \
@@ -343,7 +348,7 @@ RESOURCES += \
     icons.qrc \
     resources/librevna.qrc
 
-QMAKE_CXXFLAGS += -Wno-deprecated -Wno-deprecated-declarations
+QMAKE_CXXFLAGS += -Wno-deprecated -Wno-deprecated-declarations -Wno-deprecated-copy
 
 CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)

@@ -44,9 +44,6 @@ protected slots:
 private slots:
     void updateYAxis();
 private:
-    // color scale, input value from 0.0 to 1.0
-    QColor getColor(double scale);
-
     enum class Direction {
         TopToBottom,
         BottomToTop,

@@ -450,8 +450,8 @@
   </connection>
  </connections>
  <buttongroups>
+  <buttongroup name="lGroup"/>
   <buttongroup name="zGroup"/>
   <buttongroup name="cGroup"/>
-  <buttongroup name="lGroup"/>
  </buttongroups>
 </ui>

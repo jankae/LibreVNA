@@ -16,7 +16,7 @@ class TDRThread : public QThread
     Q_OBJECT
 public:
     TDRThread(TDR &tdr);
-    ~TDRThread(){};
+    ~TDRThread(){}
 private:
     void run() override;
     TDR &tdr;
@@ -38,7 +38,7 @@ public:
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
-    Type getType() override {return Type::TDR;};
+    Type getType() override {return Type::TDR;}
 
     enum class Mode {
         Lowpass,

@@ -88,6 +88,9 @@ namespace Util {
         result1 = (-b + root) / (T(2) * a);
         result2 = (-b - root) / (T(2) * a);
     }
+
+    // intensity color scale, input value from 0.0 to 1.0
+    QColor getIntensityGradeColor(double intensity);
 }
 
 #endif // UTILH_H

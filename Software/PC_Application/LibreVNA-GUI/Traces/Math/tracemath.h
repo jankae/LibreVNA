@@ -101,13 +101,13 @@ public:
     // indicate whether this function produces time or frequency domain data
     virtual DataType outputType(DataType inputType) = 0;
     virtual QString description() = 0;
-    virtual void edit(){};
+    virtual void edit(){}
 
     void removeInput();
     void assignInput(TraceMath *input);
 
     DataType getDataType() const;
-    std::vector<Data>& rData() { return data;};
+    std::vector<Data>& rData() { return data;}
     Status getStatus() const;
     QString getStatusDescription() const;
     virtual Type getType() = 0;
@@ -119,7 +119,7 @@ public:
 
 public slots:
     // some values of the input data have changed, begin/end determine which sample(s) has changed
-    virtual void inputSamplesChanged(unsigned int begin, unsigned int end){Q_UNUSED(begin) Q_UNUSED(end)};
+    virtual void inputSamplesChanged(unsigned int begin, unsigned int end){Q_UNUSED(begin) Q_UNUSED(end)}
 
     void inputTypeChanged(DataType type);
 

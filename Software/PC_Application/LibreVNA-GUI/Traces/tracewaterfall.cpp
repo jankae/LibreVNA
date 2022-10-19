@@ -241,7 +241,7 @@ void TraceWaterfall::draw(QPainter &p)
     }
     p.drawRect(legendRect);
     for(int i=plotAreaTop + 1;i<plotAreaBottom;i++) {
-        auto color = getColor(Util::Scale<double>(i, plotAreaTop, plotAreaBottom, 1.0, 0.0));
+        auto color = Util::getIntensityGradeColor(Util::Scale<double>(i, plotAreaTop, plotAreaBottom, 1.0, 0.0));
         p.setPen(QColor(color));
         pen.setCosmetic(true);
         p.drawLine(legendRect.x()+1, i, legendRect.x()+legendRect.width()-1, i);
@@ -387,7 +387,7 @@ void TraceWaterfall::draw(QPainter &p)
                 }
                 x_stop = xAxis.transform(x_stop, plotAreaLeft, plotAreaLeft + plotAreaWidth);
                 auto y = yAxis.sampleToCoordinate(sweep[s]);
-                auto color = getColor(yAxis.transform(y, 0.0, 1.0));
+                auto color = Util::getIntensityGradeColor(yAxis.transform(y, 0.0, 1.0));
                 auto rect = QRect(round(x_start), ytop, round(x_stop - x_start) + 1, ybottom - ytop + 1);
                 p.fillRect(rect, QBrush(color));
             }
@@ -566,19 +566,6 @@ void TraceWaterfall::updateYAxis()
         if(max > min) {
             yAxis.set(yAxis.getType(), yAxis.getLog(), true, min, max, 0);
         }
-    }
-}
-
-QColor TraceWaterfall::getColor(double scale)
-{
-    if(scale < 0.0) {
-        return Qt::black;
-    } else if(scale > 1.0) {
-        return Qt::white;
-    } else if(scale >= 0.0 && scale <= 1.0) {
-        return QColor::fromHsv(Util::Scale<double>(scale, 0.0, 1.0, 240, 0), 255, 255);
-    } else {
-        return Qt::black;
     }
 }
 

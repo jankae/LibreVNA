@@ -40,6 +40,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.cpp \
     ../LibreVNA-GUI/SpectrumAnalyzer/tracewidgetsa.cpp \
     ../LibreVNA-GUI/Tools/eseries.cpp \
+    ../LibreVNA-GUI/Tools/eyediagramdialog.cpp \
     ../LibreVNA-GUI/Tools/impedancematchdialog.cpp \
     ../LibreVNA-GUI/Tools/parameters.cpp \
     ../LibreVNA-GUI/Traces/Marker/marker.cpp \
@@ -108,6 +109,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Traces/tracexyplot.cpp \
     ../LibreVNA-GUI/Traces/waterfallaxisdialog.cpp \
     ../LibreVNA-GUI/Traces/xyplotaxisdialog.cpp \
+    ../LibreVNA-GUI/Util/prbs.cpp \
     ../LibreVNA-GUI/Util/util.cpp \
     ../LibreVNA-GUI/VNA/Deembedding/deembedding.cpp \
     ../LibreVNA-GUI/VNA/Deembedding/deembeddingdialog.cpp \
@@ -201,6 +203,7 @@ HEADERS += \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.h \
     ../LibreVNA-GUI/SpectrumAnalyzer/tracewidgetsa.h \
     ../LibreVNA-GUI/Tools/eseries.h \
+    ../LibreVNA-GUI/Tools/eyediagramdialog.h \
     ../LibreVNA-GUI/Tools/impedancematchdialog.h \
     ../LibreVNA-GUI/Tools/parameters.h \
     ../LibreVNA-GUI/Traces/Marker/marker.h \
@@ -280,6 +283,7 @@ HEADERS += \
     ../LibreVNA-GUI/Traces/tracexyplot.h \
     ../LibreVNA-GUI/Traces/waterfallaxisdialog.h \
     ../LibreVNA-GUI/Traces/xyplotaxisdialog.h \
+    ../LibreVNA-GUI/Util/prbs.h \
     ../LibreVNA-GUI/Util/util.h \
     ../LibreVNA-GUI/VNA/Deembedding/deembedding.h \
     ../LibreVNA-GUI/VNA/Deembedding/deembeddingdialog.h \
@@ -339,6 +343,7 @@ FORMS += \
     ../LibreVNA-GUI/Device/firmwareupdatedialog.ui \
     ../LibreVNA-GUI/Device/manualcontroldialog.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \
+    ../LibreVNA-GUI/Tools/eyediagramdialog.ui \
     ../LibreVNA-GUI/Tools/impedancematchdialog.ui \
     ../LibreVNA-GUI/Traces/Marker/markerwidget.ui \
     ../LibreVNA-GUI/Traces/Math/dftdialog.ui \
