@@ -746,6 +746,36 @@ Once a calibration has been saved, it can be selected as the default calibration
 \subsubsection{Viewing error terms/calibration measurements}
 The error terms calculated from the calibration measurements as well as the raw measurements used to derive these error terms can be imported by selecting \menu[,]{Calibration,Import error terms as traces} or \menu[,]{Calibration,Import measurements as traces}. This feature is mostly intended to debug calibration problems and is not normally required.
 
+\subsubsection{Electronic Calibration}
+Performing a calibration, especially when multiple ports are used, can require a lot of manual steps. The \vna{} supports an automatic electronic calibration, which takes all the required measurements for a SOLT calibration on its own. To use the electronic calibration, the LibreCAL\footnote{\url{https://github.com/jankae/LibreCAL}} device is required.
+
+To start the electronic calibration, select \menu[,]{Calibration,Electronic Calibration} or \menu[,]{Calibration,Calibration Measurements,Electronic Calibration}. There is no need to create a calibration kit first, as the electronic calibration will use the calibration coefficients stored in the LibreCAL.
+\begin{important}
+The electronic calibration will delete and replace any currently active calibration and also the calibration kit standards. Please store any unsaved calibration data before starting the electronic calibration.
+\end{important}
+
+\screenshot{0.6}{eCal.png}
+
+Steps required to perform the electronic calibration:
+\begin{enumerate}
+\item Connect the LibreCAL via USB to the same machine on which the \vna{}-GUI is running
+\item Connect every port of the \vna{} that should be calibrated to one of the ports on the LibreCAL
+\item Start the electronic calibration dialog
+\item Select the correct LibreCAL device and the coefficients:
+\begin{itemize}
+\item \textbf{Device:} Serialnumber of the LibreCAL. Usually, only one should be connected and the serialnumber will be automatically selected when the dialog is first opened
+\item \textbf{Coefficients:} Select the coefficient set to be used. The LibreCAL can store multiple sets of coefficients. Please the the manual\footnote{\url{https://github.com/jankae/LibreCAL/blob/main/Documentation/manual.pdf}} of the LibreCAL for detailed information on coefficient sets.
+\end{itemize}
+\item Check and adjust the port assignments. Ports between the \vna{} and LibreCAL can be connected in any order. Match the ports in the dialog to your physical setup.
+\item Press the "Start" button. This will perform the following steps:
+\begin{itemize}
+\item Fill the calibration kit based on the coefficients extracted from the LibreCAL
+\item Take an open, short and load measurement for every port of the \vna{}
+\item Take a through measurement for any combination of ports
+\item Apply the SOLT calibration. For the FACTORY coefficient set, the reference plane will be at the ports of the LibreCAL´
+\end{itemize}
+\end{enumerate}
+
 \subsection{De-embedding}
 The de-embedding options are available under \menu[,]{Tools,De-embedding}. The GUI works similar to the math operations for traces (see section~\ref{trace:math}) but the de-embedding is performed before the data reaches the traces (compare with section~\ref{vna:dsp}).
 \screenshot{0.8}{Deembedding.png}
@@ -753,6 +783,68 @@ The de-embedding options are available under \menu[,]{Tools,De-embedding}. The G
 Just like with the math operations, a list shows the de-embedding options. Once a new option is added (or is double clicked) a window opens which allows to configure the option. Depending on the de-embedding option, there might be some user adjustable parameters (e.g. the length and attenuation of a port extension) or the option needs a measurement from the \vna{} to calculate the de-embedding parameters (e.g. take a measurement to automatically measure the port extension length). If a measurement is required at any point, a new window opens with two choices to provide the measurement data:
 \screenshot{0.9}{DeembeddingMeas.png}
 The first possibility is to click the measure button (with the \vna{} connected) which starts a new measurement. The \vna{} connections must have been setup properly before (e.g. in the case of the port extension: extension cable connected and terminated either into an open or short. The exact setup depends on the de-embedding option). The other possibilty is to provide the measurement by using traces. This is useful if the same measurement has already been taken but the physical setup has changed since then. Select the correct traces for all required S parameters and click the "OK" button.
+
+\subsubsection{Port Extension}
+\screenshot{0.4}{DeembeddingPortExtension.png}
+The port extension allows moving the reference plane relative to the plane used during the calibration. The port extension is defined by two characteristics:
+\begin{itemize}
+\item \textbf{Distance/Time:} The one-way distance or time the reference plane will be moved. Setting either parameter will automatically calculate the other by using the velocity factor.
+\item \textbf{Loss:} The additional loss introduced by the physical component that caused the reference plane to move. It is further split into two parameters:
+\begin{itemize}
+\item \textbf{at DC:} One-way loss at \SI{0}{\hertz}
+\item \textbf{at a specific frequency:} One-way loss at a chosen frequency, typically higher than the DC loss
+\end{itemize}
+\end{itemize}
+
+All these parameters can also be calculated automatically by measuring the port extension with either an open or short connected instead of the DUT.
+
+If a port extension is required at multiple ports, add this option once for each port.
+
+\subsubsection{Two Thru}
+\screenshot{1.0}{DeembeddingTwoThru.png}
+The two thru option is an advanced de-embedding option for when there are additional fixtures between the reference plane and the DUT that can't be easily calibrated out by either a SOLT calibration or a port extension. The are a few prerequisites for using this option:
+\begin{itemize}
+\item The \vna{} must be calibrated at a reference place which does not include the fixtures
+\item The fixtures (everything between the reference plane and the DUT) must be identical for both ports
+\item It must be possible to connect the fixtures directly to each other as well as directly to the DUT
+\end{itemize}
+\vspace{0.5cm}
+To create a two thru de-embedding, perform the following steps:
+\begin{enumerate}
+\item Select the two ports for which the de-embedding will be applied in the configuration section of the dialog
+\item Connect both fixtures directly to each other (without the DUT)
+\item Take the mandatory 2xThru measurement
+\item If the fixtures have a different characteristic impedance than \SI{50}{\ohm}:
+\begin{itemize}
+\item Insert the DUT between the fixtures
+\item Take the optional Fixture-DUT-Fixture measurement
+\end{itemize}
+\item Compensate the effect of the fixtures by clicking the "Calculate" button in the dialog
+\end{enumerate}
+
+\subsubsection{Matching Network}
+\screenshot{1.0}{DeembeddingMatchingNetwork.png}
+The matching network allows the user to (de-)embed lumped components and arbitrary transmission lines between the DUT and a measurement port.
+
+Available components are:
+\begin{itemize}
+\item \textbf{Series R/L/C:} Lumped component in series between the port and the DUT
+\item \textbf{Parallel R/L/C:} Lumped component from the signal path to GND
+\item \textbf{Defined Through:} Any two-port network as defined by a touchstone file
+\end{itemize}
+Any combination of these components can be dragged into the signal path between the port of the\vna{} and the DUT.
+
+Further settings:
+\begin{itemize}
+\item \textbf{Operation:} Chose between embedding and de-embedding
+\item \textbf{Port:} Port of the \vna{}
+\end{itemize}
+If a matching network is required at multiple ports, add this option once for each port.
+
+\subsubsection{Impedance Renormalization}
+\screenshot{0.4}{DeembeddingImpedanceRenormalization.png}
+The \vna{} is a \SI{50}{\ohm} system. S parameter measurements are reported with a \SI{50}{\ohm} reference impedance. With the impedance renormalization, the acquired data can be transformed into what it would look like if the system would have a different reference impedance (e.g. \SI{75}{\ohm}). This transformation influences all traces captured by the \vna{}.
+
 
 \section{Signal Generator}
 In the signal generator mode, measurements are stopped and the \vna{} only outputs a CW signal.
@@ -1045,6 +1137,241 @@ Both plots are still completely independent of each other. For the alignment to 
 \screenshot{0.6}{GraphPolarplot.png}
 The Polar Chart looks similar to the smithchart but doesn't perform the transformation from S-paramter to impedance. Furthermore, through measurements can be displayed as well. The available settings are identical to the smithchart but the Polar Chart does not support adding custom constant lines:
 \screenshot{0.6}{GraphPolarchartSetup.png}
+
+\section{Markers}
+Markers provide an easy read-out of trace data at specific points. Each marker is assigned to one trace and will show up on any graph that show the trace at the marker position.
+
+Some general marker settings are available in the preferences:
+\screenshot{1.0}{MarkerPreferences.png}
+\begin{itemize}
+\item \textbf{Show data on graphs:} Marker data (X-coordinate, trace value) will be shown by default to the right of any graph the marker is visible on
+\item \textbf{Show data in all available formats:} All available formats for the marker data will be shown by default
+\item \textbf{Positioning:} When moving markers by hand, the can either snap to the individual trace points or be interpolated along the plotted trace
+\item \textbf{Sort order on graphs:} Defines the order of marker data to the right of a graph
+\item \textbf{Symbol style:} Various symbol styles for drawing markers on the graphs are available
+\end{itemize}
+\vspace{1cm}
+Example of a marker with all data formats shown:
+\screenshot{0.8}{MarkerExample.png}
+
+The marker dock provides a quick overview of all markers:
+\screenshot{1.0}{MarkerDock.png}
+\begin{itemize}
+\item \textbf{Marker \#:} The marker number as shown on the graphs
+\item \includesvg[height=8pt]{Screenshots/visible}/\includesvg[height=10pt]{Screenshots/invisible}: Enable/disable global visibility: Shows/hides the marker an all graphs
+\item \includegraphics[height=8pt]{Screenshots/chainlink.png}: Indicates linked markers. Markers with the same number are linked and all of them move when one changes its position
+\item \textbf{Trace:} The trace name the markers is assigned to
+\item \textbf{Type:} Various marker types are available, see section~\ref{marker:types}
+\item \textbf{Settings:} Depends on the marker type, allows configuration of the marker
+\item \textbf{Restrict:} Forces the marker to a specific frequency range (or power/time range if the trace uses another domain)
+\item \textbf{Data:} The trace data at the marker position. Can be displayed in different formats
+\end{itemize}
+
+Various other settings are also available in the \textbf{context menu}. The context menu can be reached by right-clicking the marker, either in the marker dock or on the marker symbol in any graph.
+
+\subsection{Creating and deleting markers}
+There are three ways to create a marker:
+\begin{itemize}
+\item Right-click a trace on a graph and select "Add marker here"
+\item Use the "Add marker" button in the marker dock
+\item Use the "Add markers to all traces" button in the marker dock to create a marker for each trace. The created markers are linked by default (see section~\ref{marker:linking})
+\end{itemize}
+Markers can be deleted by:
+\begin{itemize}
+\item Selecting "delete" in the context menu
+\item Selecting the marker in the marker dock and either pressing \keys{DEL} or using the "Delete marker" button
+\end{itemize}
+\subsection{Marker Types}
+\label{marker:types}
+Every marker is of a specific type. The type determines how the marker position is calculated and influences the available marker data formats. Some marker types also include helper markers for showing additional trace points. The marker type can be changed in the marker dock or in the context menu.
+\subsubsection{Manual}
+\screenshot{1.0}{MarkerManual.png}
+This is the default marker type. It can be positioned at any position by the user and will never move on its own.
+\subsubsection{Maximum}
+\screenshot{1.0}{MarkerMaximum.png}
+The marker snaps to the maximum amplitude of the assigned trace (within the limits of the "restrict" column).
+\subsubsection{Minimum}
+\screenshot{1.0}{MarkerMinimum.png}
+The marker snaps to the minimum amplitude of the assigned trace (within the limits of the "restrict" column).
+\subsubsection{Delta}
+\screenshot{1.0}{MarkerDelta}
+The delta marker can be positioned by the user. It will show the trace data relative to its assigned reference marker. The reference marker is selected by its marker number in the "type" column.
+\subsubsection{Peak Table}
+\screenshot{1.0}{MarkerPeakGraph.png}
+\screenshot{1.0}{MarkerPeakTable.png}
+The peak table lists all peaks in the signal above a specified signal level. It will create a helper marker for each peak. The peak threshold level can be adjusted in the "settings" column.
+\subsubsection{Lowpass}
+\screenshot{1.0}{MarkerLowpassGraph.png}
+\screenshot{1.0}{MarkerLowpassTable.png}
+The lowpass marker determines the cutoff frequency of a lowpass filter. At first the filter attenuation is calculated by finding the maximum signal amplitude. Afterward, the cutoff frequency is determined by finding the frequency at which the signal level has dropped by a specified amount. The threshold for this signal level drop can be adjusted in the "settings" column.
+
+This marker type is only available for through measurements.
+\subsubsection{Highpass}
+\screenshot{1.0}{MarkerHighpassGraph.png}
+\screenshot{1.0}{MarkerHighpassTable.png}
+The highpass marker determines the cutoff frequency of a highpass filter. At first the filter attenuation is calculated by finding the maximum signal amplitude. Afterward, the cutoff frequency is determined by finding the frequency at which the signal level has dropped by a specified amount. The threshold for this signal level drop can be adjusted in the "settings" column.
+
+This marker type is only available for through measurements.
+\subsubsection{Bandpass}
+\screenshot{1.0}{MarkerBandpassGraph.png}
+\screenshot{1.0}{MarkerBandpassTable.png}
+The bandpass marker determines the center frequency and bandwidth of a highpass filter. At first the filter attenuation is calculated by finding the maximum signal amplitude. Afterward, the cutoff frequency in each direction is determined by finding the frequency at which the signal level has dropped by a specified amount. The threshold for this signal level drop can be adjusted in the "settings" column. Finally, the center frequency is set to the middle of the higher and lower cutoff frequency.
+
+This marker type is only available for through measurements.
+\subsubsection{TOI/IP3}
+\screenshot{1.0}{MarkerTOIGraph.png}
+\screenshot{1.0}{MarkerTOITable.png}
+This marker type calculated the third-order intercept point. It is only available in spectrum analyzer mode. Initially a peak search is executed to find the two highest peaks. The frequencies of the intermodulation products are calculated from these peak frequencies and helper markers placed on each of these frequencies. Finally, the third-order intercept point as well as the tone and distortion signal amplitudes are calculated.
+\subsubsection{Phase noise}
+\screenshot{1.0}{MarkerPhasenoiseGraph.png}
+\screenshot{1.0}{MarkerPhasenoiseTable.png}
+This marker type calculates the phase noise of a signal. Is is only available in spectrum analyzer mode. Initially a peak search is executed to determine the signal frequency. Afterwards, a helper marker is placed at a specified offset. The offset can be configured in the "settings" column. By using the signal amplitudes from the peak and the offset marker, the phase noise is calculated.
+
+\subsubsection{P1dB}
+\screenshot{1.0}{MarkerP1dBGraph.png}
+\screenshot{1.0}{MarkerP1dBTable.png}
+This marker type is only available for through measurements on power sweeps. It calculates the 1dB compression point of amplifiers.
+
+\subsection{Marker Data}
+The trace data at the marker position can be displayed in the marker dock and on the graphs in various formats. The available formats depend on the marker type as well as the domain of the trace data. Only one of the available formats can be displayed in the marker dock at a time. On graphs, any amount of formats can be displayed at once. The shown formats can be selected in the context menu of the marker.
+
+
+\begin{center}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{L{3cm}|X|L{7cm}}
+    \toprule
+    \textbf{Trace domain} & \textbf{Marker type} & \textbf{Available data formats}\\
+     \hline
+      \multirow{3}{*}{Time}  	&    \multirow{3}{*}{\makecell{Manual\\Delta}} & dB\\ 
+    \cline{3-3}
+        	&   & Real/Imaginary\\ 
+    \cline{3-3}
+        	&  & Impedance (if step response available) \\ 
+    \cline{1-3}
+
+      \multirow{5}{*}{\makecell{Time (zero span)\\ in SA mode}}  &    \multirow{5}{*}{\makecell{Manual\\Delta\\Maximum\\Minimum\\Peak Table}} & dBm\\ 
+    \cline{3-3}
+        	&   & dBuV\\ 
+    \cline{3-3}
+        	&  & Noise \\ 
+	& & \\
+	& & \\
+    \cline{1-3}
+
+      \multirow{9}{*}{\makecell{Time (zero span)\\ in VNA mode}}  &    \multirow{9}{*}{\makecell{Manual\\Delta\\Maximum\\Minimum\\Peak Table}} & dB\\ 
+    \cline{3-3}
+        	&   & dB + angle\\ 
+    \cline{3-3}
+        	&  & Real/Imaginary \\ 
+    \cline{3-3}
+	& & \multirow{6}{*}{$\left.\begin{array}{l}
+$Impedance$\\
+$VSWR$\\
+$Series Resistance$\\
+$Capacitance$\\
+$Inductance$\\
+$Quality factor$\\
+                \end{array}\right\rbrace $\makecell{Only for reflection\\measurements}$$} \\
+	& &  \\
+	& & \\
+	& &  \\
+	& &  \\
+	& &   \\
+    \cline{1-3}
+
+      \multirow{10}{*}{\makecell{Frequency\\ in SA mode}}  &    \multirow{5}{*}{\makecell{Manual\\Delta\\Maximum\\Minimum\\Peak Table}} & dBm\\ 
+    \cline{3-3}
+        	&   & dBuV\\ 
+    \cline{3-3}
+        	&  & Noise \\ 
+	& & \\
+	& & \\
+    \cline{2-3}
+	& \multirow{2}{*}{Phase Noise} & Phase Noise\\
+   \cline{3-3}
+	& & dB\\ 
+    \cline{2-3}
+	& \multirow{3}{*}{TOI/IP3} & third-order intercept\\
+   \cline{3-3}
+	& & Average tone level\\ 
+   \cline{3-3}
+	& & Average modulation product level\\ 
+    \cline{1-3}
+
+
+      \multirow{13}{*}{\makecell{Frequency\\ in VNA mode}}  &    \multirow{9}{*}{\makecell{Manual\\Delta\\Maximum\\Minimum\\Peak Table}} & dB\\ 
+    \cline{3-3}
+        	&   & dB + angle\\ 
+    \cline{3-3}
+        	&  & Real/Imaginary \\ 
+    \cline{3-3}
+	& & \multirow{6}{*}{$\left.\begin{array}{l}
+$Impedance$\\
+$VSWR$\\
+$Series Resistance$\\
+$Capacitance$\\
+$Inductance$\\
+$Quality factor$\\
+                \end{array}\right\rbrace $\makecell{Only for reflection\\measurements}$$} \\
+	& &  \\
+	& & \\
+	& &  \\
+	& &  \\
+	& &   \\
+    \cline{2-3}
+  	& \multirow{2}{*}{Bandpass} & Center and bandwidth\\
+   \cline{3-3}
+	& & Insertion loss\\ 
+    \cline{2-3}
+  	& \multirow{2}{*}{\makecell{Lowpass\\Highpass}} & Cutoff frequency\\
+   \cline{3-3}
+	& & Insertion loss\\ 
+    \cline{2-3}
+   \cline{1-3}
+
+      \multirow{10}{*}{\makecell{Power}}  &    \multirow{10}{*}{\makecell{Manual\\Delta\\Maximum\\Minimum\\P1dB}} & 1dB compression point (only for P1dB type)\\ 
+    \cline{3-3}
+        	&   & dB \\ 
+    \cline{3-3}
+        	&   & dB + angle\\ 
+    \cline{3-3}
+        	&  & Real/Imaginary \\ 
+    \cline{3-3}
+	& & \multirow{6}{*}{$\left.\begin{array}{l}
+$Impedance$\\
+$VSWR$\\
+$Series Resistance$\\
+$Capacitance$\\
+$Inductance$\\
+$Quality factor$\\
+                \end{array}\right\rbrace $\makecell{Only for reflection\\measurements}$$} \\
+	& &  \\
+	& & \\
+	& &  \\
+	& &  \\
+	& &   \\
+    \hline
+
+      \bottomrule
+\end{tabularx}
+\end{threeparttable}
+\end{center}
+
+\subsection{Linking markers}
+\label{marker:linking}
+Normally, markers can be moved individually and are only connected to one trace. This creates a problem when reading out trace data from multiple traces at the same position. If the position is changed, all markers need to be moved manually to the new position. Linked markers provide a solution to this problem: All markers within a linked group always use the same position. If one marker is moved, the others move as well. The linked group of each marker is indicated in the marker dock (empty if the marker does not belong to any linked group.
+
+Only markers that are movable can be added to linked groups. If a marker type performs automatic positioning of the marker (e.g. the maximum marker type), it can not be added.
+
+\subsubsection{Creating a new linked group}
+Select multiple markers in the marker dock, right-click and select "link selected".
+\subsubsection{Adding a marker to an existing linked group}
+Open the markers context menu, chose "Add to linked group" and select the linked group the marker should be added to.
+\subsubsection{Removing a marker from a linked group}
+\begin{itemize}
+\item Open the markers context menu, chose "Remove from linked group"
+\item Select multiple linked markers in the marker dock, right-click and select "Break links" to remove all selected markers from their linked groups.
+\end{itemize}
 
 \section{Compound Device}
 The LibreVNA supports combining multiple hardware units to a "Compound Device". When used, the configured physical LibreVNAs are combined into a virtual device with more ports. When connected to such a device, additional measurement paramaters are available (e.g. measuring S23 in VNA mode or port 3 in spectrumanalyzer mode).
