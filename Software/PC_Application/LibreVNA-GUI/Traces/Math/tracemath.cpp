@@ -106,6 +106,37 @@ double TraceMath::getStepResponse(unsigned int index)
     }
 }
 
+double TraceMath::getInterpolatedStepResponse(double x)
+{
+    if(stepResponse.size() != data.size()) {
+        // make sure all the step response data is available
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
+    double ret = std::numeric_limits<double>::quiet_NaN();
+
+    if(data.size() == 0 || x < data.front().x || x > data.back().x) {
+        ret = std::numeric_limits<double>::quiet_NaN();
+    } else {
+        auto it = lower_bound(data.begin(), data.end(), x, [](const Data &lhs, const double x) -> bool {
+            return lhs.x < x;
+        });
+        if(it->x == x) {
+            ret = stepResponse[it - data.begin()];
+        } else {
+            // no exact match, needs to interpolate
+            unsigned int highIndex = it - data.begin();
+            unsigned int lowIndex = highIndex - 1;
+            auto high = *it;
+            it--;
+            auto low = *it;
+            double alpha = (x - low.x) / (high.x - low.x);
+            ret = stepResponse[lowIndex] * (1 - alpha) + stepResponse[highIndex] * alpha;
+        }
+    }
+    return ret;
+}
+
 TraceMath::Data TraceMath::getInterpolatedSample(double x)
 {
     Data ret;

@@ -214,7 +214,7 @@ void EyeDiagramDialog::updateThread(unsigned int width, unsigned int height)
         updating = false;
         return;
     }
-    if(datarate <= trace->getSample(0).x) {
+    if(datarate <= 0) {
         emit calculationStatus("Data rate too low");
         updating = false;
         return;
@@ -347,16 +347,27 @@ void EyeDiagramDialog::updateThread(unsigned int width, unsigned int height)
         }
     }
 
-    auto scale = timestep / (length / (samples - 1));
     unsigned long convolutedSize = length / timestep;
     if(convolutedSize > inVec.size()) {
         // impulse response is longer than what we display, truncate
         convolutedSize = inVec.size();
     }
     impulseVec.resize(convolutedSize);
+    /*
+     *  we can't use the impulse response directly because we most likely need samples inbetween
+     * the calculated values. Interpolation is available but if our sample spacing here is much
+     * wider than the impulse response data, we might miss peaks (or severely miscalculate their
+     * amplitude.
+     * Instead, the step response is interpolated and the impulse response determined by deriving
+     * it from the interpolated step response data. As the step response is the integrated imulse
+     * response data, we can't miss narrow peaks that way.
+     */
+    double lastStepResponse = 0.0;
     for(unsigned long i=0;i<convolutedSize;i++) {
         auto x = i*timestep;
-        impulseVec[i] = tdr->getInterpolatedSample(x).y.real() * scale;
+        auto step = tdr->getInterpolatedStepResponse(x);
+        impulseVec[i] = step - lastStepResponse;
+        lastStepResponse = step;
     }
 
     eyeTimeShift += (risetime + falltime) * 1.25 / 4;
