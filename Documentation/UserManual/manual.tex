@@ -266,7 +266,7 @@ Changing the default setup of the application can require a lot of configuration
 \item Graph setup and enabled traces
 \end{itemize}
 \begin{important}
-If any part of the setup references another file (e.i. a trace imported from a touchstone file), only the filename is saved. Opening a setup file after moving/deleting any of the referenced files will result in missing data. 
+If any part of the setup references another file (i.e. a trace imported from a touchstone file), only the filename is saved. Opening a setup file after moving/deleting any of the referenced files will result in missing data. 
 \end{important}
 
 \subsubsection{Device Menu}
@@ -381,7 +381,7 @@ The list shows all available traces, by default the four S parameters S11, S12, 
 \item \includesvg[height=8pt]{Screenshots/play}/\includesvg[height=8pt]{Screenshots/pause}: Play/pause. Only available when the trace is fed from live VNA data, not when it was created from a touchstone file. Pausing a trace freezes the current data, new measurements from the \vna{} will not update the trace.
 \item \includesvg[height=8pt]{Screenshots/math_enabled}/\includesvg[height=10pt]{Screenshots/math_disabled}: Enable/disable math. Only available if at least one math operation is present.
 \end{itemize}
-
+\noindent
 Creating a new trace or double clicking on an existing trace opens the "edit trace" window:
 \screenshot{1.0}{TraceEdit.png}
 On the left side, additional trace parameters can be changed, while the right side of the window handles math operations that will be applied to the trace data. The available trace parameters are:
@@ -414,7 +414,7 @@ When saving a setup with traces created from files, the actual trace data is not
 \paragraph{From Math}
 \label{trace:fromMath}
 \begin{information}
-This section is about creating a trace based of data from other traces and combining them with math operations. If you are looking to change or transform the trace data itself without using any data from other traces, see section~\ref{trace:math}.
+This section is about creating a trace based on data from other traces and combining them with math operations. If you are looking to change or transform the trace data itself without using any data from other traces, see section~\ref{trace:math}.
 \end{information}
 \screenshot{0.5}{FromMath.png}
 The trace is created from other traces and user-defined math operations. To create a trace from math, perform the following steps:
@@ -440,7 +440,6 @@ The "math operations" section on the right contains the additional calculations 
 \item \textbf{Description:} Short description of the configured math operation. Double clicking will open an (operation dependent) editing dialog providing more details.
 \item \textbf{Output Domain:} Domain (Time or Frequency) of the data after this math operation. Certain math operations can only be applied to time domain data, others only to frequency domain data. The output domain at the last line decides in which domain the trace is displayed on the graphs.
 \end{itemize}
-
 Populated with several math operations, the window could look like this:
 \screenshot{1.0}{TraceMath.png}
 In this example, time domain gating is performed:
@@ -476,9 +475,9 @@ Adjustable settings:
 \begin{itemize}
 \item \textbf{Lowpass:} Input samples should start at near DC, i.e. the start frequency must be small compared to the span. A step response can be calculated as the DC point can be extrapolated.
 \item \textbf{Bandpass:} Input samples may use any frequency and span. Only an impulse response can be calculated as the DC point is unknown.
+\end{itemize}
 \item \textbf{Compute Step Response:} Enable calculation of step response as well (only available in lowpass mode)
 \item \textbf{DC point:} Chose between extrapolating the DC point from frequency data or specifying it manually (only available in lowpass mode)
-\end{itemize}
 \item \textbf{Window:} A window is applied before performing the transformation. Available windows are:
 \begin{itemize}
 \item Rectangular
@@ -710,7 +709,7 @@ Each measurement has a few settings, depending on the measurement type:
 \paragraph{Taking measurements}
 To take a measurement, select the corresponding measurement and press \keys{Measure}. Multiple measurements may be taken at the same time if they use different ports.
 \begin{information}
-All measurements required by a calibration type should have the same start and stop frequencies as well as number of points. Do not change the span inbetween measurements.
+All measurements required by a calibration type should have the same start and stop frequencies as well as number of points. Do not change the span between measurements.
 \end{information}
 
 \subsubsection{Enabling a calibration}
@@ -764,7 +763,7 @@ Steps required to perform the electronic calibration:
 \item Select the correct LibreCAL device and the coefficients:
 \begin{itemize}
 \item \textbf{Device:} Serialnumber of the LibreCAL. Usually, only one should be connected and the serialnumber will be automatically selected when the dialog is first opened
-\item \textbf{Coefficients:} Select the coefficient set to be used. The LibreCAL can store multiple sets of coefficients. Please the the manual\footnote{\url{https://github.com/jankae/LibreCAL/blob/main/Documentation/manual.pdf}} of the LibreCAL for detailed information on coefficient sets.
+\item \textbf{Coefficients:} Select the coefficient set to be used. The LibreCAL can store multiple sets of coefficients. Please the manual\footnote{\url{https://github.com/jankae/LibreCAL/blob/main/Documentation/manual.pdf}} of the LibreCAL for detailed information on coefficient sets.
 \end{itemize}
 \item Check and adjust the port assignments. Ports between the \vna{} and LibreCAL can be connected in any order. Match the ports in the dialog to your physical setup.
 \item Press the "Start" button. This will perform the following steps:
@@ -1445,7 +1444,7 @@ If the Receiver Calibration is already done, it is also possible to infer the So
 Select \menu[,]{Device,Receiver Calibration}. The Receiver Calibration works almost identically to the Source Calibration. The only difference is in step 3:
 \begin{enumerate}
 \setcounter{enumi}{2}
-\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table and apply a signal with known level at the selected frequency and port. The signal level should be in the range of \SI{-40}{\dBm} to \SI{-10}{\dBm}. Higher signal levels might already compress in the receiver while lower levels unnecessary increase calibration errors due to noise. The \vna{} tunes its receiver to the selected frequency and measures the amplitude. Apply the signal for at least \SI{2}{\second} and enter its actual amplitude into the selected cell while the signal is still active.
+\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table and apply a signal with known level at the selected frequency and port. The signal level should be in the range of \SI{-40}{\dBm} to \SI{-10}{\dBm}. Higher signal levels might already compress in the receiver while lower levels unnecessarily increase calibration errors due to noise. The \vna{} tunes its receiver to the selected frequency and measures the amplitude. Apply the signal for at least \SI{2}{\second} and enter its actual amplitude into the selected cell while the signal is still active.
 \end{enumerate}
 \section{Troubleshooting}
 \label{troubleshooting}
