@@ -58,7 +58,7 @@ private:
 
 class SmithChartTypeDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT;
+    Q_OBJECT
     QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;
@@ -66,7 +66,7 @@ class SmithChartTypeDelegate : public QStyledItemDelegate
 
 class SmithChartParamDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT;
+    Q_OBJECT
     QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const override;
     QWidget *createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
     void setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const override;

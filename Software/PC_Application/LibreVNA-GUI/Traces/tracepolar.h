@@ -24,7 +24,7 @@ public:
     void wheelEvent(QWheelEvent *event) override;
 
 public slots:
-    virtual void axisSetupDialog() {};
+    virtual void axisSetupDialog() {}
 
 protected:
     static constexpr double polarCoordMax = 4096;
@@ -41,7 +41,7 @@ protected:
     virtual bool markerVisible(double x) override;
 
     virtual void updateContextMenu() override;
-    virtual bool supported(Trace *t) override {Q_UNUSED(t) return false;};
+    virtual bool supported(Trace *t) override {Q_UNUSED(t) return false;}
 
     // given two points and a circle, the two points are adjusted in such a way that the line they describe
     // is constrained within the circle. Returns true if there is a remaining line segment in the circle, false

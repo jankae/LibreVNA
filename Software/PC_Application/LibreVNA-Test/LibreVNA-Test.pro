@@ -40,7 +40,6 @@ SOURCES +=  \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.cpp \
     ../LibreVNA-GUI/SpectrumAnalyzer/tracewidgetsa.cpp \
     ../LibreVNA-GUI/Tools/eseries.cpp \
-    ../LibreVNA-GUI/Tools/eyediagramdialog.cpp \
     ../LibreVNA-GUI/Tools/impedancematchdialog.cpp \
     ../LibreVNA-GUI/Tools/parameters.cpp \
     ../LibreVNA-GUI/Traces/Marker/marker.cpp \
@@ -91,6 +90,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Traces/Math/timegate.cpp \
     ../LibreVNA-GUI/Traces/Math/tracemath.cpp \
     ../LibreVNA-GUI/Traces/Math/windowfunction.cpp \
+    ../LibreVNA-GUI/Traces/eyediagramplot.cpp \
     ../LibreVNA-GUI/Traces/fftcomplex.cpp \
     ../LibreVNA-GUI/Traces/sparamtraceselector.cpp \
     ../LibreVNA-GUI/Traces/trace.cpp \
@@ -203,7 +203,6 @@ HEADERS += \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.h \
     ../LibreVNA-GUI/SpectrumAnalyzer/tracewidgetsa.h \
     ../LibreVNA-GUI/Tools/eseries.h \
-    ../LibreVNA-GUI/Tools/eyediagramdialog.h \
     ../LibreVNA-GUI/Tools/impedancematchdialog.h \
     ../LibreVNA-GUI/Tools/parameters.h \
     ../LibreVNA-GUI/Traces/Marker/marker.h \
@@ -265,6 +264,7 @@ HEADERS += \
     ../LibreVNA-GUI/Traces/Math/timegate.h \
     ../LibreVNA-GUI/Traces/Math/tracemath.h \
     ../LibreVNA-GUI/Traces/Math/windowfunction.h \
+    ../LibreVNA-GUI/Traces/eyediagramplot.h \
     ../LibreVNA-GUI/Traces/fftcomplex.h \
     ../LibreVNA-GUI/Traces/sparamtraceselector.h \
     ../LibreVNA-GUI/Traces/trace.h \
@@ -293,7 +293,6 @@ HEADERS += \
     ../LibreVNA-GUI/VNA/Deembedding/matchingnetwork.h \
     ../LibreVNA-GUI/VNA/Deembedding/portextension.h \
     ../LibreVNA-GUI/VNA/Deembedding/twothru.h \
-    ../LibreVNA-GUI/VNA/portextensiondialog.h \
     ../LibreVNA-GUI/VNA/tracewidgetvna.h \
     ../LibreVNA-GUI/VNA/vna.h \
     ../LibreVNA-GUI/about.h \
@@ -343,7 +342,6 @@ FORMS += \
     ../LibreVNA-GUI/Device/firmwareupdatedialog.ui \
     ../LibreVNA-GUI/Device/manualcontroldialog.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \
-    ../LibreVNA-GUI/Tools/eyediagramdialog.ui \
     ../LibreVNA-GUI/Tools/impedancematchdialog.ui \
     ../LibreVNA-GUI/Traces/Marker/markerwidget.ui \
     ../LibreVNA-GUI/Traces/Math/dftdialog.ui \

@@ -5,6 +5,7 @@
 #include "Traces/tracesmithchart.h"
 #include "Traces/tracewaterfall.h"
 #include "Traces/tracepolarchart.h"
+#include "Traces/eyediagramplot.h"
 
 #include <QDebug>
 
@@ -76,6 +77,9 @@ nlohmann::json TileWidget::toJSON()
         case TracePlot::Type::PolarChart:
             plotname = "PolarChart";
             break;
+        case TracePlot::Type::EyeDiagram:
+            plotname = "EyeDiagram";
+            break;
         }
         j["plot"] = plotname;
         j["plotsettings"] = content->toJSON();
@@ -108,6 +112,8 @@ void TileWidget::fromJSON(nlohmann::json j)
             content = new TraceWaterfall(model);
         } else if (plotname == "PolarChart"){
             content = new TracePolarChart(model);
+        } else if (plotname == "EyeDiagram"){
+            content = new EyeDiagramPlot(model);
         }
         if(content) {
             setContent(content);
@@ -336,4 +342,11 @@ void TileWidget::on_bWaterfall_clicked()
 void TileWidget::on_bPolarchart_clicked()
 {
     setContent(new TracePolarChart(model));
+}
+
+void TileWidget::on_eyeDiagram_clicked()
+{
+    auto plot = new EyeDiagramPlot(model);
+    setContent(plot);
+    plot->axisSetupDialog();
 }

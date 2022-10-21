@@ -33,7 +33,6 @@ HEADERS += \
     SpectrumAnalyzer/spectrumanalyzer.h \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
-    Tools/eyediagramdialog.h \
     Tools/impedancematchdialog.h \
     Tools/parameters.h \
     Traces/Marker/marker.h \
@@ -95,6 +94,7 @@ HEADERS += \
     Traces/Math/timegate.h \
     Traces/Math/tracemath.h \
     Traces/Math/windowfunction.h \
+    Traces/eyediagramplot.h \
     Traces/fftcomplex.h \
     Traces/sparamtraceselector.h \
     Traces/trace.h \
@@ -177,7 +177,6 @@ SOURCES += \
     SpectrumAnalyzer/spectrumanalyzer.cpp \
     SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
-    Tools/eyediagramdialog.cpp \
     Tools/impedancematchdialog.cpp \
     Tools/parameters.cpp \
     Traces/Marker/marker.cpp \
@@ -228,6 +227,7 @@ SOURCES += \
     Traces/Math/timegate.cpp \
     Traces/Math/tracemath.cpp \
     Traces/Math/windowfunction.cpp \
+    Traces/eyediagramplot.cpp \
     Traces/fftcomplex.cpp \
     Traces/sparamtraceselector.cpp \
     Traces/trace.cpp \
@@ -305,7 +305,6 @@ FORMS += \
     Device/firmwareupdatedialog.ui \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
-    Tools/eyediagramdialog.ui \
     Tools/impedancematchdialog.ui \
     Traces/Marker/markerwidget.ui \
     Traces/Math/dftdialog.ui \
@@ -321,6 +320,7 @@ FORMS += \
     Traces/Math/timegatedialog.ui \
     Traces/Math/timegateexplanationwidget.ui \
     Traces/XYPlotConstantLineEditDialog.ui \
+    Traces/eyediagrameditdialog.ui \
     Traces/smithchartdialog.ui \
     Traces/polarchartdialog.ui \
     Traces/tracecsvexport.ui \

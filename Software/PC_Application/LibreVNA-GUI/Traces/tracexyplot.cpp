@@ -1,4 +1,4 @@
-#include "tracexyplot.h"
+﻿#include "tracexyplot.h"
 
 #include "trace.h"
 #include "CustomWidgets/informationbox.h"
@@ -94,6 +94,64 @@ void TraceXYPlot::replot()
         updateAxisTicks();
     }
     TracePlot::replot();
+}
+
+void TraceXYPlot::move(const QPoint &vect)
+{
+    if(!xAxis.getLog()) {
+        // can only move axis in linear mode
+        // calculate amount of movement
+        double distance = xAxis.inverseTransform(vect.x(), 0, plotAreaWidth) - xAxis.getRangeMin();
+        xAxis.set(xAxis.getType(), false, false, xAxis.getRangeMin() - distance, xAxis.getRangeMax() - distance, xAxis.getRangeDiv());
+        xAxisMode = XAxisMode::Manual;
+    }
+    for(int i=0;i<2;i++) {
+        if(!yAxis[i].getLog()) {
+            // can only move axis in linear mode
+            // calculate amount of movement
+            double distance = yAxis[i].inverseTransform(vect.y(), 0, plotAreaTop - plotAreaBottom) - yAxis[i].getRangeMin();
+            yAxis[i].set(yAxis[i].getType(), false, false, yAxis[i].getRangeMin() - distance, yAxis[i].getRangeMax() - distance, yAxis[i].getRangeDiv());
+        }
+    }
+    replot();
+}
+
+void TraceXYPlot::zoom(const QPoint &center, double factor, bool horizontally, bool vertically)
+{
+    if(horizontally && !xAxis.getLog()) {
+        // can only zoom axis in linear mode
+        // calculate center point
+        double cp = xAxis.inverseTransform(center.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth);
+        double min = ((xAxis.getRangeMin() - cp) * factor) + cp;
+        double max = ((xAxis.getRangeMax() - cp) * factor) + cp;
+        xAxis.set(xAxis.getType(), false, false, min, max, xAxis.getRangeDiv() * factor);
+        xAxisMode = XAxisMode::Manual;
+    }
+    for(int i=0;i<2;i++) {
+        if(vertically && yAxis[i].getType() != YAxis::Type::Disabled && !yAxis[i].getLog()) {
+            // can only move axis in linear mode
+            // calculate center point
+            double cp = yAxis[i].inverseTransform(center.y(), plotAreaBottom, plotAreaTop);
+            double min = ((yAxis[i].getRangeMin() - cp) * factor) + cp;
+            double max = ((yAxis[i].getRangeMax() - cp) * factor) + cp;
+            yAxis[i].set(yAxis[i].getType(), false, false, min, max, yAxis[i].getRangeDiv() * factor);
+        }
+    }
+    replot();
+}
+
+void TraceXYPlot::setAuto(bool horizontally, bool vertically)
+{
+    if(horizontally) {
+        xAxisMode = XAxisMode::FitTraces;
+        xAxis.set(xAxis.getType(), xAxis.getLog(), true, xAxis.getRangeMin(), xAxis.getRangeMax(), xAxis.getRangeDiv());
+    }
+    for(int i=0;i<2;i++) {
+        if(vertically && yAxis[i].getType() != YAxis::Type::Disabled) {
+            yAxis[i].set(yAxis[i].getType(), yAxis[i].getLog(), true, yAxis[i].getRangeMin(), yAxis[i].getRangeMax(), yAxis[i].getRangeDiv());
+        }
+    }
+    replot();
 }
 
 nlohmann::json TraceXYPlot::toJSON()
@@ -323,6 +381,12 @@ void TraceXYPlot::updateContextMenu()
     }
 
     finishContextMenu();
+}
+
+bool TraceXYPlot::positionWithinGraphArea(const QPoint &p)
+{
+    return p.x() >= plotAreaLeft && p.x() <= plotAreaLeft + plotAreaWidth
+            && p.y() >= plotAreaTop && p.y() <= plotAreaBottom;
 }
 
 bool TraceXYPlot::dropSupported(Trace *t)
@@ -1057,7 +1121,7 @@ void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 QString TraceXYPlot::mouseText(QPoint pos)
 {
     QString ret;
-    if(QRect(plotAreaLeft, 0, plotAreaWidth + 1, plotAreaBottom).contains(pos)) {
+    if(positionWithinGraphArea(pos)) {
         // cursor within plot area
         QPointF coords[2];
         coords[0] = pixelToPlotValue(pos, 0);

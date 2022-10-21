@@ -121,7 +121,7 @@ double TraceMath::getInterpolatedStepResponse(double x)
         auto it = lower_bound(data.begin(), data.end(), x, [](const Data &lhs, const double x) -> bool {
             return lhs.x < x;
         });
-        if(it->x == x) {
+        if(it->x == x || it == data.begin()) {
             ret = stepResponse[it - data.begin()];
         } else {
             // no exact match, needs to interpolate

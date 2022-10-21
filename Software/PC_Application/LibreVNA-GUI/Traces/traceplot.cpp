@@ -11,6 +11,7 @@
 #include <QPainterPath>
 #include <QMimeData>
 #include <QDebug>
+#include <QApplication>
 
 std::set<TracePlot*> TracePlot::plots;
 
@@ -20,6 +21,7 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
     : QWidget(parent),
       model(model),
       selectedMarker(nullptr),
+      movingGraph(false),
       traceRemovalPending(false),
       dropPending(false),
       dropTrace(nullptr),
@@ -326,15 +328,29 @@ void TracePlot::mousePressEvent(QMouseEvent *event)
 {
     if(event->buttons() == Qt::LeftButton) {
         selectedMarker = markerAtPosition(event->pos(), true);
+        if(!selectedMarker && positionWithinGraphArea(event->pos())) {
+            // no marker at the position, enter trace moving mode
+            movingGraph = true;
+            lastMousePoint = event->pos();
+            cursorLabel->hide();
+        }
     } else {
         selectedMarker = nullptr;
     }
+    if(event->button() == Qt::MiddleButton) {
+        bool horizontally = !(QApplication::keyboardModifiers() & Qt::ShiftModifier);
+        bool vertically = !(QApplication::keyboardModifiers() & Qt::ControlModifier);
+        setAuto(horizontally, vertically);
+    }
+    event->accept();
 }
 
 void TracePlot::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)
     selectedMarker = nullptr;
+    movingGraph = false;
+    event->accept();
 }
 
 void TracePlot::mouseMoveEvent(QMouseEvent *event)
@@ -344,6 +360,9 @@ void TracePlot::mouseMoveEvent(QMouseEvent *event)
         auto trace = selectedMarker->getTrace();
         selectedMarker->setPosition(nearestTracePoint(trace, clickPoint));
         cursorLabel->hide();
+    } else if(movingGraph) {
+        move(event->pos() - lastMousePoint);
+        lastMousePoint = event->pos();
     } else {
         auto text = mouseText(clickPoint);
         if(!text.isEmpty()) {
@@ -358,6 +377,7 @@ void TracePlot::mouseMoveEvent(QMouseEvent *event)
             cursorLabel->hide();
         }
     }
+    event->accept();
 }
 
 void TracePlot::leaveEvent(QEvent *event)
@@ -365,6 +385,19 @@ void TracePlot::leaveEvent(QEvent *event)
     Q_UNUSED(event);
     cursorLabel->hide();
     selectedMarker = nullptr;
+    movingGraph = false;
+    event->accept();
+}
+
+void TracePlot::wheelEvent(QWheelEvent *event)
+{
+    auto &pref = Preferences::getInstance();
+    if(positionWithinGraphArea(event->pos())) {
+        bool horizontally = !(QApplication::keyboardModifiers() & Qt::ShiftModifier);
+        bool vertically = !(QApplication::keyboardModifiers() & Qt::ControlModifier);
+        double factor = pow((1.0-pref.Graphs.zoomFactor), (double) event->angleDelta().y() / 120.0);
+        zoom(event->pos(), factor, horizontally, vertically);
+    }
 }
 
 Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)

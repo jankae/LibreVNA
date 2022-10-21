@@ -74,6 +74,10 @@ public:
     void updateSpan(double min, double max) override;
     void replot() override;
 
+    virtual void move(const QPoint &vect) override;
+    virtual void zoom(const QPoint &center, double factor, bool horizontally, bool vertically) override;
+    virtual void setAuto(bool horizontally, bool vertically) override;
+
     virtual Type getType() override { return Type::XYPlot;}
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
@@ -88,6 +92,7 @@ public slots:
 protected:
     virtual bool configureForTrace(Trace *t) override;
     virtual void updateContextMenu() override;
+    virtual bool positionWithinGraphArea(const QPoint &p) override;
     virtual bool dropSupported(Trace *t) override;
     virtual void draw(QPainter &p) override;
 

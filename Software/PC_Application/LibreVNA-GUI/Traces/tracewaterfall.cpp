@@ -54,7 +54,6 @@ void TraceWaterfall::enableTrace(Trace *t, bool enabled)
         }
         trace = nullptr;
     }
-
 }
 
 void TraceWaterfall::replot()

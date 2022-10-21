@@ -21,6 +21,7 @@ public:
         XYPlot,
         Waterfall,
         PolarChart,
+        EyeDiagram,
     };
 
     TracePlot(TraceModel &model, QWidget *parent = nullptr);
@@ -60,6 +61,9 @@ protected:
     virtual void updateContextMenu(){}
     // adds common entries at bottom of context menu. Should be called at the end of derived udpateContextMenu functions
     void finishContextMenu();
+    virtual void move(const QPoint &vect) { Q_UNUSED(vect) }
+    virtual void zoom(const QPoint &center, double factor, bool horizontally, bool vertically) {Q_UNUSED(center)Q_UNUSED(factor)Q_UNUSED(horizontally)Q_UNUSED(vertically)}
+    virtual void setAuto(bool horizontally, bool vertically) {Q_UNUSED(horizontally)Q_UNUSED(vertically)}
     virtual void replot(){update();}
     virtual void draw(QPainter& p) = 0;
     virtual bool supported(Trace *t) = 0;
@@ -77,8 +81,10 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void leaveEvent(QEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
 
     Marker *markerAtPosition(QPoint p, bool onlyMovable = false);
+    virtual bool positionWithinGraphArea(const QPoint &p) {Q_UNUSED(p) return false;}
 
     void createMarkerAtPosition(QPoint p);
 
@@ -106,6 +112,8 @@ protected:
     double sweep_fmin, sweep_fmax;
     TraceModel &model;
     Marker *selectedMarker;
+    bool movingGraph;
+    QPoint lastMousePoint;
     TileWidget *parentTile;
 
     // graph settings have been changed, check and possibly remove incompatible traces before next paint event

@@ -12,7 +12,6 @@
 #include "CustomWidgets/siunitedit.h"
 #include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
-#include "Tools/eyediagramdialog.h"
 #include "ui_main.h"
 #include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
@@ -183,8 +182,6 @@ VNA::VNA(AppWindow *window, QString name)
     actions.insert(toolsMenu->menuAction());
     auto impedanceMatching = toolsMenu->addAction("Impedance Matching");
     connect(impedanceMatching, &QAction::triggered, this, &VNA::StartImpedanceMatching);
-    auto eyeDiagram = toolsMenu->addAction("Eye Diagram");
-    connect(eyeDiagram, &QAction::triggered, this, &VNA::StartEyeDiagram);
 
     defaultCalMenu = new QMenu("Default Calibration", window);
     assignDefaultCal = defaultCalMenu->addAction("Assign...");
@@ -954,15 +951,6 @@ void VNA::StartImpedanceMatching()
         dialog->show();
     }
 }
-
-void VNA::StartEyeDiagram()
-{
-    auto dialog = new EyeDiagramDialog(traceModel);
-    if(AppWindow::showGUI()) {
-        dialog->show();
-    }
-}
-
 
 void VNA::SetSweepType(SweepType sw)
 {
