@@ -321,8 +321,7 @@ void TDRThread::run()
 
         Fft::transform(frequencyDomain, true);
 
-        tdr.data.clear();
-        tdr.data.resize(fft_bins);
+        tdr.data.resize(fft_bins, TraceMath::Data());
 
         for(unsigned int i = 0;i<fft_bins;i++) {
             tdr.data[i].x = fs * i;

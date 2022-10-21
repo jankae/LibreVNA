@@ -91,6 +91,7 @@ private:
     bool linearEdge;
     unsigned int patternbits;
     unsigned int cycles;
+    int traceBlurring;
 
     int plotAreaLeft, plotAreaWidth, plotAreaBottom, plotAreaTop;
 

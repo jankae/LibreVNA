@@ -34,7 +34,8 @@ EyeDiagramPlot::EyeDiagramPlot(TraceModel &model, QWidget *parent)
       jitter(0.0000000001),
       linearEdge(true),
       patternbits(9),
-      cycles(200)
+      cycles(200),
+      traceBlurring(2)
 {
     plotAreaTop = 0;
     plotAreaLeft = 0;
@@ -179,6 +180,7 @@ void EyeDiagramPlot::fromJSON(nlohmann::json j)
     patternbits = j.value("patternBits", patternbits);
     cycles = j.value("cycles", cycles);
     xSamples = j.value("xSamples", xSamples);
+    traceBlurring = j.value("traceBlurring", traceBlurring);
 
     for(unsigned int hash : j["traces"]) {
         // attempt to find the traces with this hash
@@ -231,6 +233,7 @@ nlohmann::json EyeDiagramPlot::toJSON()
     j["patternBits"] = patternbits;
     j["cycles"] = cycles;
     j["xSamples"] = xSamples;
+    j["traceBlurring"] = traceBlurring;
     return j;
 }
 
@@ -308,6 +311,7 @@ void EyeDiagramPlot::axisSetupDialog()
 
     ui->displayedCycles->setValue(cycles);
     ui->pointsPerCycle->setValue(xSamples);
+    ui->traceBlurring->setValue(traceBlurring);
 
     connect(ui->Xauto, &QCheckBox::toggled, [=](bool checked) {
         ui->Xmin->setEnabled(!checked);
@@ -345,6 +349,7 @@ void EyeDiagramPlot::axisSetupDialog()
 
         cycles = ui->displayedCycles->value();
         xSamples = ui->pointsPerCycle->value();
+        traceBlurring = ui->traceBlurring->value();
 
         xAxis.set(xAxis.getType(), false, ui->Xauto->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
         yAxis.set(yAxis.getType(), false, ui->Yauto->isChecked(), ui->Ymin->value(), ui->Ymax->value(), ui->Ydivs->value());
@@ -547,6 +552,9 @@ void EyeDiagramPlot::draw(QPainter &p)
 
     if(displayData->size() >= 2) {
         std::lock_guard<std::mutex> guard(bufferSwitchMutex);
+        if((*displayData)[0].y[0] == 0.0 && (*displayData)[0].y[1] == 0.0) {
+            qDebug() << "detected null data, displaydata:" << displayData;
+        }
         unsigned int pxWidth = plotAreaWidth;
         unsigned int pxHeight = plotAreaBottom - plotAreaTop;
         std::vector<std::vector<unsigned int>> bitmap;
@@ -555,7 +563,7 @@ void EyeDiagramPlot::draw(QPainter &p)
             y.resize(pxHeight, 0);
         }
         unsigned int highestIntensity = 0;
-        unsigned int numTraces = (*displayData)[0].y.size();
+        unsigned int numTraces = (*displayData)[displayData->size()-1].y.size();
 
         auto addLine = [&](int x0, int y0, int x1, int y1, bool skipFirst = true) {
             bool first = true;
@@ -564,13 +572,19 @@ void EyeDiagramPlot::draw(QPainter &p)
                     first = false;
                     return;
                 }
-                if(x < 0 || x >= (int) pxWidth || y < 0 || y >= (int) pxHeight) {
-                    return;
-                }
-                auto &bin = bitmap[x][y];
-                bin++;
-                if(bin > highestIntensity) {
-                    highestIntensity = bin;
+                for(int i=-traceBlurring;i<=traceBlurring;i++) {
+                    for(int j=-traceBlurring;j<=traceBlurring;j++) {
+                        if(i*i+j*j <= traceBlurring*traceBlurring) {
+                            if(x+i < 0 || x+i >= (int) pxWidth || y+j < 0 || y+j >= (int) pxHeight) {
+                                return;
+                            }
+                            auto &bin = bitmap[x+i][y+j];
+                            bin++;
+                            if(bin > highestIntensity) {
+                                highestIntensity = bin;
+                            }
+                        }
+                    }
                 }
             };
 
@@ -588,7 +602,7 @@ void EyeDiagramPlot::draw(QPainter &p)
         };
 
         // Assemble the bitmap
-        for(unsigned int i=1;i<xSamples;i++) {
+        for(unsigned int i=1;i<displayData->size();i++) {
             int x0 = xAxis.transform((*displayData)[i-1].x, 0, pxWidth);
             int x1 = xAxis.transform((*displayData)[i].x, 0, pxWidth);
             if((x0 < 0 && x1 < 0) || (x0 >= (int) pxWidth && x1 >= (int) pxWidth)) {
@@ -602,19 +616,46 @@ void EyeDiagramPlot::draw(QPainter &p)
             }
         }
 
+        /*
+         * Only a small amount of pixels will have a lot of traces of top of each other.
+         * This would result in using mostly the colder colors in the intensity grading.
+         *
+         * Generate a histogram of pixel usage and create an adjustment curve to evenly
+         * distribute all intensity colors
+         */
+        unsigned int hist[highestIntensity+1];
+        memset(hist, 0, sizeof(hist));
+        unsigned long total = 0;
+        for(unsigned int i=1;i<pxWidth;i++) {
+            for(unsigned int j=0;j<pxHeight;j++) {
+                hist[bitmap[i][j]]++;
+                total++;
+            }
+        }
+        unsigned int sum = 0;
+        double correctedCurve[highestIntensity+1];
+        correctedCurve[0] = 0.0;
+        total -= hist[0];
+        for(unsigned int i=1;i<=highestIntensity;i++) {
+            sum += hist[i];
+            correctedCurve[i] = pow((double) sum / total, 2); // not totally even distribution, x^2 seems to look better
+        }
+
         // draw the bitmap
         pen = QPen();
         pen.setCosmetic(true);
         for(unsigned int i=1;i<pxWidth;i++) {
             for(unsigned int j=0;j<pxHeight;j++) {
                 if(bitmap[i][j] > 0) {
-                    double value = (double) bitmap[i][j] / highestIntensity;
+                    double value = correctedCurve[bitmap[i][j]];
                     pen.setColor(Util::getIntensityGradeColor(value));
                     p.setPen(pen);
                     p.drawPoint(plotAreaLeft + i + 1, plotAreaTop + j + 1);
                 }
             }
         }
+    } else {
+        qDebug() << "Empty eye data, displaydata:" << displayData;
     }
     if(dropPending) {
         p.setOpacity(0.5);
@@ -627,7 +668,7 @@ void EyeDiagramPlot::draw(QPainter &p)
         p.setFont(font);
         p.setOpacity(1.0);
         p.setPen(Qt::white);
-        auto text = "Drop here to add\n" + dropTrace->name() + "\nto waterfall plot";
+        auto text = "Drop here to add\n" + dropTrace->name() + "\nto eye diagram";
         p.drawText(plotRect, Qt::AlignCenter, text);
     }
 }
@@ -720,6 +761,7 @@ void EyeDiagramPlot::updateThread(unsigned int xSamples)
         std::vector<std::complex<double>> inVec(xSamples * (cycles + 1), 0.0); // needs to calculate one more cycle than required for the display (settling)
 
         // resize working buffer
+        qDebug() << "Clearing old eye data, calcData:" << calcData;
         calcData->clear();
         calcData->resize(xSamples);
         for(auto& s : *calcData) {
@@ -879,12 +921,12 @@ void EyeDiagramPlot::updateThread(unsigned int xSamples)
 
         // fill data from outVec
         for(unsigned int i=0;i<xSamples;i++) {
-            (*calcData)[i].x = i * timestep;
+            (*calcData).at(i).x = i * timestep;
         }
         for(unsigned int i=xSamples;i<inVec.size();i++) {
             unsigned int x = i % xSamples;
-            unsigned int y = i / xSamples;
-            (*calcData)[x].y[y] = outVec[i].real();
+            unsigned int y = i / xSamples - 1;
+            (*calcData).at(x).y.at(y) = outVec[i].real();
         }
 
         qDebug() << "Eye calculation: Convolution done";
@@ -892,9 +934,14 @@ void EyeDiagramPlot::updateThread(unsigned int xSamples)
         {
             std::lock_guard<std::mutex> guard(bufferSwitchMutex);
             // switch buffers
+            qDebug() << "Switching diplay buffers, calcData:" << calcData;
             auto buf = displayData;
             displayData = calcData;
             calcData = buf;
+            if((*displayData)[0].y[0] == 0.0 && (*displayData)[0].y[1] == 0.0) {
+                qDebug() << "detected null after eye calculation";
+            }
+            qDebug() << "Buffer switch complete, displayData:" << displayData;
         }
 
         setStatus("Eye calculation complete");
