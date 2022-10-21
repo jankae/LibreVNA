@@ -1532,6 +1532,7 @@ QWidget *Marker::getRestrictEditor()
             max->setValueQuiet(maxPosition);
         }
         constrainPosition();
+        update();
     });
     connect(max, &SIUnitEdit::valueChanged, this, [=](){
         maxPosition = max->value();
@@ -1540,6 +1541,7 @@ QWidget *Marker::getRestrictEditor()
             min->setValueQuiet(minPosition);
         }
         constrainPosition();
+        update();
     });
 
     w->setLayout(layout);

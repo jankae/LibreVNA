@@ -357,6 +357,7 @@ FORMS += \
     ../LibreVNA-GUI/Traces/Math/timegatedialog.ui \
     ../LibreVNA-GUI/Traces/Math/timegateexplanationwidget.ui \
     ../LibreVNA-GUI/Traces/XYPlotConstantLineEditDialog.ui \
+    ../LibreVNA-GUI/Traces/eyediagrameditdialog.ui \
     ../LibreVNA-GUI/Traces/polarchartdialog.ui \
     ../LibreVNA-GUI/Traces/smithchartdialog.ui \
     ../LibreVNA-GUI/Traces/tracecsvexport.ui \
