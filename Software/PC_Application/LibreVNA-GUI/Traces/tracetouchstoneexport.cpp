@@ -12,6 +12,10 @@ TraceTouchstoneExport::TraceTouchstoneExport(TraceModel &model, QWidget *parent)
     ui(new Ui::TraceTouchstoneExport),
     model(model),
     ports(0),
+    points(0),
+    lowerFreq(0),
+    upperFreq(0),
+    referenceImpedance(50.0),
     freqsSet(false)
 {
     ui->setupUi(this);

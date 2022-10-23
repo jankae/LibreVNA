@@ -51,6 +51,10 @@ EyeDiagramPlot::EyeDiagramPlot(TraceModel &model, QWidget *parent)
     yAxis.set(YAxis::Type::Real, false, true, -1, 1, 1);
     initializeTraceInfo();
 
+    destructing = false;
+    thread = new EyeThread(*this);
+    thread->start(EyeThread::Priority::LowestPriority);
+
     connect(tdr, &Math::TDR::outputSamplesChanged, this, &EyeDiagramPlot::triggerUpdate);
 
     replot();
@@ -58,9 +62,11 @@ EyeDiagramPlot::EyeDiagramPlot(TraceModel &model, QWidget *parent)
 
 EyeDiagramPlot::~EyeDiagramPlot()
 {
-    while(updating) {
-        std::this_thread::sleep_for(20ms);
-    }
+    // tell thread to exit
+    destructing = true;
+    semphr.release();
+    thread->wait();
+    delete thread;
     delete tdr;
 }
 
@@ -859,11 +865,11 @@ void EyeDiagramPlot::updateThread(unsigned int xSamples)
         double transitionTime = -10; // assume that we start with a settled input, last transition was "long" ago
         for(unsigned int i=0;i<inVec.size();i++) {
             double time = (i+eyeXshift)*timestep;
-            double voltage;
+            double voltage = 0.0;
             if(time >= transitionTime) {
                 // currently within a bit transition
                 double edgeTime = 0;
-                double expTimeConstant;
+                double expTimeConstant = 0.0;
                 if(currentSignal < nextSignal) {
                     edgeTime = risetime;
                 } else if(currentSignal > nextSignal) {
@@ -952,13 +958,8 @@ void EyeDiagramPlot::updateThread(unsigned int xSamples)
 
 void EyeDiagramPlot::triggerUpdate()
 {
-    if(updating) {
-        // already updating, can't start again, schedule for later
-        updateScheduled = true;
-    } else {
-        updating = true;
-        new std::thread(&EyeDiagramPlot::updateThread, this, xSamples);
-    }
+    // trigger the thread
+    semphr.release();
 }
 
 void EyeDiagramPlot::setStatus(QString s)
@@ -982,4 +983,242 @@ double EyeDiagramPlot::maxDisplayVoltage()
 {
     auto eyeRange = highlevel - lowlevel;
     return highlevel + eyeRange * yOverrange;
+}
+
+void EyeThread::run()
+{
+    while(1) {
+        eye.semphr.acquire();
+        std::lock_guard<std::mutex> calc(eye.calcMutex);
+        // clear possible additional semaphores
+        eye.semphr.tryAcquire(eye.semphr.available());
+        if(eye.destructing) {
+            // Eye diagram object about to be deleted, exit thread
+            qDebug() << "Eye thread exiting";
+            return;
+        }
+        eye.setStatus("Starting calculation...");
+        if(!eye.trace) {
+            eye.setStatus("No trace assigned");
+            continue;
+        }
+
+        qDebug() << "Starting eye diagram calculation";
+
+        // sanity check values
+        if(eye.datarate >= eye.trace->getSample(eye.trace->numSamples() - 1).x) {
+            eye.setStatus("Data rate too high");
+            continue;
+        }
+        if(eye.datarate <= 0) {
+            eye.setStatus("Data rate too low");
+            continue;
+        }
+        if(eye.risetime > 0.3 * 1.0 / eye.datarate) {
+            eye.setStatus("Rise time too high");
+            continue;
+        }
+        if(eye.falltime > 0.3 * 1.0 / eye.datarate) {
+            eye.setStatus("Fall time too high");
+            continue;
+        }
+        if(eye.jitter > 0.3 * 1.0 / eye.datarate) {
+            eye.setStatus("Jitter too high");
+            continue;
+        }
+
+        qDebug() << "Eye calculation: input values okay";
+
+        // calculate timestep
+        double timestep = eye.calculatedTime() / eye.xSamples;
+        // reserve vector for input data
+        std::vector<std::complex<double>> inVec(eye.xSamples * (eye.cycles + 1), 0.0); // needs to calculate one more cycle than required for the display (settling)
+
+        // resize working buffer
+        qDebug() << "Clearing old eye data, calcData:" << eye.calcData;
+        eye.calcData->clear();
+        eye.calcData->resize(eye.xSamples);
+        for(auto& s : *eye.calcData) {
+            s.y.resize(eye.cycles, 0.0);
+        }
+
+        eye.setStatus("Extracting impulse response...");
+
+        // calculate impulse response of trace
+        double eyeTimeShift = 0;
+        std::vector<std::complex<double>> impulseVec;
+        // determine how long the impulse response is
+        auto samples = eye.tdr->numSamples();
+        if(samples == 0) {
+            // TDR calculation not yet done, unable to update
+            eye.updating = false;
+            eye.setStatus("No time-domain data from trace");
+            continue;
+        }
+        auto length = eye.tdr->getSample(samples - 1).x;
+
+        // determine average delay
+        auto total_step = eye.tdr->getStepResponse(samples - 1);
+        for(unsigned int i=0;i<samples;i++) {
+            auto step = eye.tdr->getStepResponse(i);
+            if(abs(total_step - step) <= abs(step)) {
+                // mid point reached
+                eyeTimeShift = eye.tdr->getSample(i).x;
+                break;
+            }
+        }
+
+        unsigned long convolutedSize = length / timestep;
+        if(convolutedSize > inVec.size()) {
+            // impulse response is longer than what we display, truncate
+            convolutedSize = inVec.size();
+        }
+        impulseVec.resize(convolutedSize);
+        /*
+         *  we can't use the impulse response directly because we most likely need samples inbetween
+         * the calculated values. Interpolation is available but if our sample spacing here is much
+         * wider than the impulse response data, we might miss peaks (or severely miscalculate their
+         * amplitude.
+         * Instead, the step response is interpolated and the impulse response determined by deriving
+         * it from the interpolated step response data. As the step response is the integrated imulse
+         * response data, we can't miss narrow peaks that way.
+         */
+        double lastStepResponse = 0.0;
+        for(unsigned long i=0;i<convolutedSize;i++) {
+            auto x = i*timestep;
+            auto step = eye.tdr->getInterpolatedStepResponse(x);
+            impulseVec[i] = step - lastStepResponse;
+            lastStepResponse = step;
+        }
+
+        eyeTimeShift += (eye.risetime + eye.falltime) * 1.25 / 4;
+        eyeTimeShift += 0.5 / eye.datarate;
+        int eyeXshift = eyeTimeShift / timestep;
+
+        qDebug() << "Eye calculation: TDR calculation done";
+
+        eye.setStatus("Generating PRBS sequence...");
+
+        auto prbs = PRBS(eye.patternbits);
+
+        auto getNextLevel = [&]() -> unsigned int {
+            unsigned int level = 0;
+            for(unsigned int i=0;i<eye.bitsPerSymbol;i++) {
+                level <<= 1;
+                if(prbs.next()) {
+                    level |= 0x01;
+                }
+            }
+            return level;
+        };
+
+        auto levelToVoltage = [=](unsigned int level) -> double {
+            unsigned int maxLevel = (0x01 << eye.bitsPerSymbol) - 1;
+            return Util::Scale((double) level, 0.0, (double) maxLevel, eye.lowlevel, eye.highlevel);
+        };
+
+        unsigned int currentSignal = getNextLevel();
+        unsigned int nextSignal = getNextLevel();
+
+        // initialize random generator
+        std::random_device rd1;
+        std::mt19937 mt_noise(rd1());
+        std::normal_distribution<> dist_noise(0, eye.noise);
+
+        std::random_device rd2;
+        std::mt19937 mt_jitter(rd2());
+        std::normal_distribution<> dist_jitter(0, eye.jitter);
+
+        unsigned int bitcnt = 1;
+        double transitionTime = -10; // assume that we start with a settled input, last transition was "long" ago
+        for(unsigned int i=0;i<inVec.size();i++) {
+            double time = (i+eyeXshift)*timestep;
+            double voltage;
+            if(time >= transitionTime) {
+                // currently within a bit transition
+                double edgeTime = 0;
+                double expTimeConstant;
+                if(currentSignal < nextSignal) {
+                    edgeTime = eye.risetime;
+                } else if(currentSignal > nextSignal) {
+                    edgeTime = eye.falltime;
+                }
+                if(eye.linearEdge) {
+                    // edge is modeled as linear rise/fall
+                    // increase slightly to account for typical 10/90% fall/rise time
+                    edgeTime *= 1.25;
+                } else {
+                    // edge is modeled as exponential rise/fall. Adjust time constant to match
+                    // selected rise/fall time (with 10-90% signal rise/fall within specified time)
+                    expTimeConstant = edgeTime / 2.197224577;
+                    edgeTime = 6 * expTimeConstant; // after six time constants, 99.7% of signal movement has happened
+                }
+                if(time >= transitionTime + edgeTime) {
+                    // bit transition settled
+                    voltage = levelToVoltage(nextSignal);
+                    // move on to the next bit
+                    currentSignal = nextSignal;
+                    nextSignal = getNextLevel();
+                    transitionTime = bitcnt * 1.0 / eye.datarate + dist_jitter(mt_jitter);
+                    bitcnt++;
+                } else {
+                    // still within rise or fall time
+                    double timeSinceEdge = time - transitionTime;
+                    double from = levelToVoltage(currentSignal);
+                    double to = levelToVoltage(nextSignal);
+                    if(eye.linearEdge) {
+                        double edgeRatio = timeSinceEdge / edgeTime;
+                        voltage = from * (1.0 - edgeRatio) + to * edgeRatio;
+                    } else {
+                        voltage = from + (1.0 - exp(-timeSinceEdge/expTimeConstant)) * (to - from);
+                    }
+                }
+            } else {
+                // still before the next edge
+                voltage = levelToVoltage(currentSignal);
+            }
+            voltage += dist_noise(mt_noise);
+            inVec[i] = voltage;
+        }
+
+        // input voltage vector fully assembled
+        qDebug() << "Eye calculation: input data generated";
+
+        eye.setStatus("Performing convolution...");
+
+        qDebug() << "Convolve via FFT start";
+        std::vector<std::complex<double>> outVec;
+        impulseVec.resize(inVec.size(), 0.0);
+        outVec.resize(inVec.size());
+        Fft::convolve(inVec, impulseVec, outVec);
+        qDebug() << "Convolve via FFT stop";
+
+        // fill data from outVec
+        for(unsigned int i=0;i<eye.xSamples;i++) {
+            (*eye.calcData).at(i).x = i * timestep;
+        }
+        for(unsigned int i=eye.xSamples;i<inVec.size();i++) {
+            unsigned int x = i % eye.xSamples;
+            unsigned int y = i / eye.xSamples - 1;
+            (*eye.calcData).at(x).y.at(y) = outVec[i].real();
+        }
+
+        qDebug() << "Eye calculation: Convolution done";
+
+        {
+            std::lock_guard<std::mutex> guard(eye.bufferSwitchMutex);
+            // switch buffers
+            qDebug() << "Switching diplay buffers, calcData:" << eye.calcData;
+            auto buf = eye.displayData;
+            eye.displayData = eye.calcData;
+            eye.calcData = buf;
+            if((*eye.displayData)[0].y[0] == 0.0 && (*eye.displayData)[0].y[1] == 0.0) {
+                qDebug() << "detected null after eye calculation";
+            }
+            qDebug() << "Buffer switch complete, displayData:" << eye.displayData;
+        }
+
+        eye.setStatus("Eye calculation complete");
+        eye.replot();
+    }
 }

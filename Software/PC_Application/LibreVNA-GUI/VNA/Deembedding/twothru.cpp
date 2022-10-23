@@ -15,6 +15,8 @@ TwoThru::TwoThru()
     Z0 = 50.0;
     port1 = 1;
     port2 = 2;
+    measuring2xthru = false;
+    measuringDUT = false;
 }
 
 std::set<unsigned int> TwoThru::getAffectedPorts()

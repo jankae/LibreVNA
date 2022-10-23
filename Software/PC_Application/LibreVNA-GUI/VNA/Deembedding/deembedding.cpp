@@ -70,8 +70,11 @@ void Deembedding::startMeasurementDialog(DeembeddingOption *option)
 }
 
 Deembedding::Deembedding(TraceModel &tm)
-    : tm(tm),
+    : measuringOption(nullptr),
+      tm(tm),
       measuring(false),
+      measurementDialog(nullptr),
+      measurementUI(nullptr),
       sweepPoints(0)
 {
 

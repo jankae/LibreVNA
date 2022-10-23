@@ -6,12 +6,27 @@
 #include "Traces/Math/tdr.h"
 
 #include <mutex>
+#include <QThread>
+#include <QSemaphore>
 
 #include <QObject>
 
+class EyeDiagramPlot;
+
+class EyeThread : public QThread
+{
+    Q_OBJECT
+public:
+    EyeThread(EyeDiagramPlot &eye) : eye(eye) {}
+    ~EyeThread(){}
+private:
+    void run() override;
+    EyeDiagramPlot &eye;
+};
+
 class EyeDiagramPlot : public TracePlot
 {
-//    friend class WaterfallAxisDialog;
+    friend class EyeThread;
     Q_OBJECT
 public:
     EyeDiagramPlot(TraceModel &model, QWidget *parent = 0);
@@ -99,6 +114,10 @@ private:
 
     std::mutex bufferSwitchMutex;
     std::mutex calcMutex;
+
+    EyeThread *thread;
+    bool destructing;
+    QSemaphore semphr;
 };
 
 #endif // EYEDIAGRAMPLOT_H

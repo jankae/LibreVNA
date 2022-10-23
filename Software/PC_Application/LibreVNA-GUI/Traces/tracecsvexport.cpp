@@ -127,6 +127,7 @@ TraceCSVModel::TraceCSVModel(std::vector<Trace *> traces, QObject *parent)
     save.resize(traces.size(), false);
     enabled.resize(traces.size(), true);
     points = 0;
+    minX = maxX = 0;
     updateEnabledTraces();
 }
 

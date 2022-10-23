@@ -20,6 +20,7 @@
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),
     SCPINode("TRACe"),
+    dragTrace(nullptr),
     ui(new Ui::TraceWidget),
     model(model)
 {

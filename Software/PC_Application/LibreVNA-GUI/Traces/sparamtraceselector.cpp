@@ -67,6 +67,7 @@ void SparamTraceSelector::setInitialChoices()
         }
         boxes[i]->blockSignals(false);
     }
+    minFreq = maxFreq = 0;
     points = 0;
     valid = empty_allowed;
 }

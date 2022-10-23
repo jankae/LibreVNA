@@ -21,6 +21,7 @@ PortExtension::PortExtension()
 
     port = 1;
     isIdeal = true;
+    isOpen = true;
 
     kit = nullptr;
     ui = nullptr;

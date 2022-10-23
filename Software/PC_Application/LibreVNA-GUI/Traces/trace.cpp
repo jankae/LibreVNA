@@ -26,6 +26,9 @@ Trace::Trace(QString name, QColor color, QString live)
       JSONskipHash(false),
       _liveType(LivedataType::Overwrite),
       liveParam(live),
+      fileParameter(0),
+      mathUpdateBegin(0),
+      mathUpdateEnd(0),
       vFactor(0.66),
       reflection(true),
       visible(true),
@@ -34,6 +37,7 @@ Trace::Trace(QString name, QColor color, QString live)
       domain(DataType::Frequency),
       lastMath(nullptr)
 {
+    settings.valid = false;
     MathInfo self = {.math = this, .enabled = true};
     mathOps.push_back(self);
     updateLastMath(mathOps.rbegin());
