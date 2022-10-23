@@ -122,30 +122,30 @@ VirtualDevice::VirtualDevice(QString serial)
         // just acting as a wrapper for device, pass on signals
         auto dev = new Device(serial);
         devices.push_back(dev);
-        connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost);
-        connect(dev, &Device::DeviceInfoUpdated, [=](){
+        connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost, Qt::QueuedConnection);
+        connect(dev, &Device::DeviceInfoUpdated, this, [=](){
             info = Info(devices[0]);
             emit InfoUpdated();
-        });
-        connect(dev, &Device::LogLineReceived, this, &VirtualDevice::LogLineReceived);
-        connect(dev, &Device::DeviceStatusUpdated, [=](){
+        }, Qt::QueuedConnection);
+        connect(dev, &Device::LogLineReceived, this, &VirtualDevice::LogLineReceived, Qt::QueuedConnection);
+        connect(dev, &Device::DeviceStatusUpdated, this, [=](){
             status = Status(devices[0]);
             emit StatusUpdated(status);
-        });
-        connect(dev, &Device::NeedsFirmwareUpdate, this, &VirtualDevice::NeedsFirmwareUpdate);
-        connect(dev, &Device::SpectrumResultReceived, this, &VirtualDevice::singleSpectrumResultReceived);
-        connect(dev, &Device::DatapointReceived, this, &VirtualDevice::singleDatapointReceived);
+        }, Qt::QueuedConnection);
+        connect(dev, &Device::NeedsFirmwareUpdate, this, &VirtualDevice::NeedsFirmwareUpdate, Qt::QueuedConnection);
+        connect(dev, &Device::SpectrumResultReceived, this, &VirtualDevice::singleSpectrumResultReceived, Qt::QueuedConnection);
+        connect(dev, &Device::DatapointReceived, this, &VirtualDevice::singleDatapointReceived, Qt::QueuedConnection);
     } else {
         // Connect to the actual devices
         for(auto devSerial : cdev->deviceSerials) {
             auto dev = new Device(devSerial);
             devices.push_back(dev);
             // Create device connections
-            connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost);
-            connect(dev, &Device::NeedsFirmwareUpdate, this, &VirtualDevice::NeedsFirmwareUpdate);
-            connect(dev, &Device::LogLineReceived, [=](QString line){
+            connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost, Qt::QueuedConnection);
+            connect(dev, &Device::NeedsFirmwareUpdate, this, &VirtualDevice::NeedsFirmwareUpdate, Qt::QueuedConnection);
+            connect(dev, &Device::LogLineReceived, this, [=](QString line){
                 emit LogLineReceived(line.prepend(dev->serial()+": "));
-            });
+            }, Qt::QueuedConnection);
             connect(dev, &Device::DeviceInfoUpdated, this, &VirtualDevice::compoundInfoUpdated, Qt::QueuedConnection);
             connect(dev, &Device::DeviceStatusUpdated, this, &VirtualDevice::compoundStatusUpdated, Qt::QueuedConnection);
             connect(dev, &Device::DatapointReceived, this, &VirtualDevice::compoundDatapointReceivecd, Qt::QueuedConnection);
