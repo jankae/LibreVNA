@@ -684,16 +684,16 @@ Calibration::Point Calibration::createInitializedPoint(double f) {
     Point point;
     point.frequency = f;
     // resize vectors
-    point.D.resize(caltype.usedPorts.size());
-    point.R.resize(caltype.usedPorts.size());
-    point.S.resize(caltype.usedPorts.size());
+    point.D.resize(caltype.usedPorts.size(), 0.0);
+    point.R.resize(caltype.usedPorts.size(), 0.0);
+    point.S.resize(caltype.usedPorts.size(), 0.0);
 
     point.L.resize(caltype.usedPorts.size());
     point.T.resize(caltype.usedPorts.size());
     point.I.resize(caltype.usedPorts.size());
-    fill(point.L.begin(), point.L.end(), vector<complex<double>>(caltype.usedPorts.size()));
-    fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size()));
-    fill(point.I.begin(), point.I.end(), vector<complex<double>>(caltype.usedPorts.size()));
+    fill(point.L.begin(), point.L.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
+    fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
+    fill(point.I.begin(), point.I.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
     return point;
 }
 
@@ -802,7 +802,7 @@ Calibration::Point Calibration::computeThroughNormalization(double f)
             // grab measurement and calkit through definitions
             auto throughForward = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p1, p2));
             auto throughReverse = static_cast<CalibrationMeasurement::Through*>(findMeasurement(CalibrationMeasurement::Base::Type::Through, p2, p1));
-            complex<double> S21;
+            complex<double> S21 = 0.0;
             Sparam Sideal;
             if(throughForward) {
                 S21 = throughForward->getMeasured(f).m21;
@@ -1761,35 +1761,35 @@ Calibration::Point Calibration::Point::interpolate(const Calibration::Point &to,
 {
     Point ret;
     ret.frequency = frequency * (1.0-alpha) + to.frequency * alpha;
-    ret.D.resize(D.size());
+    ret.D.resize(D.size(), 0.0);
     for(unsigned int i=0;i<D.size();i++) {
         ret.D[i] = D[i] * (1.0-alpha) + to.D[i] * alpha;
     }
-    ret.R.resize(R.size());
+    ret.R.resize(R.size(), 0.0);
     for(unsigned int i=0;i<R.size();i++) {
         ret.R[i] = R[i] * (1.0-alpha) + to.R[i] * alpha;
     }
-    ret.S.resize(S.size());
+    ret.S.resize(S.size(), 0.0);
     for(unsigned int i=0;i<S.size();i++) {
         ret.S[i] = S[i] * (1.0-alpha) + to.S[i] * alpha;
     }
     ret.T.resize(T.size());
     for(unsigned int i=0;i<T.size();i++) {
-        ret.T[i].resize(T[i].size());
+        ret.T[i].resize(T[i].size(), 0.0);
         for(unsigned int j=0;j<T[i].size();j++) {
             ret.T[i][j] = T[i][j] * (1.0 - alpha) + to.T[i][j] * alpha;
         }
     }
     ret.L.resize(L.size());
     for(unsigned int i=0;i<L.size();i++) {
-        ret.L[i].resize(L[i].size());
+        ret.L[i].resize(L[i].size(), 0.0);
         for(unsigned int j=0;j<L[i].size();j++) {
             ret.L[i][j] = L[i][j] * (1.0 - alpha) + to.L[i][j] * alpha;
         }
     }
     ret.I.resize(I.size());
     for(unsigned int i=0;i<I.size();i++) {
-        ret.I[i].resize(I[i].size());
+        ret.I[i].resize(I[i].size(), 0.0);
         for(unsigned int j=0;j<I[i].size();j++) {
             ret.I[i][j] = I[i][j] * (1.0 - alpha) + to.I[i][j] * alpha;
         }

@@ -11,7 +11,8 @@ FirmwareUpdateDialog::FirmwareUpdateDialog(Device *dev, QWidget *parent) :
     dev(dev),
     file(),
     timer(),
-    state(State::Idle)
+    state(State::Idle),
+    transferredBytes(0)
 {
     ui->setupUi(this);
     ui->bFile->setIcon(this->style()->standardPixmap(QStyle::SP_FileDialogStart));

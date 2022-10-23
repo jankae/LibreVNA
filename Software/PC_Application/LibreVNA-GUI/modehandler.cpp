@@ -8,7 +8,9 @@
 
 ModeHandler::ModeHandler(AppWindow *aw):
     QObject(),
-    aw(aw)
+    currentModeIndex(0),
+    aw(aw),
+    activeMode(nullptr)
 {}
 
 void ModeHandler::shutdown()

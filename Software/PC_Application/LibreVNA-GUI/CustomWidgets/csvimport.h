@@ -38,7 +38,6 @@ private slots:
 private:
     void evaluateFile();
     Ui::csvimport *ui;
-    int required_ports;
     CSV csv;
     bool status;
 };

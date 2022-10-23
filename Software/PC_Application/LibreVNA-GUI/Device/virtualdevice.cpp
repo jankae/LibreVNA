@@ -106,7 +106,6 @@ VirtualDevice::VirtualDevice(QString serial)
       status{}
 {
     cdev = nullptr;
-    cdev = nullptr;
     zerospan = false;
 
     // Check if this is a compound device

@@ -49,7 +49,7 @@ private:
     int createMode(Mode *mode);
     Mode *createNew(AppWindow *window, QString name, Mode::Type t);
     AppWindow *aw;
-    Mode *activeMode = nullptr;
+    Mode *activeMode;
 
 private slots:
     void setStatusBarMessageChanged(const QString &msg);

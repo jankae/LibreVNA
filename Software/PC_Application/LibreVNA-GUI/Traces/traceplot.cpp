@@ -289,25 +289,25 @@ void TracePlot::finishContextMenu()
     contextmenu->addSeparator();
     if(parentTile) {
         auto add = new QMenu("Add tile...", contextmenu);
-        auto left = new QAction("to the left");
+        auto left = new QAction("to the left", contextmenu);
         connect(left, &QAction::triggered, [=](){
             // split, keep current graph on the right
             parentTile->splitHorizontally(true);
         });
         add->addAction(left);
-        auto right = new QAction("to the right");
+        auto right = new QAction("to the right", contextmenu);
         connect(right, &QAction::triggered, [=](){
             // split, keep current graph on the left
             parentTile->splitHorizontally(false);
         });
         add->addAction(right);
-        auto above = new QAction("above");
+        auto above = new QAction("above", contextmenu);
         connect(above, &QAction::triggered, [=](){
             // split, keep current graph on the bottom
             parentTile->splitVertically(true);
         });
         add->addAction(above);
-        auto below = new QAction("below");
+        auto below = new QAction("below", contextmenu);
         connect(below, &QAction::triggered, [=](){
             // split, keep current graph on the top
             parentTile->splitVertically(false);

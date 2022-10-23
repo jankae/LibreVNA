@@ -825,13 +825,13 @@ void EyeDiagramPlot::updateThread(unsigned int xSamples)
 
         setStatus("Generating PRBS sequence...");
 
-        auto prbs = new PRBS(patternbits);
+        auto prbs = PRBS(patternbits);
 
         auto getNextLevel = [&]() -> unsigned int {
             unsigned int level = 0;
             for(unsigned int i=0;i<bitsPerSymbol;i++) {
                 level <<= 1;
-                if(prbs->next()) {
+                if(prbs.next()) {
                     level |= 0x01;
                 }
             }

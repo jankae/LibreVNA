@@ -212,10 +212,10 @@ void Math::DFTThread::run()
         dft.data.clear();
         int DCbin = timeDomain.size() / 2, startBin = 0;
         if(DC > 0) {
-            dft.data.resize(timeDomain.size());
+            dft.data.resize(timeDomain.size(), TraceMath::Data());
         } else {
             startBin = (timeDomain.size()+1) / 2;
-            dft.data.resize(timeDomain.size()/2);
+            dft.data.resize(timeDomain.size()/2, TraceMath::Data());
         }
 
         // reverse effect of frequency domain window function from TDR (if available)

@@ -5,6 +5,7 @@
 SignalgeneratorWidget::SignalgeneratorWidget(AppWindow *window, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SignalgeneratorWidget),
+    m_timerId(0),
     window(window)
 {
     ui->setupUi(this);

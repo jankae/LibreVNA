@@ -13,7 +13,10 @@ using namespace std;
 
 CompoundDeviceEditDialog::CompoundDeviceEditDialog(CompoundDevice *cdev, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CompoundDeviceEditDialog)
+    ui(new Ui::CompoundDeviceEditDialog),
+    dropPending(false),
+    dragFrame(nullptr),
+    dropFrame(nullptr)
 {
     ldev = *cdev;
     ui->setupUi(this);

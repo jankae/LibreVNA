@@ -46,8 +46,10 @@
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     : Mode(window, name, "SA"),
-      central(new TileWidget(traceModel, window))
+      central(new TileWidget(traceModel, window)),
+      firstPointTime(0)
 {
+    changingSettings = false;
     averages = 1;
     singleSweep = false;
     settings = {};
@@ -55,6 +57,12 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     normalize.measuring = false;
     normalize.points = 0;
     normalize.dialog.reset();
+    normalize.f_start = 0;
+    normalize.f_stop = 0;
+    normalize.points = 0;
+    normalize.Level = nullptr;
+    normalize.measure = nullptr;
+    normalize.enable = nullptr;
 
     traceModel.setSource(TraceModel::DataSource::SA);
 

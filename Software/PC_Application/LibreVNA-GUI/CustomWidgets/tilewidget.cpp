@@ -11,6 +11,7 @@
 
 TileWidget::TileWidget(TraceModel &model, QWidget *parent) :
     QWidget(parent),
+    fullScreenPlot(nullptr),
     ui(new Ui::TileWidget),
     splitter(0),
     isSplit(false),

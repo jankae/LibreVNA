@@ -24,6 +24,7 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidge
     dev(dev),
     modeHandler(handler),
     model(this),
+    edited(false),
     mode(CalibrationMode::BothPorts)
 {
     activeMode = modeHandler->getActiveMode();
@@ -350,6 +351,7 @@ void AmplitudeCalDialog::AddPointDialog()
 
 void AmplitudeCalDialog::AutomaticMeasurementDialog()
 {
+    automatic = {};
     automatic.isSourceCal = pointType() == Protocol::PacketType::SourceCalPoint;
     const QString ownCal = automatic.isSourceCal ? "Source" : "Receiver";
     const QString otherCal = automatic.isSourceCal ? "Receiver" : "Source";

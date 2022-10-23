@@ -28,7 +28,6 @@ private:
     static constexpr int frameSize = 350;
     QComboBox *serial;
     QComboBox *port1, *port2;
-    QLabel *image;
 
     unsigned int position;
     CompoundDevice *dev;
