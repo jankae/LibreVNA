@@ -69,7 +69,6 @@ private:
     static constexpr double yOverrange = 0.2;
     QPoint plotValueToPixel(QPointF plotValue);
     QPointF pixelToPlotValue(QPoint pixel);
-    void updateThread(unsigned int xSamples);
     void setStatus(QString s);
     double calculatedTime();
     double minDisplayVoltage();
@@ -91,8 +90,6 @@ private:
     std::vector<Xdata> data[2];
     std::vector<Xdata> *displayData;
     std::vector<Xdata> *calcData;
-    bool updating;
-    bool updateScheduled;
 
     unsigned int xSamples;
     double datarate;
