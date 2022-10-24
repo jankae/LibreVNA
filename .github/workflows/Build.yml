@@ -64,7 +64,7 @@ jobs:
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.25/libusb-1.0.25.7z
           7z x libusb.7z -r -olibusb
           Xcopy /E /I /Y libusb\include ..\Qt\5.15.2\mingw81_64\include
-          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application\LibreVNA-GUI
+          Xcopy /E /I /Y libusb\MinGW64\static\libusb-1.0.a Software\PC_Application\LibreVNA-GUI
         shell: cmd
 
       - name: Get build timestamp
