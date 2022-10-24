@@ -1250,6 +1250,7 @@ Calkit &Calibration::getKit()
 nlohmann::json Calibration::toJSON()
 {
     nlohmann::json j;
+    j["format"] = 3;
     nlohmann::json jmeasurements;
     for(auto m : measurements) {
         nlohmann::json jmeas;
@@ -1278,24 +1279,136 @@ void Calibration::fromJSON(nlohmann::json j)
     if(j.contains("calkit")) {
         kit.fromJSON(j["calkit"]);
     }
-    if(j.contains("measurements")) {
-        for(auto jm : j["measurements"]) {
-            auto type = CalibrationMeasurement::Base::TypeFromString(QString::fromStdString(jm.value("type", "")));
-            auto m = newMeasurement(type);
-            m->fromJSON(jm["data"]);
-            measurements.push_back(m);
+    unsigned int format = 0;
+    if(j.contains("format")) {
+        format = j["format"];
+    } else {
+        // no clear format indicated, attempt to guess from json content
+        if(j.contains("port1StandardMale")) {
+            format = 2;
+        } else if(j.contains("version")){
+            format = 3;
         }
     }
+    switch(format) {
+    case 3: {
+        if(j.contains("measurements")) {
+            for(auto jm : j["measurements"]) {
+                auto type = CalibrationMeasurement::Base::TypeFromString(QString::fromStdString(jm.value("type", "")));
+                auto m = newMeasurement(type);
+                if(m && jm.contains("data")) {
+                    m->fromJSON(jm["data"]);
+                    measurements.push_back(m);
+                }
+            }
+        }
 
-    CalType ct;
-    ct.type = TypeFromString(QString::fromStdString(j.value("type", "")));
-    if(j.contains("ports")) {
-        for(auto jp : j["ports"]) {
-            ct.usedPorts.push_back(jp);
+        CalType ct;
+        ct.type = TypeFromString(QString::fromStdString(j.value("type", "")));
+        if(j.contains("ports")) {
+            for(auto jp : j["ports"]) {
+                ct.usedPorts.push_back(jp);
+            }
+        }
+        if(ct.type != Type::None) {
+            compute(ct);
         }
     }
-    if(ct.type != Type::None) {
-        compute(ct);
+        break;
+    case 2: {
+        // TODO load associated calkit
+        if(j.contains("measurements")) {
+            // grab measurements
+            for(auto j_m : j["measurements"]) {
+                if(!j_m.contains("name")) {
+                    throw runtime_error("Measurement without name given");
+                }
+                CalibrationMeasurement::Base *m = nullptr;
+                auto name = QString::fromStdString(j_m["name"]);
+                if(name == "Port 1 Open") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Open);
+                    static_cast<CalibrationMeasurement::OnePort*>(m)->setPort(1);
+                } else if(name == "Port 1 Short") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Short);
+                    static_cast<CalibrationMeasurement::OnePort*>(m)->setPort(1);
+                } else if(name == "Port 1 Load") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Load);
+                    static_cast<CalibrationMeasurement::OnePort*>(m)->setPort(1);
+                } else if(name == "Port 2 Open") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Open);
+                    static_cast<CalibrationMeasurement::OnePort*>(m)->setPort(2);
+                } else if(name == "Port 2 Short") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Short);
+                    static_cast<CalibrationMeasurement::OnePort*>(m)->setPort(2);
+                } else if(name == "Port 2 Load") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Load);
+                    static_cast<CalibrationMeasurement::OnePort*>(m)->setPort(2);
+                } else if(name == "Through") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Through);
+                    static_cast<CalibrationMeasurement::TwoPort*>(m)->setPort1(1);
+                    static_cast<CalibrationMeasurement::TwoPort*>(m)->setPort2(2);
+                } else if(name == "Isolation") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Isolation);
+                } else if(name == "Line") {
+                    m = newMeasurement(CalibrationMeasurement::Base::Type::Line);
+                    static_cast<CalibrationMeasurement::TwoPort*>(m)->setPort1(1);
+                    static_cast<CalibrationMeasurement::TwoPort*>(m)->setPort2(2);
+                }
+                if(!m) {
+                    // unknown measurement name
+                    throw runtime_error("Measurement name unknown: "+std::string(j_m["name"]));
+                }
+                // no standard selection in this format, just use the first suitable one
+                m->setFirstSupportedStandard();
+                // extract points
+                if(!j_m.contains("points")) {
+                    throw runtime_error("Measurement "+name.toStdString()+" does not contain any points");
+                }
+                for(auto j_p : j_m["points"]) {
+                    VirtualDevice::VNAMeasurement p;
+                    p.frequency = j_p.value("frequency", 0.0);
+                    p.Z0 = 50.0;
+                    p.measurements["S11"] = complex<double>(j_p.value("S11_real", 0.0), j_p.value("S11_imag", 0.0));
+                    p.measurements["S12"] = complex<double>(j_p.value("S12_real", 0.0), j_p.value("S12_imag", 0.0));
+                    p.measurements["S21"] = complex<double>(j_p.value("S21_real", 0.0), j_p.value("S21_imag", 0.0));
+                    p.measurements["S22"] = complex<double>(j_p.value("S22_real", 0.0), j_p.value("S22_imag", 0.0));
+                    m->addPoint(p);
+                }
+                measurements.push_back(m);
+            }
+        }
+        // got all measurements, construct calibration according to type
+        if(j.contains("type")) {
+            auto type = QString::fromStdString(j["type"]);
+            CalType ct;
+            ct.type = Calibration::Type::None;
+            if(type == "Port 1") {
+                ct.type = Calibration::Type::SOLT;
+                ct.usedPorts = {1};
+            } else if(type == "Port 2") {
+                ct.type = Calibration::Type::SOLT;
+                ct.usedPorts = {2};
+            } else if(type == "SOLT") {
+                ct.type = Calibration::Type::SOLT;
+                ct.usedPorts = {1,2};
+            } else if(type == "Normalize") {
+                ct.type = Calibration::Type::ThroughNormalization;
+                ct.usedPorts = {1,2};
+            } else if(type == "TRL") {
+                ct.type = Calibration::Type::TRL;
+                ct.usedPorts = {1,2};
+            }
+            if(ct.type != Type::None) {
+                compute(ct);
+            }
+        }
+        InformationBox::ShowMessage("Old calibration format", "The selected calibration file was saved in an old format. Please check the imported result "
+                                                              "carefully and save the calibration to migrate to the new format");
+    }
+        break;
+    default:
+        InformationBox::ShowError("Failed to load calibration", "Unable to load calibration, unknown json format: "+QString::number(format));
+        break;
     }
 }
 
@@ -1341,6 +1454,21 @@ bool Calibration::fromFile(QString filename)
     }
 
     qDebug() << "Attempting to open calibration from file" << filename;
+
+    // attempt to load associated calibration kit first. It needs to be available when using the old calibration format. If the
+    // newer calibration format is used, the calibration kit is overwritten by the calibration file anyway
+    auto calkit_file = filename;
+    auto dotPos = calkit_file.lastIndexOf('.');
+    if(dotPos >= 0) {
+        calkit_file.truncate(dotPos);
+    }
+    calkit_file.append(".calkit");
+    qDebug() << "Associated calibration kit expected in" << calkit_file;
+    try {
+        kit = Calkit::fromFile(calkit_file);
+    } catch (runtime_error &e) {
+        qDebug() << "Parsing of calibration kit failed while opening calibration file: " << e.what() << " (ignore for calibration format >= 3)";
+    }
 
     ifstream file;
 
