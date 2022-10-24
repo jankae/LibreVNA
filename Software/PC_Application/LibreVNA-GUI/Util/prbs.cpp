@@ -1,6 +1,7 @@
 #include "prbs.h"
 
 #include <array>
+#include <stdexcept>
 
 PRBS::PRBS(unsigned int bits)
 {
