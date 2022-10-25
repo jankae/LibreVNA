@@ -47,6 +47,7 @@ public:
     void edit(std::function<void(void)> updateCal = nullptr);
 
     std::vector<CalStandard::Virtual *> getStandards() const;
+    void addStandard(CalStandard::Virtual* s);
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;

@@ -326,9 +326,10 @@ void TracePlot::finishContextMenu()
 
 void TracePlot::mousePressEvent(QMouseEvent *event)
 {
+    auto &pref = Preferences::getInstance();
     if(event->buttons() == Qt::LeftButton) {
         selectedMarker = markerAtPosition(event->pos(), true);
-        if(!selectedMarker && positionWithinGraphArea(event->pos())) {
+        if(!selectedMarker && pref.Graphs.enablePanAndZoom && positionWithinGraphArea(event->pos())) {
             // no marker at the position, enter trace moving mode
             movingGraph = true;
             lastMousePoint = event->pos();
@@ -337,7 +338,7 @@ void TracePlot::mousePressEvent(QMouseEvent *event)
     } else {
         selectedMarker = nullptr;
     }
-    if(event->button() == Qt::MiddleButton) {
+    if(pref.Graphs.enablePanAndZoom && event->button() == Qt::MiddleButton) {
         bool horizontally = !(QApplication::keyboardModifiers() & Qt::ShiftModifier);
         bool vertically = !(QApplication::keyboardModifiers() & Qt::ControlModifier);
         setAuto(horizontally, vertically);
@@ -392,10 +393,10 @@ void TracePlot::leaveEvent(QEvent *event)
 void TracePlot::wheelEvent(QWheelEvent *event)
 {
     auto &pref = Preferences::getInstance();
-    if(positionWithinGraphArea(event->pos())) {
+    if(pref.Graphs.enablePanAndZoom && positionWithinGraphArea(event->pos())) {
         bool horizontally = !(QApplication::keyboardModifiers() & Qt::ShiftModifier);
         bool vertically = !(QApplication::keyboardModifiers() & Qt::ControlModifier);
-        double factor = pow((1.0-pref.Graphs.zoomFactor), (double) event->angleDelta().y() / 120.0);
+        double factor = pow(pref.Graphs.zoomFactor, (double) event->angleDelta().y() / 120.0);
         zoom(event->pos(), factor, horizontally, vertically);
     }
 }

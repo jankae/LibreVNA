@@ -115,6 +115,9 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     connect(ui->AcquisitionADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
     connect(ui->AcquisitionADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
 
+    // Graph page
+    ui->GraphsZoomFactor->setPrecision(3);
+
     // General page
     if(p->TCPoverride) {
         ui->SCPIServerPort->setEnabled(false);
@@ -305,6 +308,8 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsFontSizeCursorOverlay->setValue(p->Graphs.fontSizeCursorOverlay);
     ui->GraphsFontSizeMarkerData->setValue(p->Graphs.fontSizeMarkerData);
     ui->GraphsFontSizeTraceNames->setValue(p->Graphs.fontSizeTraceNames);
+    ui->GraphsEnablePanZoom->setChecked(p->Graphs.enablePanAndZoom);
+    ui->GraphsZoomFactor->setValue(p->Graphs.zoomFactor);
 
     ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
     ui->MarkerShowAllMarkerData->setChecked(p->Marker.defaultBehavior.showAllData);
@@ -376,6 +381,8 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.fontSizeCursorOverlay = ui->GraphsFontSizeCursorOverlay->value();
     p->Graphs.fontSizeMarkerData = ui->GraphsFontSizeMarkerData->value();
     p->Graphs.fontSizeTraceNames = ui->GraphsFontSizeTraceNames->value();
+    p->Graphs.enablePanAndZoom = ui->GraphsEnablePanZoom->isChecked();
+    p->Graphs.zoomFactor = ui->GraphsZoomFactor->value();
 
     p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
     p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();

@@ -129,6 +129,7 @@ public:
         int fontSizeTraceNames;
         int fontSizeCursorOverlay;
 
+        bool enablePanAndZoom;
         double zoomFactor;
     } Graphs;
     struct {
@@ -213,7 +214,8 @@ private:
         {&Graphs.fontSizeCursorOverlay, "Graphs.fontSizeCursorOverlay", 12},
         {&Graphs.fontSizeMarkerData, "Graphs.fontSizeMarkerData", 12},
         {&Graphs.fontSizeTraceNames, "Graphs.fontSizeTraceNames", 12},
-        {&Graphs.zoomFactor, "Graphs.zoomFactor", 0.2},
+        {&Graphs.enablePanAndZoom, "Graphs.enablePanAndZoom", true},
+        {&Graphs.zoomFactor, "Graphs.zoomFactor", 0.9},
         {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
         {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},

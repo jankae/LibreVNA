@@ -83,8 +83,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>687</width>
-          <height>884</height>
+          <width>684</width>
+          <height>854</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -103,7 +103,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="Startup">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -1113,6 +1113,39 @@
                      </item>
                     </layout>
                    </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_18">
+                 <property name="title">
+                  <string>Pan and Zoom</string>
+                 </property>
+                 <layout class="QFormLayout" name="formLayout_13">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_46">
+                    <property name="text">
+                     <string>Enable:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QCheckBox" name="GraphsEnablePanZoom">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_47">
+                    <property name="text">
+                     <string>Zoom factor:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="SIUnitEdit" name="GraphsZoomFactor"/>
                   </item>
                  </layout>
                 </widget>

@@ -1358,8 +1358,37 @@ void Calibration::fromJSON(nlohmann::json j)
                     // unknown measurement name
                     throw runtime_error("Measurement name unknown: "+std::string(j_m["name"]));
                 }
-                // no standard selection in this format, just use the first suitable one
-                m->setFirstSupportedStandard();
+                // attempt to select the correct standard
+                bool p1male = j.value("port1StandardMale", true);
+                bool p2male = j.value("port2StandardMale", true);
+                bool throughZeroLength = j.value("throughZeroLength", true);
+
+                auto onePort = dynamic_cast<CalibrationMeasurement::OnePort*>(m);
+                if(onePort) {
+                    bool male = onePort->getPort() == 1 ? p1male : p2male;
+                    QString name = male ? "Default male standard" : "Default female standard";
+                    for(auto s : m->supportedStandards()) {
+                        if(s->getName() == name) {
+                            m->setStandard(s);
+                            break;
+                        }
+                    }
+                }
+                auto through = dynamic_cast<CalibrationMeasurement::Through*>(m);
+                if(through) {
+                    if(throughZeroLength) {
+                        // needs to create a zero length through standard in the calkit in addition to the already existing through standard
+                        auto zerolength = new CalStandard::Through();
+                        zerolength->setName("Zero length");
+                        kit.addStandard(zerolength);
+                        // use this standard
+                        m->setStandard(zerolength);
+                    }
+                }
+                if(!m->getStandard()) {
+                    // failed to find specific standard, use the first available
+                    m->setFirstSupportedStandard();
+                }
                 // extract points
                 if(!j_m.contains("points")) {
                     throw runtime_error("Measurement "+name.toStdString()+" does not contain any points");

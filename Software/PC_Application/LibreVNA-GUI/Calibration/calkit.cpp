@@ -354,6 +354,11 @@ std::vector<CalStandard::Virtual *> Calkit::getStandards() const
     return standards;
 }
 
+void Calkit::addStandard(CalStandard::Virtual *s)
+{
+    standards.push_back(s);
+}
+
 nlohmann::json Calkit::toJSON()
 {
     json j = Savable::createJSON(descr);
