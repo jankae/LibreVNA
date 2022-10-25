@@ -818,7 +818,7 @@ VirtualDevice::Info::Info()
             .maxIFBW = 1000000,
             .maxPoints = 10000,
             .mindBm = -100,
-            .maxdBm = 100,
+            .maxdBm = 30,
             .minRBW = 1,
             .maxRBW = 1000000,
     };

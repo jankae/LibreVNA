@@ -546,7 +546,7 @@ void EyeDiagramPlot::draw(QPainter &p)
             auto tickValue = Unit::ToString(t, unit, prefixes, significantDigits);
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             QRect bounding;
-            p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*2, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*4,
+            p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*4, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*8,
                              pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
             lastTickLabelEnd = bounding.x() + bounding.width();
         }

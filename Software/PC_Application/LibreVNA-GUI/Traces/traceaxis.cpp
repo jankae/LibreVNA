@@ -474,6 +474,33 @@ double XAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
 
 void XAxis::set(Type type, bool log, bool autorange, double min, double max, double div)
 {
+    if(max <= min) {
+        auto info = VirtualDevice::getInfo(VirtualDevice::getConnected());
+        // invalid selection, use default instead
+        switch(type) {
+        case Type::Frequency:
+            min = info.Limits.minFreq;
+            max = info.Limits.maxFreq;
+            break;
+        case Type::Power:
+            min = info.Limits.mindBm;
+            max = info.Limits.maxdBm;
+            break;
+        case Type::Time:
+        case Type::TimeZeroSpan:
+            min = 0.0;
+            max = 1.0;
+            break;
+        case Type::Distance:
+            min = 0.0;
+            max = 0.01;
+            break;
+        default:
+            min = 0.0;
+            max = 1.0;
+            break;
+        }
+    }
     this->type = type;
     this->log = log;
     this->autorange = autorange;

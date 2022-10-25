@@ -279,6 +279,8 @@ int TraceXYPlot::sideMargin(bool YAxisEnabled)
 void TraceXYPlot::axisSetupDialog()
 {
     auto setup = new XYplotAxisDialog(this);
+    setup->setAttribute(Qt::WA_DeleteOnClose);
+    connect(setup, &QDialog::finished, this, &TraceXYPlot::updateAxisTicks);
     if(AppWindow::showGUI()) {
         setup->show();
     }
@@ -691,7 +693,7 @@ void TraceXYPlot::draw(QPainter &p)
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             if(displayFullFreq) {
                 QRect bounding;
-                p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*2, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*4,
+                p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*4, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*8,
                                  pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
                 lastTickLabelEnd = bounding.x() + bounding.width();
             } else {
@@ -703,7 +705,7 @@ void TraceXYPlot::draw(QPainter &p)
 
                 tickValue.remove(0, tickValue.size() - displayLastDigits - unit.length());
                 QRect bounding;
-                p.drawText(QRect(xCoord - 40, plotAreaBottom + 5, 80, pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
+                p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*4, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*8, pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
                 lastTickLabelEnd = bounding.x() + bounding.width();
                 p.setPen(QPen(QColor("orange")));
                 p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, pref.Graphs.fontSizeAxis), Qt::AlignRight, "..", &bounding);
@@ -823,9 +825,7 @@ void TraceXYPlot::updateAxisTicks()
                 }
             }
         }
-        if(min < max) {
-            xAxis.set(xAxis.getType(), xAxis.getLog(), true, min, max, 0);
-        }
+        xAxis.set(xAxis.getType(), xAxis.getLog(), true, min, max, 0);
     }
 
     for(int i=0;i<2;i++) {
