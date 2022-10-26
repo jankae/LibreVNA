@@ -778,14 +778,6 @@ void EyeThread::run()
             eye.setStatus("Data rate too low");
             continue;
         }
-        if(eye.risetime > 0.3 * 1.0 / eye.datarate) {
-            eye.setStatus("Rise time too high");
-            continue;
-        }
-        if(eye.falltime > 0.3 * 1.0 / eye.datarate) {
-            eye.setStatus("Fall time too high");
-            continue;
-        }
         if(eye.jitter > 0.3 * 1.0 / eye.datarate) {
             eye.setStatus("Jitter too high");
             continue;
@@ -898,50 +890,58 @@ void EyeThread::run()
             double time = (i+eyeXshift)*timestep;
             double voltage;
             if(time >= transitionTime) {
-                // currently within a bit transition
-                double edgeTime = 0;
-                double expTimeConstant;
-                if(currentSignal < nextSignal) {
-                    edgeTime = eye.risetime;
-                } else if(currentSignal > nextSignal) {
-                    edgeTime = eye.falltime;
-                }
-                if(eye.linearEdge) {
-                    // edge is modeled as linear rise/fall
-                    // increase slightly to account for typical 10/90% fall/rise time
-                    edgeTime *= 1.25;
-                } else {
-                    // edge is modeled as exponential rise/fall. Adjust time constant to match
-                    // selected rise/fall time (with 10-90% signal rise/fall within specified time)
-                    expTimeConstant = edgeTime / 2.197224577;
-                    edgeTime = 6 * expTimeConstant; // after six time constants, 99.7% of signal movement has happened
-                }
-                if(time >= transitionTime + edgeTime) {
-                    // bit transition settled
-                    voltage = levelToVoltage(nextSignal);
-                    // move on to the next bit
-                    currentSignal = nextSignal;
-                    nextSignal = getNextLevel();
-                    transitionTime = bitcnt * 1.0 / eye.datarate + dist_jitter(mt_jitter);
-                    bitcnt++;
-                } else {
-                    // still within rise or fall time
-                    double timeSinceEdge = time - transitionTime;
-                    double from = levelToVoltage(currentSignal);
-                    double to = levelToVoltage(nextSignal);
-                    if(eye.linearEdge) {
-                        double edgeRatio = timeSinceEdge / edgeTime;
-                        voltage = from * (1.0 - edgeRatio) + to * edgeRatio;
-                    } else {
-                        voltage = from + (1.0 - exp(-timeSinceEdge/expTimeConstant)) * (to - from);
-                    }
-                }
+                // last transition is over,
+                // schedule the next transition
+                voltage = levelToVoltage(nextSignal);
+                // move on to the next bit
+                currentSignal = nextSignal;
+                nextSignal = getNextLevel();
+                transitionTime = bitcnt * 1.0 / eye.datarate + dist_jitter(mt_jitter);
+                bitcnt++;
             } else {
                 // still before the next edge
                 voltage = levelToVoltage(currentSignal);
             }
-            voltage += dist_noise(mt_noise);
             inVec[i] = voltage;
+        }
+
+        // add fall/rise time
+        for(unsigned int i=1;i<inVec.size();i++) {
+            double last = inVec[i-1].real();
+            double next = inVec[i].real();
+            if(last == next) {
+                // no change, nothing to do
+                continue;
+            }
+            if(eye.linearEdge) {
+                if(next > last) {
+                    // rising edge
+                    double max_rise = timestep / (eye.risetime * 1.25);
+                    if(next - last > max_rise) {
+                        next = last + max_rise;
+                    }
+                } else {
+                    // falling edge
+                    double max_fall = timestep / (eye.falltime * 1.25);
+                    if(next - last < -max_fall) {
+                        next = last - max_fall;
+                    }
+                }
+            } else {
+                // exponential edge
+                // edge is modeled as exponential rise/fall. Adjust time constant to match
+                // selected rise/fall time (with 10-90% signal rise/fall within specified time)
+                auto expTimeConstant = (next > last ? eye.risetime : eye.falltime) / 2.197224577;
+                if(expTimeConstant > 0) {
+                    next = last + (1.0 - exp(-timestep/expTimeConstant)) * (next - last);
+                }
+            }
+            inVec[i] = next;
+        }
+
+        // add noise
+        for(auto &v : inVec) {
+            v += dist_noise(mt_noise);
         }
 
         // input voltage vector fully assembled
