@@ -70,6 +70,24 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
     switch(transfer->status) {
     case LIBUSB_TRANSFER_COMPLETED:
         received_size += transfer->actual_length;
+        // Change/insert/delete random data to check the data handling for robustness
+//        srand((unsigned)time(0));
+//        for(unsigned int i=0;i<received_size;i++) {
+//            auto r = rand() % 100;
+//            if(r == 0) {
+//                // modify this byte
+//                buffer[i] = rand() % 256;
+//            } else if(r == 1) {
+//                // insert random byte
+//                memmove(&buffer[i+1], &buffer[i], received_size - i);
+//                buffer[i] = rand() % 256;
+//                received_size++;
+//            } else if(r == 2) {
+//                // remove byte
+//                memmove(&buffer[i], &buffer[i+1], received_size - i - 1);
+//                received_size--;
+//            }
+//        }
 //        qDebug() << transfer->actual_length <<"total:" << received_size;
         inCallback = true;
         emit DataReceived();

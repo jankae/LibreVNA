@@ -52,22 +52,23 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 	}
 
 	/* Evaluate frame size */
-	uint16_t length = *(uint16_t*) &data[1];
-	if(len < length) {
+    uint16_t length = data[1] | ((uint16_t) data[2] << 8);
+
+    if(length > sizeof(PacketInfo) * 2 || length < 8) {
+        // larger than twice the maximum expected packet size or too small, probably an error, ignore
+        info->type = PacketType::None;
+        return 1;
+    }
+
+    if(len < length) {
 		/* The frame payload has not been completely received */
 		info->type = PacketType::None;
 		return data - buf;
 	}
 
-    if(length > sizeof(PacketInfo) * 2) {
-        // larger than twice the maximum expected packet size, probably an error, ignore
-        info->type = PacketType::None;
-        return 1;
-    }
-
 	/* The complete frame has been received, check checksum */
 	auto type = (PacketType) data[3];
-	uint32_t crc = *(uint32_t*) &data[length - 4];
+    uint32_t crc = (uint32_t) data[length-4] | ((uint32_t) data[length-3] << 8) | ((uint32_t) data[length-2] << 16) | ((uint32_t) data[length-1] << 24);
 	if(type != PacketType::VNADatapoint) {
 		uint32_t compare = CRC32(0, data, length - 4);
 		if(crc != compare) {
