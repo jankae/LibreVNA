@@ -120,7 +120,6 @@ private:
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();
-    void StopSweep();
     void UpdateCalWidget();
 
     void createDefaultTracesAndGraphs(int ports);
@@ -128,6 +127,8 @@ private slots:
     void EnableDeembedding(bool enable);
     void UpdateStatusbar();
     void SetSingleSweep(bool single);
+    void Run();
+    void Stop();
 private:
     Settings settings;
     unsigned int averages;
@@ -136,6 +137,7 @@ private:
     MarkerModel *markerModel;
     Averaging average;
     bool singleSweep;
+    bool running;
 
     // Calibration
     Calibration cal;
@@ -182,6 +184,9 @@ signals:
     void startPowerChanged(double level);
     void stopPowerChanged(double level);
     void powerSweepFrequencyChanged(double freq);
+
+    void sweepStopped();
+    void sweepStarted();
 };
 
 #endif // VNA_H

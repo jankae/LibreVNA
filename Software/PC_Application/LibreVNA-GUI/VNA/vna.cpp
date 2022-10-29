@@ -50,6 +50,7 @@
 #include <QActionGroup>
 #include <QErrorMessage>
 #include <QDebug>
+#include <QStyle>
 
 VNA::VNA(AppWindow *window, QString name)
     : Mode(window, name, "VNA"),
@@ -217,11 +218,30 @@ VNA::VNA(AppWindow *window, QString name)
     std::vector<QAction*> frequencySweepActions;
     std::vector<QAction*> powerSweepActions;
 
-    tb_sweep->addWidget(new QLabel("Sweep type:"));
-    auto cbSweepType = new QComboBox();
-    cbSweepType->addItem("Frequency");
-    cbSweepType->addItem("Power");
-    tb_sweep->addWidget(cbSweepType);
+    auto bRun = new QPushButton("Run/Stop");
+    bRun->setToolTip("Pause/continue sweep");
+    bRun->setCheckable(true);
+    running = true;
+    connect(bRun, &QPushButton::toggled, [=](){
+        if(bRun->isChecked()) {
+            Run();
+        } else {
+            Stop();
+        }
+    });
+    connect(this, &VNA::sweepStopped, [=](){
+        bRun->blockSignals(true);
+        bRun->setChecked(false);
+        bRun->setIcon(bRun->style()->standardIcon(QStyle::SP_MediaPause));
+        bRun->blockSignals(false);
+    });
+    connect(this, &VNA::sweepStarted, [=](){
+        bRun->blockSignals(true);
+        bRun->setChecked(true);
+        bRun->setIcon(bRun->style()->standardIcon(QStyle::SP_MediaPlay));
+        bRun->blockSignals(false);
+    });
+    tb_sweep->addWidget(bRun);
 
     auto bSingle = new QPushButton("Single");
     bSingle->setToolTip("Single sweep");
@@ -229,6 +249,12 @@ VNA::VNA(AppWindow *window, QString name)
     connect(bSingle, &QPushButton::toggled, this, &VNA::SetSingleSweep);
     connect(this, &VNA::singleSweepChanged, bSingle, &QPushButton::setChecked);
     tb_sweep->addWidget(bSingle);
+
+    tb_sweep->addWidget(new QLabel("Sweep type:"));
+    auto cbSweepType = new QComboBox();
+    cbSweepType->addItem("Frequency");
+    cbSweepType->addItem("Power");
+    tb_sweep->addWidget(cbSweepType);
 
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
     // calculate width required with expected string length
@@ -663,6 +689,7 @@ void VNA::initializeDevice()
 void VNA::deviceDisconnected()
 {
     defaultCalMenu->setEnabled(false);
+    emit sweepStopped();
 }
 
 void VNA::shutdown()
@@ -770,11 +797,7 @@ void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
     }
 
     if(singleSweep && average.getLevel() == averages) {
-        changingSettings = true;
-        // single sweep finished
-        window->getDevice()->setIdle([=](bool){
-            changingSettings = false;
-        });
+        Stop();
     }
 
     auto m_avg = m;
@@ -874,73 +897,92 @@ void VNA::UpdateAverageCount()
 
 void VNA::SettingsChanged(bool resetTraces, std::function<void (bool)> cb)
 {
-    if (resetTraces) {
-        settings.activeSegment = 0;
-    }
-    changingSettings = true;
-    // assemble VNA protocol settings
-    VirtualDevice::VNASettings s = {};
-    s.IFBW = settings.bandwidth;
-    if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-        for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
-            s.excitedPorts.push_back(i);
+    if(running) {
+        if (resetTraces) {
+            settings.activeSegment = 0;
+        }
+        changingSettings = true;
+        // assemble VNA protocol settings
+        VirtualDevice::VNASettings s = {};
+        s.IFBW = settings.bandwidth;
+        if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
+            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+                s.excitedPorts.push_back(i);
+            }
+        } else {
+            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+                if(traceModel.PortExcitationRequired(i))
+                s.excitedPorts.push_back(i);
+            }
+        }
+        settings.excitedPorts = s.excitedPorts;
+
+        double start = settings.sweepType == SweepType::Frequency ? settings.Freq.start : settings.Power.start;
+        double stop = settings.sweepType == SweepType::Frequency ? settings.Freq.stop : settings.Power.stop;
+        int npoints = settings.npoints;
+        emit traceModel.SpanChanged(start, stop);
+        if (settings.segments > 1) {
+            // more than one segment, adjust start/stop
+            npoints = ceil((double) settings.npoints / settings.segments);
+            unsigned int segmentStartPoint = npoints * settings.activeSegment;
+            unsigned int segmentStopPoint = segmentStartPoint + npoints - 1;
+            if(segmentStopPoint >= settings.npoints) {
+                segmentStopPoint = settings.npoints - 1;
+                npoints = settings.npoints - segmentStartPoint;
+            }
+            auto seg_start = Util::Scale<double>(segmentStartPoint, 0, settings.npoints - 1, start, stop);
+            auto seg_stop = Util::Scale<double>(segmentStopPoint, 0, settings.npoints - 1, start, stop);
+            start = seg_start;
+            stop = seg_stop;
+        }
+
+        if(settings.sweepType == SweepType::Frequency) {
+            s.freqStart = start;
+            s.freqStop = stop;
+            s.points = npoints;
+            s.dBmStart = settings.Freq.excitation_power;
+            s.dBmStop = settings.Freq.excitation_power;
+            s.logSweep = settings.Freq.logSweep;
+        } else if(settings.sweepType == SweepType::Power) {
+            s.freqStart = settings.Power.frequency;
+            s.freqStop = settings.Power.frequency;
+            s.points = npoints;
+            s.dBmStart = start;
+            s.dBmStop = stop;
+            s.logSweep = false;
+        }
+        if(window->getDevice() && isActive) {
+            window->getDevice()->setVNA(s, [=](bool res){
+                // device received command, reset traces now
+                if (resetTraces) {
+                    average.reset(settings.npoints);
+                    traceModel.clearLiveData();
+                    UpdateAverageCount();
+                    UpdateCalWidget();
+                }
+                if(cb) {
+                    cb(res);
+                }
+                changingSettings = false;
+            });
+            emit sweepStarted();
+        } else {
+            // no device, unable to start sweep
+            emit sweepStopped();
+            changingSettings = false;
         }
     } else {
-        for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
-            if(traceModel.PortExcitationRequired(i))
-            s.excitedPorts.push_back(i);
-        }
-    }
-    settings.excitedPorts = s.excitedPorts;
-
-    double start = settings.sweepType == SweepType::Frequency ? settings.Freq.start : settings.Power.start;
-    double stop = settings.sweepType == SweepType::Frequency ? settings.Freq.stop : settings.Power.stop;
-    int npoints = settings.npoints;
-    emit traceModel.SpanChanged(start, stop);
-    if (settings.segments > 1) {
-        // more than one segment, adjust start/stop
-        npoints = ceil((double) settings.npoints / settings.segments);
-        unsigned int segmentStartPoint = npoints * settings.activeSegment;
-        unsigned int segmentStopPoint = segmentStartPoint + npoints - 1;
-        if(segmentStopPoint >= settings.npoints) {
-            segmentStopPoint = settings.npoints - 1;
-            npoints = settings.npoints - segmentStartPoint;
-        }
-        auto seg_start = Util::Scale<double>(segmentStartPoint, 0, settings.npoints - 1, start, stop);
-        auto seg_stop = Util::Scale<double>(segmentStopPoint, 0, settings.npoints - 1, start, stop);
-        start = seg_start;
-        stop = seg_stop;
-    }
-
-    if(settings.sweepType == SweepType::Frequency) {
-        s.freqStart = start;
-        s.freqStop = stop;
-        s.points = npoints;
-        s.dBmStart = settings.Freq.excitation_power;
-        s.dBmStop = settings.Freq.excitation_power;
-        s.logSweep = settings.Freq.logSweep;
-    } else if(settings.sweepType == SweepType::Power) {
-        s.freqStart = settings.Power.frequency;
-        s.freqStop = settings.Power.frequency;
-        s.points = npoints;
-        s.dBmStart = start;
-        s.dBmStop = stop;
-        s.logSweep = false;
-    }
-    if(window->getDevice() && isActive) {
-        window->getDevice()->setVNA(s, [=](bool res){
-            // device received command, reset traces now
-            if (resetTraces) {
-                average.reset(settings.npoints);
-                traceModel.clearLiveData();
-                UpdateAverageCount();
-                UpdateCalWidget();
-            }
-            if(cb) {
-                cb(res);
-            }
+        if(window->getDevice()) {
+            changingSettings = true;
+            // single sweep finished
+            window->getDevice()->setIdle([=](bool){
+                emit sweepStopped();
+                changingSettings = false;
+            });
+        } else {
+            emit sweepStopped();
             changingSettings = false;
-        });
+        }
     }
 }
 
@@ -1198,7 +1240,8 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
         return;
     }
     // Stop sweep
-    StopSweep();
+    running = false;
+    SettingsChanged();
     calMeasurements = m;
     // Delete any already captured data of this measurement
     cal.clearMeasurements(m);
@@ -1383,6 +1426,16 @@ void VNA::SetupSCPI()
     }, [=](QStringList) -> QString {
         return singleSweep ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
+    scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
+        Run();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
+    scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
+        Stop();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);
     scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
@@ -1480,13 +1533,6 @@ void VNA::StoreSweepSettings()
     s.setValue("SweepBandwidth", settings.bandwidth);
     s.setValue("SweepPoints", settings.npoints);
     s.setValue("SweepAveraging", averages);
-}
-
-void VNA::StopSweep()
-{
-    if(window->getDevice()) {
-        window->getDevice()->setIdle();
-    }
 }
 
 void VNA::UpdateCalWidget()
@@ -1646,6 +1692,20 @@ void VNA::SetSingleSweep(bool single)
         singleSweep = single;
         emit singleSweepChanged(single);
     }
+    if(single) {
+        SettingsChanged();
+    }
+}
+
+void VNA::Run()
+{
+    running = true;
+    SettingsChanged();
+}
+
+void VNA::Stop()
+{
+    running = false;
     SettingsChanged();
 }
 

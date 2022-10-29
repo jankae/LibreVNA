@@ -293,6 +293,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
     p.setWindow(0, 0, w, h);
 
     draw(p);
+    replotTimer.start(MaxUpdateInterval);
 }
 
 void TracePlot::finishContextMenu()

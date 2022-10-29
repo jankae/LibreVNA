@@ -49,6 +49,7 @@ signals:
 
 protected:
     static constexpr int MinUpdateInterval = 100;
+    static constexpr int MaxUpdateInterval = 2000;
     // need to be called in derived class constructor
     void initializeTraceInfo();
     std::vector<Trace*> activeTraces();

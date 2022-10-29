@@ -21,6 +21,7 @@ public:
 
     void deactivate() override;
     void initializeDevice() override;
+    void deviceDisconnected() override;
 
     virtual Type getType() override { return Type::SA;}
 
@@ -70,6 +71,9 @@ private slots:
     void ClearNormalization();
     void SetNormalizationLevel(double level);
 
+    void Run();
+    void Stop();
+
 private:
     void SetupSCPI();
     void UpdateAverageCount();
@@ -84,6 +88,7 @@ private:
     bool changingSettings;
     unsigned int averages;
     bool singleSweep;
+    bool running;
     double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
     TraceModel traceModel;
     TraceWidget *traceWidget;
@@ -127,6 +132,8 @@ signals:
     void NormalizationLevelChanged(double level);
 
     void averagingChanged(unsigned int averages);
+    void sweepStopped();
+    void sweepStarted();
 };
 
 #endif // VNA_H
