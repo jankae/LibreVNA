@@ -43,7 +43,6 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
     plots.insert(this);
 
     cursorLabel = new QLabel("Test", this);
-    cursorLabel->setStyleSheet("color: white;");
     cursorLabel->hide();
     setMouseTracking(true);
     setAcceptDrops(true);
@@ -372,6 +371,11 @@ void TracePlot::mouseMoveEvent(QMouseEvent *event)
             cursorLabel->move(event->pos() + QPoint(15, 0));
             auto font = cursorLabel->font();
             font.setPixelSize(Preferences::getInstance().Graphs.fontSizeCursorOverlay);
+            if(Util::getFontColorFromBackground(Preferences::getInstance().Graphs.Color.background) == Qt::black) {
+                cursorLabel->setStyleSheet("color: black;");
+            } else {
+                cursorLabel->setStyleSheet("color: white;");
+            }
             cursorLabel->setFont(font);
             cursorLabel->show();
         } else {
