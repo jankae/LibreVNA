@@ -61,6 +61,38 @@ void TraceWaterfall::replot()
     TracePlot::replot();
 }
 
+//void TraceWaterfall::move(const QPoint &vect)
+//{
+//    if(!xAxis.getLog()) {
+//        // can only move axis in linear mode
+//        // calculate amount of movement
+//        double distance = xAxis.inverseTransform(vect.x(), 0, plotAreaWidth) - xAxis.getRangeMin();
+//        xAxis.set(xAxis.getType(), false, false, xAxis.getRangeMin() - distance, xAxis.getRangeMax() - distance, xAxis.getRangeDiv());
+//    }
+//    replot();
+//}
+
+//void TraceWaterfall::zoom(const QPoint &center, double factor, bool horizontally, bool vertically)
+//{
+//    if(horizontally && !xAxis.getLog()) {
+//        // can only zoom axis in linear mode
+//        // calculate center point
+//        double cp = xAxis.inverseTransform(center.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth);
+//        double min = ((xAxis.getRangeMin() - cp) * factor) + cp;
+//        double max = ((xAxis.getRangeMax() - cp) * factor) + cp;
+//        xAxis.set(xAxis.getType(), false, false, min, max, xAxis.getRangeDiv() * factor);
+//    }
+//    replot();
+//}
+
+//void TraceWaterfall::setAuto(bool horizontally, bool vertically)
+//{
+//    if(horizontally) {
+//        xAxis.set(xAxis.getType(), xAxis.getLog(), true, xAxis.getRangeMin(), xAxis.getRangeMax(), xAxis.getRangeDiv());
+//    }
+//    replot();
+//}
+
 void TraceWaterfall::fromJSON(nlohmann::json j)
 {
     resetWaterfall();

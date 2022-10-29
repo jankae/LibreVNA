@@ -16,7 +16,7 @@ TracePolar::TracePolar(TraceModel &model, QWidget *parent)
     fmin = 0;
     fmax = 6000000000;
     edgeReflection = 1.0;
-    dx = 0;
+    offset = QPointF(0.0, 0.0);
     initializeTraceInfo();
 }
 
@@ -26,7 +26,8 @@ nlohmann::json TracePolar::toJSON()
     j["limit_to_span"] = limitToSpan;
     j["limit_to_edge"] = limitToEdge;
     j["edge_reflection"] = edgeReflection;
-    j["offset_axis_x"] = dx;
+    j["offset_axis_x"] = offset.x();
+    j["offset_axis_y"] = offset.y();
     j["frequency_override"] = manualFrequencyRange;
     j["override_min"] = fmin;
     j["override_max"] = fmax;
@@ -48,7 +49,7 @@ void TracePolar::fromJSON(nlohmann::json j)
     manualFrequencyRange = j.value("frequency_override", false);
     fmin = j.value("override_min", 0.0);
     fmax = j.value("override_max", 6000000000.0);
-    dx = j.value("offset_axis_x", 0.0);
+    offset = QPointF(j.value("offset_axis_x", 0.0), j.value("offset_axis_y", 0.0));
     for(unsigned int hash : j["traces"]) {
         // attempt to find the traces with this hash
         bool found = false;
@@ -65,21 +66,59 @@ void TracePolar::fromJSON(nlohmann::json j)
     }
 }
 
-void TracePolar::wheelEvent(QWheelEvent *event)
+void TracePolar::move(const QPoint &vect)
 {
-    // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
-    auto increment = event->angleDelta().y() / 120.0;
-    // round toward bigger step in case of special higher resolution mousewheel
-    int steps = increment > 0 ? ceil(increment) : floor(increment);
+    Trace::Data center;
+    center.y = 0.0;
+    center.x = 0.0;
+    auto shift = pixelToData(dataToPixel(center) + vect);
+    offset.rx() += shift.real();
+    offset.ry() += shift.imag();
+    replot();
+}
 
-    constexpr double zoomfactor = 1.1;
-    auto zoom = pow(zoomfactor, steps);
-    edgeReflection /= zoom;
+void TracePolar::zoom(const QPoint &center, double factor, bool horizontally, bool vertically)
+{
+    Q_UNUSED(horizontally);
+    Q_UNUSED(vertically);
+    auto pos = pixelToData(center);
+    auto shift = QPointF(pos.real(), pos.imag());
+    offset -= shift;
+    edgeReflection *= factor;
+    offset += shift * factor;
+    replot();
+}
 
-    auto incrementX = event->angleDelta().x() / 120.0;
-    dx += incrementX/10;
+void TracePolar::setAuto(bool horizontally, bool vertically)
+{
+    Q_UNUSED(horizontally);
+    Q_UNUSED(vertically);
+    edgeReflection = 1.0;
+    offset = QPointF(0.0, 0.0);
+    replot();
+}
 
-    triggerReplot();
+//void TracePolar::wheelEvent(QWheelEvent *event)
+//{
+//    // most mousewheel have 15 degree increments, the reported delta is in 1/8th degree -> 120
+//    auto increment = event->angleDelta().y() / 120.0;
+//    // round toward bigger step in case of special higher resolution mousewheel
+//    int steps = increment > 0 ? ceil(increment) : floor(increment);
+
+//    constexpr double zoomfactor = 1.1;
+//    auto zoom = pow(zoomfactor, steps);
+//    edgeReflection /= zoom;
+
+//    auto incrementX = event->angleDelta().x() / 120.0;
+////    dx += incrementX/10;
+
+//    triggerReplot();
+//}
+
+bool TracePolar::positionWithinGraphArea(const QPoint &p)
+{
+    // TODO
+    return true;
 }
 
 QPoint TracePolar::dataToPixel(std::complex<double> d)
@@ -92,17 +131,22 @@ QPoint TracePolar:: dataToPixel(Trace::Data d)
     return dataToPixel(d.y);
 }
 
-std::complex<double> TracePolar::dataAddDx(std::complex<double> d)
+std::complex<double> TracePolar::dataAddOffset(std::complex<double> d)
 {
-    auto dataShift = complex<double>(dx, 0);
+    auto dataShift = complex<double>(offset.x(), offset.y());
     d = d + dataShift;
     return d;
 }
 
-Trace::Data TracePolar::dataAddDx(Trace::Data d)
+Trace::Data TracePolar::dataAddOffset(Trace::Data d)
 {
-    d.y = dataAddDx(d.y);
+    d.y = dataAddOffset(d.y);
     return d;
+}
+
+QPoint TracePolar::dataToPixel(QPointF d)
+{
+    return dataToPixel(complex<double>(d.x(), d.y()));
 }
 
 std::complex<double> TracePolar::pixelToData(QPoint p)
@@ -117,7 +161,7 @@ QPoint TracePolar::markerToPixel(Marker *m)
 //    if(!m->isTimeDomain()) {
         if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
             auto d = m->getData();
-            d = dataAddDx(d);
+            d = dataAddOffset(d);
             ret = dataToPixel(d);
         }
 //    }
@@ -132,7 +176,7 @@ double TracePolar::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
     auto samples = t->size();
     for(unsigned int i=0;i<samples;i++) {
         auto data = t->sample(i);
-        data = dataAddDx(data);
+        data = dataAddOffset(data);
         auto plotPoint = dataToPixel(data);
         if (plotPoint.isNull()) {
             // destination point outside of currently displayed range
@@ -149,8 +193,8 @@ double TracePolar::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
     closestDistance = sqrt(closestDistance);
 
     if(closestIndex > 0) {
-        auto l1 = dataToPixel(dataAddDx(t->sample(closestIndex-1)));
-        auto l2 = dataToPixel(dataAddDx(t->sample(closestIndex)));
+        auto l1 = dataToPixel(dataAddOffset(t->sample(closestIndex-1)));
+        auto l2 = dataToPixel(dataAddOffset(t->sample(closestIndex)));
         double ratio;
         auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
         if(distance < closestDistance) {
@@ -159,8 +203,8 @@ double TracePolar::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
         }
     }
     if(closestIndex < t->size() - 1) {
-        auto l1 = dataToPixel(dataAddDx(t->sample(closestIndex)));
-        auto l2 = dataToPixel(dataAddDx(t->sample(closestIndex+1)));
+        auto l1 = dataToPixel(dataAddOffset(t->sample(closestIndex)));
+        auto l2 = dataToPixel(dataAddOffset(t->sample(closestIndex+1)));
         double ratio;
         auto distance = Util::distanceToLine(pixel, l1, l2, nullptr, &ratio);
         if(distance < closestDistance) {

@@ -21,7 +21,11 @@ public:
     virtual nlohmann::json toJSON() override; // derived classes must call TracePolar::joJSON before doing anything
     virtual void fromJSON(nlohmann::json j) override; // derived classes must call TracePolar::joJSON before doing anything
 
-    void wheelEvent(QWheelEvent *event) override;
+    virtual void move(const QPoint &vect) override;
+    virtual void zoom(const QPoint &center, double factor, bool horizontally, bool vertically) override;
+    virtual void setAuto(bool horizontally, bool vertically) override;
+
+//    void wheelEvent(QWheelEvent *event) override;
 
 public slots:
     virtual void axisSetupDialog() {}
@@ -29,9 +33,11 @@ public slots:
 protected:
     static constexpr double polarCoordMax = 4096;
 
-    virtual std::complex<double> dataAddDx(std::complex<double> d);
-    virtual Trace::Data dataAddDx(Trace::Data d);
+    virtual bool positionWithinGraphArea(const QPoint &p) override;
+    virtual std::complex<double> dataAddOffset(std::complex<double> d);
+    virtual Trace::Data dataAddOffset(Trace::Data d);
 
+    QPoint dataToPixel(QPointF d);
     QPoint dataToPixel(std::complex<double> d);
     QPoint dataToPixel(Trace::Data d);
     std::complex<double> pixelToData(QPoint p);
@@ -54,7 +60,7 @@ protected:
     double fmin, fmax; // frequency range when manual range is selected
 
     double edgeReflection; // magnitude of reflection coefficient at the edge of the polar chart (zoom factor)
-    double dx;
+    QPointF offset;
     QTransform transform;
 };
 

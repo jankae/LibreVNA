@@ -84,7 +84,10 @@ void TraceSmithChart::axisSetupDialog()
     ui->zoomFactor->setPrecision(3);
     ui->zoomReflection->setValue(edgeReflection);
     ui->zoomFactor->setValue(1.0/edgeReflection);
-    ui->offsetRealAxis->setValue(dx);
+    ui->offsetRealAxis->setPrecision(4);
+    ui->offsetRealAxis->setValue(offset.x());
+    ui->offsetImagAxis->setPrecision(4);
+    ui->offsetImagAxis->setValue(offset.y());
 
     ui->impedance->setUnit("Ω");
     ui->impedance->setPrecision(3);
@@ -113,7 +116,10 @@ void TraceSmithChart::axisSetupDialog()
         ui->zoomFactor->setValueQuiet(1.0 / edgeReflection);
     });
     connect(ui->offsetRealAxis, &SIUnitEdit::valueChanged, [=](){
-        dx = ui->offsetRealAxis->value();
+        offset = QPointF(ui->offsetRealAxis->value(), offset.y());
+    });
+    connect(ui->offsetImagAxis, &SIUnitEdit::valueChanged, [=](){
+        offset = QPointF(offset.x(), ui->offsetRealAxis->value());
     });
     connect(ui->impedance, &SIUnitEdit::valueChanged, [=](){
         Z0 = ui->impedance->value();
@@ -232,17 +238,22 @@ void TraceSmithChart::draw(QPainter &p) {
     p.setPen(pen);
     for(int i=1;i<Circles * 2;i++) {
         auto radius = (double) i / Circles;
-        drawArc(SmithChartArc(QPointF(1.0 - radius+dx, 0.0), radius, 0, 2*M_PI));
-        drawArc(SmithChartArc(QPointF(1.0 + radius+dx, 0.0), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0 - radius+offset.x(), 0.0+offset.y()), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0 + radius+offset.x(), 0.0+offset.y()), radius, 0, 2*M_PI));
     }
 
-      p.drawLine(dataToPixel(complex<double>(edgeReflection,0)),dataToPixel(complex<double>(-edgeReflection,0)));
+    QPointF p1 = QPointF(-100, offset.y());
+    QPointF p2 = QPointF(100, offset.y());
+    if(TracePolar::constrainLineToCircle(p1, p2, QPointF(0,0), edgeReflection)) {
+        // center line visible
+        p.drawLine(dataToPixel(p1),dataToPixel(p2));
+    }
     constexpr std::array<double, 5> impedanceLines = {10, 25, 50, 100, 250};
     for(auto z : impedanceLines) {
         z /= Z0;
         auto radius = 1.0/z;
-        drawArc(SmithChartArc(QPointF(1.0+dx, radius), radius, 0, 2*M_PI));
-        drawArc(SmithChartArc(QPointF(1.0+dx, -radius), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0+offset.x(), radius+offset.y()), radius, 0, 2*M_PI));
+        drawArc(SmithChartArc(QPointF(1.0+offset.x(), -radius+offset.y()), radius, 0, 2*M_PI));
     }
 
     // draw custom constant parameter lines
@@ -251,6 +262,7 @@ void TraceSmithChart::draw(QPainter &p) {
         pen.setCosmetic(true);
         p.setPen(pen);
         for(auto arc : line.getArcs(Z0)) {
+            arc.center += offset;
             drawArc(arc);
         }
     }
@@ -289,8 +301,8 @@ void TraceSmithChart::draw(QPainter &p) {
                 }
             }
 
-            last = dataAddDx(last);
-            now = dataAddDx(now);
+            last = dataAddOffset(last);
+            now = dataAddOffset(now);
 
             // scale to size of smith diagram
             QPointF p1 = dataToPixel(last);
@@ -325,7 +337,7 @@ void TraceSmithChart::draw(QPainter &p) {
                     continue;
                 }
                 auto coords = m->getData();
-                coords = dataAddDx(coords);
+                coords = dataAddOffset(coords);
 
                 if (limitToEdge && abs(coords) > edgeReflection) {
                     // outside of visible area
@@ -388,7 +400,7 @@ QString TraceSmithChart::mouseText(QPoint pos)
 {
     auto dataDx = pixelToData(pos);
     if(abs(dataDx) <= edgeReflection) {
-        auto data = complex<double>(dataDx.real()-dx, dataDx.imag());
+        auto data = complex<double>(dataDx.real()-offset.x(), dataDx.imag()-offset.y());
         data = Z0 * (1.0 + data) / (1.0 - data);
         auto ret = Unit::ToString(data.real(), "", " ", 3);
         if(data.imag() >= 0) {

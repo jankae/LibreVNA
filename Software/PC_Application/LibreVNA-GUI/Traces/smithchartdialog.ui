@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>976</width>
-    <height>460</height>
+    <width>974</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -155,12 +155,22 @@
           <item row="2" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
-             <string>Offset real axis</string>
+             <string>Offset real axis:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="SIUnitEdit" name="offsetRealAxis"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Offset imag axis:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="SIUnitEdit" name="offsetImagAxis"/>
           </item>
          </layout>
         </widget>

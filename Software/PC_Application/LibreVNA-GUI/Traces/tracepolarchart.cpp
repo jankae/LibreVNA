@@ -48,12 +48,12 @@ void TracePolarChart::axisSetupDialog()
     ui->displayFreqOverride->setChecked(manualFrequencyRange);
     emit ui->displayFreqOverride->toggled(manualFrequencyRange);
 
-    ui->zoomReflection->setPrecision(3);
     ui->zoomFactor->setPrecision(3);
-    ui->offsetRealAxis->setPrecision(3);
-    ui->zoomReflection->setValue(edgeReflection);
+    ui->offsetXaxis->setPrecision(3);
+    ui->offsetYaxis->setPrecision(3);
     ui->zoomFactor->setValue(1.0/edgeReflection);
-    ui->offsetRealAxis->setValue(dx);
+    ui->offsetXaxis->setValue(offset.x());
+    ui->offsetYaxis->setValue(offset.y());
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
        limitToSpan = ui->displayModeFreq->currentIndex() == 1;
@@ -65,14 +65,12 @@ void TracePolarChart::axisSetupDialog()
     });
     connect(ui->zoomFactor, &SIUnitEdit::valueChanged, [=](){
         edgeReflection = 1.0 / ui->zoomFactor->value();
-        ui->zoomReflection->setValueQuiet(edgeReflection);
     });
-    connect(ui->zoomReflection, &SIUnitEdit::valueChanged, [=](){
-        edgeReflection = ui->zoomReflection->value();
-        ui->zoomFactor->setValueQuiet(1.0 / edgeReflection);
+    connect(ui->offsetXaxis, &SIUnitEdit::valueChanged, [=](){
+        offset = QPointF(ui->offsetXaxis->value(), offset.y());
     });
-    connect(ui->offsetRealAxis, &SIUnitEdit::valueChanged, [=](){
-        dx = ui->offsetRealAxis->value();
+    connect(ui->offsetXaxis, &SIUnitEdit::valueChanged, [=](){
+        offset = QPointF(offset.x(), ui->offsetXaxis->value());
     });
     if(AppWindow::showGUI()) {
         dialog->show();
@@ -123,20 +121,20 @@ void TracePolarChart::draw(QPainter &p) {
     p.setPen(pen);
     for(int i=1;i<Circles;i++) {
         auto radius = (double) i / Circles;
-        drawArc(PolarArc(QPointF(0.0 + dx,0), radius, 0, 2*M_PI));
+        drawArc(PolarArc(offset, radius, 0, 2*M_PI));
     }
 
     auto constraintLineToCircle = [&](PolarArc cir) { // PolarArc
-        if ( (cir.spanAngle == 90 )&& (dx != 0.0)) {
-            auto angle = acos(dx/cir.radius);
-            auto p1 = complex<double>(dx, cir.center.y() + cir.radius*sin(angle));
-            auto p2 = complex<double>(dx, cir.center.y() - cir.radius*sin(angle));
+        if ( (cir.spanAngle == 90 )&& (offset == QPointF(0.0, 0.0))) {
+            auto angle = acos(offset.x() / cir.radius);
+            auto p1 = complex<double>(offset.x(), cir.center.y() + cir.radius*sin(angle));
+            auto p2 = complex<double>(offset.x(), cir.center.y() - cir.radius*sin(angle));
             p.drawLine(dataToPixel(p1),dataToPixel(p2));
         }
         else {
             auto slope = tan(cir.spanAngle*2*M_PI/360);
             auto y0 = cir.center.y();
-            auto f = dx;
+            auto f = offset.x();
             auto a = 1 + (slope*slope);
             auto b = (-2*cir.center.x())-(2*f*slope*slope)+(2*slope*y0)-(2*cir.center.y()*slope);
             auto c = (cir.center.x()*cir.center.x()) +(cir.center.y()*cir.center.y()) - (cir.radius*cir.radius) + (y0*y0) \
@@ -157,8 +155,15 @@ void TracePolarChart::draw(QPainter &p) {
 
     constexpr int Lines = 6;
     for(int i=0;i<Lines;i++) {
-        auto angle = (double) i * 30;
-        constraintLineToCircle(PolarArc(QPointF(0,0), edgeReflection, 0, angle)); // PolarArc
+        auto angle = (double) i * 30 / 180.0 * M_PI;
+        auto p1 = QPointF(sin(angle)*100, cos(angle)*100);
+        auto p2 = -p1;
+        p1 += offset;
+        p2 += offset;
+        if(TracePolar::constrainLineToCircle(p1, p2, QPointF(0,0), edgeReflection)) {
+            // center line visible
+            p.drawLine(dataToPixel(p1),dataToPixel(p2));
+        }
     }
 
     for(auto t : traces) {
@@ -195,8 +200,8 @@ void TracePolarChart::draw(QPainter &p) {
                 }
             }
 
-            last = dataAddDx(last);
-            now = dataAddDx(now);
+            last = dataAddOffset(last);
+            now = dataAddOffset(now);
 
             // scale to size of smith diagram
             QPointF p1 = dataToPixel(last);
@@ -228,7 +233,7 @@ void TracePolarChart::draw(QPainter &p) {
                     continue;
                 }
                 auto coords = m->getData();
-                coords = dataAddDx(coords);
+                coords = dataAddOffset(coords);
 
                 if (limitToEdge && abs(coords) > edgeReflection) {
                     // outside of visible area
@@ -278,7 +283,7 @@ QString TracePolarChart::mouseText(QPoint pos)
 {
     auto dataDx = pixelToData(pos);
     if(abs(dataDx) <= edgeReflection) {
-        auto data = complex<double>(dataDx.real()-dx, dataDx.imag());
+        auto data = complex<double>(dataDx.real()-offset.x(), dataDx.imag()-offset.y());
         auto ret = Unit::ToString(abs(data), "", " ", 3);
         ret += QString("∠");
         auto phase = atan(data.imag()/data.real())*180/M_PI;

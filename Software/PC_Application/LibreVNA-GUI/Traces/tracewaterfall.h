@@ -17,6 +17,11 @@ public:
     virtual void enableTrace(Trace *t, bool enabled) override;
 
     void replot() override;
+
+//    virtual void move(const QPoint &vect) override;
+//    virtual void zoom(const QPoint &center, double factor, bool horizontally, bool vertically) override;
+//    virtual void setAuto(bool horizontally, bool vertically) override;
+
     virtual Type getType() override { return Type::Waterfall;}
 
     void fromJSON(nlohmann::json j) override;
