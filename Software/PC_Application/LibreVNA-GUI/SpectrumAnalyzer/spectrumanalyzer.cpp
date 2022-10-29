@@ -627,8 +627,14 @@ void SpectrumAnalyzer::SetSpan(double span)
 
 void SpectrumAnalyzer::SetFullSpan()
 {
-    settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
-    settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+    auto &pref = Preferences::getInstance();
+    if(pref.Acquisition.fullSpanManual) {
+        settings.freqStart = pref.Acquisition.fullSpanStart;
+        settings.freqStop = pref.Acquisition.fullSpanStop;
+    } else {
+        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+    }
     ConstrainAndUpdateFrequencies();
 }
 

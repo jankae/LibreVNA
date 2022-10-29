@@ -103,6 +103,14 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->AcquisitionIF2->setUnit("Hz");
     ui->AcquisitionIF2->setPrefixes(" kM");
     ui->AcquisitionIF2->setPrecision(6);
+    ui->AcquisitionFullSpanStart->setUnit("Hz");
+    ui->AcquisitionFullSpanStart->setPrefixes(" kMG");
+    ui->AcquisitionFullSpanStart->setPrecision(6);
+    ui->AcquisitionFullSpanStart->setEnabled(false);
+    ui->AcquisitionFullSpanStop->setUnit("Hz");
+    ui->AcquisitionFullSpanStop->setPrefixes(" kMG");
+    ui->AcquisitionFullSpanStop->setPrecision(6);
+    ui->AcquisitionFullSpanStop->setEnabled(false);
     auto updateADCRate = [=]() {
         // update ADC rate, see FPGA protocol for calculation
         ui->AcquisitionADCRate->setValue(102400000.0 / ui->AcquisitionADCpresc->value());
@@ -114,6 +122,11 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     connect(ui->AcquisitionADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateADCRate);
     connect(ui->AcquisitionADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
     connect(ui->AcquisitionADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
+
+    connect(ui->AcquisitionFullSpanBehavior, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
+        ui->AcquisitionFullSpanStart->setEnabled(ui->AcquisitionFullSpanBehavior->currentIndex() == 1);
+        ui->AcquisitionFullSpanStop->setEnabled(ui->AcquisitionFullSpanBehavior->currentIndex() == 1);
+    });
 
     // Graph page
     ui->GraphsZoomFactor->setPrecision(3);
@@ -294,6 +307,10 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionIF1->setValue(p->Acquisition.IF1);
     ui->AcquisitionADCpresc->setValue(p->Acquisition.ADCprescaler);
     ui->AcquisitionADCphaseInc->setValue(p->Acquisition.DFTPhaseInc);
+    ui->AcquisitionFullSpanBehavior->setCurrentIndex(p->Acquisition.fullSpanManual ? 1 : 0);
+    ui->AcquisitionFullSpanStart->setValue(p->Acquisition.fullSpanStart);
+    ui->AcquisitionFullSpanStop->setValue(p->Acquisition.fullSpanStop);
+    ui->AcquisitionFullSpanCalibrated->setChecked(p->Acquisition.fullSpanCalibratedRange);
 
     ui->GraphsShowUnit->setChecked(p->Graphs.showUnits);
     ui->GraphsColorBackground->setColor(p->Graphs.Color.background);
@@ -367,6 +384,10 @@ void PreferencesDialog::updateFromGUI()
     p->Acquisition.IF1 = ui->AcquisitionIF1->value();
     p->Acquisition.ADCprescaler = ui->AcquisitionADCpresc->value();
     p->Acquisition.DFTPhaseInc = ui->AcquisitionADCphaseInc->value();
+    p->Acquisition.fullSpanManual = ui->AcquisitionFullSpanBehavior->currentIndex() == 1;
+    p->Acquisition.fullSpanStart = ui->AcquisitionFullSpanStart->value();
+    p->Acquisition.fullSpanStop = ui->AcquisitionFullSpanStop->value();
+    p->Acquisition.fullSpanCalibratedRange = ui->AcquisitionFullSpanCalibrated->isChecked();
 
     p->Graphs.showUnits = ui->GraphsShowUnit->isChecked();
     p->Graphs.Color.background = ui->GraphsColorBackground->getColor();

@@ -82,9 +82,9 @@
         <property name="geometry">
          <rect>
           <x>0</x>
-          <y>0</y>
-          <width>684</width>
-          <height>854</height>
+          <y>-334</y>
+          <width>687</width>
+          <height>938</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -103,7 +103,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="Startup">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -701,7 +701,7 @@
             </layout>
            </widget>
            <widget class="QWidget" name="Acquisition">
-            <layout class="QVBoxLayout" name="verticalLayout_15">
+            <layout class="QVBoxLayout" name="verticalLayout_20">
              <item>
               <widget class="QGroupBox" name="groupBox_6">
                <property name="title">
@@ -786,7 +786,7 @@
                <property name="title">
                 <string>Common</string>
                </property>
-               <layout class="QVBoxLayout" name="verticalLayout_14">
+               <layout class="QVBoxLayout" name="verticalLayout_15">
                 <item>
                  <layout class="QFormLayout" name="formLayout_10">
                   <item row="0" column="0">
@@ -919,6 +919,67 @@
                       </widget>
                      </item>
                     </layout>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_19">
+                  <property name="title">
+                   <string>Full Span</string>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_14">
+                   <item>
+                    <layout class="QFormLayout" name="formLayout_14">
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_48">
+                       <property name="text">
+                        <string>Behavior:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QComboBox" name="AcquisitionFullSpanBehavior">
+                       <item>
+                        <property name="text">
+                         <string>Use maximum possible span as advertised by device</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text">
+                         <string>Use manually defined full span</string>
+                        </property>
+                       </item>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_49">
+                       <property name="text">
+                        <string>Start frequency:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="SIUnitEdit" name="AcquisitionFullSpanStart"/>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_50">
+                       <property name="text">
+                        <string>Stop frequency:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="SIUnitEdit" name="AcquisitionFullSpanStop"/>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="AcquisitionFullSpanCalibrated">
+                     <property name="text">
+                      <string>Use calibrated range as full span when calibrated</string>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </widget>

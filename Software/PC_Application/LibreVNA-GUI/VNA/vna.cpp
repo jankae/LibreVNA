@@ -1018,8 +1018,20 @@ void VNA::SetSpan(double span)
 
 void VNA::SetFullSpan()
 {
-    settings.Freq.start = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
-    settings.Freq.stop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+    auto &pref = Preferences::getInstance();
+    if(pref.Acquisition.fullSpanCalibratedRange && cal.getNumPoints() > 0) {
+        // calibration is active, use it as the full span range
+        settings.Freq.start = cal.getMinFreq();
+        settings.Freq.stop = cal.getMaxFreq();
+    } else {
+        if(pref.Acquisition.fullSpanManual) {
+            settings.Freq.start = pref.Acquisition.fullSpanStart;
+            settings.Freq.stop = pref.Acquisition.fullSpanStop;
+        } else {
+            settings.Freq.start = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+            settings.Freq.stop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+        }
+    }
     ConstrainAndUpdateFrequencies();
 }
 

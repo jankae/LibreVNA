@@ -106,6 +106,12 @@ public:
         double IF1;
         int ADCprescaler;
         int DFTPhaseInc;
+
+        // Full span settings
+        bool fullSpanManual;
+        double fullSpanStart;
+        double fullSpanStop;
+        bool fullSpanCalibratedRange;
     } Acquisition;
     struct {
         bool showUnits;
@@ -201,6 +207,10 @@ private:
         {&Acquisition.IF1, "Acquisition.IF1", 62000000},
         {&Acquisition.ADCprescaler, "Acquisition.ADCprescaler", 128},
         {&Acquisition.DFTPhaseInc, "Acquisition.DFTPhaseInc", 1280},
+        {&Acquisition.fullSpanManual, "Acquisition.fullSpanManual", false},
+        {&Acquisition.fullSpanStart, "Acquisition.fullSpanStart", 0.0},
+        {&Acquisition.fullSpanStop, "Acquisition.fullSpanStop", 6000000000.0},
+        {&Acquisition.fullSpanCalibratedRange, "Acquisition.fullSpanCalibratedRange", false},
         {&Graphs.showUnits, "Graphs.showUnits", true},
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
