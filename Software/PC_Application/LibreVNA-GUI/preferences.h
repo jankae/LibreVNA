@@ -140,7 +140,7 @@ public:
 
         struct {
             bool triangle;
-            unsigned int triangleSize;
+            int triangleSize;
             bool line;
             bool hide;
             double hidePercent;
