@@ -544,6 +544,17 @@ void TraceXYPlot::draw(QPainter &p)
                     continue;
                 }
 
+                if((xAxis.getType() == XAxis::Type::Frequency || xAxis.getType() == XAxis::Type::TimeZeroSpan || xAxis.getType() == XAxis::Type::Power)
+                        && pref.Graphs.SweepIndicator.hide && !isnan(xSweep) && t->getSource() == Trace::Source::Live && t->isVisible() && !t->isPaused()) {
+                    // check if this part of the trace is visible
+                    double range = xAxis.getRangeMax() - xAxis.getRangeMin();
+                    double afterSweep = now.x() - xSweep;
+                    if(afterSweep > 0 && afterSweep * 100 / range <= pref.Graphs.SweepIndicator.hidePercent) {
+                        // do not display this part of the trace
+                        continue;
+                    }
+                }
+
                 // scale to plot coordinates
                 auto p1 = plotValueToPixel(last, i);
                 auto p2 = plotValueToPixel(now, i);
@@ -747,6 +758,26 @@ void TraceXYPlot::draw(QPainter &p)
             break;
         default:
             break;
+        }
+    }
+
+
+    // show sweep indicator if activated
+    if((xAxis.getType() == XAxis::Type::Frequency || xAxis.getType() == XAxis::Type::TimeZeroSpan || xAxis.getType() == XAxis::Type::Power)
+            && !isnan(xSweep)) {
+        if(xSweep >= xAxis.getRangeMin() && xSweep <= xAxis.getRangeMax()) {
+            auto xpos = plotValueToPixel(QPointF(xSweep, 1.0), 0);
+            pen = QPen(pref.Graphs.Color.axis);
+            pen.setCosmetic(true);
+            p.setPen(pen);
+            if(pref.Graphs.SweepIndicator.line) {
+                p.drawLine(xpos.x(), plotAreaTop, xpos.x(), plotAreaBottom);
+            }
+            if(pref.Graphs.SweepIndicator.triangle) {
+                for(unsigned int i=0;i<pref.Graphs.SweepIndicator.triangleSize;i++) {
+                    p.drawLine(xpos.x() - i,plotAreaBottom+i+1, xpos.x() + i, plotAreaBottom+i+1);
+                }
+            }
         }
     }
 

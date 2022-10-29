@@ -418,6 +418,25 @@ void TraceWaterfall::draw(QPainter &p)
     }
     p.setClipping(false);
 
+    // show sweep indicator if activated
+    if((xAxis.getType() == XAxis::Type::Frequency || xAxis.getType() == XAxis::Type::TimeZeroSpan || xAxis.getType() == XAxis::Type::Power)
+            && !isnan(xSweep)) {
+        if(xSweep >= xAxis.getRangeMin() && xSweep <= xAxis.getRangeMax()) {
+            auto xpos = xAxis.transform(xSweep, plotAreaLeft, plotAreaLeft + plotAreaWidth);
+            pen = QPen(pref.Graphs.Color.axis);
+            pen.setCosmetic(true);
+            p.setPen(pen);
+            if(pref.Graphs.SweepIndicator.line) {
+                p.drawLine(xpos, plotAreaTop, xpos, plotAreaBottom);
+            }
+            if(pref.Graphs.SweepIndicator.triangle) {
+                for(unsigned int i=0;i<pref.Graphs.SweepIndicator.triangleSize;i++) {
+                    p.drawLine(xpos - i,plotAreaBottom+i+1, xpos + i, plotAreaBottom+i+1);
+                }
+            }
+        }
+    }
+
     if(dropPending) {
         p.setOpacity(0.5);
         p.setBrush(Qt::white);

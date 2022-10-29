@@ -130,6 +130,8 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
 
     // Graph page
     ui->GraphsZoomFactor->setPrecision(3);
+    ui->GraphsSweepHidePercent->setPrecision(3);
+    ui->GraphsSweepHidePercent->setUnit("%");
 
     // General page
     if(p->TCPoverride) {
@@ -327,6 +329,11 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsFontSizeTraceNames->setValue(p->Graphs.fontSizeTraceNames);
     ui->GraphsEnablePanZoom->setChecked(p->Graphs.enablePanAndZoom);
     ui->GraphsZoomFactor->setValue(p->Graphs.zoomFactor);
+    ui->GraphsSweepTriangle->setChecked(p->Graphs.SweepIndicator.triangle);
+    ui->GraphsSweepTriangleSize->setValue(p->Graphs.SweepIndicator.triangleSize);
+    ui->GraphsSweepLine->setChecked(p->Graphs.SweepIndicator.line);
+    ui->GraphsSweepHide->setChecked(p->Graphs.SweepIndicator.hide);
+    ui->GraphsSweepHidePercent->setValue(p->Graphs.SweepIndicator.hidePercent);
 
     ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
     ui->MarkerShowAllMarkerData->setChecked(p->Marker.defaultBehavior.showAllData);
@@ -404,6 +411,11 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.fontSizeTraceNames = ui->GraphsFontSizeTraceNames->value();
     p->Graphs.enablePanAndZoom = ui->GraphsEnablePanZoom->isChecked();
     p->Graphs.zoomFactor = ui->GraphsZoomFactor->value();
+    p->Graphs.SweepIndicator.triangle = ui->GraphsSweepTriangle->isChecked();
+    p->Graphs.SweepIndicator.triangleSize = ui->GraphsSweepTriangleSize->value();
+    p->Graphs.SweepIndicator.line = ui->GraphsSweepLine->isChecked();
+    p->Graphs.SweepIndicator.hide = ui->GraphsSweepHide->isChecked();
+    p->Graphs.SweepIndicator.hidePercent = ui->GraphsSweepHidePercent->value();
 
     p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
     p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();

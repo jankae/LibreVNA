@@ -1,4 +1,4 @@
-#ifndef TRACEMODEL_H
+﻿#ifndef TRACEMODEL_H
 #define TRACEMODEL_H
 
 #include "Device/device.h"
@@ -57,6 +57,8 @@ public:
     DataSource getSource() const;
     void setSource(const DataSource &value);
 
+    double getSweepPosition() const;
+
 signals:
     void SpanChanged(double fmin, double fmax);
     void traceAdded(Trace *t);
@@ -71,6 +73,8 @@ public slots:
 
 private:
     DataSource source;
+    double lastSweepPosition;
+    QDateTime lastReceivedData;
     std::vector<Trace*> traces;
     MarkerModel *markerModel;
 };

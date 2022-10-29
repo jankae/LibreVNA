@@ -185,6 +185,16 @@ void TracePolarChart::draw(QPainter &p) {
                 break;
             }
 
+            if(pref.Graphs.SweepIndicator.hide && !isnan(xSweep) && trace->getSource() == Trace::Source::Live && trace->isVisible() && !trace->isPaused()) {
+                // check if this part of the trace is visible
+                double range = maximumVisibleFrequency - minimumVisibleFrequency;
+                double afterSweep = now.x - xSweep;
+                if(afterSweep > 0 && afterSweep * 100 / range <= pref.Graphs.SweepIndicator.hidePercent) {
+                    // do not display this part of the trace
+                    continue;
+                }
+            }
+
             last = dataAddDx(last);
             now = dataAddDx(now);
 

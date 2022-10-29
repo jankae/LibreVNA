@@ -110,6 +110,7 @@ protected:
     static constexpr unsigned int marginRight = 0;
 
     double sweep_fmin, sweep_fmax;
+    double xSweep; // current position in the sweep (NaN if no live traces are active on the plot)
     TraceModel &model;
     Marker *selectedMarker;
     bool movingGraph;

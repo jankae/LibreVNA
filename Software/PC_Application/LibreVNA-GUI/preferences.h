@@ -137,6 +137,14 @@ public:
 
         bool enablePanAndZoom;
         double zoomFactor;
+
+        struct {
+            bool triangle;
+            unsigned int triangleSize;
+            bool line;
+            bool hide;
+            double hidePercent;
+        } SweepIndicator;
     } Graphs;
     struct {
         struct {
@@ -226,6 +234,11 @@ private:
         {&Graphs.fontSizeTraceNames, "Graphs.fontSizeTraceNames", 12},
         {&Graphs.enablePanAndZoom, "Graphs.enablePanAndZoom", true},
         {&Graphs.zoomFactor, "Graphs.zoomFactor", 0.9},
+        {&Graphs.SweepIndicator.triangle, "Graphs.SweepIndicator.triangle", true},
+        {&Graphs.SweepIndicator.triangleSize, "Graphs.SweepIndicator.triangleSize", 5},
+        {&Graphs.SweepIndicator.line, "Graphs.SweepIndicator.line", false},
+        {&Graphs.SweepIndicator.hide, "Graphs.SweepIndicator.hide", false},
+        {&Graphs.SweepIndicator.hidePercent, "Graphs.SweepIndicator.hidePercent", 3.0},
         {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
         {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},

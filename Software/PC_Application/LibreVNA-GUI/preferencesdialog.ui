@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>909</width>
-    <height>657</height>
+    <width>989</width>
+    <height>632</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Preferences</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_13">
+  <layout class="QVBoxLayout" name="verticalLayout_25">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -74,39 +74,39 @@
       </widget>
      </item>
      <item>
-      <widget class="QScrollArea" name="scrollArea">
-       <property name="widgetResizable">
-        <bool>true</bool>
+      <widget class="QStackedWidget" name="pageWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>-334</y>
-          <width>687</width>
-          <height>938</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_12">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <widget class="QWidget" name="Startup">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <widget class="QStackedWidget" name="pageWidget">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QScrollArea" name="scrollArea">
+           <property name="widgetResizable">
+            <bool>true</bool>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="currentIndex">
-            <number>1</number>
-           </property>
-           <widget class="QWidget" name="Startup">
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>744</width>
+              <height>920</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_13">
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
@@ -138,9 +138,6 @@
                         <property name="text">
                          <string>Last used</string>
                         </property>
-                        <attribute name="buttonGroup">
-                         <string notr="true">StartupSweepGroup</string>
-                        </attribute>
                        </widget>
                       </item>
                       <item>
@@ -148,9 +145,6 @@
                         <property name="text">
                          <string>Default values</string>
                         </property>
-                        <attribute name="buttonGroup">
-                         <string notr="true">StartupSweepGroup</string>
-                        </attribute>
                        </widget>
                       </item>
                       <item>
@@ -158,9 +152,6 @@
                         <property name="text">
                          <string>Setup file</string>
                         </property>
-                        <attribute name="buttonGroup">
-                         <string notr="true">StartupSweepGroup</string>
-                        </attribute>
                        </widget>
                       </item>
                       <item>
@@ -700,8 +691,27 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="Acquisition">
-            <layout class="QVBoxLayout" name="verticalLayout_20">
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Acquisition">
+        <layout class="QVBoxLayout" name="verticalLayout_20">
+         <item>
+          <widget class="QScrollArea" name="scrollArea_2">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_2">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>605</width>
+              <height>866</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_21">
              <item>
               <widget class="QGroupBox" name="groupBox_6">
                <property name="title">
@@ -1002,8 +1012,27 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="Graphs">
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Graphs">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QScrollArea" name="scrollArea_3">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_3">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>-216</y>
+              <width>749</width>
+              <height>952</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_22">
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_11">
                <item>
@@ -1179,6 +1208,107 @@
                 </widget>
                </item>
                <item>
+                <widget class="QGroupBox" name="groupBox_20">
+                 <property name="title">
+                  <string>Sweep Indicator</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_26">
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_16">
+                    <item>
+                     <widget class="QCheckBox" name="GraphsSweepTriangle">
+                      <property name="text">
+                       <string>Show triangle of size </string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QSpinBox" name="GraphsSweepTriangleSize"/>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_52">
+                      <property name="text">
+                       <string>below X axis</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_2">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_15">
+                    <item>
+                     <widget class="QCheckBox" name="GraphsSweepLine">
+                      <property name="text">
+                       <string>Show vertical line in graph</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_3">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_17">
+                    <item>
+                     <widget class="QCheckBox" name="GraphsSweepHide">
+                      <property name="text">
+                       <string>Hide </string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="SIUnitEdit" name="GraphsSweepHidePercent"/>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_53">
+                      <property name="text">
+                       <string>of displayed data after the sweep point</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
                 <widget class="QGroupBox" name="groupBox_18">
                  <property name="title">
                   <string>Pan and Zoom</string>
@@ -1301,8 +1431,27 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="Marker">
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Marker">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QScrollArea" name="scrollArea_4">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_4">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>644</width>
+              <height>544</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_23">
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_9">
                <item>
@@ -1425,8 +1574,27 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="SCPIServer">
-            <layout class="QHBoxLayout" name="horizontalLayout_10">
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="SCPIServer">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QScrollArea" name="scrollArea_5">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_6">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>644</width>
+              <height>544</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_10">
                <item>
@@ -1488,7 +1656,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>471</width>
+                 <width>473</width>
                  <height>20</height>
                 </size>
                </property>
@@ -1496,8 +1664,27 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="CompoundDevices">
-            <layout class="QHBoxLayout" name="horizontalLayout_14">
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="CompoundDevices">
+        <layout class="QHBoxLayout" name="horizontalLayout_14">
+         <item>
+          <widget class="QScrollArea" name="scrollArea_6">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_7">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>644</width>
+              <height>544</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_24">
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_13">
                <item>

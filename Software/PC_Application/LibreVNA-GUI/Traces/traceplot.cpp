@@ -168,6 +168,18 @@ void TracePlot::paintEvent(QPaintEvent *event)
         traceRemovalPending = false;
     }
 
+    xSweep = std::numeric_limits<double>::quiet_NaN();
+    for(auto t : traces) {
+        if(!t.second) {
+            continue;
+        }
+        Trace* tr = t.first;
+        if(tr->getSource() == Trace::Source::Live && tr->isVisible() && !tr->isPaused()) {
+            xSweep = model.getSweepPosition();
+            break;
+        }
+    }
+
     Q_UNUSED(event)
     auto& pref = Preferences::getInstance();
     QPainter p(this);

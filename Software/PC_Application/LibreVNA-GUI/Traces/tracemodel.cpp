@@ -2,6 +2,7 @@
 
 #include <QIcon>
 #include <QDebug>
+#include <QDateTime>
 
 using namespace std;
 
@@ -234,6 +235,7 @@ void TraceModel::clearLiveData()
 void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype)
 {
     source = DataSource::VNA;
+    lastReceivedData = QDateTime::currentDateTimeUtc();
     for(auto t : traces) {
         if (t->getSource() == Trace::Source::Live && !t->isPaused()) {
             int index = -1;
@@ -246,13 +248,14 @@ void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::D
                 td.x = d.dBm;
                 break;
             case TraceMath::DataType::TimeZeroSpan:
-                td.x = d.us;
+                td.x = (double) d.us / 1000000.0;
                 index = d.pointNum;
                 break;
             default:
                 // invalid type, can not add
                 return;
             }
+            lastSweepPosition = td.x;
             if(d.measurements.count(t->liveParameter())) {
                 td.y = d.measurements.at(t->liveParameter());
             } else {
@@ -267,6 +270,7 @@ void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::D
 void TraceModel::addSAData(const VirtualDevice::SAMeasurement& d, const VirtualDevice::SASettings &settings)
 {
     source = DataSource::SA;
+    lastReceivedData = QDateTime::currentDateTimeUtc();
     for(auto t : traces) {
         if (t->getSource() == Trace::Source::Live && !t->isPaused()) {
             int index = -1;
@@ -284,6 +288,7 @@ void TraceModel::addSAData(const VirtualDevice::SAMeasurement& d, const VirtualD
                 // parameter not included in data, skip
                 continue;
             }
+            lastSweepPosition = td.x;
             t->addData(td, settings, index);
         }
     }
@@ -297,6 +302,17 @@ TraceModel::DataSource TraceModel::getSource() const
 void TraceModel::setSource(const DataSource &value)
 {
     source = value;
+}
+
+double TraceModel::getSweepPosition() const
+{
+    auto t = QDateTime::currentDateTimeUtc();
+    constexpr uint64_t timeout_ms = 1000;
+    if(lastReceivedData.msecsTo(t) > timeout_ms) {
+        return std::numeric_limits<double>::quiet_NaN();
+    } else {
+        return lastSweepPosition;
+    }
 }
 
 MarkerModel *TraceModel::getMarkerModel() const
