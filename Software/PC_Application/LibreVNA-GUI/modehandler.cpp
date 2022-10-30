@@ -32,8 +32,8 @@ int ModeHandler::addMode(Mode *mode)
     currentModeIndex = int(modes.size()) - 1;
     connect(mode, &Mode::statusbarMessage, this, &ModeHandler::setStatusBarMessageChanged);
 
-//    auto m = getMode(currentModeIndex);
-//    activate(m);
+    auto m = getMode(currentModeIndex);
+    activate(m);
 
     emit ModeCreated(currentModeIndex);
     return (currentModeIndex);
