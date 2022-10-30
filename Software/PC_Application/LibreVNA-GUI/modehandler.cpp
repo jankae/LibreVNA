@@ -23,17 +23,17 @@ void ModeHandler::shutdown()
 int ModeHandler::createMode(QString name, Mode::Type t)
 {
     auto mode = createNew(aw, name, t);
-    return createMode(mode);
+    return addMode(mode);
 }
 
-int ModeHandler::createMode(Mode *mode)
+int ModeHandler::addMode(Mode *mode)
 {
     modes.push_back(mode);
     currentModeIndex = int(modes.size()) - 1;
     connect(mode, &Mode::statusbarMessage, this, &ModeHandler::setStatusBarMessageChanged);
 
-    auto m = getMode(currentModeIndex);
-    activate(m);
+//    auto m = getMode(currentModeIndex);
+//    activate(m);
 
     emit ModeCreated(currentModeIndex);
     return (currentModeIndex);

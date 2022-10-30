@@ -46,7 +46,7 @@ public slots:
 private:
     std::vector<Mode*> modes;
     int currentModeIndex;
-    int createMode(Mode *mode);
+    int addMode(Mode *mode);
     Mode *createNew(AppWindow *window, QString name, Mode::Type t);
     AppWindow *aw;
     Mode *activeMode;

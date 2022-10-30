@@ -64,6 +64,11 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     normalize.measure = nullptr;
     normalize.enable = nullptr;
 
+    configurationTimer.setSingleShot(true);
+    connect(&configurationTimer, &QTimer::timeout, this, [=](){
+        ConfigureDevice();
+    });
+
     traceModel.setSource(TraceModel::DataSource::SA);
 
     // Create default traces
@@ -543,77 +548,7 @@ void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
 
 void SpectrumAnalyzer::SettingsChanged()
 {
-    if(running) {
-        changingSettings = true;
-        if(settings.freqStop - settings.freqStart >= 1000 || settings.freqStop - settings.freqStart <= 0) {
-            settings.points = 1001;
-        } else {
-            settings.points = settings.freqStop - settings.freqStart + 1;
-        }
-
-        if(settings.trackingGenerator && settings.freqStop >= 25000000) {
-            // Check point spacing.
-            // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
-            // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
-            // respect to the point number, it is ensured that every displayed point has at least one sample with
-            // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
-            // settings.
-            auto pointSpacing = (settings.freqStop - settings.freqStart) / (settings.points - 1);
-            // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
-            // This code assumes some knowledge of the actual hardware and probably should be moved
-            // onto the device at some point
-            double minSpacing = 25000;
-            auto stop = settings.freqStop;
-            while(stop <= 3000000000) {
-                minSpacing /= 2;
-                stop *= 2;
-            }
-            if(pointSpacing < minSpacing) {
-                auto requiredMinSpan = minSpacing * (settings.points - 1);
-                auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
-                                "With your current span, this could result in the signal not being detected at some bands. A minimum"
-                                " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
-                InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
-            }
-        }
-
-        if(normalize.active) {
-            // check if normalization is still valid
-            if(normalize.f_start != settings.freqStart || normalize.f_stop != settings.freqStop || normalize.points != settings.points) {
-                // normalization was taken at different settings, disable
-                EnableNormalization(false);
-                InformationBox::ShowMessage("Information", "Normalization was disabled because the span has been changed");
-            }
-        }
-
-        if(window->getDevice() && isActive) {
-            window->getDevice()->setSA(settings, [=](bool){
-                // device received command
-                changingSettings = false;
-            });
-            emit sweepStarted();
-        } else {
-            // no device, unable to start sweep
-            emit sweepStopped();
-            changingSettings = false;
-        }
-        average.reset(settings.points);
-        UpdateAverageCount();
-        traceModel.clearLiveData();
-        emit traceModel.SpanChanged(settings.freqStart, settings.freqStop);
-    } else {
-        if(window->getDevice()) {
-            changingSettings = true;
-            // single sweep finished
-            window->getDevice()->setIdle([=](bool){
-                emit sweepStopped();
-                changingSettings = false;
-            });
-        } else {
-            emit sweepStopped();
-            changingSettings = false;
-        }
-    }
+    configurationTimer.start(100);
 }
 
 void SpectrumAnalyzer::SetStartFreq(double freq)
@@ -718,7 +653,9 @@ void SpectrumAnalyzer::SetSingleSweep(bool single)
         singleSweep = single;
         emit singleSweepChanged(single);
     }
-    SettingsChanged();
+    if(single) {
+        Run();
+    }
 }
 
 void SpectrumAnalyzer::SetRBW(double bandwidth)
@@ -888,13 +825,88 @@ void SpectrumAnalyzer::SetNormalizationLevel(double level)
 void SpectrumAnalyzer::Run()
 {
     running = true;
-    SettingsChanged();
+    ConfigureDevice();
 }
 
 void SpectrumAnalyzer::Stop()
 {
     running = false;
-    SettingsChanged();
+    ConfigureDevice();
+}
+
+void SpectrumAnalyzer::ConfigureDevice()
+{
+    if(running) {
+        changingSettings = true;
+        if(settings.freqStop - settings.freqStart >= 1000 || settings.freqStop - settings.freqStart <= 0) {
+            settings.points = 1001;
+        } else {
+            settings.points = settings.freqStop - settings.freqStart + 1;
+        }
+
+        if(settings.trackingGenerator && settings.freqStop >= 25000000) {
+            // Check point spacing.
+            // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
+            // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
+            // respect to the point number, it is ensured that every displayed point has at least one sample with
+            // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
+            // settings.
+            auto pointSpacing = (settings.freqStop - settings.freqStart) / (settings.points - 1);
+            // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
+            // This code assumes some knowledge of the actual hardware and probably should be moved
+            // onto the device at some point
+            double minSpacing = 25000;
+            auto stop = settings.freqStop;
+            while(stop <= 3000000000) {
+                minSpacing /= 2;
+                stop *= 2;
+            }
+            if(pointSpacing < minSpacing) {
+                auto requiredMinSpan = minSpacing * (settings.points - 1);
+                auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
+                                "With your current span, this could result in the signal not being detected at some bands. A minimum"
+                                " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
+                InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
+            }
+        }
+
+        if(normalize.active) {
+            // check if normalization is still valid
+            if(normalize.f_start != settings.freqStart || normalize.f_stop != settings.freqStop || normalize.points != settings.points) {
+                // normalization was taken at different settings, disable
+                EnableNormalization(false);
+                InformationBox::ShowMessage("Information", "Normalization was disabled because the span has been changed");
+            }
+        }
+
+        if(window->getDevice() && isActive) {
+            window->getDevice()->setSA(settings, [=](bool){
+                // device received command
+                changingSettings = false;
+            });
+            emit sweepStarted();
+        } else {
+            // no device, unable to start sweep
+            emit sweepStopped();
+            changingSettings = false;
+        }
+        average.reset(settings.points);
+        UpdateAverageCount();
+        traceModel.clearLiveData();
+        emit traceModel.SpanChanged(settings.freqStart, settings.freqStop);
+    } else {
+        if(window->getDevice()) {
+            changingSettings = true;
+            // single sweep finished
+            window->getDevice()->setIdle([=](bool){
+                emit sweepStopped();
+                changingSettings = false;
+            });
+        } else {
+            emit sweepStopped();
+            changingSettings = false;
+        }
+    }
 }
 
 void SpectrumAnalyzer::SetupSCPI()

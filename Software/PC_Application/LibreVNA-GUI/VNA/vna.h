@@ -116,7 +116,7 @@ private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
     void SetupSCPI();
     void UpdateAverageCount();
-    void SettingsChanged(bool resetTraces = true, std::function<void(bool)> cb = nullptr);
+    void SettingsChanged();
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();
@@ -129,6 +129,7 @@ private slots:
     void SetSingleSweep(bool single);
     void Run();
     void Stop();
+    void ConfigureDevice(bool resetTraces = true, std::function<void(bool)> cb = nullptr);
 private:
     Settings settings;
     unsigned int averages;
@@ -138,6 +139,7 @@ private:
     Averaging average;
     bool singleSweep;
     bool running;
+    QTimer configurationTimer;
 
     // Calibration
     Calibration cal;

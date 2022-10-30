@@ -1140,6 +1140,14 @@ void AppWindow::LoadSetup(nlohmann::json j)
         toolbars.reference.outFreq->setCurrentText(QString::fromStdString(j["Reference"].value("Output", "Off")));
     }
 
+    // Disconnect device prior to deleting and creating new modes. This prevents excessice and unnnecessary configuration of the device
+    QString serial = QString();
+    if(vdevice->getConnected()) {
+        serial = vdevice->serial();
+        delete vdevice;
+        vdevice = nullptr;
+    }
+
     modeHandler->closeModes();
 
     /* old style VNA/Generator/Spectrum Analyzer settings,
@@ -1168,6 +1176,11 @@ void AppWindow::LoadSetup(nlohmann::json j)
                 m->fromJSON(jm["settings"]);
             }
         }
+    }
+
+    // reconnect to device
+    if(!serial.isEmpty()) {
+        vdevice = new VirtualDevice(serial);
     }
 
     // activate the correct mode

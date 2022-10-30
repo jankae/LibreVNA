@@ -69,6 +69,11 @@ VNA::VNA(AppWindow *window, QString name)
 
     traceModel.setSource(TraceModel::DataSource::VNA);
 
+    configurationTimer.setSingleShot(true);
+    connect(&configurationTimer, &QTimer::timeout, this, [=](){
+        ConfigureDevice();
+    });
+
     // Create default traces
     createDefaultTracesAndGraphs(2);
 
@@ -886,7 +891,7 @@ void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
         } else {
             settings.activeSegment = 0;
         }
-        SettingsChanged(false);
+        SettingsChanged();
     }
 }
 
@@ -895,95 +900,9 @@ void VNA::UpdateAverageCount()
     lAverages->setText(QString::number(average.getLevel()) + "/");
 }
 
-void VNA::SettingsChanged(bool resetTraces, std::function<void (bool)> cb)
+void VNA::SettingsChanged()
 {
-    if(running) {
-        if (resetTraces) {
-            settings.activeSegment = 0;
-        }
-        changingSettings = true;
-        // assemble VNA protocol settings
-        VirtualDevice::VNASettings s = {};
-        s.IFBW = settings.bandwidth;
-        if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
-                s.excitedPorts.push_back(i);
-            }
-        } else {
-            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
-                if(traceModel.PortExcitationRequired(i))
-                s.excitedPorts.push_back(i);
-            }
-        }
-        settings.excitedPorts = s.excitedPorts;
-
-        double start = settings.sweepType == SweepType::Frequency ? settings.Freq.start : settings.Power.start;
-        double stop = settings.sweepType == SweepType::Frequency ? settings.Freq.stop : settings.Power.stop;
-        int npoints = settings.npoints;
-        emit traceModel.SpanChanged(start, stop);
-        if (settings.segments > 1) {
-            // more than one segment, adjust start/stop
-            npoints = ceil((double) settings.npoints / settings.segments);
-            unsigned int segmentStartPoint = npoints * settings.activeSegment;
-            unsigned int segmentStopPoint = segmentStartPoint + npoints - 1;
-            if(segmentStopPoint >= settings.npoints) {
-                segmentStopPoint = settings.npoints - 1;
-                npoints = settings.npoints - segmentStartPoint;
-            }
-            auto seg_start = Util::Scale<double>(segmentStartPoint, 0, settings.npoints - 1, start, stop);
-            auto seg_stop = Util::Scale<double>(segmentStopPoint, 0, settings.npoints - 1, start, stop);
-            start = seg_start;
-            stop = seg_stop;
-        }
-
-        if(settings.sweepType == SweepType::Frequency) {
-            s.freqStart = start;
-            s.freqStop = stop;
-            s.points = npoints;
-            s.dBmStart = settings.Freq.excitation_power;
-            s.dBmStop = settings.Freq.excitation_power;
-            s.logSweep = settings.Freq.logSweep;
-        } else if(settings.sweepType == SweepType::Power) {
-            s.freqStart = settings.Power.frequency;
-            s.freqStop = settings.Power.frequency;
-            s.points = npoints;
-            s.dBmStart = start;
-            s.dBmStop = stop;
-            s.logSweep = false;
-        }
-        if(window->getDevice() && isActive) {
-            window->getDevice()->setVNA(s, [=](bool res){
-                // device received command, reset traces now
-                if (resetTraces) {
-                    average.reset(settings.npoints);
-                    traceModel.clearLiveData();
-                    UpdateAverageCount();
-                    UpdateCalWidget();
-                }
-                if(cb) {
-                    cb(res);
-                }
-                changingSettings = false;
-            });
-            emit sweepStarted();
-        } else {
-            // no device, unable to start sweep
-            emit sweepStopped();
-            changingSettings = false;
-        }
-    } else {
-        if(window->getDevice()) {
-            changingSettings = true;
-            // single sweep finished
-            window->getDevice()->setIdle([=](bool){
-                emit sweepStopped();
-                changingSettings = false;
-            });
-        } else {
-            emit sweepStopped();
-            changingSettings = false;
-        }
-    }
+    configurationTimer.start(100);
 }
 
 void VNA::StartImpedanceMatching()
@@ -1268,7 +1187,7 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
         cal.clearMeasurements(calMeasurements);
     });
     // Trigger sweep to start from beginning
-    SettingsChanged(true, [=](bool){
+    ConfigureDevice(true, [=](bool){
         // enable calibration measurement only in transmission callback (prevents accidental sampling of data which was still being processed)
         calMeasuring = true;
     });
@@ -1693,20 +1612,111 @@ void VNA::SetSingleSweep(bool single)
         emit singleSweepChanged(single);
     }
     if(single) {
-        SettingsChanged();
+        Run();
     }
 }
 
 void VNA::Run()
 {
     running = true;
-    SettingsChanged();
+    ConfigureDevice();
 }
 
 void VNA::Stop()
 {
     running = false;
-    SettingsChanged();
+    ConfigureDevice(false);
+}
+
+void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
+{
+    if(running) {
+        if (resetTraces) {
+            settings.activeSegment = 0;
+        }
+        changingSettings = true;
+        // assemble VNA protocol settings
+        VirtualDevice::VNASettings s = {};
+        s.IFBW = settings.bandwidth;
+        if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
+            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+                s.excitedPorts.push_back(i);
+            }
+        } else {
+            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+                if(traceModel.PortExcitationRequired(i))
+                s.excitedPorts.push_back(i);
+            }
+        }
+        settings.excitedPorts = s.excitedPorts;
+
+        double start = settings.sweepType == SweepType::Frequency ? settings.Freq.start : settings.Power.start;
+        double stop = settings.sweepType == SweepType::Frequency ? settings.Freq.stop : settings.Power.stop;
+        int npoints = settings.npoints;
+        emit traceModel.SpanChanged(start, stop);
+        if (settings.segments > 1) {
+            // more than one segment, adjust start/stop
+            npoints = ceil((double) settings.npoints / settings.segments);
+            unsigned int segmentStartPoint = npoints * settings.activeSegment;
+            unsigned int segmentStopPoint = segmentStartPoint + npoints - 1;
+            if(segmentStopPoint >= settings.npoints) {
+                segmentStopPoint = settings.npoints - 1;
+                npoints = settings.npoints - segmentStartPoint;
+            }
+            auto seg_start = Util::Scale<double>(segmentStartPoint, 0, settings.npoints - 1, start, stop);
+            auto seg_stop = Util::Scale<double>(segmentStopPoint, 0, settings.npoints - 1, start, stop);
+            start = seg_start;
+            stop = seg_stop;
+        }
+
+        if(settings.sweepType == SweepType::Frequency) {
+            s.freqStart = start;
+            s.freqStop = stop;
+            s.points = npoints;
+            s.dBmStart = settings.Freq.excitation_power;
+            s.dBmStop = settings.Freq.excitation_power;
+            s.logSweep = settings.Freq.logSweep;
+        } else if(settings.sweepType == SweepType::Power) {
+            s.freqStart = settings.Power.frequency;
+            s.freqStop = settings.Power.frequency;
+            s.points = npoints;
+            s.dBmStart = start;
+            s.dBmStop = stop;
+            s.logSweep = false;
+        }
+        if(window->getDevice() && isActive) {
+            window->getDevice()->setVNA(s, [=](bool res){
+                // device received command, reset traces now
+                if (resetTraces) {
+                    average.reset(settings.npoints);
+                    traceModel.clearLiveData();
+                    UpdateAverageCount();
+                    UpdateCalWidget();
+                }
+                if(cb) {
+                    cb(res);
+                }
+                changingSettings = false;
+            });
+            emit sweepStarted();
+        } else {
+            // no device, unable to start sweep
+            emit sweepStopped();
+            changingSettings = false;
+        }
+    } else {
+        if(window->getDevice()) {
+            changingSettings = true;
+            // single sweep finished
+            window->getDevice()->setIdle([=](bool){
+                emit sweepStopped();
+                changingSettings = false;
+            });
+        } else {
+            emit sweepStopped();
+            changingSettings = false;
+        }
+    }
 }
 
 bool VNA::LoadCalibration(QString filename)

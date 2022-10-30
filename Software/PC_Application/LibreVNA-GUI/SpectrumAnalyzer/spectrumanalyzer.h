@@ -73,6 +73,7 @@ private slots:
 
     void Run();
     void Stop();
+    void ConfigureDevice();
 
 private:
     void SetupSCPI();
@@ -89,6 +90,8 @@ private:
     unsigned int averages;
     bool singleSweep;
     bool running;
+    QTimer configurationTimer;
+
     double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
     TraceModel traceModel;
     TraceWidget *traceWidget;
