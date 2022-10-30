@@ -93,12 +93,13 @@ void Marker::assignTrace(Trace *t)
         // Use display format on graph from preferences
         auto& p = Preferences::getInstance();
         if(p.Marker.defaultBehavior.showDataOnGraphs) {
-            if(p.Marker.defaultBehavior.showAllData) {
-                for(auto f : applicableFormats()) {
-                    formatGraph.insert(f);
+            auto applicable = applicableFormats();
+            for(auto f : defaultActiveFormats()) {
+                if(find(applicable.begin(), applicable.end(), f) == applicable.end()) {
+                    // this format is not allowed for this marker
+                    continue;
                 }
-            } else {
-                formatGraph.insert(applicableFormats().front());
+                formatGraph.insert(f);
             }
         }
     }
@@ -294,6 +295,73 @@ std::vector<Marker::Format> Marker::applicableFormats()
         break;
     case Trace::DataType::Invalid:
         break;
+    }
+    return ret;
+}
+
+std::vector<Marker::Format> Marker::defaultActiveFormats()
+{
+    std::vector<Marker::Format> ret;
+    auto &pref = Preferences::getInstance();
+    if(pref.Marker.defaultBehavior.showdB) {
+        ret.push_back(Format::dB);
+    }
+    if(pref.Marker.defaultBehavior.showdBm) {
+        ret.push_back(Format::dBm);
+    }
+    if(pref.Marker.defaultBehavior.showdBuV) {
+        ret.push_back(Format::dBuV);
+    }
+    if(pref.Marker.defaultBehavior.showdBAngle) {
+        ret.push_back(Format::dBAngle);
+    }
+    if(pref.Marker.defaultBehavior.showRealImag) {
+        ret.push_back(Format::RealImag);
+    }
+    if(pref.Marker.defaultBehavior.showImpedance) {
+        ret.push_back(Format::Impedance);
+    }
+    if(pref.Marker.defaultBehavior.showVSWR) {
+        ret.push_back(Format::VSWR);
+    }
+    if(pref.Marker.defaultBehavior.showResistance) {
+        ret.push_back(Format::SeriesR);
+    }
+    if(pref.Marker.defaultBehavior.showCapacitance) {
+        ret.push_back(Format::Capacitance);
+    }
+    if(pref.Marker.defaultBehavior.showInductance) {
+        ret.push_back(Format::Inductance);
+    }
+    if(pref.Marker.defaultBehavior.showQualityFactor) {
+        ret.push_back(Format::QualityFactor);
+    }
+    if(pref.Marker.defaultBehavior.showNoise) {
+        ret.push_back(Format::Noise);
+    }
+    if(pref.Marker.defaultBehavior.showPhasenoise) {
+        ret.push_back(Format::PhaseNoise);
+    }
+    if(pref.Marker.defaultBehavior.showCenterBandwidth) {
+        ret.push_back(Format::CenterBandwidth);
+    }
+    if(pref.Marker.defaultBehavior.showCutoff) {
+        ret.push_back(Format::Cutoff);
+    }
+    if(pref.Marker.defaultBehavior.showInsertionLoss) {
+        ret.push_back(Format::InsertionLoss);
+    }
+    if(pref.Marker.defaultBehavior.showTOI) {
+        ret.push_back(Format::TOI);
+    }
+    if(pref.Marker.defaultBehavior.showAvgTone) {
+        ret.push_back(Format::AvgTone);
+    }
+    if(pref.Marker.defaultBehavior.showAvgModulation) {
+        ret.push_back(Format::AvgModulationProduct);
+    }
+    if(pref.Marker.defaultBehavior.showP1dB) {
+        ret.push_back(Format::P1dB);
     }
     return ret;
 }

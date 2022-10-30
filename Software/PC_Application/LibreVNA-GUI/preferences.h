@@ -149,7 +149,8 @@ public:
     struct {
         struct {
             bool showDataOnGraphs;
-            bool showAllData;
+            bool showdB, showdBm, showdBuV, showdBAngle, showRealImag, showImpedance, showVSWR, showResistance, showCapacitance, showInductance, showQualityFactor;
+            bool showNoise, showPhasenoise, showCenterBandwidth, showCutoff, showInsertionLoss, showTOI, showAvgTone, showAvgModulation, showP1dB;
         } defaultBehavior;
         bool interpolatePoints;
         MarkerSortOrder sortOrder;
@@ -240,7 +241,26 @@ private:
         {&Graphs.SweepIndicator.hide, "Graphs.SweepIndicator.hide", false},
         {&Graphs.SweepIndicator.hidePercent, "Graphs.SweepIndicator.hidePercent", 3.0},
         {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
-        {&Marker.defaultBehavior.showAllData, "Marker.defaultBehavior.ShowAllData", false},
+        {&Marker.defaultBehavior.showdB, "Marker.defaultBehavior.showdB", true},
+        {&Marker.defaultBehavior.showdBm, "Marker.defaultBehavior.showdBm", true},
+        {&Marker.defaultBehavior.showdBuV, "Marker.defaultBehavior.showdBuV", true},
+        {&Marker.defaultBehavior.showdBAngle, "Marker.defaultBehavior.showdBAngle", true},
+        {&Marker.defaultBehavior.showRealImag, "Marker.defaultBehavior.showRealImag", true},
+        {&Marker.defaultBehavior.showVSWR, "Marker.defaultBehavior.showVSWR", true},
+        {&Marker.defaultBehavior.showImpedance, "Marker.defaultBehavior.showImpedance", true},
+        {&Marker.defaultBehavior.showResistance, "Marker.defaultBehavior.showResistance", true},
+        {&Marker.defaultBehavior.showCapacitance, "Marker.defaultBehavior.showCapacitance", true},
+        {&Marker.defaultBehavior.showInductance, "Marker.defaultBehavior.showInductance", true},
+        {&Marker.defaultBehavior.showQualityFactor, "Marker.defaultBehavior.showQualityFactor", true},
+        {&Marker.defaultBehavior.showNoise, "Marker.defaultBehavior.showNoise", true},
+        {&Marker.defaultBehavior.showPhasenoise, "Marker.defaultBehavior.showPhasenoise", true},
+        {&Marker.defaultBehavior.showCenterBandwidth, "Marker.defaultBehavior.showCenterBandwidth", true},
+        {&Marker.defaultBehavior.showCutoff, "Marker.defaultBehavior.showCutoff", true},
+        {&Marker.defaultBehavior.showInsertionLoss, "Marker.defaultBehavior.showInsertionLoss", true},
+        {&Marker.defaultBehavior.showTOI, "Marker.defaultBehavior.showTOI", true},
+        {&Marker.defaultBehavior.showAvgTone, "Marker.defaultBehavior.showAvgTone", true},
+        {&Marker.defaultBehavior.showAvgModulation, "Marker.defaultBehavior.showAvgModulation", true},
+        {&Marker.defaultBehavior.showP1dB, "Marker.defaultBehavior.showP1dB", true},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
         {&Marker.sortOrder, "Marker.sortOrder", MarkerSortOrder::PrefMarkerSortXCoord},
         {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::EmptyNumberAbove},

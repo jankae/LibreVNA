@@ -140,7 +140,26 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     }
 
     connect(ui->MarkerShowMarkerData, &QCheckBox::toggled, [=](bool enabled) {
-         ui->MarkerShowAllMarkerData->setEnabled(enabled);
+         ui->MarkerShowdB->setEnabled(enabled);
+         ui->MarkerShowdBm->setEnabled(enabled);
+         ui->MarkerShowdBUv->setEnabled(enabled);
+         ui->MarkerShowdBAngle->setEnabled(enabled);
+         ui->MarkerShowRealImag->setEnabled(enabled);
+         ui->MarkerShowImpedance->setEnabled(enabled);
+         ui->MarkerShowVSWR->setEnabled(enabled);
+         ui->MarkerShowResistance->setEnabled(enabled);
+         ui->MarkerShowCapacitance->setEnabled(enabled);
+         ui->MarkerShowInductance->setEnabled(enabled);
+         ui->MarkerShowQualityFactor->setEnabled(enabled);
+         ui->MarkerShowNoise->setEnabled(enabled);
+         ui->MarkerShowPhasenoise->setEnabled(enabled);
+         ui->MarkerShowCenterBandwidth->setEnabled(enabled);
+         ui->MarkerShowCutoff->setEnabled(enabled);
+         ui->MarkerShowInsertionLoss->setEnabled(enabled);
+         ui->MarkerShowTOI->setEnabled(enabled);
+         ui->MarkerShowAvgTone->setEnabled(enabled);
+         ui->MarkerShowAvgMod->setEnabled(enabled);
+         ui->MarkerShowP1dB->setEnabled(enabled);
     });
 
     // Compound device page
@@ -336,7 +355,27 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsSweepHidePercent->setValue(p->Graphs.SweepIndicator.hidePercent);
 
     ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
-    ui->MarkerShowAllMarkerData->setChecked(p->Marker.defaultBehavior.showAllData);
+
+    ui->MarkerShowdB->setChecked(p->Marker.defaultBehavior.showdB);
+    ui->MarkerShowdBm->setChecked(p->Marker.defaultBehavior.showdBm);
+    ui->MarkerShowdBUv->setChecked(p->Marker.defaultBehavior.showdBuV);
+    ui->MarkerShowdBAngle->setChecked(p->Marker.defaultBehavior.showdBAngle);
+    ui->MarkerShowRealImag->setChecked(p->Marker.defaultBehavior.showRealImag);
+    ui->MarkerShowImpedance->setChecked(p->Marker.defaultBehavior.showImpedance);
+    ui->MarkerShowVSWR->setChecked(p->Marker.defaultBehavior.showVSWR);
+    ui->MarkerShowResistance->setChecked(p->Marker.defaultBehavior.showResistance);
+    ui->MarkerShowCapacitance->setChecked(p->Marker.defaultBehavior.showCapacitance);
+    ui->MarkerShowInductance->setChecked(p->Marker.defaultBehavior.showInductance);
+    ui->MarkerShowQualityFactor->setChecked(p->Marker.defaultBehavior.showQualityFactor);
+    ui->MarkerShowNoise->setChecked(p->Marker.defaultBehavior.showNoise);
+    ui->MarkerShowPhasenoise->setChecked(p->Marker.defaultBehavior.showPhasenoise);
+    ui->MarkerShowCenterBandwidth->setChecked(p->Marker.defaultBehavior.showCenterBandwidth);
+    ui->MarkerShowCutoff->setChecked(p->Marker.defaultBehavior.showCutoff);
+    ui->MarkerShowInsertionLoss->setChecked(p->Marker.defaultBehavior.showInsertionLoss);
+    ui->MarkerShowTOI->setChecked(p->Marker.defaultBehavior.showTOI);
+    ui->MarkerShowAvgTone->setChecked(p->Marker.defaultBehavior.showAvgTone);
+    ui->MarkerShowAvgMod->setChecked(p->Marker.defaultBehavior.showAvgModulation);
+    ui->MarkerShowP1dB->setChecked(p->Marker.defaultBehavior.showP1dB);
     ui->MarkerInterpolate->setCurrentIndex(p->Marker.interpolatePoints ? 1 : 0);
     ui->MarkerSortOrder->setCurrentIndex((int) p->Marker.sortOrder);
     ui->MarkerSymbolStyle->setCurrentIndex((int) p->Marker.symbolStyle);
@@ -418,7 +457,26 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.SweepIndicator.hidePercent = ui->GraphsSweepHidePercent->value();
 
     p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
-    p->Marker.defaultBehavior.showAllData = ui->MarkerShowAllMarkerData->isChecked();
+    p->Marker.defaultBehavior.showdB = ui->MarkerShowdB->isChecked();
+    p->Marker.defaultBehavior.showdBm = ui->MarkerShowdBm->isChecked();
+    p->Marker.defaultBehavior.showdBuV = ui->MarkerShowdBUv->isChecked();
+    p->Marker.defaultBehavior.showdBAngle = ui->MarkerShowdBAngle->isChecked();
+    p->Marker.defaultBehavior.showRealImag = ui->MarkerShowRealImag->isChecked();
+    p->Marker.defaultBehavior.showImpedance = ui->MarkerShowImpedance->isChecked();
+    p->Marker.defaultBehavior.showVSWR = ui->MarkerShowVSWR->isChecked();
+    p->Marker.defaultBehavior.showResistance = ui->MarkerShowResistance->isChecked();
+    p->Marker.defaultBehavior.showCapacitance = ui->MarkerShowCapacitance->isChecked();
+    p->Marker.defaultBehavior.showInductance = ui->MarkerShowInductance->isChecked();
+    p->Marker.defaultBehavior.showQualityFactor = ui->MarkerShowQualityFactor->isChecked();
+    p->Marker.defaultBehavior.showNoise = ui->MarkerShowNoise->isChecked();
+    p->Marker.defaultBehavior.showPhasenoise = ui->MarkerShowPhasenoise->isChecked();
+    p->Marker.defaultBehavior.showCenterBandwidth = ui->MarkerShowCenterBandwidth->isChecked();
+    p->Marker.defaultBehavior.showCutoff = ui->MarkerShowCutoff->isChecked();
+    p->Marker.defaultBehavior.showInsertionLoss = ui->MarkerShowInsertionLoss->isChecked();
+    p->Marker.defaultBehavior.showTOI = ui->MarkerShowTOI->isChecked();
+    p->Marker.defaultBehavior.showAvgTone = ui->MarkerShowAvgTone->isChecked();
+    p->Marker.defaultBehavior.showAvgModulation = ui->MarkerShowAvgMod->isChecked();
+    p->Marker.defaultBehavior.showP1dB = ui->MarkerShowP1dB->isChecked();
     p->Marker.interpolatePoints = ui->MarkerInterpolate->currentIndex() == 1;
     p->Marker.sortOrder = (MarkerSortOrder) ui->MarkerSortOrder->currentIndex();
     p->Marker.symbolStyle = (MarkerSymbolStyle) ui->MarkerSymbolStyle->currentIndex();

@@ -88,7 +88,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -102,7 +102,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>744</width>
+              <width>749</width>
               <height>920</height>
              </rect>
             </property>
@@ -707,8 +707,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>605</width>
-              <height>866</height>
+              <width>749</width>
+              <height>846</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -1027,7 +1027,7 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>-216</y>
+              <y>0</y>
               <width>749</width>
               <height>952</height>
              </rect>
@@ -1450,20 +1450,20 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>0</y>
-              <width>644</width>
-              <height>544</height>
+              <y>-15</y>
+              <width>749</width>
+              <height>576</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_23">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_9">
+              <layout class="QVBoxLayout" name="verticalLayout_9" stretch="0,0,0">
                <item>
                 <widget class="QGroupBox" name="groupBox_9">
                  <property name="title">
                   <string>Default Behavior</string>
                  </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_12">
+                 <layout class="QVBoxLayout" name="verticalLayout_28">
                   <item>
                    <widget class="QCheckBox" name="MarkerShowMarkerData">
                     <property name="text">
@@ -1472,11 +1472,186 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QCheckBox" name="MarkerShowAllMarkerData">
+                   <widget class="QLabel" name="label_51">
                     <property name="text">
-                     <string>Show data in all available formats</string>
+                     <string>Select formats to be shown by default:</string>
                     </property>
                    </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_18">
+                    <item>
+                     <widget class="QGroupBox" name="groupBox_21">
+                      <property name="title">
+                       <string>Standard formats</string>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_12">
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowdB">
+                         <property name="text">
+                          <string>dB</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowdBm">
+                         <property name="text">
+                          <string>dBm</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowdBUv">
+                         <property name="text">
+                          <string>dBUv</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowdBAngle">
+                         <property name="text">
+                          <string>dB+Angle</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowRealImag">
+                         <property name="text">
+                          <string>Real+Imaginary</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowVSWR">
+                         <property name="text">
+                          <string>VSWR</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowImpedance">
+                         <property name="text">
+                          <string>Impedance</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowResistance">
+                         <property name="text">
+                          <string>Resistance</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowCapacitance">
+                         <property name="text">
+                          <string>Capacitance</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowInductance">
+                         <property name="text">
+                          <string>Inductance</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowQualityFactor">
+                         <property name="text">
+                          <string>Quality factor</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QGroupBox" name="groupBox_22">
+                      <property name="title">
+                       <string>Special marker formats</string>
+                      </property>
+                      <layout class="QVBoxLayout" name="verticalLayout_27">
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowP1dB">
+                         <property name="text">
+                          <string>P1dB</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowNoise">
+                         <property name="text">
+                          <string>Noise</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowPhasenoise">
+                         <property name="text">
+                          <string>Phasenoise</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowInsertionLoss">
+                         <property name="text">
+                          <string>Insertion loss</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowCutoff">
+                         <property name="text">
+                          <string>Cut-off frequency</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowCenterBandwidth">
+                         <property name="text">
+                          <string>Center + Bandwidth</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowTOI">
+                         <property name="text">
+                          <string>TOI</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowAvgTone">
+                         <property name="text">
+                          <string>Average Tone</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowAvgMod">
+                         <property name="text">
+                          <string>Average Modulation</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_6">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
                   </item>
                  </layout>
                 </widget>
@@ -1594,8 +1769,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>644</width>
-              <height>544</height>
+              <width>168</width>
+              <height>127</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -1684,8 +1859,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>644</width>
-              <height>544</height>
+              <width>126</width>
+              <height>90</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -1778,7 +1953,4 @@
   <include location="icons.qrc"/>
  </resources>
  <connections/>
- <buttongroups>
-  <buttongroup name="StartupSweepGroup"/>
- </buttongroups>
 </ui>

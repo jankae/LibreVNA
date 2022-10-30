@@ -55,6 +55,7 @@ public:
     static Format formatFromString(QString s);
     static std::vector<Format> formats();
     std::vector<Format> applicableFormats();
+    std::vector<Format> defaultActiveFormats();
 
     QString readableData(Format format = Format::Last);
     QString readablePosition();
