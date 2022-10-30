@@ -6,6 +6,7 @@
 #include "QFileDialog"
 #include "appwindow.h"
 #include "CustomWidgets/informationbox.h"
+#include "Util/util.h"
 
 #include <QPainter>
 #include <array>
@@ -19,6 +20,7 @@ TraceSmithChart::TraceSmithChart(TraceModel &model, QWidget *parent)
     : TracePolar(model, parent)
 {
     Z0 = 50.0;
+    mouseTextFormat = Marker::Format::RealImag;
 }
 
 nlohmann::json TraceSmithChart::toJSON()
@@ -26,6 +28,7 @@ nlohmann::json TraceSmithChart::toJSON()
     nlohmann::json j;
     j = TracePolar::toJSON();
     j["Z0"] = Z0;
+    j["cursorFormat"] = Marker::formatToString(mouseTextFormat).toStdString();
     nlohmann::json jlines;
     for(auto line : constantLines) {
         jlines.push_back(line.toJSON());
@@ -38,6 +41,12 @@ void TraceSmithChart::fromJSON(nlohmann::json j)
 {
     TracePolar::fromJSON(j);
     Z0 = j.value("Z0", 50.0);
+    mouseTextFormat = Marker::formatFromString(QString::fromStdString(j.value("cursorFormat", "")));
+    auto applicable = applicableMouseTextFormats();
+    if(std::find(applicable.begin(), applicable.end(), mouseTextFormat) == applicable.end()) {
+        // selected format is not allowed
+        mouseTextFormat = Marker::Format::RealImag;
+    }
     if(j.contains("constantLines")) {
         for(auto jline : j["constantLines"]) {
             SmithChartConstantLine line;
@@ -177,6 +186,29 @@ void TraceSmithChart::axisSetupDialog()
     if(AppWindow::showGUI()) {
         dialog->show();
     }
+}
+
+void TraceSmithChart::updateContextMenu()
+{
+    TracePolar::updateContextMenu();
+    // insert the mouse text format selection
+    auto formatMenu = new QMenu("Cursor format", contextmenu);
+    auto group = new QActionGroup(contextmenu);
+    for(auto f : applicableMouseTextFormats()) {
+        auto action = new QAction(Marker::formatToString(f));
+        action->setCheckable(true);
+        action->setActionGroup(group);
+        if(mouseTextFormat == f) {
+            action->setChecked(true);
+        }
+        connect(action, &QAction::triggered, [=](){
+            mouseTextFormat = f;
+        });
+        formatMenu->addAction(action);
+    }
+    auto actions = contextmenu->actions();
+    contextmenu->insertSeparator(actions[4]);
+    contextmenu->insertMenu(actions[4], formatMenu);
 }
 
 bool TraceSmithChart::configureForTrace(Trace *t)
@@ -401,16 +433,36 @@ QString TraceSmithChart::mouseText(QPoint pos)
     auto dataDx = pixelToData(pos);
     if(abs(dataDx) <= edgeReflection) {
         auto data = complex<double>(dataDx.real()-offset.x(), dataDx.imag()-offset.y());
-        data = Z0 * (1.0 + data) / (1.0 - data);
-        auto ret = Unit::ToString(data.real(), "", " ", 3);
-        if(data.imag() >= 0) {
-            ret += "+";
+//        data = Z0 * (1.0 + data) / (1.0 - data);
+
+        switch(mouseTextFormat) {
+        case Marker::Format::dB: return Unit::ToString(Util::SparamTodB(data), "dB", " ", 4);
+        case Marker::Format::dBAngle: return Unit::ToString(Util::SparamTodB(data), "dB", " ", 4) + "/"+Unit::ToString(arg(data)*180/M_PI, "°", " ", 4);
+        case Marker::Format::RealImag: return Unit::ToString(data.real(), "", " ", 5) + "+"+Unit::ToString(data.imag(), "", " ", 5)+"j";
+        case Marker::Format::VSWR:
+            if(abs(data) < 1.0) {
+                return "VSWR: "+Unit::ToString(Util::SparamToVSWR(data), ":1", " ", 5);
+            } else {
+                return "VSWR: NaN";
+            }
+            break;
+        case Marker::Format::SeriesR: return Unit::ToString(Util::SparamToResistance(data, Z0), "Ω", "m kM", 4);
+        case Marker::Format::QualityFactor: return "Q:" + Unit::ToString(Util::SparamToQualityFactor(data), "", " ", 3);
+        case Marker::Format::Impedance: {
+            auto impedance = Util::SparamToImpedance(data, Z0);
+            return Unit::ToString(impedance.real(), "Ω", "m k", 5) + "+"+Unit::ToString(impedance.imag(), "Ω", "m k", 5)+"j";
         }
-        ret += Unit::ToString(data.imag(), "j", " ", 3);
-        return ret;
+        default: return QString();
+        }
     } else {
         return QString();
     }
+}
+
+std::vector<Marker::Format> TraceSmithChart::applicableMouseTextFormats()
+{
+    return {Marker::Format::dB, Marker::Format::dBAngle, Marker::Format::RealImag, Marker::Format::VSWR,
+                Marker::Format::SeriesR, Marker::Format::QualityFactor, Marker::Format::Impedance};
 }
 
 bool TraceSmithChart::supported(Trace *t)

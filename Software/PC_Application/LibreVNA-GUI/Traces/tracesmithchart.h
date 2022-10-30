@@ -2,6 +2,7 @@
 #define TRACESMITHCHART_H
 
 #include "tracepolar.h"
+#include "Marker/marker.h"
 
 #include <QPen>
 #include <QPainterPath>
@@ -75,7 +76,7 @@ class SmithChartParamDelegate : public QStyledItemDelegate
 class SmithChartContantLineModel : public QAbstractTableModel
 {
     Q_OBJECT
-    friend TraceSmithChart;
+    friend class TraceSmithChart;
 public:
     SmithChartContantLineModel(TraceSmithChart &chart, QObject *parent = 0);
 
@@ -114,12 +115,15 @@ public slots:
     virtual void axisSetupDialog() override;
 
 protected:
+    virtual void updateContextMenu() override;
     virtual bool configureForTrace(Trace *t) override;
     bool supported(Trace *t) override;
     virtual void draw(QPainter& painter) override;
     virtual void traceDropped(Trace *t, QPoint position) override;
     virtual bool dropSupported(Trace *t) override;
     QString mouseText(QPoint pos) override;
+    std::vector<Marker::Format> applicableMouseTextFormats();
+    Marker::Format mouseTextFormat;
     double Z0;
     std::vector<SmithChartConstantLine> constantLines;
 };
