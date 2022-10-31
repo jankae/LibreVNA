@@ -1,6 +1,7 @@
 #include "device.h"
 
 #include "CustomWidgets/informationbox.h"
+#include "deviceusblog.h"
 
 #include <signal.h>
 #include <QDebug>
@@ -496,6 +497,14 @@ void Device::ReceivedData()
 //        qDebug() << "Decoding" << dataBuffer->getReceived() << "Bytes";
         handled_len = Protocol::DecodeBuffer(dataBuffer->getBuffer(), dataBuffer->getReceived(), &packet);
 //        qDebug() << "Handled" << handled_len << "Bytes, type:" << (int) packet.type;
+        if(handled_len > 0) {
+            auto &log = DeviceUSBLog::getInstance();
+            if(packet.type != Protocol::PacketType::None) {
+                log.addPacket(packet, m_serial);
+            } else {
+                log.addInvalidBytes(dataBuffer->getBuffer(), handled_len, m_serial);
+            }
+        }
         dataBuffer->removeBytes(handled_len);
         switch(packet.type) {
         case Protocol::PacketType::VNADatapoint:
@@ -585,6 +594,8 @@ bool Device::startNextTransmission()
         return false;
     }
     int actual_length;
+    auto &log = DeviceUSBLog::getInstance();
+    log.addPacket(t.packet);
     auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
     if(ret < 0) {
         qCritical() << "Error sending data: "

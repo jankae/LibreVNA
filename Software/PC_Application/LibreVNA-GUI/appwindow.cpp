@@ -3,6 +3,7 @@
 #include "unit.h"
 #include "CustomWidgets/toggleswitch.h"
 #include "Device/manualcontroldialog.h"
+#include "Device/deviceusblogview.h"
 #include "Traces/tracemodel.h"
 #include "Traces/tracewidget.h"
 #include "Traces/tracesmithchart.h"
@@ -232,6 +233,7 @@ void AppWindow::SetupMenu()
     });
 
     connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
+    connect(ui->actionUSB_log, &QAction::triggered, this, &AppWindow::ShowUSBLog);
     connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
     connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
     connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
@@ -990,6 +992,14 @@ void AppWindow::UpdateAcquisitionFrequencies()
     p.acquisitionFrequencySettings.DFTphaseInc = pref.Acquisition.DFTPhaseInc;
     for(auto dev : vdevice->getDevices()) {
         dev->SendPacket(p);
+    }
+}
+
+void AppWindow::ShowUSBLog()
+{
+    auto d = new DeviceUSBLogView();
+    if(AppWindow::showGUI()) {
+        d->exec();
     }
 }
 

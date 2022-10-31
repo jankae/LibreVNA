@@ -64,6 +64,7 @@ private slots:
     void UpdateReferenceToolbar();
     void UpdateReference();
     void UpdateAcquisitionFrequencies();
+    void ShowUSBLog();
     void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
     void DeviceStatusUpdated(VirtualDevice::Status status);

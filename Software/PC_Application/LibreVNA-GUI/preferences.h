@@ -160,6 +160,9 @@ public:
         bool enabled;
         int port;
     } SCPIServer;
+    struct {
+        double USBlogSizeLimit;
+    } Debug;
 
     bool TCPoverride; // in case of manual port specification via command line
 
@@ -264,6 +267,7 @@ private:
         {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::EmptyNumberAbove},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
+        {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&compoundDeviceJSON, "compoundDeviceJSON", "[]"},
     }};
 };

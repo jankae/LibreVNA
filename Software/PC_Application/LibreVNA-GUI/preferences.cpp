@@ -212,6 +212,10 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         }
     });
 
+    // Debug page
+    ui->DebugMaxUSBlogSize->setUnit("B");
+    ui->DebugMaxUSBlogSize->setPrefixes(" kMG");
+
     // Page selection
     connect(ui->treeWidget, &QTreeWidget::currentItemChanged, [=](QTreeWidgetItem *current, QTreeWidgetItem *) {
         auto name = current->text(0);
@@ -383,6 +387,8 @@ void PreferencesDialog::setInitialGUIState()
     ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
     ui->SCPIServerPort->setValue(p->SCPIServer.port);
 
+    ui->DebugMaxUSBlogSize->setValue(p->Debug.USBlogSizeLimit);
+
     for(auto cd : p->compoundDevices) {
         ui->compoundList->addItem(cd->getDesription());
     }
@@ -483,6 +489,8 @@ void PreferencesDialog::updateFromGUI()
 
     p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
     p->SCPIServer.port = ui->SCPIServerPort->value();
+
+    p->Debug.USBlogSizeLimit = ui->DebugMaxUSBlogSize->value();
 
     p->nonTrivialWriting();
 }

@@ -25,6 +25,8 @@ HEADERS += \
     Device/compounddeviceeditdialog.h \
     Device/device.h \
     Device/devicelog.h \
+    Device/deviceusblog.h \
+    Device/deviceusblogview.h \
     Device/firmwareupdatedialog.h \
     Device/manualcontroldialog.h \
     Device/virtualdevice.h \
@@ -169,6 +171,8 @@ SOURCES += \
     Device/compounddeviceeditdialog.cpp \
     Device/device.cpp \
     Device/devicelog.cpp \
+    Device/deviceusblog.cpp \
+    Device/deviceusblogview.cpp \
     Device/firmwareupdatedialog.cpp \
     Device/manualcontroldialog.cpp \
     Device/virtualdevice.cpp \
@@ -302,6 +306,7 @@ FORMS += \
     CustomWidgets/touchstoneimport.ui \
     Device/compounddeviceeditdialog.ui \
     Device/devicelog.ui \
+    Device/deviceusblogview.ui \
     Device/firmwareupdatedialog.ui \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \

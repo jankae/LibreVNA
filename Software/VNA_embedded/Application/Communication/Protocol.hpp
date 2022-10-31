@@ -88,6 +88,25 @@ public:
 		return std::numeric_limits<std::complex<double>>::quiet_NaN();
 	}
 
+    class Value {
+    public:
+        std::complex<double> value;
+        uint8_t flags;
+    };
+    Value getValue(unsigned int index) {
+        Value v;
+        v.value = 0.0;
+        v.flags = 0;
+        if(index <= num_values) {
+            v.value = std::complex<double>(real_values[index], imag_values[index]);
+            v.flags = descr_values[index];
+        }
+        return v;
+    }
+    unsigned int getNumValues() {
+        return num_values;
+    }
+
 	uint16_t requiredBufferSize() {
 		return 8+2+2+ num_values * (4+4+1);
 	}

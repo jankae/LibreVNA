@@ -32,6 +32,8 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.cpp \
     ../LibreVNA-GUI/Device/device.cpp \
     ../LibreVNA-GUI/Device/devicelog.cpp \
+    ../LibreVNA-GUI/Device/deviceusblog.cpp \
+    ../LibreVNA-GUI/Device/deviceusblogview.cpp \
     ../LibreVNA-GUI/Device/firmwareupdatedialog.cpp \
     ../LibreVNA-GUI/Device/manualcontroldialog.cpp \
     ../LibreVNA-GUI/Device/virtualdevice.cpp \
@@ -195,6 +197,8 @@ HEADERS += \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.h \
     ../LibreVNA-GUI/Device/device.h \
     ../LibreVNA-GUI/Device/devicelog.h \
+    ../LibreVNA-GUI/Device/deviceusblog.h \
+    ../LibreVNA-GUI/Device/deviceusblogview.h \
     ../LibreVNA-GUI/Device/firmwareupdatedialog.h \
     ../LibreVNA-GUI/Device/manualcontroldialog.h \
     ../LibreVNA-GUI/Device/virtualdevice.h \
@@ -339,6 +343,7 @@ FORMS += \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.ui \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \
+    ../LibreVNA-GUI/Device/deviceusblogview.ui \
     ../LibreVNA-GUI/Device/firmwareupdatedialog.ui \
     ../LibreVNA-GUI/Device/manualcontroldialog.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \

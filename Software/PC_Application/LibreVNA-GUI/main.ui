@@ -55,6 +55,8 @@
     <addaction name="actionSource_Calibration"/>
     <addaction name="actionReceiver_Calibration"/>
     <addaction name="actionFrequency_Calibration"/>
+    <addaction name="separator"/>
+    <addaction name="actionUSB_log"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -222,6 +224,14 @@
    </property>
    <property name="text">
     <string>Preset</string>
+   </property>
+  </action>
+  <action name="actionUSB_log">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>View USB log</string>
    </property>
   </action>
  </widget>
