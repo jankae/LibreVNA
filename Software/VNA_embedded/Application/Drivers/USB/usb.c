@@ -24,6 +24,9 @@ static uint16_t usb_transmit_read_index = 0;
 static uint16_t usb_transmit_fifo_level = 0;
 static bool data_transmission_active = false;
 static bool log_transmission_active = true;
+static uint32_t last_transmission = 0;
+
+#define USB_TRANMISSION_TIMEOUT		100
 
 USBD_ClassTypeDef  USBD_ClassDriver =
 {
@@ -162,6 +165,14 @@ static bool trigger_next_fifo_transmission() {
 	return USBD_LL_Transmit(&hUsbDeviceFS, EP_DATA_IN_ADDRESS, &usb_transmit_fifo[usb_transmit_read_index], continous_length) == USBD_OK;
 }
 
+static bool connection_okay() {
+	if(data_transmission_active && HAL_GetTick() - last_transmission > USB_TRANMISSION_TIMEOUT) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 static uint8_t USBD_Class_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 	// A bulk transfer is complete when the endpoint does on of the following:
 	// - Has transferred exactly the amount of data expected
@@ -189,6 +200,7 @@ static uint8_t USBD_Class_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
 			log_transmission_active = false;
 		}
 	}
+	last_transmission = HAL_GetTick();
 	return USBD_OK;
 }
 static uint8_t  USBD_Class_DataOut(USBD_HandleTypeDef *pdev,
@@ -222,6 +234,9 @@ void usb_init(usbd_recv_callback_t receive_callback) {
 	HAL_NVIC_EnableIRQ(USB_LP_IRQn);
 }
 bool usb_transmit(const uint8_t *data, uint16_t length) {
+	if(!connection_okay()) {
+		return false;
+	}
 	// attempt to add data to fifo
 	if(length > usb_available_buffer()) {
 		// data won't fit, abort
