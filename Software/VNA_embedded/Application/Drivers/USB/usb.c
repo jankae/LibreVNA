@@ -235,7 +235,9 @@ void usb_init(usbd_recv_callback_t receive_callback) {
 }
 bool usb_transmit(const uint8_t *data, uint16_t length) {
 	if(!connection_okay()) {
-		return false;
+		// clear buffer and attempt to restart the transfer
+		data_transmission_active = false;
+		usb_transmit_fifo_level = 0;
 	}
 	// attempt to add data to fifo
 	if(length > usb_available_buffer()) {
