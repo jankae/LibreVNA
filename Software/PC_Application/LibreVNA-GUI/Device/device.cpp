@@ -25,6 +25,7 @@ USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, i
     inCallback(false)
 {
     buffer = new unsigned char[buffer_size];
+    memset(buffer, 0, buffer_size);
     transfer = libusb_alloc_transfer(0);
     libusb_fill_bulk_transfer(transfer, handle, endpoint, buffer, buffer_size, CallbackTrampoline, this, 0);
     libusb_submit_transfer(transfer);
@@ -229,9 +230,6 @@ Device::Device(QString serial)
     connect(this, &Device::receivedAnswer, this, &Device::transmissionFinished, Qt::QueuedConnection);
     transmissionTimer.setSingleShot(true);
     transmissionActive = false;
-    // got a new connection, request info
-    SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
-    SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceStatus);
 }
 
 Device::~Device()

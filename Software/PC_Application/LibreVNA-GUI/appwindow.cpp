@@ -345,8 +345,6 @@ bool AppWindow::ConnectToDevice(QString serial)
         }
         ui->actionPreset->setEnabled(true);
 
-        UpdateAcquisitionFrequencies();
-
         for(auto d : deviceActionGroup->actions()) {
             if(d->text() == vdevice->serial()) {
                 d->blockSignals(true);
@@ -359,6 +357,9 @@ bool AppWindow::ConnectToDevice(QString serial)
             connect(vdevice, &VirtualDevice::InfoUpdated, m, &Mode::deviceInfoUpdated);
         }
 
+        vdevice->initialize();
+
+        UpdateAcquisitionFrequencies();
         if (modeHandler->getActiveMode()) {
             modeHandler->getActiveMode()->initializeDevice();
         }
@@ -1276,17 +1277,10 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
     case DeviceStatusBar::Connected:
         lConnectionStatus.setText("Connected to " + vdevice->serial());
         qInfo() << "Connected to" << vdevice->serial();
-//        lDeviceInfo.setText(vdevice->getLastDeviceInfoString());
         break;
     case DeviceStatusBar::Disconnected:
         lConnectionStatus.setText("No device connected");
         lDeviceInfo.setText("No device information available yet");
-        break;
-    case DeviceStatusBar::Updated:
-//        lDeviceInfo.setText(vdevice->getLastDeviceInfoString());
-//        lADCOverload.setVisible(vdevice->StatusV1().ADC_overload);
-//        lUnlevel.setVisible(vdevice->StatusV1().unlevel);
-//        lUnlock.setVisible(!vdevice->StatusV1().LO1_locked || !vdevice->StatusV1().source_locked);
         break;
     default:
         // invalid status

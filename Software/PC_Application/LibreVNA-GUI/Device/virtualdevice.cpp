@@ -178,6 +178,14 @@ void VirtualDevice::RegisterTypes()
     qRegisterMetaType<VirtualDevice::SAMeasurement>("SAMeasurement");
 }
 
+void VirtualDevice::initialize()
+{
+    for(auto dev : devices) {
+        dev->SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
+        dev->SendCommandWithoutPayload(Protocol::PacketType::RequestDeviceStatus);
+    }
+}
+
 bool VirtualDevice::isCompoundDevice() const
 {
     return cdev != nullptr;

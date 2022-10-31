@@ -118,7 +118,12 @@ void TracePolar::setAuto(bool horizontally, bool vertically)
 bool TracePolar::positionWithinGraphArea(const QPoint &p)
 {
     // TODO
-    return true;
+    auto coord = pixelToData(p);
+    if(abs(coord) <= edgeReflection) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 QPoint TracePolar::dataToPixel(std::complex<double> d)

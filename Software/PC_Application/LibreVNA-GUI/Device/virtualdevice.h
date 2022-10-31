@@ -61,6 +61,8 @@ public:
 
     static void RegisterTypes();
 
+    void initialize(); // call this after creating the virtual device and all connections to signals have been made
+
     bool isCompoundDevice() const;
     Device *getDevice();
     CompoundDevice *getCompoundDevice();

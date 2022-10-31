@@ -1316,7 +1316,7 @@ void Calibration::fromJSON(nlohmann::json j)
     }
         break;
     case 2: {
-        // TODO load associated calkit
+        // associated calkit should already be loaded
         if(j.contains("measurements")) {
             // grab measurements
             for(auto j_m : j["measurements"]) {

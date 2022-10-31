@@ -339,12 +339,13 @@ void TracePlot::finishContextMenu()
 void TracePlot::mousePressEvent(QMouseEvent *event)
 {
     auto &pref = Preferences::getInstance();
+    auto position = event->pos() - QPoint(marginLeft, marginTop);
     if(event->buttons() == Qt::LeftButton) {
-        selectedMarker = markerAtPosition(event->pos(), true);
-        if(!selectedMarker && pref.Graphs.enablePanAndZoom && positionWithinGraphArea(event->pos())) {
+        selectedMarker = markerAtPosition(position, true);
+        if(!selectedMarker && pref.Graphs.enablePanAndZoom && positionWithinGraphArea(position)) {
             // no marker at the position, enter trace moving mode
             movingGraph = true;
-            lastMousePoint = event->pos();
+            lastMousePoint = position;
             cursorLabel->hide();
         }
     } else {
@@ -374,8 +375,8 @@ void TracePlot::mouseMoveEvent(QMouseEvent *event)
         selectedMarker->setPosition(nearestTracePoint(trace, clickPoint));
         cursorLabel->hide();
     } else if(movingGraph) {
-        move(event->pos() - lastMousePoint);
-        lastMousePoint = event->pos();
+        move(clickPoint - lastMousePoint);
+        lastMousePoint = clickPoint;
     } else {
         auto text = mouseText(clickPoint);
         if(!text.isEmpty()) {

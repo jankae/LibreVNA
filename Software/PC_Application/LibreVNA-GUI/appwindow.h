@@ -79,7 +79,6 @@ private:
 
     enum class DeviceStatusBar {
         Connected,
-        Updated,
         Disconnected,
     };
 
