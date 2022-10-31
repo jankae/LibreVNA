@@ -22,7 +22,8 @@ static constexpr USBID IDs[] = {
 USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size) :
     buffer_size(buffer_size),
     received_size(0),
-    inCallback(false)
+    inCallback(false),
+    cancelling(false)
 {
     buffer = new unsigned char[buffer_size];
     memset(buffer, 0, buffer_size);
@@ -34,6 +35,7 @@ USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, i
 USBInBuffer::~USBInBuffer()
 {
     if(transfer) {
+        cancelling = true;
         libusb_cancel_transfer(transfer);
         // wait for cancellation to complete
         mutex mtx;
@@ -67,6 +69,13 @@ int USBInBuffer::getReceived() const
 
 void USBInBuffer::Callback(libusb_transfer *transfer)
 {
+    if(cancelling || (transfer->status == LIBUSB_TRANSFER_CANCELLED)) {
+        // destructor called, do not resubmit
+        libusb_free_transfer(transfer);
+        this->transfer = nullptr;
+        cv.notify_all();
+        return;
+    }
 //    qDebug() << libusb_error_name(transfer->status);
     switch(transfer->status) {
     case LIBUSB_TRANSFER_COMPLETED:
@@ -111,11 +120,7 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
         // nothing to do
         break;
     case LIBUSB_TRANSFER_CANCELLED:
-        // destructor called, do not resubmit
-        libusb_free_transfer(transfer);
-        this->transfer = nullptr;
-        cv.notify_all();
-        return;
+        // already handled before switch-case
         break;
     }
     // Resubmit the transfer

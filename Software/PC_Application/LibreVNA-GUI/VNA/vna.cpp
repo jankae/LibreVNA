@@ -1160,7 +1160,7 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
     }
     // Stop sweep
     running = false;
-    SettingsChanged();
+    ConfigureDevice();
     calMeasurements = m;
     // Delete any already captured data of this measurement
     cal.clearMeasurements(m);
@@ -1187,6 +1187,7 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
         cal.clearMeasurements(calMeasurements);
     });
     // Trigger sweep to start from beginning
+    running = true;
     ConfigureDevice(true, [=](bool){
         // enable calibration measurement only in transmission callback (prevents accidental sampling of data which was still being processed)
         calMeasuring = true;
@@ -1707,15 +1708,14 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
     } else {
         if(window->getDevice()) {
             changingSettings = true;
-            // single sweep finished
             window->getDevice()->setIdle([=](bool){
-                emit sweepStopped();
                 changingSettings = false;
             });
         } else {
             emit sweepStopped();
             changingSettings = false;
         }
+        emit sweepStopped();
     }
 }
 

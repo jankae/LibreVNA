@@ -502,10 +502,10 @@ void Preferences::load()
     for(auto d : descr) {
         try {
             d.var.setValue(settings.value(d.name, d.def));
-            qDebug() << "Setting" << d.name << "is set to" << d.var.value();
+//            qDebug() << "Setting" << d.name << "is set to" << d.var.value();
         } catch (const exception& e){
             d.var.setValue(d.def);
-            qDebug() << "Setting" << d.name << "reset to default:" << d.def;
+//            qDebug() << "Setting" << d.name << "reset to default:" << d.def;
         }
     }
     nonTrivialParsing();

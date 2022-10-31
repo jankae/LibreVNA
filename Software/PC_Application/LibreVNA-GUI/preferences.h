@@ -174,9 +174,7 @@ public:
 
 private:
     Preferences() :
-     TCPoverride(false) {
-        qDebug() << "Pref constructor: " << &compoundDeviceJSON;
-    }
+     TCPoverride(false) {}
     static Preferences instance;
 
     const std::vector<Savable::SettingDescription> descr = {{

@@ -40,6 +40,7 @@ private:
     int buffer_size;
     int received_size;
     bool inCallback;
+    bool cancelling;
     std::condition_variable cv;
 };
 
