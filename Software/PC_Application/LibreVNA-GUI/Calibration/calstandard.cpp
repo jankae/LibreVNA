@@ -176,7 +176,7 @@ void Open::edit(std::function<void(void)> finishedCallback)
 
     ui->name->setText(name);
     ui->Z0->setUnit("Ω");
-    ui->Z0->setPrecision(2);
+    ui->Z0->setPrecision(4);
     ui->Z0->setValue(Z0);
     ui->delay->setValue(delay);
     ui->loss->setValue(loss);
@@ -291,7 +291,7 @@ void Short::edit(std::function<void(void)> finishedCallback)
 
     ui->name->setText(name);
     ui->Z0->setUnit("Ω");
-    ui->Z0->setPrecision(2);
+    ui->Z0->setPrecision(4);
     ui->Z0->setValue(Z0);
     ui->delay->setValue(delay);
     ui->loss->setValue(loss);
@@ -419,20 +419,20 @@ void Load::edit(std::function<void(void)> finishedCallback)
 
     ui->name->setText(name);
     ui->resistance->setUnit("Ω");
-    ui->resistance->setPrecision(2);
+    ui->resistance->setPrecision(4);
     ui->resistance->setValue(resistance);
     ui->Z0->setUnit("Ω");
-    ui->Z0->setPrecision(2);
+    ui->Z0->setPrecision(4);
     ui->Z0->setValue(Z0);
     ui->delay->setValue(delay);
     ui->loss->setValue(loss);
     ui->parC->setUnit("F");
     ui->parC->setPrefixes("pnum ");
-    ui->parC->setPrecision(3);
+    ui->parC->setPrecision(4);
     ui->parC->setValue(Cparallel);
     ui->serL->setUnit("H");
     ui->serL->setPrefixes("num ");
-    ui->serL->setPrecision(3);
+    ui->serL->setPrecision(4);
     ui->serL->setValue(Lseries);
 
     if(Cfirst) {
@@ -591,7 +591,7 @@ void Through::edit(std::function<void(void)> finishedCallback)
 
     ui->name->setText(name);
     ui->Z0->setUnit("Ω");
-    ui->Z0->setPrecision(2);
+    ui->Z0->setPrecision(4);
     ui->Z0->setValue(Z0);
     ui->delay->setValue(delay);
     ui->loss->setValue(loss);
@@ -736,18 +736,18 @@ void Line::edit(std::function<void ()> finishedCallback)
 
     ui->name->setText(name);
     ui->Z0->setUnit("Ω");
-    ui->Z0->setPrecision(2);
+    ui->Z0->setPrecision(4);
     ui->Z0->setValue(Z0);
     ui->delay->setValue(delay);
     ui->delay->setUnit("s");
     ui->delay->setPrefixes("pnum ");
     ui->delay->setPrecision(4);
     ui->minFreq->setUnit("Hz");
-    ui->minFreq->setPrecision(3);
+    ui->minFreq->setPrecision(4);
     ui->minFreq->setPrefixes(" kMG");
     ui->minFreq->setValue(minFreq);
     ui->maxFreq->setUnit("Hz");
-    ui->maxFreq->setPrecision(3);
+    ui->maxFreq->setPrecision(4);
     ui->maxFreq->setPrefixes(" kMG");
     ui->maxFreq->setValue(maxFreq);
 
