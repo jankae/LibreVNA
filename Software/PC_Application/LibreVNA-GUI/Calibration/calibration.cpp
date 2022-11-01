@@ -315,6 +315,7 @@ Calibration::Type Calibration::TypeFromString(QString s)
 
 void Calibration::correctMeasurement(VirtualDevice::VNAMeasurement &d)
 {
+    lock_guard<recursive_mutex> guard(access);
     if(caltype.type == Type::None) {
         // no calibration active, nothing to do
         return;
@@ -422,6 +423,7 @@ void Calibration::edit()
     }
 
     auto updateCalStatistics = [=](){
+        lock_guard<recursive_mutex> guard(access);
         ui->activeCalibration->setText(caltype.getReadableDescription());
         ui->calPoints->setValue(points.size());
         if(points.size() > 0) {
@@ -434,6 +436,7 @@ void Calibration::edit()
     };
 
     auto updateCalButtons = [=](){
+        lock_guard<recursive_mutex> guard(access);
         auto row = ui->calibrationList->currentRow();
         if(row < 0) {
             ui->activate->setEnabled(false);
@@ -993,6 +996,7 @@ Calibration::CalType Calibration::getCaltype() const
 
 Calibration::InterpolationType Calibration::getInterpolation(double f_start, double f_stop, int npoints)
 {
+    lock_guard<recursive_mutex> guard(access);
     if(!points.size()) {
         return InterpolationType::NoCalibration;
     }
@@ -1026,6 +1030,7 @@ Calibration::InterpolationType Calibration::getInterpolation(double f_start, dou
 
 std::vector<Trace *> Calibration::getErrorTermTraces()
 {
+    lock_guard<recursive_mutex> guard(access);
     vector<Trace*> ret;
     if(points.size() == 0) {
         return ret;
@@ -1088,6 +1093,7 @@ std::vector<Trace *> Calibration::getErrorTermTraces()
 
 std::vector<Trace *> Calibration::getMeasurementTraces()
 {
+    lock_guard<recursive_mutex> guard(access);
     vector<Trace*> ret;
     for(auto m : measurements) {
         switch(m->getType()) {
@@ -1249,6 +1255,7 @@ Calkit &Calibration::getKit()
 
 nlohmann::json Calibration::toJSON()
 {
+    lock_guard<recursive_mutex> guard(access);
     nlohmann::json j;
     j["format"] = 3;
     nlohmann::json jmeasurements;
@@ -1276,6 +1283,7 @@ nlohmann::json Calibration::toJSON()
 void Calibration::fromJSON(nlohmann::json j)
 {
     reset();
+    lock_guard<recursive_mutex> guard(access);
     if(j.contains("calkit")) {
         kit.fromJSON(j["calkit"]);
     }
@@ -1642,6 +1650,7 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
 
 bool Calibration::compute(Calibration::CalType type)
 {
+    lock_guard<recursive_mutex> guard(access);
     if(type.type == Type::None) {
         deactivate();
         return true;
@@ -1719,6 +1728,7 @@ void Calibration::measurementsComplete()
 
 void Calibration::deactivate()
 {
+    lock_guard<recursive_mutex> guard(access);
     points.clear();
     caltype.type = Type::None;
     caltype.usedPorts.clear();
@@ -1740,6 +1750,7 @@ QString Calibration::DefaultMeasurementsToString(Calibration::DefaultMeasurement
 
 void Calibration::createDefaultMeasurements(Calibration::DefaultMeasurements dm)
 {
+    lock_guard<recursive_mutex> guard(access);
     auto createSOL = [=](int port) {
         auto _short = new CalibrationMeasurement::Short(this);
         _short->setPort(port);
@@ -1793,6 +1804,7 @@ void Calibration::createDefaultMeasurements(Calibration::DefaultMeasurements dm)
 
 void Calibration::deleteMeasurements()
 {
+    lock_guard<recursive_mutex> guard(access);
     for(auto m : measurements) {
         delete m;
     }

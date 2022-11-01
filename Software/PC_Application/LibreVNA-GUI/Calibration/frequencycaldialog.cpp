@@ -13,7 +13,7 @@ FrequencyCalDialog::FrequencyCalDialog(Device *dev,  ModeHandler *handler, QWidg
     ui->ppm->setPrecision(4);
     ui->ppm->setValue(0.0);
 
-    connect(dev, &Device::FrequencyCorrectionReceived, ui->ppm, &SIUnitEdit::setValueQuiet);
+    connect(dev, &Device::FrequencyCorrectionReceived, ui->ppm, &SIUnitEdit::setValueQuiet, Qt::QueuedConnection);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
         // get value and transfer to device

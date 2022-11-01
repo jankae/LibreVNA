@@ -61,8 +61,8 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     }
     file->seek(0);
     state = State::ErasingFLASH;
-    connect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
-    connect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
+    connect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck, Qt::QueuedConnection);
+    connect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack, Qt::QueuedConnection);
     addStatus("Erasing device memory...");
     dev->SendCommandWithoutPayload(Protocol::PacketType::ClearFlash);
     timer.setSingleShot(true);

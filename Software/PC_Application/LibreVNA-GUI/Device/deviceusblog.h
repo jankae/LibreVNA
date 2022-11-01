@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <QDateTime>
 #include <QObject>
+#include <mutex>
 
 class DeviceUSBLog : public QObject, public Savable
 {
@@ -34,6 +35,11 @@ public:
     public:
         LogEntry()
             : type(Type::InvalidBytes), timestamp(QDateTime()), serial(""), p(nullptr) {}
+        ~LogEntry() {
+            delete p;
+        }
+
+        LogEntry(const LogEntry &e);
 
         enum class Type {
             Packet,
@@ -57,7 +63,10 @@ public:
         virtual void fromJSON(nlohmann::json j) override;
     };
 
-    std::deque<LogEntry> getEntries() const;
+    LogEntry getEntry(unsigned int index);
+
+    unsigned long getUsedStorageSize() const;
+    unsigned long getMaxStorageSize() const;
 
 signals:
     void entryAdded(const LogEntry &e);
@@ -70,6 +79,8 @@ private:
     unsigned long maxStorageSize;
     unsigned long usedStorageSize;
     std::deque<LogEntry> entries;
+
+    std::mutex access;
 };
 
 #endif // DEVICEUSBLOG_H

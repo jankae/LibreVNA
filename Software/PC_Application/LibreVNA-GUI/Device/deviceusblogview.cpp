@@ -82,9 +82,18 @@ void DeviceUSBLogView::updateTree()
     ui->tree->setColumnCount(4);
     ui->tree->setHeaderLabels({"Timestamp","Source","Type","Content"});
 
-    for(auto &e : log.getEntries()) {
-        addEntry(e);
+    unsigned int i=0;
+    try {
+        // will throw once all entries have been added (number of entries may change while the loop is running)
+        for(i=0;;i++) {
+            addEntry(log.getEntry(i));
+        }
+    } catch (...) {
     }
+
+    QString status = "Log contains "+QString::number(i) + " entries, using ";
+    status += Unit::ToString(log.getUsedStorageSize(), "B", " kMG") + " (maximum: "+Unit::ToString(log.getMaxStorageSize(), "B", " kMG")+")";
+    ui->status->setText(status);
 }
 
 void DeviceUSBLogView::addEntry(const DeviceUSBLog::LogEntry &e)

@@ -134,7 +134,7 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidge
     });
     connect(ui->automatic, &QPushButton::clicked, this, &AmplitudeCalDialog::AutomaticMeasurementDialog);
 
-    connect(dev, &Device::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedMeasurement);
+    connect(dev, &Device::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedMeasurement, Qt::QueuedConnection);
 }
 
 AmplitudeCalDialog::~AmplitudeCalDialog()
@@ -211,7 +211,7 @@ void AmplitudeCalDialog::LoadFromDevice()
     dev->SetIdle();
     RemoveAllPoints();
 //    qDebug() << "Asking for amplitude calibration";
-    connect(dev, &Device::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint);
+    connect(dev, &Device::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint, Qt::QueuedConnection);
     dev->SendCommandWithoutPayload(requestCommand());
     edited = false;
     UpdateSaveButton();
@@ -401,7 +401,7 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
             disconnect(dev, &Device::AmplitudeCorrectionPointReceived, this, nullptr);
             qDebug() << "Received" << p.totalPoints << "points for automatic calibration";
         }
-    });
+    }, Qt::QueuedConnection);
     // request points of otherCal
     // switch between source/receiver calibration
     auto request = automatic.isSourceCal ? Protocol::PacketType::RequestReceiverCal : Protocol::PacketType::RequestSourceCal;
@@ -414,7 +414,7 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
             AddPoint(p.frequency);
         }
         // intialize measurement state machine
-        connect(dev, &Device::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedAutomaticMeasurementResult);
+        connect(dev, &Device::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedAutomaticMeasurementResult, Qt::QueuedConnection);
         automatic.measuringPort2 = false;
         automatic.measuringCount = 0;
         ui->status->setText("Taking measurements...");

@@ -453,6 +453,7 @@ const Protocol::DeviceInfo &Device::Info(Device *dev)
 
 Protocol::DeviceStatusV1 &Device::StatusV1()
 {
+    lock_guard<mutex> guard(accessMutex);
     return status.v1;
 }
 
@@ -467,6 +468,7 @@ const Protocol::DeviceStatusV1 &Device::StatusV1(Device *dev)
 
 QString Device::getLastDeviceInfoString()
 {
+    lock_guard<mutex> guard(accessMutex);
     QString ret;
     if(!infoValid) {
         ret.append("No device information available yet");
@@ -521,18 +523,24 @@ void Device::ReceivedData()
             emit AmplitudeCorrectionPointReceived(packet.amplitudePoint);
             break;
         case Protocol::PacketType::DeviceInfo:
-            if(packet.info.ProtocolVersion != Protocol::Version) {
-                if(!infoValid) {
-                emit NeedsFirmwareUpdate(packet.info.ProtocolVersion, Protocol::Version);
+            {
+                lock_guard<mutex> guard(accessMutex);
+                if(packet.info.ProtocolVersion != Protocol::Version) {
+                    if(!infoValid) {
+                    emit NeedsFirmwareUpdate(packet.info.ProtocolVersion, Protocol::Version);
+                    }
+                } else {
+                    info = packet.info;
                 }
-            } else {
-                info = packet.info;
+                infoValid = true;
             }
-            infoValid = true;
             emit DeviceInfoUpdated(this);
             break;
         case Protocol::PacketType::DeviceStatusV1:
-            status.v1 = packet.statusV1;
+            {
+                lock_guard<mutex> guard(accessMutex);
+                status.v1 = packet.statusV1;
+            }
             emit DeviceStatusUpdated(this);
             break;
         case Protocol::PacketType::Ack:

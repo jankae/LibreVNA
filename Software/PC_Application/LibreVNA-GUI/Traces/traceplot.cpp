@@ -38,6 +38,7 @@ TracePlot::TracePlot(TraceModel &model, QWidget *parent)
     connect(&replotTimer, &QTimer::timeout, this, qOverload<>(&TracePlot::update));
     sweep_fmin = std::numeric_limits<double>::lowest();
     sweep_fmax = std::numeric_limits<double>::max();
+    xSweep = std::numeric_limits<double>::quiet_NaN();
     // get notified when the span changes
     connect(&model, &TraceModel::SpanChanged, this, qOverload<double, double>(&TracePlot::updateSpan));
     plots.insert(this);

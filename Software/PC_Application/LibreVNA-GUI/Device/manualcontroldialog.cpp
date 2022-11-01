@@ -148,7 +148,7 @@ ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
     MakeReadOnly(ui->refmag);
     MakeReadOnly(ui->refphase);
 
-    connect(&dev, &Device::ManualStatusReceived, this, &ManualControlDialog::NewStatus);
+    connect(&dev, &Device::ManualStatusReceived, this, &ManualControlDialog::NewStatus, Qt::QueuedConnection);
 
     connect(ui->SourceCE, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->SourceRFEN, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });

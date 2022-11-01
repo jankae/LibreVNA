@@ -155,6 +155,8 @@ private:
     QString currentCalFile;
 
     bool unsavedChanges;
+
+    std::recursive_mutex access;
 };
 
 #endif // CALIBRATION2_H

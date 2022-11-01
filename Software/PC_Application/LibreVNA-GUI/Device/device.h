@@ -140,6 +140,8 @@ private:
     union {
         Protocol::DeviceStatusV1 v1;
     } status;
+
+    std::mutex accessMutex;
 };
 
 #endif // DEVICE_H

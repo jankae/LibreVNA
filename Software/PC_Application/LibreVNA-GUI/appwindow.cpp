@@ -939,6 +939,8 @@ void AppWindow::StartManualControl()
 
 void AppWindow::UpdateReferenceToolbar()
 {
+    toolbars.reference.type->blockSignals(true);
+    toolbars.reference.outFreq->blockSignals(true);
     if(!vdevice || !vdevice->getInfo().supportsExtRef) {
         toolbars.reference.type->setEnabled(false);
         toolbars.reference.outFreq->setEnabled(false);
@@ -968,6 +970,9 @@ void AppWindow::UpdateReferenceToolbar()
     } else {
         toolbars.reference.outFreq->setCurrentIndex(0);
     }
+    toolbars.reference.type->blockSignals(false);
+    toolbars.reference.outFreq->blockSignals(false);
+    UpdateReference();
 }
 
 void AppWindow::UpdateReference()
@@ -1046,7 +1051,6 @@ void AppWindow::DeviceInfoUpdated()
         modeHandler->getActiveMode()->initializeDevice();
     }
     UpdateReferenceToolbar();
-    UpdateReference();
 }
 
 void AppWindow::SourceCalibrationDialog()

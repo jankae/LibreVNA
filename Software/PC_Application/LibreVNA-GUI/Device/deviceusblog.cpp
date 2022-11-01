@@ -2,7 +2,11 @@
 
 #include "preferences.h"
 
+#include <exception>
+
 #include <QDateTime>
+
+using namespace std;
 
 DeviceUSBLog::DeviceUSBLog()
     : usedStorageSize(0)
@@ -18,6 +22,7 @@ DeviceUSBLog::~DeviceUSBLog()
 
 void DeviceUSBLog::reset()
 {
+    std::lock_guard<mutex> guard(access);
     entries.clear();
     usedStorageSize = 0;
 }
@@ -64,8 +69,19 @@ void DeviceUSBLog::fromJSON(nlohmann::json j)
     }
 }
 
+DeviceUSBLog::LogEntry DeviceUSBLog::getEntry(unsigned int index)
+{
+    std::lock_guard<mutex> guard(access);
+    if(index < entries.size()) {
+        return entries[index];
+    } else {
+        throw std::runtime_error("Index too high");
+    }
+}
+
 void DeviceUSBLog::addEntry(const DeviceUSBLog::LogEntry &e)
 {
+    std::lock_guard<mutex> guard(access);
     usedStorageSize += e.storageSize();
     while(usedStorageSize > maxStorageSize) {
         usedStorageSize -= entries.front().storageSize();
@@ -75,9 +91,28 @@ void DeviceUSBLog::addEntry(const DeviceUSBLog::LogEntry &e)
     emit entryAdded(e);
 }
 
-std::deque<DeviceUSBLog::LogEntry> DeviceUSBLog::getEntries() const
+unsigned long DeviceUSBLog::getMaxStorageSize() const
 {
-    return entries;
+    return maxStorageSize;
+}
+
+unsigned long DeviceUSBLog::getUsedStorageSize() const
+{
+    return usedStorageSize;
+}
+
+DeviceUSBLog::LogEntry::LogEntry(const DeviceUSBLog::LogEntry &e)
+{
+    timestamp = e.timestamp;
+    type = e.type;
+    serial = e.serial;
+    bytes = e.bytes;
+    if(e.p) {
+        p = new Protocol::PacketInfo;
+        *p = *e.p;
+    } else {
+        p = nullptr;
+    }
 }
 
 nlohmann::json DeviceUSBLog::LogEntry::toJSON()
