@@ -30,7 +30,7 @@ public:
     Sparam(const Tparam &t);
     Sparam(const ABCDparam &a, Type Z01, Type Z02);
     Sparam(const ABCDparam &a, Type Z0);
-    Sparam operator+(const Sparam &r) {
+    Sparam operator+(const Sparam &r) const {
         Sparam p;
         p.m11 = this->m11+r.m11;
         p.m12 = this->m12+r.m12;
@@ -38,7 +38,7 @@ public:
         p.m22 = this->m22+r.m22;
         return p;
     }
-    Sparam operator*(const Type &r) {
+    Sparam operator*(const Type &r) const {
         Sparam p(m11*r, m12*r, m21*r, m22*r);
         return p;
     }

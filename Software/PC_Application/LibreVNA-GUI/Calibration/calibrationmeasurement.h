@@ -94,6 +94,19 @@ public:
     public:
         double frequency;
         std::complex<double> S;
+
+        Point operator*(double scalar) const {
+            Point ret;
+            ret.frequency = frequency * scalar;
+            ret.S = S * scalar;
+            return ret;
+        }
+        Point operator+(const Point &p) const {
+            Point ret;
+            ret.frequency = frequency + p.frequency;
+            ret.S = S + p.S;
+            return ret;
+        }
     };
     std::vector<Point> getPoints() const;
 
@@ -195,6 +208,19 @@ public:
     public:
         double frequency;
         Sparam S;
+
+        Point operator*(double scalar) const {
+            Point ret;
+            ret.frequency = frequency * scalar;
+            ret.S = S * scalar;
+            return ret;
+        }
+        Point operator+(const Point &p) const {
+            Point ret;
+            ret.frequency = frequency + p.frequency;
+            ret.S = S + p.S;
+            return ret;
+        }
     };
     std::vector<Point> getPoints() const;
 
@@ -254,6 +280,37 @@ public:
     public:
         double frequency;
         std::vector<std::vector<std::complex<double>>> S;
+
+        Point operator*(double scalar) const {
+            Point ret;
+            ret.frequency = frequency * scalar;
+            for(const auto &v1 : S) {
+                std::vector<std::complex<double>> v;
+                for(const auto &s : v1) {
+                    v.push_back(s * scalar);
+                }
+                ret.S.push_back(v);
+            }
+            return ret;
+        }
+        Point operator+(const Point &p) const {
+            Point ret;
+            ret.frequency = frequency + p.frequency;
+            if(S.size() != p.S.size()) {
+                throw std::runtime_error("Points to not have the same number of measurements");
+            }
+            for(unsigned int i=0;i<S.size();i++) {
+                std::vector<std::complex<double>> v;
+                if(S[i].size() != p.S[i].size()) {
+                    throw std::runtime_error("Points to not have the same number of measurements");
+                }
+                for(unsigned int j=0;j<S[i].size();j++) {
+                    v.push_back(S[i][j] + p.S[i][j]);
+                }
+                ret.S.push_back(v);
+            }
+            return ret;
+        }
     };
     std::vector<Point> getPoints() const;
 

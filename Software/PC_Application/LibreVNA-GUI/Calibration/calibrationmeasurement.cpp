@@ -1,6 +1,7 @@
 #include "calibrationmeasurement.h"
 #include "unit.h"
 #include "calibration.h"
+#include "Util/util.h"
 
 #include <QDateTime>
 #include <QComboBox>
@@ -336,14 +337,10 @@ std::complex<double> CalibrationMeasurement::OnePort::getMeasured(double frequen
         return numeric_limits<complex<double>>::quiet_NaN();
     }
     // frequency within points, interpolate
-    auto lower = lower_bound(points.begin(), points.end(), frequency, [](const Point &lhs, double rhs) -> bool {
-        return lhs.frequency < rhs;
+    Point interp = Util::interpolate<Point, double>(points, frequency, [](const Point &p)->double{
+        return p.frequency;
     });
-    auto highPoint = *lower;
-    auto lowPoint = *prev(lower);
-    double alpha = (frequency - lowPoint.frequency) / (highPoint.frequency - lowPoint.frequency);
-    complex<double> ret;
-    return lowPoint.S * (1.0 - alpha) + highPoint.S * alpha;
+    return interp.S;
 }
 
 std::complex<double> CalibrationMeasurement::OnePort::getActual(double frequency)
@@ -522,19 +519,10 @@ Sparam CalibrationMeasurement::TwoPort::getMeasured(double frequency)
         return Sparam();
     }
     // frequency within points, interpolate
-    auto lower = lower_bound(points.begin(), points.end(), frequency, [](const Point &lhs, double rhs) -> bool {
-        return lhs.frequency < rhs;
+    Point interp = Util::interpolate<Point, double>(points, frequency, [](const Point &p)->double{
+        return p.frequency;
     });
-    auto lowPoint = *lower;
-    advance(lower, 1);
-    auto highPoint = *lower;
-    double alpha = (frequency - lowPoint.frequency) / (highPoint.frequency - lowPoint.frequency);
-    Sparam ret;
-    ret.m11 = lowPoint.S.m11 * (1.0 - alpha) + highPoint.S.m11 * alpha;
-    ret.m12 = lowPoint.S.m12 * (1.0 - alpha) + highPoint.S.m12 * alpha;
-    ret.m21 = lowPoint.S.m21 * (1.0 - alpha) + highPoint.S.m21 * alpha;
-    ret.m22 = lowPoint.S.m22 * (1.0 - alpha) + highPoint.S.m22 * alpha;
-    return ret;
+    return interp.S;
 }
 
 Sparam CalibrationMeasurement::TwoPort::getActual(double frequency)
@@ -699,15 +687,14 @@ std::complex<double> CalibrationMeasurement::Isolation::getMeasured(double frequ
     }
     portRcv--;
     portSrc--;
-    // find correct point, no interpolation yet
-    auto lower = lower_bound(points.begin(), points.end(), frequency, [](const Point &lhs, double rhs) -> bool {
-        return lhs.frequency < rhs;
+    // find correct point, interpolate
+    Point interp = Util::interpolate<Point, double>(points, frequency, [](const Point &p)->double{
+        return p.frequency;
     });
-    Point p = *lower;
-    if(portRcv >= p.S.size() || portSrc >= p.S[portRcv].size()) {
+    if(portRcv >= interp.S.size() || portSrc >= interp.S[portRcv].size()) {
         return numeric_limits<complex<double>>::quiet_NaN();
     } else {
-        return p.S[portRcv][portSrc];
+        return interp.S[portRcv][portSrc];
     }
 }
 

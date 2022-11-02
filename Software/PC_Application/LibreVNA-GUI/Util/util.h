@@ -69,6 +69,42 @@ namespace Util {
         return brightness > 0.6 ? Qt::black : Qt::white;
     }
 
+    /*
+     * Performs interpolation of a list of sorted values.
+     * T: type of the elements in the list. Must contain a value by which these elements are sorted in the list.
+     * C: Target value of the interpolation (e.g. frequency).
+     * extract: A function returning the "sorted by"-value of the element
+     *
+     * The following operators must be defined:
+     * T*double
+     * T+T
+     *
+     * Will return an interpolated element T. If no interpolation is possible because target is outside
+     * of the list, either the first or last element in the list is returned instead.
+     */
+    template<typename T, typename C>
+    T interpolate(const std::vector<T> &list, C target, std::function<C(const T &lhs)> extract) {
+        T ret = {};
+        if(list.size() > 0) {
+            auto it = std::lower_bound(list.begin(), list.end(), target, [=](const T &lhs, C rhs)->bool{
+                return extract(lhs) < rhs;
+            });
+            if(it == list.begin()) {
+                // just return the first element
+                ret = list.front();
+            } else if(it == list.end()) {
+                // outside of the list of provided values, just use the last one
+                ret = list.back();
+            } else {
+                // needs to interpolate
+                auto highPoint = *it;
+                auto lowPoint = *std::prev(it);
+                double alpha = (target - extract(lowPoint)) / (extract(highPoint) - extract(lowPoint));
+                ret = lowPoint * (1.0 - alpha) + highPoint * alpha;
+            }
+        }
+        return ret;
+    }
     void unwrapPhase(std::vector<double> &phase, unsigned int start_index = 0);
 
     // input values are Y coordinates, assumes evenly spaced linear X values from 0 to input.size() - 1

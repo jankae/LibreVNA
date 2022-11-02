@@ -11,6 +11,7 @@ TraceModel::TraceModel(QObject *parent)
 {
     traces.clear();
     source = DataSource::Unknown;
+    lastSweepPosition = 0.0;
 }
 
 TraceModel::~TraceModel()
