@@ -181,6 +181,10 @@ double TracePolar::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
     auto samples = t->size();
     for(unsigned int i=0;i<samples;i++) {
         auto data = t->sample(i);
+        if(data.x < minimumVisibleFrequency() || data.x > maximumVisibleFrequency()) {
+            // outside of displayed range
+            continue;
+        }
         data = dataAddOffset(data);
         auto plotPoint = dataToPixel(data);
         if (plotPoint.isNull()) {
@@ -197,7 +201,7 @@ double TracePolar::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
     }
     closestDistance = sqrt(closestDistance);
 
-    if(closestIndex > 0) {
+    if(closestIndex > 0 && t->sample(closestIndex-1).x >= minimumVisibleFrequency()) {
         auto l1 = dataToPixel(dataAddOffset(t->sample(closestIndex-1)));
         auto l2 = dataToPixel(dataAddOffset(t->sample(closestIndex)));
         double ratio;
@@ -207,7 +211,7 @@ double TracePolar::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
             closestXpos = t->sample(closestIndex-1).x + (t->sample(closestIndex).x - t->sample(closestIndex-1).x) * ratio;
         }
     }
-    if(closestIndex < t->size() - 1) {
+    if(closestIndex < t->size() - 1 && t->sample(closestIndex+1).x <= maximumVisibleFrequency()) {
         auto l1 = dataToPixel(dataAddOffset(t->sample(closestIndex)));
         auto l2 = dataToPixel(dataAddOffset(t->sample(closestIndex+1)));
         double ratio;
@@ -293,6 +297,28 @@ void TracePolar::updateContextMenu()
     }
 
     finishContextMenu();
+}
+
+double TracePolar::minimumVisibleFrequency()
+{
+    if(manualFrequencyRange) {
+        return fmin;
+    } else if(limitToSpan) {
+        return sweep_fmin;
+    } else {
+        return std::numeric_limits<double>::lowest();
+    }
+}
+
+double TracePolar::maximumVisibleFrequency()
+{
+    if(manualFrequencyRange) {
+        return fmax;
+    } else if(limitToSpan) {
+        return sweep_fmax;
+    } else {
+        return std::numeric_limits<double>::max();
+    }
 }
 
 bool TracePolar::constrainLineToCircle(QPointF &a, QPointF &b, QPointF center, double radius)

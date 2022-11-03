@@ -239,16 +239,6 @@ void TraceSmithChart::draw(QPainter &p) {
     transform = p.transform();
     p.restore();
 
-    auto minimumVisibleFrequency = std::numeric_limits<double>::lowest();
-    auto maximumVisibleFrequency = std::numeric_limits<double>::max();
-    if(manualFrequencyRange) {
-        minimumVisibleFrequency = fmin;
-        maximumVisibleFrequency = fmax;
-    } else if(limitToSpan) {
-        minimumVisibleFrequency = sweep_fmin;
-        maximumVisibleFrequency = sweep_fmax;
-    }
-
     auto drawArc = [&](SmithChartArc a) {
         a.constrainToCircle(QPointF(0,0), edgeReflection);
         auto topleft = dataToPixel(complex<double>(a.center.x() - a.radius, a.center.y() - a.radius));
@@ -316,7 +306,7 @@ void TraceSmithChart::draw(QPainter &p) {
         for(int i=1;i<nPoints;i++) {
             auto last = trace->sample(i-1);
             auto now = trace->sample(i);
-            if ((trace->getDataType() == Trace::DataType::Frequency) && (last.x < minimumVisibleFrequency || now.x > maximumVisibleFrequency)) {
+            if ((trace->getDataType() == Trace::DataType::Frequency) && (last.x < minimumVisibleFrequency() || now.x > maximumVisibleFrequency())) {
                 continue;
             }
             if(isnan(now.y.real())) {
@@ -325,7 +315,7 @@ void TraceSmithChart::draw(QPainter &p) {
 
             if(pref.Graphs.SweepIndicator.hide && !isnan(xSweep) && trace->getSource() == Trace::Source::Live && trace->isVisible() && !trace->isPaused()) {
                 // check if this part of the trace is visible
-                double range = maximumVisibleFrequency - minimumVisibleFrequency;
+                double range = maximumVisibleFrequency() - minimumVisibleFrequency();
                 double afterSweep = now.x - xSweep;
                 if(afterSweep > 0 && afterSweep * 100 / range <= pref.Graphs.SweepIndicator.hidePercent) {
                     // do not display this part of the trace
@@ -361,7 +351,7 @@ void TraceSmithChart::draw(QPainter &p) {
 //                if (m->isTimeDomain()) {
 //                    continue;
 //                }
-                if (m->getPosition() < minimumVisibleFrequency || m->getPosition() > maximumVisibleFrequency) {
+                if (m->getPosition() < minimumVisibleFrequency() || m->getPosition() > maximumVisibleFrequency()) {
                     continue;
                 }
                 if(m->getPosition() < trace->minX() || m->getPosition() > trace->maxX()) {

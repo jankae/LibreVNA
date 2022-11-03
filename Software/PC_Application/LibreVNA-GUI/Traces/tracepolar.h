@@ -49,6 +49,9 @@ protected:
     virtual void updateContextMenu() override;
     virtual bool supported(Trace *t) override {Q_UNUSED(t) return false;}
 
+    double minimumVisibleFrequency();
+    double maximumVisibleFrequency();
+
     // given two points and a circle, the two points are adjusted in such a way that the line they describe
     // is constrained within the circle. Returns true if there is a remaining line segment in the circle, false
     // if the line lies completely outside of the circle (or is tangent to the circle)
