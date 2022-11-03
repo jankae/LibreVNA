@@ -138,7 +138,8 @@ std::vector<Trace *> TracePlot::orderedTraces()
 
 void TracePlot::contextMenuEvent(QContextMenuEvent *event)
 {
-    auto m = markerAtPosition(event->pos());
+    auto position = event->pos() - QPoint(marginLeft, marginTop);
+    auto m = markerAtPosition(position);
     QMenu *menu;
     if(m) {
         // right click on marker, execute its contextmenu
@@ -422,7 +423,6 @@ void TracePlot::wheelEvent(QWheelEvent *event)
 
 Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
 {
-    auto clickPoint = p - QPoint(marginLeft, marginTop);
     // check if click was near a marker
     unsigned int closestDistance = numeric_limits<unsigned int>::max();
     Marker *closestMarker = nullptr;
@@ -441,7 +441,7 @@ Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
                 // invalid, skip
                 continue;
             }
-            auto diff = markerPoint - clickPoint;
+            auto diff = markerPoint - p;
             unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
             if(distance < closestDistance) {
                 closestDistance = distance;
