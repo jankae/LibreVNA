@@ -80,6 +80,8 @@ entity Sweep is
 			  PORT1_ACTIVE : out STD_LOGIC;
 			  PORT2_ACTIVE : out STD_LOGIC;
 			  
+			  SOURCE_CE : out STD_LOGIC;
+			  
 			  -- Debug signals
 			  DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0);
 			  RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0)
@@ -121,6 +123,7 @@ begin
 	ATTENUATOR <= config_reg(45 downto 39);
 	SOURCE_FILTER <= config_reg(89 downto 88);
 	BAND_SELECT <= config_reg(48);
+	SOURCE_CE <= source_active;
 							
 	NSAMPLES <= USER_NSAMPLES when config_reg(92 downto 90) = "000" else
 					std_logic_vector(to_unsigned(6, 13)) when config_reg(92 downto 90) = "001" else

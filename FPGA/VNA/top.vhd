@@ -151,6 +151,7 @@ architecture Behavioral of top is
 
 		PORT1_ACTIVE : out STD_LOGIC;
 		PORT2_ACTIVE : out STD_LOGIC;
+		SOURCE_CE : out STD_LOGIC;
 		RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0);
 		DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
 		);
@@ -399,6 +400,8 @@ architecture Behavioral of top is
 	signal sweep_excite_port1 : std_logic;
 	signal sweep_excite_port2 : std_logic;
 	
+	signal sweep_source_CE : std_logic;
+	
 	signal sweep_trigger_in : std_logic;
 	signal sweep_trigger_out : std_logic;
 	
@@ -413,6 +416,7 @@ architecture Behavioral of top is
 	signal port2mix_en : std_logic;
 	signal refmix_en : std_logic;	
 	signal portswitch_en : std_logic;
+	signal SPI_source_CE : std_logic;
 	
 	-- PLL/SPI internal mux
 	signal fpga_select : std_logic;
@@ -722,6 +726,7 @@ begin
 
 		PORT1_ACTIVE => sweep_excite_port1,
 		PORT2_ACTIVE => sweep_excite_port2,
+		SOURCE_CE => sweep_source_CE,
 		DEBUG_STATUS => debug,
 		RESULT_INDEX => sampling_result(303 downto 288)
 	);
@@ -751,6 +756,8 @@ begin
 					LO1_MUX when aux2_sync = '1' else
 					fpga_miso when MCU_NSS = '0' else
 					'Z';
+	
+	SOURCE_CE <= SPI_source_CE when sweep_reset = '1' else sweep_source_CE;
 
 	lo_unlocked <= not lo_ld_sync;
 	source_unlocked <= not source_ld_sync;
@@ -782,7 +789,7 @@ begin
 		AMP_SHDN => AMP_PWDN,
 		SOURCE_RF_EN => SOURCE_RF_EN,
 		LO_RF_EN => LO1_RF_EN,
-		SOURCE_CE_EN => SOURCE_CE,
+		SOURCE_CE_EN => SPI_source_CE,
 		LO_CE_EN => LO1_CE,
 		PORTSWITCH_EN => portswitch_en,
 		LEDS => user_leds,
