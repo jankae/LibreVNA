@@ -81,6 +81,7 @@ public slots:
 private slots:
     void NewDatapoint(VirtualDevice::VNAMeasurement m);
     void StartImpedanceMatching();
+    void StartMixedModeConversion();
     // Sweep control
     void SetSweepType(SweepType sw);
     void SetStartFreq(double freq);

@@ -24,18 +24,10 @@ public:
 private slots:
     void on_buttonBox_accepted();
     void on_sbPorts_valueChanged(int ports);
-    void selectionChanged(QComboBox *w);
+    void selectionChanged();
 
 private:
     Ui::TraceTouchstoneExport *ui;
-    TraceModel &model;
-    std::vector<std::vector<QComboBox*>> cTraces;
-
-    unsigned int ports;
-    unsigned int points;
-    double lowerFreq, upperFreq;
-    double referenceImpedance;
-    bool freqsSet;
 };
 
 #endif // TRACEEXPORTDIALOG_H

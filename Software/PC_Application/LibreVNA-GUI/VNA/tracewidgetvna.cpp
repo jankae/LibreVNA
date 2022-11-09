@@ -34,7 +34,7 @@ TraceWidgetVNA::TraceWidgetVNA(TraceModel &model, Calibration &cal, Deembedding 
             if(i >= traces.size()) {
                 break;
             }
-            e->setTrace(i%2, i/2, traces[i]);
+            e->setTrace(i%2+1, i/2+1, traces[i]);
         }
         if(AppWindow::showGUI()) {
             e->show();

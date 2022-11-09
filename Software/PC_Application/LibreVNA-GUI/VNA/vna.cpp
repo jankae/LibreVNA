@@ -12,6 +12,7 @@
 #include "CustomWidgets/siunitedit.h"
 #include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
+#include "Tools/mixedmodeconversion.h"
 #include "ui_main.h"
 #include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
@@ -188,6 +189,8 @@ VNA::VNA(AppWindow *window, QString name)
     actions.insert(toolsMenu->menuAction());
     auto impedanceMatching = toolsMenu->addAction("Impedance Matching");
     connect(impedanceMatching, &QAction::triggered, this, &VNA::StartImpedanceMatching);
+    auto mixedMode = toolsMenu->addAction("Mixed Mode Conversion");
+    connect(mixedMode, &QAction::triggered, this, &VNA::StartMixedModeConversion);
 
     defaultCalMenu = new QMenu("Default Calibration", window);
     assignDefaultCal = defaultCalMenu->addAction("Assign...");
@@ -908,6 +911,20 @@ void VNA::SettingsChanged()
 void VNA::StartImpedanceMatching()
 {
     auto dialog = new ImpedanceMatchDialog(*markerModel);
+    if(AppWindow::showGUI()) {
+        dialog->show();
+    }
+}
+
+void VNA::StartMixedModeConversion()
+{
+    auto dialog = new MixedModeConversion(traceModel);
+    connect(dialog, &MixedModeConversion::tracesCreated, [=](std::vector<Trace*> traces) {
+        auto d = new TraceImportDialog(traceModel, traces);
+        if(AppWindow::showGUI()) {
+            d->show();
+        }
+    });
     if(AppWindow::showGUI()) {
         dialog->show();
     }

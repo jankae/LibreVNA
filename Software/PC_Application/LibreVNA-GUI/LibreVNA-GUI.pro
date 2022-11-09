@@ -21,6 +21,7 @@ HEADERS += \
     CustomWidgets/tilewidget.h \
     CustomWidgets/toggleswitch.h \
     CustomWidgets/touchstoneimport.h \
+    CustomWidgets/tracesetselector.h \
     Device/compounddevice.h \
     Device/compounddeviceeditdialog.h \
     Device/device.h \
@@ -36,6 +37,7 @@ HEADERS += \
     SpectrumAnalyzer/tracewidgetsa.h \
     Tools/eseries.h \
     Tools/impedancematchdialog.h \
+    Tools/mixedmodeconversion.h \
     Tools/parameters.h \
     Traces/Marker/marker.h \
     Traces/Marker/markergroup.h \
@@ -167,6 +169,7 @@ SOURCES += \
     CustomWidgets/tilewidget.cpp \
     CustomWidgets/toggleswitch.cpp \
     CustomWidgets/touchstoneimport.cpp \
+    CustomWidgets/tracesetselector.cpp \
     Device/compounddevice.cpp \
     Device/compounddeviceeditdialog.cpp \
     Device/device.cpp \
@@ -182,6 +185,7 @@ SOURCES += \
     SpectrumAnalyzer/tracewidgetsa.cpp \
     Tools/eseries.cpp \
     Tools/impedancematchdialog.cpp \
+    Tools/mixedmodeconversion.cpp \
     Tools/parameters.cpp \
     Traces/Marker/marker.cpp \
     Traces/Marker/markergroup.cpp \
@@ -311,6 +315,7 @@ FORMS += \
     Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
+    Tools/mixedmodeconversion.ui \
     Traces/Marker/markerwidget.ui \
     Traces/Math/dftdialog.ui \
     Traces/Math/dftexplanationwidget.ui \

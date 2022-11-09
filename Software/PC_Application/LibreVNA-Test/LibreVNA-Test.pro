@@ -28,6 +28,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/CustomWidgets/tilewidget.cpp \
     ../LibreVNA-GUI/CustomWidgets/toggleswitch.cpp \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.cpp \
+    ../LibreVNA-GUI/CustomWidgets/tracesetselector.cpp \
     ../LibreVNA-GUI/Device/compounddevice.cpp \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.cpp \
     ../LibreVNA-GUI/Device/device.cpp \
@@ -43,6 +44,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/SpectrumAnalyzer/tracewidgetsa.cpp \
     ../LibreVNA-GUI/Tools/eseries.cpp \
     ../LibreVNA-GUI/Tools/impedancematchdialog.cpp \
+    ../LibreVNA-GUI/Tools/mixedmodeconversion.cpp \
     ../LibreVNA-GUI/Tools/parameters.cpp \
     ../LibreVNA-GUI/Traces/Marker/marker.cpp \
     ../LibreVNA-GUI/Traces/Marker/markergroup.cpp \
@@ -193,6 +195,7 @@ HEADERS += \
     ../LibreVNA-GUI/CustomWidgets/tilewidget.h \
     ../LibreVNA-GUI/CustomWidgets/toggleswitch.h \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.h \
+    ../LibreVNA-GUI/CustomWidgets/tracesetselector.h \
     ../LibreVNA-GUI/Device/compounddevice.h \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.h \
     ../LibreVNA-GUI/Device/device.h \
@@ -208,6 +211,7 @@ HEADERS += \
     ../LibreVNA-GUI/SpectrumAnalyzer/tracewidgetsa.h \
     ../LibreVNA-GUI/Tools/eseries.h \
     ../LibreVNA-GUI/Tools/impedancematchdialog.h \
+    ../LibreVNA-GUI/Tools/mixedmodeconversion.h \
     ../LibreVNA-GUI/Tools/parameters.h \
     ../LibreVNA-GUI/Traces/Marker/marker.h \
     ../LibreVNA-GUI/Traces/Marker/markergroup.h \
@@ -348,6 +352,7 @@ FORMS += \
     ../LibreVNA-GUI/Device/manualcontroldialog.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \
     ../LibreVNA-GUI/Tools/impedancematchdialog.ui \
+    ../LibreVNA-GUI/Tools/mixedmodeconversion.ui \
     ../LibreVNA-GUI/Traces/Marker/markerwidget.ui \
     ../LibreVNA-GUI/Traces/Math/dftdialog.ui \
     ../LibreVNA-GUI/Traces/Math/dftexplanationwidget.ui \

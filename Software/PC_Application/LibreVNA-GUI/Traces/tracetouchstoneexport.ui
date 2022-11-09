@@ -68,6 +68,11 @@
      <property name="title">
       <string>Traces</string>
      </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="TraceSetSelector" name="selector" native="true"/>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -221,6 +226,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TraceSetSelector</class>
+   <extends>QWidget</extends>
+   <header>CustomWidgets/tracesetselector.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
