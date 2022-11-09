@@ -48,10 +48,11 @@ body:
   validations:
             required: true
 
-- type: checkboxes
+- type: markdown
   attributes:
-    label: Confirming that you haven´t forgot to include configuration files (if applicable)
-    options: 
-      - label: Setup file
-      - label: Calibration file
-      - label: Touchstone file of measurements
+    value: |
+      Please attach the following files if applicable:
+      - Setup file
+        - File->Save Setup
+        - If available, make sure that "include datapoints" under "Window->Preferences->Debug->Trace saving" is enabled
+      - Calibration file
