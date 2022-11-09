@@ -82,6 +82,7 @@
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionCreate_Debug_Data"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -232,6 +233,11 @@
    </property>
    <property name="text">
     <string>View USB log</string>
+   </property>
+  </action>
+  <action name="actionCreate_Debug_Data">
+   <property name="text">
+    <string>Create Debug Data</string>
    </property>
   </action>
  </widget>

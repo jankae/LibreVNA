@@ -712,8 +712,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>565</width>
-              <height>863</height>
+              <width>749</width>
+              <height>846</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -1033,8 +1033,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>553</width>
-              <height>969</height>
+              <width>749</width>
+              <height>952</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1957,6 +1957,22 @@
                   </item>
                   <item row="0" column="1">
                    <widget class="SIUnitEdit" name="DebugMaxUSBlogSize"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_24">
+                 <property name="title">
+                  <string>Trace saving</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_31">
+                  <item>
+                   <widget class="QCheckBox" name="DebugSaveTraceData">
+                    <property name="text">
+                     <string>Include datapoints</string>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </widget>

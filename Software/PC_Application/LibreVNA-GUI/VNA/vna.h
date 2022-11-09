@@ -76,7 +76,8 @@ public:
     };
 
 public slots:
-    bool LoadCalibration(QString filename);
+    bool LoadCalibration(QString filename = "");
+    bool SaveCalibration(QString filename = "");
 
 private slots:
     void NewDatapoint(VirtualDevice::VNAMeasurement m);

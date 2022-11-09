@@ -63,12 +63,13 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 
     ui->GSource->setId(ui->bLive, 0);
     ui->GSource->setId(ui->bFile, 1);
-    ui->GSource->setId(ui->bFile, 2);
+    ui->GSource->setId(ui->bMath, 2);
 
     if(t.getSource() == Trace::Source::Calibration) {
         // prevent editing imported calibration traces (and csv files for now)
         ui->bLive->setEnabled(false);
         ui->bFile->setEnabled(false);
+        ui->bMath->setEnabled(false);
         ui->CLiveType->setEnabled(false);
         ui->CLiveParam->setEnabled(false);
     }

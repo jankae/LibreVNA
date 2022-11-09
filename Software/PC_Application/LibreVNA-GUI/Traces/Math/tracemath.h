@@ -53,7 +53,7 @@ public:
 
     class Data {
     public:
-        Data() : x(0){}
+        Data() : x(0), y(0){}
         double x;
         std::complex<double> y;
     };

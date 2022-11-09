@@ -143,7 +143,7 @@
        <item>
         <widget class="QStackedWidget" name="stack">
          <property name="currentIndex">
-          <number>3</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="LivePage">
           <layout class="QFormLayout" name="formLayout_2">
@@ -399,6 +399,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>ColorPickerButton</class>
+   <extends>QPushButton</extends>
+   <header>CustomWidgets/colorpickerbutton.h</header>
+  </customwidget>
+  <customwidget>
    <class>SIUnitEdit</class>
    <extends>QLineEdit</extends>
    <header>CustomWidgets/siunitedit.h</header>
@@ -408,11 +413,6 @@
    <extends>QWidget</extends>
    <header>CustomWidgets/touchstoneimport.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ColorPickerButton</class>
-   <extends>QPushButton</extends>
-   <header>CustomWidgets/colorpickerbutton.h</header>
   </customwidget>
   <customwidget>
    <class>CSVImport</class>

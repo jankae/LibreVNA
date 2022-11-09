@@ -89,13 +89,11 @@ VNA::VNA(AppWindow *window, QString name)
     calMenu->addSeparator();
 
     connect(calLoad, &QAction::triggered, [=](){
-        LoadCalibration("");
+        LoadCalibration();
     });
 
     connect(saveCal, &QAction::triggered, [=](){
-        if(cal.toFile()) {
-            UpdateStatusbar();
-        }
+        SaveCalibration();
     });
 
     connect(&cal, &Calibration::startMeasurements, this, &VNA::StartCalibrationMeasurements);
@@ -705,7 +703,7 @@ void VNA::shutdown()
     if(cal.hasUnsavedChanges() && cal.getCaltype().type != Calibration::Type::None) {
         auto save = InformationBox::AskQuestion("Save calibration?", "The calibration contains data that has not been saved yet. Do you want to save it before exiting?", false);
         if(save) {
-            cal.toFile();
+            SaveCalibration();
         }
     }
 }
@@ -1739,4 +1737,9 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
 bool VNA::LoadCalibration(QString filename)
 {
     return cal.fromFile(filename);
+}
+
+bool VNA::SaveCalibration(QString filename)
+{
+    return cal.toFile(filename);
 }

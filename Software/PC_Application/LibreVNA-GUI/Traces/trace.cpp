@@ -6,6 +6,7 @@
 #include "traceaxis.h"
 #include "tracemodel.h"
 #include "Math/parser/mpParser.h"
+#include "preferences.h"
 
 #include <math.h>
 #include <QDebug>
@@ -684,10 +685,6 @@ nlohmann::json Trace::toJSON()
     if(!JSONskipHash) {
         j["hash"] = toHash(true);
     }
-    if(source == Source::Calibration) {
-        // calibration traces can't be saved
-        return j;
-    }
     j["name"] = _name.toStdString();
     j["color"] = _color.name().toStdString();
     j["visible"] = visible;
@@ -717,13 +714,26 @@ nlohmann::json Trace::toJSON()
     }
         break;
     case Source::Calibration:
-        // Skip for now, TODO?
+        j["type"] = "Calibration";
         break;
     case Source::Last:
         break;
     }
     j["velocityFactor"] = vFactor;
     j["reflection"] = reflection;
+
+    auto &pref = Preferences::getInstance();
+    if(pref.Debug.saveTraceData) {
+        nlohmann::json jdata;
+        for(const auto &d : data) {
+            nlohmann::json jpoint;
+            jpoint["x"] = d.x;
+            jpoint["real"] = d.y.real();
+            jpoint["imag"] = d.y.imag();
+            jdata.push_back(jpoint);
+        }
+        j["data"] = jdata;
+    }
 
     nlohmann::json mathList;
     for(auto m : mathOps) {
@@ -757,6 +767,16 @@ void Trace::fromJSON(nlohmann::json j)
     _color = QColor(QString::fromStdString(j.value("color", "yellow")));
     visible = j.value("visible", true);
     auto type = QString::fromStdString(j.value("type", "Live"));
+    if(j.contains("data")) {
+        // Trace data is contained in the json, load now
+        clear();
+        for(auto jpoint : j["data"]) {
+            Data d;
+            d.x = jpoint.value("x", 0.0);
+            d.y = complex<double>(jpoint.value("real", 0.0), jpoint.value("imag", 0.0));
+            data.push_back(d);
+        }
+    }
     if(type == "Live") {
         if(j.contains("parameter")) {
             if(j["parameter"].type() == nlohmann::json::value_t::string) {
@@ -776,6 +796,7 @@ void Trace::fromJSON(nlohmann::json j)
         _liveType = j.value("livetype", LivedataType::Overwrite);
         paused = j.value("paused", false);
     } else if(type == "Touchstone" || type == "File") {
+        source = Source::File;
         auto filename = QString::fromStdString(j.value("filename", ""));
         fileParameter = j.value("parameter", 0);
         try {
@@ -788,10 +809,10 @@ void Trace::fromJSON(nlohmann::json j)
                 fillFromTouchstone(t, fileParameter);
             }
         } catch (const exception &e) {
-            std::string what = e.what();
-            throw runtime_error("Failed to create from file:" + what);
+            qWarning() << "Failed to create from file:" << QString::fromStdString(e.what());
         }
     } else if(type == "Math") {
+        source = Source::Math;
         mathFormula = QString::fromStdString(j.value("expression", ""));
         if(j.contains("sources")) {
             for(auto js : j["sources"]) {
@@ -804,6 +825,9 @@ void Trace::fromJSON(nlohmann::json j)
             }
         }
         fromMath();
+    } else if(type == "Calibration") {
+        source = Source::Calibration;
+        // data has already been loaded if present in the file
     }
     vFactor = j.value("velocityFactor", 0.66);
     reflection = j.value("reflection", false);
@@ -841,6 +865,8 @@ void Trace::fromJSON(nlohmann::json j)
         updateLastMath(mathOps.rbegin());
     }
     enableMath(j.value("math_enabled", true));
+    // indicate successful loading of trace data
+    success();
 }
 
 unsigned int Trace::toHash(bool forceUpdate)

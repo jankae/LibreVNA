@@ -388,6 +388,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->SCPIServerPort->setValue(p->SCPIServer.port);
 
     ui->DebugMaxUSBlogSize->setValue(p->Debug.USBlogSizeLimit);
+    ui->DebugSaveTraceData->setChecked(p->Debug.saveTraceData);
 
     for(auto cd : p->compoundDevices) {
         ui->compoundList->addItem(cd->getDesription());
@@ -491,6 +492,7 @@ void PreferencesDialog::updateFromGUI()
     p->SCPIServer.port = ui->SCPIServerPort->value();
 
     p->Debug.USBlogSizeLimit = ui->DebugMaxUSBlogSize->value();
+    p->Debug.saveTraceData = ui->DebugSaveTraceData->isChecked();
 
     p->nonTrivialWriting();
 }
