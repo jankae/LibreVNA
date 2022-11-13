@@ -4,6 +4,7 @@
 #include "caldevice.h"
 #include "usbdevice.h"
 #include "Device/virtualdevice.h"
+#include "CustomWidgets/informationbox.h"
 
 #include <set>
 
@@ -27,8 +28,13 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
     connect(ui->cbDevice, &QComboBox::currentTextChanged, [=](QString text) {
         if(device) {
             delete device;
+            device = nullptr;
         }
-        device = new CalDevice(text);
+        try {
+            device = new CalDevice(text);
+        } catch (exception &e) {
+            device = nullptr;
+        }
         if(device) {
             createPortAssignmentUI();
             connect(device, &CalDevice::updateCoefficientsPercent, ui->progressCoeff, &QProgressBar::setValue);
@@ -376,8 +382,9 @@ void LibreCALDialog::startCalibration()
                     ui->lCalibrationStatus->setText("Failed to activate calibration.");
                     ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
                 }
-                // severe connection to this function
+                // sever connection to this function
                 disconnect(cal, &Calibration::measurementsUpdated, this, nullptr);
+                setTerminationOnAllUsedPorts(CalDevice::Standard::None);
                 enableUI();
                 break;
             }

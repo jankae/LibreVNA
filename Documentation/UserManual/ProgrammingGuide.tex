@@ -505,6 +505,9 @@ $$ S_{11}...S_{1n},S_{21}...S_{2n},...,S_{n1}...S_{nn} $$
 \event{Activates a specific calibration. This command fails if the required measurements have not been taken yet}{VNA:CALibration:ACTivate}{<type>}
 \query{Queries the currently available calibration types}{VNA:CALibration:ACTivate?}{None}{comma-separated list of available calibration types}
 
+\subsubsection{VNA:CALibration:ACTIVE}
+\query{Queries the currently active calibration type}{VNA:CALibration:ACTIVE?}{None}{Currently active calibration type}
+
 \subsubsection{VNA:CALibration:NUMber}
 \query{Queries the number of available calibration measurements}{VNA:CALibration:NUMber?}{None}{<number of configured measurements>}
 

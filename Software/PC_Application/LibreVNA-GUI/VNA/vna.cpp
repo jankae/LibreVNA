@@ -1649,6 +1649,10 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
     if(running) {
         if (resetTraces) {
             settings.activeSegment = 0;
+            average.reset(settings.npoints);
+            traceModel.clearLiveData();
+            UpdateAverageCount();
+            UpdateCalWidget();
         }
         changingSettings = true;
         // assemble VNA protocol settings

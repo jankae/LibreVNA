@@ -54,6 +54,7 @@ Calibration::Calibration()
                     // check if calibration can be activated
                     if(canCompute(caltype)) {
                         compute(caltype);
+                        return SCPI::getResultName(SCPI::Result::Empty);
                     } else {
                         return SCPI::getResultName(SCPI::Result::Error);
                     }
@@ -74,6 +75,9 @@ Calibration::Calibration()
             ret += availableCals[i].getShortString();
         }
         return ret;
+    }));
+    add(new SCPICommand("ACTIVE", nullptr, [=](QStringList) -> QString {
+        return caltype.getShortString();
     }));
     add(new SCPICommand("NUMber", nullptr, [=](QStringList) -> QString {
         return QString::number(measurements.size());

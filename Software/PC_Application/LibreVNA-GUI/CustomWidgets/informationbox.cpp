@@ -6,7 +6,7 @@
 
 bool InformationBox::has_gui = true;
 
-void InformationBox::ShowMessage(QString title, QString message, QString messageID, bool block)
+void InformationBox::ShowMessage(QString title, QString message, QString messageID, bool block, QWidget *parent)
 {
     if(!has_gui) {
         // no gui option active, do not show any messages
@@ -23,7 +23,7 @@ void InformationBox::ShowMessage(QString title, QString message, QString message
 
     QSettings s;
     if(!s.contains(hashToSettingsKey(hash))) {
-        auto box = new InformationBox(title, message, QMessageBox::Information, hash, nullptr);
+        auto box = new InformationBox(title, message, QMessageBox::Information, hash, parent);
         if(block) {
             box->exec();
         } else {
@@ -32,22 +32,22 @@ void InformationBox::ShowMessage(QString title, QString message, QString message
     }
 }
 
-void InformationBox::ShowMessageBlocking(QString title, QString message, QString messageID)
+void InformationBox::ShowMessageBlocking(QString title, QString message, QString messageID, QWidget *parent)
 {
-    ShowMessage(title, message, messageID, true);
+    ShowMessage(title, message, messageID, true, parent);
 }
 
-void InformationBox::ShowError(QString title, QString message)
+void InformationBox::ShowError(QString title, QString message, QWidget *parent)
 {
     if(!has_gui) {
         // no gui option active, do not show any messages
         return;
     }
-    auto box = new InformationBox(title, message, QMessageBox::Information, 0, nullptr);
+    auto box = new InformationBox(title, message, QMessageBox::Information, 0, parent);
     box->show();
 }
 
-bool InformationBox::AskQuestion(QString title, QString question, bool defaultAnswer, QString messageID)
+bool InformationBox::AskQuestion(QString title, QString question, bool defaultAnswer, QString messageID, QWidget *parent)
 {
     if(!has_gui) {
         // no gui option active, do not show any messages
@@ -64,7 +64,7 @@ bool InformationBox::AskQuestion(QString title, QString question, bool defaultAn
 
     QSettings s;
     if(!s.contains(hashToSettingsKey(hash))) {
-        auto box = new InformationBox(title, question, QMessageBox::Question, hash, nullptr);
+        auto box = new InformationBox(title, question, QMessageBox::Question, hash, parent);
         box->setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         int ret = box->exec();
         if(ret == QMessageBox::Yes) {
@@ -90,6 +90,7 @@ InformationBox::InformationBox(QString title, QString message, Icon icon, unsign
     setWindowTitle(title);
     setText(message);
     setAttribute(Qt::WA_DeleteOnClose, true);
+    setModal(true);
     setIcon(icon);
 
     auto cb = new QCheckBox("Do not show this message again");
