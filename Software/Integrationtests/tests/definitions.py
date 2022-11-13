@@ -1,0 +1,1 @@
+GUI_PATH = "../PC_Application/LibreVNA-GUI/LibreVNA-GUI"

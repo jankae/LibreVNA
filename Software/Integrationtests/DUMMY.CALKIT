@@ -1,0 +1,60 @@
+{
+    "Description": "Dummy ideal calibration kit",
+    "Manufacturer": "LibreVNA",
+    "Serialnumber": "1234",
+    "standards": [
+        {
+            "params": {
+                "C0": 0.0,
+                "C1": 0.0,
+                "C2": 0.0,
+                "C3": 0.0,
+                "Z0": 50.0,
+                "delay": 0.0,
+                "id": 13726173464103258082,
+                "loss": 0.0,
+                "name": "Default"
+            },
+            "type": "Open"
+        },
+        {
+            "params": {
+                "L0": 0.0,
+                "L1": 0.0,
+                "L2": 0.0,
+                "L3": 0.0,
+                "Z0": 50.0,
+                "delay": 0.0,
+                "id": 13573063103112146609,
+                "loss": 0.0,
+                "name": "Default"
+            },
+            "type": "Short"
+        },
+        {
+            "params": {
+                "Cfirst": true,
+                "Cparallel": 0.0,
+                "Lseries": 0.0,
+                "Z0": 50.0,
+                "delay": 0.0,
+                "id": 11987083411312060381,
+                "loss": 0.0,
+                "name": "Default",
+                "resistance": 50.0
+            },
+            "type": "Load"
+        },
+        {
+            "params": {
+                "Z0": 50.0,
+                "delay": 0.0,
+                "id": 2916288069679020801,
+                "loss": 0.0,
+                "name": "Default"
+            },
+            "type": "Through"
+        }
+    ],
+    "version": "1.5.0-alpha.1-9b7f457aa"
+}
