@@ -510,6 +510,7 @@ void Device::ReceivedData()
         dataBuffer->removeBytes(handled_len);
         switch(packet.type) {
         case Protocol::PacketType::VNADatapoint:
+//            qDebug() << "Got point" << packet.VNAdatapoint->pointNum;
             emit DatapointReceived(this, packet.VNAdatapoint);
             break;
         case Protocol::PacketType::ManualStatusV1:

@@ -1,10 +1,12 @@
 import socket
 from asyncio import IncompleteReadError  # only import the exception class
+import time
 
 class SocketStreamReader:
     def __init__(self, sock: socket.socket):
         self._sock = sock
         self._recv_buffer = bytearray()
+        self.timeout = 1.0
 
     def read(self, num_bytes: int = -1) -> bytes:
         raise NotImplementedError
@@ -32,10 +34,13 @@ class SocketStreamReader:
         bytes_read = self._recv_into(memoryview(buf))
         assert bytes_read == len(buf)
 
+        timeout = time.time() + self.timeout
         while True:
             idx = buf.find(separator, start)
             if idx != -1:
                 break
+            elif time.time() > timeout:
+                raise Exception("Timed out waiting for response from GUI")
 
             start = len(self._recv_buffer)
             bytes_read = self._recv_into(memoryview(chunk))
@@ -53,7 +58,10 @@ class SocketStreamReader:
         self._recv_buffer = self._recv_buffer[bytes_read:]
         if bytes_read == len(view):
             return bytes_read
-        bytes_read += self._sock.recv_into(view[bytes_read:])
+        try:
+            bytes_read += self._sock.recv_into(view[bytes_read:], 0, socket.MSG_DONTWAIT)
+        except:
+            pass
         return bytes_read
 
 class libreVNA:

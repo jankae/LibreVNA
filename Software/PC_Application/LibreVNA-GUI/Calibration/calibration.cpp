@@ -293,6 +293,7 @@ Calibration::Calibration()
         }
         return SCPI::getResultName(SCPI::Result::True);
     }));
+    add(&kit);
 }
 
 QString Calibration::TypeToString(Calibration::Type type)

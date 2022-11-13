@@ -64,6 +64,9 @@ VNA::VNA(AppWindow *window, QString name)
     calMeasuring = false;
     calWaitFirst = false;
     calDialog.reset();
+    // A modal QProgressDialog calls processEvents() in setValue(). Needs to use a queued connection to update the progress
+    // value from within the NewDatapoint slot to prevent possible re-entrancy.
+    connect(this, &VNA::calibrationMeasurementPercentage, &calDialog, &QProgressDialog::setValue, Qt::QueuedConnection);
     changingSettings = false;
     settings.sweepType = SweepType::Frequency;
     settings.zerospan = false;
@@ -837,11 +840,12 @@ void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
                 if(m_avg.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
                     cal.measurementsComplete();
+                    calDialog.reset();
                 }
             }
         }
         int percentage = (((average.currentSweep() - 1) * 100) + (m_avg.pointNum + 1) * 100 / settings.npoints) / averages;
-        calDialog.setValue(percentage);
+        emit calibrationMeasurementPercentage(percentage);
     }
 
     cal.correctMeasurement(m_avg);
@@ -879,6 +883,7 @@ void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
+
     static unsigned int lastPoint = 0;
     if(m_avg.pointNum > 0 && m_avg.pointNum != lastPoint + 1) {
         qWarning() << "Got point" << m_avg.pointNum << "but last received point was" << lastPoint << "("<<(m_avg.pointNum-lastPoint-1)<<"missed points)";

@@ -1,4 +1,4 @@
-#include "virtualdevice.h"
+﻿#include "virtualdevice.h"
 
 #include "preferences.h"
 #include "CustomWidgets/informationbox.h"

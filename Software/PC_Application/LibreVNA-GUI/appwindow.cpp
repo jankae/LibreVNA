@@ -546,7 +546,7 @@ void AppWindow::SetupSCPI()
         if(active) {
             switch(active->getType()) {
             case Mode::Type::VNA: return "VNA";
-            case Mode::Type::SG: return "SG";
+            case Mode::Type::SG: return "GEN";
             case Mode::Type::SA: return "SA";
             case Mode::Type::Last: return SCPI::getResultName(SCPI::Result::Error);
             }

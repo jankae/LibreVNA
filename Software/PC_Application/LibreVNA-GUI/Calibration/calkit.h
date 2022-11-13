@@ -5,6 +5,7 @@
 #include "Util/qpointervariant.h"
 #include "calstandard.h"
 #include "savable.h"
+#include "scpi.h"
 
 #include "LibreCAL/caldevice.h"
 
@@ -12,7 +13,7 @@
 #include <complex>
 #include <QDir>
 
-class Calkit : public Savable
+class Calkit : public Savable, public SCPINode
 {
     friend class CalkitDialog;
     friend class LibreCALDialog;

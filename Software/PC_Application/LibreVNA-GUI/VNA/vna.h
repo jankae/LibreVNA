@@ -191,6 +191,8 @@ signals:
 
     void sweepStopped();
     void sweepStarted();
+
+    void calibrationMeasurementPercentage(int percent);
 };
 
 #endif // VNA_H

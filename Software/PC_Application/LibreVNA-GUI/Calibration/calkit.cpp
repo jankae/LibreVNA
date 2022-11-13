@@ -16,12 +16,33 @@ using json = nlohmann::json;
 using namespace std;
 
 Calkit::Calkit()
+    : SCPINode("KIT")
 {
-
     // set default values
     for(auto e : descr) {
         e.var.setValue(e.def);
     }
+
+    add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
+        if(params.size() != 1 ) {
+            // no filename given or no calibration active
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        toFile(params[0]);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // no filename given or no calibration active
+            return SCPI::getResultName(SCPI::Result::False);
+        }
+        try {
+            *this = fromFile(params[0]);
+            return SCPI::getResultName(SCPI::Result::True);
+        } catch (runtime_error &e) {
+            return SCPI::getResultName(SCPI::Result::False);
+        }
+    }));
 }
 
 void Calkit::toFile(QString filename)
