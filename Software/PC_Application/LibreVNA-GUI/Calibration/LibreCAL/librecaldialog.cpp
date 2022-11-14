@@ -348,15 +348,15 @@ void LibreCALDialog::startCalibration()
         ui->progressCal->setValue(measurementsTaken * 100 / totalMeasurements);
         switch(measurementsTaken) {
         case 0:
-            setTerminationOnAllUsedPorts(CalDevice::Standard::Open);
+            setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::Open));
             emit cal->startMeasurements(openMeasurements);
             break;
         case 1:
-            setTerminationOnAllUsedPorts(CalDevice::Standard::Short);
+            setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::Short));
             emit cal->startMeasurements(shortMeasurements);
             break;
         case 2:
-            setTerminationOnAllUsedPorts(CalDevice::Standard::Load);
+            setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::Load));
             emit cal->startMeasurements(loadMeasurements);
             break;
         default: {
@@ -384,14 +384,13 @@ void LibreCALDialog::startCalibration()
                 }
                 // sever connection to this function
                 disconnect(cal, &Calibration::measurementsUpdated, this, nullptr);
-                setTerminationOnAllUsedPorts(CalDevice::Standard::None);
+                setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::None));
                 enableUI();
                 break;
             }
-            setTerminationOnAllUsedPorts(CalDevice::Standard::None);
+            setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::None));
             auto m = throughMeasurements[throughIndex];
-            device->setStandard(m->getPort1(), CalDevice::Standard::Through);
-            device->setStandard(m->getPort2(), CalDevice::Standard::Through);
+            device->setStandard(m->getPort1(), CalDevice::Standard(m->getPort2()));
             emit cal->startMeasurements({m});
         }
             break;

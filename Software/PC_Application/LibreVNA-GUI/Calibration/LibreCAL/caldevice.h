@@ -14,12 +14,19 @@ public:
     CalDevice(QString serial);
     ~CalDevice();
 
-    enum class Standard {
-        Open,
-        Short,
-        Load,
-        Through,
-        None
+    class Standard {
+    public:
+        enum class Type {
+            Open,
+            Short,
+            Load,
+            Through,
+            None
+        };
+        Standard(Type type) : type(type), throughDest(0){}
+        Standard(int throughDest) : type(Type::Through), throughDest(throughDest){}
+        Type type;
+        int throughDest;
     };
 
     static QString StandardToString(Standard s);
@@ -36,6 +43,8 @@ public:
     QString serial();
     QString getFirmware() const;
     unsigned int getNumPorts() const;
+
+    bool enterBootloader();
 
     class CoefficientSet {
     public:
@@ -67,6 +76,8 @@ public:
     void saveCoefficientSets();
     std::vector<CoefficientSet> getCoefficientSets() const;
 
+    void addCoefficientSet(QString name);
+
     QStringList getCoefficientSetNames();
 
     bool hasModifiedCoefficients();
@@ -75,6 +86,8 @@ signals:
     void updateCoefficientsPercent(int percent);
     // emitted when all coefficients have been received and it is safe to call all functions again
     void updateCoefficientsDone(bool success);
+
+    void disconnected();
 
 private:
     void loadCoefficientSetsThread(QStringList names = QStringList());

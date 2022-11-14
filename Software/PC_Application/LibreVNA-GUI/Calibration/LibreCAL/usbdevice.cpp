@@ -78,11 +78,12 @@ bool USBDevice::Cmd(QString cmd)
 {
     QString rcv;
     bool success = send(cmd) && receive(&rcv);
-    if(success) {
+    if(success && rcv == "") {
         // empty response expected by commad
-        return rcv == "";
+        return true;
     } else {
         // failed to send/receive
+        emit communicationFailure();
         return false;
     }
 }
@@ -93,7 +94,11 @@ QString USBDevice::Query(QString query)
         QString rcv;
         if(receive(&rcv)) {
             return rcv;
+        } else {
+            emit communicationFailure();
         }
+    } else {
+        emit communicationFailure();
     }
     return QString();
 }
@@ -194,7 +199,7 @@ void USBDevice::SearchDevices(std::function<bool (libusb_device_handle *, QStrin
 
 bool USBDevice::send(const QString &s)
 {
-    qDebug() << "Send:"<<s;
+//    qDebug() << "Send:"<<s;
     unsigned char data[s.size()+2];
     memcpy(data, s.toLatin1().data(), s.size());
     memcpy(&data[s.size()], "\r\n", 2);
@@ -232,13 +237,20 @@ bool USBDevice::receive(QString *s)
     if(res == 0) {
         if(s) {
             *s = QString(data);
-            qDebug() << "Receive:"<<*s;
+//            qDebug() << "Receive:"<<*s;
         }
         return true;
     } else {
         return false;
     }
 }
+
+bool USBDevice::flushRX()
+{
+    char data[512];
+//    libusb_bulk_transfer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, (unsigned char*) data, sizeof(data), &actual, 1);
+}
+
 
 QString USBDevice::serial() const
 {

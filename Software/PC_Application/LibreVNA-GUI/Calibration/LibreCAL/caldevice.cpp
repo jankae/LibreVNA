@@ -23,6 +23,7 @@ CalDevice::CalDevice(QString serial) :
     if(!okay) {
         numPorts = 0;
     }
+    connect(usb, &USBDevice::communicationFailure, this, &CalDevice::disconnected);
 }
 
 CalDevice::~CalDevice()
@@ -32,24 +33,24 @@ CalDevice::~CalDevice()
 
 QString CalDevice::StandardToString(CalDevice::Standard s)
 {
-    switch(s) {
-    case Standard::Open: return "OPEN";
-    case Standard::Short: return "SHORT";
-    case Standard::Load: return "LOAD";
-    case Standard::Through: return "THROUGH";
-    case Standard::None: return "NONE";
+    switch(s.type) {
+    case Standard::Type::Open: return "OPEN";
+    case Standard::Type::Short: return "SHORT";
+    case Standard::Type::Load: return "LOAD";
+    case Standard::Type::Through: return "THROUGH "+QString::number(s.throughDest);
+    case Standard::Type::None: return "NONE";
     }
     return "Invalid";
 }
 
 CalDevice::Standard CalDevice::StandardFromString(QString s)
 {
-    for(int i=0;i<=(int) Standard::None;i++) {
-        if(s == StandardToString((Standard) i)) {
-            return (Standard) i;
+    for(auto standard : availableStandards()) {
+        if(s == StandardToString(standard)) {
+            return standard;
         }
     }
-    return Standard::None;
+    return Standard(Standard::Type::None);
 }
 
 CalDevice::Standard CalDevice::getStandard(int port)
@@ -67,7 +68,7 @@ bool CalDevice::setStandard(int port, CalDevice::Standard s)
 
 std::vector<CalDevice::Standard> CalDevice::availableStandards()
 {
-    return {Standard::None, Standard::Open, Standard::Short, Standard::Load, Standard::Through};
+    return {Standard(Standard::Type::None), Standard(Standard::Type::Open), Standard(Standard::Type::Short), Standard(Standard::Type::Load), Standard(1), Standard(2), Standard(3), Standard(4)};
 }
 
 double CalDevice::getTemperature()
@@ -111,6 +112,11 @@ QString CalDevice::getFirmware() const
 unsigned int CalDevice::getNumPorts() const
 {
     return numPorts;
+}
+
+bool CalDevice::enterBootloader()
+{
+    return usb->Cmd(":BOOTloader");
 }
 
 void CalDevice::loadCoefficientSets(QStringList names)
@@ -304,6 +310,18 @@ void CalDevice::saveCoefficientSetsThread()
 std::vector<CalDevice::CoefficientSet> CalDevice::getCoefficientSets() const
 {
     return coeffSets;
+}
+
+void CalDevice::addCoefficientSet(QString name)
+{
+    CoefficientSet set;
+    set.name = name;
+    set.ports = numPorts;
+    set.loads.resize(numPorts, new CoefficientSet::Coefficient());
+    set.shorts.resize(numPorts, new CoefficientSet::Coefficient());
+    set.opens.resize(numPorts, new CoefficientSet::Coefficient());
+    set.throughs.resize(numPorts*(numPorts-1)/2, new CoefficientSet::Coefficient());
+    coeffSets.push_back(set);
 }
 
 QStringList CalDevice::getCoefficientSetNames()
