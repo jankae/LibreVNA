@@ -651,7 +651,15 @@ bool Trace::isSAParameter(QString param)
 
 bool Trace::isVNAParameter(QString param)
 {
-    return param.length() == 3 && param[0] == 'S' && param[1].isDigit() && param[2].isDigit();
+    if(param.length() == 3 && param[0] == 'S' && param[1].isDigit() && param[2].isDigit()) {
+        // normal S parameter
+        return true;
+    }
+    if(param.startsWith("RawPort")) {
+        // raw receiver value
+        return true;
+    }
+    return false;
 }
 
 double Trace::velocityFactor()

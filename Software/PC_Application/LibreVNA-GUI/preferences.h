@@ -163,6 +163,7 @@ public:
     struct {
         double USBlogSizeLimit;
         bool saveTraceData;
+        bool makeRawReceiverValuesAvailable;
     } Debug;
 
     bool TCPoverride; // in case of manual port specification via command line
@@ -270,6 +271,7 @@ private:
         {&SCPIServer.port, "SCPIServer.port", 19542},
         {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&Debug.saveTraceData, "Debug.saveTraceData", false},
+        {&Debug.makeRawReceiverValuesAvailable, "Debug.makeRawReceiverValuesAvailable", false},
         {&compoundDeviceJSON, "compoundDeviceJSON", "[]"},
     }};
 };

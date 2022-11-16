@@ -1978,6 +1978,22 @@
                 </widget>
                </item>
                <item>
+                <widget class="QGroupBox" name="groupBox_25">
+                 <property name="title">
+                  <string>Acquisition</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_32">
+                  <item>
+                   <widget class="QCheckBox" name="DebugCaptureRawReceiverValues">
+                    <property name="text">
+                     <string>Capture raw receiver values</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
                 <spacer name="verticalSpacer_9">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>

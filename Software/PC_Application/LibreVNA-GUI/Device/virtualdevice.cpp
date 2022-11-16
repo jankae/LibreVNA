@@ -246,6 +246,15 @@ QStringList VirtualDevice::availableVNAMeasurements()
             ret.push_back("S"+QString::number(i)+QString::number(j));
         }
     }
+    auto &pref = Preferences::getInstance();
+    if(pref.Debug.makeRawReceiverValuesAvailable) {
+        for(unsigned int i=1;i<=info.ports;i++) {
+            for(unsigned int j=0;j<info.ports;j++) {
+                ret.push_back("RawPort"+QString::number(i)+"Stage"+QString::number(j));
+                ret.push_back("RawPort"+QString::number(i)+"Stage"+QString::number(j)+"Ref");
+            }
+        }
+    }
     return ret;
 }
 
@@ -554,6 +563,7 @@ VirtualDevice *VirtualDevice::getConnected()
 void VirtualDevice::singleDatapointReceived(Device *dev, Protocol::VNADatapoint<32> *res)
 {
     Q_UNUSED(dev)
+    auto &pref = Preferences::getInstance();
     VNAMeasurement m;
     m.pointNum = res->pointNum;
     m.Z0 = 50.0;
@@ -567,12 +577,18 @@ void VirtualDevice::singleDatapointReceived(Device *dev, Protocol::VNADatapoint<
         // map.first is the port (starts at zero)
         // map.second is the stage at which this port had the stimulus (starts at zero)
         complex<double> ref = res->getValue(map.second, map.first, true);
-        for(int i=0;i<2;i++) {
+        for(int i=0;i<info.ports;i++) {
             complex<double> input = res->getValue(map.second, i, false);
             if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
                 // got both required measurements
                 QString name = "S"+QString::number(i+1)+QString::number(map.first+1);
                 m.measurements[name] = input / ref;
+            }
+            if(pref.Debug.makeRawReceiverValuesAvailable) {
+                QString name = "RawPort"+QString::number(i+1)+"Stage"+QString::number(map.first);
+                m.measurements[name] = input;
+                name = "RawPort"+QString::number(i+1)+"Stage"+QString::number(map.first)+"Ref";
+                m.measurements[name] = res->getValue(map.second, i, true);
             }
         }
     }
