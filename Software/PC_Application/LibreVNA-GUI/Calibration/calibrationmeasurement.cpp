@@ -225,7 +225,7 @@ CalStandard::Virtual* CalibrationMeasurement::Base::getStandard() const
 double CalibrationMeasurement::OnePort::minFreq()
 {
     if(points.size() > 0 && standard) {
-        return min(points.front().frequency, standard->minFrequency());
+        return max(points.front().frequency, standard->minFrequency());
     } else {
         return numeric_limits<double>::max();
     }
@@ -234,7 +234,7 @@ double CalibrationMeasurement::OnePort::minFreq()
 double CalibrationMeasurement::OnePort::maxFreq()
 {
     if(points.size() > 0 && standard) {
-        return max(points.back().frequency, standard->maxFrequency());
+        return min(points.back().frequency, standard->maxFrequency());
     } else {
         return 0;
     }
@@ -369,7 +369,7 @@ std::vector<CalibrationMeasurement::OnePort::Point> CalibrationMeasurement::OneP
 double CalibrationMeasurement::TwoPort::minFreq()
 {
     if(points.size() > 0 && standard) {
-        return min(points.front().frequency, standard->minFrequency());
+        return max(points.front().frequency, standard->minFrequency());
     } else {
         return numeric_limits<double>::max();
     }
@@ -378,7 +378,7 @@ double CalibrationMeasurement::TwoPort::minFreq()
 double CalibrationMeasurement::TwoPort::maxFreq()
 {
     if(points.size() > 0 && standard) {
-        return max(points.back().frequency, standard->maxFrequency());
+        return min(points.back().frequency, standard->maxFrequency());
     } else {
         return 0;
     }
