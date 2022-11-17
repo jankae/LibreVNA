@@ -1,0 +1,1735 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE eagle SYSTEM "eagle.dtd">
+<eagle version="9.3.1">
+<drawing>
+<settings>
+<setting alwaysvectorfont="no"/>
+<setting verticaltext="up"/>
+</settings>
+<grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="10" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
+<layers>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="2" name="Route2" color="10" fill="1" visible="no" active="yes"/>
+<layer number="3" name="Route3" color="17" fill="1" visible="no" active="no"/>
+<layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
+<layer number="5" name="Route5" color="19" fill="1" visible="no" active="no"/>
+<layer number="6" name="Route6" color="25" fill="1" visible="no" active="no"/>
+<layer number="7" name="Route7" color="26" fill="1" visible="no" active="no"/>
+<layer number="8" name="Route8" color="27" fill="1" visible="no" active="no"/>
+<layer number="9" name="Route9" color="28" fill="1" visible="no" active="no"/>
+<layer number="10" name="Route10" color="29" fill="1" visible="no" active="no"/>
+<layer number="11" name="Route11" color="30" fill="1" visible="no" active="no"/>
+<layer number="12" name="Route12" color="20" fill="1" visible="no" active="no"/>
+<layer number="13" name="Route13" color="21" fill="1" visible="no" active="no"/>
+<layer number="14" name="Route14" color="22" fill="1" visible="no" active="no"/>
+<layer number="15" name="Route15" color="14" fill="1" visible="no" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="yes"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="no" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="no" active="yes"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="no" active="yes"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="no" active="yes"/>
+<layer number="29" name="tStop" color="7" fill="3" visible="yes" active="yes"/>
+<layer number="30" name="bStop" color="7" fill="6" visible="yes" active="yes"/>
+<layer number="31" name="tCream" color="7" fill="4" visible="no" active="yes"/>
+<layer number="32" name="bCream" color="7" fill="5" visible="no" active="yes"/>
+<layer number="33" name="tFinish" color="6" fill="3" visible="no" active="yes"/>
+<layer number="34" name="bFinish" color="6" fill="6" visible="no" active="yes"/>
+<layer number="35" name="tGlue" color="7" fill="4" visible="no" active="yes"/>
+<layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="39" name="tKeepout" color="4" fill="11" visible="yes" active="yes"/>
+<layer number="40" name="bKeepout" color="1" fill="11" visible="yes" active="yes"/>
+<layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
+<layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
+<layer number="43" name="vRestrict" color="2" fill="10" visible="no" active="yes"/>
+<layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="yes" active="yes"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
+<layer number="48" name="Document" color="7" fill="1" visible="no" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="no" active="yes"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="no" active="no"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="53" name="tPadExt" color="7" fill="1" visible="no" active="no"/>
+<layer number="54" name="bPadExt" color="7" fill="1" visible="no" active="no"/>
+<layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
+<layer number="57" name="tCAD" color="7" fill="1" visible="no" active="no"/>
+<layer number="88" name="SimResults" color="9" fill="1" visible="no" active="no"/>
+<layer number="89" name="SimProbes" color="9" fill="1" visible="no" active="no"/>
+<layer number="90" name="Modules" color="5" fill="1" visible="no" active="no"/>
+<layer number="91" name="Nets" color="2" fill="1" visible="no" active="no"/>
+<layer number="92" name="Busses" color="1" fill="1" visible="no" active="no"/>
+<layer number="93" name="Pins" color="2" fill="1" visible="no" active="no"/>
+<layer number="94" name="Symbols" color="4" fill="1" visible="no" active="no"/>
+<layer number="95" name="Names" color="7" fill="1" visible="no" active="no"/>
+<layer number="96" name="Values" color="7" fill="1" visible="no" active="no"/>
+<layer number="97" name="Info" color="7" fill="1" visible="no" active="no"/>
+<layer number="98" name="Guide" color="6" fill="1" visible="no" active="no"/>
+<layer number="99" name="SpiceOrder" color="7" fill="1" visible="no" active="no"/>
+<layer number="100" name="Muster" color="7" fill="1" visible="no" active="yes"/>
+<layer number="101" name="Patch_Top" color="7" fill="1" visible="no" active="yes"/>
+<layer number="102" name="Vscore" color="7" fill="1" visible="no" active="yes"/>
+<layer number="103" name="tMap" color="7" fill="1" visible="no" active="yes"/>
+<layer number="104" name="Name" color="7" fill="1" visible="no" active="yes"/>
+<layer number="105" name="tPlate" color="7" fill="1" visible="no" active="yes"/>
+<layer number="106" name="bPlate" color="7" fill="1" visible="no" active="yes"/>
+<layer number="107" name="Crop" color="7" fill="1" visible="no" active="yes"/>
+<layer number="108" name="fp8" color="7" fill="1" visible="no" active="yes"/>
+<layer number="109" name="fp9" color="7" fill="1" visible="no" active="yes"/>
+<layer number="110" name="fp0" color="7" fill="1" visible="no" active="yes"/>
+<layer number="111" name="LPC17xx" color="7" fill="1" visible="no" active="yes"/>
+<layer number="112" name="tSilk" color="7" fill="1" visible="no" active="yes"/>
+<layer number="113" name="IDFDebug" color="7" fill="1" visible="no" active="yes"/>
+<layer number="116" name="Patch_BOT" color="7" fill="1" visible="no" active="yes"/>
+<layer number="121" name="_tsilk" color="7" fill="1" visible="no" active="yes"/>
+<layer number="122" name="_bsilk" color="7" fill="1" visible="no" active="yes"/>
+<layer number="123" name="tTestmark" color="7" fill="1" visible="no" active="yes"/>
+<layer number="124" name="bTestmark" color="7" fill="1" visible="no" active="yes"/>
+<layer number="125" name="_tNames" color="7" fill="1" visible="no" active="yes"/>
+<layer number="126" name="_bNames" color="7" fill="1" visible="no" active="yes"/>
+<layer number="127" name="_tValues" color="7" fill="1" visible="no" active="yes"/>
+<layer number="128" name="_bValues" color="7" fill="1" visible="no" active="yes"/>
+<layer number="131" name="tAdjust" color="7" fill="1" visible="no" active="yes"/>
+<layer number="132" name="bAdjust" color="7" fill="1" visible="no" active="yes"/>
+<layer number="144" name="Drill_legend" color="7" fill="1" visible="no" active="yes"/>
+<layer number="150" name="Notes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="151" name="HeatSink" color="7" fill="1" visible="no" active="yes"/>
+<layer number="152" name="_bDocu" color="7" fill="1" visible="no" active="yes"/>
+<layer number="153" name="FabDoc1" color="7" fill="1" visible="no" active="yes"/>
+<layer number="154" name="FabDoc2" color="7" fill="1" visible="no" active="yes"/>
+<layer number="155" name="FabDoc3" color="7" fill="1" visible="no" active="yes"/>
+<layer number="199" name="Contour" color="7" fill="1" visible="no" active="yes"/>
+<layer number="200" name="200bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="201" name="201bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="202" name="202bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="203" name="203bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="204" name="204bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="205" name="205bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="206" name="206bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="207" name="207bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="208" name="208bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="209" name="209bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="210" name="210bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="211" name="211bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="212" name="212bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="213" name="213bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="214" name="214bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="215" name="215bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="216" name="216bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="217" name="217bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="218" name="218bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="219" name="219bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="220" name="220bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="221" name="221bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="222" name="222bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="223" name="223bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="224" name="224bmp" color="7" fill="1" visible="no" active="yes"/>
+<layer number="248" name="Housing" color="7" fill="1" visible="no" active="yes"/>
+<layer number="249" name="Edge" color="7" fill="1" visible="no" active="yes"/>
+<layer number="250" name="Descript" color="7" fill="1" visible="no" active="yes"/>
+<layer number="251" name="SMDround" color="7" fill="1" visible="no" active="yes"/>
+<layer number="254" name="cooling" color="7" fill="1" visible="no" active="yes"/>
+</layers>
+<board>
+<plain>
+<wire x1="0" y1="100" x2="0" y2="0" width="0" layer="20"/>
+<wire x1="0" y1="0" x2="50" y2="0" width="0" layer="20"/>
+<wire x1="50" y1="0" x2="50" y2="100" width="0" layer="20"/>
+<wire x1="50" y1="100" x2="0" y2="100" width="0" layer="20"/>
+<rectangle x1="43.5" y1="5.4" x2="44.5" y2="94.6" layer="29"/>
+<wire x1="30.6" y1="100" x2="30.6" y2="0" width="0" layer="41"/>
+<wire x1="33.4" y1="100" x2="33.4" y2="0" width="0" layer="41"/>
+<rectangle x1="5.4" y1="5.5" x2="16.8" y2="6.5" layer="29"/>
+<rectangle x1="5.4" y1="17.5" x2="16.8" y2="18.5" layer="29"/>
+<rectangle x1="5.4" y1="29.5" x2="16.8" y2="30.5" layer="29"/>
+<rectangle x1="5.4" y1="41.5" x2="16.8" y2="42.5" layer="29"/>
+<rectangle x1="5.4" y1="53.5" x2="16.8" y2="54.5" layer="29"/>
+<polygon width="0" layer="29">
+<vertex x="5.5" y="94.5"/>
+<vertex x="5.5" y="94.6"/>
+<vertex x="6.5" y="94.6"/>
+<vertex x="6.5" y="92.2"/>
+<vertex x="9.2" y="89.5"/>
+<vertex x="14.2" y="89.5"/>
+<vertex x="16.5" y="87.2"/>
+<vertex x="16.5" y="86.7"/>
+<vertex x="15.5" y="86.7"/>
+<vertex x="15.5" y="86.8"/>
+<vertex x="13.8" y="88.5"/>
+<vertex x="8.8" y="88.5"/>
+<vertex x="5.5" y="91.8"/>
+</polygon>
+<polygon width="0" layer="29">
+<vertex x="19.5" y="94.6"/>
+<vertex x="20.5" y="94.6"/>
+<vertex x="20.5" y="88.8"/>
+<vertex x="18" y="86.3"/>
+<vertex x="18" y="86.5"/>
+<vertex x="17.8" y="86.7"/>
+<vertex x="17.1" y="86.7"/>
+<vertex x="17.1" y="86.8"/>
+<vertex x="19.5" y="89.2"/>
+<vertex x="19.5" y="94.5"/>
+</polygon>
+<polygon width="0" layer="29">
+<vertex x="5.4" y="82.5"/>
+<vertex x="5.4" y="81.5"/>
+<vertex x="14" y="81.5"/>
+<vertex x="14" y="82.5"/>
+</polygon>
+<polygon width="0" layer="29">
+<vertex x="5.4" y="65.5"/>
+<vertex x="5.4" y="66.5"/>
+<vertex x="8.8" y="66.5"/>
+<vertex x="15.5" y="73.2"/>
+<vertex x="15.5" y="79"/>
+<vertex x="16" y="79.5"/>
+<vertex x="16.5" y="79"/>
+<vertex x="16.5" y="72.8"/>
+<vertex x="9.2" y="65.5"/>
+</polygon>
+<wire x1="0" y1="66.9" x2="5.1" y2="66.9" width="0" layer="41"/>
+<wire x1="5.1" y1="66.9" x2="5.7" y2="66.3" width="0" layer="41"/>
+<wire x1="0" y1="65.1" x2="5.1" y2="65.1" width="0" layer="41"/>
+<wire x1="5.1" y1="65.1" x2="5.7" y2="65.7" width="0" layer="41"/>
+<wire x1="0" y1="82.9" x2="5.1" y2="82.9" width="0" layer="41"/>
+<wire x1="5.1" y1="82.9" x2="5.7" y2="82.3" width="0" layer="41"/>
+<wire x1="0" y1="81.1" x2="5.1" y2="81.1" width="0" layer="41"/>
+<wire x1="5.1" y1="81.1" x2="5.7" y2="81.7" width="0" layer="41"/>
+<wire x1="6.9" y1="100" x2="6.9" y2="94.9" width="0" layer="41"/>
+<wire x1="6.9" y1="94.9" x2="6.3" y2="94.3" width="0" layer="41"/>
+<wire x1="5.1" y1="100" x2="5.1" y2="94.9" width="0" layer="41"/>
+<wire x1="5.1" y1="94.9" x2="5.7" y2="94.3" width="0" layer="41"/>
+<wire x1="20.9" y1="100.1" x2="20.9" y2="95" width="0" layer="41"/>
+<wire x1="20.9" y1="95" x2="20.3" y2="94.4" width="0" layer="41"/>
+<wire x1="19.1" y1="100.1" x2="19.1" y2="95" width="0" layer="41"/>
+<wire x1="19.1" y1="95" x2="19.7" y2="94.4" width="0" layer="41"/>
+<wire x1="44.9" y1="100" x2="44.9" y2="94.9" width="0" layer="41"/>
+<wire x1="44.9" y1="94.9" x2="44.3" y2="94.3" width="0" layer="41"/>
+<wire x1="43.1" y1="100" x2="43.1" y2="94.9" width="0" layer="41"/>
+<wire x1="43.1" y1="94.9" x2="43.7" y2="94.3" width="0" layer="41"/>
+<wire x1="43.1" y1="0" x2="43.1" y2="5.1" width="0" layer="41"/>
+<wire x1="43.1" y1="5.1" x2="43.7" y2="5.7" width="0" layer="41"/>
+<wire x1="44.9" y1="0" x2="44.9" y2="5.1" width="0" layer="41"/>
+<wire x1="44.9" y1="5.1" x2="44.3" y2="5.7" width="0" layer="41"/>
+<wire x1="0" y1="6.9" x2="5.1" y2="6.9" width="0" layer="41"/>
+<wire x1="5.1" y1="6.9" x2="5.7" y2="6.3" width="0" layer="41"/>
+<wire x1="0" y1="5.1" x2="5.1" y2="5.1" width="0" layer="41"/>
+<wire x1="5.1" y1="5.1" x2="5.7" y2="5.7" width="0" layer="41"/>
+<wire x1="0" y1="18.9" x2="5.1" y2="18.9" width="0" layer="41"/>
+<wire x1="5.1" y1="18.9" x2="5.7" y2="18.3" width="0" layer="41"/>
+<wire x1="0" y1="17.1" x2="5.1" y2="17.1" width="0" layer="41"/>
+<wire x1="5.1" y1="17.1" x2="5.7" y2="17.7" width="0" layer="41"/>
+<wire x1="0" y1="30.9" x2="5.1" y2="30.9" width="0" layer="41"/>
+<wire x1="5.1" y1="30.9" x2="5.7" y2="30.3" width="0" layer="41"/>
+<wire x1="0" y1="29.1" x2="5.1" y2="29.1" width="0" layer="41"/>
+<wire x1="5.1" y1="29.1" x2="5.7" y2="29.7" width="0" layer="41"/>
+<wire x1="0" y1="42.9" x2="5.1" y2="42.9" width="0" layer="41"/>
+<wire x1="5.1" y1="42.9" x2="5.7" y2="42.3" width="0" layer="41"/>
+<wire x1="0" y1="41.1" x2="5.1" y2="41.1" width="0" layer="41"/>
+<wire x1="5.1" y1="41.1" x2="5.7" y2="41.7" width="0" layer="41"/>
+<wire x1="0" y1="54.9" x2="5.1" y2="54.9" width="0" layer="41"/>
+<wire x1="5.1" y1="54.9" x2="5.7" y2="54.3" width="0" layer="41"/>
+<wire x1="0" y1="53.1" x2="5.1" y2="53.1" width="0" layer="41"/>
+<wire x1="5.1" y1="53.1" x2="5.7" y2="53.7" width="0" layer="41"/>
+<wire x1="13.5" y1="81.6" x2="15.7" y2="78.3" width="0" layer="41"/>
+<wire x1="13.5" y1="82.4" x2="14.3" y2="83.2" width="0" layer="41"/>
+<wire x1="14.3" y1="83.2" x2="16.8" y2="83.2" width="0" layer="41"/>
+<wire x1="16.8" y1="83.2" x2="18.5" y2="83.2" width="0" layer="41"/>
+<wire x1="18.5" y1="83.2" x2="19" y2="82.7" width="0" layer="41"/>
+<wire x1="19" y1="82.7" x2="19" y2="81.8" width="0" layer="41"/>
+<wire x1="19" y1="81.8" x2="16.3" y2="78.5" width="0" layer="41"/>
+<wire x1="16.4" y1="86.8" x2="17.3" y2="86.8" width="0" layer="41"/>
+<wire x1="15.4" y1="87" x2="15.1" y2="86.7" width="0" layer="41"/>
+<wire x1="17.9" y1="86.5" x2="17.9" y2="84.8" width="0" layer="41"/>
+<wire x1="17.9" y1="84.8" x2="15.1" y2="84.8" width="0" layer="41"/>
+<text x="5.1" y="5.5" size="1.016" layer="22" font="vector" rot="MR0">2.6mm</text>
+<text x="5" y="17.5" size="1.016" layer="22" font="vector" rot="MR0">2.4mm</text>
+<text x="5.2" y="29.5" size="1.016" layer="22" font="vector" rot="MR0">2.2mm</text>
+<text x="5.1" y="41.5" size="1.016" layer="22" font="vector" rot="MR0">2.0mm</text>
+<text x="5" y="53.6" size="1.016" layer="22" font="vector" rot="MR0">1.8mm</text>
+<wire x1="6" y1="59" x2="25" y2="59" width="0.1" layer="22"/>
+<wire x1="25" y1="59" x2="25" y2="1" width="0.1" layer="22"/>
+<text x="23.2" y="44.2" size="1.778" layer="22" font="vector" rot="MR270">GND cutout size variation</text>
+<text x="20.6" y="77" size="1.778" layer="22" font="vector" rot="MR270">RLB Test</text>
+<wire x1="6" y1="61" x2="24.9" y2="61" width="0.1" layer="22"/>
+<wire x1="24.9" y1="61" x2="25" y2="61" width="0.1" layer="22"/>
+<wire x1="25" y1="61" x2="25" y2="94" width="0.1" layer="22"/>
+<text x="6.5" y="97.7" size="1.016" layer="22" font="vector" rot="MR270">out+</text>
+<text x="20.6" y="97.8" size="1.016" layer="22" font="vector" rot="MR270">out-</text>
+<text x="5" y="81.5" size="1.016" layer="22" font="vector" rot="MR0">DUT</text>
+<text x="5" y="65.5" size="1.016" layer="22" font="vector" rot="MR0">Source</text>
+<wire x1="27" y1="94" x2="27" y2="6" width="0.1" layer="22"/>
+<wire x1="37" y1="6" x2="37" y2="94" width="0.1" layer="22"/>
+<wire x1="39" y1="94" x2="39" y2="6" width="0.1" layer="22"/>
+<text x="31.1" y="48.5" size="1.778" layer="22" font="vector" rot="MR90">Microstrip</text>
+<text x="48.1" y="65.2" size="1.778" layer="22" font="vector" rot="MR270">Coplanar Waveguide</text>
+</plain>
+<libraries>
+<library name="VNA" urn="urn:adsk.eagle:library:22367181">
+<description>Generated from &lt;b&gt;VNA.sch&lt;/b&gt;&lt;p&gt;
+by exp-lbrs.ulp</description>
+<packages>
+<package name="AMPHENOL_132289" urn="urn:adsk.eagle:footprint:22367257/1" library_version="2" library_locally_modified="yes">
+<wire x1="0" y1="5.588" x2="0" y2="-5.588" width="0" layer="20"/>
+<wire x1="-1.55" y1="-4.65" x2="-1.55" y2="-2" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="-2" x2="-3.7" y2="-2" width="0.2032" layer="21"/>
+<wire x1="-3.7" y1="-2" x2="-4.45" y2="-2.75" width="0.2032" layer="21"/>
+<wire x1="-4.45" y1="-2.75" x2="-8.25" y2="-2.75" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="-2.75" x2="-8.25" y2="-1.9" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="-1.9" x2="-9.425" y2="-1.9" width="0.2032" layer="21"/>
+<wire x1="-9.425" y1="-1.9" x2="-9.425" y2="1.9" width="0.2032" layer="21"/>
+<wire x1="-9.425" y1="1.9" x2="-8.25" y2="1.9" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="1.9" x2="-8.25" y2="2.75" width="0.2032" layer="21"/>
+<wire x1="-8.25" y1="2.75" x2="-4.45" y2="2.75" width="0.2032" layer="21"/>
+<wire x1="-4.45" y1="2.75" x2="-3.7" y2="2" width="0.2032" layer="21"/>
+<wire x1="-3.7" y1="2" x2="-1.55" y2="2" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="2" x2="-1.55" y2="4.65" width="0.2032" layer="21"/>
+<wire x1="-0.1" y1="-3.85" x2="-0.1" y2="3.85" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="4.65" x2="-0.1" y2="4.65" width="0.2032" layer="21"/>
+<wire x1="-0.1" y1="-4.65" x2="-1.55" y2="-4.65" width="0.2032" layer="21"/>
+<wire x1="-1.55" y1="4.65" x2="4.65" y2="4.65" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="-4.65" x2="-1.55" y2="-4.65" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="-4.65" x2="4.65" y2="-3.85" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="-3.85" x2="-0.1" y2="-3.85" width="0.2032" layer="51"/>
+<wire x1="-0.1" y1="3.85" x2="4.65" y2="3.85" width="0.2032" layer="51"/>
+<wire x1="4.65" y1="3.85" x2="4.65" y2="4.65" width="0.2032" layer="51"/>
+<rectangle x1="-0.025" y1="-0.5" x2="4.05" y2="0.5" layer="51"/>
+<smd name="1" x="2.5654" y="0" dx="5.08" dy="1.143" layer="1"/>
+<smd name="G@1" x="2.5654" y="4.4196" dx="5.08" dy="2.286" layer="1"/>
+<smd name="G@2" x="2.5654" y="-4.4196" dx="5.08" dy="2.286" layer="1"/>
+<smd name="G@3" x="2.5654" y="4.4196" dx="5.08" dy="2.286" layer="16"/>
+<smd name="G@4" x="2.5654" y="-4.4196" dx="5.08" dy="2.286" layer="16"/>
+<text x="0.635" y="6.35" size="1.778" layer="25">&gt;NAME</text>
+<text x="1.27" y="-8.89" size="1.778" layer="27">&gt;VALUE</text>
+</package>
+<package name="R0402" urn="urn:adsk.eagle:footprint:22367265/1" locally_modified="yes" library_version="2" library_locally_modified="yes">
+<description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
+<wire x1="-0.245" y1="0.224" x2="0.245" y2="0.224" width="0.1524" layer="51"/>
+<wire x1="0.245" y1="-0.224" x2="-0.245" y2="-0.224" width="0.1524" layer="51"/>
+<wire x1="-1.073" y1="0.483" x2="1.073" y2="0.483" width="0.0508" layer="39"/>
+<wire x1="1.073" y1="0.483" x2="1.073" y2="-0.483" width="0.0508" layer="39"/>
+<wire x1="1.073" y1="-0.483" x2="-1.073" y2="-0.483" width="0.0508" layer="39"/>
+<wire x1="-1.073" y1="-0.483" x2="-1.073" y2="0.483" width="0.0508" layer="39"/>
+<rectangle x1="-0.554" y1="-0.3048" x2="-0.254" y2="0.2951" layer="51"/>
+<rectangle x1="0.2588" y1="-0.3048" x2="0.5588" y2="0.2951" layer="51"/>
+<rectangle x1="-0.1999" y1="-0.4001" x2="0.1999" y2="0.4001" layer="35"/>
+<smd name="1" x="-0.56" y="0" dx="0.67" dy="0.72" layer="1"/>
+<smd name="2" x="0.56" y="0" dx="0.67" dy="0.72" layer="1"/>
+<text x="-0.635" y="0.635" size="1.27" layer="25">&gt;NAME</text>
+<text x="-0.635" y="-1.905" size="1.27" layer="27">&gt;VALUE</text>
+</package>
+<package name="EASTEVER_BALUN" urn="urn:adsk.eagle:footprint:22367266/1" library_version="2" library_locally_modified="yes">
+<circle x="-1.2" y="-2.68" radius="0.22360625" width="0" layer="21"/>
+<wire x1="-1.4" y1="1.9" x2="1.4" y2="1.9" width="0.127" layer="21"/>
+<wire x1="1.4" y1="1.9" x2="1.4" y2="-1.9" width="0.127" layer="21"/>
+<wire x1="1.4" y1="-1.9" x2="-1.4" y2="-1.9" width="0.127" layer="21"/>
+<wire x1="-1.4" y1="-1.9" x2="-1.4" y2="1.9" width="0.127" layer="21"/>
+<smd name="1" x="-1.715" y="-1.25" dx="1.4" dy="0.8" layer="1"/>
+<smd name="2" x="-1.715" y="0" dx="1.4" dy="0.8" layer="1"/>
+<smd name="3" x="-1.715" y="1.25" dx="1.4" dy="0.8" layer="1"/>
+<smd name="4" x="1.715" y="1.25" dx="1.4" dy="0.8" layer="1"/>
+<smd name="5" x="1.715" y="0" dx="1.4" dy="0.8" layer="1"/>
+<smd name="6" x="1.715" y="-1.25" dx="1.4" dy="0.8" layer="1"/>
+<text x="-1.87" y="2.2" size="0.8128" layer="25" font="vector">&gt;Name</text>
+<text x="-0.43" y="-3.1" size="0.8128" layer="27" font="vector">&gt;Value</text>
+</package>
+</packages>
+<packages3d>
+<package3d name="AMPHENOL_132289" urn="urn:adsk.eagle:package:22367282/2" type="model" library_version="2" library_locally_modified="yes">
+<packageinstances>
+<packageinstance name="AMPHENOL_132289"/>
+</packageinstances>
+</package3d>
+<package3d name="R0402" urn="urn:adsk.eagle:package:22367274/2" locally_modified="yes" type="model" library_version="2" library_locally_modified="yes">
+<description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
+<packageinstances>
+<packageinstance name="R0402"/>
+</packageinstances>
+</package3d>
+<package3d name="EASTEVER_BALUN" urn="urn:adsk.eagle:package:22367273/2" type="model" library_version="2" library_locally_modified="yes">
+<packageinstances>
+<packageinstance name="EASTEVER_BALUN"/>
+</packageinstances>
+</package3d>
+</packages3d>
+</library>
+</libraries>
+<attributes>
+</attributes>
+<variantdefs>
+</variantdefs>
+<classes>
+<class number="0" name="default" width="0" drill="0">
+</class>
+</classes>
+<designrules name="JLCPCB4L_7628 *">
+<description language="de">&lt;b&gt;EAGLE Design Rules&lt;/b&gt;
+&lt;p&gt;
+Die Standard-Design-Rules sind so gewählt, dass sie für 
+die meisten Anwendungen passen. Sollte ihre Platine 
+besondere Anforderungen haben, treffen Sie die erforderlichen
+Einstellungen hier und speichern die Design Rules unter 
+einem neuen Namen ab.</description>
+<description language="en">&lt;b&gt;EAGLE Design Rules&lt;/b&gt;
+&lt;p&gt;
+The default Design Rules have been set to cover
+a wide range of applications. Your particular design
+may have different requirements, so please make the
+necessary adjustments and save your customized
+design rules under a new name.</description>
+<param name="layerSetup" value="(1+2*15+16)"/>
+<param name="mtCopper" value="0.035mm 0.0175mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.035mm 0.0175mm 0.035mm"/>
+<param name="mtIsolate" value="0.2mm 1.064mm 0.2mm 0.15mm 0.2mm 0.15mm 0.2mm 0.15mm 0.2mm 0.15mm 0.2mm 0.15mm 0.2mm 0.15mm 0.2mm"/>
+<param name="mdWireWire" value="3.5mil"/>
+<param name="mdWirePad" value="3.5mil"/>
+<param name="mdWireVia" value="3.5mil"/>
+<param name="mdPadPad" value="3.5mil"/>
+<param name="mdPadVia" value="3.5mil"/>
+<param name="mdViaVia" value="3.5mil"/>
+<param name="mdSmdPad" value="0mil"/>
+<param name="mdSmdVia" value="0mil"/>
+<param name="mdSmdSmd" value="0mil"/>
+<param name="mdViaViaSameLayer" value="6mil"/>
+<param name="mnLayersViaInSmd" value="2"/>
+<param name="mdCopperDimension" value="0.2mm"/>
+<param name="mdDrill" value="0.2mm"/>
+<param name="mdSmdStop" value="0mil"/>
+<param name="msWidth" value="6mil"/>
+<param name="msDrill" value="0.2mm"/>
+<param name="msMicroVia" value="9.99mm"/>
+<param name="msBlindViaRatio" value="0.5"/>
+<param name="rvPadTop" value="0.25"/>
+<param name="rvPadInner" value="0.25"/>
+<param name="rvPadBottom" value="0.25"/>
+<param name="rvViaOuter" value="0.25"/>
+<param name="rvViaInner" value="0.25"/>
+<param name="rvMicroViaOuter" value="0.25"/>
+<param name="rvMicroViaInner" value="0.25"/>
+<param name="rlMinPadTop" value="10mil"/>
+<param name="rlMaxPadTop" value="20mil"/>
+<param name="rlMinPadInner" value="10mil"/>
+<param name="rlMaxPadInner" value="20mil"/>
+<param name="rlMinPadBottom" value="10mil"/>
+<param name="rlMaxPadBottom" value="20mil"/>
+<param name="rlMinViaOuter" value="3.5mil"/>
+<param name="rlMaxViaOuter" value="20mil"/>
+<param name="rlMinViaInner" value="3.5mil"/>
+<param name="rlMaxViaInner" value="20mil"/>
+<param name="rlMinMicroViaOuter" value="4mil"/>
+<param name="rlMaxMicroViaOuter" value="20mil"/>
+<param name="rlMinMicroViaInner" value="4mil"/>
+<param name="rlMaxMicroViaInner" value="20mil"/>
+<param name="psTop" value="-1"/>
+<param name="psBottom" value="-1"/>
+<param name="psFirst" value="-1"/>
+<param name="psElongationLong" value="100"/>
+<param name="psElongationOffset" value="100"/>
+<param name="mvStopFrame" value="1"/>
+<param name="mvCreamFrame" value="0"/>
+<param name="mlMinStopFrame" value="4mil"/>
+<param name="mlMaxStopFrame" value="4mil"/>
+<param name="mlMinCreamFrame" value="0mil"/>
+<param name="mlMaxCreamFrame" value="0mil"/>
+<param name="mlViaStopLimit" value="0mil"/>
+<param name="srRoundness" value="0"/>
+<param name="srMinRoundness" value="0mil"/>
+<param name="srMaxRoundness" value="0mil"/>
+<param name="slThermalIsolate" value="10mil"/>
+<param name="slThermalsForVias" value="0"/>
+<param name="dpMaxLengthDifference" value="10mm"/>
+<param name="dpGapFactor" value="2.5"/>
+<param name="checkAngle" value="0"/>
+<param name="checkFont" value="1"/>
+<param name="checkRestrict" value="1"/>
+<param name="checkStop" value="0"/>
+<param name="checkValues" value="0"/>
+<param name="checkNames" value="1"/>
+<param name="checkWireStubs" value="1"/>
+<param name="checkPolygonWidth" value="0"/>
+<param name="useDiameter" value="13"/>
+<param name="maxErrors" value="50"/>
+</designrules>
+<autorouter>
+<pass name="Default">
+<param name="RoutingGrid" value="50mil"/>
+<param name="AutoGrid" value="1"/>
+<param name="Efforts" value="0"/>
+<param name="TopRouterVariant" value="1"/>
+<param name="tpViaShape" value="round"/>
+<param name="PrefDir.1" value="a"/>
+<param name="PrefDir.2" value="0"/>
+<param name="PrefDir.3" value="0"/>
+<param name="PrefDir.4" value="0"/>
+<param name="PrefDir.5" value="0"/>
+<param name="PrefDir.6" value="0"/>
+<param name="PrefDir.7" value="0"/>
+<param name="PrefDir.8" value="0"/>
+<param name="PrefDir.9" value="0"/>
+<param name="PrefDir.10" value="0"/>
+<param name="PrefDir.11" value="0"/>
+<param name="PrefDir.12" value="0"/>
+<param name="PrefDir.13" value="0"/>
+<param name="PrefDir.14" value="0"/>
+<param name="PrefDir.15" value="0"/>
+<param name="PrefDir.16" value="a"/>
+<param name="cfVia" value="8"/>
+<param name="cfNonPref" value="5"/>
+<param name="cfChangeDir" value="2"/>
+<param name="cfOrthStep" value="2"/>
+<param name="cfDiagStep" value="3"/>
+<param name="cfExtdStep" value="0"/>
+<param name="cfBonusStep" value="1"/>
+<param name="cfMalusStep" value="1"/>
+<param name="cfPadImpact" value="4"/>
+<param name="cfSmdImpact" value="4"/>
+<param name="cfBusImpact" value="0"/>
+<param name="cfHugging" value="3"/>
+<param name="cfAvoid" value="4"/>
+<param name="cfPolygon" value="10"/>
+<param name="cfBase.1" value="0"/>
+<param name="cfBase.2" value="1"/>
+<param name="cfBase.3" value="1"/>
+<param name="cfBase.4" value="1"/>
+<param name="cfBase.5" value="1"/>
+<param name="cfBase.6" value="1"/>
+<param name="cfBase.7" value="1"/>
+<param name="cfBase.8" value="1"/>
+<param name="cfBase.9" value="1"/>
+<param name="cfBase.10" value="1"/>
+<param name="cfBase.11" value="1"/>
+<param name="cfBase.12" value="1"/>
+<param name="cfBase.13" value="1"/>
+<param name="cfBase.14" value="1"/>
+<param name="cfBase.15" value="1"/>
+<param name="cfBase.16" value="0"/>
+<param name="mnVias" value="20"/>
+<param name="mnSegments" value="9999"/>
+<param name="mnExtdSteps" value="9999"/>
+<param name="mnRipupLevel" value="10"/>
+<param name="mnRipupSteps" value="100"/>
+<param name="mnRipupTotal" value="100"/>
+</pass>
+<pass name="Follow-me" refer="Default" active="yes">
+</pass>
+<pass name="Busses" refer="Default" active="yes">
+<param name="cfNonPref" value="4"/>
+<param name="cfBusImpact" value="4"/>
+<param name="cfHugging" value="0"/>
+<param name="mnVias" value="0"/>
+</pass>
+<pass name="Route" refer="Default" active="yes">
+</pass>
+<pass name="Optimize1" refer="Default" active="yes">
+<param name="cfVia" value="99"/>
+<param name="cfExtdStep" value="10"/>
+<param name="cfHugging" value="1"/>
+<param name="mnExtdSteps" value="1"/>
+<param name="mnRipupLevel" value="0"/>
+</pass>
+<pass name="Optimize2" refer="Optimize1" active="yes">
+<param name="cfNonPref" value="0"/>
+<param name="cfChangeDir" value="6"/>
+<param name="cfExtdStep" value="0"/>
+<param name="cfBonusStep" value="2"/>
+<param name="cfMalusStep" value="2"/>
+<param name="cfPadImpact" value="2"/>
+<param name="cfSmdImpact" value="2"/>
+<param name="cfHugging" value="0"/>
+</pass>
+<pass name="Optimize3" refer="Optimize2" active="yes">
+<param name="cfChangeDir" value="8"/>
+<param name="cfPadImpact" value="0"/>
+<param name="cfSmdImpact" value="0"/>
+</pass>
+<pass name="Optimize4" refer="Optimize3" active="yes">
+<param name="cfChangeDir" value="25"/>
+</pass>
+</autorouter>
+<elements>
+<element name="J1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="0" y="6" smashed="yes">
+<attribute name="VALUE" x="1.27" y="-2.89" size="1.778" layer="27"/>
+</element>
+<element name="J2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="0" y="54" smashed="yes">
+<attribute name="VALUE" x="1.27" y="45.11" size="1.778" layer="27"/>
+</element>
+<element name="J3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="0" y="18" smashed="yes">
+<attribute name="VALUE" x="1.27" y="9.11" size="1.778" layer="27"/>
+</element>
+<element name="J4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="0" y="42" smashed="yes">
+<attribute name="VALUE" x="1.27" y="33.11" size="1.778" layer="27"/>
+</element>
+<element name="J5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="0" y="30" smashed="yes">
+<attribute name="NAME" x="0.635" y="36.35" size="1.778" layer="25"/>
+<attribute name="VALUE" x="1.27" y="21.11" size="1.778" layer="27"/>
+</element>
+<element name="J6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="32" y="0" smashed="yes" rot="R90">
+<attribute name="VALUE" x="40.89" y="1.27" size="1.778" layer="27" rot="R90"/>
+</element>
+<element name="J7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="32" y="100" smashed="yes" rot="R270">
+<attribute name="VALUE" x="23.11" y="98.73" size="1.778" layer="27" rot="R270"/>
+</element>
+<element name="J8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="44" y="100" smashed="yes" rot="R270">
+<attribute name="VALUE" x="35.11" y="98.73" size="1.778" layer="27" rot="R270"/>
+</element>
+<element name="J9" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="44" y="0" smashed="yes" rot="R90">
+<attribute name="VALUE" x="52.89" y="1.27" size="1.778" layer="27" rot="R90"/>
+</element>
+<element name="R1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="18" y="6" smashed="yes" rot="R180">
+<attribute name="VALUE" x="18.635" y="7.905" size="1.27" layer="27" rot="R180"/>
+</element>
+<element name="R2" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="18" y="54" smashed="yes" rot="R180">
+<attribute name="VALUE" x="18.635" y="55.905" size="1.27" layer="27" rot="R180"/>
+</element>
+<element name="R3" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="18" y="18" smashed="yes" rot="R180">
+<attribute name="VALUE" x="18.635" y="19.905" size="1.27" layer="27" rot="R180"/>
+</element>
+<element name="R4" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="18" y="42" smashed="yes" rot="R180">
+<attribute name="VALUE" x="18.635" y="43.905" size="1.27" layer="27" rot="R180"/>
+</element>
+<element name="R5" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="18" y="30" smashed="yes" rot="R180">
+<attribute name="VALUE" x="18.635" y="31.905" size="1.27" layer="27" rot="R180"/>
+</element>
+<element name="T1" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="EASTEVER_BALUN" package3d_urn="urn:adsk.eagle:package:22367273/2" value="B012-617DB-1-63-B331" x="16" y="84" smashed="yes" rot="R270">
+<attribute name="VALUE" x="12.9" y="84.43" size="0.8128" layer="27" font="vector" rot="R270"/>
+</element>
+<element name="J10" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="0" y="82" smashed="yes">
+<attribute name="VALUE" x="1.27" y="73.11" size="1.778" layer="27"/>
+</element>
+<element name="J11" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="6" y="100" smashed="yes" rot="R270">
+<attribute name="VALUE" x="-2.89" y="98.73" size="1.778" layer="27" rot="R270"/>
+</element>
+<element name="J12" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="20" y="100" smashed="yes" rot="R270">
+<attribute name="VALUE" x="11.11" y="98.73" size="1.778" layer="27" rot="R270"/>
+</element>
+<element name="R6" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="19.2" y="82.3" smashed="yes" rot="R180">
+<attribute name="VALUE" x="19.835" y="84.205" size="1.27" layer="27" rot="R180"/>
+</element>
+<element name="R7" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="16.9" y="80.3" smashed="yes" rot="R60">
+<attribute name="VALUE" x="18.232278125" y="78.79756875" size="1.27" layer="27" rot="R60"/>
+</element>
+<element name="R8" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="R0402" package3d_urn="urn:adsk.eagle:package:22367274/2" value="49R9" x="15.1" y="80.3" smashed="yes" rot="R120">
+<attribute name="VALUE" x="17.067275" y="80.702575" size="1.27" layer="27" rot="R120"/>
+</element>
+<element name="J13" library="VNA" library_urn="urn:adsk.eagle:library:22367181" package="AMPHENOL_132289" package3d_urn="urn:adsk.eagle:package:22367282/2" value="AMPHENOL_132289" x="0" y="66" smashed="yes">
+<attribute name="VALUE" x="1.27" y="57.11" size="1.778" layer="27"/>
+</element>
+</elements>
+<signals>
+<signal name="GND">
+<contactref element="R1" pad="1"/>
+<contactref element="J1" pad="G@1"/>
+<contactref element="J1" pad="G@2"/>
+<contactref element="J1" pad="G@3"/>
+<contactref element="J1" pad="G@4"/>
+<contactref element="R2" pad="1"/>
+<contactref element="J2" pad="G@1"/>
+<contactref element="J2" pad="G@2"/>
+<contactref element="J2" pad="G@3"/>
+<contactref element="J2" pad="G@4"/>
+<contactref element="R3" pad="1"/>
+<contactref element="J3" pad="G@1"/>
+<contactref element="J3" pad="G@2"/>
+<contactref element="J3" pad="G@3"/>
+<contactref element="J3" pad="G@4"/>
+<contactref element="R4" pad="1"/>
+<contactref element="J4" pad="G@1"/>
+<contactref element="J4" pad="G@2"/>
+<contactref element="J4" pad="G@3"/>
+<contactref element="J4" pad="G@4"/>
+<contactref element="R5" pad="1"/>
+<contactref element="J5" pad="G@1"/>
+<contactref element="J5" pad="G@2"/>
+<contactref element="J5" pad="G@3"/>
+<contactref element="J5" pad="G@4"/>
+<contactref element="J6" pad="G@1"/>
+<contactref element="J6" pad="G@2"/>
+<contactref element="J6" pad="G@3"/>
+<contactref element="J6" pad="G@4"/>
+<contactref element="J7" pad="G@1"/>
+<contactref element="J7" pad="G@2"/>
+<contactref element="J7" pad="G@3"/>
+<contactref element="J7" pad="G@4"/>
+<contactref element="J8" pad="G@1"/>
+<contactref element="J8" pad="G@2"/>
+<contactref element="J8" pad="G@3"/>
+<contactref element="J8" pad="G@4"/>
+<contactref element="J9" pad="G@1"/>
+<contactref element="J9" pad="G@2"/>
+<contactref element="J9" pad="G@3"/>
+<contactref element="J9" pad="G@4"/>
+<polygon width="0" layer="1" isolate="0.36" thermals="no">
+<vertex x="38" y="100"/>
+<vertex x="50" y="100"/>
+<vertex x="50" y="0"/>
+<vertex x="38" y="0"/>
+</polygon>
+<via x="44.8" y="89" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="88" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="87" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="86" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="85" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="92" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="91" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="90" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="79" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="78" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="77" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="76" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="75" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="83" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="82" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="81" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="80" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="69" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="68" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="67" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="66" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="65" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="74" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="73" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="72" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="71" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="70" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="59" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="58" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="57" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="56" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="55" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="64" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="63" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="62" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="61" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="60" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="9" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="14" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="13" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="12" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="11" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="10" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="49" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="48" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="47" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="46" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="45" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="54" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="53" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="52" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="51" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="50" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="39" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="38" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="37" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="36" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="35" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="44" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="43" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="42" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="41" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="40" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="29" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="28" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="27" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="26" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="25" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="34" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="33" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="32" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="31" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="30" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="19" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="18" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="17" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="16" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="15" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="24" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="23" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="22" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="21" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="44.8" y="20" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="89" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="88" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="87" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="86" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="85" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="92" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="91" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="90" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="79" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="78" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="77" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="76" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="75" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="83" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="82" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="81" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="80" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="69" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="68" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="67" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="66" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="65" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="74" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="73" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="72" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="71" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="70" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="59" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="58" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="57" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="56" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="55" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="64" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="63" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="62" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="61" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="60" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="9" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="14" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="13" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="12" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="11" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="10" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="49" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="48" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="47" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="46" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="45" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="54" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="53" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="52" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="51" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="50" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="39" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="38" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="37" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="36" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="35" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="44" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="43" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="42" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="41" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="40" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="29" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="28" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="27" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="26" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="34" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="33" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="32" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="31" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="30" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="19" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="18" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="17" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="16" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="15" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="24" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="23" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="22" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="21" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="43.2" y="20" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="42.5" y="1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="45.5" y="5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<polygon width="0" layer="2" isolate="0.2" thermals="no" rank="6">
+<vertex x="0" y="100"/>
+<vertex x="50" y="100"/>
+<vertex x="50" y="0"/>
+<vertex x="0" y="0"/>
+</polygon>
+<via x="30" y="89" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="88" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="87" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="86" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="85" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="92" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="91" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="90" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="79" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="78" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="76" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="75" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="83" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="82" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="81" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="80" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="69" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="68" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="67" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="66" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="65" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="74" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="73" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="72" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="71" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="70" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="59" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="58" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="57" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="56" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="55" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="64" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="63" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="62" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="61" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="60" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="9" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="14" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="13" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="12" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="11" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="10" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="49" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="48" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="47" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="46" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="45" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="54" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="53" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="52" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="51" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="50" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="39" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="38" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="37" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="36" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="35" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="44" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="43" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="42" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="41" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="40" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="29" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="28" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="27" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="26" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="25" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="34" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="33" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="32" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="31" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="30" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="19" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="18" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="17" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="16" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="15" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="24" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="23" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="22" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="21" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="20" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="89" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="88" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="87" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="86" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="85" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="92" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="91" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="90" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="79" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="78" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="77" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="76" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="75" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="83" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="82" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="81" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="80" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="69" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="68" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="67" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="66" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="65" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="74" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="73" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="72" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="71" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="70" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="59" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="58" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="57" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="56" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="55" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="64" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="63" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="62" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="61" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="60" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="9" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="14" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="13" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="12" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="11" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="10" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="49" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="48" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="47" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="46" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="45" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="54" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="53" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="52" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="51" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="50" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="39" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="38" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="37" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="36" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="35" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="44" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="43" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="42" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="41" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="40" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="29" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="28" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="27" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="26" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="25" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="34" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="33" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="32" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="31" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="30" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="19" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="18" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="17" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="16" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="15" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="24" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="23" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="22" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="21" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="20" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="30" y="1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="34" y="5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<polygon width="0" layer="1" isolate="0.36" thermals="no">
+<vertex x="0" y="100"/>
+<vertex x="38" y="100"/>
+<vertex x="38" y="0"/>
+<vertex x="0" y="0"/>
+</polygon>
+<polygon width="0" layer="15" thermals="no">
+<vertex x="0" y="100"/>
+<vertex x="0" y="0"/>
+<vertex x="50" y="0"/>
+<vertex x="50" y="100"/>
+</polygon>
+<via x="6" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="54.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="55.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="55.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="55.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="52.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="52.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="52.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="53.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="54" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="54.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="53.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="55.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="55.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="55.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="55.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="55.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="52.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="52.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="52.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="52.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="52.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="42.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="43.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="43.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="43.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="40.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="40.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="40.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="41.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="42" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="42.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="41.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="43.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="43.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="43.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="43.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="43.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="40.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="40.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="40.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="40.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="40.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="30.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="31.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="31.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="31.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="28.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="28.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="28.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="29.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="30" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="30.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="29.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="31.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="31.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="31.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="31.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="31.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="28.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="28.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="28.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="28.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="28.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="18.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="19.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="19.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="19.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="16.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="16.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="16.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="17.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="18" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="18.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="17.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="19.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="19.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="19.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="19.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="19.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="16.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="16.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="16.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="16.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="16.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="6.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="7.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="7.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="7.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19" y="4.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18" y="4.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17" y="4.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="5.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.4" y="6.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="5.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="7.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="7.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="7.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="7.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="7.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="4.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="4.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="4.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="4.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="4.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<contactref element="J12" pad="G@1"/>
+<contactref element="J12" pad="G@4"/>
+<contactref element="J12" pad="G@3"/>
+<contactref element="J12" pad="G@2"/>
+<contactref element="J11" pad="G@1"/>
+<contactref element="J11" pad="G@4"/>
+<contactref element="J11" pad="G@3"/>
+<contactref element="J11" pad="G@2"/>
+<contactref element="R6" pad="1"/>
+<contactref element="J10" pad="G@1"/>
+<contactref element="J10" pad="G@4"/>
+<contactref element="J10" pad="G@3"/>
+<contactref element="J10" pad="G@2"/>
+<contactref element="J13" pad="G@1"/>
+<contactref element="J13" pad="G@4"/>
+<contactref element="J13" pad="G@3"/>
+<contactref element="J13" pad="G@2"/>
+<via x="6" y="66.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="66.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="66.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="65.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="65.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="65.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="65.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9.9" y="65.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10.6" y="66.4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11.3" y="67.1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="67.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12.7" y="68.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13.4" y="69.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14.1" y="69.9" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14.8" y="70.6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.5" y="71.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.2" y="72" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.8" y="73" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.8" y="74" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.8" y="75" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.8" y="76" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.8" y="77" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.8" y="78" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.2" y="78" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.2" y="77" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.2" y="76" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.2" y="75" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.2" y="74" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14.7" y="72.9" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="72.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13.3" y="71.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12.6" y="70.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11.9" y="70.1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11.2" y="69.4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10.5" y="68.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9.8" y="68" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9.1" y="67.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="67.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="67.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="67.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="67.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="67.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="64.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="64.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="64.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="64.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="64.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="82.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6" y="81.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="80.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="80.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="80.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="80.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="80.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="1" y="83.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="2" y="83.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="3" y="83.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4" y="83.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5" y="83.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13.7" y="83.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14.5" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.4" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.3" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17.2" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.1" y="83.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.7" y="83.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.5" y="83" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.6" y="82.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.5" y="81.6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.7" y="81.4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.1" y="80.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="80" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17.9" y="79.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17.3" y="78.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14.6" y="78.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="79.6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13.5" y="80.4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="21.5" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="21.5" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="21.5" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="21.5" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="21.5" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.8" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.8" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.8" y="92" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.8" y="91" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.8" y="90" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.8" y="89" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.2" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.2" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.2" y="92" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.2" y="91" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.2" y="90" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4.5" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4.5" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4.5" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4.5" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="4.5" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7.5" y="95" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7.5" y="96" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7.5" y="97" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7.5" y="98" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7.5" y="99" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5.2" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5.2" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5.2" y="92" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6.8" y="94" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6.8" y="93" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="88.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="88.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="88.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="88.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="88.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13" y="89.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14" y="89.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="12" y="89.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="11" y="89.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="10" y="89.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8.2" y="88.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7.6" y="89.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="89.9" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="6.4" y="90.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="5.7" y="91.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7" y="92.1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="7.7" y="91.4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="8.3" y="90.8" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="9" y="90.1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14.8" y="89.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="15.4" y="88.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16" y="88.1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="16.6" y="87.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17.3" y="87.4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="17.9" y="88" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="88.6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.1" y="89.2" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="20.4" y="88.3" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.8" y="87.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="19.2" y="87.1" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.6" y="86.5" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="85.6" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="18.5" y="84.7" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="13.9" y="88" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<via x="14.5" y="87.4" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+<polygon width="0" layer="16" thermals="no">
+<vertex x="0" y="100"/>
+<vertex x="50" y="100"/>
+<vertex x="50" y="0"/>
+<vertex x="0" y="0"/>
+<vertex x="0" y="99.9"/>
+</polygon>
+<via x="18.1" y="84" extent="1-16" drill="0.2" diameter="0.4" shape="octagon"/>
+</signal>
+<signal name="N$1">
+<contactref element="J1" pad="1"/>
+<contactref element="R1" pad="2"/>
+<wire x1="2.5654" y1="6" x2="17.44" y2="6" width="0.3" layer="1"/>
+</signal>
+<signal name="N$2">
+<contactref element="J2" pad="1"/>
+<contactref element="R2" pad="2"/>
+<wire x1="2.5654" y1="54" x2="17.44" y2="54" width="0.3" layer="1"/>
+</signal>
+<signal name="N$3">
+<contactref element="J3" pad="1"/>
+<contactref element="R3" pad="2"/>
+<wire x1="2.5654" y1="18" x2="17.44" y2="18" width="0.3" layer="1"/>
+</signal>
+<signal name="N$4">
+<contactref element="J4" pad="1"/>
+<contactref element="R4" pad="2"/>
+<wire x1="2.5654" y1="42" x2="17.44" y2="42" width="0.3" layer="1"/>
+</signal>
+<signal name="N$5">
+<contactref element="J5" pad="1"/>
+<contactref element="R5" pad="2"/>
+<wire x1="2.5654" y1="30" x2="17.44" y2="30" width="0.3" layer="1"/>
+</signal>
+<signal name="N$6">
+<contactref element="J6" pad="1"/>
+<contactref element="J7" pad="1"/>
+<wire x1="32" y1="2.5654" x2="32" y2="97.4346" width="0.3" layer="1"/>
+</signal>
+<signal name="N$8">
+<contactref element="J8" pad="1"/>
+<contactref element="J9" pad="1"/>
+<wire x1="44" y1="2.5654" x2="44" y2="97.4346" width="0.3" layer="1"/>
+</signal>
+<signal name="CUTOUT">
+<wire x1="22" y1="100" x2="23" y2="100" width="0" layer="2"/>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="43.1" y="100"/>
+<vertex x="43.1" y="94.6"/>
+<vertex x="44.9" y="94.6"/>
+<vertex x="44.9" y="100"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="43.1" y="5.4"/>
+<vertex x="43.1" y="0"/>
+<vertex x="44.9" y="0"/>
+<vertex x="44.9" y="5.4"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="31.1" y="5.4"/>
+<vertex x="31.1" y="0"/>
+<vertex x="32.9" y="0"/>
+<vertex x="32.9" y="5.4"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="31.1" y="100"/>
+<vertex x="31.1" y="94.6"/>
+<vertex x="32.9" y="94.6"/>
+<vertex x="32.9" y="100"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="0" y="4.9"/>
+<vertex x="5.6" y="4.9"/>
+<vertex x="5.6" y="7.1"/>
+<vertex x="0" y="7.1"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="0" y="17"/>
+<vertex x="5.5" y="17"/>
+<vertex x="5.5" y="19"/>
+<vertex x="0" y="19"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="0" y="29.1"/>
+<vertex x="5.4" y="29.1"/>
+<vertex x="5.4" y="30.9"/>
+<vertex x="0" y="30.9"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="0" y="41.2"/>
+<vertex x="5.3" y="41.2"/>
+<vertex x="5.3" y="42.8"/>
+<vertex x="0" y="42.8"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="0" y="53.3"/>
+<vertex x="5.2" y="53.3"/>
+<vertex x="5.2" y="54.7"/>
+<vertex x="0" y="54.7"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="18.1" y="30.7"/>
+<vertex x="18.1" y="29.3"/>
+<vertex x="16.7" y="29.3"/>
+<vertex x="16.7" y="30.7"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="18" y="42.6"/>
+<vertex x="18" y="41.4"/>
+<vertex x="16.8" y="41.4"/>
+<vertex x="16.8" y="42.6"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="18" y="54.6"/>
+<vertex x="18" y="53.4"/>
+<vertex x="16.8" y="53.4"/>
+<vertex x="16.8" y="54.6"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="18.2" y="18.8"/>
+<vertex x="18.2" y="17.2"/>
+<vertex x="16.6" y="17.2"/>
+<vertex x="16.6" y="18.8"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="18.3" y="6.9"/>
+<vertex x="18.3" y="5.1"/>
+<vertex x="16.5" y="5.1"/>
+<vertex x="16.5" y="6.9"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="19.1" y="100"/>
+<vertex x="19.1" y="94.6"/>
+<vertex x="20.9" y="94.6"/>
+<vertex x="20.9" y="100"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="5.1" y="100"/>
+<vertex x="5.1" y="94.6"/>
+<vertex x="6.9" y="94.6"/>
+<vertex x="6.9" y="100"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="0" y="81.1"/>
+<vertex x="5.4" y="81.1"/>
+<vertex x="5.4" y="82.9"/>
+<vertex x="0" y="82.9"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="0" y="65.1"/>
+<vertex x="5.4" y="65.1"/>
+<vertex x="5.4" y="66.9"/>
+<vertex x="0" y="66.9"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="19.3" y="83"/>
+<vertex x="19.3" y="81.6"/>
+<vertex x="17.9" y="81.6"/>
+<vertex x="17.9" y="83"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="15.3" y="84.6"/>
+<vertex x="18" y="84.6"/>
+<vertex x="18" y="86.8"/>
+<vertex x="15.3" y="86.8"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="16.7" y="83.3"/>
+<vertex x="17.9" y="83.3"/>
+<vertex x="17.9" y="81.2"/>
+<vertex x="16.6" y="81.2"/>
+<vertex x="16.6" y="83.3"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="16.9" y="81.6"/>
+<vertex x="16" y="80"/>
+<vertex x="15.1" y="81.6"/>
+<vertex x="14" y="81"/>
+<vertex x="15.1" y="79"/>
+<vertex x="16" y="79.5"/>
+<vertex x="16.9" y="79"/>
+<vertex x="18.1" y="81"/>
+</polygon>
+<polygon width="0" layer="2" thermals="no">
+<vertex x="14.2" y="83.3"/>
+<vertex x="15.4" y="83.3"/>
+<vertex x="15.4" y="81.2"/>
+<vertex x="14.1" y="81.2"/>
+<vertex x="14.1" y="83.3"/>
+</polygon>
+</signal>
+<signal name="N$9">
+<contactref element="J12" pad="1"/>
+<contactref element="T1" pad="3"/>
+<wire x1="17.25" y1="85.715" x2="17.25" y2="86.25" width="0.3" layer="1"/>
+<wire x1="17.25" y1="86.25" x2="20" y2="89" width="0.3" layer="1"/>
+<wire x1="20" y1="89" x2="20" y2="97.4346" width="0.3" layer="1"/>
+</signal>
+<signal name="N$7">
+<contactref element="R8" pad="2"/>
+<contactref element="J10" pad="1"/>
+<contactref element="T1" pad="6"/>
+<wire x1="2.5654" y1="82" x2="14.465" y2="82" width="0.3" layer="1"/>
+<wire x1="14.465" y1="82" x2="14.75" y2="82.285" width="0.3" layer="1"/>
+<wire x1="14.75" y1="82.285" x2="14.75" y2="80.854971875" width="0.3" layer="1"/>
+<wire x1="14.75" y1="80.854971875" x2="14.82" y2="80.784971875" width="0.3" layer="1"/>
+</signal>
+<signal name="N$11">
+<contactref element="R7" pad="2"/>
+<contactref element="R6" pad="2"/>
+<contactref element="T1" pad="4"/>
+<wire x1="17.25" y1="82.285" x2="17.25" y2="80.854971875" width="0.3" layer="1"/>
+<wire x1="17.25" y1="80.854971875" x2="17.18" y2="80.784971875" width="0.3" layer="1"/>
+<wire x1="18.64" y1="82.3" x2="17.265" y2="82.3" width="0.3" layer="1"/>
+<wire x1="17.265" y1="82.3" x2="17.25" y2="82.285" width="0.3" layer="1"/>
+</signal>
+<signal name="N$12">
+<contactref element="J13" pad="1"/>
+<contactref element="R7" pad="1"/>
+<contactref element="R8" pad="1"/>
+<wire x1="2.5654" y1="66" x2="9" y2="66" width="0.3" layer="1"/>
+<wire x1="9" y1="66" x2="16" y2="73" width="0.3" layer="1"/>
+<wire x1="16" y1="73" x2="16" y2="79.195025" width="0.3" layer="1"/>
+<wire x1="16" y1="79.195025" x2="16.62" y2="79.815025" width="0.3" layer="1"/>
+<wire x1="16" y1="79.195025" x2="15.38" y2="79.815025" width="0.3" layer="1"/>
+</signal>
+<signal name="N$10">
+<contactref element="T1" pad="2"/>
+<contactref element="J11" pad="1"/>
+<wire x1="16" y1="85.715" x2="16" y2="87" width="0.3" layer="1"/>
+<wire x1="16" y1="87" x2="14" y2="89" width="0.3" layer="1"/>
+<wire x1="14" y1="89" x2="9" y2="89" width="0.3" layer="1"/>
+<wire x1="9" y1="89" x2="6" y2="92" width="0.3" layer="1"/>
+<wire x1="6" y1="92" x2="6" y2="97.4346" width="0.3" layer="1"/>
+</signal>
+</signals>
+<mfgpreviewcolors>
+<mfgpreviewcolor name="soldermaskcolor" color="0xC8008000"/>
+<mfgpreviewcolor name="silkscreencolor" color="0xFFFEFEFE"/>
+<mfgpreviewcolor name="backgroundcolor" color="0xFF282828"/>
+<mfgpreviewcolor name="coppercolor" color="0xFFFFBF00"/>
+<mfgpreviewcolor name="substratecolor" color="0xFF786E46"/>
+</mfgpreviewcolors>
+</board>
+</drawing>
+<compatibility>
+<note version="8.2" severity="warning">
+Since Version 8.2, EAGLE supports online libraries. The ids
+of those online libraries will not be understood (or retained)
+with this version.
+</note>
+<note version="8.3" severity="warning">
+Since Version 8.3, EAGLE supports URNs for individual library
+assets (packages, symbols, and devices). The URNs of those assets
+will not be understood (or retained) with this version.
+</note>
+<note version="8.3" severity="warning">
+Since Version 8.3, EAGLE supports the association of 3D packages
+with devices in libraries, schematics, and board files. Those 3D
+packages will not be understood (or retained) with this version.
+</note>
+</compatibility>
+</eagle>
