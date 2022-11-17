@@ -4,7 +4,7 @@
 
 This is the improved version of my [first attempt](https://www.github.com/jankae/VNA) at a VNA.
 
-![](Documentation/Pictures/RevisionBTop.JPG)
+![](Documentation/Pictures/RevisionB6LTop.JPG)
 
 ## GUI Installation
 
