@@ -175,6 +175,17 @@ bool Si5351C::Locked(PLL pll) {
 	}
 }
 
+bool Si5351C::WaitForLock(PLL pll, uint32_t timeout) {
+	uint32_t start = HAL_GetTick();
+	while(HAL_GetTick() - start <= timeout) {
+		if(Locked(pll)) {
+			return true;
+		}
+	}
+	LOG_WARN("Failed to lock");
+	return false;
+}
+
 bool Si5351C::WritePLLConfig(PLLConfig config, PLL pll) {
 	uint8_t PllData[8];
 	// See register map in https://www.silabs.com/documents/public/application-notes/AN619.pdf (page 11)
@@ -372,4 +383,3 @@ bool Si5351C::ReadRawCLKConfig(uint8_t clknum, uint8_t *config) {
 	auto reg = (Reg) ((int) Reg::MS0_CONFIG + 8 * clknum);
 	return ReadRegisterRange(reg, config, 8);
 }
-

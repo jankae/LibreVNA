@@ -135,6 +135,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
+	Si5351.WaitForLock(Si5351C::PLL::B, 10);
 
 	IFTableIndexCnt = 0;
 
@@ -269,6 +270,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// revert clk configuration to previous value (might have been changed in sweep calculation)
 	Si5351.SetCLK(SiChannel::RefLO2, HW::getIF1() - HW::getIF2(), Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
+	Si5351.WaitForLock(Si5351C::PLL::B, 10);
 	// Enable mixers/amplifier/PLLs
 	FPGA::SetWindow(FPGA::Window::Kaiser);
 	FPGA::Enable(FPGA::Periphery::Port1Mixer);
@@ -381,8 +383,9 @@ void VNA::SweepHalted() {
 			Si5351.WriteRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);
 			Si5351.ResetPLL(Si5351C::PLL::B);
 			IFTableIndexCnt++;
+			Si5351.WaitForLock(Si5351C::PLL::B, 10);
 			// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
-			Delay::us(1300);
+			Delay::us(1500);
 		}
 		uint64_t frequency = getPointFrequency(pointCnt);
 		int16_t power = settings.cdbm_excitation_start
@@ -408,7 +411,7 @@ void VNA::SweepHalted() {
 			if(lowbandDisabled && freqSuccess) {
 				// frequency is valid, can enable lowband source now
 				Si5351.Enable(SiChannel::LowbandSource);
-				Delay::us(1300);
+				Delay::ms(10);
 				lowbandDisabled = false;
 			}
 

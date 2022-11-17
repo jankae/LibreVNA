@@ -133,7 +133,9 @@ bool HW::Init() {
 	// PLL reset appears to realign phases of clock signals
 	Si5351.ResetPLL(Si5351C::PLL::B);
 
-	LOG_DEBUG("Si5351 locked");
+	if(Si5351.WaitForLock(Si5351C::PLL::B, 10)) {
+		LOG_DEBUG("Si5351 locked");
+	}
 
 	// FPGA clock is now present, can initialize
 	if (!FPGA::Init(HaltedCallback)) {

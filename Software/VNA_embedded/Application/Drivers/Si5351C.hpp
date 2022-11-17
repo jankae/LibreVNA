@@ -39,6 +39,7 @@ public:
 	bool Enable(uint8_t clknum);
 	bool Disable(uint8_t clknum);
 	bool Locked(PLL pll);
+	bool WaitForLock(PLL pll, uint32_t timeout);
 	bool ResetPLL(PLL pll);
 	bool ExtCLKAvailable();
 
