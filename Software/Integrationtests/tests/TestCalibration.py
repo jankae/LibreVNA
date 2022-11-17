@@ -1,13 +1,15 @@
 from tests.TestBase import TestBase
+from libreCAL import libreCAL
 import time
+import math
 
 class TestCalibration(TestBase):
-    def cal_measure(self, number):
+    def cal_measure(self, number, timeout = 3):
         self.vna.cmd(":VNA:CAL:MEAS "+str(number))
         # wait for the measurement to finish
-        timeout = time.time() + 3
+        stoptime = time.time() + timeout
         while self.vna.query(":VNA:CAL:BUSY?") == "TRUE":
-            if time.time() > timeout:
+            if time.time() > stoptime:
                 raise AssertionError("Calibration measurement timed out")
             time.sleep(0.1)
     
@@ -80,3 +82,85 @@ class TestCalibration(TestBase):
         self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_1"), "")
         self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_2"), "")
         self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_12"), "")
+        
+    def assertTrace_dB(self, trace, dB_nominal, dB_deviation):
+        for S in trace:
+            dB = 20*math.log10(abs(S[1]))
+            self.assertLessEqual(dB, dB_nominal + dB_deviation)
+            self.assertGreaterEqual(dB, dB_nominal - dB_deviation)
+        
+    def test_SOLT_calibration(self):
+        # This test performs a 2-port SOLT calibration with a connected LibreCAL
+        # Afterwqrds, the calibration is checked with a 6dB attenuator
+        # Set up the sweep first
+        self.vna.cmd(":DEV:MODE VNA")
+        self.vna.cmd(":VNA:SWEEP FREQUENCY")
+        self.vna.cmd(":VNA:STIM:LVL -10")
+        self.vna.cmd(":VNA:ACQ:IFBW 1000")
+        self.vna.cmd(":VNA:ACQ:AVG 1")
+        self.vna.cmd(":VNA:ACQ:POINTS 501")
+        self.vna.cmd(":VNA:FREQuency:START 50000000")
+        self.vna.cmd(":VNA:FREQuency:STOP 6000000000")
+        
+        self.vna.cmd(":VNA:CAL:RESET")
+
+        # Load calibration file (only for standard and measurement setup, no
+        # measurements are included)
+        self.assertEqual(self.vna.query(":VNA:CAL:LOAD? LIBRECAL.CAL"), "TRUE")
+        
+        # Take the measurements
+               
+        cal = libreCAL()
+        # Connections:
+        # LibreVNA -> LibreCAL
+        # 1 -> 3
+        # 2 -> 1
+        cal.reset()
+        cal.setPort(cal.Standard.OPEN, 1)
+        cal.setPort(cal.Standard.OPEN, 3)
+        self.cal_measure(0, 15)
+        self.cal_measure(3, 15)
+
+        cal.setPort(cal.Standard.SHORT, 1)
+        cal.setPort(cal.Standard.SHORT, 3)
+        self.cal_measure(1, 15)
+        self.cal_measure(4, 15)
+
+        cal.setPort(cal.Standard.LOAD, 1)
+        cal.setPort(cal.Standard.LOAD, 3)
+        self.cal_measure(2, 15)
+        self.cal_measure(5, 15)
+
+        cal.setPort(cal.Standard.THROUGH, 1, 3)
+        self.cal_measure(6, 15)
+        
+        # activate calibration
+        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_12"), "")
+
+        # switch in 6dB attenuator
+        cal.setPort(cal.Standard.THROUGH, 1, 2)        
+        cal.setPort(cal.Standard.THROUGH, 3, 4)        
+
+        # Start measurement and grab data
+        self.vna.cmd(":VNA:ACQ:SINGLE TRUE")
+        while self.vna.query(":VNA:ACQ:FIN?") == "FALSE":
+            time.sleep(0.1)
+
+        cal.reset()
+        
+        # grab trace data
+        S11 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
+        S12 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S12"))
+        S21 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S21"))
+        S22 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S22"))
+    
+        # Attenuation is frequency dependent, use excessively large limits
+        # TODO: use smaller limits based on frequency
+        self.assertTrace_dB(S12, -13, 5)
+        self.assertTrace_dB(S21, -13, 5)
+        
+        # Reflection should be below -10dB (much lower for most frequencies)
+        self.assertTrace_dB(S11, -100, 90)
+        self.assertTrace_dB(S22, -100, 90)
+        
+        
