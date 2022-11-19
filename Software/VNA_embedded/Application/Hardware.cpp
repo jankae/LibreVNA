@@ -236,6 +236,7 @@ void HW::SetIdle() {
 	Trigger::SetInput(false);
 	FPGA::AbortSweep();
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	FPGA::DisableAllInterrupts();
 	FPGA::DisableHardwareOverwrite();
 	FPGA::Enable(FPGA::Periphery::SourceChip, false);
 	FPGA::Enable(FPGA::Periphery::SourceRF, false);

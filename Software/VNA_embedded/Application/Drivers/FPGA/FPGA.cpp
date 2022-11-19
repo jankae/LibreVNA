@@ -14,6 +14,7 @@ static FPGA::HaltedCallback halted_cb;
 static uint16_t SysCtrlReg = 0x0000;
 static uint16_t ISRMaskReg = 0x0000;
 static uint32_t ADC_samplerate;
+static volatile bool busy_reading = false;
 
 using namespace FPGAHAL;
 
@@ -86,6 +87,7 @@ bool FPGA::Configure(uint32_t start_address, uint32_t bitstream_size) {
 
 bool FPGA::Init(HaltedCallback cb) {
 	halted_cb = cb;
+	busy_reading = false;
 	SysCtrlReg = 0;
 	ISRMaskReg = 0;
 	// Reset FPGA
@@ -180,6 +182,11 @@ void FPGA::DisableInterrupt(Interrupt i) {
 	WriteRegister(Reg::InterruptMask, ISRMaskReg);
 }
 
+void FPGA::DisableAllInterrupts() {
+	ISRMaskReg = 0x0000;
+	WriteRegister(Reg::InterruptMask, ISRMaskReg);
+}
+
 void FPGA::WriteMAX2871Default(uint32_t *DefaultRegs) {
 	WriteRegister(Reg::MAX2871Def0LSB, DefaultRegs[0] & 0xFFFF);
 	WriteRegister(Reg::MAX2871Def0MSB, DefaultRegs[0] >> 16);
@@ -259,19 +266,21 @@ static inline int64_t sign_extend_64(int64_t x, uint16_t bits) {
 static FPGA::ReadCallback callback;
 static uint8_t raw[40];
 static FPGA::SamplingResult result;
-static bool busy_reading = false;
 
 bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	if(busy_reading) {
-		LOG_ERR("ISR while still reading old data");
+		LOG_ERR("ISR while SPI is busy");
 		return false;
 	}
 	callback = cb;
-	uint8_t cmd[40] = {0xC0, 0x00};
+	static uint8_t cmd[40] = {0xC0, 0x00};
 	// Start data read
 	Low(CS);
 	busy_reading = true;
-	HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 40);
+	if(HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 40) != HAL_OK) {
+		LOG_ERR("Failed to start SPI DMA");
+		busy_reading = false;
+	}
 	return true;
 }
 
@@ -313,7 +322,11 @@ void FPGA::StartSweep() {
 }
 
 void FPGA::AbortSweep() {
+	// abort any FPGA operation by pulling sweep pin low
 	Low(AUX3);
+	// data transfer of a datapoint might still be active, abort
+	HAL_SPI_DMAStop(&FPGA_SPI);
+	busy_reading = false;
 }
 
 void FPGA::SetMode(Mode mode) {
