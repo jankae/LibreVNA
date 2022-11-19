@@ -132,6 +132,7 @@ private slots:
     void Run();
     void Stop();
     void ConfigureDevice(bool resetTraces = true, std::function<void(bool)> cb = nullptr);
+    void ResetLiveTraces();
 private:
     Settings settings;
     unsigned int averages;

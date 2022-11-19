@@ -909,6 +909,8 @@ void VNA::UpdateAverageCount()
 void VNA::SettingsChanged()
 {
     configurationTimer.start(100);
+    changingSettings = true;
+    ResetLiveTraces();
 }
 
 void VNA::StartImpedanceMatching()
@@ -938,6 +940,7 @@ void VNA::SetSweepType(SweepType sw)
     if(settings.sweepType != sw) {
         settings.sweepType = sw;
         emit sweepTypeChanged(sw);
+        ConstrainAndUpdateFrequencies();
         SettingsChanged();
     }
 }
@@ -1085,6 +1088,7 @@ void VNA::SetPowerSweepFrequency(double freq)
 {
     settings.Power.frequency = freq;
     emit powerSweepFrequencyChanged(freq);
+    ConstrainAndUpdateFrequencies();
     SettingsChanged();
 }
 
@@ -1220,7 +1224,8 @@ void VNA::SetupSCPI()
         if(params.size() >= 1) {
             if(params[0] == "FREQUENCY") {
                 SetSweepType(SweepType::Frequency);
-                return "";
+                ResetLiveTraces();
+                return SCPI::getResultName(SCPI::Result::Empty);
             } else if(params[0] == "POWER") {
                 SetSweepType(SweepType::Power);
                 return SCPI::getResultName(SCPI::Result::Empty);
@@ -1280,6 +1285,7 @@ void VNA::SetupSCPI()
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         SetFullSpan();
+        ResetLiveTraces();
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_freq->add(new SCPICommand("ZERO", [=](QStringList params) -> QString {
@@ -1653,11 +1659,7 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
 {
     if(running) {
         if (resetTraces) {
-            settings.activeSegment = 0;
-            average.reset(settings.npoints);
-            traceModel.clearLiveData();
-            UpdateAverageCount();
-            UpdateCalWidget();
+            ResetLiveTraces();
         }
         changingSettings = true;
         // assemble VNA protocol settings
@@ -1713,10 +1715,7 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
             window->getDevice()->setVNA(s, [=](bool res){
                 // device received command, reset traces now
                 if (resetTraces) {
-                    average.reset(settings.npoints);
-                    traceModel.clearLiveData();
-                    UpdateAverageCount();
-                    UpdateCalWidget();
+                    ResetLiveTraces();
                 }
                 if(cb) {
                     cb(res);
@@ -1741,6 +1740,15 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
         }
         emit sweepStopped();
     }
+}
+
+void VNA::ResetLiveTraces()
+{
+    settings.activeSegment = 0;
+    average.reset(settings.npoints);
+    traceModel.clearLiveData();
+    UpdateAverageCount();
+    UpdateCalWidget();
 }
 
 bool VNA::LoadCalibration(QString filename)

@@ -1,9 +1,9 @@
 import unittest
 
 testmodules = [
-#    'tests.TestConnect',
-#    'tests.TestMode',
-#    'tests.TestVNASweep',
+    'tests.TestConnect',
+    'tests.TestMode',
+    'tests.TestVNASweep',
     'tests.TestCalibration',
     ]
 

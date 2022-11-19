@@ -208,19 +208,23 @@ void TraceWidget::SetupSCPI()
            return "ERROR";
         }
         QString ret;
-        for(unsigned int i=0;i<t->size();i++) {
-            auto d = t->sample(i);
-            int precision = 0;
-            switch(t->outputType()) {
-            case Trace::DataType::Invalid:
-            case Trace::DataType::Frequency: precision = 0; break;
-            case Trace::DataType::Time: precision = 12; break;
-            case Trace::DataType::Power: precision = 3; break;
-            case Trace::DataType::TimeZeroSpan: precision = 4; break;
+        if(t->size() > 0) {
+            for(unsigned int i=0;i<t->size();i++) {
+                auto d = t->sample(i);
+                int precision = 0;
+                switch(t->outputType()) {
+                case Trace::DataType::Invalid:
+                case Trace::DataType::Frequency: precision = 0; break;
+                case Trace::DataType::Time: precision = 12; break;
+                case Trace::DataType::Power: precision = 3; break;
+                case Trace::DataType::TimeZeroSpan: precision = 4; break;
+                }
+                ret += "[" + QString::number(d.x, 'f', precision) + ","+createStringFromData(t, d)+"],";
             }
-            ret += "[" + QString::number(d.x, 'f', precision) + ","+createStringFromData(t, d)+"],";
+            ret.chop(1);
+        } else {
+            ret = "EMPTY";
         }
-        ret.chop(1);
         return ret;
     }));
     add(new SCPICommand("AT", nullptr, [=](QStringList params) -> QString {
