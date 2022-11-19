@@ -1,0 +1,24 @@
+{
+    "Header": {
+        "Comment": "All values are metric (mm)",
+        "CreationDate": "2022-11-19T14:50:53Z",
+        "GenerationSoftware": {
+            "Application": "EAGLE",
+            "Vendor": "Autodesk",
+            "Version": "9.3.1"
+        },
+        "Part": "Single"
+    },
+    "Overall": {
+        "BoardThickness": 1.68,
+        "LayerNumber": 6,
+        "Name": {
+            "ProjectId": "VNA"
+        },
+        "Owner": "Jan Kaberich <j.kaeberich@gmx.de>",
+        "Size": {
+            "X": 122,
+            "Y": 98
+        }
+    }
+}
