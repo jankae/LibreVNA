@@ -54,7 +54,7 @@ void Manual::Setup(Protocol::ManualControlV1 m) {
 
 	// Configure single sweep point
 	FPGA::WriteSweepConfig(0, !m.SourceHighband, Source.GetRegisters(),
-			LO1.GetRegisters(), m.attenuator, 0, FPGA::SettlingTime::us20,
+			LO1.GetRegisters(), m.attenuator, 0, FPGA::SettlingTime::us60,
 			FPGA::Samples::SPPRegister, 0,
 			(FPGA::LowpassFilter) m.SourceHighLowpass);
 

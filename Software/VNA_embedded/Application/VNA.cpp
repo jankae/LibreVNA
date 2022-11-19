@@ -263,7 +263,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		}
 
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
-				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us20,
+				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us60,
 				FPGA::Samples::SPPRegister, needs_halt);
 		last_lowband = lowband;
 	}
