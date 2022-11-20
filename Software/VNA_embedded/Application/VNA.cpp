@@ -23,6 +23,7 @@
 static Protocol::SweepSettings settings;
 static uint16_t pointCnt;
 static uint8_t stageCnt;
+static uint32_t last_LO2;
 static double logMultiplier, logFrequency;
 static Protocol::VNADatapoint<32> data;
 static bool active = false;
@@ -36,15 +37,6 @@ static bool zerospan;
 
 static constexpr uint8_t sourceHarmonic = 5;
 static constexpr uint8_t LOHarmonic = 3;
-
-using IFTableEntry = struct {
-	uint16_t pointCnt;
-	uint8_t clkconfig[8];
-};
-
-static constexpr uint16_t IFTableNumEntries = 500;
-static IFTableEntry IFTable[IFTableNumEntries];
-static uint16_t IFTableIndexCnt = 0;
 
 static constexpr float alternativeSamplerate = 914285.7143f;
 static constexpr uint8_t alternativePrescaler = 102400000UL / alternativeSamplerate;
@@ -74,6 +66,42 @@ static uint64_t getPointFrequency(uint16_t pointNum) {
 		}
 		lastPointNum = pointNum;
 		return logFrequency;
+	}
+}
+
+static void setPLLFrequencies(uint64_t f) {
+	if(f > HW::Info.limits_maxFreq) {
+		Source.SetFrequency(f / sourceHarmonic);
+		LO1.SetFrequency((f + HW::getIF1()) / LOHarmonic);
+	} else {
+		if(f >= HW::BandSwitchFrequency) {
+			Source.SetFrequency(f);
+		}
+		LO1.SetFrequency(f + HW::getIF1());
+	}
+}
+
+static bool needs2LOshift(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO) {
+	// Check if 2.LO needs to be shifted
+	uint64_t actualSource, actual1LO;
+	actualSource = Source.GetActualFrequency();
+	actual1LO = LO1.GetActualFrequency();
+	if(f > HW::Info.limits_maxFreq) {
+		actualSource *= sourceHarmonic;
+		actual1LO *= LOHarmonic;
+	} else if(f < HW::BandSwitchFrequency) {
+		// can use the lowband PLL with high frequency resolution, assume perfect frequency match
+		actualSource = f;
+	}
+	uint32_t actualFirstIF = actual1LO - actualSource;
+	uint32_t actualFinalIF = actualFirstIF - current2LO;
+	uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
+	if(IFdeviation > IFBW / 2) {
+		*new2LO = actualFirstIF - HW::getIF2();
+		return true;
+	} else {
+		// no shift required
+		return false;
 	}
 }
 
@@ -130,107 +158,47 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 
 	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
-	uint32_t last_LO2 = HW::getIF1() - HW::getIF2();
+	last_LO2 = HW::getIF1() - HW::getIF2();
 	Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
 	Si5351.WaitForLock(Si5351C::PLL::B, 10);
 
-	IFTableIndexCnt = 0;
-
 	zerospan = (s.f_start == s.f_stop) && (s.cdbm_excitation_start == s.cdbm_excitation_stop);
 
 	bool last_lowband = false;
-
-	// invalidate first entry of IFTable, preventing switing of 2.LO in halted callback
-	IFTable[0].pointCnt = 0xFFFF;
 
 	uint16_t pointsWithoutHalt = 0;
 
 	// Transfer PLL configuration to FPGA
 	for (uint16_t i = 0; i < settings.points; i++) {
-		bool harmonic_mixing = false;
 		uint64_t freq = getPointFrequency(i);
 		int16_t power = s.cdbm_excitation_start + (s.cdbm_excitation_stop - s.cdbm_excitation_start) * i / (settings.points - 1);
 		freq = Cal::FrequencyCorrectionToDevice(freq);
 
-		if(freq > 6000000000ULL) {
-			harmonic_mixing = true;
-		}
-
-		// SetFrequency only manipulates the register content in RAM, no SPI communication is done.
-		// No mode-switch of FPGA necessary here.
-
 		bool needs_halt = false;
-		uint64_t actualSourceFreq;
 		bool lowband = false;
 		if (freq < HW::BandSwitchFrequency) {
 			needs_halt = true;
 			lowband = true;
-			actualSourceFreq = freq;
-		} else {
-			uint64_t srcFreq = freq;
-			if(harmonic_mixing) {
-				srcFreq /= sourceHarmonic;
-			}
-			Source.SetFrequency(srcFreq);
-			actualSourceFreq = Source.GetActualFrequency();
-			if(harmonic_mixing) {
-				actualSourceFreq *= sourceHarmonic;
+		}
+		if(i == 0) {
+			// halt before first point (makes sure that the 2.LO gets configured correctly if it was shifted for the last point in
+			// the previous sweep
+			needs_halt = true;
+		}
+		// SetFrequency only manipulates the register content in RAM, no SPI communication is done.
+		// No mode-switch of FPGA necessary here.
+		setPLLFrequencies(freq);
+		if(s.suppressPeaks) {
+			if(needs2LOshift(freq, last_LO2, actualBandwidth, &last_LO2)) {
+				needs_halt = true;
 			}
 		}
 		if (last_lowband && !lowband) {
 			// additional halt before first highband point to enable highband source
 			needs_halt = true;
-		}
-		uint64_t LOFreq = freq + HW::getIF1();
-		if(harmonic_mixing) {
-			LOFreq /= LOHarmonic;
-		}
-		LO1.SetFrequency(LOFreq);
-		uint64_t actualLO1 = LO1.GetActualFrequency();
-		if(harmonic_mixing) {
-			actualLO1 *= LOHarmonic;
-		}
-		uint32_t actualFirstIF = actualLO1 - actualSourceFreq;
-		uint32_t actualFinalIF = actualFirstIF - last_LO2;
-		uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
-		bool needs_LO2_shift = false;
-		if(IFdeviation > actualBandwidth / 2) {
-			needs_LO2_shift = true;
-		}
-		if (s.suppressPeaks && needs_LO2_shift) {
-			if (IFTableIndexCnt < IFTableNumEntries) {
-				// still room in table
-				needs_halt = true;
-				IFTable[IFTableIndexCnt].pointCnt = i;
-				if(IFTableIndexCnt < IFTableNumEntries - 1) {
-					// Configure LO2 for the changed IF1. This is not necessary right now but it will generate
-					// the correct clock settings
-					last_LO2 = actualFirstIF - HW::getIF2();
-					LOG_INFO("Changing 2.LO to %lu at point %lu (%lu%06luHz) to reach correct 2.IF frequency (1.LO: %lu%06luHz, 1.IF: %lu%06luHz)",
-							last_LO2, i, (uint32_t ) (freq / 1000000),
-							(uint32_t ) (freq % 1000000), (uint32_t ) (actualLO1 / 1000000),
-							(uint32_t ) (actualLO1 % 1000000), (uint32_t ) (actualFirstIF / 1000000),
-							(uint32_t ) (actualFirstIF % 1000000));
-				} else {
-					// last entry in IF table, revert LO2 to default
-					last_LO2 = HW::getIF1() - HW::getIF2();
-				}
-				Si5351.SetCLK(SiChannel::RefLO2, last_LO2,
-						Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-				// store calculated clock configuration for later change
-				Si5351.ReadRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);
-				IFTableIndexCnt++;
-				needs_LO2_shift = false;
-			}
-		}
-		if(needs_LO2_shift) {
-			// if shift is still needed either peak suppression is disabled or no more room in IFTable was available
-			LOG_WARN(
-					"PLL deviation of %luHz for measurement at %lu%06luHz, will cause a peak",
-					IFdeviation, (uint32_t ) (freq / 1000000), (uint32_t ) (freq % 1000000));
 		}
 
 		// halt on regular intervals to prevent USB buffer overflow
@@ -239,8 +207,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			if(pointsWithoutHalt > maxPointsBetweenHalts) {
 				needs_halt = true;
 			}
-		}
-		if(needs_halt) {
+		} else {
 			pointsWithoutHalt = 0;
 		}
 
@@ -286,7 +253,6 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::Enable(FPGA::Periphery::PortSwitch);
 	pointCnt = 0;
 	stageCnt = 0;
-	IFTableIndexCnt = 0;
 	adcShifted = false;
 	active = true;
 	// Enable new data and sweep halt interrupt
@@ -344,7 +310,6 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 		if (pointCnt >= settings.points) {
 			// reached end of sweep, start again
 			pointCnt = 0;
-			IFTableIndexCnt = 0;
 			// request to trigger work function
 			return true;
 		}
@@ -376,22 +341,11 @@ void VNA::SweepHalted() {
 	// are handled through the STM::DispatchToInterrupt functionality, ensuring that they do not interrupt each other
 	STM::DispatchToInterrupt([](){
 		LOG_DEBUG("Halted before point %d", pointCnt);
-		// Check if IF table has entry at this point
-		if (IFTableIndexCnt < IFTableNumEntries && IFTable[IFTableIndexCnt].pointCnt == pointCnt) {
-			Si5351.WriteRawCLKConfig(SiChannel::Port1LO2, IFTable[IFTableIndexCnt].clkconfig);
-			Si5351.WriteRawCLKConfig(SiChannel::Port2LO2, IFTable[IFTableIndexCnt].clkconfig);
-			Si5351.WriteRawCLKConfig(SiChannel::RefLO2, IFTable[IFTableIndexCnt].clkconfig);
-			Si5351.ResetPLL(Si5351C::PLL::B);
-			IFTableIndexCnt++;
-			Si5351.WaitForLock(Si5351C::PLL::B, 10);
-			// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
-			Delay::us(1500);
-		}
+		bool adcShiftRequired = false;
 		uint64_t frequency = getPointFrequency(pointCnt);
 		int16_t power = settings.cdbm_excitation_start
 				+ (settings.cdbm_excitation_stop - settings.cdbm_excitation_start)
 						* pointCnt / (settings.points - 1);
-		bool adcShiftRequired = false;
 		if (frequency < HW::BandSwitchFrequency) {
 			auto driveStrength = fixedPowerLowband;
 			if(!settings.fixedPowerSetting) {
@@ -431,6 +385,20 @@ void VNA::SweepHalted() {
 			// first sweep point in highband is also halted, disable lowband source
 			Si5351.Disable(SiChannel::LowbandSource);
 			FPGA::Enable(FPGA::Periphery::SourceRF);
+		}
+		if(settings.suppressPeaks) {
+			// does not actually change PLL settings, just calculates the register values and
+			// is required to determine the need for a 2.LO shift
+			setPLLFrequencies(frequency);
+			if(needs2LOshift(frequency, last_LO2, actualBandwidth, &last_LO2)) {
+				Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+				Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+				Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+				Si5351.ResetPLL(Si5351C::PLL::B);
+				Si5351.WaitForLock(Si5351C::PLL::B, 10);
+				// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
+				Delay::us(1500);
+			}
 		}
 
 		if (pointCnt == 0) {
