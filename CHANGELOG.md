@@ -1,17 +1,27 @@
 # Changelog
 
 ## v1.5.0
-**v1.5.0 is in a pre-release state for now:** The following changes are implemented but not sufficiently tested for productive use. The v1.5.0-alpha.1 release allows testing of these features, proceed at your own risk.
+**v1.5.0 is in a pre-release state for now:** The following changes are implemented but not sufficiently tested for productive use. The v1.5.0-alpha.2 release allows testing of these features, proceed at your own risk.
 
 - New features:
   - Further abstraction from the LibreVNA hardware. The GUI now supports VNAs with up to 8 ports
   - Allow cascading of muliple LibreVNAs, see Preferences->Compound Devices. You need to configure a compound device first (consisting of up to 4 LibreVNAs). Afterwards, you are able to use them as one larger, virtual VNA with more ports (or more physical separation between the ports). Measurements within one physical LibreVNA will contain phase information, measurements between different LibreVNAs have their phase set to zero
   - Support for calibrating with sliding loads
+  - New graph type: Eye Diagram
+  - Restrict markers to a certain frequency range
 
 - API-breaking changes: Unfortunately, some major rework was required to make the GUI compatible to devices with more than two ports. In some areas, the file storage format and the SCPI API had to change. Almost all changes are within the calibration system.
   - Calibration kit file format changed (old calibration kits can be imported)
-  - Calibration file format changed (old calibration can **not** be imported)
+  - Calibration file format changed (old calibration can be imported)
   - Calibration API changed significantly, see Programming Guide
+  
+- Lots of bugfixes, for example:
+  - Fix X-label clipping on graphs
+  - Prevent activation of a calibration without defined calibration standards
+  - Fix isolation measurements for calibration
+  - Valgrind issues fixed (mostly variable initializations)
+  - made USB communication more robust
+  - PLL locking issue fixed
 
 ## v1.4.0
 

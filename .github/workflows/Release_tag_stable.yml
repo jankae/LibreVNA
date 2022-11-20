@@ -8,7 +8,7 @@ on:
 jobs:
 
   PC_Application_Ubuntu:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     outputs:
       upload_url: ${{ steps.bump_release.outputs.upload_url }} 
     steps:
@@ -26,14 +26,13 @@ jobs:
           fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
-          echo "::set-output name=app_version::v$fw_major.$fw_minor.$fw_patch"
+          echo "app_version=v$fw_major.$fw_minor.$fw_patch" >> $GITHUB_OUTPUT
 
       - name: Build application
         run: |
           cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
-          zip LibreVNA-GUI.zip LibreVNA-GUI
         shell: bash
 
       - name: Bump release page
@@ -71,26 +70,26 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
-          version: '5.15.1'
+          version: '5.15.2'
           arch: 'win64_mingw81'
       
       - name: Download libusb
         run: |
-          curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.23/libusb-1.0.23.7z
+          curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.25/libusb-1.0.25.7z
           7z x libusb.7z -r -olibusb
-          Xcopy /E /I /Y libusb\include ..\Qt\5.15.1\mingw81_64\include
-          Xcopy /E /I /Y libusb\MinGW64\static Software\PC_Application\LibreVNA-GUI
+          Xcopy /E /I /Y libusb\include ..\Qt\5.15.2\mingw81_64\include
+          Xcopy /E /I /Y libusb\MinGW64\static\libusb-1.0.a Software\PC_Application\LibreVNA-GUI
         shell: cmd
 
       - name: Get app version
         id: id_version
         shell: msys2 {0}
         run: |
-          cd Software/PC_Application
+          cd Software/PC_Application/LibreVNA-GUI
           fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
-          echo "::set-output name=app_version::v$fw_major.$fw_minor.$fw_patch"
+          echo "app_version=v$fw_major.$fw_minor.$fw_patch" >> $GITHUB_OUTPUT
 
       - name: Build application
         run: |
@@ -104,10 +103,10 @@ jobs:
           cd Software/PC_Application/LibreVNA-GUI/release
           del *.o *.cpp
           windeployqt.exe .
-          copy ..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\libwinpthread-1.dll .
-          copy ..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\libgcc_s_seh-1.dll .
-          copy "..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\libstdc++-6.dll" .
-          copy ..\..\..\..\..\Qt\5.15.1\mingw81_64\bin\Qt5OpenGL.dll .
+          copy ..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\libwinpthread-1.dll .
+          copy ..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\libgcc_s_seh-1.dll .
+          copy "..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\libstdc++-6.dll" .
+          copy ..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\Qt5OpenGL.dll .
         shell: cmd
 
       - name: Zip app
@@ -130,7 +129,7 @@ jobs:
           
   PC_Application_OSX:
     needs: PC_Application_Ubuntu
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v1
 
@@ -149,7 +148,7 @@ jobs:
           fw_major=`pcregrep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_minor=`pcregrep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
           fw_patch=`pcregrep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
-          echo "::set-output name=app_version::v$fw_major.$fw_minor.$fw_patch"
+          echo "app_version=v$fw_major.$fw_minor.$fw_patch" >> $GITHUB_OUTPUT
 
       - name: Build application
         run: |
@@ -189,7 +188,7 @@ jobs:
           fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' Makefile`
           fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' Makefile`
           hw_revision=`grep "DHW_REVISION=" Makefile | sed "s/-DHW_REVISION=\"'//" | sed "sr'\" [\]rr"`
-          echo "::set-output name=app_version::hw-rev-$hw_revision-v$fw_major.$fw_minor.$fw_patch"
+          echo "app_version=hw-rev-$hw_revision-v$fw_major.$fw_minor.$fw_patch" >> $GITHUB_OUTPUT
 
       - name: Build application
         run: |
