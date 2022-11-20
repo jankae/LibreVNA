@@ -74,6 +74,7 @@ private slots:
     void Run();
     void Stop();
     void ConfigureDevice();
+    void ResetLiveTraces();
 
 private:
     void SetupSCPI();

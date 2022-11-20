@@ -149,10 +149,10 @@ class TestCalibration(TestBase):
         cal.reset()
         
         # grab trace data
-        S11 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
-        S12 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S12"))
-        S21 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S21"))
-        S22 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S22"))
+        S11 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
+        S12 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S12"))
+        S21 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S21"))
+        S22 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S22"))
     
         # Attenuation is frequency dependent, use excessively large limits
         # TODO: use smaller limits based on frequency

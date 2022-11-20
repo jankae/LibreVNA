@@ -549,6 +549,7 @@ void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
 void SpectrumAnalyzer::SettingsChanged()
 {
     configurationTimer.start(100);
+    ResetLiveTraces();
 }
 
 void SpectrumAnalyzer::SetStartFreq(double freq)
@@ -909,6 +910,13 @@ void SpectrumAnalyzer::ConfigureDevice()
     }
 }
 
+void SpectrumAnalyzer::ResetLiveTraces()
+{
+    average.reset(settings.points);
+    traceModel.clearLiveData();
+    UpdateAverageCount();
+}
+
 void SpectrumAnalyzer::SetupSCPI()
 {
     auto scpi_freq = new SCPINode("FREQuency");
@@ -1113,8 +1121,8 @@ void SpectrumAnalyzer::SetupSCPI()
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
             return SCPI::getResultName(SCPI::Result::Error);
-        } else if(newval <= VirtualDevice::getInfo(window->getDevice()).ports){
-            SetTGPort(newval);
+        } else if(newval > 0 && newval <= VirtualDevice::getInfo(window->getDevice()).ports){
+            SetTGPort(newval-1);
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {
             // invalid port number
@@ -1122,7 +1130,7 @@ void SpectrumAnalyzer::SetupSCPI()
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return QString::number(settings.trackingPort);
+        return QString::number(settings.trackingPort+1);
     }));
     scpi_tg->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;

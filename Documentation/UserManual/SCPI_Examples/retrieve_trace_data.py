@@ -42,7 +42,7 @@ data = vna.query(":VNA:TRACE:DATA? S11")
 
 # Returned data is just a string containing all the measurement points.
 # Parsing the data returns a list containing frequency/complex tuples
-S11 = vna.parse_trace_data(data)
+S11 = vna.parse_VNA_trace_data(data)
 
 for x in S11:
     print(x)

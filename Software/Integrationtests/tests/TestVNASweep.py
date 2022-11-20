@@ -20,7 +20,7 @@ class TestVNASweep(TestBase):
         self.vna.cmd(":VNA:FREQuency:STOP 6000000000")
         self.waitSweepTimeout(2)
         
-        S11 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
+        S11 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
         self.assertEqual(S11[0][0], 1000000)
         self.assertEqual(S11[-1][0], 6000000000)
         
@@ -36,7 +36,7 @@ class TestVNASweep(TestBase):
         self.vna.cmd(":VNA:FREQuency:ZERO 1500000000")
         self.waitSweepTimeout(2)
         
-        S11 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
+        S11 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
         self.assertEqual(S11[0][0], 0.0)
         # Sweep should take about 0.125 seconds
         self.assertGreater(S11[-1][0], 0.1)
@@ -53,7 +53,7 @@ class TestVNASweep(TestBase):
         self.vna.cmd(":VNA:POWER:STOP -10")
         self.waitSweepTimeout(2)
         
-        S11 = self.vna.parse_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
+        S11 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
         self.assertEqual(S11[0][0], -30)
         self.assertEqual(S11[-1][0], -10)
                

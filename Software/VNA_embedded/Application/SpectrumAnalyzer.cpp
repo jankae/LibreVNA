@@ -37,8 +37,11 @@ static uint8_t attenuator;
 static int64_t trackingFreq;
 static bool trackingLowband;
 
+static bool firstSample;
+
+// Zero span variables
 static uint64_t firstPointTime;
-static bool firstPoint;
+static bool firstPoint; // indicates the first point to be transmitted to the GUI, sets the firstPointTime
 static bool zerospan;
 
 static void StartNextSample() {
@@ -175,6 +178,17 @@ static void StartNextSample() {
 			trackingFreq, FPGA::SettlingTime::us60, FPGA::Samples::SPPRegister, 0,
 			FPGA::LowpassFilter::Auto);
 
+	if(firstSample && (signalIDstep == 0)) {
+		firstSample = false;
+		// configure source/LO to allow for early settling
+		FPGA::SetMode(FPGA::Mode::SourcePLL);
+		Source.Update();
+		FPGA::SetMode(FPGA::Mode::LOPLL);
+		LO1.Update();
+		FPGA::SetMode(FPGA::Mode::FPGA);
+		HAL_Delay(20);
+	}
+
 	FPGA::StartSweep();
 }
 
@@ -214,6 +228,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	zerospan = (s.f_start == s.f_stop);
 	// set initial state
 	pointCnt = 0;
+	signalIDstep = 0;
 	// enable the required hardware resources
 	Si5351.Enable(SiChannel::Port1LO2);
 	Si5351.Enable(SiChannel::Port2LO2);
@@ -265,6 +280,7 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 
 	lastLO2 = 0;
 	firstPoint = true;
+	firstSample = true;
 	active = true;
 	StartNextSample();
 }

@@ -132,7 +132,7 @@ public:
         Detector detector;
         bool signalID;
         bool trackingGenerator;
-        int trackingPort;
+        int trackingPort; // counting starts at zero
         double trackingOffset;
         double trackingPower;
     };

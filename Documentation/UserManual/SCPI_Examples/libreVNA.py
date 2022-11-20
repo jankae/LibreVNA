@@ -90,7 +90,7 @@ class libreVNA:
         return self.__read_response()
     
     @staticmethod
-    def parse_trace_data(data):
+    def parse_VNA_trace_data(data):
         ret = []
         # Remove brackets (order of data implicitly known)
         data = data.replace(']','').replace('[','')
@@ -103,5 +103,20 @@ class libreVNA:
             real = float(values[i+1])
             imag = float(values[i+2])
             ret.append((freq, complex(real, imag)))
-        return ret       
+        return ret
+    
+    @staticmethod
+    def parse_SA_trace_data(data):
+        ret = []
+        # Remove brackets (order of data implicitly known)
+        data = data.replace(']','').replace('[','')
+        values = data.split(',')
+        if int(len(values) / 2) * 2 != len(values):
+            # number of values must be a multiple of two (frequency, dBm)
+            raise Exception("Invalid input data: expected tuples of two values each")
+        for i in range(0, len(values), 2):
+            freq = float(values[i])
+            dBm = float(values[i+1])
+            ret.append((freq, dBm))
+        return ret
 

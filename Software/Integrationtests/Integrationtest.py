@@ -5,6 +5,8 @@ testmodules = [
     'tests.TestMode',
     'tests.TestVNASweep',
     'tests.TestCalibration',
+    'tests.TestGenerator',
+    'tests.TestSASweep',
     ]
 
 suite = unittest.TestSuite()
