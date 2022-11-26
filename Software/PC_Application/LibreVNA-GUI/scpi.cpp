@@ -17,7 +17,7 @@ bool SCPI::match(QString s1, QString s2)
 {
     if (s1.compare(s2, Qt::CaseInsensitive) == 0
      || s1.compare(alternateName(s2), Qt::CaseInsensitive) == 0
-     || alternateName(s1).compare(alternateName(s2), Qt::CaseInsensitive) == 0
+     || alternateName(s1).compare(s2, Qt::CaseInsensitive) == 0
      || alternateName(s1).compare(alternateName(s2), Qt::CaseInsensitive) == 0) {
         return true;
     } else {
