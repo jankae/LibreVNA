@@ -115,7 +115,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install qt@5 libusb
+          brew install qt@5 libusb pcre
           
       - name: Set Environment
         run: |

@@ -33,6 +33,7 @@ jobs:
           cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
           make -j9
+          zip LibreVNA-GUI.zip LibreVNA-GUI
         shell: bash
 
       - name: Bump release page
@@ -135,7 +136,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install qt@5 libusb
+          brew install qt@5 libusb pcre
           
       - name: Set Environment
         run: |
