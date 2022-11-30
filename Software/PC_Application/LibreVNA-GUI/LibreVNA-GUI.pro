@@ -1,5 +1,6 @@
 HEADERS += \
     ../../VNA_embedded/Application/Communication/Protocol.hpp \
+    ../../VNA_embedded/Application/Communication/PacketConstants.h \
     Calibration/LibreCAL/caldevice.h \
     Calibration/LibreCAL/librecaldialog.h \
     Calibration/LibreCAL/usbdevice.h \

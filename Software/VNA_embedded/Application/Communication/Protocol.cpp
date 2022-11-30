@@ -1,18 +1,15 @@
 #include "Protocol.hpp"
-
 #include <cstring>
+#include "PacketConstants.h"
 
 /*
  * General packet format:
  * 1. 1 byte header
  * 2. 2 byte overall packet length (with header and checksum)
- * 3. packet type
- * 4. packet payload
+ * 3. 1 byte packet type
+ * 4. variable length packet payload
  * 5. 4 byte CRC32 (with header)
  */
-
-static constexpr uint8_t header = 0x5A;
-static constexpr uint8_t header_size = 4;
 
 #define CRC32_POLYGON 0xEDB88320
 uint32_t Protocol::CRC32(uint32_t crc, const void *data, uint32_t len) {
@@ -35,7 +32,7 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 	}
 	uint8_t *data = buf;
 	/* Remove any out-of-order bytes in front of the frame */
-	while (*data != header) {
+	while (*data != PCKT_HEADER_DATA) {
 		data++;
 		if(--len == 0) {
 			/* Reached end of data */
@@ -45,16 +42,16 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 		}
 	}
 	/* At this point, data points to the beginning of the frame */
-	if(len < header_size) {
+	if(len < PCKT_COMBINED_HEADER_LEN) {
 		/* the frame header has not been completely received */
 		info->type = PacketType::None;
 		return data - buf;
 	}
 
 	/* Evaluate frame size */
-    uint16_t length = data[1] | ((uint16_t) data[2] << 8);
+    uint16_t length = data[PCKT_LENGTH_OFFSET] | ((uint16_t) data[2] << 8);
 
-    if(length > sizeof(PacketInfo) * 2 || length < 8) {
+    if(length > sizeof(PacketInfo) * 2 || length < PCKT_EXCL_PAYLOAD_LEN) {
         // larger than twice the maximum expected packet size or too small, probably an error, ignore
         info->type = PacketType::None;
         return 1;
@@ -67,10 +64,10 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 	}
 
 	/* The complete frame has been received, check checksum */
-	auto type = (PacketType) data[3];
+	auto type = (PacketType) data[PCKT_TYPE_OFFSET];
     uint32_t crc = (uint32_t) data[length-4] | ((uint32_t) data[length-3] << 8) | ((uint32_t) data[length-2] << 16) | ((uint32_t) data[length-1] << 24);
 	if(type != PacketType::VNADatapoint) {
-		uint32_t compare = CRC32(0, data, length - 4);
+		uint32_t compare = CRC32(0, data, length - PCKT_CRC_LEN);
 		if(crc != compare) {
 			// CRC mismatch, remove header
 			data += 1;
@@ -78,7 +75,7 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 			return data - buf;
 		}
 		// Valid packet, copy packet type and payload
-		memcpy(info, &data[3], length - 7);
+		memcpy(info, &data[PCKT_TYPE_OFFSET], length - 7);
 	} else {
 		// Datapoint has the CRC set to zero
 		if(crc != 0x00000000) {
@@ -87,9 +84,9 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 			return data - buf;
 		}
 		// Create the datapoint
-		info->type = (PacketType) data[3];
+		info->type = (PacketType) data[PCKT_TYPE_OFFSET];
 		info->VNAdatapoint = new VNADatapoint<32>;
-		info->VNAdatapoint->decode(&data[4], length - 8);
+		info->VNAdatapoint->decode(&data[PCKT_PAYLOAD_OFFSET], length - PCKT_EXCL_PAYLOAD_LEN);
 	}
 
 	return data - buf + length;
@@ -132,29 +129,29 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::None:
         break;
     }
-    if (payload_size < 0 || payload_size + 8 > destsize) {
+    if (payload_size < 0 || payload_size + PCKT_EXCL_PAYLOAD_LEN > destsize) {
 		// encoding failed, buffer too small
 		return 0;
 	}
 	// Write header
-	dest[0] = header;
-	uint16_t overall_size = payload_size + 8;
-	memcpy(&dest[1], &overall_size, 2);
+	dest[PCKT_HEADER_OFFSET] = PCKT_HEADER_DATA;
+	uint16_t overall_size = payload_size + PCKT_EXCL_PAYLOAD_LEN;
+	memcpy(&dest[PCKT_LENGTH_OFFSET], &overall_size, PCKT_LENGTH_LEN);
 	// Further encoding uses a special case for VNADatapoint packettype
 	uint32_t crc = 0x00000000;
 	if(packet.type == PacketType::VNADatapoint) {
 		// CRC calculation takes about 18us which is the bulk of the time required to encode and transmit a datapoint.
 		// Skip CRC for data points to optimize throughput
-		dest[3] = (uint8_t) packet.type;
-		packet.VNAdatapoint->encode(&dest[4], destsize - 8);
+		dest[PCKT_TYPE_OFFSET] = (uint8_t) packet.type;
+		packet.VNAdatapoint->encode(&dest[PCKT_PAYLOAD_OFFSET], destsize - PCKT_EXCL_PAYLOAD_LEN);
 		crc = 0x00000000;
 	} else {
 		// Copy rest of the packet
-		memcpy(&dest[3], &packet, payload_size + 1); // one additional byte for the packet type
+		memcpy(&dest[PCKT_TYPE_OFFSET], &packet, payload_size + PCKT_TYPE_LEN); // one additional byte for the packet type
 		// Calculate the CRC
-		crc = CRC32(0, dest, overall_size - 4);
+		crc = CRC32(0, dest, overall_size - PCKT_CRC_LEN);
 	}
-	memcpy(&dest[overall_size - 4], &crc, 4);
+	memcpy(&dest[overall_size - PCKT_CRC_LEN], &crc, PCKT_CRC_LEN);
 	return overall_size;
 }
 

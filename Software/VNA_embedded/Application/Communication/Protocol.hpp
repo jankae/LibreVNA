@@ -1,9 +1,13 @@
 #pragma once
 
+
 #include <cstdint>
 #include <cstring>
 #include <limits>
 #include <complex>
+#include "PacketConstants.h"
+
+using namespace PacketConstants;
 
 namespace Protocol {
 
@@ -37,7 +41,7 @@ public:
 		}
 		real_values[num_values] = real;
 		imag_values[num_values] = imag;
-		descr_values[num_values] = stage << 5 | sourceMask;
+		descr_values[num_values] = stage << DPNT_CONF_STAGE_OFFSET | sourceMask;
 		num_values++;
 		return true;
 	}
@@ -46,27 +50,32 @@ public:
 		if(requiredBufferSize() > destSize) {
 			return false;
 		}
-		memcpy(dest, &frequency, 8);
-		memcpy(dest+8, &cdBm, 2);
-		memcpy(dest+10, &pointNum, 2);
-        dest += 12;
-		memcpy(dest, real_values, num_values * 4);
-		dest += num_values * 4;
-		memcpy(dest, imag_values, num_values * 4);
-		dest += num_values * 4;
+		memcpy(dest, &frequency, DPNT_FREQ_LEN);
+		dest += DPNT_FREQ_LEN;
+		memcpy(dest, &cdBm, DPNT_POW_LVL_LEN);
+		dest += DPNT_POW_LVL_LEN;
+		memcpy(dest, &pointNum, DPNT_PNT_NUM_LEN);
+        dest += DPNT_PNT_NUM_LEN;
+		memcpy(dest, real_values, num_values * DPNT_REAL_PART_LEN);
+		dest += num_values * DPNT_REAL_PART_LEN;
+		memcpy(dest, imag_values, num_values * DPNT_IMAG_PART_LEN);
+		dest += num_values * DPNT_IMAG_PART_LEN;
 		memcpy(dest, descr_values, num_values);
 		return true;
 	}
     void decode(const uint8_t *buffer, uint16_t size) {
-        num_values = (size - (8+2+2)) / (1+4+4);
-        memcpy(&frequency, buffer, 8);
-        memcpy(&cdBm, buffer+8, 2);
-        memcpy(&pointNum, buffer+10, 2);
-        buffer += 12;
-        memcpy(real_values, buffer, num_values * 4);
-        buffer += num_values * 4;
-        memcpy(imag_values, buffer, num_values * 4);
-        buffer += num_values * 4;
+        num_values = (size - (DPNT_FREQ_LEN + DPNT_POW_LVL_LEN + DPNT_PNT_NUM_LEN)) /
+        		(DPNT_REAL_PART_LEN + DPNT_IMAG_PART_LEN + DPNT_DESC_LEN);
+        memcpy(&frequency, buffer, DPNT_FREQ_LEN);
+        buffer += DPNT_FREQ_LEN;
+        memcpy(&cdBm, buffer, DPNT_POW_LVL_LEN);
+        buffer += DPNT_POW_LVL_LEN;
+        memcpy(&pointNum, buffer, DPNT_PNT_NUM_LEN);
+        buffer += DPNT_PNT_NUM_LEN;
+        memcpy(real_values, buffer, num_values * DPNT_REAL_PART_LEN);
+        buffer += num_values * DPNT_REAL_PART_LEN;
+        memcpy(imag_values, buffer, num_values * DPNT_IMAG_PART_LEN);
+        buffer += num_values * DPNT_IMAG_PART_LEN;
         memcpy(descr_values, buffer, num_values);
 	}
 
@@ -77,7 +86,7 @@ public:
 			sourceMask |= (int) Source::Reference;
 		}
 		for(int i=0;i<num_values;i++) {
-			if(descr_values[i] >> 5 != stage) {
+			if(descr_values[i] >> DPNT_CONF_STAGE_OFFSET != stage) {
 				continue;
 			}
 			if((descr_values[i] & sourceMask) != sourceMask) {
@@ -108,7 +117,8 @@ public:
     }
 
 	uint16_t requiredBufferSize() {
-		return 8+2+2+ num_values * (4+4+1);
+		return DPNT_FREQ_LEN + DPNT_POW_LVL_LEN + DPNT_PNT_NUM_LEN +
+				num_values * (DPNT_REAL_PART_LEN + DPNT_IMAG_PART_LEN + DPNT_DESC_LEN);
 	}
 
 	union {
@@ -299,10 +309,10 @@ using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
 	uint16_t pointNum;
 };
 
-static constexpr uint16_t FirmwareChunkSize = 256;
+
 using FirmwarePacket = struct _firmwarePacket {
     uint32_t address;
-    uint8_t data[FirmwareChunkSize];
+    uint8_t data[FW_CHUNK_SIZE];
 };
 
 using AmplitudeCorrectionPoint = struct _amplitudecorrectionpoint {

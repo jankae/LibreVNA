@@ -1,6 +1,7 @@
 #include "firmwareupdatedialog.h"
 
 #include "ui_firmwareupdatedialog.h"
+#include "../../VNA_embedded/Application/Communication/PacketConstants.h"
 
 #include <QFileDialog>
 #include <QStyle>
@@ -49,7 +50,7 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     }
     file->seek(0);
     addStatus("Evaluating file...");
-    if(file->size() % Protocol::FirmwareChunkSize != 0) {
+    if(file->size() % PacketConstants::FW_CHUNK_SIZE != 0) {
         abortWithError("Invalid file size");
         return;
     }
@@ -132,7 +133,7 @@ void FirmwareUpdateDialog::receivedAck()
         timer.start(1000);
         break;
     case State::TransferringData:
-        transferredBytes += Protocol::FirmwareChunkSize;
+        transferredBytes += PacketConstants::FW_CHUNK_SIZE;
         ui->progress->setValue(100 * transferredBytes / file->size());
         if(transferredBytes >= file->size()) {
             // complete file transferred
@@ -175,6 +176,6 @@ void FirmwareUpdateDialog::sendNextFirmwareChunk()
 {
     Protocol::FirmwarePacket fw;
     fw.address = transferredBytes;
-    file->read((char*) &fw.data, Protocol::FirmwareChunkSize);
+    file->read((char*) &fw.data, PacketConstants::FW_CHUNK_SIZE);
     dev->SendFirmwareChunk(fw);
 }
