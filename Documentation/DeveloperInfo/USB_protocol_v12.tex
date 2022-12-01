@@ -279,9 +279,9 @@ The packet contains the following fields:
 8 & 8 & UINT64 & f\_stop & Stop frequency in Hz \\
 16 & 2 & UINT16 & points & Number of points in the sweep \\
 18 & 4 & UINT32 & IF\_bandwidth & Bandwidth of the IF sampling in Hz \\
-22 & 2 &  UIN164 &cdbm\_excitation\_start &  Stimulus power at the first point in $\frac{1}{100}$dBm \\
+22 & 2 &  INT16 &cdbm\_excitation\_start &  Stimulus power at the first point in $\frac{1}{100}$dBm \\
 24 & 2 & UINT16 & Configuration & Bitmap for configuration, see below \\
-26 & 2 &  UINT16 &cdbm\_excitation\_stop & Stimulus power at the last point in $\frac{1}{100}$dBm \\
+26 & 2 &  INT16 &cdbm\_excitation\_stop & Stimulus power at the last point in $\frac{1}{100}$dBm \\
 \end{longtable}   
 \end{ThreePartTable}
 
@@ -355,12 +355,12 @@ The packet contains the following fields:
 %\insertTableNotes  % tell LaTeX where to insert the table-related notes
 \endlastfoot
 
-0 & 2 & UINT16 & port1min & Minimum value of the ADC at port 1 \\
-2 & 2 & UINT16 & port1max & Maximum value of the ADC at port 1 \\
-4 & 2 & UINT16 & port2min & Minimum value of the ADC at port 2 \\
-6 & 2 & UINT16 & port2max & Maximum value of the ADC at port 2 \\
-8 & 2 & UINT16 & refmin & Minimum value of the ADC at the reference receiver \\
-10 & 2 & UINT16 & refmax & Maximum value of the ADC at the reference receiver \\
+0 & 2 & INT16 & port1min & Minimum value of the ADC at port 1 \\
+2 & 2 & INT16 & port1max & Maximum value of the ADC at port 1 \\
+4 & 2 & INT16 & port2min & Minimum value of the ADC at port 2 \\
+6 & 2 & INT16 & port2max & Maximum value of the ADC at port 2 \\
+8 & 2 & INT16 & refmin & Minimum value of the ADC at the reference receiver \\
+10 & 2 & INT16 & refmax & Maximum value of the ADC at the reference receiver \\
 12 & 4 & FLOAT & port1real & Real part of the complex signal at port 1 \\
 16 & 4 & FLOAT & port1imag & Imaginary part of the complex signal at port 1 \\
 20 & 4 & FLOAT & port2real & Real part of the complex signal at port 2 \\
@@ -547,8 +547,8 @@ The packet contains the following fields:
 23 & 4 & UINT64 & MinIFBW & Minimum supported IF bandwidth in Hz \\
 27 & 4 & UINT64 & MaxIFBW & Maximum supported IF bandwidth in Hz \\
 31 & 2 & UINT16 & MaxPoints & Maximum number of points per sweep \\
-33 & 2 & UINT16 & MincdBm & Minimum stimulus power in $\frac{1}{100}$dBm \\
-35 & 2 & UINT16 & MaxcdBm & Maximum stimulus power in $\frac{1}{100}$dBm \\
+33 & 2 & INT16 & MincdBm & Minimum stimulus power in $\frac{1}{100}$dBm \\
+35 & 2 & INT16 & MaxcdBm & Maximum stimulus power in $\frac{1}{100}$dBm \\
 37 & 4 & UINT32 & MinRBW & Minimum supported resolution bandwidth in Hz \\
 41 & 4 & UINT32 & MaxRBW & Maximum supported resolution bandwidth in Hz \\
 45 & 1 & UINT8 & MaxAmplitudePoints & Maximum supported number of amplitude calibration points \\
@@ -633,7 +633,7 @@ The packet contains the following fields:
 \endlastfoot
 
 0 & 8 & UINT64 & OutputFrequency & Output frequency of the generator in Hz\\
-8 & 2 & UINT16 & cdBmLevel & Output level in $\frac{1}{100}$dBm \\
+8 & 2 & INT16 & cdBmLevel & Output level in $\frac{1}{100}$dBm \\
 10 & 1 & UINT8 & Configuration & Configuration bitmap, see below \\
 \end{longtable}   
 \end{ThreePartTable}
