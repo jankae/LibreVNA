@@ -279,7 +279,7 @@ The packet contains the following fields:
 8 & 8 & UINT64 & f\_stop & Stop frequency in Hz \\
 16 & 2 & UINT16 & points & Number of points in the sweep \\
 18 & 4 & UINT32 & IF\_bandwidth & Bandwidth of the IF sampling in Hz \\
-22 & 2 &  UIN164 &cdbm\_excitation\_start &  Stimulus power at the first point in $\frac{1}{100}$dBm \\
+22 & 2 &  UINT16 &cdbm\_excitation\_start &  Stimulus power at the first point in $\frac{1}{100}$dBm \\
 24 & 2 & UINT16 & Configuration & Bitmap for configuration, see below \\
 26 & 2 &  UINT16 &cdbm\_excitation\_stop & Stimulus power at the last point in $\frac{1}{100}$dBm \\
 \end{longtable}   
