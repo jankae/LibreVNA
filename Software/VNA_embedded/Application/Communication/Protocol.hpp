@@ -364,6 +364,8 @@ enum class PacketType : uint8_t {
 	VNADatapoint = 27,
 	SetTrigger = 28,
 	ClearTrigger = 29,
+	StopStatusUpdates = 30,
+	StartStatusUpdates = 31,
 };
 
 using PacketInfo = struct _packetinfo {

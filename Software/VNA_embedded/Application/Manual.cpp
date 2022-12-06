@@ -123,18 +123,21 @@ void Manual::Work() {
 	HW::GetTemps(&p.manualStatusV1.temp_source, &p.manualStatusV1.temp_LO);
 	Communication::Send(p);
 	HW::Ref::update();
-	Protocol::PacketInfo packet;
-	packet.type = Protocol::PacketType::DeviceStatusV1;
-	// Enable PLL chips for temperature reading
-	bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
-	bool LOEn = FPGA::IsEnabled(FPGA::Periphery::LO1Chip);
-	FPGA::Enable(FPGA::Periphery::SourceChip);
-	FPGA::Enable(FPGA::Periphery::LO1Chip);
-	HW::getDeviceStatus(&packet.statusV1, true);
-	// restore PLL state
-	FPGA::Enable(FPGA::Periphery::SourceChip, srcEn);
-	FPGA::Enable(FPGA::Periphery::LO1Chip, LOEn);
-	Communication::Send(packet);
+	if(HW::getStatusUpdateFlag()) {
+		Protocol::PacketInfo packet;
+		packet.type = Protocol::PacketType::DeviceStatusV1;
+		// Enable PLL chips for temperature reading
+		bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
+		bool LOEn = FPGA::IsEnabled(FPGA::Periphery::LO1Chip);
+		FPGA::Enable(FPGA::Periphery::SourceChip);
+		FPGA::Enable(FPGA::Periphery::LO1Chip);
+		HW::getDeviceStatus(&packet.statusV1, true);
+		// restore PLL state
+		FPGA::Enable(FPGA::Periphery::SourceChip, srcEn);
+		FPGA::Enable(FPGA::Periphery::LO1Chip, LOEn);
+		Communication::Send(packet);
+	}
+
 	// Trigger next status update
 	FPGA::StartSweep();
 }

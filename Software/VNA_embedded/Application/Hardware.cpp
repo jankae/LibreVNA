@@ -21,6 +21,8 @@ static bool extRefInUse = false;
 HW::Mode activeMode;
 static bool unlevel = false;
 
+static bool StatusUpdateFlag = true;
+
 static Protocol::ReferenceSettings ref;
 static volatile uint64_t lastISR;
 
@@ -438,8 +440,16 @@ uint64_t HW::getLastISRTimestamp() {
 	return lastISR;
 }
 
+bool HW::getStatusUpdateFlag(){
+	return StatusUpdateFlag;
+}
+
+void HW::setStatusUpdateFlag(bool flag){
+	StatusUpdateFlag = flag;
+}
+
 void HW::updateDeviceStatus() {
-	if(activeMode == Mode::Idle || activeMode == Mode::Generator) {
+	if(StatusUpdateFlag && (activeMode == Mode::Idle || activeMode == Mode::Generator)) {
 		static uint32_t last_update = 0;
 		if(HAL_GetTick() - last_update >= 1000) {
 			last_update = HAL_GetTick();
