@@ -248,6 +248,8 @@ The following packet types are available:
 27 & VNADatapoint & D$\rightarrow$H & Sent for every sampled frequency within the sweep in VNA mode &None \\
 28 & SetTrigger & D$\leftrightarrow$H & Updates the trigger status for synchronization over USB & None\\
 29 & ClearTrigger & D$\leftrightarrow$H & Updates the trigger status for synchronization over USB & None\\
+30 & StopStatusUpdates & H$\rightarrow$D & Stops the automatic transmission of device status packets & None\\
+31 & StartStatusUpdates & H$\rightarrow$D & Starts the automatic transmission of device status packets & None\\
 \end{longtable}   
 \end{ThreePartTable}
 An Ack is transmitted by the device for every received command after it has been handled successfully. If additional responses are triggered by the command, they are transmitted after this Ack.
@@ -1009,5 +1011,11 @@ This packet is used when multiple devices are synchronized over USB and can be t
 
 \subsection{ClearTrigger}
 This packet is used when multiple devices are synchronized over USB and can be transmitted in both directions. It has no payload. Synchronized devices must be logically organized in a closed loop. When a ClearTrigger packet is received from any devices in the loop it must be passed on to the next device in the loop.
+
+\subsection{StopStatusUpdates}
+This packet instructs the device to stop sending automatically scheduled DeviceStatusV1 packets. Device status can still be requested explicitly via RequestDeviceStatus packets.
+
+\subsection{StartStatusUpdates}
+This packet instructs the device to start sending automatically scheduled DeviceStatusV1 packets. This restores default update behaviour if a StopStatusUpdates packet has previously been sent.
 
 \end{document}
