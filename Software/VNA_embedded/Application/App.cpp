@@ -173,6 +173,16 @@ inline void App_Process() {
 					Communication::Send(p);
 				}
 					break;
+				case Protocol::PacketType::StopStatusUpdates: {
+					HW::setStatusUpdateFlag(false);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+				}
+					break;
+				case Protocol::PacketType::StartStatusUpdates: {
+					HW::setStatusUpdateFlag(true);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+				}
+					break;
 				case Protocol::PacketType::SetIdle:
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;

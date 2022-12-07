@@ -123,6 +123,8 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::RequestDeviceStatus:
     case PacketType::SetTrigger:
     case PacketType::ClearTrigger:
+    case PacketType::StopStatusUpdates:
+    case PacketType::StartStatusUpdates:
         // no payload
         break;
     case PacketType::VNADatapoint: payload_size = packet.VNAdatapoint->requiredBufferSize(); break;

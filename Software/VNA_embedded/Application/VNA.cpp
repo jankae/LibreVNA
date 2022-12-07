@@ -325,8 +325,10 @@ void VNA::Work() {
 	// Compile info packet
 	Protocol::PacketInfo packet;
 	packet.type = Protocol::PacketType::DeviceStatusV1;
-	HW::getDeviceStatus(&packet.statusV1, true);
-	Communication::Send(packet);
+	if(HW::getStatusUpdateFlag()) {
+		HW::getDeviceStatus(&packet.statusV1, true);
+		Communication::Send(packet);
+	}
 	// do not reset unlevel flag here, as it is calculated only once at the setup of the sweep
 	// Start next sweep
 	FPGA::StartSweep();

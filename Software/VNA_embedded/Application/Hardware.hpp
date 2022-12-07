@@ -102,6 +102,10 @@ uint64_t getLastISRTimestamp();
 
 void SetOutputUnlevel(bool unlev);
 
+bool getStatusUpdateFlag();
+
+void setStatusUpdateFlag(bool flag);
+
 void updateDeviceStatus();
 
 using AmplitudeSettings = struct _amplitudeSettings {

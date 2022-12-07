@@ -428,7 +428,7 @@ void SA::Work() {
 		// setup for next step
 		signalIDstep = 0;
 
-		if(pointCnt % 10 == 0) {
+		if(HW::getStatusUpdateFlag() && pointCnt % 10 == 0) {
 			// send device info every nth point
 			FPGA::Enable(FPGA::Periphery::SourceChip); // needs to enable the chip to get a valid temperature reading
 			Protocol::PacketInfo packet;
