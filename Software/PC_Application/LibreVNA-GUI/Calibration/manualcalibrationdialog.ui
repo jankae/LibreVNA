@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>597</width>
-    <height>200</height>
+    <height>331</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Manual Calibration</string>
   </property>
   <property name="modal">
    <bool>true</bool>

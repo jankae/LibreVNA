@@ -51,25 +51,33 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
     // at this point the map contains the matching network effect
     auto m = matching[p.frequency];
     VirtualDevice::VNAMeasurement uncorrected = p;
-    // correct reflection measurement (in case no two-port measurement is complete
-    QString name = "S"+QString::number(port)+QString::number(port);
-    if(uncorrected.measurements.count(name) > 0) {
-        auto S = Sparam(uncorrected.measurements[name], 0.0, 0.0, 1.0);
-        auto corrected = Sparam(m.p * ABCDparam(S, p.Z0), p.Z0);
-        p.measurements[name] = corrected.m11;
-    }
-    // handle the rest of the measurements
-    for(unsigned int i=1;i<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
-        for(unsigned int j=i+1;j<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;j++) {
+    // handle the measurements
+    for(auto &meas : p.measurements) {
+        QString name = meas.first;
+        unsigned int i = name.mid(1,1).toUInt();
+        unsigned int j = name.mid(2,1).toUInt();
+        if(i == j) {
+            // reflection measurement
             if(i == port) {
-                auto S = uncorrected.toSparam(i, j);
+                // the port of the matching network itself
+                auto S = Sparam(uncorrected.measurements[name], 1.0, 1.0, 0.0);
                 auto corrected = Sparam(m.p * ABCDparam(S, p.Z0), p.Z0);
-                p.fromSparam(corrected, i, j);
-            } else if(j == port) {
-                auto S = uncorrected.toSparam(i, j);
-                auto corrected = Sparam(ABCDparam(S, p.Z0) * m.p, p.Z0);
-                p.fromSparam(corrected, i, j);
+                p.measurements[name] = corrected.m11;
+            } else {
+                // another reflection measurement
+                try {
+                    auto S = uncorrected.toSparam(i, port);
+                    auto corrected = Sparam(ABCDparam(S, p.Z0) * m.p, p.Z0);
+                    p.fromSparam(corrected, i, port);
+                } catch (...) {
+                    // missing measurements, nothing can be done
+                }
             }
+        } else {
+            // through measurement
+            // Already handled by reflection measurement (toSparam uses S12/S21 as well)
+            // and if the corresponding reflection measurement is not available, we can't
+            // do anything anyway
         }
     }
 }
@@ -230,9 +238,11 @@ void MatchingNetwork::addComponentAtPosition(int pos, MatchingComponent *c)
 void MatchingNetwork::addComponent(int index, MatchingComponent *c)
 {
     network.insert(network.begin() + index, c);
+    matching.clear();
     // remove from list when the component deletes itself
     connect(c, &MatchingComponent::deleted, [=](){
          network.erase(remove(network.begin(), network.end(), c), network.end());
+         matching.clear();
     });
 }
 

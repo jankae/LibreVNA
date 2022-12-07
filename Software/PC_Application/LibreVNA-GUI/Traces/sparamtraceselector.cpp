@@ -2,21 +2,27 @@
 
 #include <QFormLayout>
 #include <QLabel>
+#include <QCheckBox>
+#include <QScrollArea>
+#include <QEvent>
+#include <QScrollBar>
 
 using namespace std;
 
-SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::vector<unsigned int> used_ports, bool empty_allowed)
+SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::vector<unsigned int> used_ports, bool empty_allowed, unsigned int editablePorts)
     : model(model),
       empty_allowed(empty_allowed),
-      used_ports(used_ports)
+      used_ports(used_ports),
+      editablePorts(editablePorts)
 {
     createGUI();
     setInitialChoices();
 }
 
-SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::set<unsigned int> used_ports, bool empty_allowed)
+SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::set<unsigned int> used_ports, bool empty_allowed, unsigned int editablePorts)
     : model(model),
-      empty_allowed(empty_allowed)
+      empty_allowed(empty_allowed),
+      editablePorts(editablePorts)
 {
     // create vector from set
     std::copy(used_ports.begin(), used_ports.end(), std::back_inserter(this->used_ports));
@@ -113,7 +119,9 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
                 for(int j=0;j<b->count();j++) {
                     auto candidate = b->itemText(j);
                     // check if correct parameter
-                    QString expectedSparam = QString::number(i/used_ports.size()+1)+QString::number(i%used_ports.size()+1);
+                    int port1 = used_ports[i/used_ports.size()];
+                    int port2 = used_ports[i%used_ports.size()];
+                    QString expectedSparam = QString::number(port1)+QString::number(port2);
                     if(!candidate.endsWith(expectedSparam)) {
                         // wrong S parameter, skip
                         continue;
@@ -131,7 +139,9 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
         }
 
     } else if(cb->currentIndex() == 0 && points > 0) {
-        emit selectionValid(false);
+        if(!empty_allowed) {
+            emit selectionValid(false);
+        }
         // Check if all trace selections are set for none
         for(auto c : boxes) {
             if(!c->isVisible()) {
@@ -150,8 +160,8 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
         setInitialChoices();
     }
     if(empty_allowed) {
-        // always valid
-        emit selectionValid(true);
+        // always valid as soon as at least one trace is selected
+        emit selectionValid(points > 0);
     } else {
         // actually need to check
         valid = true;
@@ -172,8 +182,44 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
 void SparamTraceSelector::createGUI()
 {
     // Create comboboxes
-    auto layout = new QFormLayout;
-    setLayout(layout);
+    qDeleteAll(findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly));
+    delete layout();
+    boxes.clear();
+
+    auto scroll = new QScrollArea(this);
+    scroll->installEventFilter(this);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    auto w = new QWidget();
+
+    auto boxlayout = new QVBoxLayout();
+    setLayout(boxlayout);
+    boxlayout->setContentsMargins(0,0,0,0);
+    boxlayout->addWidget(scroll);
+
+    auto formlayout = new QFormLayout;
+    w->setLayout(formlayout);
+
+    for(unsigned int i=1;i<=editablePorts;i++) {
+        auto label = new QLabel("Include Port "+QString::number(i)+":");
+        auto cb = new QCheckBox();
+        if(std::find(used_ports.begin(), used_ports.end(), i) != used_ports.end()) {
+            cb->setChecked(true);
+        }
+        connect(cb, &QCheckBox::toggled, [=](bool checked){
+            if(checked) {
+                // add this port to the vector at the correct position
+                used_ports.insert(upper_bound(used_ports.begin(), used_ports.end(), i), i);
+            } else {
+                // remove port from the vector
+                used_ports.erase(std::remove(used_ports.begin(), used_ports.end(), i), used_ports.end());
+            }
+            QTimer::singleShot(0, [=](){
+                createGUI();
+                setInitialChoices();
+            });
+        });
+        formlayout->addRow(label, cb);
+    }
     for(unsigned int i=0;i<used_ports.size();i++) {
         for(unsigned int j=0;j<used_ports.size();j++) {
             auto label = new QLabel("S"+QString::number(used_ports[i])+QString::number(used_ports[j])+":");
@@ -182,7 +228,26 @@ void SparamTraceSelector::createGUI()
                traceSelectionChanged(box);
             });
             boxes.push_back(box);
-            layout->addRow(label, box);
+            formlayout->addRow(label, box);
         }
     }
+
+    scroll->setWidget(w);
+    w->show();
+    eventFilter(scroll, new QEvent(QEvent::Resize));
+}
+
+bool SparamTraceSelector::eventFilter(QObject *watched, QEvent *event)
+{
+    // Make sure that the widget in the scroll area always expands to the scroll area size horizontally (only vertical scrolling)
+    if(event->type() == QEvent::Resize) {
+        auto scroll = (QScrollArea*) watched;
+        auto w = scroll->widget();
+        auto width = scroll->width();
+        if(scroll->verticalScrollBar()->isVisible()) {
+            width -= scroll->verticalScrollBar()->width();
+        }
+        w->setFixedWidth(width);
+    }
+    return false;
 }

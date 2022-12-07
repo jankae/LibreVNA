@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>508</width>
-    <height>168</height>
+    <width>522</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Manual De-embedding</string>
   </property>
   <property name="modal">
    <bool>true</bool>

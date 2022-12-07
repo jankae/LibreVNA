@@ -7,7 +7,7 @@ ManualDeembeddingDialog::ManualDeembeddingDialog(const TraceModel &model, Deembe
     ui(new Ui::ManualDeembeddingDialog)
 {
     ui->setupUi(this);
-    auto traceSelector = new SparamTraceSelector(model, deemb->getAffectedPorts());
+    auto traceSelector = new SparamTraceSelector(model, deemb->getAffectedPorts(), true, 8);
     ui->verticalLayout->insertWidget(1, traceSelector, 1.0);
     ui->buttonBox->setEnabled(false);
     connect(traceSelector, &SparamTraceSelector::selectionValid, ui->buttonBox, &QDialogButtonBox::setEnabled);

@@ -979,6 +979,7 @@ std::vector<VirtualDevice::VNAMeasurement> Trace::assembleDatapoints(std::map<QS
         }
         d.pointNum = i;
         d.frequency = freqs[i];
+        d.Z0 = impedance;
         ret.push_back(d);
     }
     return ret;
