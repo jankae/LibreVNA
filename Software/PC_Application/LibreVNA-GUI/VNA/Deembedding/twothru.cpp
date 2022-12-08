@@ -135,9 +135,9 @@ void TwoThru::edit()
     ui->lZ0->setVisible(false);
 
     ui->port1->setValue(port1);
-    ui->port1->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
+    ui->port1->setMaximum(VirtualDevice::maximumSupportedPorts);
     ui->port2->setValue(port2);
-    ui->port2->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
+    ui->port2->setMaximum(VirtualDevice::maximumSupportedPorts);
 
     auto portChanged = [=](){
         port1 = ui->port1->value();

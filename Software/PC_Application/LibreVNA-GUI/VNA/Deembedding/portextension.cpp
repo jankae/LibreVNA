@@ -82,7 +82,7 @@ void PortExtension::edit()
     ui->Loss->setValue(ext.loss);
     ui->Frequency->setValue(ext.frequency);
     ui->port->setValue(port);
-    ui->port->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
+    ui->port->setMaximum(VirtualDevice::maximumSupportedPorts);
     if(!kit) {
         ui->calkit->setEnabled(false);
     }

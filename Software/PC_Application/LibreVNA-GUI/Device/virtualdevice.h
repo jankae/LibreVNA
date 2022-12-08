@@ -175,6 +175,8 @@ public:
     static std::set<QString> GetAvailableVirtualDevices();
     static VirtualDevice* getConnected();
 
+    static constexpr unsigned int maximumSupportedPorts = 8;
+
 signals:
     void VNAmeasurementReceived(VNAMeasurement m);
     void SAmeasurementReceived(SAMeasurement m);

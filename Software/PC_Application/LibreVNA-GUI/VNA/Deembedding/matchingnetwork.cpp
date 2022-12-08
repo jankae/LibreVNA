@@ -112,7 +112,7 @@ void MatchingNetwork::edit()
     ui->lDefinedShunt->installEventFilter(this);
 
     ui->port->setValue(port);
-    ui->port->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
+    ui->port->setMaximum(VirtualDevice::maximumSupportedPorts);
 
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
