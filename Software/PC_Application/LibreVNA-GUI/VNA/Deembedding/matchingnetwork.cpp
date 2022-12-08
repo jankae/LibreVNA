@@ -38,13 +38,16 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
         // this point is not calculated yet
         MatchingPoint m;
         // start with identiy matrix
-        m.p = ABCDparam(1.0,0.0,0.0,1.0);
-        for(auto c : network) {
-            m.p = m.p * c->parameters(p.frequency);
+        m.forward = ABCDparam(1.0,0.0,0.0,1.0);
+        m.reverse = ABCDparam(1.0,0.0,0.0,1.0);
+        for(unsigned int i=0;i<network.size();i++) {
+            m.forward = m.forward * network[i]->parameters(p.frequency);
+            m.reverse = m.reverse * network[network.size()-i-1]->parameters(p.frequency);
         }
         if(!addNetwork) {
             // need to remove the effect of the network, invert matrix
-            m.p = m.p.inverse();
+            m.forward = m.forward.inverse();
+            m.reverse = m.reverse.inverse();
         }
         matching[p.frequency] = m;
     }
@@ -61,13 +64,13 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
             if(i == port) {
                 // the port of the matching network itself
                 auto S = Sparam(uncorrected.measurements[name], 1.0, 1.0, 0.0);
-                auto corrected = Sparam(m.p * ABCDparam(S, p.Z0), p.Z0);
+                auto corrected = Sparam(m.forward * ABCDparam(S, p.Z0), p.Z0);
                 p.measurements[name] = corrected.m11;
             } else {
                 // another reflection measurement
                 try {
                     auto S = uncorrected.toSparam(i, port);
-                    auto corrected = Sparam(ABCDparam(S, p.Z0) * m.p, p.Z0);
+                    auto corrected = Sparam(ABCDparam(S, p.Z0) * m.reverse, p.Z0);
                     p.fromSparam(corrected, i, port);
                 } catch (...) {
                     // missing measurements, nothing can be done

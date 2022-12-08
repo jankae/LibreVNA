@@ -94,7 +94,8 @@ private:
 
     class MatchingPoint {
     public:
-        ABCDparam p;
+        ABCDparam forward;
+        ABCDparam reverse;
     };
     std::map<double, MatchingPoint> matching;
 
