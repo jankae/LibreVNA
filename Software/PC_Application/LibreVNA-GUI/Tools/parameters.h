@@ -131,4 +131,11 @@ public:
     }
 };
 
+class Yparam : public Parameters {
+public:
+    using Parameters::Parameters;
+    Yparam(const Sparam &s, Type Z01, Type Z02);
+    Yparam(const Sparam &s, Type Z0);
+};
+
 #endif // TPARAM_H

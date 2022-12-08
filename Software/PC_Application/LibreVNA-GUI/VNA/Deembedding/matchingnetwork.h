@@ -24,6 +24,7 @@ public:
         ParallelL,
         ParallelC,
         DefinedThrough,
+        DefinedShunt,
         // Add new matching components here, do not explicitly assign values and keep the Last entry at the last position
         Last,
     };

@@ -65,3 +65,18 @@ void Parameters::fromJSON(nlohmann::json j)
     m21 = complex<double>(j.value("m21_real", 0.0), j.value("m21_imag", 0.0));
     m22 = complex<double>(j.value("m22_real", 0.0), j.value("m22_imag", 0.0));
 }
+
+Yparam::Yparam(const Sparam &s, Type Z01, Type Z02)
+{
+    // from https://www.rfcafe.com/references/electrical/s-h-y-z.htm
+    auto denom = (conj(Z01)+s.m11*Z01)*(conj(Z02)+s.m22*Z02)-s.m12*s.m21*Z01*Z02;
+    m11 = ((1.0-s.m11)*(conj(Z02)+s.m22*Z02)+s.m12*s.m21*Z02) / denom;
+    m12 = -2.0*s.m12*sqrt(real(Z01)*real(Z02));
+    m21 = -2.0*s.m21*sqrt(real(Z01)*real(Z02));
+    m22 = ((conj(Z01)+s.m11*Z01)*(1.0-s.m22)+s.m12*s.m21*Z01) / denom;
+}
+
+Yparam::Yparam(const Sparam &s, Type Z0)
+    : Yparam(s, Z0, Z0)
+{
+}

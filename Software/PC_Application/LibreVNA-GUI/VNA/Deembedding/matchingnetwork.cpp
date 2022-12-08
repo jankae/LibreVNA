@@ -109,6 +109,7 @@ void MatchingNetwork::edit()
     ui->lParallelL->installEventFilter(this);
     ui->lParallelR->installEventFilter(this);
     ui->lDefinedThrough->installEventFilter(this);
+    ui->lDefinedShunt->installEventFilter(this);
 
     ui->port->setValue(port);
     ui->port->setMaximum(VirtualDevice::getInfo(VirtualDevice::getConnected()).ports);
@@ -361,6 +362,8 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
                     dragComponent = new MatchingComponent(MatchingComponent::Type::ParallelR);
                 } else if(object->objectName() == "lDefinedThrough") {
                     dragComponent = new MatchingComponent(MatchingComponent::Type::DefinedThrough);
+                } else if(object->objectName() == "lDefinedShunt") {
+                    dragComponent = new MatchingComponent(MatchingComponent::Type::DefinedShunt);
                 } else {
                     dragComponent = nullptr;
                 }
@@ -470,6 +473,19 @@ MatchingComponent::MatchingComponent(Type type)
         updateTouchstoneLabel();
     }
         break;
+    case Type::DefinedShunt: {
+        touchstone = new Touchstone(2);
+        touchstoneLabel = new QLabel();
+        touchstoneLabel->setWordWrap(true);
+        touchstoneLabel->setAlignment(Qt::AlignCenter);
+        auto layout = new QVBoxLayout();
+        layout->addWidget(touchstoneLabel);
+        layout->setContentsMargins(0, 0, 0, 0);
+        setLayout(layout);
+        setStyleSheet("image: url(:/icons/definedShunt.png);");
+        updateTouchstoneLabel();
+    }
+        break;
     default:
         break;
     }
@@ -504,7 +520,16 @@ ABCDparam MatchingComponent::parameters(double freq)
         } else {
             auto d = touchstone->interpolate(freq);
             auto S = Sparam(d.S[0], d.S[1], d.S[2], d.S[3]);
-            return ABCDparam(S, 50.0);
+            return ABCDparam(S, touchstone->getReferenceImpedance());
+        }
+    case Type::DefinedShunt:
+        if(touchstone->points() == 0 || freq < touchstone->minFreq() || freq > touchstone->maxFreq()) {
+            // outside of provided frequency range, pass through unchanged
+            return ABCDparam(1.0, 0.0, 0.0, 1.0);
+        } else {
+            auto d = touchstone->interpolate(freq);
+            auto Y = Yparam(Sparam(d.S[0], d.S[1], d.S[2], d.S[3]), touchstone->getReferenceImpedance());
+            return ABCDparam(1.0, 0.0, Y.m11, 1.0);
         }
     default:
         return ABCDparam(1.0, 0.0, 0.0, 1.0);
@@ -547,6 +572,7 @@ nlohmann::json MatchingComponent::toJSON()
         j["value"] = eValue->value();
         break;
     case Type::DefinedThrough:
+    case Type::DefinedShunt:
         j["touchstone"] = touchstone->toJSON();
         break;
     case Type::Last:
@@ -567,6 +593,7 @@ void MatchingComponent::fromJSON(nlohmann::json j)
         eValue->setValue(j.value("value", 1e-12));
         break;
     case Type::DefinedThrough:
+    case Type::DefinedShunt:
         touchstone->fromJSON(j["touchstone"]);
         updateTouchstoneLabel();
         break;
@@ -578,7 +605,7 @@ void MatchingComponent::fromJSON(nlohmann::json j)
 void MatchingComponent::mouseDoubleClickEvent(QMouseEvent *e)
 {
     Q_UNUSED(e);
-    if(type == Type::DefinedThrough) {
+    if(type == Type::DefinedThrough || type == Type::DefinedShunt) {
         // select new touchstone file
         auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s2p)", nullptr, QFileDialog::DontUseNativeDialog);
         if (!filename.isEmpty()) {
@@ -588,6 +615,7 @@ void MatchingComponent::mouseDoubleClickEvent(QMouseEvent *e)
                 InformationBox::ShowError("Failed to load file", QString("Attempt to load file ended with error: \"") + e.what()+"\"");
             }
             updateTouchstoneLabel();
+            emit valueChanged();
         }
     }
 }
@@ -597,12 +625,20 @@ void MatchingComponent::updateTouchstoneLabel()
     if(!touchstone || !touchstoneLabel) {
         return;
     }
+    QFont font = touchstoneLabel->font();
+    font.setPointSize(10);
+    touchstoneLabel->setFont(font);
     if(touchstone->points() == 0) {
         touchstoneLabel->setText("No data. Double-click to select touchstone file");
     } else {
         QString text = QString::number(touchstone->points()) + " points from "+Unit::ToString(touchstone->minFreq(), "Hz", " kMG", 4)
                 + " to "+Unit::ToString(touchstone->maxFreq(), "Hz", " kMG", 4);
         touchstoneLabel->setText(text);
+    }
+    if(type == Type::DefinedThrough) {
+        touchstoneLabel->setAlignment(Qt::AlignCenter);
+    } else if(type == Type::DefinedShunt) {
+        touchstoneLabel->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
     }
 }
 
@@ -616,6 +652,7 @@ QString MatchingComponent::typeToName(MatchingComponent::Type type)
     case Type::ParallelL: return "ParallelL";
     case Type::ParallelC: return "ParallelC";
     case Type::DefinedThrough: return "Touchstone Through";
+    case Type::DefinedShunt: return "Touchstone Shunt";
     default: return "";
     }
 }
