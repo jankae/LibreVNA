@@ -184,11 +184,10 @@ Touchstone Touchstone::fromFile(string filename)
             option_line_found = true;
             transform(line.begin(), line.end(), line.begin(), ::toupper);
             // check individual options
+            line.erase(0,1);
             istringstream iss(line);
             bool last_R = false;
             string s;
-            // throw away the option line start character
-            iss >> s;
             for(;iss>>s;) {
                 if(last_R) {
                     last_R = false;
