@@ -4,6 +4,7 @@
 #include "unit.h"
 #include "CustomWidgets/informationbox.h"
 #include "appwindow.h"
+#include "Util/util.h"
 
 #include <QDialog>
 #include <QHBoxLayout>
@@ -54,6 +55,17 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
     // at this point the map contains the matching network effect
     auto m = matching[p.frequency];
     VirtualDevice::VNAMeasurement uncorrected = p;
+
+    auto portReflectionName = "S"+QString::number(port)+QString::number(port);
+    if(!uncorrected.measurements.count(portReflectionName)) {
+        // the reflection measurement for the port to de-embed is not included, nothing can be done
+        return;
+    }
+    // calculate internal reflection at the matching port
+    auto portReflectionS = uncorrected.measurements[portReflectionName];
+    auto matchingReflectionS = Sparam(m.forward, p.Z0).m22;
+    auto internalPortReflectionS = matchingReflectionS / (1.0 - matchingReflectionS * portReflectionS);
+
     // handle the measurements
     for(auto &meas : p.measurements) {
         QString name = meas.first;
@@ -78,9 +90,20 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
             }
         } else {
             // through measurement
-            // Already handled by reflection measurement (toSparam uses S12/S21 as well)
-            // and if the corresponding reflection measurement is not available, we can't
-            // do anything anyway
+            if(i != port && j != port) {
+                try {
+                    // find through measurements from these two ports to and from the embedding port
+                    auto toPort = uncorrected.measurements["S"+QString::number(port)+QString::number(j)];
+                    auto fromPort = uncorrected.measurements["S"+QString::number(i)+QString::number(port)];
+                    p.measurements[name] = p.measurements[name] + toPort * internalPortReflectionS * fromPort;
+                } catch (...) {
+                    // missing measurements, nothing can be done
+                }
+            } else {
+                // Already handled by reflection measurement (toSparam uses S12/S21 as well)
+                // and if the corresponding reflection measurement is not available, we can't
+                // do anything anyway
+            }
         }
     }
 }
