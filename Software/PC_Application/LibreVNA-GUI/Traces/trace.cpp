@@ -74,6 +74,7 @@ void Trace::clear(bool force) {
         return;
     }
     data.clear();
+    clearDeembedding();
     settings.valid = false;
     warning("No data");
     emit cleared(this);
@@ -147,6 +148,39 @@ void Trace::addData(const Trace::Data &d, const VirtualDevice::SASettings &s, in
         domain = DataType::TimeZeroSpan;
     }
     addData(d, domain, 50.0, index);
+}
+
+void Trace::addDeembeddingData(const Trace::Data &d, int index)
+{
+    if(index >= 0) {
+        // index position specified
+        if(deembeddingData.size() <= (unsigned int) index) {
+            deembeddingData.resize(index + 1);
+        }
+        deembeddingData[index] = d;
+    } else {
+        // no index given, determine position by X-coordinate
+
+        // add or replace data in vector while keeping it sorted with increasing frequency
+        auto lower = lower_bound(deembeddingData.begin(), deembeddingData.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
+            return lhs.x < rhs.x;
+        });
+        // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
+        index = lower - deembeddingData.begin();
+        if(lower == deembeddingData.end()) {
+            // highest frequency yet, add to vector
+            deembeddingData.push_back(d);
+        } else if(lower->x == d.x) {
+            *lower = d;
+        } else {
+            // insert at this position
+            deembeddingData.insert(lower, d);
+        }
+    }
+    if(deembeddingActive) {
+        emit outputSamplesChanged(index, index + 1);
+    }
+    emit deembeddingChanged();
 }
 
 void Trace::setName(QString name) {
@@ -265,11 +299,15 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     return lastTraceName;
 }
 
-void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data)
+void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data, bool deembedded)
 {
     // remove all previous points
     for(auto m : traceSet) {
-        m.second->clear();
+        if(!deembedded) {
+            m.second->clear();
+        } else {
+            m.second->clearDeembedding();
+        }
     }
     // add new points to traces
     for(auto d : data) {
@@ -279,7 +317,11 @@ void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::v
             td.y = m.second;
             QString measurement = m.first;
             if(traceSet.count(measurement)) {
-                traceSet[measurement]->addData(td, DataType::Frequency);
+                if(!deembedded) {
+                    traceSet[measurement]->addData(td, DataType::Frequency);
+                } else {
+                    traceSet[measurement]->addDeembeddingData(td);
+                }
             }
         }
     }
@@ -743,6 +785,17 @@ nlohmann::json Trace::toJSON()
         j["data"] = jdata;
     }
 
+    j["deembeddingActive"] = deembeddingActive;
+    nlohmann::json jdedata;
+    for(const auto &d : deembeddingData) {
+        nlohmann::json jpoint;
+        jpoint["x"] = d.x;
+        jpoint["real"] = d.y.real();
+        jpoint["imag"] = d.y.imag();
+        jdedata.push_back(jpoint);
+    }
+    j["deembeddingData"] = jdedata;
+
     nlohmann::json mathList;
     for(auto m : mathOps) {
         if(m.math->getType() == Type::Last) {
@@ -758,6 +811,7 @@ nlohmann::json Trace::toJSON()
     }
     j["math"] = mathList;
     j["math_enabled"] = mathEnabled();
+
 
     return j;
 }
@@ -785,6 +839,18 @@ void Trace::fromJSON(nlohmann::json j)
             data.push_back(d);
         }
     }
+    if(j.contains("deembeddingData")) {
+        // Deembedded data is contained in the json, load now
+        clearDeembedding();
+        for(auto jpoint : j["deembeddingData"]) {
+            Data d;
+            d.x = jpoint.value("x", 0.0);
+            d.y = complex<double>(jpoint.value("real", 0.0), jpoint.value("imag", 0.0));
+            deembeddingData.push_back(d);
+        }
+    }
+    deembeddingActive = j.value("deembeddingActive", false);
+
     if(type == "Live") {
         if(j.contains("parameter")) {
             if(j["parameter"].type() == nlohmann::json::value_t::string) {
@@ -1226,6 +1292,36 @@ unsigned int Trace::size() const
     return lastMath->numSamples();
 }
 
+bool Trace::isDeembeddingActive()
+{
+    return deembeddingActive;
+}
+
+bool Trace::deembeddingAvailable()
+{
+    return deembeddingData.size() > 0;
+}
+
+void Trace::setDeembeddingActive(bool active)
+{
+    deembeddingActive = active;
+    if(deembeddingAvailable()) {
+        if(active) {
+            emit outputSamplesChanged(0, deembeddingData.size());
+        } else {
+            emit outputSamplesChanged(0, data.size());
+        }
+    }
+    emit deembeddingChanged();
+}
+
+void Trace::clearDeembedding()
+{
+    setDeembeddingActive(false);
+    deembeddingData.clear();
+    deembeddingChanged();
+}
+
 double Trace::minX()
 {
     if(lastMath->numSamples() > 0) {
@@ -1329,6 +1425,60 @@ Trace::Data Trace::sample(unsigned int index, bool getStepResponse) const
         data.y = lastMath->getStepResponse(index);
     }
     return data;
+}
+
+Trace::Data Trace::getSample(unsigned int index)
+{
+    if(deembeddingActive && deembeddingAvailable()) {
+        if(index < deembeddingData.size()) {
+            return deembeddingData[index];
+        } else {
+            TraceMath::Data d;
+            d.x = 0;
+            d.y = 0;
+            return d;
+        }
+    } else {
+        return TraceMath::getSample(index);
+    }
+}
+
+Trace::Data Trace::getInterpolatedSample(double x)
+{
+    if(deembeddingActive && deembeddingAvailable()) {
+        Data ret;
+        if(deembeddingData.size() == 0 || x < deembeddingData.front().x || x > deembeddingData.back().x) {
+            ret.y = std::numeric_limits<std::complex<double>>::quiet_NaN();
+            ret.x = std::numeric_limits<double>::quiet_NaN();
+        } else {
+            auto it = lower_bound(deembeddingData.begin(), deembeddingData.end(), x, [](const Data &lhs, const double x) -> bool {
+                return lhs.x < x;
+            });
+            if(it->x == x) {
+                ret = *it;
+            } else {
+                // no exact match, needs to interpolate
+                auto high = *it;
+                it--;
+                auto low = *it;
+                double alpha = (x - low.x) / (high.x - low.x);
+                ret.y = low.y * (1 - alpha) + high.y * alpha;
+                ret.x = x;
+            }
+        }
+        return ret;
+    } else {
+        return TraceMath::getInterpolatedSample(x);
+    }
+}
+
+unsigned int Trace::numSamples()
+{
+    if(deembeddingActive && deembeddingAvailable()) {
+        return deembeddingData.size();
+    } else {
+        return TraceMath::numSamples();
+    }
 }
 
 double Trace::getUnwrappedPhase(unsigned int index)

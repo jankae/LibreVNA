@@ -124,7 +124,10 @@ void Deembedding::Deembed(std::map<QString, Trace *> traceSet)
         for(auto &p : points) {
             Deembed(p);
         }
-        Trace::fillFromDatapoints(traceSet, points);
+        Trace::fillFromDatapoints(traceSet, points, true);
+        for(auto t : traceSet) {
+            t.second->setDeembeddingActive(true);
+        }
     }
 }
 

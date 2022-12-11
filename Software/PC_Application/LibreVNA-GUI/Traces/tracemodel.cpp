@@ -32,6 +32,9 @@ void TraceModel::addTrace(Trace *t)
     connect(t, &Trace::pauseChanged, [=](){
         emit dataChanged(createIndex(0, 0), createIndex(traces.size() - 1, ColIndexLast - 1));
     });
+    connect(t, &Trace::deembeddingChanged, [=](){
+        emit dataChanged(createIndex(0, 0), createIndex(traces.size() - 1, ColIndexLast - 1));
+    });
     traces.push_back(t);
     endInsertRows();
     t->setModel(this);
@@ -106,6 +109,18 @@ void TraceModel::toggleMath(unsigned int index)
     }
 }
 
+void TraceModel::toggleDeembedding(unsigned int index)
+{
+    if (index >= traces.size()) {
+        return;
+    }
+    auto trace = traces[index];
+    if(trace->deembeddingAvailable()) {
+        trace->setDeembeddingActive(!trace->isDeembeddingActive());
+        emit dataChanged(createIndex(index, ColIndexDeembedding), createIndex(index, ColIndexDeembedding));
+    }
+}
+
 int TraceModel::rowCount(const QModelIndex &) const
 {
     return traces.size();
@@ -133,6 +148,8 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
             } else {
                 return QIcon(":/icons/invisible.svg");
             }
+        } else if(role == Qt::ToolTipRole){
+            return "Toggle Visibility";
         } else {
             return QVariant();
         }
@@ -144,6 +161,21 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
             } else {
                 return QIcon(":/icons/play.svg");
             }
+        } else if(role == Qt::ToolTipRole && trace->canBePaused()){
+            return "Toggle Play/Pause";
+        } else {
+            return QVariant();
+        }
+        break;
+    case ColIndexDeembedding:
+        if (role == Qt::DecorationRole && trace->deembeddingAvailable()) {
+            if(trace->isDeembeddingActive()) {
+                return QIcon(":icons/deembedding_enabled.svg");
+            } else {
+                return QIcon(":icons/deembedding_disabled.svg");
+            }
+        } else if(role == Qt::ToolTipRole && trace->deembeddingAvailable()){
+            return "Toggle De-embedding";
         } else {
             return QVariant();
         }
@@ -155,6 +187,10 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
             } else {
                 return QIcon(":icons/math_disabled");
             }
+        } else if(role == Qt::ToolTipRole && trace->hasMathOperations()){
+            return "Toggle Math Operations";
+        } else {
+            return QVariant();
         }
         break;
     case ColIndexName:
@@ -173,6 +209,17 @@ QVariant TraceModel::data(const QModelIndex &index, int role) const
 std::vector<Trace *> TraceModel::getTraces() const
 {
     return traces;
+}
+
+std::vector<Trace *> TraceModel::getLiveTraces() const
+{
+    std::vector<Trace*> ret;
+    for(auto t : traces) {
+        if(t->getSource() == Trace::Source::Live) {
+            ret.push_back(t);
+        }
+    }
+    return ret;
 }
 
 bool TraceModel::PortExcitationRequired(int port)
@@ -233,7 +280,7 @@ void TraceModel::clearLiveData()
     }
 }
 
-void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype)
+void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype, bool deembedded)
 {
     source = DataSource::VNA;
     lastReceivedData = QDateTime::currentDateTimeUtc();
@@ -263,7 +310,11 @@ void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::D
                 // parameter not included in data, skip
                 continue;
             }
-            t->addData(td, datatype, d.Z0, index);
+            if(!deembedded) {
+                t->addData(td, datatype, d.Z0, index);
+            } else {
+                t->addDeembeddingData(td, index);
+            }
         }
     }
 }

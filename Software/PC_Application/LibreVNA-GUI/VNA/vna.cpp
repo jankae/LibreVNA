@@ -850,10 +850,6 @@ void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
 
     cal.correctMeasurement(m_avg);
 
-    if(deembedding_active) {
-        deembedding.Deembed(m_avg);
-    }
-
     TraceMath::DataType type;
     if(settings.zerospan) {
         type = TraceMath::DataType::TimeZeroSpan;
@@ -877,7 +873,11 @@ void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
         }
     }
 
-    traceModel.addVNAData(m_avg, type);
+    traceModel.addVNAData(m_avg, type, false);
+    if(deembedding_active) {
+        deembedding.Deembed(m_avg);
+        traceModel.addVNAData(m_avg, type, true);
+    }
     emit dataChanged();
     if(m_avg.pointNum == settings.npoints - 1) {
         UpdateAverageCount();
@@ -1579,6 +1579,14 @@ void VNA::EnableDeembedding(bool enable)
     enableDeembeddingAction->blockSignals(true);
     enableDeembeddingAction->setChecked(enable);
     enableDeembeddingAction->blockSignals(false);
+    for(auto t : traceModel.getLiveTraces()) {
+        if(enable) {
+            t->setDeembeddingActive(true);
+        } else {
+            t->clearDeembedding();
+        }
+    }
+
 }
 
 void VNA::setAveragingMode(Averaging::Mode mode)

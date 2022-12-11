@@ -71,5 +71,7 @@
         <file>icons/definedShunt.svg</file>
         <file>icons/definedThrough.png</file>
         <file>icons/definedThrough.svg</file>
+        <file>icons/deembedding_disabled.svg</file>
+        <file>icons/deembedding_enabled.svg</file>
     </qresource>
 </RCC>

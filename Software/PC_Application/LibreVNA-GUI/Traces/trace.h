@@ -45,11 +45,12 @@ public:
     void clear(bool force = false);
     void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
     void addData(const Data& d, const VirtualDevice::SASettings &s, int index = -1);
+    void addDeembeddingData(const Data& d, int index = -1);
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
-    static void fillFromDatapoints(std::map<QString, Trace*> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data);
+    static void fillFromDatapoints(std::map<QString, Trace*> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data, bool deembedded = false);
     void fromLivedata(LivedataType type, QString param);
     void fromMath();
     QString name() { return _name; }
@@ -65,6 +66,12 @@ public:
     LivedataType liveType() { return _liveType; }
     TraceMath::DataType outputType() const { return lastMath->getDataType(); }
     unsigned int size() const;
+
+    bool isDeembeddingActive();
+    bool deembeddingAvailable();
+    void setDeembeddingActive(bool active);
+    void clearDeembedding();
+
     double minX();
     double maxX();
     double findExtremum(bool max, double xmin = std::numeric_limits<double>::lowest(), double xmax = std::numeric_limits<double>::max());
@@ -82,6 +89,11 @@ public:
     };
 
     Data sample(unsigned int index, bool getStepResponse = false) const;
+
+    virtual Data getSample(unsigned int index) override;
+    virtual Data getInterpolatedSample(double x) override;
+    virtual unsigned int numSamples() override;
+
     double getUnwrappedPhase(unsigned int index);
     // returns a (possibly interpolated sample) at a specified frequency/time/power
     Data interpolatedSample(double x);
@@ -190,6 +202,7 @@ signals:
     void dataChanged(unsigned int begin, unsigned int end);
     void nameChanged();
     void pauseChanged();
+    void deembeddingChanged();
     void colorChanged(Trace *t);
     void markerAdded(Marker *m);
     void markerRemoved(Marker *m);
@@ -265,6 +278,10 @@ private:
         };
         bool valid;
     } settings;
+
+    // de-embedding variables
+    std::vector<Data> deembeddingData;
+    bool deembeddingActive;
 
     std::vector<MathInfo> mathOps;
     TraceMath *lastMath;

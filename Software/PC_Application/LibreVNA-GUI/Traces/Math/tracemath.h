@@ -91,11 +91,11 @@ public:
     };
     static TypeInfo getInfo(Type type);
 
-    Data getSample(unsigned int index);
-    Data getInterpolatedSample(double x);
+    virtual Data getSample(unsigned int index);
+    virtual Data getInterpolatedSample(double x);
     double getStepResponse(unsigned int index);
     double getInterpolatedStepResponse(double x);
-    unsigned int numSamples();
+    virtual unsigned int numSamples();
 
     static QString dataTypeToString(DataType type);
     static DataType dataTypeFromString(QString s);

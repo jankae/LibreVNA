@@ -20,8 +20,9 @@ public:
     enum {
         ColIndexVisible = 0,
         ColIndexPlayPause = 1,
-        ColIndexMath = 2,
-        ColIndexName = 3,
+        ColIndexDeembedding = 2,
+        ColIndexMath = 3,
+        ColIndexName = 4,
         ColIndexLast,
     };
 
@@ -39,12 +40,14 @@ public:
     void toggleVisibility(unsigned int index);
     void togglePause(unsigned int index);
     void toggleMath(unsigned int index);
+    void toggleDeembedding(unsigned int index);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
     std::vector<Trace*> getTraces() const;
+    std::vector<Trace*> getLiveTraces() const;
 
     bool PortExcitationRequired(int port);
 
@@ -68,7 +71,7 @@ signals:
 
 public slots:
     void clearLiveData();
-    void addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype);
+    void addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype, bool deembedded);
     void addSAData(const VirtualDevice::SAMeasurement &d, const VirtualDevice::SASettings &settings);
 
 private:
