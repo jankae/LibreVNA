@@ -160,36 +160,61 @@ bool SCPINode::add(SCPICommand *cmd)
     return true;
 }
 
-bool SCPINode::addDoubleParameter(QString name, double &param, bool gettable, bool settable)
+bool SCPINode::addDoubleParameter(QString name, double &param, bool gettable, bool settable, std::function<void(void)> setCallback)
 {
-    auto cmd = settable ? [&](QStringList params) -> QString {
+    auto cmd = settable ? [&param, setCallback](QStringList params) -> QString {
         if(SCPI::paramToDouble(params, 0, param)) {
+            if(setCallback) {
+                setCallback();
+            }
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {
             return SCPI::getResultName(SCPI::Result::Error);
         }
     } : (std::function<QString(QStringList)>) nullptr;
-    auto query = settable ? [=](QStringList params) -> QString {
+    auto query = gettable ? [=](QStringList params) -> QString {
         Q_UNUSED(params)
         return QString::number(param);
     } : (std::function<QString(QStringList)>) nullptr;
     return add(new SCPICommand(name, cmd, query));
 }
 
-bool SCPINode::addUnsignedIntParameter(QString name, unsigned int &param, bool gettable, bool settable)
+bool SCPINode::addUnsignedIntParameter(QString name, unsigned int &param, bool gettable, bool settable, std::function<void(void)> setCallback)
 {
-    auto cmd = settable ? [&](QStringList params) -> QString {
+    auto cmd = settable ? [&param, setCallback](QStringList params) -> QString {
         unsigned long long value;
         if(SCPI::paramToULongLong(params, 0, value)) {
             param = value;
+            if(setCallback) {
+                setCallback();
+            }
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {
             return SCPI::getResultName(SCPI::Result::Error);
         }
     } : (std::function<QString(QStringList)>) nullptr;
-    auto query = settable ? [=](QStringList params) -> QString {
+    auto query = gettable ? [=](QStringList params) -> QString {
         Q_UNUSED(params)
         return QString::number(param);
+    } : (std::function<QString(QStringList)>) nullptr;
+    return add(new SCPICommand(name, cmd, query));
+}
+
+bool SCPINode::addBoolParameter(QString name, bool &param, bool gettable, bool settable, std::function<void(void)> setCallback)
+{
+    auto cmd = settable ? [&param, setCallback](QStringList params) -> QString {
+        if(SCPI::paramToBool(params, 0, param)) {
+            if(setCallback) {
+                setCallback();
+            }
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    } : (std::function<QString(QStringList)>) nullptr;
+    auto query = gettable ? [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        return param ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     } : (std::function<QString(QStringList)>) nullptr;
     return add(new SCPICommand(name, cmd, query));
 }
@@ -206,6 +231,7 @@ bool SCPINode::changeName(QString newname)
         }
     }
     name = newname;
+    return true;
 }
 
 bool SCPINode::nameCollision(QString name)

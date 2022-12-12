@@ -28,6 +28,7 @@ public:
     void removeOption(unsigned int index);
     void addOption(DeembeddingOption* option);
     void swapOptions(unsigned int index);
+    void clear();
 
     std::set<unsigned int> getAffectedPorts();
 

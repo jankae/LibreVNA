@@ -27,6 +27,50 @@ MatchingNetwork::MatchingNetwork()
     dropComponent = nullptr;
     addNetwork = true;
     port = 1;
+
+    graph = nullptr;
+    insertIndicator = nullptr;
+
+    addUnsignedIntParameter("PORT", port);
+    addBoolParameter("ADD", addNetwork);
+    add(new SCPICommand("CLEAR", [=](QStringList params) -> QString {
+        Q_UNUSED(params);
+        clearNetwork();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    add(new SCPICommand("NUMber", nullptr, [=](QStringList params) -> QString {
+        Q_UNUSED(params);
+        return QString::number(network.size());
+    }));
+    add(new SCPICommand("NEW", [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto c = MatchingComponent::createFromName(params[0].replace("_", " "));
+        if(!c) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        unsigned long long index = network.size();
+        // parse index (unchanged if not provided)
+        SCPI::paramToULongLong(params, 1, index);
+        addComponent(index, c);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    add(new SCPICommand("TYPE", nullptr, [=](QStringList params) -> QString {
+        unsigned long long index = 0;
+        if(!SCPI::paramToULongLong(params, 0, index)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(index < 1 || index > network.size()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return network[index-1]->getName().replace(" ", "_");
+    }));
+}
+
+MatchingNetwork::~MatchingNetwork()
+{
+    clearNetwork();
 }
 
 std::set<unsigned int> MatchingNetwork::getAffectedPorts()
@@ -179,7 +223,10 @@ void MatchingNetwork::edit()
     connect(ui->port, qOverload<int>(&QSpinBox::valueChanged), [=](){
         port = ui->port->value();
     });
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
+        graph = nullptr;
+        dialog->accept();
+    });
 }
 
 nlohmann::json MatchingNetwork::toJSON()
@@ -200,7 +247,7 @@ nlohmann::json MatchingNetwork::toJSON()
 
 void MatchingNetwork::fromJSON(nlohmann::json j)
 {
-    network.clear();
+    clearNetwork();
     port = j.value("port", 1);
     if(j.contains("network")) {
         for(auto jc : j["network"]) {
@@ -217,6 +264,15 @@ void MatchingNetwork::fromJSON(nlohmann::json j)
     }
     addNetwork = j.value("addNetwork", true);
     matching.clear();
+}
+
+void MatchingNetwork::clearNetwork()
+{
+    while(network.size() > 0) {
+        auto c = network[0];
+        removeComponent(c);
+        delete c;
+    }
 }
 
 MatchingComponent *MatchingNetwork::componentAtPosition(int pos)
@@ -266,12 +322,35 @@ void MatchingNetwork::addComponentAtPosition(int pos, MatchingComponent *c)
 void MatchingNetwork::addComponent(int index, MatchingComponent *c)
 {
     network.insert(network.begin() + index, c);
+    updateSCPINames();
+    if(graph) {
+        graph->update();
+    }
     matching.clear();
     // remove from list when the component deletes itself
     connect(c, &MatchingComponent::deleted, [=](){
-         network.erase(std::remove(network.begin(), network.end(), c), network.end());
-         matching.clear();
+         removeComponent(c);
     });
+}
+
+void MatchingNetwork::removeComponent(int index)
+{
+    network.erase(network.begin() + index);
+    matching.clear();
+    updateSCPINames();
+    if(graph) {
+        graph->update();
+    }
+}
+
+void MatchingNetwork::removeComponent(MatchingComponent *c)
+{
+    network.erase(std::remove(network.begin(), network.end(), c), network.end());
+    matching.clear();
+    updateSCPINames();
+    if(graph) {
+        graph->update();
+    }
 }
 
 void MatchingNetwork::createDragComponent(MatchingComponent *c)
@@ -326,7 +405,7 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
             // remove and hide component while it is being dragged
             graph->layout()->removeWidget(dragComponent);
             dragComponent->hide();
-            network.erase(std::remove(network.begin(), network.end(), dragComponent), network.end());
+            removeComponent(dragComponent);
             graph->update();
 
             // network changed, need to recalculate matching
@@ -414,7 +493,23 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
     return false;
 }
 
+void MatchingNetwork::updateSCPINames()
+{
+    // Need to remove all components from the subnode list first, otherwise
+    // name changes wouldn't work due to temporarily name collisions
+    for(auto &c : network) {
+        remove(c);
+    }
+    unsigned int i=1;
+    for(auto &c : network) {
+        c->changeName(QString::number(i));
+        add(c);
+        i++;
+    }
+}
+
 MatchingComponent::MatchingComponent(Type type)
+    : SCPINode("COMPONENT")
 {
     this->type = type;
     eValue = nullptr;
@@ -431,7 +526,10 @@ MatchingComponent::MatchingComponent(Type type)
         eValue = new SIUnitEdit();
         eValue->setPrecision(4);
         eValue->setPrefixes("fpnum k");
-        connect(eValue, &SIUnitEdit::valueChanged, this, &MatchingComponent::valueChanged);
+        connect(eValue, &SIUnitEdit::valueChanged, [=](double newval) {
+            value = newval;
+            emit valueChanged();
+        });
         auto layout = new QVBoxLayout();
         layout->addWidget(eValue);
         setLayout(layout);
@@ -443,7 +541,10 @@ MatchingComponent::MatchingComponent(Type type)
         eValue = new SIUnitEdit();
         eValue->setPrecision(4);
         eValue->setPrefixes("fpnum k");
-        connect(eValue, &SIUnitEdit::valueChanged, this, &MatchingComponent::valueChanged);
+        connect(eValue, &SIUnitEdit::valueChanged, [=](double newval) {
+            value = newval;
+            emit valueChanged();
+        });
         auto layout = new QVBoxLayout();
         layout->addWidget(eValue);
         layout->addStretch(1);
@@ -513,6 +614,37 @@ MatchingComponent::MatchingComponent(Type type)
     default:
         break;
     }
+    switch(type) {
+    case Type::SeriesR:
+    case Type::SeriesL:
+    case Type::SeriesC:
+    case Type::ParallelR:
+    case Type::ParallelL:
+    case Type::ParallelC:
+        addDoubleParameter("VALue", value, true, true, [=](){
+            eValue->setValue(value);
+        });
+        break;
+    case Type::DefinedThrough:
+    case Type::DefinedShunt:
+        add(new SCPICommand("FILE", [=](QStringList params) -> QString {
+            if(params.size() < 1) {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            try {
+                *touchstone = Touchstone::fromFile(params[0].toStdString());
+                updateTouchstoneLabel();
+                emit valueChanged();
+                return SCPI::getResultName(SCPI::Result::Empty);
+            } catch(const std::exception& e) {
+                // failed to load file
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+        }, nullptr));
+        break;
+    default:
+        break;
+    }
 }
 
 MatchingComponent::~MatchingComponent()
@@ -562,6 +694,7 @@ ABCDparam MatchingComponent::parameters(double freq)
 
 void MatchingComponent::MatchingComponent::setValue(double v)
 {
+    value = v;
     if(eValue) {
         eValue->setValue(v);
     }
@@ -570,7 +703,7 @@ void MatchingComponent::MatchingComponent::setValue(double v)
 MatchingComponent *MatchingComponent::createFromName(QString name)
 {
     for(unsigned int i=0;i<(int) Type::Last;i++) {
-        if(name == typeToName((Type) i)) {
+        if(typeToName((Type) i).compare(name, Qt::CaseInsensitive) == 0) {
             return new MatchingComponent((Type) i);
         }
     }

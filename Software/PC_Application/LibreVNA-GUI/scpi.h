@@ -35,8 +35,9 @@ public:
     bool remove(SCPINode *node);
     bool add(SCPICommand *cmd);
 
-    bool addDoubleParameter(QString name, double &param, bool gettable = true, bool settable = true);
-    bool addUnsignedIntParameter(QString name, unsigned int &param, bool gettable = true, bool settable = true);
+    bool addDoubleParameter(QString name, double &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
+    bool addUnsignedIntParameter(QString name, unsigned int &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
+    bool addBoolParameter(QString name, bool &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
 
     bool changeName(QString newname);
 

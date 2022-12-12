@@ -12,7 +12,7 @@
 #include <vector>
 
 
-class MatchingComponent : public QFrame, public Savable
+class MatchingComponent : public QFrame, public Savable, public SCPINode
 {
     Q_OBJECT
 public:
@@ -56,12 +56,14 @@ private:
     void focusInEvent(QFocusEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
     QString oldStylesheet;
+    double value;
 };
 
 class MatchingNetwork : public DeembeddingOption
 {
 public:
     MatchingNetwork();
+    ~MatchingNetwork();
 
     // DeembeddingOption interface
 public:
@@ -71,6 +73,8 @@ public:
     Type getType() override {return Type::MatchingNetwork;}
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;
+
+    void clearNetwork();
 private:
     static constexpr int imageHeight = 151;
     static constexpr int componentWidth = 151;
@@ -80,9 +84,13 @@ private:
     unsigned int findInsertPosition(int xcoord);
     void addComponentAtPosition(int pos, MatchingComponent *c);
     void addComponent(int index, MatchingComponent *c);
+    void removeComponent(int index);
+    void removeComponent(MatchingComponent *c);
     void createDragComponent(MatchingComponent *c);
     void updateInsertIndicator(int xcoord);
     bool eventFilter(QObject *object, QEvent *event) override;
+
+    void updateSCPINames();
 
     std::vector<MatchingComponent*> network;
     unsigned int port;

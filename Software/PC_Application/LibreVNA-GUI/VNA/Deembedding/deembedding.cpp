@@ -80,6 +80,7 @@ void Deembedding::updateSCPINames()
     for(auto &option : options) {
         option->changeName(QString::number(i));
         add(option);
+        i++;
     }
 }
 
@@ -104,18 +105,23 @@ Deembedding::Deembedding(TraceModel &tm)
         if(index < 1 || index > options.size()) {
             return SCPI::getResultName(SCPI::Result::Error);
         }
-        return DeembeddingOption::TypeToString(options[index]->getType());
+        return DeembeddingOption::TypeToString(options[index-1]->getType()).replace(" ", "_");
     }));
     add(new SCPICommand("NEW", [=](QStringList params) -> QString {
         if(params.size() < 1) {
             return SCPI::getResultName(SCPI::Result::Error);
         }
-        auto type = DeembeddingOption::TypeFromString(params[0]);
+        auto type = DeembeddingOption::TypeFromString(params[0].replace("_", " "));
         if(type == DeembeddingOption::Type::Last) {
             return SCPI::getResultName(SCPI::Result::Error);
         }
         auto option = DeembeddingOption::create(type);
         addOption(option);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    add(new SCPICommand("CLEAR", [=](QStringList params) -> QString {
+        Q_UNUSED(params);
+        clear();
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
 }
@@ -208,6 +214,13 @@ void Deembedding::swapOptions(unsigned int index)
     }
     std::swap(options[index], options[index+1]);
     updateSCPINames();
+}
+
+void Deembedding::clear()
+{
+    while(options.size() > 0) {
+        removeOption(0);
+    }
 }
 
 std::set<unsigned int> Deembedding::getAffectedPorts()

@@ -40,7 +40,7 @@ QString DeembeddingOption::TypeToString(DeembeddingOption::Type type)
 DeembeddingOption::Type DeembeddingOption::TypeFromString(QString string)
 {
     for(unsigned int i=0;i<(int) Type::Last;i++) {
-        if(TypeToString((Type) i) == string) {
+        if(TypeToString((Type) i).compare(string, Qt::CaseInsensitive) == 0) {
             return (Type) i;
         }
     }
