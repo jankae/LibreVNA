@@ -142,6 +142,7 @@ void TraceWidget::on_view_clicked(const QModelIndex &index)
         break;
     case TraceModel::ColIndexDeembedding:
         model.toggleDeembedding(index.row());
+        break;
     case TraceModel::ColIndexMath:
         model.toggleMath(index.row());
         break;
