@@ -82,7 +82,9 @@ class libreVNA:
     def cmd(self, cmd):
         self.sock.sendall(cmd.encode())
         self.sock.send(b"\n")
-        self.__read_response()
+        resp = self.__read_response()
+        if len(resp) > 0:
+        	raise Exception("Expected empty response but got "+resp)
 
     def query(self, query):
         self.sock.sendall(query.encode())
