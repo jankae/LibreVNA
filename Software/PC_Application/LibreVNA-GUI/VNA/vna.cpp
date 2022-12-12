@@ -52,13 +52,17 @@
 #include <QErrorMessage>
 #include <QDebug>
 #include <QStyle>
+#include <QScrollArea>
 
 VNA::VNA(AppWindow *window, QString name)
     : Mode(window, name, "VNA"),
       deembedding(traceModel),
       deembedding_active(false),
-      central(new TileWidget(traceModel))
+      central(new QScrollArea),
+      tiles(new TileWidget(traceModel))
 {
+    central->setWidget(tiles);
+    central->setWidgetResizable(true);
     averages = 1;
     singleSweep = false;
     calMeasuring = false;
@@ -734,7 +738,7 @@ nlohmann::json VNA::toJSON()
     j["sweep"] = sweep;
 
     j["traces"] = traceModel.toJSON();
-    j["tiles"] = central->toJSON();
+    j["tiles"] = tiles->toJSON();
     j["markers"] = markerModel->toJSON();
     j["de-embedding"] = deembedding.toJSON();
     j["de-embedding_enabled"] = deembedding_active;
@@ -750,7 +754,7 @@ void VNA::fromJSON(nlohmann::json j)
         traceModel.fromJSON(j["traces"]);
     }
     if(j.contains("tiles")) {
-        central->fromJSON(j["tiles"]);
+        tiles->fromJSON(j["tiles"]);
     }
     if(j.contains("markers")) {
         markerModel->fromJSON(j["markers"]);
@@ -1359,7 +1363,7 @@ void VNA::SetupSCPI()
         return average.getLevel() == averages ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_acq->add(new SCPICommand("LIMit", nullptr, [=](QStringList) -> QString {
-        return central->allLimitsPassing() ? "PASS" : "FAIL";
+        return tiles->allLimitsPassing() ? "PASS" : "FAIL";
     }));
     scpi_acq->add(new SCPICommand("SINGLE", [=](QStringList params) -> QString {
         bool single;
@@ -1531,8 +1535,8 @@ void VNA::createDefaultTracesAndGraphs(int ports)
         }
     }
     // Add created graphs to tiles
-    central->clear();
-    TileWidget *tile = central;
+    tiles->clear();
+    TileWidget *tile = tiles;
     for(int i=0;i<ports;i++) {
         TileWidget *row;
         if(i != ports - 1) {
@@ -1557,7 +1561,7 @@ void VNA::createDefaultTracesAndGraphs(int ports)
     }
     if(ports >= 3) {
         // default split at the middle does not result in all plots being the same size, adjust
-        tile = central;
+        tile = tiles;
         for(int i=0;i<ports;i++) {
             TileWidget *rowTile;
             if(i < ports - 1) {

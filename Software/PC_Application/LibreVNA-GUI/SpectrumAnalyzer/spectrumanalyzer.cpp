@@ -46,9 +46,12 @@
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     : Mode(window, name, "SA"),
-      central(new TileWidget(traceModel, window)),
+      central(new QScrollArea),
+      tiles(new TileWidget(traceModel, window)),
       firstPointTime(0)
 {
+    central->setWidget(tiles);
+    central->setWidgetResizable(true);
     changingSettings = false;
     averages = 1;
     singleSweep = false;
@@ -385,7 +388,7 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     j["sweep"] = sweep;
 
     j["traces"] = traceModel.toJSON();
-    j["tiles"] = central->toJSON();
+    j["tiles"] = tiles->toJSON();
     j["markers"] = markerModel->toJSON();
     return j;
 }
@@ -399,7 +402,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
         traceModel.fromJSON(j["traces"]);
     }
     if(j.contains("tiles")) {
-        central->fromJSON(j["tiles"]);
+        tiles->fromJSON(j["tiles"]);
     }
     if(j.contains("markers")) {
         markerModel->fromJSON(j["markers"]);
@@ -1059,7 +1062,7 @@ void SpectrumAnalyzer::SetupSCPI()
         return average.getLevel() == averages ? "TRUE" : "FALSE";
     }));
     scpi_acq->add(new SCPICommand("LIMit", nullptr, [=](QStringList) -> QString {
-        return central->allLimitsPassing() ? "PASS" : "FAIL";
+        return tiles->allLimitsPassing() ? "PASS" : "FAIL";
     }));
     scpi_acq->add(new SCPICommand("SIGid", [=](QStringList params) -> QString {
         if (params.size() != 1) {
@@ -1257,13 +1260,13 @@ void SpectrumAnalyzer::StoreSweepSettings()
 
 void SpectrumAnalyzer::createDefaultTracesAndGraphs(int ports)
 {
-    central->clear();
+    tiles->clear();
     auto traceXY = new TraceXYPlot(traceModel);
     traceXY->setYAxis(0, YAxis::Type::Magnitude, false, false, -120,0,10);
     traceXY->setYAxis(1, YAxis::Type::Disabled, false, true, 0,0,1);
     traceXY->updateSpan(settings.freqStart, settings.freqStop);
 
-    central->setPlot(traceXY);
+    tiles->setPlot(traceXY);
 
     QColor defaultColors[] = {Qt::yellow, Qt::blue, Qt::red, Qt::green, Qt::gray, Qt::cyan, Qt::magenta, Qt::white};
 

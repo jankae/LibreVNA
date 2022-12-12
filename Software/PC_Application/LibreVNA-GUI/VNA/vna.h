@@ -12,6 +12,7 @@
 
 #include <QObject>
 #include <QWidget>
+#include <QScrollArea>
 #include <functional>
 
 class VNA : public Mode
@@ -168,7 +169,8 @@ private:
     QLabel *lAverages;
     QLabel *calLabel;
 
-    TileWidget *central;
+    TileWidget *tiles;
+    QScrollArea *central;
 
 signals:
     void deviceInitialized();

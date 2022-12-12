@@ -1,4 +1,4 @@
-#include "appwindow.h"
+﻿#include "appwindow.h"
 
 #include "unit.h"
 #include "CustomWidgets/toggleswitch.h"
@@ -58,6 +58,7 @@
 #include <iomanip>
 #include <QDateTime>
 #include <QCommandLineParser>
+#include <QScrollArea>
 
 using namespace std;
 

@@ -12,6 +12,7 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QScrollArea>
 
 class SpectrumAnalyzer : public Mode
 {
@@ -99,7 +100,8 @@ private:
     MarkerModel *markerModel;
     Averaging average;
 
-    TileWidget *central;
+    QScrollArea *central;
+    TileWidget *tiles;
     QCheckBox *cbSignalID;
     QComboBox *cbWindowType, *cbDetector;
     QComboBox *cbTrackGenPort;
