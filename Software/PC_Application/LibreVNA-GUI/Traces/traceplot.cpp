@@ -418,6 +418,7 @@ void TracePlot::wheelEvent(QWheelEvent *event)
         bool vertically = !(QApplication::keyboardModifiers() & Qt::ControlModifier);
         double factor = pow(pref.Graphs.zoomFactor, (double) event->angleDelta().y() / 120.0);
         zoom(event->pos(), factor, horizontally, vertically);
+        event->accept();
     }
 }
 
