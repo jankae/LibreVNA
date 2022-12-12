@@ -1411,6 +1411,8 @@ void VNA::SetupSCPI()
     cal.add(new SCPICommand("BUSy", nullptr, [=](QStringList) -> QString {
         return CalibrationMeasurementActive() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
+
+    SCPINode::add(&deembedding);
 }
 
 void VNA::ConstrainAndUpdateFrequencies()

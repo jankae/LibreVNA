@@ -9,10 +9,20 @@
 using namespace std;
 
 ImpedanceRenormalization::ImpedanceRenormalization()
-    : DeembeddingOption(),
+    : DeembeddingOption("ZNORMalization"),
       impedance(50.0)
 {
-
+    add(new SCPICommand("IMPedance", [=](QStringList params) -> QString {
+        double new_value;
+        if(!SCPI::paramToDouble(params, 0, new_value)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        impedance = new_value;
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList params) -> QString {
+        Q_UNUSED(params);
+        return QString::number(impedance);
+    }));
 }
 
 std::set<unsigned int> ImpedanceRenormalization::getAffectedPorts()

@@ -21,7 +21,7 @@ DeembeddingOption *DeembeddingOption::create(DeembeddingOption::Type type)
     }
 }
 
-QString DeembeddingOption::getName(DeembeddingOption::Type type)
+QString DeembeddingOption::TypeToString(DeembeddingOption::Type type)
 {
     switch(type) {
     case Type::PortExtension:
@@ -35,4 +35,14 @@ QString DeembeddingOption::getName(DeembeddingOption::Type type)
     default:
         return "";
     }
+}
+
+DeembeddingOption::Type DeembeddingOption::TypeFromString(QString string)
+{
+    for(unsigned int i=0;i<(int) Type::Last;i++) {
+        if(TypeToString((Type) i) == string) {
+            return (Type) i;
+        }
+    }
+    return Type::Last;
 }

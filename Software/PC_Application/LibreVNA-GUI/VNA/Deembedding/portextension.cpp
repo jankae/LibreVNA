@@ -11,7 +11,7 @@
 using namespace std;
 
 PortExtension::PortExtension()
-    : DeembeddingOption()
+    : DeembeddingOption("PORTEXTension")
 {
     ext.frequency = 0;
     ext.loss = 0;
@@ -25,6 +25,12 @@ PortExtension::PortExtension()
 
     kit = nullptr;
     ui = nullptr;
+
+    addUnsignedIntParameter("PORT", port);
+    addDoubleParameter("DELAY", ext.delay);
+    addDoubleParameter("DCLOSS", ext.DCloss);
+    addDoubleParameter("LOSS", ext.loss);
+    addDoubleParameter("FREQuency", ext.frequency);
 }
 
 std::set<unsigned int> PortExtension::getAffectedPorts()

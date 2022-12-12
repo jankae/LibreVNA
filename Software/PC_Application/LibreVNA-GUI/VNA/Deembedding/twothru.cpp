@@ -11,6 +11,7 @@
 using namespace std;
 
 TwoThru::TwoThru()
+    : DeembeddingOption("TWOTHRU")
 {
     Z0 = 50.0;
     port1 = 1;

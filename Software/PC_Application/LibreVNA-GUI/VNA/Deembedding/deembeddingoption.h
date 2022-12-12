@@ -4,10 +4,11 @@
 #include "savable.h"
 #include "Device/device.h"
 #include "Traces/tracemodel.h"
+#include "scpi.h"
 
 #include <QWidget>
 
-class DeembeddingOption : public QObject, public Savable
+class DeembeddingOption : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
 public:   
@@ -21,7 +22,8 @@ public:
     };
 
     static DeembeddingOption *create(Type type);
-    static QString getName(Type type);
+    static QString TypeToString(Type type);
+    static Type TypeFromString(QString string);
 
     virtual std::set<unsigned int> getAffectedPorts() = 0;
     virtual void transformDatapoint(VirtualDevice::VNAMeasurement &p) = 0;
@@ -35,6 +37,10 @@ signals:
     void deleted(DeembeddingOption *option);
 
    void triggerMeasurement();
+
+protected:
+   DeembeddingOption(QString SCPIname)
+       : SCPINode(SCPIname){}
 };
 
 #endif // DEEMBEDDING_H

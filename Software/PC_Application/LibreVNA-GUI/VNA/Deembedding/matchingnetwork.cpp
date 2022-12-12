@@ -20,6 +20,7 @@
 using namespace std;
 
 MatchingNetwork::MatchingNetwork()
+    : DeembeddingOption("MATCHing")
 {
     dropPending = false;
     dragComponent = nullptr;
@@ -268,7 +269,7 @@ void MatchingNetwork::addComponent(int index, MatchingComponent *c)
     matching.clear();
     // remove from list when the component deletes itself
     connect(c, &MatchingComponent::deleted, [=](){
-         network.erase(remove(network.begin(), network.end(), c), network.end());
+         network.erase(std::remove(network.begin(), network.end(), c), network.end());
          matching.clear();
     });
 }
@@ -325,7 +326,7 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
             // remove and hide component while it is being dragged
             graph->layout()->removeWidget(dragComponent);
             dragComponent->hide();
-            network.erase(remove(network.begin(), network.end(), dragComponent), network.end());
+            network.erase(std::remove(network.begin(), network.end(), dragComponent), network.end());
             graph->update();
 
             // network changed, need to recalculate matching

@@ -160,6 +160,54 @@ bool SCPINode::add(SCPICommand *cmd)
     return true;
 }
 
+bool SCPINode::addDoubleParameter(QString name, double &param, bool gettable, bool settable)
+{
+    auto cmd = settable ? [&](QStringList params) -> QString {
+        if(SCPI::paramToDouble(params, 0, param)) {
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    } : (std::function<QString(QStringList)>) nullptr;
+    auto query = settable ? [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        return QString::number(param);
+    } : (std::function<QString(QStringList)>) nullptr;
+    return add(new SCPICommand(name, cmd, query));
+}
+
+bool SCPINode::addUnsignedIntParameter(QString name, unsigned int &param, bool gettable, bool settable)
+{
+    auto cmd = settable ? [&](QStringList params) -> QString {
+        unsigned long long value;
+        if(SCPI::paramToULongLong(params, 0, value)) {
+            param = value;
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    } : (std::function<QString(QStringList)>) nullptr;
+    auto query = settable ? [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        return QString::number(param);
+    } : (std::function<QString(QStringList)>) nullptr;
+    return add(new SCPICommand(name, cmd, query));
+}
+
+bool SCPINode::changeName(QString newname)
+{
+    if(newname == name) {
+        return true;
+    }
+    if(parent) {
+        if(parent->nameCollision(newname)) {
+            // new name would result in a collision
+            return false;
+        }
+    }
+    name = newname;
+}
+
 bool SCPINode::nameCollision(QString name)
 {
     for(auto n : subnodes) {

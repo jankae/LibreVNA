@@ -15,7 +15,7 @@ DeembeddingDialog::DeembeddingDialog(Deembedding *d, QWidget *parent) :
     auto addMenu = new QMenu();
     for(unsigned int i=0;i<(unsigned int)DeembeddingOption::Type::Last;i++) {
         auto type = (DeembeddingOption::Type) i;
-        auto action = new QAction(DeembeddingOption::getName(type));
+        auto action = new QAction(DeembeddingOption::TypeToString(type));
         connect(action, &QAction::triggered, [=](){
             auto option = DeembeddingOption::create(type);
             model.addOption(option);
@@ -86,7 +86,7 @@ QVariant OptionModel::data(const QModelIndex &index, int role) const
 {
     if(index.isValid() && role == Qt::DisplayRole) {
         auto type = d->getOptions()[index.row()]->getType();
-        return DeembeddingOption::getName(type);
+        return DeembeddingOption::TypeToString(type);
     } else {
         return QVariant();
     }

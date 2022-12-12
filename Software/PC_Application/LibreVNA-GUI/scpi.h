@@ -35,11 +35,16 @@ public:
     bool remove(SCPINode *node);
     bool add(SCPICommand *cmd);
 
+    bool addDoubleParameter(QString name, double &param, bool gettable = true, bool settable = true);
+    bool addUnsignedIntParameter(QString name, unsigned int &param, bool gettable = true, bool settable = true);
+
+    bool changeName(QString newname);
+
 private:
     QString parse(QString cmd, SCPINode* &lastNode);
     bool nameCollision(QString name);
     void createCommandList(QString prefix, QString &list);
-    const QString name;
+    QString name;
     std::vector<SCPINode*> subnodes;
     std::vector<SCPICommand*> commands;
     SCPINode *parent;

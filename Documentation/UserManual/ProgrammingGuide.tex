@@ -493,6 +493,16 @@ $$ S_{11}...S_{1n},S_{21}...S_{2n},...,S_{n1}...S_{nn} $$
 \subsubsection{VNA:TRACe:PAUSED}
 \query{Queries whether a trace is paused}{VNA:TRACe:PAUSED?}{<trace>, either by name or by index}{TRUE or FALSE}
 
+\subsubsection{VNA:TRACe:DEEMBedding:ACTive}
+\event{Enables/disables de-embedding on a trace}{VNA:TRACe:DEEMBedding:ACTive}{<trace>, either by name or by index\\<enable>, either TRUE or FALSE}
+
+If no de-embedding is configured for the selected trace, enabling the de-embedding will fail.
+
+\query{Queries whether de-embedding is active for the selected trace}{VNA:TRACe:DEEMBedding:ACTive?}{<trace>, either by name or by index}{TRUE or FALSE}
+
+\subsubsection{VNA:TRACe:DEEMBedding:AVAILable}
+\query{Queries whether de-embedding is available for the selected trace}{VNA:TRACe:DEEMBedding:AVAILable?}{<trace>, either by name or by index}{TRUE or FALSE}
+
 \subsubsection{VNA:TRACe:PARAMeter}
 \event{Sets the measurement parameter that is stored in the trace}{VNA:TRACe:PARAMeter}{<trace>, either by name or by index\\<parameter>, options are S11, S12, S21 or S22}
 \query{Queries the measurement parameter of a trace}{VNA:TRACe:PARAMeter?}{<trace>, either by name or by index}{S11, S12, S21 or S22}

@@ -69,15 +69,55 @@ void Deembedding::startMeasurementDialog(DeembeddingOption *option)
     }
 }
 
+void Deembedding::updateSCPINames()
+{
+    // Need to remove all options from the subnode list first, otherwise
+    // name changes wouldn't work due to temporarily name collisions
+    for(auto &option : options) {
+        remove(option);
+    }
+    unsigned int i=1;
+    for(auto &option : options) {
+        option->changeName(QString::number(i));
+        add(option);
+    }
+}
+
 Deembedding::Deembedding(TraceModel &tm)
-    : measuringOption(nullptr),
+    : SCPINode("DEEMBedding"),
+      measuringOption(nullptr),
       tm(tm),
       measuring(false),
       measurementDialog(nullptr),
       measurementUI(nullptr),
       sweepPoints(0)
 {
-
+    add(new SCPICommand("NUMber", nullptr, [=](QStringList params) -> QString {
+        Q_UNUSED(params);
+        return QString::number(options.size());
+    }));
+    add(new SCPICommand("TYPE", nullptr, [=](QStringList params) -> QString {
+        unsigned long long index;
+        if(!SCPI::paramToULongLong(params, 0, index)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(index < 1 || index > options.size()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return DeembeddingOption::TypeToString(options[index]->getType());
+    }));
+    add(new SCPICommand("NEW", [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto type = DeembeddingOption::TypeFromString(params[0]);
+        if(type == DeembeddingOption::Type::Last) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto option = DeembeddingOption::create(type);
+        addOption(option);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
 }
 
 void Deembedding::Deembed(VirtualDevice::VNAMeasurement &d)
@@ -137,6 +177,7 @@ void Deembedding::removeOption(unsigned int index)
         delete options[index];
         options.erase(options.begin() + index);
     }
+    updateSCPINames();
     if(options.size() == 0) {
         emit allOptionsCleared();
     }
@@ -156,6 +197,7 @@ void Deembedding::addOption(DeembeddingOption *option)
         measuringOption = option;
         startMeasurementDialog(option);
     });
+    updateSCPINames();
     emit optionAdded();
 }
 
@@ -165,6 +207,7 @@ void Deembedding::swapOptions(unsigned int index)
         return;
     }
     std::swap(options[index], options[index+1]);
+    updateSCPINames();
 }
 
 std::set<unsigned int> Deembedding::getAffectedPorts()
@@ -182,7 +225,7 @@ nlohmann::json Deembedding::toJSON()
     nlohmann::json list;
     for(auto m : options) {
         nlohmann::json jm;
-        jm["operation"] = DeembeddingOption::getName(m->getType()).toStdString();
+        jm["operation"] = DeembeddingOption::TypeToString(m->getType()).toStdString();
         jm["settings"] = m->toJSON();
         list.push_back(jm);
     }
@@ -204,7 +247,7 @@ void Deembedding::fromJSON(nlohmann::json j)
         // attempt to find the type of operation
         DeembeddingOption::Type type = DeembeddingOption::Type::Last;
         for(unsigned int i=0;i<(int) DeembeddingOption::Type::Last;i++) {
-            if(DeembeddingOption::getName((DeembeddingOption::Type) i) == operation) {
+            if(DeembeddingOption::TypeToString((DeembeddingOption::Type) i) == operation) {
                 // found the correct operation
                 type = (DeembeddingOption::Type) i;
                 break;

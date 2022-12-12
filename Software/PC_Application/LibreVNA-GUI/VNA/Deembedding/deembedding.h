@@ -4,6 +4,7 @@
 #include "deembeddingoption.h"
 #include "savable.h"
 #include "Traces/tracemodel.h"
+#include "scpi.h"
 
 #include <vector>
 #include <map>
@@ -14,7 +15,7 @@
 
 class Ui_DeembeddingMeasurementDialog;
 
-class Deembedding : public QObject, public Savable
+class Deembedding : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
 public:
@@ -42,6 +43,7 @@ signals:
 private:
     void measurementCompleted();
     void startMeasurementDialog(DeembeddingOption *option);
+    void updateSCPINames();
     std::vector<DeembeddingOption*> options;
     DeembeddingOption *measuringOption;
     TraceModel &tm;

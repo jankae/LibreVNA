@@ -208,7 +208,7 @@ void TraceWidget::SetupSCPI()
     add(new SCPICommand("DATA", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         QString ret;
         if(t->size() > 0) {
@@ -233,11 +233,11 @@ void TraceWidget::SetupSCPI()
     add(new SCPICommand("AT", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         double x;
         if(!SCPI::paramToDouble(params, 1, x)) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             auto d = t->interpolatedSample(x);
             if(std::isnan(d.x)) {
@@ -250,21 +250,21 @@ void TraceWidget::SetupSCPI()
     add(new SCPICommand("TOUCHSTONE", nullptr, [=](QStringList params) -> QString {
         if(params.size() < 1) {
             // no traces given
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         // check number of paramaters, must be a square number
         int numTraces = params.size();
         int ports = round(sqrt(numTraces));
         if(ports * ports != numTraces) {
             // invalid number of traces
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         Trace* traces[numTraces];
         for(int i=0;i<numTraces;i++) {
             traces[i] = findTraceFromName(params[i]);
             if(!traces[i]) {
                 // couldn't find that trace
-                return "ERROR";
+                return SCPI::getResultName(SCPI::Result::Error);
             }
         }
         // check if trace selection is valid
@@ -277,15 +277,15 @@ void TraceWidget::SetupSCPI()
                 auto t = traces[j+i*ports];
                 if(t->getDataType() != Trace::DataType::Frequency) {
                     // invalid domain
-                    return "ERROR";
+                    return SCPI::getResultName(SCPI::Result::Error);
                 }
                 if(t->isReflection() != need_reflection) {
                     // invalid measurement at this position
-                    return "ERROR";
+                    return SCPI::getResultName(SCPI::Result::Error);
                 }
                 if((t->size() != npoints) || (t->minX() != f_start) || (t->maxX() != f_stop)) {
                     // frequency points are not identical
-                    return "ERROR";
+                    return SCPI::getResultName(SCPI::Result::Error);
                 }
             }
         }
@@ -307,21 +307,21 @@ void TraceWidget::SetupSCPI()
     add(new SCPICommand("MAXFrequency", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         return QString::number(t->maxX(), 'f', 0);
     }));
     add(new SCPICommand("MINFrequency", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         return QString::number(t->minX(), 'f', 0);
     }));
     add(new SCPICommand("MAXAmplitude", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         auto d = t->interpolatedSample(t->findExtremum(true));
         return QString::number(d.x, 'f', 0)+","+createStringFromData(t, d);
@@ -329,90 +329,125 @@ void TraceWidget::SetupSCPI()
     add(new SCPICommand("MINAmplitude", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         auto d = t->interpolatedSample(t->findExtremum(false));
         return QString::number(d.x, 'f', 0)+","+createStringFromData(t, d);
     }));
     add(new SCPICommand("NEW", [=](QStringList params) -> QString {
         if(params.size() != 1) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         createCount++;
         auto t = new Trace(params[0], Qt::darkYellow, defaultParameter());
         t->setColor(QColor::fromHsl((createCount * 50) % 360, 250, 128));
         model.addTrace(t);
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     add(new SCPICommand("RENAME", [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         if(params.size() != 2) {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         t->setName(params[1]);
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     add(new SCPICommand("PAUSE", [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         t->pause();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     add(new SCPICommand("RESUME", [=](QStringList params) -> QString {
         auto t = findTrace(params);
-        if(!t) {           return "ERROR";
+        if(!t) {
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         t->resume();
-        return "";
+        return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     add(new SCPICommand("PAUSED", nullptr, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
-        return t->isPaused() ? "TRUE" : "FALSE";
+        return t->isPaused() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
+    auto deembed = new SCPINode("DEEMBedding");
+    deembed->add(new SCPICommand("ACTive", [=](QStringList params) -> QString {
+        Trace* t = findTrace(params);
+        if(!t) {
+           return SCPI::getResultName(SCPI::Result::Error);
+        }
+        bool activate = false;
+        if(!SCPI::paramToBool(params, 1, activate)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(activate) {
+            if(!t->deembeddingAvailable()) {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            t->setDeembeddingActive(true);
+        } else {
+            t->setDeembeddingActive(false);
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList params) -> QString {
+        Trace* t = findTrace(params);
+        if(!t) {
+           return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return t->isDeembeddingActive() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
+    deembed->add(new SCPICommand("AVAILable", nullptr, [=](QStringList params) -> QString {
+        Trace* t = findTrace(params);
+        if(!t) {
+           return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return t->deembeddingAvailable() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
+    add(deembed);
     add(new SCPICommand("PARAMeter", [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t || params.size() < 2) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         auto newparam = params[1];
         if((Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))
                 || (Trace::isSAParameter(t->liveParameter()) && Trace::isSAParameter(newparam))) {
             t->fromLivedata(t->liveType(), newparam);
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
     }, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         return t->liveParameter();
     }));
     add(new SCPICommand("TYPE", [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t || params.size() < 2) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         auto newtype = Trace::TypeFromString(params[1]);
         if(newtype != Trace::LivedataType::Invalid) {
             t->fromLivedata(newtype, t->liveParameter());
-            return "";
+            return SCPI::getResultName(SCPI::Result::Empty);
         } else {
-            return "ERROR";
+            return SCPI::getResultName(SCPI::Result::Error);
         }
     }, [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {
-           return "ERROR";
+           return SCPI::getResultName(SCPI::Result::Error);
         }
         return Trace::TypeToString(t->liveType());
     }));
