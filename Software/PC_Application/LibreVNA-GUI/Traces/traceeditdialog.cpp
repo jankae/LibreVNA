@@ -4,6 +4,7 @@
 #include "ui_newtracemathdialog.h"
 #include "Math/tdr.h"
 #include "appwindow.h"
+#include "CustomWidgets/informationbox.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
@@ -339,13 +340,26 @@ void TraceEditDialog::okClicked()
     if(trace.getSource() != Trace::Source::Calibration) {
         // only apply changes if it is not a calibration trace
         if (ui->bFile->isChecked()) {
-            if(ui->stack->currentIndex() == 1) {
-                // touchstone page active
-                auto t = ui->touchstoneImport->getTouchstone();
-                trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
-            } else {
-                // CSV page active
-                ui->csvImport->fillTrace(trace);
+            auto newName = ui->stack->currentIndex() == 1 ? ui->touchstoneImport->getFilename() : ui->csvImport->getFilename();
+            if(newName != trace.getFilename()) {
+                // only update if filename has changed
+                if(trace.deembeddingAvailable()) {
+                    InformationBox::ShowMessage("Removing de-embedding data", "You have selected a new file as the trace source. Any de-embedding data has been deleted before loading the new trace data.");
+                    trace.clearDeembedding();
+                }
+                if(ui->stack->currentIndex() == 1) {
+                    // touchstone page active
+                    if(ui->touchstoneImport->getFilename() != trace.getFilename()) {
+                        auto t = ui->touchstoneImport->getTouchstone();
+                        trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
+                    }
+                } else {
+                    // CSV page active
+                    if(ui->csvImport->getFilename() != trace.getFilename()) {
+
+                    }
+                    ui->csvImport->fillTrace(trace);
+                }
             }
         } else if(ui->bLive->isChecked()) {
             Trace::LivedataType type = Trace::LivedataType::Overwrite;
