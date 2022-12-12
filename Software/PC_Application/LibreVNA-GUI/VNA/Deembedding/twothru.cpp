@@ -200,6 +200,7 @@ nlohmann::json TwoThru::toJSON()
     nlohmann::json j;
     j["port1"] = port1;
     j["port2"] = port2;
+    nlohmann::json jpoints;
     for(auto p : points) {
         nlohmann::json jp;
         jp["frequency"] = p.freq;
@@ -219,17 +220,32 @@ nlohmann::json TwoThru::toJSON()
         jp["p2_21_i"] = p.inverseP2.m21.imag();
         jp["p2_22_r"] = p.inverseP2.m22.real();
         jp["p2_22_i"] = p.inverseP2.m22.imag();
-        j.push_back(jp);
+        jpoints.push_back(jp);
     }
+    j["points"] = jpoints;
     return j;
 }
 
 void TwoThru::fromJSON(nlohmann::json j)
 {
-    port1 = j.value("port1", 1);
-    port2 = j.value("port2", 2);
+    nlohmann::json jpoints;
+    if(j.is_array()) {
+        // old format, containing the points as an array in the root json
+        jpoints = j;
+        port1 = 1;
+        port2 = 2;
+    } else {
+        port1 = j.value("port1", 1);
+        port2 = j.value("port2", 2);
+        if(j.contains("points")) {
+            jpoints = j["points"];
+        } else {
+            // missing points
+            jpoints = nlohmann::json();
+        }
+    }
     points.clear();
-    for(auto jp : j) {
+    for(auto jp : jpoints) {
         Point p;
         p.freq = jp.value("frequency", 0.0);
         p.inverseP1.m11 = complex<double>(jp.value("p1_11_r", 0.0), jp.value("p1_11_i", 0.0));
