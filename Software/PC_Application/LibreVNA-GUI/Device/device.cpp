@@ -174,7 +174,7 @@ static constexpr Protocol::DeviceStatusV1 defaultStatusV1 = {
     .temp_MCU = 0,
 };
 
-Device::Device(QString serial)
+Device::Device(QString serial, bool ignoreOpenError)
 {
     info = defaultInfo;
     status = {};
@@ -197,7 +197,7 @@ Device::Device(QString serial)
             // not the requested device, continue search
             return true;
         }
-    }, m_context, false);
+    }, m_context, ignoreOpenError);
 
     if(!m_handle) {
         QString message =  "No device found";

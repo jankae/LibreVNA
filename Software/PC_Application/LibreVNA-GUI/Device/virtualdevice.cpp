@@ -138,7 +138,7 @@ VirtualDevice::VirtualDevice(QString serial)
     } else {
         // Connect to the actual devices
         for(auto devSerial : cdev->deviceSerials) {
-            auto dev = new Device(devSerial);
+            auto dev = new Device(devSerial, true);
             devices.push_back(dev);
             // Create device connections
             connect(dev, &Device::ConnectionLost, this, &VirtualDevice::ConnectionLost, Qt::QueuedConnection);
