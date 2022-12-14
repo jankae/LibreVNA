@@ -433,7 +433,7 @@ Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
             continue;
         }
         auto markers = t.first->getMarkers();
-        for(auto m : markers) {
+        for(Marker* m : markers) {
             if(!m->isMovable() && onlyMovable) {
                 continue;
             }
@@ -448,6 +448,9 @@ Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
                 closestDistance = distance;
                 if(m->getParent()) {
                     closestMarker = m->getParent();
+                    if(closestMarker->getType() == Marker::Type::NonUniformity) {
+                        closestMarker = m;
+                    }
                 } else {
                     closestMarker = m;
                 }

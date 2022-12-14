@@ -303,7 +303,7 @@ QVariant MarkerModel::headerData(int section, Qt::Orientation orientation, int r
 
 bool MarkerModel::setData(const QModelIndex &index, const QVariant &value, int)
 {
-    if((unsigned int) index.row() >= markers.size()) {
+    if(!index.isValid()) {
         return false;
     }
     auto m = markerFromIndex(index);
@@ -340,7 +340,7 @@ Qt::ItemFlags MarkerModel::flags(const QModelIndex &index) const
     case ColIndexData: flags |= Qt::ItemIsEnabled; break;
     }
     auto marker = markerFromIndex(index);
-    if(marker->getParent()) {
+    if(!marker->isEditable()) {
         // this is a helper marker -> nothing is editable
         flags &= ~Qt::ItemIsEditable;
     }

@@ -93,7 +93,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>6</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -1457,7 +1457,7 @@
               <x>0</x>
               <y>0</y>
               <width>749</width>
-              <height>576</height>
+              <height>605</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_23">
@@ -1640,6 +1640,27 @@
                          </property>
                         </widget>
                        </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowNonUniformity">
+                         <property name="text">
+                          <string>Non-uniformity</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowMaxDeltaNeg">
+                         <property name="text">
+                          <string>Max. Delta Negative</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QCheckBox" name="MarkerShowMaxDeltaPos">
+                         <property name="text">
+                          <string>Max. Delta Positive</string>
+                         </property>
+                        </widget>
+                       </item>
                       </layout>
                      </widget>
                     </item>
@@ -1774,8 +1795,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>763</width>
-              <height>561</height>
+              <width>168</width>
+              <height>127</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_12">

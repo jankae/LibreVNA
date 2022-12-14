@@ -136,6 +136,9 @@ QString Marker::formatToString(Marker::Format f)
     case Format::CenterBandwidth: return "Center + Bandwidth";
     case Format::InsertionLoss: return "Insertion loss";
     case Format::P1dB: return "P1dB";
+    case Format::NonUniformity: return "Non-uniformity";
+    case Format::maxDeltaNeg: return "Max. Delta Negative";
+    case Format::maxDeltaPos: return "Max. Delta Positive";
     case Format::Last: return "";
     }
     return "";
@@ -262,6 +265,11 @@ std::vector<Marker::Format> Marker::applicableFormats()
             ret.push_back(Format::AvgTone);
             ret.push_back(Format::AvgModulationProduct);
             break;
+        case Type::NonUniformity:
+            ret.push_back(Format::NonUniformity);
+            ret.push_back(Format::maxDeltaNeg);
+            ret.push_back(Format::maxDeltaPos);
+            break;
         default:
             break;
         }
@@ -362,6 +370,15 @@ std::vector<Marker::Format> Marker::defaultActiveFormats()
     }
     if(pref.Marker.defaultBehavior.showP1dB) {
         ret.push_back(Format::P1dB);
+    }
+    if(pref.Marker.defaultBehavior.showNonUniformity) {
+        ret.push_back(Format::NonUniformity);
+    }
+    if(pref.Marker.defaultBehavior.showMaxDeltaNeg) {
+        ret.push_back(Format::maxDeltaNeg);
+    }
+    if(pref.Marker.defaultBehavior.showMaxDeltaPos) {
+        ret.push_back(Format::maxDeltaPos);
     }
     return ret;
 }
@@ -549,6 +566,16 @@ QString Marker::readableData(Format f)
                 } else {
                     return "Input P1dB:"+Unit::ToString(position, "dBm", " ", 4);
                 }
+                break;
+            case Format::NonUniformity:
+                return "Non-uniformity:"+Unit::ToString(maxDeltaNeg+maxDeltaPos, "dB", " ", 4);
+                break;
+            case Format::maxDeltaNeg:
+                return "max. Δ-:"+Unit::ToString(maxDeltaNeg, "dB", " ", 4);
+                break;
+            case Format::maxDeltaPos:
+                return "max. Δ+:"+Unit::ToString(maxDeltaPos, "dB", " ", 4);
+                break;
             case Format::Last:
                 return "Invalid";
             }
@@ -625,6 +652,8 @@ QString Marker::readableSettings()
             return "none";
         case Type::PhaseNoise:
             return Unit::ToString(offset, "Hz", " kM", 4);
+        case Type::NonUniformity:
+            return "None";
         default:
             break;
         }
@@ -987,6 +1016,7 @@ std::set<Marker::Type> Marker::getSupportedTypes()
             supported.insert(Type::Minimum);
             supported.insert(Type::Delta);
             supported.insert(Type::PeakTable);
+            supported.insert(Type::NonUniformity);
             if(!parentTrace->isReflection()) {
                 supported.insert(Type::Lowpass);
                 supported.insert(Type::Highpass);
@@ -1172,6 +1202,9 @@ void Marker::setType(Marker::Type t)
     case Type::PhaseNoise:
         required_helpers = {{"o", "Offset", Type::Manual}};
         break;
+    case Type::NonUniformity:
+        required_helpers = {{"l", "Lower Limit", Type::Manual}, {"u", "Upper Limit", Type::Manual}};
+        break;
     default:
         break;
     }
@@ -1182,6 +1215,14 @@ void Marker::setType(Marker::Type t)
         helper->assignTrace(parentTrace);
         helper->setType(h.type);
         helperMarkers.push_back(helper);
+    }
+    if(type == Type::NonUniformity) {
+        // need to update when any of the helper markers is moved
+        for(auto h : helperMarkers) {
+            connect(h, &Marker::positionChanged, [=](){
+                setPosition((helperMarkers[0]->position + helperMarkers[1]->position)/2);
+            });
+        }
     }
     constrainFormat();
 
@@ -1881,6 +1922,32 @@ void Marker::update()
         setPosition(p1db);
     }
         break;
+    case Type::NonUniformity: {
+        auto dbLower = Util::SparamTodB(helperMarkers[0]->getData());
+        auto dbUpper = Util::SparamTodB(helperMarkers[1]->getData());
+        auto posLower = helperMarkers[0]->getPosition();
+        auto posUpper = helperMarkers[1]->getPosition();
+        if(posLower > posUpper) {
+            swap(posLower, posUpper);
+            swap(dbLower, dbUpper);
+        }
+        auto startIndex = parentTrace->index(posLower);
+        auto stopIndex = parentTrace->index(posUpper);
+        maxDeltaNeg = std::numeric_limits<double>::lowest();
+        maxDeltaPos = std::numeric_limits<double>::lowest();
+        for(int i=startIndex;i<=stopIndex;i++) {
+            auto dbTrace = Util::SparamTodB(parentTrace->sample(i).y);
+            auto dbStraightLine = Util::Scale((double) i, (double) startIndex, (double) stopIndex, dbLower, dbUpper);
+            auto delta = dbTrace - dbStraightLine;
+            if(delta > maxDeltaPos) {
+                maxDeltaPos = delta;
+            }
+            if(-delta > maxDeltaNeg) {
+                maxDeltaNeg = -delta;
+            }
+        }
+    }
+        break;
     case Type::Last:
         break;
     }
@@ -1905,6 +1972,10 @@ std::complex<double> Marker::getData() const
 bool Marker::isMovable()
 {
     if(parent) {
+        if(parent->type == Type::NonUniformity) {
+            // non-uniformity is the exception, it has movable helper markers
+            return true;
+        }
         // helper traces are never movable by the user
         return false;
     }
@@ -1918,6 +1989,19 @@ bool Marker::isMovable()
     default:
         return false;
     }
+}
+
+bool Marker::isEditable()
+{
+    if(parent) {
+        if(parent->type == Type::NonUniformity) {
+            // non-uniformity is the exception, it has movable helper markers
+            return true;
+        }
+        // helper traces are never movable by the user
+        return false;
+    }
+    return true;
 }
 
 QPixmap &Marker::getSymbol()

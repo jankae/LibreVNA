@@ -47,6 +47,9 @@ public:
         AvgModulationProduct,   // average level of modulation products
         // compression parameters
         P1dB,                   // power level at 1dB compression
+        NonUniformity,
+        maxDeltaPos,
+        maxDeltaNeg,
         // keep last at end
         Last,
     };
@@ -68,6 +71,7 @@ public:
     double getPosition() const;
     std::complex<double> getData() const;
     bool isMovable();
+    bool isEditable();
     Trace::DataType getDomain();
 
     QPixmap& getSymbol();
@@ -92,6 +96,7 @@ public:
         TOI,
         PhaseNoise,
         P1dB,
+        NonUniformity,
         // keep last at end
         Last,
     };
@@ -171,6 +176,7 @@ private:
         case Type::TOI: return "TOI/IP3";
         case Type::PhaseNoise: return "Phase noise";
         case Type::P1dB: return "1dB compression";
+        case Type::NonUniformity: return "Non-uniformity";
         default: return QString();
         }
     }
@@ -210,6 +216,10 @@ private:
     double cutoffAmplitude;
     double peakThreshold;
     double offset;
+
+    // non-uniformity
+    double maxDeltaNeg;
+    double maxDeltaPos;
 
     Format formatTable;
     std::set<Format> formatGraph;

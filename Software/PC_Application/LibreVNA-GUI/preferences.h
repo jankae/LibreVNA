@@ -150,7 +150,7 @@ public:
         struct {
             bool showDataOnGraphs;
             bool showdB, showdBm, showdBuV, showdBAngle, showRealImag, showImpedance, showVSWR, showResistance, showCapacitance, showInductance, showQualityFactor;
-            bool showNoise, showPhasenoise, showCenterBandwidth, showCutoff, showInsertionLoss, showTOI, showAvgTone, showAvgModulation, showP1dB;
+            bool showNoise, showPhasenoise, showCenterBandwidth, showCutoff, showInsertionLoss, showTOI, showAvgTone, showAvgModulation, showP1dB, showNonUniformity, showMaxDeltaNeg, showMaxDeltaPos;
         } defaultBehavior;
         bool interpolatePoints;
         MarkerSortOrder sortOrder;
@@ -264,6 +264,9 @@ private:
         {&Marker.defaultBehavior.showAvgTone, "Marker.defaultBehavior.showAvgTone", true},
         {&Marker.defaultBehavior.showAvgModulation, "Marker.defaultBehavior.showAvgModulation", true},
         {&Marker.defaultBehavior.showP1dB, "Marker.defaultBehavior.showP1dB", true},
+        {&Marker.defaultBehavior.showNonUniformity, "Marker.defaultBehavior.showNonUniformity", true},
+        {&Marker.defaultBehavior.showMaxDeltaNeg, "Marker.defaultBehavior.showMaxDeltaNeg", true},
+        {&Marker.defaultBehavior.showMaxDeltaPos, "Marker.defaultBehavior.showMaxDeltaPos", true},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
         {&Marker.sortOrder, "Marker.sortOrder", MarkerSortOrder::PrefMarkerSortXCoord},
         {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::EmptyNumberAbove},
