@@ -152,6 +152,7 @@ void Trace::addData(const Trace::Data &d, const VirtualDevice::SASettings &s, in
 
 void Trace::addDeembeddingData(const Trace::Data &d, int index)
 {
+    bool wasAvailable = deembeddingAvailable();
     if(index >= 0) {
         // index position specified
         if(deembeddingData.size() <= (unsigned int) index) {
@@ -180,7 +181,9 @@ void Trace::addDeembeddingData(const Trace::Data &d, int index)
     if(deembeddingActive) {
         emit outputSamplesChanged(index, index + 1);
     }
-    emit deembeddingChanged();
+    if(!wasAvailable) {
+        emit deembeddingChanged();
+    }
 }
 
 void Trace::setName(QString name) {
@@ -1317,7 +1320,6 @@ void Trace::setDeembeddingActive(bool active)
 
 void Trace::clearDeembedding()
 {
-    setDeembeddingActive(false);
     deembeddingData.clear();
     deembeddingChanged();
 }

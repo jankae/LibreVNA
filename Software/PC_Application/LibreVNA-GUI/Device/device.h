@@ -58,7 +58,7 @@ public:
     Q_ENUM(TransmissionResult)
 
     // connect to a VNA device. If serial is specified only connecting to this device, otherwise to the first one found
-    Device(QString serial = QString());
+    Device(QString serial = QString(), bool ignoreOpenError = false);
     ~Device();
 
     static void RegisterTypes();
