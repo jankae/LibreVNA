@@ -25,7 +25,7 @@ public:
     };
 
     TracePlot(TraceModel &model, QWidget *parent = nullptr);
-    ~TracePlot();
+    virtual ~TracePlot();
 
     void setParentTile(TileWidget *tile);
 

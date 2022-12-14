@@ -12,6 +12,7 @@ class DeembeddingOption : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
 public:   
+    virtual ~DeembeddingOption(){}
     enum class Type {
         PortExtension,
         TwoThru,

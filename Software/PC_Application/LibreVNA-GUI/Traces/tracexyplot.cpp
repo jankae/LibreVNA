@@ -774,7 +774,7 @@ void TraceXYPlot::draw(QPainter &p)
                 p.drawLine(xpos.x(), plotAreaTop, xpos.x(), plotAreaBottom);
             }
             if(pref.Graphs.SweepIndicator.triangle) {
-                for(unsigned int i=0;i<pref.Graphs.SweepIndicator.triangleSize;i++) {
+                for(int i=0;i<pref.Graphs.SweepIndicator.triangleSize;i++) {
                     p.drawLine(xpos.x() - i,plotAreaBottom+i+1, xpos.x() + i, plotAreaBottom+i+1);
                 }
             }

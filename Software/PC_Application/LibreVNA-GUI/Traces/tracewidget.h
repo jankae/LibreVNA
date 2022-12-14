@@ -16,7 +16,7 @@ class TraceWidget : public QWidget, public SCPINode
 
 public:
     explicit TraceWidget(TraceModel &model, QWidget *parent = nullptr);
-    ~TraceWidget();
+    virtual ~TraceWidget();
 
 protected slots:
     void on_add_clicked();

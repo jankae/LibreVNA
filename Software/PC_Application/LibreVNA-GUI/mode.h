@@ -26,7 +26,7 @@ public:
     };
 
     Mode(AppWindow *window, QString name, QString SCPIname);
-    ~Mode();
+    virtual ~Mode();
 
     virtual void shutdown(){} // called when the application is about to exit
     QString getName() const;

@@ -46,9 +46,9 @@
 
 SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     : Mode(window, name, "SA"),
+      firstPointTime(0),
       central(new QScrollArea),
-      tiles(new TileWidget(traceModel, window)),
-      firstPointTime(0)
+      tiles(new TileWidget(traceModel, window))
 {
     central->setWidget(tiles);
     central->setWidgetResizable(true);

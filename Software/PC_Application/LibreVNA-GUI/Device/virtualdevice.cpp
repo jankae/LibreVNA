@@ -577,7 +577,7 @@ void VirtualDevice::singleDatapointReceived(Device *dev, Protocol::VNADatapoint<
         // map.first is the port (starts at zero)
         // map.second is the stage at which this port had the stimulus (starts at zero)
         complex<double> ref = res->getValue(map.second, map.first, true);
-        for(int i=0;i<info.ports;i++) {
+        for(unsigned int i=0;i<info.ports;i++) {
             complex<double> input = res->getValue(map.second, i, false);
             if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
                 // got both required measurements

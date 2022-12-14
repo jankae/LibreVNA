@@ -245,13 +245,6 @@ bool USBDevice::receive(QString *s)
     }
 }
 
-bool USBDevice::flushRX()
-{
-    char data[512];
-//    libusb_bulk_transfer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, (unsigned char*) data, sizeof(data), &actual, 1);
-}
-
-
 QString USBDevice::serial() const
 {
     return m_serial;

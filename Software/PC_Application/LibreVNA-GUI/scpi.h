@@ -29,7 +29,7 @@ class SCPINode {
 public:
     SCPINode(QString name) :
         name(name), parent(nullptr){}
-    ~SCPINode();
+    virtual ~SCPINode();
 
     bool add(SCPINode *node);
     bool remove(SCPINode *node);

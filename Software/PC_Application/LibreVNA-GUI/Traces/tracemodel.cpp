@@ -359,7 +359,7 @@ void TraceModel::setSource(const DataSource &value)
 double TraceModel::getSweepPosition() const
 {
     auto t = QDateTime::currentDateTimeUtc();
-    constexpr uint64_t timeout_ms = 1000;
+    constexpr qint64 timeout_ms = 1000;
     if(lastReceivedData.msecsTo(t) > timeout_ms) {
         return std::numeric_limits<double>::quiet_NaN();
     } else {

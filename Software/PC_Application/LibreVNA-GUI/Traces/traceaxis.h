@@ -9,6 +9,7 @@
 class Axis {
 public:
     Axis();
+    virtual ~Axis(){}
     virtual double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) = 0;
     double transform(double value, double to_low, double to_high);
     double inverseTransform(double value, double to_low, double to_high);

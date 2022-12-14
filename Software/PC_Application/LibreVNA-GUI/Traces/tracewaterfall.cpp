@@ -462,7 +462,7 @@ void TraceWaterfall::draw(QPainter &p)
                 p.drawLine(xpos, plotAreaTop, xpos, plotAreaBottom);
             }
             if(pref.Graphs.SweepIndicator.triangle) {
-                for(unsigned int i=0;i<pref.Graphs.SweepIndicator.triangleSize;i++) {
+                for(int i=0;i<pref.Graphs.SweepIndicator.triangleSize;i++) {
                     p.drawLine(xpos - i,plotAreaBottom+i+1, xpos + i, plotAreaBottom+i+1);
                 }
             }

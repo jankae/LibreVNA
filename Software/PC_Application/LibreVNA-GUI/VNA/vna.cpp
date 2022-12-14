@@ -58,8 +58,8 @@ VNA::VNA(AppWindow *window, QString name)
     : Mode(window, name, "VNA"),
       deembedding(traceModel),
       deembedding_active(false),
-      central(new QScrollArea),
-      tiles(new TileWidget(traceModel))
+      tiles(new TileWidget(traceModel)),
+    central(new QScrollArea)
 {
     central->setWidget(tiles);
     central->setWidgetResizable(true);

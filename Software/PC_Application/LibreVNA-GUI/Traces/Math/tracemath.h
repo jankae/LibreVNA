@@ -50,6 +50,7 @@ class TraceMath : public QObject, public Savable {
     Q_OBJECT
 public:
     TraceMath();
+    virtual ~TraceMath(){}
 
     class Data {
     public:

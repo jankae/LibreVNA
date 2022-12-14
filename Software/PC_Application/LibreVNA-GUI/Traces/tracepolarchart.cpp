@@ -114,35 +114,6 @@ void TracePolarChart::draw(QPainter &p) {
         drawArc(PolarArc(offset, radius, 0, 2*M_PI));
     }
 
-    auto constraintLineToCircle = [&](PolarArc cir) { // PolarArc
-        if ( (cir.spanAngle == 90 )&& (offset == QPointF(0.0, 0.0))) {
-            auto angle = acos(offset.x() / cir.radius);
-            auto p1 = complex<double>(offset.x(), cir.center.y() + cir.radius*sin(angle));
-            auto p2 = complex<double>(offset.x(), cir.center.y() - cir.radius*sin(angle));
-            p.drawLine(dataToPixel(p1),dataToPixel(p2));
-        }
-        else {
-            auto slope = tan(cir.spanAngle*2*M_PI/360);
-            auto y0 = cir.center.y();
-            auto f = offset.x();
-            auto a = 1 + (slope*slope);
-            auto b = (-2*cir.center.x())-(2*f*slope*slope)+(2*slope*y0)-(2*cir.center.y()*slope);
-            auto c = (cir.center.x()*cir.center.x()) +(cir.center.y()*cir.center.y()) - (cir.radius*cir.radius) + (y0*y0) \
-                    + (slope*slope*f*f) - (2 * slope * f * y0 ) \
-                    + (2*cir.center.y()*slope*f)-(2*cir.center.y()*y0);
-            auto D = (b*b) - (4 * a * c);
-
-            auto x1 = (-b + sqrt(D))/(2*a);
-            auto x2 = (-b - sqrt(D))/(2*a);
-            auto y1 = slope*(x1-f)+y0;
-            auto y2 = slope*(x2-f)+y0;
-
-            auto p1 = complex<double>(x1,y1);
-            auto p2 = complex<double>(x2,y2);
-            p.drawLine(dataToPixel(p1),dataToPixel(p2));
-        }
-    };
-
     constexpr int Lines = 6;
     for(int i=0;i<Lines;i++) {
         auto angle = (double) i * 30 / 180.0 * M_PI;
