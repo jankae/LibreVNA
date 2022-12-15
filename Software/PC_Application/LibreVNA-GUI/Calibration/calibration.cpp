@@ -1248,6 +1248,24 @@ QString Calibration::descriptiveCalName()
     return tmp;
 }
 
+QString Calibration::getValidDevice() const
+{
+    return validDevice;
+}
+
+bool Calibration::validForDevice(QString serial) const
+{
+    if(validDevice.isEmpty()) {
+        // no device indicated, always assume that the calibration is valid
+        return true;
+    }
+    if(validDevice == serial) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool Calibration::hasUnsavedChanges() const
 {
     return unsavedChanges;
@@ -1279,9 +1297,7 @@ nlohmann::json Calibration::toJSON()
     }
     j["ports"] = jports;
     j["version"] = qlibrevnaApp->applicationVersion().toStdString();
-    if(VirtualDevice::getConnected()) {
-        j["device"] = VirtualDevice::getConnected()->serial().toStdString();
-    }
+    j["device"] = validDevice.toStdString();
     return j;
 }
 
@@ -1326,6 +1342,7 @@ void Calibration::fromJSON(nlohmann::json j)
         if(ct.type != Type::None) {
             compute(ct);
         }
+        validDevice = QString::fromStdString(j.value("device", ""));
     }
         break;
     case 2: {
@@ -1716,6 +1733,9 @@ void Calibration::addMeasurements(std::set<CalibrationMeasurement::Base *> m, co
         meas->addPoint(data);
     }
     unsavedChanges = true;
+    if(VirtualDevice::getConnected()) {
+        validDevice = VirtualDevice::getConnected()->serial();
+    }
 }
 
 void Calibration::clearMeasurements(std::set<CalibrationMeasurement::Base *> m)

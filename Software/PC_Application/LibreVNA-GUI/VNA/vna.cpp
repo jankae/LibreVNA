@@ -97,6 +97,10 @@ VNA::VNA(AppWindow *window, QString name)
 
     connect(calLoad, &QAction::triggered, [=](){
         LoadCalibration();
+        if(window->getDevice() && !cal.validForDevice(window->getDevice()->serial())) {
+            InformationBox::ShowMessage("Invalid calibration", "The selected calibration was created for a different device. You can still load it but the resulting "
+                                        "data likely isn't useful.");
+        }
     });
 
     connect(saveCal, &QAction::triggered, [=](){
@@ -215,6 +219,7 @@ VNA::VNA(AppWindow *window, QString name)
            if(!filename.isEmpty()) {
                settings.setValue(key, filename);
                removeDefaultCal->setEnabled(true);
+               LoadCalibration(filename);
            }
        }
     });
@@ -697,6 +702,10 @@ void VNA::initializeDevice()
     // Configure initial state of device
     SettingsChanged();
     emit deviceInitialized();
+    if(window->getDevice() && !cal.validForDevice(window->getDevice()->serial())) {
+        InformationBox::ShowMessage("Invalid calibration", "The current calibration was created for a different device. You can still use it but the resulting "
+                                    "data likely isn't useful.");
+    }
 }
 
 void VNA::deviceDisconnected()

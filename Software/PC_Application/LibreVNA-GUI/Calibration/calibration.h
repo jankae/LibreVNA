@@ -93,6 +93,9 @@ public:
     int getNumPoints();
     bool hasUnsavedChanges() const;
 
+    QString getValidDevice() const;
+    bool validForDevice(QString serial) const;
+
 public slots:
     // Call once all datapoints of the current span have been added
     void measurementsComplete();
@@ -153,6 +156,8 @@ private:
 
     QString descriptiveCalName();
     QString currentCalFile;
+
+    QString validDevice;
 
     bool unsavedChanges;
 
