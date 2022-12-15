@@ -183,6 +183,16 @@ inline void App_Process() {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 				}
 					break;
+				case Protocol::PacketType::StopAutoIdle: {
+					HW::setAutoIdleFlag(false);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+				}
+					break;
+				case Protocol::PacketType::StartAutoIdle: {
+					HW::setAutoIdleFlag(true);
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+				}
+					break;
 				case Protocol::PacketType::SetIdle:
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;

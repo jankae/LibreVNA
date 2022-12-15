@@ -22,6 +22,7 @@ HW::Mode activeMode;
 static bool unlevel = false;
 
 static bool StatusUpdateFlag = true;
+static bool AutoIdleFlag = true;
 
 static Protocol::ReferenceSettings ref;
 static volatile uint64_t lastISR;
@@ -468,6 +469,14 @@ void HW::updateDeviceStatus() {
 			Communication::Send(packet);
 		}
 	}
+}
+
+bool HW::getAutoIdleFlag(){
+	return StatusUpdateFlag;
+}
+
+void HW::setAutoIdleFlag(bool flag){
+	StatusUpdateFlag = flag;
 }
 
 uint16_t HW::getDFTPhaseInc() {

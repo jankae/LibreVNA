@@ -106,6 +106,10 @@ bool getStatusUpdateFlag();
 
 void setStatusUpdateFlag(bool flag);
 
+bool getAutoIdleFlag();
+
+void setAutoIdleFlag(bool flag);
+
 void updateDeviceStatus();
 
 using AmplitudeSettings = struct _amplitudeSettings {

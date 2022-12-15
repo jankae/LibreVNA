@@ -366,6 +366,8 @@ enum class PacketType : uint8_t {
 	ClearTrigger = 29,
 	StopStatusUpdates = 30,
 	StartStatusUpdates = 31,
+	StopAutoIdle = 32,
+	StartAutoIdle = 33
 };
 
 using PacketInfo = struct _packetinfo {
