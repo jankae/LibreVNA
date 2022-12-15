@@ -250,6 +250,8 @@ The following packet types are available:
 29 & ClearTrigger & D$\leftrightarrow$H & Updates the trigger status for synchronization over USB & None\\
 30 & StopStatusUpdates & H$\rightarrow$D & Stops the automatic transmission of device status packets & None\\
 31 & StartStatusUpdates & H$\rightarrow$D & Starts the automatic transmission of device status packets & None\\
+32 & StopAutoIdle & H$\rightarrow$D & Stops automatic VNA idling after timeout & None\\
+33 & StartAutoIdle & H$\rightarrow$D & Starts automatic VNA idling after timeout & None\\
 \end{longtable}   
 \end{ThreePartTable}
 An Ack is transmitted by the device for every received command after it has been handled successfully. If additional responses are triggered by the command, they are transmitted after this Ack.
@@ -1017,5 +1019,11 @@ This packet instructs the device to stop sending automatically scheduled DeviceS
 
 \subsection{StartStatusUpdates}
 This packet instructs the device to start sending automatically scheduled DeviceStatusV1 packets. This restores default update behaviour if a StopStatusUpdates packet has previously been sent.
+
+\subsection{StopAutoIdle}
+This packet instructs the device to stop automatically going to idle mode after fixed timeout of 100ms when buffer is full (i.e. when VNADatapoint packets are not being actively read from device).
+
+\subsection{StartAutoIdle}
+This packet instructs the device to resume automatically going to idle mode after fixed timeout of 100ms when buffer is full (i.e. when VNADatapoint packets are not being actively read from device). This restores the default behavious if a StopAutoIdle packet has previously been sent.
 
 \end{document}
