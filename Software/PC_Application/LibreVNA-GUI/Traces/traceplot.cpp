@@ -448,7 +448,7 @@ Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
                 closestDistance = distance;
                 if(m->getParent()) {
                     closestMarker = m->getParent();
-                    if(closestMarker->getType() == Marker::Type::NonUniformity) {
+                    if(closestMarker->getType() == Marker::Type::Flatness) {
                         closestMarker = m;
                     }
                 } else {
