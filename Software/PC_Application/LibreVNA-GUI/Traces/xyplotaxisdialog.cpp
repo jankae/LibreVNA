@@ -172,7 +172,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     for(auto l : plot->constantLines) {
         auto item = new QListWidgetItem(l->getDescription());
         ui->lineList->addItem(item);
-        connect(l, &XYPlotConstantLine::editingFinished, [=](){
+        connect(l, &XYPlotConstantLine::editingFinished, this, [=](){
             item->setText(l->getDescription());
         });
     }
@@ -187,7 +187,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         ui->lineList->setCurrentItem(item);
         ui->removeLine->setEnabled(true);
         editLine(line);
-        connect(line, &XYPlotConstantLine::editingFinished, [=](){
+        connect(line, &XYPlotConstantLine::editingFinished, this, [=](){
             if(line->getPoints().size() < 2) {  // must have 2 points to be a line
                 int index = ui->lineList->currentRow();
                 removeLine(index);
@@ -196,11 +196,11 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
             }
         });
     });
-    connect(ui->removeLine, &QPushButton::clicked, [=](){
+    connect(ui->removeLine, &QPushButton::clicked, this, [=](){
         int index = ui->lineList->currentRow();
         removeLine(index);
     });
-    connect(ui->exportLines, &QPushButton::clicked, [=](){
+    connect(ui->exportLines, &QPushButton::clicked, this, [=](){
         QString filename = QFileDialog::getSaveFileName(nullptr, "Save limit lines", "", "Limit files (*.limits)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.isEmpty()) {
             // aborted selection
