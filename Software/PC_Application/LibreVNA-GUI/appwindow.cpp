@@ -1196,7 +1196,7 @@ void AppWindow::LoadSetup(nlohmann::json j)
 
     // reconnect to device
     if(!serial.isEmpty()) {
-        vdevice = new VirtualDevice(serial);
+        ConnectToDevice(serial);
     }
 
     // activate the correct mode
