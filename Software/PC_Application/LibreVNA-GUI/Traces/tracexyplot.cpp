@@ -607,6 +607,24 @@ void TraceXYPlot::draw(QPainter &p)
                         markerPoint = traceToCoordinate(t, t->index(xPosition), yAxis[i]);
                     }
                     auto point = plotValueToPixel(markerPoint, i);
+
+                    for(auto line : m->getLines()) {
+                        QPointF pF1 = QPointF(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN());
+                        pF1.setX(xAxis.sampleToCoordinate(line.p1));
+                        pF1.setY(yAxis[0].sampleToCoordinate(line.p1));
+                        QPointF pF2 = QPointF(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN());
+                        pF2.setX(xAxis.sampleToCoordinate(line.p2));
+                        pF2.setY(yAxis[0].sampleToCoordinate(line.p2));
+                        auto p1 = plotValueToPixel(pF1, i);
+                        auto p2 = plotValueToPixel(pF2, i);
+                        if(!plotRect.contains(p1) && !plotRect.contains(p2)) {
+                            // completely out of frame
+                            continue;
+                        }
+                        // draw line
+                        p.drawLine(p1, p2);
+                    }
+
                     if(!plotRect.contains(point)) {
                         // out of screen
                         continue;

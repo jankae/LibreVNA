@@ -47,7 +47,7 @@ public:
         AvgModulationProduct,   // average level of modulation products
         // compression parameters
         P1dB,                   // power level at 1dB compression
-        NonUniformity,
+        Flatness,
         maxDeltaPos,
         maxDeltaNeg,
         // keep last at end
@@ -74,6 +74,12 @@ public:
     bool isEditable();
     Trace::DataType getDomain();
 
+    class Line {
+    public:
+        TraceMath::Data p1, p2;
+    };
+    std::vector<Line> getLines();
+
     QPixmap& getSymbol();
 
     unsigned long getCreationTimestamp() const;
@@ -96,7 +102,7 @@ public:
         TOI,
         PhaseNoise,
         P1dB,
-        NonUniformity,
+        Flatness,
         // keep last at end
         Last,
     };
@@ -176,7 +182,7 @@ private:
         case Type::TOI: return "TOI/IP3";
         case Type::PhaseNoise: return "Phase noise";
         case Type::P1dB: return "1dB compression";
-        case Type::NonUniformity: return "Non-uniformity";
+        case Type::Flatness: return "Flatness";
         default: return QString();
         }
     }
@@ -212,6 +218,10 @@ private:
     Marker *delta;
     std::vector<Marker*> helperMarkers;
     Marker *parent;
+
+    // additional lines the marker wants to show on the graphs (the graphs are responsible for drawing the lines)
+    std::vector<Line> lines;
+
     // settings for the different marker types
     double cutoffAmplitude;
     double peakThreshold;

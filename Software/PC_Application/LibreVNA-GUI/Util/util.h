@@ -11,7 +11,7 @@
 
 namespace Util {
     template<typename T> T Scale(T value, T from_low, T from_high, T to_low, T to_high, bool log_from = false, bool log_to = false) {
-        double normalized;
+        T normalized;
         if(log_from) {
             normalized = log10(value / from_low) / log10(from_high / from_low);
         } else {

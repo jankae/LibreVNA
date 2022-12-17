@@ -136,7 +136,7 @@ QString Marker::formatToString(Marker::Format f)
     case Format::CenterBandwidth: return "Center + Bandwidth";
     case Format::InsertionLoss: return "Insertion loss";
     case Format::P1dB: return "P1dB";
-    case Format::NonUniformity: return "Non-uniformity";
+    case Format::Flatness: return "Flatness";
     case Format::maxDeltaNeg: return "Max. Delta Negative";
     case Format::maxDeltaPos: return "Max. Delta Positive";
     case Format::Last: return "";
@@ -265,8 +265,8 @@ std::vector<Marker::Format> Marker::applicableFormats()
             ret.push_back(Format::AvgTone);
             ret.push_back(Format::AvgModulationProduct);
             break;
-        case Type::NonUniformity:
-            ret.push_back(Format::NonUniformity);
+        case Type::Flatness:
+            ret.push_back(Format::Flatness);
             ret.push_back(Format::maxDeltaNeg);
             ret.push_back(Format::maxDeltaPos);
             break;
@@ -371,8 +371,8 @@ std::vector<Marker::Format> Marker::defaultActiveFormats()
     if(pref.Marker.defaultBehavior.showP1dB) {
         ret.push_back(Format::P1dB);
     }
-    if(pref.Marker.defaultBehavior.showNonUniformity) {
-        ret.push_back(Format::NonUniformity);
+    if(pref.Marker.defaultBehavior.showFlatness) {
+        ret.push_back(Format::Flatness);
     }
     if(pref.Marker.defaultBehavior.showMaxDeltaNeg) {
         ret.push_back(Format::maxDeltaNeg);
@@ -567,8 +567,8 @@ QString Marker::readableData(Format f)
                     return "Input P1dB:"+Unit::ToString(position, "dBm", " ", 4);
                 }
                 break;
-            case Format::NonUniformity:
-                return "Non-uniformity:"+Unit::ToString(maxDeltaNeg+maxDeltaPos, "dB", " ", 4);
+            case Format::Flatness:
+                return "Flatness:"+Unit::ToString(maxDeltaNeg+maxDeltaPos, "dB", " ", 4);
                 break;
             case Format::maxDeltaNeg:
                 return "max. Δ-:"+Unit::ToString(maxDeltaNeg, "dB", " ", 4);
@@ -652,7 +652,7 @@ QString Marker::readableSettings()
             return "none";
         case Type::PhaseNoise:
             return Unit::ToString(offset, "Hz", " kM", 4);
-        case Type::NonUniformity:
+        case Type::Flatness:
             return "None";
         default:
             break;
@@ -1016,7 +1016,7 @@ std::set<Marker::Type> Marker::getSupportedTypes()
             supported.insert(Type::Minimum);
             supported.insert(Type::Delta);
             supported.insert(Type::PeakTable);
-            supported.insert(Type::NonUniformity);
+            supported.insert(Type::Flatness);
             if(!parentTrace->isReflection()) {
                 supported.insert(Type::Lowpass);
                 supported.insert(Type::Highpass);
@@ -1202,7 +1202,7 @@ void Marker::setType(Marker::Type t)
     case Type::PhaseNoise:
         required_helpers = {{"o", "Offset", Type::Manual}};
         break;
-    case Type::NonUniformity:
+    case Type::Flatness:
         required_helpers = {{"l", "Lower Limit", Type::Manual}, {"u", "Upper Limit", Type::Manual}};
         break;
     default:
@@ -1216,7 +1216,7 @@ void Marker::setType(Marker::Type t)
         helper->setType(h.type);
         helperMarkers.push_back(helper);
     }
-    if(type == Type::NonUniformity) {
+    if(type == Type::Flatness) {
         // need to update when any of the helper markers is moved
         for(auto h : helperMarkers) {
             connect(h, &Marker::positionChanged, [=](){
@@ -1764,6 +1764,7 @@ void Marker::update()
         // empty trace, nothing to do
         return;
     }
+    lines.clear();
     auto xmin = restrictPosition ? minPosition : numeric_limits<double>::lowest();
     auto xmax = restrictPosition ? maxPosition : numeric_limits<double>::max();
     switch(type) {
@@ -1922,28 +1923,47 @@ void Marker::update()
         setPosition(p1db);
     }
         break;
-    case Type::NonUniformity: {
-        auto dbLower = Util::SparamTodB(helperMarkers[0]->getData());
-        auto dbUpper = Util::SparamTodB(helperMarkers[1]->getData());
+    case Type::Flatness: {
+        auto lower = helperMarkers[0]->getData();
+        auto upper = helperMarkers[1]->getData();
         auto posLower = helperMarkers[0]->getPosition();
         auto posUpper = helperMarkers[1]->getPosition();
+        // three additional lines:
+        // 0: line between lower and upper markers
+        // 1: positive peak deviation
+        // 2: negative peak deviation
+        lines.resize(3);
+        lines[0].p1.x = posLower;
+        lines[0].p1.y = lower;
+        lines[0].p2.x = posUpper;
+        lines[0].p2.y = upper;
         if(posLower > posUpper) {
             swap(posLower, posUpper);
-            swap(dbLower, dbUpper);
+            swap(lower, upper);
         }
         auto startIndex = parentTrace->index(posLower);
         auto stopIndex = parentTrace->index(posUpper);
         maxDeltaNeg = std::numeric_limits<double>::lowest();
         maxDeltaPos = std::numeric_limits<double>::lowest();
         for(int i=startIndex;i<=stopIndex;i++) {
-            auto dbTrace = Util::SparamTodB(parentTrace->sample(i).y);
-            auto dbStraightLine = Util::Scale((double) i, (double) startIndex, (double) stopIndex, dbLower, dbUpper);
+            auto sample = parentTrace->sample(i);
+            auto dbTrace = Util::SparamTodB(sample.y);
+            auto dbStraightLine = Util::Scale((double) i, (double) startIndex, (double) stopIndex, Util::SparamTodB(lower), Util::SparamTodB(upper));
+            auto straightLine = Util::dBToMagnitude(dbStraightLine);
             auto delta = dbTrace - dbStraightLine;
             if(delta > maxDeltaPos) {
                 maxDeltaPos = delta;
+                lines[1].p1.x = sample.x;
+                lines[1].p1.y = sample.y;
+                lines[1].p2.x = sample.x;
+                lines[1].p2.y = straightLine;
             }
             if(-delta > maxDeltaNeg) {
                 maxDeltaNeg = -delta;
+                lines[2].p1.x = sample.x;
+                lines[2].p1.y = sample.y;
+                lines[2].p2.x = sample.x;
+                lines[2].p2.y = straightLine;
             }
         }
     }
@@ -1972,8 +1992,8 @@ std::complex<double> Marker::getData() const
 bool Marker::isMovable()
 {
     if(parent) {
-        if(parent->type == Type::NonUniformity) {
-            // non-uniformity is the exception, it has movable helper markers
+        if(parent->type == Type::Flatness) {
+            // flatness is the exception, it has movable helper markers
             return true;
         }
         // helper traces are never movable by the user
@@ -1994,8 +2014,8 @@ bool Marker::isMovable()
 bool Marker::isEditable()
 {
     if(parent) {
-        if(parent->type == Type::NonUniformity) {
-            // non-uniformity is the exception, it has movable helper markers
+        if(parent->type == Type::Flatness) {
+            // flatness is the exception, it has movable helper markers
             return true;
         }
         // helper traces are never movable by the user
@@ -2025,5 +2045,10 @@ Trace::DataType Marker::getDomain()
         return parentTrace->outputType();
     }
     return Trace::DataType::Invalid;
+}
+
+std::vector<Marker::Line> Marker::getLines()
+{
+    return lines;
 }
 

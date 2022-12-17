@@ -380,7 +380,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->MarkerShowAvgTone->setChecked(p->Marker.defaultBehavior.showAvgTone);
     ui->MarkerShowAvgMod->setChecked(p->Marker.defaultBehavior.showAvgModulation);
     ui->MarkerShowP1dB->setChecked(p->Marker.defaultBehavior.showP1dB);
-    ui->MarkerShowNonUniformity->setChecked(p->Marker.defaultBehavior.showNonUniformity);
+    ui->MarkerShowFlatness->setChecked(p->Marker.defaultBehavior.showFlatness);
     ui->MarkerShowMaxDeltaNeg->setChecked(p->Marker.defaultBehavior.showMaxDeltaNeg);
     ui->MarkerShowMaxDeltaPos->setChecked(p->Marker.defaultBehavior.showMaxDeltaPos);
     ui->MarkerInterpolate->setCurrentIndex(p->Marker.interpolatePoints ? 1 : 0);
@@ -488,7 +488,7 @@ void PreferencesDialog::updateFromGUI()
     p->Marker.defaultBehavior.showAvgTone = ui->MarkerShowAvgTone->isChecked();
     p->Marker.defaultBehavior.showAvgModulation = ui->MarkerShowAvgMod->isChecked();
     p->Marker.defaultBehavior.showP1dB = ui->MarkerShowP1dB->isChecked();
-    p->Marker.defaultBehavior.showNonUniformity = ui->MarkerShowNonUniformity->isChecked();
+    p->Marker.defaultBehavior.showFlatness = ui->MarkerShowFlatness->isChecked();
     p->Marker.defaultBehavior.showMaxDeltaNeg = ui->MarkerShowMaxDeltaNeg->isChecked();
     p->Marker.defaultBehavior.showMaxDeltaPos = ui->MarkerShowMaxDeltaPos->isChecked();
     p->Marker.interpolatePoints = ui->MarkerInterpolate->currentIndex() == 1;

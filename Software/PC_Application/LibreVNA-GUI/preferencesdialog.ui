@@ -107,8 +107,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>749</width>
-              <height>920</height>
+              <width>530</width>
+              <height>937</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -712,8 +712,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>749</width>
-              <height>846</height>
+              <width>565</width>
+              <height>863</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -1033,8 +1033,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>749</width>
-              <height>952</height>
+              <width>553</width>
+              <height>969</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1641,9 +1641,9 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="QCheckBox" name="MarkerShowNonUniformity">
+                        <widget class="QCheckBox" name="MarkerShowFlatness">
                          <property name="text">
-                          <string>Non-uniformity</string>
+                          <string>Flatness</string>
                          </property>
                         </widget>
                        </item>
@@ -1885,8 +1885,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>763</width>
-              <height>561</height>
+              <width>126</width>
+              <height>90</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -1956,8 +1956,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>763</width>
-              <height>561</height>
+              <width>263</width>
+              <height>241</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_19">
