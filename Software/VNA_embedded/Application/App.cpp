@@ -183,6 +183,11 @@ inline void App_Process() {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 				}
 					break;
+				case Protocol::PacketType::InitiateSweep: {
+					VNA::InitiateSweep();
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+				}
+					break;
 				case Protocol::PacketType::SetIdle:
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;
@@ -314,7 +319,7 @@ inline void App_Process() {
 				}
 			}
 		}
-		if(HW::TimedOut()) {
+		if(!VNA::GetStandbyMode() && HW::TimedOut()) {
 			HW::SetMode(HW::Mode::Idle);
 			// insert the last received packet (restarts the timed out operation)
 			Communication::BlockNextAck();

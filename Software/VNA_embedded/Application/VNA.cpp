@@ -258,10 +258,24 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// Enable new data and sweep halt interrupt
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
 	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
-	// Start the sweep
+	// Start the sweep if not configured for standby
 	firstPoint = true;
-	FPGA::StartSweep();
+	if(!settings.standby){
+		FPGA::StartSweep();
+	}
 	return true;
+}
+
+void VNA::InitiateSweep() {
+	// Invoked by a host via InitiateSweep packet
+	if(settings.standby){
+		// make sure that SweepSettings have been configured for standby operation
+		FPGA::StartSweep();
+	}
+}
+
+bool VNA::GetStandbyMode() {
+	return settings.standby;
 }
 
 static void PassOnData() {
@@ -330,8 +344,11 @@ void VNA::Work() {
 		Communication::Send(packet);
 	}
 	// do not reset unlevel flag here, as it is calculated only once at the setup of the sweep
-	// Start next sweep
-	FPGA::StartSweep();
+	// Start next sweep if not configured for standby
+	if (!settings.standby){
+		FPGA::StartSweep();
+	}
+
 }
 
 void VNA::SweepHalted() {
