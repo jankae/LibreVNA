@@ -1029,6 +1029,6 @@ This packet instructs the device to stop sending automatically scheduled DeviceS
 This packet instructs the device to start sending automatically scheduled DeviceStatusV1 packets. This restores default update behaviour if a StopStatusUpdates packet has previously been sent.
 
 \subsection{InitiateSweep}
-This packet instructs the device to initiate a new single sweep when the VNA is configured for standby operation. This triggering method can be used for fast intermittent single sweeps with minimum latency. The packet will be acknowledged but quietly ignored if the SweepSettings are not configured for standby operation.
+This packet instructs the device to initiate a new single sweep when the VNA is configured for standby operation. This triggering method can be used for fast intermittent single sweeps with minimum latency. If the SweepSettings are not configured for standby operation, this packet will result in a Nack response.
 
 \end{document}
