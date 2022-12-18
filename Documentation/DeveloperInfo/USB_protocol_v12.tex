@@ -338,13 +338,13 @@ Setting & Behavior\\
 \end{tabularx}
 \end{center}
 \item \textbf{SM:} Sync Master. Must be set to 1 at exactly one device when multiple devices are synchronized. Set to 0 when synchronization is disabled.
-\item \textbf{SO:} Standby Operation. Indicates whether the VNA will timeout automatically, or wait in the configured state indefinitely for the next sweep to be triggered. Standy operation allows for lower latency of intermittent single sweeps.
+\item \textbf{SO:} Standby Operation. Indicates whether the VNA will begin sweep immediately, or wait in the configured state to be triggered manually by InitiateSweep packets. Standy operation allows for lower latency of intermittent single sweeps.
 \begin{center}
 \begin{tabularx}{\textwidth}{ c|X }
 Setting & Behavior\\
  \hline
-0 & VNA will timeout to idle mode after 100ms in the halted state, or 1000ms after a sucessfully completed sweep. Requires a new SweepSettings packet to be sent for subsequent sweeps after timeout. \\
-1 & VNA will wait indefinitely in a configured state for an InitiateSweep packet. The host application is responsible for putting the VNA into idle mode with a SetIdle packet.\\
+0 & VNA will begin sweep immediately and timeout to idle mode 1000ms after sweep is completed or 100ms after entering the halted state. \\
+1 & VNA will wait in a configured state for InitiateSweep packets. The host application is responsible for putting the VNA into idle mode with a SetIdle packet.\\
 \end{tabularx}
 \end{center}
 \end{itemize}
