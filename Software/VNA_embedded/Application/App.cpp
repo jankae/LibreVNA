@@ -324,7 +324,7 @@ inline void App_Process() {
 				}
 			}
 		}
-		if(!VNA::GetStandbyMode() && HW::TimedOut()) {
+		if(HW::TimedOut()) {
 			HW::SetMode(HW::Mode::Idle);
 			// insert the last received packet (restarts the timed out operation)
 			Communication::BlockNextAck();
