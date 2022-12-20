@@ -284,10 +284,6 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	return true;
 }
 
-bool FPGA::IsSweepActive() {
-	return isHigh(AUX3);
-}
-
 static int64_t assembleSampleResultValue(uint8_t *raw) {
 //	LOG_DEBUG("Raw: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", raw[4], raw[5], raw[2], raw[3], raw[1], raw[0]);
 	return sign_extend_64(

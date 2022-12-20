@@ -303,7 +303,7 @@ bool HW::TimedOut() {
 	auto bufISR = lastISR;
 	uint64_t now = Delay::get_us();
 	uint64_t timeSinceLast = now - bufISR;
-	if(activeMode != Mode::Idle && activeMode != Mode::Generator && !VNA::IsWaitingInStandby() && timeSinceLast > timeout) {
+	if(activeMode != Mode::Idle && activeMode != Mode::Generator && !VNA::GetStandbyMode() && timeSinceLast > timeout) {
 		LOG_WARN("Timed out, last ISR was at %lu%06lu, now %lu%06lu"
 				, (uint32_t) (bufISR / 1000000), (uint32_t)(bufISR%1000000)
 				, (uint32_t) (now / 1000000), (uint32_t)(now%1000000));

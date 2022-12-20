@@ -278,10 +278,6 @@ bool VNA::GetStandbyMode() {
 	return settings.standby;
 }
 
-bool VNA::IsWaitingInStandby() {
-	return settings.standby && !FPGA::IsSweepActive();
-}
-
 static void PassOnData() {
 	Protocol::PacketInfo info;
 	info.type = Protocol::PacketType::VNADatapoint;
