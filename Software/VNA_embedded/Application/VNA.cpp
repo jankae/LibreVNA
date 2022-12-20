@@ -27,6 +27,7 @@ static uint32_t last_LO2;
 static double logMultiplier, logFrequency;
 static Protocol::VNADatapoint<32> data;
 static bool active = false;
+static bool waitingInStandby = false;
 static Si5351C::DriveStrength fixedPowerLowband;
 static bool adcShifted;
 static uint32_t actualBandwidth;
@@ -260,7 +261,10 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
 	// Start the sweep if not configured for standby
 	firstPoint = true;
-	if(!settings.standby){
+	if (settings.standby) {
+		waitingInStandby = true;
+	}
+	else {
 		FPGA::StartSweep();
 	}
 	return true;
@@ -268,14 +272,23 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 
 void VNA::InitiateSweep() {
 	// Invoked by a host via InitiateSweep packet
-	if(settings.standby){
+	if(waitingInStandby){
 		// make sure that SweepSettings have been configured for standby operation
 		FPGA::StartSweep();
+		waitingInStandby = false;
 	}
 }
 
 bool VNA::GetStandbyMode() {
 	return settings.standby;
+}
+
+bool VNA::IsWaitingInStandby() {
+	return waitingInStandby;
+}
+
+void VNA::SetWaitingInStandby(bool waiting) {
+	waitingInStandby = waiting;
 }
 
 static void PassOnData() {
@@ -345,7 +358,10 @@ void VNA::Work() {
 	}
 	// do not reset unlevel flag here, as it is calculated only once at the setup of the sweep
 	// Start next sweep if not configured for standby
-	if (!settings.standby){
+	if (settings.standby) {
+		waitingInStandby = true;
+	}
+	else {
 		FPGA::StartSweep();
 	}
 
