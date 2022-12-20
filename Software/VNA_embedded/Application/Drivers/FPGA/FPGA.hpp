@@ -135,6 +135,7 @@ ADCLimits GetADCLimits();
 void ResetADCLimits();
 bool ResumeHaltedSweep();
 uint16_t GetStatus();
+bool IsSweepActive();
 
 void OverwriteHardware(uint8_t attenuation, LowpassFilter filter, bool lowband, bool port1_enabled, bool port2_enabled);
 void DisableHardwareOverwrite();
