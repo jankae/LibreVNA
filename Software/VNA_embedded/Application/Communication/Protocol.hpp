@@ -159,7 +159,7 @@ using SweepSettings = struct _sweepSettings {
     uint16_t points;
     uint32_t if_bandwidth;
     int16_t cdbm_excitation_start; // in 1/100 dbm
-	uint16_t unused:1;
+	uint16_t standby:1;
 	uint16_t syncMaster:1;
 	uint16_t suppressPeaks:1;
 	uint16_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
@@ -366,6 +366,7 @@ enum class PacketType : uint8_t {
 	ClearTrigger = 29,
 	StopStatusUpdates = 30,
 	StartStatusUpdates = 31,
+	InitiateSweep = 32
 };
 
 using PacketInfo = struct _packetinfo {
