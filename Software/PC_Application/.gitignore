@@ -75,6 +75,8 @@ Application
 /build-*
 /LibreVNA-GUI/LibreVNA-GUI
 /LibreVNA-Test/LibreVNA-Test
+/LibreVNA-GUI/users*appdatalocaltemp*
+
 
 
 
