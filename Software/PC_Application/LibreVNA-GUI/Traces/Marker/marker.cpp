@@ -192,6 +192,7 @@ std::vector<Marker::Format> Marker::applicableFormats()
         case Type::Maximum:
         case Type::Minimum:
         case Type::PeakTable:
+        case Type::NegativePeakTable:
             if(Trace::isSAParameter(parentTrace->liveParameter())) {
                 ret.push_back(Format::dBm);
                 ret.push_back(Format::dBuV);
@@ -225,6 +226,7 @@ std::vector<Marker::Format> Marker::applicableFormats()
         case Type::Maximum:
         case Type::Minimum:
         case Type::PeakTable:
+        case Type::NegativePeakTable:
             if(Trace::isSAParameter(parentTrace->liveParameter())) {
                 ret.push_back(Format::dBm);
                 ret.push_back(Format::dBuV);
@@ -441,6 +443,7 @@ QString Marker::readableData(Format f)
     case Trace::DataType::TimeZeroSpan:
         switch(type) {
         case Type::PeakTable:
+        case Type::NegativePeakTable:
             return "Found " + QString::number(helperMarkers.size()) + " peaks";
         case Type::Delta: {
             if(!delta) {
@@ -647,6 +650,7 @@ QString Marker::readableSettings()
         case Type::Bandpass:
             return Unit::ToString(cutoffAmplitude, "db", " ", 3);
         case Type::PeakTable:
+        case Type::NegativePeakTable:
             return Unit::ToString(peakThreshold, "db", " ", 3);
         case Type::TOI:
             return "none";
@@ -712,6 +716,7 @@ QString Marker::tooltipSettings()
         case Type::Bandpass:
             return "Cutoff amplitude (relativ to peak)";
         case Type::PeakTable:
+        case Type::NegativePeakTable:
             return "Peak threshold";
         case Type::PhaseNoise:
             return "Frequency offset";
@@ -1016,6 +1021,7 @@ std::set<Marker::Type> Marker::getSupportedTypes()
             supported.insert(Type::Minimum);
             supported.insert(Type::Delta);
             supported.insert(Type::PeakTable);
+            supported.insert(Type::NegativePeakTable);
             supported.insert(Type::Flatness);
             if(!parentTrace->isReflection()) {
                 supported.insert(Type::Lowpass);
@@ -1315,6 +1321,7 @@ nlohmann::json Marker::toJSON()
         j["delta_marker"] = delta->toHash();
         break;
     case Type::PeakTable:
+    case Type::NegativePeakTable:
         j["peak_threshold"] = peakThreshold;
         break;
     case Type::Lowpass:
@@ -1377,6 +1384,7 @@ void Marker::fromJSON(nlohmann::json j)
         // Instead it will be correctly assigned in TraceMarkerModel::fromJSON()
         break;
     case Type::PeakTable:
+    case Type::NegativePeakTable:
         peakThreshold = j.value("peak_threshold", -40);
         break;
     case Type::Lowpass:
@@ -1576,6 +1584,7 @@ SIUnitEdit *Marker::getSettingsEditor()
             ret->setValue(cutoffAmplitude);
             break;
         case Type::PeakTable:
+        case Type::NegativePeakTable:
             ret = new SIUnitEdit("db", " ", 3);
             ret->setValue(peakThreshold);
             break;
@@ -1707,6 +1716,7 @@ void Marker::adjustSettings(double value)
             cutoffAmplitude = value;
             break;
         case Type::PeakTable:
+        case Type::NegativePeakTable:
             peakThreshold = value;
             break;
         case Type::PhaseNoise:
@@ -1778,9 +1788,10 @@ void Marker::update()
     case Type::Minimum:
         setPosition(parentTrace->findExtremum(false, xmin, xmax));
         break;
-    case Type::PeakTable: {
+    case Type::PeakTable:
+    case Type::NegativePeakTable: {
         deleteHelperMarkers();
-        auto peaks = parentTrace->findPeakFrequencies(100, peakThreshold, 3.0, xmin, xmax);
+        auto peaks = parentTrace->findPeakFrequencies(100, peakThreshold, 3.0, xmin, xmax, type == Type::NegativePeakTable);
         char suffix = 'a';
         for(auto p : peaks) {
             auto helper = new Marker(model, number, this);

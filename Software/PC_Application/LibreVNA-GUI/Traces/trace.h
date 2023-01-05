@@ -81,7 +81,7 @@ public:
      * To detect the next peak, the signal first has to drop at least minValley below the peak level.
      */
     std::vector<double> findPeakFrequencies(unsigned int maxPeaks = 100, double minLevel = -100.0, double minValley = 3.0,
-                                            double xmin = std::numeric_limits<double>::lowest(), double xmax = std::numeric_limits<double>::max());
+                                            double xmin = std::numeric_limits<double>::lowest(), double xmax = std::numeric_limits<double>::max(), bool negativePeaks = false);
     enum class SampleType {
         Frequency,
         TimeImpulse,

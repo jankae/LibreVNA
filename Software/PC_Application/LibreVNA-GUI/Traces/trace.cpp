@@ -1361,11 +1361,14 @@ double Trace::findExtremum(bool max, double xmin, double xmax)
     return freq;
 }
 
-std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double minLevel, double minValley, double xmin, double xmax)
+std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double minLevel, double minValley, double xmin, double xmax, bool negativePeaks)
 {
     if(lastMath->getDataType() != DataType::Frequency) {
         // not in frequency domain
         return vector<double>();
+    }
+    if(negativePeaks) {
+        minLevel = -minLevel;
     }
     using peakInfo = struct peakinfo {
         double frequency;
@@ -1380,6 +1383,9 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
             continue;
         }
         double dbm = Util::SparamTodB(d.y);
+        if(negativePeaks) {
+            dbm = -dbm;
+        }
         if((dbm >= max_dbm) && (min_dbm <= dbm - minValley)) {
             // potential peak frequency
             frequency = d.x;

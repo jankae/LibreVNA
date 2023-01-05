@@ -96,6 +96,7 @@ public:
         Minimum,
         Delta,
         PeakTable,
+        NegativePeakTable,
         Lowpass,
         Highpass,
         Bandpass,
@@ -176,6 +177,7 @@ private:
         case Type::Minimum: return "Minimum";
         case Type::Delta: return "Delta";
         case Type::PeakTable: return "Peak Table";
+        case Type::NegativePeakTable: return "Negative Peak Table";
         case Type::Lowpass: return "Lowpass";
         case Type::Highpass: return "Highpass";
         case Type::Bandpass: return "Bandpass";
