@@ -7,6 +7,10 @@
 namespace VNA {
 
 bool Setup(Protocol::SweepSettings s);
+void InitiateSweep();
+bool GetStandbyMode();
+bool IsWaitingInStandby();
+void SetWaitingInStandby(bool waiting);
 bool MeasurementDone(const FPGA::SamplingResult &result);
 void Work();
 void SweepHalted();

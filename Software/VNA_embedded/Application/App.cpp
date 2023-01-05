@@ -183,6 +183,16 @@ inline void App_Process() {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 				}
 					break;
+				case Protocol::PacketType::InitiateSweep: {
+					if(VNA::GetStandbyMode()) {
+						VNA::InitiateSweep();
+						Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					} else {
+						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
+					}
+
+				}
+					break;
 				case Protocol::PacketType::SetIdle:
 					HW::SetMode(HW::Mode::Idle);
 					sweepActive = false;

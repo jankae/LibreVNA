@@ -93,6 +93,7 @@ public:
     virtual Data getSample(unsigned int index) override;
     virtual Data getInterpolatedSample(double x) override;
     virtual unsigned int numSamples() override;
+    virtual std::vector<Data>& rData() override;
 
     double getUnwrappedPhase(unsigned int index);
     // returns a (possibly interpolated sample) at a specified frequency/time/power

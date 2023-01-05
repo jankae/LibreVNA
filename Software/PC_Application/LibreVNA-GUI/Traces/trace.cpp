@@ -1490,6 +1490,15 @@ unsigned int Trace::numSamples()
     }
 }
 
+std::vector<Trace::Data> &Trace::rData()
+{
+    if(deembeddingActive && deembeddingAvailable()) {
+        return deembeddingData;
+    } else {
+        return TraceMath::rData();
+    }
+}
+
 double Trace::getUnwrappedPhase(unsigned int index)
 {
     if(index >= size()) {

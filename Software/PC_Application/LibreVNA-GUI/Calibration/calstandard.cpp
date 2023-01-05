@@ -619,7 +619,7 @@ void Through::edit(std::function<void(void)> finishedCallback)
 
     QObject::connect(ui->touchstoneImport, &TouchstoneImport::statusChanged, ui->updateFile, &QPushButton::setEnabled);
 
-    ui->touchstoneImport->setPorts(1);
+    ui->touchstoneImport->setPorts(2);
     if(touchstone) {
         ui->measurement->setChecked(true);
         ui->touchstoneImport->setFile(touchstone->getFilename());
@@ -628,7 +628,7 @@ void Through::edit(std::function<void(void)> finishedCallback)
     }
 
     QObject::connect(ui->updateFile, &QPushButton::clicked, [=](){
-        setMeasurement(ui->touchstoneImport->getTouchstone(), ui->touchstoneImport->getPorts()[0]);
+        setMeasurement(ui->touchstoneImport->getTouchstone(), ui->touchstoneImport->getPorts()[0], ui->touchstoneImport->getPorts()[1]);
         updateMeasurementLabel();
     });
 

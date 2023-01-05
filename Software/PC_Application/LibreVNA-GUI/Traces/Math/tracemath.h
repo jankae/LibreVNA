@@ -110,7 +110,7 @@ public:
     void assignInput(TraceMath *input);
 
     DataType getDataType() const;
-    std::vector<Data>& rData() { return data;}
+    virtual std::vector<Data>& rData() { return data;}
     Status getStatus() const;
     QString getStatusDescription() const;
     virtual Type getType() = 0;

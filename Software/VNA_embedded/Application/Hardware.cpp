@@ -250,6 +250,8 @@ void HW::SetIdle() {
 	FPGA::Enable(FPGA::Periphery::RefMixer, false);
 	FPGA::Enable(FPGA::Periphery::PortSwitch, false);
 	activeMode = Mode::Idle;
+	VNA::SetWaitingInStandby(false);
+
 }
 
 HW::AmplitudeSettings HW::GetAmplitudeSettings(int16_t cdbm, uint64_t freq, bool applyCorrections, bool port2) {
@@ -303,7 +305,7 @@ bool HW::TimedOut() {
 	auto bufISR = lastISR;
 	uint64_t now = Delay::get_us();
 	uint64_t timeSinceLast = now - bufISR;
-	if(activeMode != Mode::Idle && activeMode != Mode::Generator && timeSinceLast > timeout) {
+	if(activeMode != Mode::Idle && activeMode != Mode::Generator && !VNA::IsWaitingInStandby() && timeSinceLast > timeout) {
 		LOG_WARN("Timed out, last ISR was at %lu%06lu, now %lu%06lu"
 				, (uint32_t) (bufISR / 1000000), (uint32_t)(bufISR%1000000)
 				, (uint32_t) (now / 1000000), (uint32_t)(now%1000000));
