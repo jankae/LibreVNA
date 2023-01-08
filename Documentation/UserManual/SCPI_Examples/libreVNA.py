@@ -5,6 +5,7 @@ import time
 class SocketStreamReader:
     def __init__(self, sock: socket.socket):
         self._sock = sock
+        self._sock.setblocking(0)
         self._recv_buffer = bytearray()
         self.timeout = 1.0
 
@@ -59,7 +60,7 @@ class SocketStreamReader:
         if bytes_read == len(view):
             return bytes_read
         try:
-            bytes_read += self._sock.recv_into(view[bytes_read:], 0, socket.MSG_DONTWAIT)
+            bytes_read += self._sock.recv_into(view[bytes_read:], 0)
         except:
             pass
         return bytes_read
