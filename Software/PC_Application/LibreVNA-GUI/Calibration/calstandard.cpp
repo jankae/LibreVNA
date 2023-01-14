@@ -120,7 +120,7 @@ void OnePort::clearMeasurement()
     delete touchstone;
     touchstone = nullptr;
     minFreq = std::numeric_limits<double>::lowest();
-    minFreq = std::numeric_limits<double>::max();
+    maxFreq = std::numeric_limits<double>::max();
 }
 
 nlohmann::json OnePort::toJSON()
@@ -538,7 +538,7 @@ void TwoPort::clearMeasurement()
     delete touchstone;
     touchstone = nullptr;
     minFreq = std::numeric_limits<double>::lowest();
-    minFreq = std::numeric_limits<double>::max();
+    maxFreq = std::numeric_limits<double>::max();
 }
 
 nlohmann::json TwoPort::toJSON()

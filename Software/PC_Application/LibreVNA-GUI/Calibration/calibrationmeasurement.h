@@ -38,6 +38,7 @@ public:
     virtual double minFreq() = 0;
     virtual double maxFreq() = 0;
     virtual unsigned int numPoints() = 0;
+    virtual bool readyForMeasurement() {return false;}
     virtual bool readyForCalculation() {return false;}
 
     static std::vector<Type> availableTypes();
@@ -80,6 +81,7 @@ public:
     virtual double minFreq() override;
     virtual double maxFreq() override;
     virtual unsigned int numPoints() override {return points.size();}
+    virtual bool readyForMeasurement() override {return standard != nullptr;}
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
 
     virtual void clearPoints() override;
@@ -194,6 +196,7 @@ public:
     virtual double minFreq() override;
     virtual double maxFreq() override;
     virtual unsigned int numPoints() override {return points.size();}
+    virtual bool readyForMeasurement() override {return standard != nullptr;}
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
 
     virtual void clearPoints() override;
@@ -265,6 +268,7 @@ public:
     virtual double minFreq() override;
     virtual double maxFreq() override;
     virtual unsigned int numPoints() override;
+    virtual bool readyForMeasurement() override {return true;}
     virtual bool readyForCalculation() override {return points.size() > 0;}
 
     virtual void clearPoints() override;
