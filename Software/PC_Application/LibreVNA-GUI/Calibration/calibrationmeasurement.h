@@ -2,7 +2,7 @@
 #define CALIBRATIONMEASUREMENT_H
 
 #include "calstandard.h"
-#include "Device/virtualdevice.h"
+#include "Device/devicedriver.h"
 
 #include <QDateTime>
 #include <QObject>
@@ -47,7 +47,7 @@ public:
     virtual Type getType() = 0;
 
     virtual void clearPoints() = 0;
-    virtual void addPoint(const VirtualDevice::VNAMeasurement &m) = 0;
+    virtual void addPoint(const DeviceDriver::VNAMeasurement &m) = 0;
 
     virtual QWidget* createStandardWidget();
     virtual QWidget* createSettingsWidget() = 0;
@@ -83,7 +83,7 @@ public:
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
 
     virtual void clearPoints() override;
-    virtual void addPoint(const VirtualDevice::VNAMeasurement &m) override;
+    virtual void addPoint(const DeviceDriver::VNAMeasurement &m) override;
 
     virtual QWidget* createSettingsWidget() override;
 
@@ -197,7 +197,7 @@ public:
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
 
     virtual void clearPoints() override;
-    virtual void addPoint(const VirtualDevice::VNAMeasurement &m) override;
+    virtual void addPoint(const DeviceDriver::VNAMeasurement &m) override;
 
     virtual QWidget* createSettingsWidget() override;
 
@@ -268,7 +268,7 @@ public:
     virtual bool readyForCalculation() override {return points.size() > 0;}
 
     virtual void clearPoints() override;
-    virtual void addPoint(const VirtualDevice::VNAMeasurement &m) override;
+    virtual void addPoint(const DeviceDriver::VNAMeasurement &m) override;
 
     virtual QWidget* createStandardWidget() override;
     virtual QWidget* createSettingsWidget() override;

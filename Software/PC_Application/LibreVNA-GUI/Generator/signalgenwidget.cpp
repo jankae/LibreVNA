@@ -33,16 +33,16 @@ SignalgeneratorWidget::SignalgeneratorWidget(AppWindow *window, QWidget *parent)
     ui->steps->setPrecision(0);
 
     connect(ui->frequency, &SIUnitEdit::valueChanged, [=](double newval) {
-       if(newval < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
-           newval = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
-       } else if (newval > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
-           newval = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+       if(newval < DeviceDriver::getInfo(window->getDevice()).Limits.Generator.minFreq) {
+           newval = DeviceDriver::getInfo(window->getDevice()).Limits.Generator.minFreq;
+       } else if (newval > DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq) {
+           newval = DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq;
        }
        ui->frequency->setValueQuiet(newval);
        if (newval < ui->span->value()/2)
            ui->span->setValueQuiet(newval/2);
-       if (newval + ui->span->value()/2 > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq)
-           ui->span->setValueQuiet((VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - newval)*2);
+       if (newval + ui->span->value()/2 > DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq)
+           ui->span->setValueQuiet((DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq - newval)*2);
        newval = ui->frequency->value() - ui->span->value()/2;
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -51,8 +51,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(AppWindow *window, QWidget *parent)
     connect(ui->span, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
-           newval = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+       } else if (newval > DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq - DeviceDriver::getInfo(window->getDevice()).Limits.Generator.minFreq) {
+           newval = DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq - DeviceDriver::getInfo(window->getDevice()).Limits.Generator.minFreq;
        }
        ui->span->setValueQuiet(newval);
 
@@ -61,8 +61,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(AppWindow *window, QWidget *parent)
            ui->frequency->setValueQuiet(ui->span->value()/2);
        }
        newF = ui->frequency->value() + ui->span->value()/2;
-       if (newF  > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
-           ui->frequency->setValueQuiet(VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - ui->span->value()/2);
+       if (newF  > DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq) {
+           ui->frequency->setValueQuiet(DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq - ui->span->value()/2);
        }
 
        newval = ui->frequency->value() - ui->span->value()/2;
@@ -73,8 +73,8 @@ SignalgeneratorWidget::SignalgeneratorWidget(AppWindow *window, QWidget *parent)
     connect(ui->current, &SIUnitEdit::valueChanged, [=](double newval) {
        if(newval < 0 ) {
            newval = 0;
-       } else if (newval > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
-           newval = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+       } else if (newval > DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq - DeviceDriver::getInfo(window->getDevice()).Limits.Generator.minFreq) {
+           newval = DeviceDriver::getInfo(window->getDevice()).Limits.Generator.maxFreq - DeviceDriver::getInfo(window->getDevice()).Limits.Generator.minFreq;
        }
        ui->current->setValueQuiet(newval);
        emit SettingsChanged();
@@ -132,9 +132,9 @@ void SignalgeneratorWidget::timerEvent(QTimerEvent *event)
     }
 }
 
-VirtualDevice::SGSettings SignalgeneratorWidget::getDeviceStatus()
+DeviceDriver::SGSettings SignalgeneratorWidget::getDeviceStatus()
 {
-    VirtualDevice::SGSettings s = {};
+    DeviceDriver::SGSettings s = {};
     if (ui->EnabledSweep->isChecked())
         s.freq = ui->current->value();
     else
@@ -189,7 +189,7 @@ void SignalgeneratorWidget::deviceInfoUpdated()
         delete cb;
     }
     portCheckboxes.clear();
-    for(unsigned int i=1;i<=VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+    for(unsigned int i=1;i<=DeviceDriver::getInfo(window->getDevice()).Limits.Generator.ports;i++) {
         auto cb = new QCheckBox("Port "+QString::number(i));
         ui->portBox->layout()->addWidget(cb);
         portCheckboxes.push_back(cb);

@@ -11,6 +11,7 @@
 #include "scpi.h"
 #include "tcpserver.h"
 #include "Device/manualcontroldialog.h"
+#include "Device/devicedriver.h"
 
 #include <QWidget>
 #include <QMainWindow>
@@ -42,7 +43,7 @@ public:
     Ui::MainWindow *getUi() const;
     QStackedWidget *getCentral() const;
     ModeHandler* getModeHandler() const;
-    VirtualDevice *getDevice();
+    DeviceDriver *getDevice();
 
     const QString& getAppVersion() const;
     const QString& getAppGitHash() const;
@@ -60,18 +61,18 @@ private slots:
     bool ConnectToDevice(QString serial = QString());
     void DisconnectDevice();
     int UpdateDeviceList();
-    void StartManualControl();
+//    void StartManualControl();
     void UpdateReferenceToolbar();
     void UpdateReference();
-    void UpdateAcquisitionFrequencies();
+//    void UpdateAcquisitionFrequencies();
     void ShowUSBLog();
-    void StartFirmwareUpdateDialog();
+//    void StartFirmwareUpdateDialog();
     void DeviceNeedsUpdate(int reported, int expected);
     void DeviceStatusUpdated(VirtualDevice::Status status);
     void DeviceInfoUpdated();
-    void SourceCalibrationDialog();
-    void ReceiverCalibrationDialog();
-    void FrequencyCalibrationDialog();
+//    void SourceCalibrationDialog();
+//    void ReceiverCalibrationDialog();
+//    void FrequencyCalibrationDialog();
     nlohmann::json SaveSetup();
     void SaveSetup(QString filename);
     void LoadSetup(QString filename);
@@ -103,7 +104,11 @@ private:
     } toolbars;
 
     ModeHandler *modeHandler;
-    VirtualDevice *vdevice;
+
+//    VirtualDevice *vdevice;
+    std::vector<DeviceDriver*> deviceDrivers;
+    DeviceDriver *device;
+
     DeviceLog deviceLog;
     QString deviceSerial;
     QActionGroup *deviceActionGroup;

@@ -28,13 +28,13 @@ ImpedanceRenormalization::ImpedanceRenormalization()
 std::set<unsigned int> ImpedanceRenormalization::getAffectedPorts()
 {
     set<unsigned int> ret;
-    for(unsigned int i=1;i<=VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;i++) {
+    for(unsigned int i=1;i<=DeviceDriver::getInfo(DeviceDriver::getActiveDriver()).Limits.VNA.ports;i++) {
         ret.insert(i);
     }
     return ret;
 }
 
-void ImpedanceRenormalization::transformDatapoint(VirtualDevice::VNAMeasurement &p)
+void ImpedanceRenormalization::transformDatapoint(DeviceDriver::VNAMeasurement &p)
 {
     std::map<QString, std::complex<double>> transformed;
     int ports = 0;

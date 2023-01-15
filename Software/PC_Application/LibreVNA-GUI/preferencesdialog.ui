@@ -93,7 +93,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>6</number>
        </property>
        <widget class="QWidget" name="Startup">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -107,8 +107,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>530</width>
-              <height>937</height>
+              <width>749</width>
+              <height>920</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -1795,8 +1795,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>168</width>
-              <height>127</height>
+              <width>763</width>
+              <height>561</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -1885,8 +1885,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>126</width>
-              <height>90</height>
+              <width>763</width>
+              <height>561</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -1956,8 +1956,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>263</width>
-              <height>241</height>
+              <width>763</width>
+              <height>561</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_19">

@@ -18,7 +18,7 @@ public:
     explicit SignalgeneratorWidget(AppWindow *window, QWidget *parent = nullptr);
     ~SignalgeneratorWidget();
 
-    VirtualDevice::SGSettings getDeviceStatus();
+    DeviceDriver::SGSettings getDeviceStatus();
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 

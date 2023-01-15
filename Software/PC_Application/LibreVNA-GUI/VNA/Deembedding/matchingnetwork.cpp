@@ -78,7 +78,7 @@ std::set<unsigned int> MatchingNetwork::getAffectedPorts()
     return {port};
 }
 
-void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
+void MatchingNetwork::transformDatapoint(DeviceDriver::VNAMeasurement &p)
 {
     if(matching.count(p.frequency) == 0) {
         // this point is not calculated yet
@@ -99,7 +99,7 @@ void MatchingNetwork::transformDatapoint(VirtualDevice::VNAMeasurement &p)
     }
     // at this point the map contains the matching network effect
     auto m = matching[p.frequency];
-    VirtualDevice::VNAMeasurement uncorrected = p;
+    DeviceDriver::VNAMeasurement uncorrected = p;
 
     auto portReflectionName = "S"+QString::number(port)+QString::number(port);
     if(!uncorrected.measurements.count(portReflectionName)) {
@@ -180,7 +180,7 @@ void MatchingNetwork::edit()
     ui->lDefinedShunt->installEventFilter(this);
 
     ui->port->setValue(port);
-    ui->port->setMaximum(VirtualDevice::maximumSupportedPorts);
+    ui->port->setMaximum(DeviceDriver::maximumSupportedPorts);
 
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);

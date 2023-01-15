@@ -1,7 +1,7 @@
 ﻿#ifndef TRACEMODEL_H
 #define TRACEMODEL_H
 
-#include "Device/device.h"
+#include "Device/devicedriver.h"
 #include "savable.h"
 #include "trace.h"
 
@@ -71,8 +71,8 @@ signals:
 
 public slots:
     void clearLiveData();
-    void addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype, bool deembedded);
-    void addSAData(const VirtualDevice::SAMeasurement &d, const VirtualDevice::SASettings &settings);
+    void addVNAData(const DeviceDriver::VNAMeasurement& d, TraceMath::DataType datatype, bool deembedded);
+    void addSAData(const DeviceDriver::SAMeasurement &d, const DeviceDriver::SASettings &settings);
 
 private:
     DataSource source;

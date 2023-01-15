@@ -23,7 +23,7 @@ void Averaging::setAverages(unsigned int a)
     reset(avg.size());
 }
 
-VirtualDevice::VNAMeasurement Averaging::process(VirtualDevice::VNAMeasurement d)
+DeviceDriver::VNAMeasurement Averaging::process(DeviceDriver::VNAMeasurement d)
 {
     if(d.measurements.size() != numMeasurements) {
         numMeasurements = d.measurements.size();
@@ -42,7 +42,7 @@ VirtualDevice::VNAMeasurement Averaging::process(VirtualDevice::VNAMeasurement d
     return d;
 }
 
-VirtualDevice::SAMeasurement Averaging::process(VirtualDevice::SAMeasurement d)
+DeviceDriver::SAMeasurement Averaging::process(DeviceDriver::SAMeasurement d)
 {
     if(d.measurements.size() != numMeasurements) {
         numMeasurements = d.measurements.size();

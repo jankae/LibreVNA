@@ -13,7 +13,7 @@ PortExtensionTests::PortExtensionTests() : QObject(nullptr)
     constexpr int steps = 501;
     for(int i=0;i<steps;i++) {
         double f = startFreq + (stopFreq - startFreq) * i / (steps - 1);
-        VirtualDevice::VNAMeasurement m;
+        DeviceDriver::VNAMeasurement m;
         m.frequency = f;
         m.dBm = -10;
         m.pointNum = i;

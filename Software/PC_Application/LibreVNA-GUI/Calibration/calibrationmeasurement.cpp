@@ -246,7 +246,7 @@ void CalibrationMeasurement::OnePort::clearPoints()
     timestamp = QDateTime();
 }
 
-void CalibrationMeasurement::OnePort::addPoint(const VirtualDevice::VNAMeasurement &m)
+void CalibrationMeasurement::OnePort::addPoint(const DeviceDriver::VNAMeasurement &m)
 {
     QString measurementName = "S"+QString::number(port)+QString::number(port);
     if(m.measurements.count(measurementName) > 0) {
@@ -262,12 +262,12 @@ QWidget *CalibrationMeasurement::OnePort::createSettingsWidget()
 {
     auto label = new QLabel("Port:");
     auto cbPort = new QComboBox();
-    auto dev = VirtualDevice::getConnected();
+    auto dev = DeviceDriver::getActiveDriver();
     if(dev) {
         if(port == 0) {
             setPort(1);
         }
-        for(unsigned int i=1;i<=dev->getInfo().ports;i++) {
+        for(unsigned int i=1;i<=dev->getInfo().Limits.VNA.ports;i++) {
             cbPort->addItem(QString::number(i));
             if(port == i) {
                 cbPort->setCurrentText(QString::number(i));
@@ -390,7 +390,7 @@ void CalibrationMeasurement::TwoPort::clearPoints()
     timestamp = QDateTime();
 }
 
-void CalibrationMeasurement::TwoPort::addPoint(const VirtualDevice::VNAMeasurement &m)
+void CalibrationMeasurement::TwoPort::addPoint(const DeviceDriver::VNAMeasurement &m)
 {
     Point p;
     p.frequency = m.frequency;
@@ -407,7 +407,7 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
     auto cbPort2 = new QComboBox();
     auto cbReverse = new QCheckBox("Reversed");
     cbReverse->setToolTip("Enable this option if the calibration standard is defined with the port order swapped");
-    auto dev = VirtualDevice::getConnected();
+    auto dev = DeviceDriver::getActiveDriver();
     if(dev) {
         if(port1 == 0) {
             setPort1(1);
@@ -415,7 +415,7 @@ QWidget *CalibrationMeasurement::TwoPort::createSettingsWidget()
         if(port2 == 0) {
             setPort2(2);
         }
-        for(unsigned int i=1;i<=dev->getInfo().ports;i++) {
+        for(unsigned int i=1;i<=dev->getInfo().Limits.VNA.ports;i++) {
             cbPort1->addItem(QString::number(i));
             cbPort2->addItem(QString::number(i));
             if(port1 == i) {
@@ -603,7 +603,7 @@ void CalibrationMeasurement::Isolation::clearPoints()
     timestamp = QDateTime();
 }
 
-void CalibrationMeasurement::Isolation::addPoint(const VirtualDevice::VNAMeasurement &m)
+void CalibrationMeasurement::Isolation::addPoint(const DeviceDriver::VNAMeasurement &m)
 {
     Point p;
     p.frequency = m.frequency;

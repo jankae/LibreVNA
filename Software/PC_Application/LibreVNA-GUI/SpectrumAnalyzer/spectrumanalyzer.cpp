@@ -13,7 +13,6 @@
 #include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
 #include "ui_main.h"
-#include "Device/virtualdevice.h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
 
@@ -191,7 +190,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     cbWindowType->addItem("Flat Top");
     cbWindowType->setCurrentIndex(1);
     connect(cbWindowType, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       SetWindow((VirtualDevice::SASettings::Window) index);
+       SetWindow((DeviceDriver::SASettings::Window) index);
     });
     tb_acq->addWidget(cbWindowType);
 
@@ -204,7 +203,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     cbDetector->addItem("Average");
     cbDetector->setCurrentIndex(0);
     connect(cbDetector, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       SetDetector((VirtualDevice::SASettings::Detector) index);
+       SetDetector((DeviceDriver::SASettings::Detector) index);
     });
     tb_acq->addWidget(cbDetector);
 
@@ -218,10 +217,6 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     connect(sbAverages, qOverload<int>(&QSpinBox::valueChanged), this, &SpectrumAnalyzer::SetAveraging);
     connect(this, &SpectrumAnalyzer::averagingChanged, sbAverages, &QSpinBox::setValue);
     tb_acq->addWidget(sbAverages);
-
-    cbSignalID = new QCheckBox("Signal ID");
-    connect(cbSignalID, &QCheckBox::toggled, this, &SpectrumAnalyzer::SetSignalID);
-    tb_acq->addWidget(cbSignalID);
 
     window->addToolBar(tb_acq);
     toolbars.insert(tb_acq);
@@ -321,10 +316,8 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
         ConstrainAndUpdateFrequencies();
         SetRBW(pref.Startup.SA.RBW);
         SetAveraging(pref.Startup.SA.averaging);
-        settings.points = 1001;
-        SetWindow((VirtualDevice::SASettings::Window) pref.Startup.SA.window);
-        SetDetector((VirtualDevice::SASettings::Detector) pref.Startup.SA.detector);
-        SetSignalID(pref.Startup.SA.signalID);
+        SetWindow((DeviceDriver::SASettings::Window) pref.Startup.SA.window);
+        SetDetector((DeviceDriver::SASettings::Detector) pref.Startup.SA.detector);
     }
 
     finalize(central);
@@ -338,7 +331,7 @@ void SpectrumAnalyzer::deactivate()
 
 void SpectrumAnalyzer::initializeDevice()
 {
-    connect(window->getDevice(), &VirtualDevice::SAmeasurementReceived, this, &SpectrumAnalyzer::NewDatapoint, Qt::UniqueConnection);
+    connect(window->getDevice(), &DeviceDriver::SAmeasurementReceived, this, &SpectrumAnalyzer::NewDatapoint, Qt::UniqueConnection);
 
     // Configure initial state of device
     SettingsChanged();
@@ -361,9 +354,8 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     sweep["single"] = singleSweep;
     nlohmann::json acq;
     acq["RBW"] = settings.RBW;
-    acq["window"] = WindowToString((VirtualDevice::SASettings::Window) settings.window).toStdString();
-    acq["detector"] = DetectorToString((VirtualDevice::SASettings::Detector) settings.detector).toStdString();
-    acq["signal ID"] = settings.signalID ? true : false;
+    acq["window"] = WindowToString((DeviceDriver::SASettings::Window) settings.window).toStdString();
+    acq["detector"] = DetectorToString((DeviceDriver::SASettings::Detector) settings.detector).toStdString();
     sweep["acquisition"] = acq;
     nlohmann::json tracking;
     tracking["enabled"] = settings.trackingGenerator ? true : false;
@@ -419,18 +411,17 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
             auto acq = sweep["acquisition"];
             SetRBW(acq.value("RBW", settings.RBW));
             auto w = WindowFromString(QString::fromStdString(acq.value("window", "")));
-            if(w == VirtualDevice::SASettings::Window::Last) {
+            if(w == DeviceDriver::SASettings::Window::Last) {
                 // invalid, keep current value
-                w = (VirtualDevice::SASettings::Window) settings.window;
+                w = (DeviceDriver::SASettings::Window) settings.window;
             }
             SetWindow(w);
             auto d = DetectorFromString(QString::fromStdString(acq.value("detector", "")));
-            if(d == VirtualDevice::SASettings::Detector::Last) {
+            if(d == DeviceDriver::SASettings::Detector::Last) {
                 // invalid, keep current value
-                d = (VirtualDevice::SASettings::Detector) settings.detector;
+                d = (DeviceDriver::SASettings::Detector) settings.detector;
             }
             SetDetector(d);
-            SetSignalID(acq.value("signal ID", settings.signalID ? true : false));
         }
         if(sweep.contains("trackingGenerator")) {
             auto tracking = sweep["trackingGenerator"];
@@ -473,8 +464,8 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
 
 using namespace std;
 
-void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
-{
+void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
+{   
     if(isActive != true) {
         return;
     }
@@ -486,11 +477,6 @@ void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
 
     if(singleSweep && average.getLevel() == averages) {
         Stop();
-    }
-
-    if(m.pointNum >= settings.points) {
-        qWarning() << "Ignoring point with too large point number (" << m.pointNum << ")";
-        return;
     }
 
     auto m_avg = average.process(m);
@@ -513,18 +499,18 @@ void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
                 for(auto m : m_avg.measurements) {
                     normalize.portCorrection[m.first].push_back(m.second);
                 }
-                if(m_avg.pointNum == settings.points - 1) {
+                if(m_avg.pointNum == DeviceDriver::getActiveDriver()->getSApoints() - 1) {
                     // this was the last point
                     normalize.measuring = false;
                     normalize.f_start = settings.freqStart;
                     normalize.f_stop = settings.freqStop;
-                    normalize.points = settings.points;
+                    normalize.points = DeviceDriver::getActiveDriver()->getSApoints();
                     EnableNormalization(true);
                     qDebug() << "Normalization measurement complete";
                 }
             }
         }
-        int percentage = (((average.currentSweep() - 1) * 100) + (m_avg.pointNum + 1) * 100 / settings.points) / averages;
+        int percentage = (((average.currentSweep() - 1) * 100) + (m_avg.pointNum + 1) * 100 / DeviceDriver::getActiveDriver()->getSApoints()) / averages;
         normalize.dialog.setValue(percentage);
     }
 
@@ -538,7 +524,7 @@ void SpectrumAnalyzer::NewDatapoint(VirtualDevice::SAMeasurement m)
 
     traceModel.addSAData(m_avg, settings);
     emit dataChanged();
-    if(m_avg.pointNum == settings.points - 1) {
+    if(m_avg.pointNum == DeviceDriver::getActiveDriver()->getSApoints() - 1) {
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
@@ -576,14 +562,14 @@ void SpectrumAnalyzer::SetStopFreq(double freq)
 void SpectrumAnalyzer::SetCenterFreq(double freq)
 {
     auto old_span = settings.freqStop - settings.freqStart;
-    if (freq - old_span / 2 <= VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
+    if (freq - old_span / 2 <= DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq) {
         // would shift start frequency below minimum
         settings.freqStart = 0;
         settings.freqStop = 2 * freq;
-    } else if(freq + old_span / 2 >= VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
+    } else if(freq + old_span / 2 >= DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq) {
         // would shift stop frequency above maximum
-        settings.freqStart = 2 * freq - VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
-        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+        settings.freqStart = 2 * freq - DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq;
+        settings.freqStop = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq;
     } else {
         settings.freqStart = freq - old_span / 2;
         settings.freqStop = freq + old_span / 2;
@@ -594,14 +580,14 @@ void SpectrumAnalyzer::SetCenterFreq(double freq)
 void SpectrumAnalyzer::SetSpan(double span)
 {
     auto old_center = (settings.freqStart + settings.freqStop) / 2;
-    if(old_center < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq + span / 2) {
+    if(old_center < DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq + span / 2) {
         // would shift start frequency below minimum
-        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
-        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq + span;
-    } else if(old_center > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - span / 2) {
+        settings.freqStart = DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq;
+        settings.freqStop = DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq + span;
+    } else if(old_center > DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq - span / 2) {
         // would shift stop frequency above maximum
-        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - span;
-        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+        settings.freqStart = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq - span;
+        settings.freqStop = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq;
     } else {
         settings.freqStart = old_center - span / 2;
          settings.freqStop = settings.freqStart + span;
@@ -616,8 +602,8 @@ void SpectrumAnalyzer::SetFullSpan()
         settings.freqStart = pref.Acquisition.fullSpanStart;
         settings.freqStop = pref.Acquisition.fullSpanStop;
     } else {
-        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
-        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+        settings.freqStart = DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq;
+        settings.freqStop = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq;
     }
     ConstrainAndUpdateFrequencies();
 }
@@ -664,24 +650,24 @@ void SpectrumAnalyzer::SetSingleSweep(bool single)
 
 void SpectrumAnalyzer::SetRBW(double bandwidth)
 {
-    if(bandwidth > VirtualDevice::getInfo(window->getDevice()).Limits.maxRBW) {
-        bandwidth = VirtualDevice::getInfo(window->getDevice()).Limits.maxRBW;
-    } else if(bandwidth < VirtualDevice::getInfo(window->getDevice()).Limits.minRBW) {
-        bandwidth = VirtualDevice::getInfo(window->getDevice()).Limits.minRBW;
+    if(bandwidth > DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxRBW) {
+        bandwidth = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxRBW;
+    } else if(bandwidth < DeviceDriver::getInfo(window->getDevice()).Limits.SA.minRBW) {
+        bandwidth = DeviceDriver::getInfo(window->getDevice()).Limits.SA.minRBW;
     }
     settings.RBW = bandwidth;
     emit RBWChanged(settings.RBW);
     SettingsChanged();
 }
 
-void SpectrumAnalyzer::SetWindow(VirtualDevice::SASettings::Window w)
+void SpectrumAnalyzer::SetWindow(DeviceDriver::SASettings::Window w)
 {
     settings.window = w;
     cbWindowType->setCurrentIndex((int) w);
     SettingsChanged();
 }
 
-void SpectrumAnalyzer::SetDetector(VirtualDevice::SASettings::Detector d)
+void SpectrumAnalyzer::SetDetector(DeviceDriver::SASettings::Detector d)
 {
     settings.detector = d;
     cbDetector->setCurrentIndex((int) d);
@@ -693,13 +679,6 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     this->averages = averages;
     average.setAverages(averages);
     emit averagingChanged(averages);
-    SettingsChanged();
-}
-
-void SpectrumAnalyzer::SetSignalID(bool enabled)
-{
-    settings.signalID = enabled ? 1 : 0;
-    cbSignalID->setChecked(enabled);
     SettingsChanged();
 }
 
@@ -735,10 +714,10 @@ void SpectrumAnalyzer::SetTGPort(int port)
 
 void SpectrumAnalyzer::SetTGLevel(double level)
 {
-    if(level > VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm) {
-        level = VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm;
-    } else if(level < VirtualDevice::getInfo(window->getDevice()).Limits.mindBm) {
-        level = VirtualDevice::getInfo(window->getDevice()).Limits.mindBm;
+    if(level > DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxdBm) {
+        level = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxdBm;
+    } else if(level < DeviceDriver::getInfo(window->getDevice()).Limits.SA.mindBm) {
+        level = DeviceDriver::getInfo(window->getDevice()).Limits.SA.mindBm;
     }
     emit TGLevelChanged(level);
     settings.trackingPower = level * 100;
@@ -842,51 +821,47 @@ void SpectrumAnalyzer::ConfigureDevice()
 {
     if(running) {
         changingSettings = true;
-        if(settings.freqStop - settings.freqStart >= 1000 || settings.freqStop - settings.freqStart <= 0) {
-            settings.points = 1001;
-        } else {
-            settings.points = settings.freqStop - settings.freqStart + 1;
-        }
 
-        if(settings.trackingGenerator && settings.freqStop >= 25000000) {
-            // Check point spacing.
-            // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
-            // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
-            // respect to the point number, it is ensured that every displayed point has at least one sample with
-            // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
-            // settings.
-            auto pointSpacing = (settings.freqStop - settings.freqStart) / (settings.points - 1);
-            // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
-            // This code assumes some knowledge of the actual hardware and probably should be moved
-            // onto the device at some point
-            double minSpacing = 25000;
-            auto stop = settings.freqStop;
-            while(stop <= 3000000000) {
-                minSpacing /= 2;
-                stop *= 2;
-            }
-            if(pointSpacing < minSpacing) {
-                auto requiredMinSpan = minSpacing * (settings.points - 1);
-                auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
-                                "With your current span, this could result in the signal not being detected at some bands. A minimum"
-                                " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
-                InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
-            }
-        }
-
-        if(normalize.active) {
-            // check if normalization is still valid
-            if(normalize.f_start != settings.freqStart || normalize.f_stop != settings.freqStop || normalize.points != settings.points) {
-                // normalization was taken at different settings, disable
-                EnableNormalization(false);
-                InformationBox::ShowMessage("Information", "Normalization was disabled because the span has been changed");
-            }
-        }
+        // TODO move into libreVNA driver
+//        if(settings.trackingGenerator && settings.freqStop >= 25000000) {
+//            // Check point spacing.
+//            // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
+//            // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
+//            // respect to the point number, it is ensured that every displayed point has at least one sample with
+//            // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
+//            // settings.
+//            auto pointSpacing = (settings.freqStop - settings.freqStart) / (settings.points - 1);
+//            // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
+//            // This code assumes some knowledge of the actual hardware and probably should be moved
+//            // onto the device at some point
+//            double minSpacing = 25000;
+//            auto stop = settings.freqStop;
+//            while(stop <= 3000000000) {
+//                minSpacing /= 2;
+//                stop *= 2;
+//            }
+//            if(pointSpacing < minSpacing) {
+//                auto requiredMinSpan = minSpacing * (settings.points - 1);
+//                auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
+//                                "With your current span, this could result in the signal not being detected at some bands. A minimum"
+//                                " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
+//                InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
+//            }
+//        }
 
         if(window->getDevice() && isActive) {
             window->getDevice()->setSA(settings, [=](bool){
                 // device received command
                 changingSettings = false;
+
+                if(normalize.active) {
+                    // check if normalization is still valid
+                    if(normalize.f_start != settings.freqStart || normalize.f_stop != settings.freqStop || normalize.points != DeviceDriver::getActiveDriver()->getSApoints()) {
+                        // normalization was taken at different settings, disable
+                        EnableNormalization(false);
+                        InformationBox::ShowMessage("Information", "Normalization was disabled because the span has been changed");
+                    }
+                }
             });
             emit sweepStarted();
         } else {
@@ -894,7 +869,7 @@ void SpectrumAnalyzer::ConfigureDevice()
             emit sweepStopped();
             changingSettings = false;
         }
-        average.reset(settings.points);
+        average.reset(DeviceDriver::getActiveDriver()->getSApoints());
         UpdateAverageCount();
         traceModel.clearLiveData();
         emit traceModel.SpanChanged(settings.freqStart, settings.freqStop);
@@ -915,7 +890,7 @@ void SpectrumAnalyzer::ConfigureDevice()
 
 void SpectrumAnalyzer::ResetLiveTraces()
 {
-    average.reset(settings.points);
+    average.reset(DeviceDriver::getActiveDriver()->getSApoints());
     traceModel.clearLiveData();
     UpdateAverageCount();
 }
@@ -996,23 +971,23 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Error);
         }
         if (params[0] == "NONE") {
-            SetWindow(VirtualDevice::SASettings::Window::None);
+            SetWindow(DeviceDriver::SASettings::Window::None);
         } else if(params[0] == "KAISER") {
-            SetWindow(VirtualDevice::SASettings::Window::Kaiser);
+            SetWindow(DeviceDriver::SASettings::Window::Kaiser);
         } else if(params[0] == "HANN") {
-            SetWindow(VirtualDevice::SASettings::Window::Hann);
+            SetWindow(DeviceDriver::SASettings::Window::Hann);
         } else if(params[0] == "FLATTOP") {
-            SetWindow(VirtualDevice::SASettings::Window::FlatTop);
+            SetWindow(DeviceDriver::SASettings::Window::FlatTop);
         } else {
             return "INVALID WINDOW";
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        switch((VirtualDevice::SASettings::Window) settings.window) {
-        case VirtualDevice::SASettings::Window::None: return "NONE";
-        case VirtualDevice::SASettings::Window::Kaiser: return "KAISER";
-        case VirtualDevice::SASettings::Window::Hann: return "HANN";
-        case VirtualDevice::SASettings::Window::FlatTop: return "FLATTOP";
+        switch((DeviceDriver::SASettings::Window) settings.window) {
+        case DeviceDriver::SASettings::Window::None: return "NONE";
+        case DeviceDriver::SASettings::Window::Kaiser: return "KAISER";
+        case DeviceDriver::SASettings::Window::Hann: return "HANN";
+        case DeviceDriver::SASettings::Window::FlatTop: return "FLATTOP";
         default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
@@ -1021,26 +996,26 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Error);
         }
         if (params[0] == "+PEAK") {
-            SetDetector(VirtualDevice::SASettings::Detector::PPeak);
+            SetDetector(DeviceDriver::SASettings::Detector::PPeak);
         } else if(params[0] == "-PEAK") {
-            SetDetector(VirtualDevice::SASettings::Detector::NPeak);
+            SetDetector(DeviceDriver::SASettings::Detector::NPeak);
         } else if(params[0] == "NORMAL") {
-            SetDetector(VirtualDevice::SASettings::Detector::Normal);
+            SetDetector(DeviceDriver::SASettings::Detector::Normal);
         } else if(params[0] == "SAMPLE") {
-            SetDetector(VirtualDevice::SASettings::Detector::Sample);
+            SetDetector(DeviceDriver::SASettings::Detector::Sample);
         } else if(params[0] == "AVERAGE") {
-            SetDetector(VirtualDevice::SASettings::Detector::Average);
+            SetDetector(DeviceDriver::SASettings::Detector::Average);
         } else {
             return "INVALID MDOE";
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        switch((VirtualDevice::SASettings::Detector) settings.detector) {
-        case VirtualDevice::SASettings::Detector::PPeak: return "+PEAK";
-        case VirtualDevice::SASettings::Detector::NPeak: return "-PEAK";
-        case VirtualDevice::SASettings::Detector::Normal: return "NORMAL";
-        case VirtualDevice::SASettings::Detector::Sample: return "SAMPLE";
-        case VirtualDevice::SASettings::Detector::Average: return "AVERAGE";
+        switch((DeviceDriver::SASettings::Detector) settings.detector) {
+        case DeviceDriver::SASettings::Detector::PPeak: return "+PEAK";
+        case DeviceDriver::SASettings::Detector::NPeak: return "-PEAK";
+        case DeviceDriver::SASettings::Detector::Normal: return "NORMAL";
+        case DeviceDriver::SASettings::Detector::Sample: return "SAMPLE";
+        case DeviceDriver::SASettings::Detector::Average: return "AVERAGE";
         default: return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
@@ -1063,21 +1038,6 @@ void SpectrumAnalyzer::SetupSCPI()
     }));
     scpi_acq->add(new SCPICommand("LIMit", nullptr, [=](QStringList) -> QString {
         return tiles->allLimitsPassing() ? "PASS" : "FAIL";
-    }));
-    scpi_acq->add(new SCPICommand("SIGid", [=](QStringList params) -> QString {
-        if (params.size() != 1) {
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        if(params[0] == "1" || params[0] == "TRUE") {
-            SetSignalID(true);
-        } else if(params[0] == "0" || params[0] == "FALSE") {
-            SetSignalID(false);
-        } else {
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, [=](QStringList) -> QString {
-        return settings.signalID ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_acq->add(new SCPICommand("SINGLE", [=](QStringList params) -> QString {
         bool single;
@@ -1124,7 +1084,7 @@ void SpectrumAnalyzer::SetupSCPI()
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
             return SCPI::getResultName(SCPI::Result::Error);
-        } else if(newval > 0 && newval <= VirtualDevice::getInfo(window->getDevice()).ports){
+        } else if(newval > 0 && newval <= DeviceDriver::getInfo(window->getDevice()).Limits.SA.ports){
             SetTGPort(newval-1);
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {
@@ -1200,24 +1160,24 @@ void SpectrumAnalyzer::UpdateAverageCount()
 
 void SpectrumAnalyzer::ConstrainAndUpdateFrequencies()
 {
-    if(settings.freqStop > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
-        settings.freqStop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+    if(settings.freqStop > DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq) {
+        settings.freqStop = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq;
     }
     if(settings.freqStart > settings.freqStop) {
         settings.freqStart = settings.freqStop;
     }
-    if(settings.freqStart < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
-        settings.freqStart = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+    if(settings.freqStart < DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq) {
+        settings.freqStart = DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq;
     }
 
     bool trackingOffset_limited = false;
-    if(settings.freqStop + settings.trackingOffset > VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
+    if(settings.freqStop + settings.trackingOffset > DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq) {
         trackingOffset_limited = true;
-        settings.trackingOffset = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq - settings.freqStop;
+        settings.trackingOffset = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq - settings.freqStop;
     }
-    if(settings.freqStart + settings.trackingOffset < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
+    if(settings.freqStart + settings.trackingOffset < DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq) {
         trackingOffset_limited = true;
-        settings.trackingOffset = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq - settings.freqStart;
+        settings.trackingOffset = DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq - settings.freqStart;
     }
     if(trackingOffset_limited) {
         InformationBox::ShowMessage("Warning", "The selected tracking generator offset is not reachable for all frequencies with the current span. "
@@ -1239,10 +1199,8 @@ void SpectrumAnalyzer::LoadSweepSettings()
     settings.freqStop = s.value("SAStop", pref.Startup.SA.stop).toULongLong();
     ConstrainAndUpdateFrequencies();
     SetRBW(s.value("SARBW", pref.Startup.SA.RBW).toUInt());
-    settings.points = 1001;
-    SetWindow((VirtualDevice::SASettings::Window) s.value("SAWindow", pref.Startup.SA.window).toInt());
-    SetDetector((VirtualDevice::SASettings::Detector) s.value("SADetector", pref.Startup.SA.detector).toInt());
-    SetSignalID(s.value("SASignalID", pref.Startup.SA.signalID).toBool());
+    SetWindow((DeviceDriver::SASettings::Window) s.value("SAWindow", pref.Startup.SA.window).toInt());
+    SetDetector((DeviceDriver::SASettings::Detector) s.value("SADetector", pref.Startup.SA.detector).toInt());
     SetAveraging(s.value("SAAveraging", pref.Startup.SA.averaging).toInt());
 }
 
@@ -1255,7 +1213,6 @@ void SpectrumAnalyzer::StoreSweepSettings()
     s.setValue("SAWindow", (int) settings.window);
     s.setValue("SADetector", (int) settings.detector);
     s.setValue("SAAveraging", averages);
-    s.setValue("SASignalID", static_cast<bool>(settings.signalID));
 }
 
 void SpectrumAnalyzer::createDefaultTracesAndGraphs(int ports)
@@ -1291,7 +1248,7 @@ void SpectrumAnalyzer::preset()
         }
     }
     // Create default traces
-    createDefaultTracesAndGraphs(VirtualDevice::getInfo(window->getDevice()).ports);
+    createDefaultTracesAndGraphs(DeviceDriver::getInfo(window->getDevice()).Limits.SA.ports);
 }
 
 void SpectrumAnalyzer::deviceInfoUpdated()
@@ -1300,53 +1257,53 @@ void SpectrumAnalyzer::deviceInfoUpdated()
     ClearNormalization();
     auto tgPort = cbTrackGenPort->currentIndex();
     cbTrackGenPort->clear();
-    for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+    for(unsigned int i=0;i<DeviceDriver::getInfo(window->getDevice()).Limits.SA.ports;i++) {
         cbTrackGenPort->addItem("Port "+QString::number(i+1));
     }
     SetTGPort(tgPort);
 }
 
-QString SpectrumAnalyzer::WindowToString(VirtualDevice::SASettings::Window w)
+QString SpectrumAnalyzer::WindowToString(DeviceDriver::SASettings::Window w)
 {
     switch(w) {
-    case VirtualDevice::SASettings::Window::None: return "None";
-    case VirtualDevice::SASettings::Window::Kaiser: return "Kaiser";
-    case VirtualDevice::SASettings::Window::Hann: return "Hann";
-    case VirtualDevice::SASettings::Window::FlatTop: return "FlatTop";
+    case DeviceDriver::SASettings::Window::None: return "None";
+    case DeviceDriver::SASettings::Window::Kaiser: return "Kaiser";
+    case DeviceDriver::SASettings::Window::Hann: return "Hann";
+    case DeviceDriver::SASettings::Window::FlatTop: return "FlatTop";
     default: return "Unknown";
     }
 }
 
-VirtualDevice::SASettings::Window SpectrumAnalyzer::WindowFromString(QString s)
+DeviceDriver::SASettings::Window SpectrumAnalyzer::WindowFromString(QString s)
 {
-    for(int i=0;i<(int)VirtualDevice::SASettings::Window::Last;i++) {
-        if(WindowToString((VirtualDevice::SASettings::Window) i) == s) {
-            return (VirtualDevice::SASettings::Window) i;
+    for(int i=0;i<(int)DeviceDriver::SASettings::Window::Last;i++) {
+        if(WindowToString((DeviceDriver::SASettings::Window) i) == s) {
+            return (DeviceDriver::SASettings::Window) i;
         }
     }
     // not found
-    return VirtualDevice::SASettings::Window::Last;
+    return DeviceDriver::SASettings::Window::Last;
 }
 
-QString SpectrumAnalyzer::DetectorToString(VirtualDevice::SASettings::Detector d)
+QString SpectrumAnalyzer::DetectorToString(DeviceDriver::SASettings::Detector d)
 {
     switch(d) {
-    case VirtualDevice::SASettings::Detector::PPeak: return "+Peak";
-    case VirtualDevice::SASettings::Detector::NPeak: return "-Peak";
-    case VirtualDevice::SASettings::Detector::Sample: return "Sample";
-    case VirtualDevice::SASettings::Detector::Normal: return "Normal";
-    case VirtualDevice::SASettings::Detector::Average: return "Average";
+    case DeviceDriver::SASettings::Detector::PPeak: return "+Peak";
+    case DeviceDriver::SASettings::Detector::NPeak: return "-Peak";
+    case DeviceDriver::SASettings::Detector::Sample: return "Sample";
+    case DeviceDriver::SASettings::Detector::Normal: return "Normal";
+    case DeviceDriver::SASettings::Detector::Average: return "Average";
     default: return "Unknown";
     }
 }
 
-VirtualDevice::SASettings::Detector SpectrumAnalyzer::DetectorFromString(QString s)
+DeviceDriver::SASettings::Detector SpectrumAnalyzer::DetectorFromString(QString s)
 {
-    for(int i=0;i<(int)VirtualDevice::SASettings::Detector::Last;i++) {
-        if(DetectorToString((VirtualDevice::SASettings::Detector) i) == s) {
-            return (VirtualDevice::SASettings::Detector) i;
+    for(int i=0;i<(int)DeviceDriver::SASettings::Detector::Last;i++) {
+        if(DetectorToString((DeviceDriver::SASettings::Detector) i) == s) {
+            return (DeviceDriver::SASettings::Detector) i;
         }
     }
     // not found
-    return VirtualDevice::SASettings::Detector::Last;
+    return DeviceDriver::SASettings::Detector::Last;
 }

@@ -15,7 +15,7 @@ private slots:
     void autocalc();
     void correct();
 private:
-    std::vector<VirtualDevice::VNAMeasurement> dummyData;
+    std::vector<DeviceDriver::VNAMeasurement> dummyData;
 };
 
 #endif // PORTEXTENSIONTESTS_H

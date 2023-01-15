@@ -151,7 +151,7 @@ Calibration::Calibration()
                 }
                 bool okay;
                 unsigned int number = params[1].toInt(&okay);
-                if(!okay || number < 1 || number > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports) {
+                if(!okay || number < 1 || number > DeviceDriver::getInfo(DeviceDriver::getActiveDriver()).Limits.VNA.ports) {
                     // invalid port specified
                     return SCPI::getResultName(SCPI::Result::Error);
                 }
@@ -168,8 +168,8 @@ Calibration::Calibration()
                 unsigned int port1 = params[1].toInt(&okay1);
                 bool okay2;
                 unsigned int port2 = params[2].toInt(&okay2);
-                if(!okay1 || !okay2 || port1 < 1 || port2 > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports
-                         || port2 < 1 || port2 > VirtualDevice::getInfo(VirtualDevice::getConnected()).ports) {
+                if(!okay1 || !okay2 || port1 < 1 || port2 > DeviceDriver::getInfo(DeviceDriver::getActiveDriver()).Limits.VNA.ports
+                         || port2 < 1 || port2 > DeviceDriver::getInfo(DeviceDriver::getActiveDriver()).Limits.VNA.ports) {
                     // invalid port specified
                     return SCPI::getResultName(SCPI::Result::Error);
                 }
@@ -318,7 +318,7 @@ Calibration::Type Calibration::TypeFromString(QString s)
     return Type::None;
 }
 
-void Calibration::correctMeasurement(VirtualDevice::VNAMeasurement &d)
+void Calibration::correctMeasurement(DeviceDriver::VNAMeasurement &d)
 {
     lock_guard<recursive_mutex> guard(access);
     if(caltype.type == Type::None) {
@@ -1424,7 +1424,7 @@ void Calibration::fromJSON(nlohmann::json j)
                     throw runtime_error("Measurement "+name.toStdString()+" does not contain any points");
                 }
                 for(auto j_p : j_m["points"]) {
-                    VirtualDevice::VNAMeasurement p;
+                    DeviceDriver::VNAMeasurement p;
                     p.frequency = j_p.value("frequency", 0.0);
                     p.Z0 = 50.0;
                     p.measurements["S11"] = complex<double>(j_p.value("S11_real", 0.0), j_p.value("S11_imag", 0.0));
@@ -1557,10 +1557,7 @@ bool Calibration::fromFile(QString filename)
 
 std::vector<Calibration::CalType> Calibration::getAvailableCalibrations()
 {
-    unsigned int ports = 2;
-    if(VirtualDevice::getConnected()) {
-        ports = VirtualDevice::getConnected()->getInfo().ports;
-    }
+    unsigned int ports = DeviceDriver::getInfo(DeviceDriver::getActiveDriver()).Limits.VNA.ports;
     vector<CalType> ret;
     for(auto t : getTypes()) {
         CalType cal;
@@ -1727,14 +1724,15 @@ int Calibration::minimumPorts(Calibration::Type type)
     return -1;
 }
 
-void Calibration::addMeasurements(std::set<CalibrationMeasurement::Base *> m, const VirtualDevice::VNAMeasurement &data)
+void Calibration::addMeasurements(std::set<CalibrationMeasurement::Base *> m, const DeviceDriver::VNAMeasurement &data)
 {
     for(auto meas : m) {
         meas->addPoint(data);
     }
     unsavedChanges = true;
-    if(VirtualDevice::getConnected()) {
-        validDevice = VirtualDevice::getConnected()->serial();
+    // TODO
+    if(DeviceDriver::getActiveDriver()) {
+        validDevice = DeviceDriver::getActiveDriver()->getSerial();
     }
 }
 

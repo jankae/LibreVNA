@@ -32,6 +32,7 @@ HEADERS += \
     Device/deviceusblogview.h \
     Device/firmwareupdatedialog.h \
     Device/librevnadriver.h \
+    Device/librevnausbdriver.h \
     Device/manualcontroldialog.h \
     Device/virtualdevice.h \
     Generator/generator.h \
@@ -176,11 +177,13 @@ SOURCES += \
     Device/compounddevice.cpp \
     Device/compounddeviceeditdialog.cpp \
     Device/device.cpp \
+    Device/devicedriver.cpp \
     Device/devicelog.cpp \
     Device/deviceusblog.cpp \
     Device/deviceusblogview.cpp \
     Device/firmwareupdatedialog.cpp \
     Device/librevnadriver.cpp \
+    Device/librevnausbdriver.cpp \
     Device/manualcontroldialog.cpp \
     Device/virtualdevice.cpp \
     Generator/generator.cpp \

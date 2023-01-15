@@ -7,6 +7,8 @@
 #include "Traces/trace.h"
 #include "scpi.h"
 
+#include <mutex>
+
 class Calibration : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
@@ -38,7 +40,7 @@ public:
     static Type TypeFromString(QString s);
 
     // Applies calculated calibration coefficients to measurement data
-    void correctMeasurement(VirtualDevice::VNAMeasurement &d);
+    void correctMeasurement(DeviceDriver::VNAMeasurement &d);
     void correctTraces(std::map<QString, Trace*> traceSet);
 
     // Starts the calibration edit dialog, allowing the user to make/delete measurements
@@ -68,7 +70,7 @@ public:
     static int minimumPorts(Type type);
 
     // Adds a new measurement point (data) to all calibration measurements (m)
-    void addMeasurements(std::set<CalibrationMeasurement::Base*> m, const VirtualDevice::VNAMeasurement &data);
+    void addMeasurements(std::set<CalibrationMeasurement::Base*> m, const DeviceDriver::VNAMeasurement &data);
     // Deletes all datapoints in the calibration measurements (m)
     void clearMeasurements(std::set<CalibrationMeasurement::Base*> m);
     CalType getCaltype() const;

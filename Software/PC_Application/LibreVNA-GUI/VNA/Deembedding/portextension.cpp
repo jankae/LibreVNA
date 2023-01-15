@@ -38,7 +38,7 @@ std::set<unsigned int> PortExtension::getAffectedPorts()
     return {port};
 }
 
-void PortExtension::transformDatapoint(VirtualDevice::VNAMeasurement &d)
+void PortExtension::transformDatapoint(DeviceDriver::VNAMeasurement &d)
 {
     auto phase = -2 * M_PI * ext.delay * d.frequency;
     auto db_attennuation = ext.DCloss;
@@ -88,7 +88,7 @@ void PortExtension::edit()
     ui->Loss->setValue(ext.loss);
     ui->Frequency->setValue(ext.frequency);
     ui->port->setValue(port);
-    ui->port->setMaximum(VirtualDevice::maximumSupportedPorts);
+    ui->port->setMaximum(DeviceDriver::maximumSupportedPorts);
     if(!kit) {
         ui->calkit->setEnabled(false);
     }
@@ -138,7 +138,7 @@ void PortExtension::edit()
     }
 }
 
-void PortExtension::measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m)
+void PortExtension::measurementCompleted(std::vector<DeviceDriver::VNAMeasurement> m)
 {
     if(m.size() > 0) {
         double last_phase = 0.0;

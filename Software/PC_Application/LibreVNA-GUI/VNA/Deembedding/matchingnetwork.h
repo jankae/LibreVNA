@@ -68,7 +68,7 @@ public:
     // DeembeddingOption interface
 public:
     std::set<unsigned int> getAffectedPorts() override;
-    void transformDatapoint(VirtualDevice::VNAMeasurement &p) override;
+    void transformDatapoint(DeviceDriver::VNAMeasurement &p) override;
     void edit() override;
     Type getType() override {return Type::MatchingNetwork;}
     nlohmann::json toJSON() override;

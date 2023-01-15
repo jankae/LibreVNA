@@ -25,7 +25,7 @@ std::set<unsigned int> TwoThru::getAffectedPorts()
     return {port1, port2};
 }
 
-void TwoThru::transformDatapoint(VirtualDevice::VNAMeasurement &p)
+void TwoThru::transformDatapoint(DeviceDriver::VNAMeasurement &p)
 {
     // correct measurement
     if(points.size() > 0) {
@@ -109,7 +109,7 @@ void TwoThru::updateGUI()
     }
 }
 
-void TwoThru::measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m)
+void TwoThru::measurementCompleted(std::vector<DeviceDriver::VNAMeasurement> m)
 {
     if (measuring2xthru) {
         measurements2xthru = m;
@@ -136,9 +136,9 @@ void TwoThru::edit()
     ui->lZ0->setVisible(false);
 
     ui->port1->setValue(port1);
-    ui->port1->setMaximum(VirtualDevice::maximumSupportedPorts);
+    ui->port1->setMaximum(DeviceDriver::maximumSupportedPorts);
     ui->port2->setValue(port2);
-    ui->port2->setMaximum(VirtualDevice::maximumSupportedPorts);
+    ui->port2->setMaximum(DeviceDriver::maximumSupportedPorts);
 
     auto portChanged = [=](){
         port1 = ui->port1->value();
@@ -261,7 +261,7 @@ void TwoThru::fromJSON(nlohmann::json j)
     }
 }
 
-std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru)
+std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDriver::VNAMeasurement> data_2xthru)
 {
     // calculate error boxes, see https://www.freelists.org/post/si-list/IEEE-P370-Opensource-Deembedding-MATLAB-functions
     // create vectors of S parameters
@@ -442,7 +442,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VirtualDevi
     return ret;
 }
 
-std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VirtualDevice::VNAMeasurement> data_2xthru, std::vector<VirtualDevice::VNAMeasurement> data_fix_dut_fix, double z0)
+std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDriver::VNAMeasurement> data_2xthru, std::vector<DeviceDriver::VNAMeasurement> data_fix_dut_fix, double z0)
 {
     vector<Point> ret;
 
@@ -715,9 +715,9 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<VirtualDevi
     return ret;
 }
 
-std::vector<VirtualDevice::VNAMeasurement> TwoThru::interpolateEvenFrequencySteps(std::vector<VirtualDevice::VNAMeasurement> input)
+std::vector<DeviceDriver::VNAMeasurement> TwoThru::interpolateEvenFrequencySteps(std::vector<DeviceDriver::VNAMeasurement> input)
 {
-    vector<VirtualDevice::VNAMeasurement> ret;
+    vector<DeviceDriver::VNAMeasurement> ret;
     if(input.size() > 1) {
         int size = input.size();
         double freqStep = 0.0;
@@ -739,8 +739,8 @@ std::vector<VirtualDevice::VNAMeasurement> TwoThru::interpolateEvenFrequencyStep
             // needs to interpolate
             double freq = freqStep;
             while(freq <= input.back().frequency) {
-                VirtualDevice::VNAMeasurement interp;
-                auto it = lower_bound(input.begin(), input.end(), freq, [](const VirtualDevice::VNAMeasurement &lhs, const double f) -> bool {
+                DeviceDriver::VNAMeasurement interp;
+                auto it = lower_bound(input.begin(), input.end(), freq, [](const DeviceDriver::VNAMeasurement &lhs, const double f) -> bool {
                     return lhs.frequency < f;
                 });
                 if(it->frequency == freq) {

@@ -30,6 +30,7 @@
 #include "mode.h"
 #include "modehandler.h"
 #include "modewindow.h"
+#include "Device/librevnausbdriver.h"
 
 #include <QDockWidget>
 #include <QDesktopWidget>
@@ -83,6 +84,9 @@ AppWindow::AppWindow(QWidget *parent)
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 
+    // Register device drivers
+    deviceDrivers.push_back(new LibreVNAUSBDriver());
+
     this->setWindowIcon(QIcon(":/app/logo.png"));
 
     parser.setApplicationDescription(qlibrevnaApp->applicationName());
@@ -102,7 +106,8 @@ AppWindow::AppWindow(QWidget *parent)
     } else {
         Preferences::getInstance().load();
     }
-    vdevice = nullptr;
+    device = nullptr;
+//    vdevice = nullptr;
     modeHandler = nullptr;
 
     if(parser.isSet("port")) {
@@ -233,12 +238,12 @@ void AppWindow::SetupMenu()
         modeHandler->getActiveMode()->saveSreenshot();
     });
 
-    connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
+//    connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
     connect(ui->actionUSB_log, &QAction::triggered, this, &AppWindow::ShowUSBLog);
-    connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
-    connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
-    connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
-    connect(ui->actionFrequency_Calibration, &QAction::triggered, this, &AppWindow::FrequencyCalibrationDialog);
+//    connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
+//    connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
+//    connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
+//    connect(ui->actionFrequency_Calibration, &QAction::triggered, this, &AppWindow::FrequencyCalibrationDialog);
 
     connect(ui->actionPreset, &QAction::triggered, [=](){
         modeHandler->getActiveMode()->preset();
@@ -278,14 +283,13 @@ void AppWindow::SetupMenu()
         }
 
         // acquisition frequencies may have changed, update
-        UpdateAcquisitionFrequencies();
+//        UpdateAcquisitionFrequencies();
 
         auto active = modeHandler->getActiveMode();
         if (active)
         {
             active->updateGraphColors();
-
-            if(vdevice) {
+            if(device) {
                 active->initializeDevice();
             }
         }
@@ -311,7 +315,13 @@ void AppWindow::closeEvent(QCloseEvent *event)
     if(modeHandler->getActiveMode()) {
         modeHandler->deactivate(modeHandler->getActiveMode());
     }
-    delete vdevice;
+    if(device) {
+        device->disconnectDevice();
+        device = nullptr;
+    }
+    for(auto driver : deviceDrivers) {
+        delete driver;
+    }
     delete modeHandler;
     modeHandler = nullptr;
     pref.store();
@@ -325,31 +335,41 @@ bool AppWindow::ConnectToDevice(QString serial)
     } else {
         qDebug() << "Trying to connect to" << serial;
     }
-    if(vdevice) {
+    if(device) {
         qDebug() << "Already connected to a device, disconnecting first...";
         DisconnectDevice();
     }
     try {
         qDebug() << "Attempting to connect to device...";
-        vdevice = new VirtualDevice(serial);
-        UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
-        connect(vdevice, &VirtualDevice::InfoUpdated, this, &AppWindow::DeviceInfoUpdated);
-        connect(vdevice, &VirtualDevice::LogLineReceived, &deviceLog, &DeviceLog::addLine);
-        connect(vdevice, &VirtualDevice::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
-        connect(vdevice, &VirtualDevice::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
-        connect(vdevice, &VirtualDevice::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
-        ui->actionDisconnect->setEnabled(true);
-        if(!vdevice->isCompoundDevice()) {
-            ui->actionManual_Control->setEnabled(true);
-            ui->actionFirmware_Update->setEnabled(true);
-            ui->actionSource_Calibration->setEnabled(true);
-            ui->actionReceiver_Calibration->setEnabled(true);
-            ui->actionFrequency_Calibration->setEnabled(true);
+        for(auto driver : deviceDrivers) {
+            if(driver->GetAvailableDevices().count(serial)) {
+                // this driver can connect to the device
+                if(driver->connectDevice(serial)) {
+                    device = driver;
+                } else {
+                    // failed to connect
+                    // TODO show error message
+                }
+            }
         }
+        UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
+        connect(device, &DeviceDriver::InfoUpdated, this, &AppWindow::DeviceInfoUpdated);
+        connect(device, &DeviceDriver::LogLineReceived, &deviceLog, &DeviceLog::addLine);
+        connect(device, &DeviceDriver::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
+        connect(device, &DeviceDriver::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
+//        connect(vdevice, &VirtualDevice::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
+        ui->actionDisconnect->setEnabled(true);
+//        if(!vdevice->isCompoundDevice()) {
+//            ui->actionManual_Control->setEnabled(true);
+//            ui->actionFirmware_Update->setEnabled(true);
+//            ui->actionSource_Calibration->setEnabled(true);
+//            ui->actionReceiver_Calibration->setEnabled(true);
+//            ui->actionFrequency_Calibration->setEnabled(true);
+//        }
         ui->actionPreset->setEnabled(true);
 
         for(auto d : deviceActionGroup->actions()) {
-            if(d->text() == vdevice->serial()) {
+            if(d->text() == device->getSerial()) {
                 d->blockSignals(true);
                 d->setChecked(true);
                 d->blockSignals(false);
@@ -357,12 +377,12 @@ bool AppWindow::ConnectToDevice(QString serial)
             }
         }
         for(auto m : modeHandler->getModes()) {
-            connect(vdevice, &VirtualDevice::InfoUpdated, m, &Mode::deviceInfoUpdated);
+            connect(device, &DeviceDriver::InfoUpdated, m, &Mode::deviceInfoUpdated);
         }
 
-        vdevice->initialize();
+//        vdevice->initialize();
 
-        UpdateAcquisitionFrequencies();
+//        UpdateAcquisitionFrequencies();
         if (modeHandler->getActiveMode()) {
             modeHandler->getActiveMode()->initializeDevice();
         }
@@ -377,8 +397,10 @@ bool AppWindow::ConnectToDevice(QString serial)
 
 void AppWindow::DisconnectDevice()
 {
-    delete vdevice;
-    vdevice = nullptr;
+    if(device) {
+        device->disconnectDevice();
+        device = nullptr;
+    }
     ui->actionDisconnect->setEnabled(false);
     ui->actionManual_Control->setEnabled(false);
     ui->actionFirmware_Update->setEnabled(false);
@@ -446,8 +468,8 @@ void AppWindow::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        if(vdevice) {
-            return vdevice->serial();
+        if(device) {
+            return device->getSerial();
         } else {
             return "Not connected";
         }
@@ -519,7 +541,11 @@ void AppWindow::SetupSCPI()
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return VirtualDevice::getStatus(getDevice()).extRef ? "EXT" : "INT";
+        if(device) {
+            return device->asserted(DeviceDriver::Flag::ExtRef) ? "EXT" : "INT";
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
     }));
     scpi_dev->add(new SCPICommand("MODE", [=](QStringList params) -> QString {
         if (params.size() != 1) {
@@ -557,84 +583,104 @@ void AppWindow::SetupSCPI()
     auto scpi_status = new SCPINode("STAtus");
     scpi_dev->add(scpi_status);
     scpi_status->add(new SCPICommand("UNLOcked", nullptr, [=](QStringList){
-        return VirtualDevice::getStatus(getDevice()).unlocked ? "TRUE" : "FALSE";
+        if(device) {
+            return device->asserted(DeviceDriver::Flag::Unlocked) ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
     }));
     scpi_status->add(new SCPICommand("ADCOVERload", nullptr, [=](QStringList){
-        return VirtualDevice::getStatus(getDevice()).overload ? "TRUE" : "FALSE";
+        if(device) {
+            return device->asserted(DeviceDriver::Flag::Overload) ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
     }));
     scpi_status->add(new SCPICommand("UNLEVel", nullptr, [=](QStringList){
-        return VirtualDevice::getStatus(getDevice()).unlevel ? "TRUE" : "FALSE";
+        if(device) {
+            return device->asserted(DeviceDriver::Flag::Unlevel) ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
     }));
     auto scpi_info = new SCPINode("INFo");
     scpi_dev->add(scpi_info);
     scpi_info->add(new SCPICommand("FWREVision", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).FW_major)+"."+QString::number(VirtualDevice::getInfo(getDevice()).FW_minor)+"."+QString::number(VirtualDevice::getInfo(getDevice()).FW_patch);
-    }));
-    scpi_info->add(new SCPICommand("HWREVision", nullptr, [=](QStringList){
-        return QString(VirtualDevice::getInfo(getDevice()).HW_Revision);
-    }));
-    scpi_info->add(new SCPICommand("TEMPeratures", nullptr, [=](QStringList){
-        if(!vdevice) {
-            return QString("0/0/0");
-        } else if(vdevice->isCompoundDevice()) {
-            // show highest temperature of all devices
-            int maxTempSource = 0;
-            int maxTempLO = 0;
-            int maxTempMCU = 0;
-            for(auto dev : vdevice->getDevices()) {
-                auto status = dev->StatusV1();
-                if(status.temp_source > maxTempSource) {
-                    maxTempSource = status.temp_source;
-                }
-                if(status.temp_LO1 > maxTempLO) {
-                    maxTempLO = status.temp_LO1;
-                }
-                if(status.temp_MCU > maxTempMCU) {
-                    maxTempMCU = status.temp_MCU;
-                }
-            }
-            return QString::number(maxTempSource)+"/"+QString::number(maxTempLO)+"/"+QString::number(maxTempMCU);
+        if(device) {
+            return device->getInfo().firmware_version;
         } else {
-            auto dev = vdevice->getDevice();
-            return QString::number(dev->StatusV1().temp_source)+"/"+QString::number(dev->StatusV1().temp_LO1)+"/"+QString::number(dev->StatusV1().temp_MCU);
+            return SCPI::getResultName(SCPI::Result::Error);
         }
     }));
+    scpi_info->add(new SCPICommand("HWREVision", nullptr, [=](QStringList){
+        if(device) {
+            return device->getInfo().hardware_version;
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    }));
+//    scpi_info->add(new SCPICommand("TEMPeratures", nullptr, [=](QStringList){
+//        if(!vdevice) {
+//            return QString("0/0/0");
+//        } else if(vdevice->isCompoundDevice()) {
+//            // show highest temperature of all devices
+//            int maxTempSource = 0;
+//            int maxTempLO = 0;
+//            int maxTempMCU = 0;
+//            for(auto dev : vdevice->getDevices()) {
+//                auto status = dev->StatusV1();
+//                if(status.temp_source > maxTempSource) {
+//                    maxTempSource = status.temp_source;
+//                }
+//                if(status.temp_LO1 > maxTempLO) {
+//                    maxTempLO = status.temp_LO1;
+//                }
+//                if(status.temp_MCU > maxTempMCU) {
+//                    maxTempMCU = status.temp_MCU;
+//                }
+//            }
+//            return QString::number(maxTempSource)+"/"+QString::number(maxTempLO)+"/"+QString::number(maxTempMCU);
+//        } else {
+//            auto dev = vdevice->getDevice();
+//            return QString::number(dev->StatusV1().temp_source)+"/"+QString::number(dev->StatusV1().temp_LO1)+"/"+QString::number(dev->StatusV1().temp_MCU);
+//        }
+//    }));
     auto scpi_limits = new SCPINode("LIMits");
     scpi_info->add(scpi_limits);
     scpi_limits->add(new SCPICommand("MINFrequency", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.minFreq);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.minFreq);
     }));
     scpi_limits->add(new SCPICommand("MAXFrequency", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxFreq);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.SA.maxFreq);
     }));
     scpi_limits->add(new SCPICommand("MINIFBW", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.minIFBW);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.minIFBW);
     }));
     scpi_limits->add(new SCPICommand("MAXIFBW", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxIFBW);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.maxIFBW);
     }));
     scpi_limits->add(new SCPICommand("MAXPoints", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxPoints);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.maxPoints);
     }));
     scpi_limits->add(new SCPICommand("MINPOWer", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.mindBm);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.mindBm);
     }));
     scpi_limits->add(new SCPICommand("MAXPOWer", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxdBm);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.maxdBm);
     }));
     scpi_limits->add(new SCPICommand("MINRBW", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.minRBW);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.SA.minRBW);
     }));
     scpi_limits->add(new SCPICommand("MAXRBW", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxRBW);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.SA.maxRBW);
     }));
     scpi_limits->add(new SCPICommand("MAXHARMonicfrequency", nullptr, [=](QStringList){
-        return QString::number(VirtualDevice::getInfo(getDevice()).Limits.maxFreqHarmonic);
+        return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.maxFreq);
     }));
 
     auto scpi_manual = new SCPINode("MANual");
     scpi_manual->add(new SCPICommand("STArt",[=](QStringList) -> QString {
-        StartManualControl();
+//        StartManualControl();
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_manual->add(new SCPICommand("STOp",[=](QStringList) -> QString {
@@ -887,9 +933,12 @@ int AppWindow::UpdateDeviceList()
 {
     deviceActionGroup->setExclusive(true);
     ui->menuConnect_to->clear();
-    auto devices = VirtualDevice::GetAvailableVirtualDevices();
-    if(vdevice) {
-        devices.insert(vdevice->serial());
+    std::set<QString> devices;
+    for(auto driver : deviceDrivers) {
+        devices.merge(driver->GetAvailableDevices());
+    }
+    if(device) {
+        devices.insert(device->getSerial());
     }
     int available = 0;
     bool found = false;
@@ -902,7 +951,7 @@ int AppWindow::UpdateDeviceList()
             auto connectAction = ui->menuConnect_to->addAction(d);
             connectAction->setCheckable(true);
             connectAction->setActionGroup(deviceActionGroup);
-            if(vdevice && d == vdevice->serial()) {
+            if(device && d == device->getSerial()) {
                 connectAction->setChecked(true);
             }
             connect(connectAction, &QAction::triggered, [this, d]() {
@@ -917,59 +966,56 @@ int AppWindow::UpdateDeviceList()
     return available;
 }
 
-void AppWindow::StartManualControl()
-{
-    if(!vdevice || vdevice->isCompoundDevice()) {
-        return;
-    }
-    if(manual) {
-        // dialog already active, nothing to do
-        return;
-    }
-    manual = new ManualControlDialog(*vdevice->getDevice(), this);
-    connect(manual, &QDialog::finished, [=](){
-        manual = nullptr;
-        if(vdevice) {
-            modeHandler->getActiveMode()->initializeDevice();
-        }
-    });
-    if(AppWindow::showGUI()) {
-        manual->show();
-    }
-}
+//void AppWindow::StartManualControl()
+//{
+//    if(!vdevice || vdevice->isCompoundDevice()) {
+//        return;
+//    }
+//    if(manual) {
+//        // dialog already active, nothing to do
+//        return;
+//    }
+//    manual = new ManualControlDialog(*vdevice->getDevice(), this);
+//    connect(manual, &QDialog::finished, [=](){
+//        manual = nullptr;
+//        if(vdevice) {
+//            modeHandler->getActiveMode()->initializeDevice();
+//        }
+//    });
+//    if(AppWindow::showGUI()) {
+//        manual->show();
+//    }
+//}
 
 void AppWindow::UpdateReferenceToolbar()
 {
     toolbars.reference.type->blockSignals(true);
     toolbars.reference.outFreq->blockSignals(true);
-    if(!vdevice || !vdevice->getInfo().supportsExtRef) {
-        toolbars.reference.type->setEnabled(false);
-        toolbars.reference.outFreq->setEnabled(false);
-    } else {
-        toolbars.reference.type->setEnabled(true);
-        toolbars.reference.outFreq->setEnabled(true);
-    }
-    // save current setting
-    auto refInBuf = toolbars.reference.type->currentText();
-    auto refOutBuf = toolbars.reference.outFreq->currentText();
-    toolbars.reference.type->clear();
-    for(auto in : vdevice->availableExtRefInSettings()) {
-        toolbars.reference.type->addItem(in);
-    }
-    toolbars.reference.outFreq->clear();
-    for(auto out : vdevice->availableExtRefOutSettings()) {
-        toolbars.reference.outFreq->addItem(out);
-    }
-    // restore previous setting if still available
-    if(toolbars.reference.type->findText(refInBuf) >= 0) {
-        toolbars.reference.type->setCurrentText(refInBuf);
-    } else {
-        toolbars.reference.type->setCurrentIndex(0);
-    }
-    if(toolbars.reference.outFreq->findText(refOutBuf) >= 0) {
-        toolbars.reference.outFreq->setCurrentText(refOutBuf);
-    } else {
-        toolbars.reference.outFreq->setCurrentIndex(0);
+    toolbars.reference.type->setEnabled(device || device->supports(DeviceDriver::Feature::ExtRefIn));
+    toolbars.reference.outFreq->setEnabled(device || device->supports(DeviceDriver::Feature::ExtRefOut));
+    if(device) {
+        // save current setting
+        auto refInBuf = toolbars.reference.type->currentText();
+        auto refOutBuf = toolbars.reference.outFreq->currentText();
+        toolbars.reference.type->clear();
+        for(auto in : device->availableExtRefInSettings()) {
+            toolbars.reference.type->addItem(in);
+        }
+        toolbars.reference.outFreq->clear();
+        for(auto out : device->availableExtRefOutSettings()) {
+            toolbars.reference.outFreq->addItem(out);
+        }
+        // restore previous setting if still available
+        if(toolbars.reference.type->findText(refInBuf) >= 0) {
+            toolbars.reference.type->setCurrentText(refInBuf);
+        } else {
+            toolbars.reference.type->setCurrentIndex(0);
+        }
+        if(toolbars.reference.outFreq->findText(refOutBuf) >= 0) {
+            toolbars.reference.outFreq->setCurrentText(refOutBuf);
+        } else {
+            toolbars.reference.outFreq->setCurrentIndex(0);
+        }
     }
     toolbars.reference.type->blockSignals(false);
     toolbars.reference.outFreq->blockSignals(false);
@@ -978,27 +1024,11 @@ void AppWindow::UpdateReferenceToolbar()
 
 void AppWindow::UpdateReference()
 {
-    if(!vdevice) {
+    if(!device) {
         // can't update without a device connected
         return;
     }
-    vdevice->setExtRef(toolbars.reference.type->currentText(), toolbars.reference.outFreq->currentText());
-}
-
-void AppWindow::UpdateAcquisitionFrequencies()
-{
-    if(!vdevice) {
-        return;
-    }
-    Protocol::PacketInfo p;
-    p.type = Protocol::PacketType::AcquisitionFrequencySettings;
-    auto& pref = Preferences::getInstance();
-    p.acquisitionFrequencySettings.IF1 = pref.Acquisition.IF1;
-    p.acquisitionFrequencySettings.ADCprescaler = pref.Acquisition.ADCprescaler;
-    p.acquisitionFrequencySettings.DFTphaseInc = pref.Acquisition.DFTPhaseInc;
-    for(auto dev : vdevice->getDevices()) {
-        dev->SendPacket(p);
-    }
+    device->setExtRef(toolbars.reference.type->currentText(), toolbars.reference.outFreq->currentText());
 }
 
 void AppWindow::ShowUSBLog()
@@ -1009,34 +1039,21 @@ void AppWindow::ShowUSBLog()
     }
 }
 
-void AppWindow::StartFirmwareUpdateDialog()
-{
-    if(!vdevice || vdevice->isCompoundDevice()) {
-        return;
-    }
-    auto fw_update = new FirmwareUpdateDialog(vdevice->getDevice());
-    connect(fw_update, &FirmwareUpdateDialog::DeviceRebooting, this, &AppWindow::DisconnectDevice);
-    connect(fw_update, &FirmwareUpdateDialog::DeviceRebooted, this, &AppWindow::ConnectToDevice);
-    if(AppWindow::showGUI()) {
-        fw_update->exec();
-    }
-}
-
-void AppWindow::DeviceNeedsUpdate(int reported, int expected)
-{
-    auto ret = InformationBox::AskQuestion("Warning",
-                                "The device reports a different protocol"
-                                "version (" + QString::number(reported) + ") than expected (" + QString::number(expected) + ").\n"
-                                "A firmware update is strongly recommended. Do you want to update now?", false);
-    if (ret) {
-        if (vdevice->isCompoundDevice()) {
-            InformationBox::ShowError("Unable to update the firmware", "The connected device is a compound device, direct firmware"
-                                    " update is not supported. Connect to each LibreVNA individually for the update.");
-            return;
-        }
-        StartFirmwareUpdateDialog();
-    }
-}
+//void AppWindow::DeviceNeedsUpdate(int reported, int expected)
+//{
+//    auto ret = InformationBox::AskQuestion("Warning",
+//                                "The device reports a different protocol"
+//                                "version (" + QString::number(reported) + ") than expected (" + QString::number(expected) + ").\n"
+//                                "A firmware update is strongly recommended. Do you want to update now?", false);
+//    if (ret) {
+//        if (vdevice->isCompoundDevice()) {
+//            InformationBox::ShowError("Unable to update the firmware", "The connected device is a compound device, direct firmware"
+//                                    " update is not supported. Connect to each LibreVNA individually for the update.");
+//            return;
+//        }
+//        StartFirmwareUpdateDialog();
+//    }
+//}
 
 void AppWindow::DeviceStatusUpdated(VirtualDevice::Status status)
 {
@@ -1054,38 +1071,38 @@ void AppWindow::DeviceInfoUpdated()
     UpdateReferenceToolbar();
 }
 
-void AppWindow::SourceCalibrationDialog()
-{
-    if(!vdevice || vdevice->isCompoundDevice()) {
-        return;
-    }
-    auto d = new SourceCalDialog(vdevice->getDevice(), modeHandler);
-    if(AppWindow::showGUI()) {
-        d->exec();
-    }
-}
+//void AppWindow::SourceCalibrationDialog()
+//{
+//    if(!vdevice || vdevice->isCompoundDevice()) {
+//        return;
+//    }
+//    auto d = new SourceCalDialog(vdevice->getDevice(), modeHandler);
+//    if(AppWindow::showGUI()) {
+//        d->exec();
+//    }
+//}
 
-void AppWindow::ReceiverCalibrationDialog()
-{
-    if(!vdevice || vdevice->isCompoundDevice()) {
-        return;
-    }
-    auto d = new ReceiverCalDialog(vdevice->getDevice(), modeHandler);
-    if(AppWindow::showGUI()) {
-        d->exec();
-    }
-}
+//void AppWindow::ReceiverCalibrationDialog()
+//{
+//    if(!vdevice || vdevice->isCompoundDevice()) {
+//        return;
+//    }
+//    auto d = new ReceiverCalDialog(vdevice->getDevice(), modeHandler);
+//    if(AppWindow::showGUI()) {
+//        d->exec();
+//    }
+//}
 
-void AppWindow::FrequencyCalibrationDialog()
-{
-    if(!vdevice || vdevice->isCompoundDevice()) {
-        return;
-    }
-    auto d = new FrequencyCalDialog(vdevice->getDevice(), modeHandler);
-    if(AppWindow::showGUI()) {
-        d->exec();
-    }
-}
+//void AppWindow::FrequencyCalibrationDialog()
+//{
+//    if(!vdevice || vdevice->isCompoundDevice()) {
+//        return;
+//    }
+//    auto d = new FrequencyCalDialog(vdevice->getDevice(), modeHandler);
+//    if(AppWindow::showGUI()) {
+//        d->exec();
+//    }
+//}
 
 void AppWindow::SaveSetup(QString filename)
 {
@@ -1158,10 +1175,10 @@ void AppWindow::LoadSetup(nlohmann::json j)
 
     // Disconnect device prior to deleting and creating new modes. This prevents excessice and unnnecessary configuration of the device
     QString serial = QString();
-    if(vdevice->getConnected()) {
-        serial = vdevice->serial();
-        delete vdevice;
-        vdevice = nullptr;
+    if(device) {
+        serial = device->getSerial();
+        device->disconnectDevice();
+        device = nullptr;
     }
 
     modeHandler->closeModes();
@@ -1214,9 +1231,9 @@ void AppWindow::LoadSetup(nlohmann::json j)
     }
 }
 
-VirtualDevice *AppWindow::getDevice()
+DeviceDriver *AppWindow::getDevice()
 {
-    return vdevice;
+    return device;
 }
 
 QStackedWidget *AppWindow::getCentral() const
@@ -1290,8 +1307,8 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
 {
     switch(status) {
     case DeviceStatusBar::Connected:
-        lConnectionStatus.setText("Connected to " + vdevice->serial());
-        qInfo() << "Connected to" << vdevice->serial();
+        lConnectionStatus.setText("Connected to " + device->getSerial());
+        qInfo() << "Connected to" << device->getSerial();
         break;
     case DeviceStatusBar::Disconnected:
         lConnectionStatus.setText("No device connected");

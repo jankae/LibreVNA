@@ -1,4 +1,4 @@
-#ifndef DEVICEDRIVER_H
+﻿#ifndef DEVICEDRIVER_H
 #define DEVICEDRIVER_H
 
 /**
@@ -24,8 +24,8 @@ class DeviceDriver : public QObject
 {
     Q_OBJECT
 public:
-    DeviceDriver();
-    virtual ~DeviceDriver();
+    DeviceDriver() {}
+    virtual ~DeviceDriver() {}
 
     /**
      * @brief Returns the driver name. It must be unique across all implemented drivers and is used to identify the driver
@@ -37,22 +37,26 @@ public:
      * @return Serial numbers of detected devices
      */
     virtual std::set<QString> GetAvailableDevices() = 0;
+
+protected:
     /**
      * @brief Connects to a device, given by its serial number
+     *
      * @param serial Serial number of device that should be connected to
      * @return true if connection successful, otherwise false
      */
-    virtual bool connectTo(QString serial) = 0;
+    virtual bool connectTo(QString getSerial) = 0;
     /**
      * @brief Disconnects from device. Has no effect if no device was connected
      */
     virtual void disconnect() = 0;
 
+public:
     /**
      * @brief Returns the serial number of the connected device
      * @return Serial number of connected device (empty string if no device is connected)
      */
-    virtual QString serial() = 0;
+    virtual QString getSerial() = 0;
 
     enum class Feature {
         // VNA features
@@ -65,7 +69,6 @@ public:
         Generator,
         // Spectrum analyzer features
         SA,
-        SASignalID,
         SATrackingGenerator,
         SATrackingOffset,
         // External reference
@@ -75,6 +78,7 @@ public:
 
     class Info {
     public:
+        // TODO create constructor with default values
         QString firmware_version;
         QString hardware_version;
         std::set<Feature> supportedFeatures;
@@ -106,6 +110,8 @@ public:
                 double minFreq, maxFreq;
                 // RBW limits in Hz
                 double minRBW, maxRBW;
+                // Output level limits  of the tracking generator in dBm
+                double mindBm, maxdBm;
             } SA;
         } Limits;
     };
@@ -179,19 +185,16 @@ public:
     /**
      * @brief Returns the driver specific settings
      *
-     * The settings are returned as a map.
-     * Key: user-readable setting name
-     * Value: SettingDescription, consisting of:
+     * The settings are returned as a vector of SettingDescriptions, consisting of:
      *      - var: Pointer to the setting variable (should be a private member of the derived class)
      *      - name: Arbitrary string used to persistently store this setting (never visible to the user)
      *      - def: Default value of the setting
      *
-     * These settings will be persistent across reboots. For each device driver, a section within the preferences
-     * will be created where these settings can be changed.
+     * These settings will be persistent across reboots.
      *
      * @return Map of driver specific settings
      */
-    virtual std::map<QString, Savable::SettingDescription> driverSpecificSettings() {return std::map<QString, Savable::SettingDescription>();}
+    virtual std::vector<Savable::SettingDescription> driverSpecificSettings() {return std::vector<Savable::SettingDescription>();}
 
     /**
      * @brief Return driver specific actions.
@@ -343,6 +346,12 @@ public:
      * @return true if configuration successful, false otherwise
      */
     virtual bool setSA(const SASettings &s, std::function<void(bool)> cb = nullptr) {Q_UNUSED(s) Q_UNUSED(cb) return false;}
+
+    /**
+     * @brief Returns the number of points in one spectrum analyzer sweep (as configured by the last setSA() call)
+     * @return Number of points in the sweep
+     */
+    virtual unsigned int getSApoints() {return 0;}
 signals:
     /**
      * @brief This signal must be emitted whenever a SA measurement is complete and should be passed on to the GUI
@@ -411,9 +420,19 @@ public:
      */
     static constexpr unsigned int maximumSupportedPorts = 8;
 
+    static Info getInfo(DeviceDriver* driver) {
+        if(driver) {
+            return driver->getInfo();
+        } else {
+            return Info();
+        }
+    }
+
 signals:
     /**
      * @brief Emit this signal when the device connection has been lost unexpectedly
+     *
+     * The device driver should do nothing else, the disconnect() function will be called from the application after this signal has been emitted.
      */
     void ConnectionLost();
     /**
@@ -421,6 +440,14 @@ signals:
      * @param line
      */
     void LogLineReceived(QString line);
+
+public:
+    bool connectDevice(QString serial);
+    void disconnectDevice();
+    static DeviceDriver* getActiveDriver() {return activeDriver;}
+
+private:
+    static DeviceDriver *activeDriver;
 };
 
 Q_DECLARE_METATYPE(DeviceDriver::VNAMeasurement)

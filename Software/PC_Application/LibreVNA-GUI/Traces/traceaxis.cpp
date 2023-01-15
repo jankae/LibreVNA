@@ -475,16 +475,16 @@ double XAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
 void XAxis::set(Type type, bool log, bool autorange, double min, double max, double div)
 {
     if(max <= min) {
-        auto info = VirtualDevice::getInfo(VirtualDevice::getConnected());
+        auto info = DeviceDriver::getInfo(DeviceDriver::getActiveDriver());
         // invalid selection, use default instead
         switch(type) {
         case Type::Frequency:
-            min = info.Limits.minFreq;
-            max = info.Limits.maxFreq;
+            min = info.Limits.VNA.minFreq;
+            max = info.Limits.VNA.maxFreq;
             break;
         case Type::Power:
-            min = info.Limits.mindBm;
-            max = info.Limits.maxdBm;
+            min = info.Limits.VNA.mindBm;
+            max = info.Limits.VNA.maxdBm;
             break;
         case Type::Time:
         case Type::TimeZeroSpan:

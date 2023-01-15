@@ -2,7 +2,7 @@
 #define DEEMBEDDINGOPTION_H
 
 #include "savable.h"
-#include "Device/device.h"
+#include "Device/devicedriver.h"
 #include "Traces/tracemodel.h"
 #include "scpi.h"
 
@@ -27,12 +27,12 @@ public:
     static Type TypeFromString(QString string);
 
     virtual std::set<unsigned int> getAffectedPorts() = 0;
-    virtual void transformDatapoint(VirtualDevice::VNAMeasurement &p) = 0;
+    virtual void transformDatapoint(DeviceDriver::VNAMeasurement &p) = 0;
     virtual void edit(){}
     virtual Type getType() = 0;
 
 public slots:
-    virtual void measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m){Q_UNUSED(m)}
+    virtual void measurementCompleted(std::vector<DeviceDriver::VNAMeasurement> m){Q_UNUSED(m)}
 signals:
     // Deembedding option may selfdestruct if not applicable with current settings. It should emit this signal before deleting itself
     void deleted(DeembeddingOption *option);

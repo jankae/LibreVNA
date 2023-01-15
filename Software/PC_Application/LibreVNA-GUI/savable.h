@@ -21,7 +21,9 @@ public:
     bool openFromFileDialog(QString title, QString filetype);
     bool saveToFileDialog(QString title, QString filetype, QString ending = "");
 
-    using SettingDescription = struct {
+    class SettingDescription {
+    public:
+        SettingDescription(QPointerVariant var, QString name, QVariant def) : var(var), name(name), def(def){}
         QPointerVariant var;
         QString name;
         QVariant def;

@@ -3,7 +3,7 @@
 
 #include "touchstone.h"
 #include "csv.h"
-#include "Device/virtualdevice.h"
+#include "Device/devicedriver.h"
 #include "Math/tracemath.h"
 #include "Tools/parameters.h"
 
@@ -13,6 +13,7 @@
 #include <QColor>
 #include <set>
 #include <QTime>
+#include <QTimer>
 
 class Marker;
 class TraceModel;
@@ -44,13 +45,13 @@ public:
 
     void clear(bool force = false);
     void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
-    void addData(const Data& d, const VirtualDevice::SASettings &s, int index = -1);
+    void addData(const Data& d, const DeviceDriver::SASettings &s, int index = -1);
     void addDeembeddingData(const Data& d, int index = -1);
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
     QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
-    static void fillFromDatapoints(std::map<QString, Trace*> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data, bool deembedded = false);
+    static void fillFromDatapoints(std::map<QString, Trace*> traceSet, const std::vector<DeviceDriver::VNAMeasurement> &data, bool deembedded = false);
     void fromLivedata(LivedataType type, QString param);
     void fromMath();
     QString name() { return _name; }
@@ -151,7 +152,7 @@ public:
 
     // Assembles datapoints as received from the VNA from four S parameter traces. Requires that all traces are in the frequency domain,
     // have the same number of samples and their samples must be at the same frequencies across all traces
-    static std::vector<VirtualDevice::VNAMeasurement> assembleDatapoints(std::map<QString, Trace *> traceSet);
+    static std::vector<DeviceDriver::VNAMeasurement> assembleDatapoints(std::map<QString, Trace *> traceSet);
 
     static LivedataType TypeFromString(QString s);
     static QString TypeToString(LivedataType t);
@@ -275,7 +276,7 @@ private:
     std::set<Marker*> markers;
     struct {
         union {
-            VirtualDevice::SASettings SA;
+            DeviceDriver::SASettings SA;
         };
         bool valid;
     } settings;

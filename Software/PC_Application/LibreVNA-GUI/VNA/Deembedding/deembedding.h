@@ -22,7 +22,7 @@ public:
     Deembedding(TraceModel &tm);
     ~Deembedding(){}
 
-    void Deembed(VirtualDevice::VNAMeasurement &d);
+    void Deembed(DeviceDriver::VNAMeasurement &d);
     void Deembed(std::map<QString, Trace*> traceSet);
 
     void removeOption(unsigned int index);
@@ -50,7 +50,7 @@ private:
     TraceModel &tm;
 
     bool measuring;
-    std::vector<VirtualDevice::VNAMeasurement> measurements;
+    std::vector<DeviceDriver::VNAMeasurement> measurements;
     QDialog *measurementDialog;
     Ui_DeembeddingMeasurementDialog *measurementUI;
 

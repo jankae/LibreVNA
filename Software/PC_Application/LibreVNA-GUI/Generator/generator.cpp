@@ -98,7 +98,7 @@ void Generator::setupSCPI()
     }));
     add(new SCPICommand("PORT", [=](QStringList params) -> QString {
         unsigned long long newval;
-        if(!SCPI::paramToULongLong(params, 0, newval) || newval > VirtualDevice::getInfo(window->getDevice()).ports) {
+        if(!SCPI::paramToULongLong(params, 0, newval) || newval > DeviceDriver::getInfo(window->getDevice()).Limits.Generator.ports) {
             return SCPI::getResultName(SCPI::Result::Error);
         } else {
             central->setPort(newval);

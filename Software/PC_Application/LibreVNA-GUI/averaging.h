@@ -1,7 +1,7 @@
 #ifndef AVERAGING_H
 #define AVERAGING_H
 
-#include "Device/virtualdevice.h"
+#include "Device/devicedriver.h"
 
 #include <array>
 #include <deque>
@@ -18,8 +18,8 @@ public:
     Averaging();
     void reset(unsigned int points);
     void setAverages(unsigned int a);
-    VirtualDevice::VNAMeasurement process(VirtualDevice::VNAMeasurement d);
-    VirtualDevice::SAMeasurement process(VirtualDevice::SAMeasurement d);
+    DeviceDriver::VNAMeasurement process(DeviceDriver::VNAMeasurement d);
+    DeviceDriver::SAMeasurement process(DeviceDriver::SAMeasurement d);
     // Returns the number of averaged sweeps. Value is incremented whenever the last point of the sweep is added.
     // Returned values are in range 0 to averages
     unsigned int getLevel();

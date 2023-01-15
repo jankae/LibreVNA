@@ -126,7 +126,7 @@ Deembedding::Deembedding(TraceModel &tm)
     }, nullptr));
 }
 
-void Deembedding::Deembed(VirtualDevice::VNAMeasurement &d)
+void Deembedding::Deembed(DeviceDriver::VNAMeasurement &d)
 {
     // figure out the point in one sweep based on the incomig pointNums
     static unsigned lastPointNum;

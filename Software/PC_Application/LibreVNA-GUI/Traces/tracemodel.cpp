@@ -280,7 +280,7 @@ void TraceModel::clearLiveData()
     }
 }
 
-void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::DataType datatype, bool deembedded)
+void TraceModel::addVNAData(const DeviceDriver::VNAMeasurement& d, TraceMath::DataType datatype, bool deembedded)
 {
     source = DataSource::VNA;
     lastReceivedData = QDateTime::currentDateTimeUtc();
@@ -319,7 +319,7 @@ void TraceModel::addVNAData(const VirtualDevice::VNAMeasurement& d, TraceMath::D
     }
 }
 
-void TraceModel::addSAData(const VirtualDevice::SAMeasurement& d, const VirtualDevice::SASettings &settings)
+void TraceModel::addSAData(const DeviceDriver::SAMeasurement& d, const DeviceDriver::SASettings &settings)
 {
     source = DataSource::SA;
     lastReceivedData = QDateTime::currentDateTimeUtc();

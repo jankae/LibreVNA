@@ -81,7 +81,7 @@ public slots:
     bool SaveCalibration(QString filename = "");
 
 private slots:
-    void NewDatapoint(VirtualDevice::VNAMeasurement m);
+    void NewDatapoint(DeviceDriver::VNAMeasurement m);
     void StartImpedanceMatching();
     void StartMixedModeConversion();
     // Sweep control

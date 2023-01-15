@@ -97,7 +97,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     connect(calLoad, &QAction::triggered, [=](){
         LoadCalibration();
-        if(window->getDevice() && !cal.validForDevice(window->getDevice()->serial())) {
+        if(window->getDevice() && !cal.validForDevice(window->getDevice()->getSerial())) {
             InformationBox::ShowMessage("Invalid calibration", "The selected calibration was created for a different device. You can still load it but the resulting "
                                         "data likely isn't useful.");
         }
@@ -213,7 +213,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     connect(assignDefaultCal, &QAction::triggered, [=](){
        if(window->getDevice()) {
-           auto key = "DefaultCalibration"+window->getDevice()->serial();
+           auto key = "DefaultCalibration"+window->getDevice()->getSerial();
            QSettings settings;
            auto filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", settings.value(key).toString(), "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
            if(!filename.isEmpty()) {
@@ -225,7 +225,7 @@ VNA::VNA(AppWindow *window, QString name)
     });
     connect(removeDefaultCal, &QAction::triggered, [=](){
         QSettings settings;
-        settings.remove("DefaultCalibration"+window->getDevice()->serial());
+        settings.remove("DefaultCalibration"+window->getDevice()->getSerial());
         removeDefaultCal->setEnabled(false);
     });
 
@@ -678,10 +678,10 @@ void VNA::deactivate()
 void VNA::initializeDevice()
 {
     defaultCalMenu->setEnabled(true);
-    connect(window->getDevice(), &VirtualDevice::VNAmeasurementReceived, this, &VNA::NewDatapoint, Qt::UniqueConnection);
+    connect(window->getDevice(), &DeviceDriver::VNAmeasurementReceived, this, &VNA::NewDatapoint, Qt::UniqueConnection);
     // Check if default calibration exists and attempt to load it
     QSettings s;
-    auto key = "DefaultCalibration"+window->getDevice()->serial();
+    auto key = "DefaultCalibration"+window->getDevice()->getSerial();
     if (s.contains(key)) {
         auto filename = s.value(key).toString();
         qDebug() << "Attempting to load default calibration file " << filename;
@@ -702,7 +702,7 @@ void VNA::initializeDevice()
     // Configure initial state of device
     SettingsChanged();
     emit deviceInitialized();
-    if(window->getDevice() && !cal.validForDevice(window->getDevice()->serial())) {
+    if(window->getDevice() && !cal.validForDevice(window->getDevice()->getSerial())) {
         InformationBox::ShowMessage("Invalid calibration", "The current calibration was created for a different device. You can still use it but the resulting "
                                     "data likely isn't useful.");
     }
@@ -806,7 +806,7 @@ void VNA::fromJSON(nlohmann::json j)
 
 using namespace std;
 
-void VNA::NewDatapoint(VirtualDevice::VNAMeasurement m)
+void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
 {
     if(isActive != true) {
         // ignore
@@ -979,14 +979,14 @@ void VNA::SetStopFreq(double freq)
 void VNA::SetCenterFreq(double freq)
 {
     auto old_span = settings.Freq.stop - settings.Freq.start;
-    if (freq - old_span / 2 <= VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
+    if (freq - old_span / 2 <= DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq) {
         // would shift start frequency below minimum
         settings.Freq.start = 0;
         settings.Freq.stop = 2 * freq;
-    } else if(freq + old_span / 2 >= VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq) {
+    } else if(freq + old_span / 2 >= DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq) {
         // would shift stop frequency above maximum
-        settings.Freq.start = 2 * freq - VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
-        settings.Freq.stop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+        settings.Freq.start = 2 * freq - DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
+        settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
     } else {
         settings.Freq.start = freq - old_span / 2;
         settings.Freq.stop = freq + old_span / 2;
@@ -996,12 +996,12 @@ void VNA::SetCenterFreq(double freq)
 
 void VNA::SetSpan(double span)
 {
-    auto maxFreq = Preferences::getInstance().Acquisition.harmonicMixing ? VirtualDevice::getInfo(window->getDevice()).Limits.maxFreqHarmonic : VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+    auto maxFreq = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
     auto old_center = (settings.Freq.start + settings.Freq.stop) / 2;
-    if(old_center < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq + span / 2) {
+    if(old_center < DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq + span / 2) {
         // would shift start frequency below minimum
-        settings.Freq.start = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
-        settings.Freq.stop = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq + span;
+        settings.Freq.start = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq;
+        settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq + span;
     } else if(old_center > maxFreq - span / 2) {
         // would shift stop frequency above maximum
         settings.Freq.start = maxFreq - span;
@@ -1025,8 +1025,8 @@ void VNA::SetFullSpan()
             settings.Freq.start = pref.Acquisition.fullSpanStart;
             settings.Freq.stop = pref.Acquisition.fullSpanStop;
         } else {
-            settings.Freq.start = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
-            settings.Freq.stop = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
+            settings.Freq.start = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq;
+            settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
         }
     }
     ConstrainAndUpdateFrequencies();
@@ -1073,10 +1073,10 @@ void VNA::SetLogSweep(bool log)
 
 void VNA::SetSourceLevel(double level)
 {
-    if(level > VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm) {
-        level = VirtualDevice::getInfo(window->getDevice()).Limits.maxdBm;
-    } else if(level < VirtualDevice::getInfo(window->getDevice()).Limits.mindBm) {
-        level = VirtualDevice::getInfo(window->getDevice()).Limits.mindBm;
+    if(level > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxdBm) {
+        level = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxdBm;
+    } else if(level < DeviceDriver::getInfo(window->getDevice()).Limits.VNA.mindBm) {
+        level = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.mindBm;
     }
     emit sourceLevelChanged(level);
     settings.Freq.excitation_power = level;
@@ -1107,15 +1107,15 @@ void VNA::SetPowerSweepFrequency(double freq)
 
 void VNA::SetPoints(unsigned int points)
 {
-    unsigned int maxPoints = Preferences::getInstance().Acquisition.allowSegmentedSweep ? UINT16_MAX : VirtualDevice::getInfo(window->getDevice()).Limits.maxPoints;
+    unsigned int maxPoints = Preferences::getInstance().Acquisition.allowSegmentedSweep ? UINT16_MAX : DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxPoints;
     if(points > maxPoints) {
         points = maxPoints;
     } else if (points < 2) {
         points = 2;
     }
-    if (points > VirtualDevice::getInfo(window->getDevice()).Limits.maxPoints) {
+    if (points > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxPoints) {
         // needs segmented sweep
-        settings.segments = ceil((double) points / VirtualDevice::getInfo(window->getDevice()).Limits.maxPoints);
+        settings.segments = ceil((double) points / DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxPoints);
         settings.activeSegment = 0;
     } else {
         // can fit all points into one segment
@@ -1129,10 +1129,10 @@ void VNA::SetPoints(unsigned int points)
 
 void VNA::SetIFBandwidth(double bandwidth)
 {
-    if(bandwidth > VirtualDevice::getInfo(window->getDevice()).Limits.maxIFBW) {
-        bandwidth = VirtualDevice::getInfo(window->getDevice()).Limits.maxIFBW;
-    } else if(bandwidth < VirtualDevice::getInfo(window->getDevice()).Limits.minIFBW) {
-        bandwidth = VirtualDevice::getInfo(window->getDevice()).Limits.minIFBW;
+    if(bandwidth > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxIFBW) {
+        bandwidth = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxIFBW;
+    } else if(bandwidth < DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minIFBW) {
+        bandwidth = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minIFBW;
     }
     settings.bandwidth = bandwidth;
     emit IFBandwidthChanged(settings.bandwidth);
@@ -1150,7 +1150,7 @@ void VNA::SetAveraging(unsigned int averages)
 void VNA::ExcitationRequired()
 {
     if(!Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-        for(unsigned int i=1;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+        for(unsigned int i=1;i<DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
             auto required = traceModel.PortExcitationRequired(i);
             auto set = find(settings.excitedPorts.begin(), settings.excitedPorts.end(), i) != settings.excitedPorts.end();
             if(required != set) {
@@ -1430,21 +1430,14 @@ void VNA::SetupSCPI()
 
 void VNA::ConstrainAndUpdateFrequencies()
 {
-    auto& pref = Preferences::getInstance();
-    double maxFreq;
-    if(pref.Acquisition.harmonicMixing) {
-        maxFreq = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreqHarmonic;
-    } else {
-        maxFreq = VirtualDevice::getInfo(window->getDevice()).Limits.maxFreq;
-    }
-    if(settings.Freq.stop > maxFreq) {
-        settings.Freq.stop = maxFreq;
+    if(settings.Freq.stop > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq) {
+        settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq;
     }
     if(settings.Freq.start > settings.Freq.stop) {
         settings.Freq.start = settings.Freq.stop;
     }
-    if(settings.Freq.start < VirtualDevice::getInfo(window->getDevice()).Limits.minFreq) {
-        settings.Freq.start = VirtualDevice::getInfo(window->getDevice()).Limits.minFreq;
+    if(settings.Freq.start < DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq) {
+        settings.Freq.start = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq;
     }
     settings.zerospan = (settings.sweepType == SweepType::Frequency && settings.Freq.start == settings.Freq.stop)
             || (settings.sweepType == SweepType::Power && settings.Power.start == settings.Power.stop);
@@ -1617,7 +1610,7 @@ void VNA::preset()
         }
     }
     // Create default traces
-    createDefaultTracesAndGraphs(VirtualDevice::getInfo(window->getDevice()).ports);
+    createDefaultTracesAndGraphs(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports);
 }
 
 QString VNA::SweepTypeToString(VNA::SweepType sw)
@@ -1686,14 +1679,14 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
         }
         changingSettings = true;
         // assemble VNA protocol settings
-        VirtualDevice::VNASettings s = {};
+        DeviceDriver::VNASettings s = {};
         s.IFBW = settings.bandwidth;
         if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+            for(unsigned int i=0;i<DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
                 s.excitedPorts.push_back(i);
             }
         } else {
-            for(unsigned int i=0;i<VirtualDevice::getInfo(window->getDevice()).ports;i++) {
+            for(unsigned int i=0;i<DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
                 if(traceModel.PortExcitationRequired(i))
                 s.excitedPorts.push_back(i);
             }

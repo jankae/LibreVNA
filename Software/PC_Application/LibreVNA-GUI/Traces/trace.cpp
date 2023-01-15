@@ -139,7 +139,7 @@ void Trace::addData(const Trace::Data& d, DataType domain, double reference_impe
     emit outputSamplesChanged(index, index + 1);
 }
 
-void Trace::addData(const Trace::Data &d, const VirtualDevice::SASettings &s, int index)
+void Trace::addData(const Trace::Data &d, const DeviceDriver::SASettings &s, int index)
 {
     settings.SA = s;
     settings.valid = true;
@@ -303,7 +303,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     return lastTraceName;
 }
 
-void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::vector<VirtualDevice::VNAMeasurement> &data, bool deembedded)
+void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::vector<DeviceDriver::VNAMeasurement> &data, bool deembedded)
 {
     // remove all previous points
     for(auto m : traceSet) {
@@ -1001,9 +1001,9 @@ std::vector<Trace *> Trace::createFromCSV(CSV &csv)
     return traces;
 }
 
-std::vector<VirtualDevice::VNAMeasurement> Trace::assembleDatapoints(std::map<QString, Trace *> traceSet)
+std::vector<DeviceDriver::VNAMeasurement> Trace::assembleDatapoints(std::map<QString, Trace *> traceSet)
 {
-    vector<VirtualDevice::VNAMeasurement> ret;
+    vector<DeviceDriver::VNAMeasurement> ret;
 
     // Sanity check traces
     unsigned int samples = traceSet.begin()->second->size();
@@ -1041,7 +1041,7 @@ std::vector<VirtualDevice::VNAMeasurement> Trace::assembleDatapoints(std::map<QS
 
     // Checks passed, assemble datapoints
     for(unsigned int i=0;i<samples;i++) {
-        VirtualDevice::VNAMeasurement d;
+        DeviceDriver::VNAMeasurement d;
         for(auto m : traceSet) {
             QString measurement = m.first;
             const Trace *t = m.second;

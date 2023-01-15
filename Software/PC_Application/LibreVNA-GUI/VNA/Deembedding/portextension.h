@@ -19,14 +19,14 @@ class PortExtension : public DeembeddingOption
 public:
     PortExtension();
     std::set<unsigned int> getAffectedPorts() override;
-    void transformDatapoint(VirtualDevice::VNAMeasurement& d) override;
+    void transformDatapoint(DeviceDriver::VNAMeasurement& d) override;
     void setCalkit(Calkit *kit);
     Type getType() override {return Type::PortExtension;}
     nlohmann::json toJSON() override;
     void fromJSON(nlohmann::json j) override;
 public slots:
     void edit() override;
-    void measurementCompleted(std::vector<VirtualDevice::VNAMeasurement> m) override;
+    void measurementCompleted(std::vector<DeviceDriver::VNAMeasurement> m) override;
 
 private:
     void startMeasurement();

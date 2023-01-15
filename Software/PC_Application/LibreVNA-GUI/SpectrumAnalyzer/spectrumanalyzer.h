@@ -38,13 +38,13 @@ public:
     virtual void deviceInfoUpdated() override;
 
 private:
-    static QString WindowToString(VirtualDevice::SASettings::Window w);
-    static VirtualDevice::SASettings::Window WindowFromString(QString s);
-    static QString DetectorToString(VirtualDevice::SASettings::Detector d);
-    static VirtualDevice::SASettings::Detector DetectorFromString(QString s);
+    static QString WindowToString(DeviceDriver::SASettings::Window w);
+    static DeviceDriver::SASettings::Window WindowFromString(QString s);
+    static QString DetectorToString(DeviceDriver::SASettings::Detector d);
+    static DeviceDriver::SASettings::Detector DetectorFromString(QString s);
 
 private slots:
-    void NewDatapoint(VirtualDevice::SAMeasurement m);
+    void NewDatapoint(DeviceDriver::SAMeasurement m);
     // Sweep control
     void SetStartFreq(double freq);
     void SetStopFreq(double freq);
@@ -57,10 +57,9 @@ private slots:
     void SetSingleSweep(bool single);
     // Acquisition control
     void SetRBW(double bandwidth);
-    void SetWindow(VirtualDevice::SASettings::Window w);
-    void SetDetector(VirtualDevice::SASettings::Detector d);
+    void SetWindow(DeviceDriver::SASettings::Window w);
+    void SetDetector(DeviceDriver::SASettings::Detector d);
     void SetAveraging(unsigned int averages);
-    void SetSignalID(bool enabled);
     // TG control
     void SetTGEnabled(bool enabled);
     void SetTGPort(int port);
@@ -87,7 +86,7 @@ private:
 
     void createDefaultTracesAndGraphs(int ports);
 
-    VirtualDevice::SASettings settings;
+    DeviceDriver::SASettings settings;
     bool changingSettings;
     unsigned int averages;
     bool singleSweep;
