@@ -249,6 +249,12 @@ void LibreVNAUSBDriver::disconnect()
     }
 }
 
+void LibreVNAUSBDriver::registerTypes()
+{
+    qRegisterMetaType<Protocol::PacketInfo>("LibreVNAUSBPacket");
+    qRegisterMetaType<TransmissionResult>("LibreVNAUSBResult");
+}
+
 void LibreVNAUSBDriver::ReceivedData()
 {
     Protocol::PacketInfo packet;
@@ -428,4 +434,33 @@ void LibreVNAUSBDriver::SearchDevices(std::function<bool (libusb_device_handle *
         libusb_close(handle);
     }
     libusb_free_device_list(devList, 1);
+}
+
+bool LibreVNAUSBDriver::startNextTransmission()
+{
+    if(transmissionQueue.isEmpty() || !connected) {
+        // nothing more to transmit
+        transmissionActive = false;
+        return false;
+    }
+    transmissionActive = true;
+    auto t = transmissionQueue.head();
+    unsigned char buffer[1024];
+    unsigned int length = Protocol::EncodePacket(t.packet, buffer, sizeof(buffer));
+    if(!length) {
+        qCritical() << "Failed to encode packet";
+        return false;
+    }
+    int actual_length;
+    auto &log = DeviceUSBLog::getInstance();
+    log.addPacket(t.packet);
+    auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
+    if(ret < 0) {
+        qCritical() << "Error sending data: "
+                                << libusb_strerror((libusb_error) ret);
+        return false;
+    }
+    transmissionTimer.start(t.timeout);
+//    qDebug() << "Transmission started, queue at " << transmissionQueue.size();
+    return true;
 }

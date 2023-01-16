@@ -163,14 +163,14 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     });
 
     // Compound device page
-    connect(ui->compoundList, &QListWidget::currentRowChanged, [=](){
-        if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[ui->compoundList->currentRow()]) {
-            // can't remove the device we are connected to
-            ui->compoundDelete->setEnabled(false);
-        } else {
-            ui->compoundDelete->setEnabled(true);
-        }
-    });
+//    connect(ui->compoundList, &QListWidget::currentRowChanged, [=](){
+//        if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[ui->compoundList->currentRow()]) {
+//            // can't remove the device we are connected to
+//            ui->compoundDelete->setEnabled(false);
+//        } else {
+//            ui->compoundDelete->setEnabled(true);
+//        }
+//    });
     connect(ui->compoundList, &QListWidget::doubleClicked, [=](){
         auto index = ui->compoundList->currentRow();
         if(index >= 0 && index < (int) p->compoundDevices.size()) {
@@ -195,22 +195,22 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         });
         d->show();
     });
-    connect(ui->compoundDelete, &QPushButton::clicked, [=](){
-        auto index = ui->compoundList->currentRow();
-        if(index >= 0 && index < (int) p->compoundDevices.size()) {
-            // delete the actual compound device
-            if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[index]) {
-                // can't remove the device we are currently connected to
-                return;
-            }
-            delete p->compoundDevices[index];
-            // delete the line in the GUI list
-            delete ui->compoundList->takeItem(index);
-            // remove compound device from list
-            p->compoundDevices.erase(p->compoundDevices.begin() + index);
-            p->nonTrivialWriting();
-        }
-    });
+//    connect(ui->compoundDelete, &QPushButton::clicked, [=](){
+//        auto index = ui->compoundList->currentRow();
+//        if(index >= 0 && index < (int) p->compoundDevices.size()) {
+//            // delete the actual compound device
+//            if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[index]) {
+//                // can't remove the device we are currently connected to
+//                return;
+//            }
+//            delete p->compoundDevices[index];
+//            // delete the line in the GUI list
+//            delete ui->compoundList->takeItem(index);
+//            // remove compound device from list
+//            p->compoundDevices.erase(p->compoundDevices.begin() + index);
+//            p->nonTrivialWriting();
+//        }
+//    });
 
     // Debug page
     ui->DebugMaxUSBlogSize->setUnit("B");
@@ -514,24 +514,32 @@ Preferences::~Preferences()
 
 void Preferences::load()
 {
-    QSettings settings;
     // load settings, using default values if not present
     qInfo() << "Loading preferences";
+    load(descr);
+    nonTrivialParsing();
+}
+
+void Preferences::load(std::vector<Savable::SettingDescription> descr)
+{
+    QSettings settings;
     for(auto d : descr) {
         try {
             d.var.setValue(settings.value(d.name, d.def));
-//            qDebug() << "Setting" << d.name << "is set to" << d.var.value();
         } catch (const exception& e){
             d.var.setValue(d.def);
-//            qDebug() << "Setting" << d.name << "reset to default:" << d.def;
         }
     }
-    nonTrivialParsing();
 }
 
 void Preferences::store()
 {
     nonTrivialWriting();
+    store(descr);
+}
+
+void Preferences::store(std::vector<Savable::SettingDescription> descr)
+{
     QSettings settings;
     // store settings
     for(auto d : descr) {

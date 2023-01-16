@@ -1430,8 +1430,8 @@ void VNA::SetupSCPI()
 
 void VNA::ConstrainAndUpdateFrequencies()
 {
-    if(settings.Freq.stop > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq) {
-        settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq;
+    if(settings.Freq.stop > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq) {
+        settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
     }
     if(settings.Freq.start > settings.Freq.stop) {
         settings.Freq.start = settings.Freq.stop;

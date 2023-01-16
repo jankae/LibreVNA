@@ -60,6 +60,7 @@
 #include <QDateTime>
 #include <QCommandLineParser>
 #include <QScrollArea>
+#include <QStringList>
 
 using namespace std;
 
@@ -84,9 +85,6 @@ AppWindow::AppWindow(QWidget *parent)
 //    qDebug().setVerbosity(0);
     qDebug() << "Application start";
 
-    // Register device drivers
-    deviceDrivers.push_back(new LibreVNAUSBDriver());
-
     this->setWindowIcon(QIcon(":/app/logo.png"));
 
     parser.setApplicationDescription(qlibrevnaApp->applicationName());
@@ -106,6 +104,15 @@ AppWindow::AppWindow(QWidget *parent)
     } else {
         Preferences::getInstance().load();
     }
+
+    // Register device drivers
+    deviceDrivers.push_back(new LibreVNAUSBDriver());
+
+    for(auto driver : deviceDrivers) {
+        driver->registerTypes();
+        Preferences::getInstance().load(driver->driverSpecificSettings());
+    }
+
     device = nullptr;
 //    vdevice = nullptr;
     modeHandler = nullptr;
@@ -184,9 +191,9 @@ AppWindow::AppWindow(QWidget *parent)
     }
     // List available devices
     UpdateDeviceList();
-    if(pref.Startup.ConnectToFirstDevice) {
+    if(pref.Startup.ConnectToFirstDevice && deviceList.size() > 0) {
         // at least one device available
-        ConnectToDevice();
+        ConnectToDevice(deviceList[0].serial);
     }
 
     if(parser.isSet("setup")) {
@@ -325,10 +332,13 @@ void AppWindow::closeEvent(QCloseEvent *event)
     delete modeHandler;
     modeHandler = nullptr;
     pref.store();
+    for(auto driver : deviceDrivers) {
+        Preferences::getInstance().store(driver->driverSpecificSettings());
+    }
     QMainWindow::closeEvent(event);
 }
 
-bool AppWindow::ConnectToDevice(QString serial)
+bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
 {
     if(serial.isEmpty()) {
         qDebug() << "Trying to connect to any device";
@@ -341,16 +351,24 @@ bool AppWindow::ConnectToDevice(QString serial)
     }
     try {
         qDebug() << "Attempting to connect to device...";
-        for(auto driver : deviceDrivers) {
-            if(driver->GetAvailableDevices().count(serial)) {
+        for(auto d : deviceDrivers) {
+            if(driver && driver != d) {
+                // not the specified driver
+                continue;
+            }
+            if(d->GetAvailableDevices().count(serial)) {
                 // this driver can connect to the device
-                if(driver->connectDevice(serial)) {
-                    device = driver;
+                if(d->connectDevice(serial)) {
+                    device = d;
                 } else {
-                    // failed to connect
-                    // TODO show error message
+                    break;
                 }
             }
+        }
+        if(!device) {
+            // failed to connect
+            InformationBox::ShowError("Failed to connect", "Could not connect to "+serial);
+            return false;
         }
         UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
         connect(device, &DeviceDriver::InfoUpdated, this, &AppWindow::DeviceInfoUpdated);
@@ -368,8 +386,11 @@ bool AppWindow::ConnectToDevice(QString serial)
 //        }
         ui->actionPreset->setEnabled(true);
 
+        DeviceEntry e;
+        e.serial = device->getSerial();
+        e.driver = device;
         for(auto d : deviceActionGroup->actions()) {
-            if(d->text() == device->getSerial()) {
+            if(d->text() == e.toString()) {
                 d->blockSignals(true);
                 d->setChecked(true);
                 d->blockSignals(false);
@@ -476,8 +497,10 @@ void AppWindow::SetupSCPI()
     }));
     scpi_dev->add(new SCPICommand("LIST", nullptr, [=](QStringList) -> QString {
         QString ret;
-        for(auto d : VirtualDevice::GetAvailableVirtualDevices()) {
-            ret += d + ",";
+        for(auto driver : deviceDrivers) {
+            for(auto d : driver->GetAvailableDevices()) {
+                ret += d + ",";
+            }
         }
         // remove last comma
         ret.chop(1);
@@ -933,33 +956,42 @@ int AppWindow::UpdateDeviceList()
 {
     deviceActionGroup->setExclusive(true);
     ui->menuConnect_to->clear();
-    std::set<QString> devices;
+    deviceList.clear();
     for(auto driver : deviceDrivers) {
-        devices.merge(driver->GetAvailableDevices());
+        for(auto serial : driver->GetAvailableDevices()) {
+            DeviceEntry e;
+            e.driver = driver;
+            e.serial = serial;
+            deviceList.push_back(e);
+        }
     }
     if(device) {
-        devices.insert(device->getSerial());
+        DeviceEntry e;
+        e.driver = device;
+        e.serial = device->getSerial();
+        if(std::find(deviceList.begin(), deviceList.end(), e) == deviceList.end()) {
+            // connected device is not in list (this may happen if the driver does not detect a connected device as "available")
+            deviceList.push_back(e);
+        }
     }
     int available = 0;
     bool found = false;
-    if(devices.size()) {
-        for(auto d : devices) {
-            if(!parser.value("device").isEmpty() && parser.value("device") != d) {
-                // specified device does not match, ignore
-                continue;
-            }
-            auto connectAction = ui->menuConnect_to->addAction(d);
-            connectAction->setCheckable(true);
-            connectAction->setActionGroup(deviceActionGroup);
-            if(device && d == device->getSerial()) {
-                connectAction->setChecked(true);
-            }
-            connect(connectAction, &QAction::triggered, [this, d]() {
-               ConnectToDevice(d);
-            });
-            found = true;
-            available++;
+    for(auto d : deviceList) {
+        if(!parser.value("device").isEmpty() && parser.value("device") != d.serial) {
+            // specified device does not match, ignore
+            continue;
         }
+        auto connectAction = ui->menuConnect_to->addAction(d.toString());
+        connectAction->setCheckable(true);
+        connectAction->setActionGroup(deviceActionGroup);
+        if(device && d.serial == device->getSerial()) {
+            connectAction->setChecked(true);
+        }
+        connect(connectAction, &QAction::triggered, [this, d]() {
+           ConnectToDevice(d.serial, d.driver);
+        });
+        found = true;
+        available++;
     }
     ui->menuConnect_to->setEnabled(found);
     qDebug() << "Updated device list, found" << available;
@@ -1055,12 +1087,16 @@ void AppWindow::ShowUSBLog()
 //    }
 //}
 
-void AppWindow::DeviceStatusUpdated(VirtualDevice::Status status)
+void AppWindow::DeviceStatusUpdated()
 {
-    lDeviceInfo.setText(status.statusString);
-    lADCOverload.setVisible(status.overload);
-    lUnlevel.setVisible(status.unlevel);
-    lUnlock.setVisible(status.unlocked);
+    lDeviceInfo.setText(device->getStatus());
+}
+
+void AppWindow::DeviceFlagsUpdated()
+{
+    lADCOverload.setVisible(device->asserted(DeviceDriver::Flag::Overload));
+    lUnlevel.setVisible(device->asserted(DeviceDriver::Flag::Unlevel));
+    lUnlock.setVisible(device->asserted(DeviceDriver::Flag::Unlocked));
 }
 
 void AppWindow::DeviceInfoUpdated()
@@ -1320,3 +1356,31 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
     }
 }
 
+
+QString AppWindow::DeviceEntry::toString()
+{
+    return serial + " (" + driver->getDriverName()+")";
+}
+
+AppWindow::DeviceEntry AppWindow::DeviceEntry::fromString(QString s, std::vector<DeviceDriver*> drivers)
+{
+    DeviceEntry e;
+    QStringList parts = s.split(" ");
+    if(parts.size() < 2) {
+        // invalid string
+        e.serial = "";
+        e.driver = nullptr;
+    } else {
+        e.serial = parts[0];
+        e.driver = nullptr;
+        parts[1].chop(1);
+        auto driverName = parts[1].mid(1);
+        for(auto d : drivers) {
+            if(d->getDriverName() == driverName) {
+                e.driver = d;
+                break;
+            }
+        }
+    }
+    return e;
+}

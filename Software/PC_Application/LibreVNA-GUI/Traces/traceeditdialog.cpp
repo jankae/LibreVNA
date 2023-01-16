@@ -125,12 +125,11 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     }
 
     VNAtrace = Trace::isVNAParameter(t.liveParameter());
-    if(VirtualDevice::getConnected()) {
-        qDebug() << VirtualDevice::getConnected();
+    if(DeviceDriver::getActiveDriver()) {
         if(VNAtrace) {
-            ui->CLiveParam->addItems(VirtualDevice::getConnected()->availableVNAMeasurements());
+            ui->CLiveParam->addItems(DeviceDriver::getActiveDriver()->availableVNAMeasurements());
         } else {
-            ui->CLiveParam->addItems(VirtualDevice::getConnected()->availableSAMeasurements());
+            ui->CLiveParam->addItems(DeviceDriver::getActiveDriver()->availableSAMeasurements());
         }
     }
 

@@ -499,18 +499,18 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
                 for(auto m : m_avg.measurements) {
                     normalize.portCorrection[m.first].push_back(m.second);
                 }
-                if(m_avg.pointNum == DeviceDriver::getActiveDriver()->getSApoints() - 1) {
+                if(m_avg.pointNum == DeviceDriver::SApoints() - 1) {
                     // this was the last point
                     normalize.measuring = false;
                     normalize.f_start = settings.freqStart;
                     normalize.f_stop = settings.freqStop;
-                    normalize.points = DeviceDriver::getActiveDriver()->getSApoints();
+                    normalize.points = DeviceDriver::SApoints();
                     EnableNormalization(true);
                     qDebug() << "Normalization measurement complete";
                 }
             }
         }
-        int percentage = (((average.currentSweep() - 1) * 100) + (m_avg.pointNum + 1) * 100 / DeviceDriver::getActiveDriver()->getSApoints()) / averages;
+        int percentage = (((average.currentSweep() - 1) * 100) + (m_avg.pointNum + 1) * 100 / DeviceDriver::SApoints()) / averages;
         normalize.dialog.setValue(percentage);
     }
 
@@ -524,7 +524,7 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
 
     traceModel.addSAData(m_avg, settings);
     emit dataChanged();
-    if(m_avg.pointNum == DeviceDriver::getActiveDriver()->getSApoints() - 1) {
+    if(m_avg.pointNum == DeviceDriver::SApoints() - 1) {
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
@@ -771,7 +771,8 @@ void SpectrumAnalyzer::EnableNormalization(bool enabled)
     if(enabled != normalize.active) {
         if(enabled) {
             // check if measurements already taken
-            if(normalize.f_start == settings.freqStart && normalize.f_stop == settings.freqStop && normalize.points == settings.points) {
+            if(normalize.f_start == settings.freqStart && normalize.f_stop == settings.freqStop
+                    && normalize.points == DeviceDriver::SApoints()) {
                 // same settings as with normalization measurement, can enable
                 normalize.active = true;
             } else {
@@ -856,7 +857,7 @@ void SpectrumAnalyzer::ConfigureDevice()
 
                 if(normalize.active) {
                     // check if normalization is still valid
-                    if(normalize.f_start != settings.freqStart || normalize.f_stop != settings.freqStop || normalize.points != DeviceDriver::getActiveDriver()->getSApoints()) {
+                    if(normalize.f_start != settings.freqStart || normalize.f_stop != settings.freqStop || normalize.points != DeviceDriver::SApoints()) {
                         // normalization was taken at different settings, disable
                         EnableNormalization(false);
                         InformationBox::ShowMessage("Information", "Normalization was disabled because the span has been changed");
@@ -869,7 +870,7 @@ void SpectrumAnalyzer::ConfigureDevice()
             emit sweepStopped();
             changingSettings = false;
         }
-        average.reset(DeviceDriver::getActiveDriver()->getSApoints());
+        average.reset(DeviceDriver::SApoints());
         UpdateAverageCount();
         traceModel.clearLiveData();
         emit traceModel.SpanChanged(settings.freqStart, settings.freqStop);
@@ -890,7 +891,7 @@ void SpectrumAnalyzer::ConfigureDevice()
 
 void SpectrumAnalyzer::ResetLiveTraces()
 {
-    average.reset(DeviceDriver::getActiveDriver()->getSApoints());
+    average.reset(DeviceDriver::SApoints());
     traceModel.clearLiveData();
     UpdateAverageCount();
 }

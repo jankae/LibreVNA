@@ -51,7 +51,9 @@ public:
     Preferences(const Preferences&) = delete;
     ~Preferences();
     void load();
+    void load(std::vector<Savable::SettingDescription> descr);
     void store();
+    void store(std::vector<Savable::SettingDescription> descr);
     void edit();
     void setDefault();
 

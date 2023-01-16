@@ -3,6 +3,8 @@
 
 #include "../../VNA_embedded/Application/Communication/Protocol.hpp"
 
+#include "librevnausbdriver.h"
+
 #include <functional>
 #include <libusb-1.0/libusb.h>
 #include <thread>
@@ -18,31 +20,31 @@ Q_DECLARE_METATYPE(Protocol::ManualStatusV1)
 Q_DECLARE_METATYPE(Protocol::SpectrumAnalyzerResult)
 Q_DECLARE_METATYPE(Protocol::AmplitudeCorrectionPoint)
 
-class USBInBuffer : public QObject {
-    Q_OBJECT
-public:
-    USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size);
-    ~USBInBuffer();
+//class USBInBuffer : public QObject {
+//    Q_OBJECT
+//public:
+//    USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size);
+//    ~USBInBuffer();
 
-    void removeBytes(int handled_bytes);
-    int getReceived() const;
-    uint8_t *getBuffer() const;
+//    void removeBytes(int handled_bytes);
+//    int getReceived() const;
+//    uint8_t *getBuffer() const;
 
-signals:
-    void DataReceived();
-    void TransferError();
+//signals:
+//    void DataReceived();
+//    void TransferError();
 
-private:
-    void Callback(libusb_transfer *transfer);
-    static void LIBUSB_CALL CallbackTrampoline(libusb_transfer *transfer);
-    libusb_transfer *transfer;
-    unsigned char *buffer;
-    int buffer_size;
-    int received_size;
-    bool inCallback;
-    bool cancelling;
-    std::condition_variable cv;
-};
+//private:
+//    void Callback(libusb_transfer *transfer);
+//    static void LIBUSB_CALL CallbackTrampoline(libusb_transfer *transfer);
+//    libusb_transfer *transfer;
+//    unsigned char *buffer;
+//    int buffer_size;
+//    int received_size;
+//    bool inCallback;
+//    bool cancelling;
+//    std::condition_variable cv;
+//};
 
 
 class Device : public QObject

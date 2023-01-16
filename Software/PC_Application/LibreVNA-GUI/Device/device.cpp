@@ -8,6 +8,7 @@
 #include <QString>
 #include <QMessageBox>
 #include <mutex>
+#include "devicedriver.h"
 
 using namespace std;
 
@@ -20,126 +21,126 @@ static constexpr USBID IDs[] = {
     {0x0483, 0x4121},
 };
 
-USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size) :
-    buffer_size(buffer_size),
-    received_size(0),
-    inCallback(false),
-    cancelling(false)
-{
-    buffer = new unsigned char[buffer_size];
-    memset(buffer, 0, buffer_size);
-    transfer = libusb_alloc_transfer(0);
-    libusb_fill_bulk_transfer(transfer, handle, endpoint, buffer, buffer_size, CallbackTrampoline, this, 0);
-    libusb_submit_transfer(transfer);
-}
+//USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size) :
+//    buffer_size(buffer_size),
+//    received_size(0),
+//    inCallback(false),
+//    cancelling(false)
+//{
+//    buffer = new unsigned char[buffer_size];
+//    memset(buffer, 0, buffer_size);
+//    transfer = libusb_alloc_transfer(0);
+//    libusb_fill_bulk_transfer(transfer, handle, endpoint, buffer, buffer_size, CallbackTrampoline, this, 0);
+//    libusb_submit_transfer(transfer);
+//}
 
-USBInBuffer::~USBInBuffer()
-{
-    if(transfer) {
-        cancelling = true;
-        libusb_cancel_transfer(transfer);
-        // wait for cancellation to complete
-        mutex mtx;
-        unique_lock<mutex> lck(mtx);
-        using namespace std::chrono_literals;
-        if(cv.wait_for(lck, 100ms) == cv_status::timeout) {
-            qWarning() << "Timed out waiting for mutex acquisition during disconnect";
-        }
-    }
-    delete[] buffer;
-}
-
-void USBInBuffer::removeBytes(int handled_bytes)
-{
-    if(!inCallback) {
-        throw runtime_error("Removing of bytes is only allowed from within receive callback");
-    }
-    if(handled_bytes >= received_size) {
-        received_size = 0;
-    } else {
-        // not removing all bytes, have to move remaining data to the beginning of the buffer
-        memmove(buffer, &buffer[handled_bytes], received_size - handled_bytes);
-        received_size -= handled_bytes;
-    }
-}
-
-int USBInBuffer::getReceived() const
-{
-    return received_size;
-}
-
-void USBInBuffer::Callback(libusb_transfer *transfer)
-{
-    if(cancelling || (transfer->status == LIBUSB_TRANSFER_CANCELLED)) {
-        // destructor called, do not resubmit
-        libusb_free_transfer(transfer);
-        this->transfer = nullptr;
-        cv.notify_all();
-        return;
-    }
-//    qDebug() << libusb_error_name(transfer->status);
-    switch(transfer->status) {
-    case LIBUSB_TRANSFER_COMPLETED:
-        received_size += transfer->actual_length;
-        // Change/insert/delete random data to check the data handling for robustness
-//        srand((unsigned)time(0));
-//        for(unsigned int i=0;i<received_size;i++) {
-//            auto r = rand() % 100;
-//            if(r == 0) {
-//                // modify this byte
-//                buffer[i] = rand() % 256;
-//            } else if(r == 1) {
-//                // insert random byte
-//                memmove(&buffer[i+1], &buffer[i], received_size - i);
-//                buffer[i] = rand() % 256;
-//                received_size++;
-//            } else if(r == 2) {
-//                // remove byte
-//                memmove(&buffer[i], &buffer[i+1], received_size - i - 1);
-//                received_size--;
-//            }
+//USBInBuffer::~USBInBuffer()
+//{
+//    if(transfer) {
+//        cancelling = true;
+//        libusb_cancel_transfer(transfer);
+//        // wait for cancellation to complete
+//        mutex mtx;
+//        unique_lock<mutex> lck(mtx);
+//        using namespace std::chrono_literals;
+//        if(cv.wait_for(lck, 100ms) == cv_status::timeout) {
+//            qWarning() << "Timed out waiting for mutex acquisition during disconnect";
 //        }
-//        qDebug() << transfer->actual_length <<"total:" << received_size;
-        inCallback = true;
-        emit DataReceived();
-        inCallback = false;
-        break;
-    case LIBUSB_TRANSFER_NO_DEVICE:
-        qCritical() << "LIBUSB_TRANSFER_NO_DEVICE";
-        libusb_free_transfer(transfer);
-        return;
-    case LIBUSB_TRANSFER_ERROR:
-    case LIBUSB_TRANSFER_OVERFLOW:
-    case LIBUSB_TRANSFER_STALL:
-        qCritical() << "LIBUSB_ERROR" << transfer->status;
-        libusb_free_transfer(transfer);
-        this->transfer = nullptr;
-        emit TransferError();
-        return;
-        break;
-    case LIBUSB_TRANSFER_TIMED_OUT:
-        // nothing to do
-        break;
-    case LIBUSB_TRANSFER_CANCELLED:
-        // already handled before switch-case
-        break;
-    }
-    // Resubmit the transfer
-    transfer->buffer = &buffer[received_size];
-    transfer->length = buffer_size - received_size;
-    libusb_submit_transfer(transfer);
-}
+//    }
+//    delete[] buffer;
+//}
 
-void USBInBuffer::CallbackTrampoline(libusb_transfer *transfer)
-{
-    auto usb = (USBInBuffer*) transfer->user_data;
-    usb->Callback(transfer);
-}
+//void USBInBuffer::removeBytes(int handled_bytes)
+//{
+//    if(!inCallback) {
+//        throw runtime_error("Removing of bytes is only allowed from within receive callback");
+//    }
+//    if(handled_bytes >= received_size) {
+//        received_size = 0;
+//    } else {
+//        // not removing all bytes, have to move remaining data to the beginning of the buffer
+//        memmove(buffer, &buffer[handled_bytes], received_size - handled_bytes);
+//        received_size -= handled_bytes;
+//    }
+//}
 
-uint8_t *USBInBuffer::getBuffer() const
-{
-    return buffer;
-}
+//int USBInBuffer::getReceived() const
+//{
+//    return received_size;
+//}
+
+//void USBInBuffer::Callback(libusb_transfer *transfer)
+//{
+//    if(cancelling || (transfer->status == LIBUSB_TRANSFER_CANCELLED)) {
+//        // destructor called, do not resubmit
+//        libusb_free_transfer(transfer);
+//        this->transfer = nullptr;
+//        cv.notify_all();
+//        return;
+//    }
+////    qDebug() << libusb_error_name(transfer->status);
+//    switch(transfer->status) {
+//    case LIBUSB_TRANSFER_COMPLETED:
+//        received_size += transfer->actual_length;
+//        // Change/insert/delete random data to check the data handling for robustness
+////        srand((unsigned)time(0));
+////        for(unsigned int i=0;i<received_size;i++) {
+////            auto r = rand() % 100;
+////            if(r == 0) {
+////                // modify this byte
+////                buffer[i] = rand() % 256;
+////            } else if(r == 1) {
+////                // insert random byte
+////                memmove(&buffer[i+1], &buffer[i], received_size - i);
+////                buffer[i] = rand() % 256;
+////                received_size++;
+////            } else if(r == 2) {
+////                // remove byte
+////                memmove(&buffer[i], &buffer[i+1], received_size - i - 1);
+////                received_size--;
+////            }
+////        }
+////        qDebug() << transfer->actual_length <<"total:" << received_size;
+//        inCallback = true;
+//        emit DataReceived();
+//        inCallback = false;
+//        break;
+//    case LIBUSB_TRANSFER_NO_DEVICE:
+//        qCritical() << "LIBUSB_TRANSFER_NO_DEVICE";
+//        libusb_free_transfer(transfer);
+//        return;
+//    case LIBUSB_TRANSFER_ERROR:
+//    case LIBUSB_TRANSFER_OVERFLOW:
+//    case LIBUSB_TRANSFER_STALL:
+//        qCritical() << "LIBUSB_ERROR" << transfer->status;
+//        libusb_free_transfer(transfer);
+//        this->transfer = nullptr;
+//        emit TransferError();
+//        return;
+//        break;
+//    case LIBUSB_TRANSFER_TIMED_OUT:
+//        // nothing to do
+//        break;
+//    case LIBUSB_TRANSFER_CANCELLED:
+//        // already handled before switch-case
+//        break;
+//    }
+//    // Resubmit the transfer
+//    transfer->buffer = &buffer[received_size];
+//    transfer->length = buffer_size - received_size;
+//    libusb_submit_transfer(transfer);
+//}
+
+//void USBInBuffer::CallbackTrampoline(libusb_transfer *transfer)
+//{
+//    auto usb = (USBInBuffer*) transfer->user_data;
+//    usb->Callback(transfer);
+//}
+
+//uint8_t *USBInBuffer::getBuffer() const
+//{
+//    return buffer;
+//}
 
 static constexpr Protocol::DeviceInfo defaultInfo = {
     .ProtocolVersion = Protocol::Version,

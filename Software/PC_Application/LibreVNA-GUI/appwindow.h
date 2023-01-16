@@ -58,7 +58,7 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
-    bool ConnectToDevice(QString serial = QString());
+    bool ConnectToDevice(QString serial = QString(), DeviceDriver *driver = nullptr);
     void DisconnectDevice();
     int UpdateDeviceList();
 //    void StartManualControl();
@@ -67,8 +67,9 @@ private slots:
 //    void UpdateAcquisitionFrequencies();
     void ShowUSBLog();
 //    void StartFirmwareUpdateDialog();
-    void DeviceNeedsUpdate(int reported, int expected);
-    void DeviceStatusUpdated(VirtualDevice::Status status);
+//    void DeviceNeedsUpdate(int reported, int expected);
+    void DeviceStatusUpdated();
+    void DeviceFlagsUpdated();
     void DeviceInfoUpdated();
 //    void SourceCalibrationDialog();
 //    void ReceiverCalibrationDialog();
@@ -108,6 +109,20 @@ private:
 //    VirtualDevice *vdevice;
     std::vector<DeviceDriver*> deviceDrivers;
     DeviceDriver *device;
+
+    class DeviceEntry {
+    public:
+        QString toString();
+        static DeviceEntry fromString(QString s, std::vector<DeviceDriver*> drivers);
+        bool operator==(const DeviceEntry& rhs) {
+            return serial == rhs.serial && driver == rhs.driver;
+        }
+
+        QString serial;
+        DeviceDriver *driver;
+    };
+
+    std::vector<DeviceEntry> deviceList;
 
     DeviceLog deviceLog;
     QString deviceSerial;

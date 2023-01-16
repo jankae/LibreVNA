@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
     qSetMessagePattern("%{time process}: [%{type}] %{message}");
 
     Device::RegisterTypes();
-    VirtualDevice::RegisterTypes();
 
     app = new QApplication(argc, argv);
     QCoreApplication::setOrganizationName("LibreVNA");

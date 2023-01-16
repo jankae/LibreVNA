@@ -2,6 +2,96 @@
 
 using namespace std;
 
+class Reference
+{
+public:
+    enum class TypeIn {
+        Internal,
+        External,
+        Auto,
+        None
+    };
+    enum class OutFreq {
+        MHZ10,
+        MHZ100,
+        Off,
+        None
+    };
+
+    static QString OutFreqToLabel(Reference::OutFreq t)
+    {
+        switch(t) {
+        case OutFreq::MHZ10: return "10 MHz";
+        case OutFreq::MHZ100: return "100 MHz";
+        case OutFreq::Off: return "Off";
+        default: return "Invalid";
+        }
+    }
+
+    static QString OutFreqToKey(Reference::OutFreq f)
+    {
+        switch(f) {
+        case OutFreq::MHZ10: return "10 MHz";
+        case OutFreq::MHZ100: return "100 MHz";
+        case OutFreq::Off: return "Off";
+        default: return "Invalid";
+        }
+    }
+
+    static Reference::OutFreq KeyToOutFreq(QString key)
+    {
+        for (auto r: Reference::getOutFrequencies()) {
+            if(OutFreqToKey(r) == key|| OutFreqToLabel(r) == key) {
+                return r;
+            }
+        }
+        // not found
+        return Reference::OutFreq::None;
+    }
+
+
+    static QString TypeToLabel(TypeIn t)
+    {
+        switch(t) {
+        case TypeIn::Internal: return "Internal";
+        case TypeIn::External: return "External";
+        case TypeIn::Auto: return "Auto";
+        default: return "Invalid";
+        }
+    }
+
+    static const QString TypeToKey(TypeIn t)
+    {
+        switch(t) {
+        case TypeIn::Internal: return "Int";
+        case TypeIn::External: return "Ext";
+        case TypeIn::Auto: return "Auto";
+        default: return "Invalid";
+        }
+    }
+
+    static TypeIn KeyToType(QString key)
+    {
+        for (auto r: Reference::getReferencesIn()) {
+            if(TypeToKey(r) == key || TypeToLabel(r) == key) {
+                return r;
+            }
+        }
+        // not found
+        return TypeIn::None;
+    }
+
+    static std::vector<Reference::TypeIn> getReferencesIn()
+    {
+        return {TypeIn::Internal, TypeIn::External, TypeIn::Auto};
+    }
+
+    static std::vector<Reference::OutFreq> getOutFrequencies()
+    {
+        return {OutFreq::Off, OutFreq::MHZ10, OutFreq::MHZ100};
+    }
+};
+
 LibreVNADriver::LibreVNADriver()
 {
     connected = false;
@@ -142,6 +232,7 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     zerospan = s.freqStart == s.freqStop;
 
     Protocol::PacketInfo p = {};
+    p.type = Protocol::PacketType::SpectrumAnalyzerSettings;
     p.spectrumSettings.f_start = s.freqStart;
     p.spectrumSettings.f_stop = s.freqStop;
 
@@ -207,6 +298,62 @@ bool LibreVNADriver::setIdle(std::function<void (bool)> cb)
     });
 }
 
+QStringList LibreVNADriver::availableExtRefInSettings()
+{
+    QStringList ret;
+    for(auto r : Reference::getReferencesIn()) {
+        ret.push_back(Reference::TypeToLabel(r));
+    }
+    return ret;
+}
+
+QStringList LibreVNADriver::availableExtRefOutSettings()
+{
+    QStringList ret;
+    for(auto r : Reference::getOutFrequencies()) {
+        ret.push_back(Reference::OutFreqToLabel(r));
+    }
+    return ret;
+}
+
+bool LibreVNADriver::setExtRef(QString option_in, QString option_out)
+{
+    auto refIn = Reference::KeyToType(option_in);
+    if(refIn == Reference::TypeIn::None) {
+        refIn = Reference::TypeIn::Internal;
+    }
+    auto refOut = Reference::KeyToOutFreq(option_out);
+    if(refOut == Reference::OutFreq::None) {
+        refOut = Reference::OutFreq::Off;
+    }
+
+    Protocol::PacketInfo p = {};
+    p.type = Protocol::PacketType::Reference;
+    switch(refIn) {
+    case Reference::TypeIn::Internal:
+    case Reference::TypeIn::None:
+        p.reference.UseExternalRef = 0;
+        p.reference.AutomaticSwitch = 0;
+        break;
+    case Reference::TypeIn::Auto:
+        p.reference.UseExternalRef = 0;
+        p.reference.AutomaticSwitch = 1;
+        break;
+    case Reference::TypeIn::External:
+        p.reference.UseExternalRef = 1;
+        p.reference.AutomaticSwitch = 0;
+        break;
+    }
+    switch(refOut) {
+    case Reference::OutFreq::None:
+    case Reference::OutFreq::Off: p.reference.ExtRefOuputFreq = 0; break;
+    case Reference::OutFreq::MHZ10: p.reference.ExtRefOuputFreq = 10000000; break;
+    case Reference::OutFreq::MHZ100: p.reference.ExtRefOuputFreq = 100000000; break;
+    }
+
+    return SendPacket(p);
+}
+
 void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
 {
     emit passOnReceivedPacket(packet);
@@ -253,6 +400,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
     case Protocol::PacketType::DeviceStatusV1:
         lastStatus = packet.statusV1;
         emit StatusUpdated();
+        emit FlagsUpdated();
         break;
     case Protocol::PacketType::VNADatapoint: {
         VNAMeasurement m;

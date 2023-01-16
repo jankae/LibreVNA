@@ -277,7 +277,7 @@ void LibreCALDialog::startCalibration()
     }
     ui->lCalibrationStatus->setText("Creating calibration measurements...");
     cal->reset();
-    auto vnaPorts = VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;
+    auto vnaPorts = DeviceDriver::getInfo(DeviceDriver::getActiveDriver()).Limits.VNA.ports;
     set<CalibrationMeasurement::Base*> openMeasurements;
     set<CalibrationMeasurement::Base*> shortMeasurements;
     set<CalibrationMeasurement::Base*> loadMeasurements;
@@ -432,7 +432,7 @@ void LibreCALDialog::createPortAssignmentUI()
     while(layout->rowCount() > 1) {
         layout->removeRow(1);
     }
-    auto vnaPorts = VirtualDevice::getInfo(VirtualDevice::getConnected()).ports;
+    auto vnaPorts = DeviceDriver::getInfo(DeviceDriver::getActiveDriver()).Limits.VNA.ports;
     portAssignment.resize(vnaPorts, 0);
     auto calPorts = 0;
     if(device) {

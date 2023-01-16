@@ -10,6 +10,9 @@
 #include <QQueue>
 #include <QTimer>
 
+Q_DECLARE_METATYPE(Protocol::PacketInfo)
+Q_DECLARE_METATYPE(LibreVNADriver::TransmissionResult)
+
 class USBInBuffer : public QObject {
     Q_OBJECT
 public:
@@ -63,6 +66,14 @@ public:
      */
     virtual void disconnect() override;
 
+    /**
+     * @brief Registers metatypes within the Qt Framework.
+     *
+     * If the device driver uses a queued signal/slot connection with custom data types, these types must be registered before emitting the signal.
+     * Register them within this function with qRegisterMetaType<Type>("Name");
+     */
+    virtual void registerTypes();
+
 private slots:
     void ReceivedData();
     void ReceivedLog();
@@ -101,11 +112,6 @@ private:
     bool transmissionActive;
 
     std::thread *m_receiveThread;
-    Protocol::DeviceInfo info;
-    bool infoValid;
-    union {
-        Protocol::DeviceStatusV1 v1;
-    } status;
 
     std::mutex accessMutex;
 };

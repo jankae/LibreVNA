@@ -32,10 +32,13 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/compounddevice.cpp \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.cpp \
     ../LibreVNA-GUI/Device/device.cpp \
+    ../LibreVNA-GUI/Device/devicedriver.cpp \
     ../LibreVNA-GUI/Device/devicelog.cpp \
     ../LibreVNA-GUI/Device/deviceusblog.cpp \
     ../LibreVNA-GUI/Device/deviceusblogview.cpp \
     ../LibreVNA-GUI/Device/firmwareupdatedialog.cpp \
+    ../LibreVNA-GUI/Device/librevnadriver.cpp \
+    ../LibreVNA-GUI/Device/librevnausbdriver.cpp \
     ../LibreVNA-GUI/Device/manualcontroldialog.cpp \
     ../LibreVNA-GUI/Device/virtualdevice.cpp \
     ../LibreVNA-GUI/Generator/generator.cpp \
@@ -199,10 +202,13 @@ HEADERS += \
     ../LibreVNA-GUI/Device/compounddevice.h \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.h \
     ../LibreVNA-GUI/Device/device.h \
+    ../LibreVNA-GUI/Device/devicedriver.h \
     ../LibreVNA-GUI/Device/devicelog.h \
     ../LibreVNA-GUI/Device/deviceusblog.h \
     ../LibreVNA-GUI/Device/deviceusblogview.h \
     ../LibreVNA-GUI/Device/firmwareupdatedialog.h \
+    ../LibreVNA-GUI/Device/librevnadriver.h \
+    ../LibreVNA-GUI/Device/librevnausbdriver.h \
     ../LibreVNA-GUI/Device/manualcontroldialog.h \
     ../LibreVNA-GUI/Device/virtualdevice.h \
     ../LibreVNA-GUI/Generator/generator.h \
