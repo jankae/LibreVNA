@@ -1,11 +1,12 @@
 #ifndef AMPLITUDECALDIALOG_H
 #define AMPLITUDECALDIALOG_H
 
-#include "mode.h"
-#include "modehandler.h"
-#include "Device/device.h"
+#include "librevnadriver.h"
 
+#include <deque>
 #include <QDialog>
+#include <QAbstractTableModel>
+#include <QProgressBar>
 
 namespace Ui {
 class AmplitudeCalDialog;
@@ -15,7 +16,7 @@ class AmplitudeCalDialog;
 
 class AmplitudeModel : public QAbstractTableModel
 {
-    friend AmplitudeCalDialog;
+    friend class AmplitudeCalDialog;
     Q_OBJECT
 public:
     AmplitudeModel(AmplitudeCalDialog *c);
@@ -43,7 +44,7 @@ class AmplitudeCalDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidget *parent = nullptr);
+    explicit AmplitudeCalDialog(LibreVNADriver *dev, QWidget *parent = nullptr);
     ~AmplitudeCalDialog();
     void reject() override;
 
@@ -78,16 +79,18 @@ protected slots:
     bool AddPoint(double frequency);
     void AddPointDialog();
     void AutomaticMeasurementDialog();
-    void ReceivedMeasurement(Device *dev, Protocol::SpectrumAnalyzerResult res);
 signals:
     void pointsUpdated();
     void newPointCreated(CorrectionPoint& p);
+    void AmplitudeCorrectionPointReceived(Protocol::AmplitudeCorrectionPoint p);
+    void SpectrumResultReceived(Protocol::SpectrumAnalyzerResult res);
 protected:
     static constexpr double excitationAmplitude = -20.0;
     static constexpr int automaticSweepPoints = 31;
     static constexpr int averages = 3;
     static constexpr int automaticSettling = 1;
 
+    void ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res);
     bool ConfirmActionIfEdited();
     void UpdateSaveButton();
     virtual Protocol::PacketType requestCommand() = 0;
@@ -100,15 +103,13 @@ protected:
     virtual void UpdateAmplitude(CorrectionPoint& point) = 0;
     std::vector<CorrectionPoint> points;
     Ui::AmplitudeCalDialog *ui;
-    Device *dev;
-    Mode *activeMode;
-    ModeHandler *modeHandler;
+    LibreVNADriver *dev;
     AmplitudeModel model;
     bool edited;
     CalibrationMode mode;
 
     void SetupNextAutomaticPoint(bool isSourceCal);
-    void ReceivedAutomaticMeasurementResult(Device *dev, Protocol::SpectrumAnalyzerResult res);
+    void ReceivedAutomaticMeasurementResult(Protocol::SpectrumAnalyzerResult res);
     struct {
         QDialog *dialog;
         std::vector<CorrectionPoint> points;

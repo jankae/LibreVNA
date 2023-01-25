@@ -184,6 +184,7 @@ private:
      TCPoverride(false) {}
     static Preferences instance;
 
+    // TODO remove settings that have been moved to LibreVNADriver
     const std::vector<Savable::SettingDescription> descr = {{
         {&Startup.ConnectToFirstDevice, "Startup.ConnectToFirstDevice", true},
         {&Startup.RememberSweepSettings, "Startup.RememberSweepSettings", false},

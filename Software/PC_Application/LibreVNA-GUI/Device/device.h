@@ -3,7 +3,7 @@
 
 #include "../../VNA_embedded/Application/Communication/Protocol.hpp"
 
-#include "librevnausbdriver.h"
+#include "LibreVNA/librevnausbdriver.h"
 
 #include <functional>
 #include <libusb-1.0/libusb.h>

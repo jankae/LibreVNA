@@ -49,12 +49,6 @@
     <addaction name="menuConnect_to"/>
     <addaction name="actionDisconnect"/>
     <addaction name="separator"/>
-    <addaction name="actionManual_Control"/>
-    <addaction name="actionFirmware_Update"/>
-    <addaction name="separator"/>
-    <addaction name="actionSource_Calibration"/>
-    <addaction name="actionReceiver_Calibration"/>
-    <addaction name="actionFrequency_Calibration"/>
     <addaction name="separator"/>
     <addaction name="actionUSB_log"/>
    </widget>

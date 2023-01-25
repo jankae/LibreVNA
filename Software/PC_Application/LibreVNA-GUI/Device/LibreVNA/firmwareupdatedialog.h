@@ -1,7 +1,7 @@
 #ifndef FIRMWAREUPDATEDIALOG_H
 #define FIRMWAREUPDATEDIALOG_H
 
-#include "device.h"
+#include "librevnadriver.h"
 
 #include <QDialog>
 #include <QFile>
@@ -23,7 +23,7 @@ public:
      * - If the update fails during device reboot, the device pointer is set to zero and the device deleted
      * - If the update succeeds, the device pointer will be set to the new device instance
      */
-    explicit FirmwareUpdateDialog(Device *dev, QWidget *parent = nullptr);
+    explicit FirmwareUpdateDialog(LibreVNADriver *dev, QWidget *parent = nullptr);
     ~FirmwareUpdateDialog();
 
 signals:
@@ -42,7 +42,7 @@ private:
     void abortWithError(QString error);
     void sendNextFirmwareChunk();
     Ui::FirmwareUpdateDialog *ui;
-    Device *dev;
+    LibreVNADriver *dev;
     QFile *file;
     QTimer timer;
 

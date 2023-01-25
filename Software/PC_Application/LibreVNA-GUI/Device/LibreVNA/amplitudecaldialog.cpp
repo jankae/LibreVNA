@@ -18,18 +18,16 @@
 using namespace std;
 using namespace nlohmann;
 
-AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidget *parent) :
+AmplitudeCalDialog::AmplitudeCalDialog(LibreVNADriver *dev, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AmplitudeCalDialog),
     dev(dev),
-    modeHandler(handler),
     model(this),
     edited(false),
     mode(CalibrationMode::BothPorts)
 {
-    activeMode = modeHandler->getActiveMode();
-    modeHandler->deactivate(activeMode);
-    dev->SetIdle();
+    setAttribute(Qt::WA_DeleteOnClose);
+    emit dev->acquireControl();
     ui->setupUi(this);
     ui->view->setModel(&model);
     ui->view->setColumnWidth(AmplitudeModel::ColIndexFreq, 100);
@@ -134,13 +132,21 @@ AmplitudeCalDialog::AmplitudeCalDialog(Device *dev, ModeHandler *handler, QWidge
     });
     connect(ui->automatic, &QPushButton::clicked, this, &AmplitudeCalDialog::AutomaticMeasurementDialog);
 
-    connect(dev, &Device::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedMeasurement, Qt::QueuedConnection);
+    connect(this, &AmplitudeCalDialog::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedMeasurement);
+
+    connect(dev, &LibreVNADriver::receivedPacket, this, [=](const Protocol::PacketInfo &p){
+       if(p.type == Protocol::PacketType::SpectrumAnalyzerResult) {
+           emit SpectrumResultReceived(p.spectrumResult);
+       } else if(p.type == Protocol::PacketType::SourceCalPoint || p.type == Protocol::PacketType::ReceiverCalPoint) {
+           emit AmplitudeCorrectionPointReceived(p.amplitudePoint);
+       }
+    }, Qt::QueuedConnection);
 }
 
 AmplitudeCalDialog::~AmplitudeCalDialog()
 {
+    emit dev->releaseControl();
     delete ui;
-    modeHandler->activate(activeMode);
 }
 
 void AmplitudeCalDialog::reject()
@@ -200,7 +206,7 @@ void AmplitudeCalDialog::ReceivedPoint(Protocol::AmplitudeCorrectionPoint p)
     emit pointsUpdated();
     if(p.pointNum == p.totalPoints - 1) {
         // this was the last point
-        disconnect(dev, &Device::AmplitudeCorrectionPointReceived, this, nullptr);
+        disconnect(this, &AmplitudeCalDialog::AmplitudeCorrectionPointReceived, this, nullptr);
         ui->load->setEnabled(true);
     }
 }
@@ -208,18 +214,18 @@ void AmplitudeCalDialog::ReceivedPoint(Protocol::AmplitudeCorrectionPoint p)
 void AmplitudeCalDialog::LoadFromDevice()
 {
     ui->load->setEnabled(false);
-    dev->SetIdle();
+    dev->setIdle();
     RemoveAllPoints();
 //    qDebug() << "Asking for amplitude calibration";
-    connect(dev, &Device::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint, Qt::QueuedConnection);
-    dev->SendCommandWithoutPayload(requestCommand());
+    connect(this, &AmplitudeCalDialog::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint, Qt::QueuedConnection);
+    dev->sendWithoutPayload(requestCommand());
     edited = false;
     UpdateSaveButton();
 }
 
 void AmplitudeCalDialog::SaveToDevice()
 {
-    dev->SetIdle();
+    dev->setIdle();
     for(unsigned int i=0;i<points.size();i++) {
         auto p = points[i];
         Protocol::PacketInfo info;
@@ -256,7 +262,7 @@ void AmplitudeCalDialog::RemoveAllPoints()
 
 bool AmplitudeCalDialog::AddPoint(AmplitudeCalDialog::CorrectionPoint &p)
 {
-    if (points.size() >= Device::Info(dev).limits_maxAmplitudePoints) {
+    if (points.size() >= dev->getMaxAmplitudePoints()) {
         // already at limit
         return false;
     }
@@ -302,8 +308,8 @@ void AmplitudeCalDialog::AddPointDialog()
     ui->stopFreq->setUnit("Hz");
     ui->stopFreq->setPrefixes(" kMG");
     ui->frequency->setValue(1000000000.0);
-    ui->startFreq->setValue(Device::Info(dev).limits_minFreq);
-    ui->stopFreq->setValue(Device::Info(dev).limits_maxFreq);
+    ui->startFreq->setValue(dev->getInfo().Limits.SA.minFreq);
+    ui->stopFreq->setValue(dev->getInfo().Limits.SA.maxFreq);
     connect(ui->singlePoint, &QRadioButton::toggled, [=](bool single) {
         ui->stopFreq->setEnabled(!single);
         ui->startFreq->setEnabled(!single);
@@ -342,7 +348,7 @@ void AmplitudeCalDialog::AddPointDialog()
         delete d;
     });
 
-    dev->SendCommandWithoutPayload(requestCommand());
+    dev->sendWithoutPayload(requestCommand());
 
     if(AppWindow::showGUI()) {
         d->show();
@@ -377,14 +383,14 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
     connect(automatic.dialog, &QDialog::rejected, ui->abort, &QPushButton::click);
     connect(ui->abort, &QPushButton::clicked, [=](){
         // aborted, clean up
-        disconnect(dev, &Device::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedAutomaticMeasurementResult);
-        dev->SetIdle();
+        disconnect(this, &AmplitudeCalDialog::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedAutomaticMeasurementResult);
+        dev->setIdle();
         delete ui;
         delete automatic.dialog;
     });
 
-    dev->SetIdle();
-    connect(dev, &Device::AmplitudeCorrectionPointReceived, this, [this, ui, otherCal](Protocol::AmplitudeCorrectionPoint p) {
+    dev->setIdle();
+    connect(this, &AmplitudeCalDialog::AmplitudeCorrectionPointReceived, this, [this, ui, otherCal](Protocol::AmplitudeCorrectionPoint p) {
         CorrectionPoint c;
         c.frequency = p.freq * 10.0;
         c.correctionPort1 = p.port1;
@@ -398,14 +404,14 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
             ui->progress->setValue(0);
             ui->status->setText(otherCal + " Calibration contains " +QString::number(p.totalPoints)+" points, ready to start measurement");
             ui->start->setEnabled(true);
-            disconnect(dev, &Device::AmplitudeCorrectionPointReceived, this, nullptr);
+            disconnect(this, &AmplitudeCalDialog::AmplitudeCorrectionPointReceived, this, nullptr);
             qDebug() << "Received" << p.totalPoints << "points for automatic calibration";
         }
     }, Qt::QueuedConnection);
     // request points of otherCal
     // switch between source/receiver calibration
     auto request = automatic.isSourceCal ? Protocol::PacketType::RequestReceiverCal : Protocol::PacketType::RequestSourceCal;
-    dev->SendCommandWithoutPayload(request);
+    dev->sendWithoutPayload(request);
 
     connect(ui->start, &QPushButton::clicked, [=](){
         // remove any exising points in own calibration and copy points from other calibration
@@ -414,7 +420,7 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
             AddPoint(p.frequency);
         }
         // intialize measurement state machine
-        connect(dev, &Device::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedAutomaticMeasurementResult, Qt::QueuedConnection);
+        connect(this, &AmplitudeCalDialog::SpectrumResultReceived, this, &AmplitudeCalDialog::ReceivedAutomaticMeasurementResult, Qt::QueuedConnection);
         automatic.measuringPort2 = false;
         automatic.measuringCount = 0;
         ui->status->setText("Taking measurements...");
@@ -426,9 +432,8 @@ void AmplitudeCalDialog::AutomaticMeasurementDialog()
     }
 }
 
-void AmplitudeCalDialog::ReceivedMeasurement(Device *dev, Protocol::SpectrumAnalyzerResult res)
+void AmplitudeCalDialog::ReceivedMeasurement(Protocol::SpectrumAnalyzerResult res)
 {
-    Q_UNUSED(dev)
     MeasurementResult m = {.port1 = Util::SparamTodB(res.port1), .port2 = Util::SparamTodB(res.port2)};
     sweepMeasurements.push_back(m);
     if(res.pointNum == automaticSweepPoints - 1) {
@@ -533,9 +538,8 @@ void AmplitudeCalDialog::SetupNextAutomaticPoint(bool isSourceCal)
     sweepMeasurements.reserve(automaticSweepPoints);
 }
 
-void AmplitudeCalDialog::ReceivedAutomaticMeasurementResult(Device *dev, Protocol::SpectrumAnalyzerResult res)
+void AmplitudeCalDialog::ReceivedAutomaticMeasurementResult(Protocol::SpectrumAnalyzerResult res)
 {
-    Q_UNUSED(dev)
     if(res.pointNum != automaticSweepPoints - 1) {
         // ignore everything except end of sweep
         return;

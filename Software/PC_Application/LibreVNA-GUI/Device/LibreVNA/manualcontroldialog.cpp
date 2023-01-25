@@ -11,12 +11,15 @@
 
 using namespace std;
 
-ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
+ManualControlDialog::ManualControlDialog(LibreVNADriver &dev, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ManualControlDialog),
     dev(dev)
 {
     ui->setupUi(this);
+    setAttribute(Qt::WA_DeleteOnClose);
+
+    emit dev.acquireControl();
 
     ui->SourceLowFrequency->setUnit("Hz");
     ui->SourceLowFrequency->setPrefixes(" kM");
@@ -148,7 +151,11 @@ ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
     MakeReadOnly(ui->refmag);
     MakeReadOnly(ui->refphase);
 
-    connect(&dev, &Device::ManualStatusReceived, this, &ManualControlDialog::NewStatus, Qt::QueuedConnection);
+    connect(&dev, &LibreVNADriver::receivedPacket, this, [=](const Protocol::PacketInfo &p){
+        if(p.type == Protocol::PacketType::ManualStatusV1) {
+            NewStatus(p.manualStatusV1);
+        }
+    }, Qt::QueuedConnection);
 
     connect(ui->SourceCE, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->SourceRFEN, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
@@ -184,6 +191,7 @@ ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
 
 ManualControlDialog::~ManualControlDialog()
 {
+    emit dev.releaseControl();
     delete ui;
 }
 
@@ -616,7 +624,9 @@ void ManualControlDialog::NewStatus(Protocol::ManualStatusV1 status)
 
 void ManualControlDialog::UpdateDevice()
 {
-    Protocol::ManualControlV1 m;
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::ManualControlV1;
+    Protocol::ManualControlV1 &m = p.manual;
     // Source highband
     m.SourceHighCE = ui->SourceCE->isChecked();
     m.SourceHighRFEN = ui->SourceRFEN->isChecked();
@@ -648,5 +658,5 @@ void ManualControlDialog::UpdateDevice()
 
     qDebug() << "Updating manual control state";
 
-    dev.SetManual(m);
+    dev.SendPacket(p);
 }

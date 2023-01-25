@@ -2,8 +2,8 @@
 
 #include <QDebug>
 
-SourceCalDialog::SourceCalDialog(Device *dev, ModeHandler *handler)
-    : AmplitudeCalDialog(dev, handler)
+SourceCalDialog::SourceCalDialog(LibreVNADriver *dev)
+    : AmplitudeCalDialog(dev)
 {
     setWindowTitle("Source Calibration Dialog");
     LoadFromDevice();

@@ -1,7 +1,7 @@
 #include "receivercaldialog.h"
 
-ReceiverCalDialog::ReceiverCalDialog(Device *dev, ModeHandler *handler)
-    : AmplitudeCalDialog(dev, handler)
+ReceiverCalDialog::ReceiverCalDialog(LibreVNADriver *dev)
+    : AmplitudeCalDialog(dev)
 {
     setWindowTitle("Receiver Calibration Dialog");
     LoadFromDevice();
@@ -17,7 +17,7 @@ void ReceiverCalDialog::SelectedPoint(double frequency, bool)
         // setup 3 points centered around the measurement frequency (zero span not supported yet)
         p.spectrumSettings.f_stop = frequency + 1.0;
         p.spectrumSettings.f_start = frequency - 1.0;
-        p.spectrumSettings.pointNum = 3;
+        p.spectrumSettings.pointNum = automaticSweepPoints;
         p.spectrumSettings.Detector = 0;
         p.spectrumSettings.SignalID = 1;
         p.spectrumSettings.WindowType = 3;
@@ -25,7 +25,7 @@ void ReceiverCalDialog::SelectedPoint(double frequency, bool)
         dev->SendPacket(p);
     } else {
         // invalid frequency, disable
-        dev->SetIdle();
+        dev->setIdle();
     }
 }
 

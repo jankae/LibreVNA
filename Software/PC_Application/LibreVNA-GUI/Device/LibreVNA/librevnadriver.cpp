@@ -1,5 +1,14 @@
 #include "librevnadriver.h"
 
+#include "manualcontroldialog.h"
+#include "firmwareupdatedialog.h"
+#include "frequencycaldialog.h"
+#include "sourcecaldialog.h"
+#include "receivercaldialog.h"
+
+#include "unit.h"
+#include "CustomWidgets/informationbox.h"
+
 using namespace std;
 
 class Reference
@@ -97,6 +106,53 @@ LibreVNADriver::LibreVNADriver()
     connected = false;
     skipOwnPacketHandling = false;
     SApoints = 0;
+
+    auto manual = new QAction("Manual Control");
+    connect(manual, &QAction::triggered, this, [=](){
+        auto d = new ManualControlDialog(*this);
+        d->show();
+    });
+    specificActions.push_back(manual);
+
+    auto update = new QAction("Firmware Update");
+    connect(update, &QAction::triggered, this, [=](){
+       auto d = new FirmwareUpdateDialog(this);
+       d->show();
+    });
+    specificActions.push_back(update);
+
+    auto sep = new QAction();
+    sep->setSeparator(true);
+    specificActions.push_back(sep);
+
+    auto srccal = new QAction("Source Calibration");
+    connect(srccal, &QAction::triggered, this, [=](){
+       auto d = new SourceCalDialog(this);
+       d->show();
+    });
+    specificActions.push_back(srccal);
+
+    auto recvcal = new QAction("Receiver Calibration");
+    connect(recvcal, &QAction::triggered, this, [=](){
+       auto d = new ReceiverCalDialog(this);
+       d->show();
+    });
+    specificActions.push_back(recvcal);
+
+    auto freqcal = new QAction("Frequency Calibration");
+    connect(freqcal, &QAction::triggered, this, [=](){
+       auto d = new FrequencyCalDialog(this);
+       d->show();
+    });
+    specificActions.push_back(freqcal);
+
+    specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "captureRawReceiverValues", false));
+    specificSettings.push_back(Savable::SettingDescription(&harmonicMixing, "harmonicMixing", false));
+    specificSettings.push_back(Savable::SettingDescription(&SASignalID, "signalID", true));
+    specificSettings.push_back(Savable::SettingDescription(&VNASuppressInvalidPeaks, "suppressInvalidPeaks", true));
+    specificSettings.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "adjustPowerLevel", false));
+    specificSettings.push_back(Savable::SettingDescription(&SAUseDFT, "useDFT", true));
+    specificSettings.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "RBWlimitDFT", 3000));
 }
 
 std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
@@ -134,24 +190,6 @@ QString LibreVNADriver::getStatus()
         }
     }
     return ret;
-}
-
-std::vector<Savable::SettingDescription> LibreVNADriver::driverSpecificSettings()
-{
-    std::vector<Savable::SettingDescription> ret;
-    ret.push_back(Savable::SettingDescription(&captureRawReceiverValues, "captureRawReceiverValues", false));
-    ret.push_back(Savable::SettingDescription(&SASignalID, "signalID", true));
-    ret.push_back(Savable::SettingDescription(&VNASuppressInvalidPeaks, "suppressInvalidPeaks", true));
-    ret.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "adjustPowerLevel", false));
-    ret.push_back(Savable::SettingDescription(&SAUseDFT, "useDFT", true));
-    ret.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "RBWlimitDFT", 3000));
-    return ret;
-}
-
-std::vector<QAction *> LibreVNADriver::driverSpecificActions()
-{
-    // TODO
-    return std::vector<QAction*>();
 }
 
 QStringList LibreVNADriver::availableVNAMeasurements()
@@ -229,6 +267,7 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     if(!supports(Feature::SA)) {
         return false;
     }
+
     zerospan = s.freqStart == s.freqStop;
 
     Protocol::PacketInfo p = {};
@@ -260,6 +299,33 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     p.spectrumSettings.trackingGeneratorPort = s.trackingPort;
     p.spectrumSettings.syncMode = 0;
     p.spectrumSettings.syncMaster = 0;
+
+    if(p.spectrumSettings.trackingGenerator && p.spectrumSettings.f_stop >= 25000000) {
+        // Check point spacing.
+        // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
+        // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
+        // respect to the point number, it is ensured that every displayed point has at least one sample with
+        // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
+        // settings.
+        auto pointSpacing = (p.spectrumSettings.f_stop - p.spectrumSettings.f_start) / (p.spectrumSettings.pointNum - 1);
+        // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
+        // This code assumes some knowledge of the actual hardware and probably should be moved
+        // onto the device at some point
+        double minSpacing = 25000;
+        auto stop = p.spectrumSettings.f_stop;
+        while(stop <= 3000000000) {
+            minSpacing /= 2;
+            stop *= 2;
+        }
+        if(pointSpacing < minSpacing) {
+            auto requiredMinSpan = minSpacing * (p.spectrumSettings.pointNum - 1);
+            auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
+                            "With your current span, this could result in the signal not being detected at some bands. A minimum"
+                            " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
+            InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
+        }
+    }
+
     return SendPacket(p, [=](TransmissionResult r){
         if(cb) {
             cb(r == TransmissionResult::Ack);
@@ -364,7 +430,18 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
 
     switch(packet.type) {
     case Protocol::PacketType::DeviceInfo:
-        // TODO check protocol version
+        // Check protocol version
+        if(packet.info.ProtocolVersion != Protocol::Version) {
+            auto ret = InformationBox::AskQuestion("Warning",
+                                        "The device reports a different protocol"
+                                        "version (" + QString::number(packet.info.ProtocolVersion) + ") than expected (" + QString::number(Protocol::Version) + ").\n"
+                                        "A firmware update is strongly recommended. Do you want to update now?", false);
+            if (ret) {
+                auto d = new FirmwareUpdateDialog(this);
+                d->show();
+            }
+        }
+
         info.firmware_version = QString::number(packet.info.FW_major)+"."+QString::number(packet.info.FW_minor)+"."+QString::number(packet.info.FW_patch);
         info.hardware_version = QString::number(packet.info.hardware_version)+QString(packet.info.HW_Revision);
         info.supportedFeatures = {
@@ -375,7 +452,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         };
         info.Limits.VNA.ports = 2;
         info.Limits.VNA.minFreq = packet.info.limits_minFreq;
-        info.Limits.VNA.maxFreq = packet.info.limits_maxFreq; // TODO check if harmonic mixing is enabled
+        info.Limits.VNA.maxFreq = harmonicMixing ? packet.info.limits_maxFreqHarmonic : packet.info.limits_maxFreq;
         info.Limits.VNA.maxPoints = packet.info.limits_maxPoints;
         info.Limits.VNA.minIFBW = packet.info.limits_minIFBW;
         info.Limits.VNA.maxIFBW = packet.info.limits_maxIFBW;
@@ -395,6 +472,8 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         info.Limits.SA.maxRBW = packet.info.limits_maxRBW;
         info.Limits.SA.mindBm = (double) packet.info.limits_cdbm_min / 100;
         info.Limits.SA.maxdBm = (double) packet.info.limits_cdbm_max / 100;
+
+        limits_maxAmplitudePoints = packet.info.limits_maxAmplitudePoints;
         emit InfoUpdated();
         break;
     case Protocol::PacketType::DeviceStatusV1:
@@ -449,7 +528,14 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         emit SAmeasurementReceived(m);
     }
         break;
+    default:
+        break;
     }
+}
+
+int LibreVNADriver::getMaxAmplitudePoints() const
+{
+    return limits_maxAmplitudePoints;
 }
 
 bool LibreVNADriver::sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb)

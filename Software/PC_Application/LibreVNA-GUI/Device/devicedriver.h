@@ -8,7 +8,7 @@
   * - Derive from this class
   * - Implement all pure virtual functions
   * - Implement the virtual functions if the device supports the specific function
-  * - TODO register the driver during application start
+  * - register the driver during application start
   */
 
 #include "Tools/parameters.h"
@@ -25,7 +25,7 @@ class DeviceDriver : public QObject
     Q_OBJECT
 public:
     DeviceDriver() {}
-    virtual ~DeviceDriver() {}
+    virtual ~DeviceDriver();
 
     /**
      * @brief Returns the driver name. It must be unique across all implemented drivers and is used to identify the driver
@@ -201,7 +201,7 @@ public:
      *
      * @return Map of driver specific settings
      */
-    virtual std::vector<Savable::SettingDescription> driverSpecificSettings() {return std::vector<Savable::SettingDescription>();}
+    std::vector<Savable::SettingDescription> driverSpecificSettings() {return specificSettings;}
 
     /**
      * @brief Return driver specific actions.
@@ -210,7 +210,7 @@ public:
      *
      * @return List of actions
      */
-    virtual std::vector<QAction*> driverSpecificActions() {return std::vector<QAction*>();}
+    std::vector<QAction*> driverSpecificActions() {return specificActions;}
 
     class VNASettings {
     public:
@@ -456,11 +456,26 @@ signals:
      */
     void LogLineReceived(QString line);
 
+    /**
+     * @brief Emit this signal whenever the device driver wants complete control over the device. Once emitted, no other part of the application
+     * will try to communicate until releaseControl() is emitted
+     */
+    void acquireControl();
+
+    /**
+     * @brief Emit this signal whenever the device driver wants to return control to the application.
+     */
+    void releaseControl();
+
 public:
     bool connectDevice(QString serial);
     void disconnectDevice();
     static DeviceDriver* getActiveDriver() {return activeDriver;}
     static unsigned int SApoints();
+
+protected:
+    std::vector<QAction*> specificActions;
+    std::vector<Savable::SettingDescription> specificSettings;
 
 private:
     static DeviceDriver *activeDriver;

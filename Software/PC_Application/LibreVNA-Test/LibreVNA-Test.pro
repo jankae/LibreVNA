@@ -10,16 +10,12 @@ SOURCES +=  \
     ../LibreVNA-GUI/Calibration/LibreCAL/caldevice.cpp \
     ../LibreVNA-GUI/Calibration/LibreCAL/librecaldialog.cpp \
     ../LibreVNA-GUI/Calibration/LibreCAL/usbdevice.cpp \
-    ../LibreVNA-GUI/Calibration/amplitudecaldialog.cpp \
     ../LibreVNA-GUI/Calibration/calibration.cpp \
     ../LibreVNA-GUI/Calibration/calibrationmeasurement.cpp \
     ../LibreVNA-GUI/Calibration/calkit.cpp \
     ../LibreVNA-GUI/Calibration/calkitdialog.cpp \
     ../LibreVNA-GUI/Calibration/calstandard.cpp \
-    ../LibreVNA-GUI/Calibration/frequencycaldialog.cpp \
     ../LibreVNA-GUI/Calibration/manualcalibrationdialog.cpp \
-    ../LibreVNA-GUI/Calibration/receivercaldialog.cpp \
-    ../LibreVNA-GUI/Calibration/sourcecaldialog.cpp \
     ../LibreVNA-GUI/CustomWidgets/colorpickerbutton.cpp \
     ../LibreVNA-GUI/CustomWidgets/csvimport.cpp \
     ../LibreVNA-GUI/CustomWidgets/informationbox.cpp \
@@ -29,6 +25,14 @@ SOURCES +=  \
     ../LibreVNA-GUI/CustomWidgets/toggleswitch.cpp \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.cpp \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/librevnadriver.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/sourcecaldialog.cpp \
     ../LibreVNA-GUI/Device/compounddevice.cpp \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.cpp \
     ../LibreVNA-GUI/Device/device.cpp \
@@ -36,10 +40,6 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/devicelog.cpp \
     ../LibreVNA-GUI/Device/deviceusblog.cpp \
     ../LibreVNA-GUI/Device/deviceusblogview.cpp \
-    ../LibreVNA-GUI/Device/firmwareupdatedialog.cpp \
-    ../LibreVNA-GUI/Device/librevnadriver.cpp \
-    ../LibreVNA-GUI/Device/librevnausbdriver.cpp \
-    ../LibreVNA-GUI/Device/manualcontroldialog.cpp \
     ../LibreVNA-GUI/Device/virtualdevice.cpp \
     ../LibreVNA-GUI/Generator/generator.cpp \
     ../LibreVNA-GUI/Generator/signalgenwidget.cpp \
@@ -180,16 +180,12 @@ HEADERS += \
     ../LibreVNA-GUI/Calibration/LibreCAL/caldevice.h \
     ../LibreVNA-GUI/Calibration/LibreCAL/librecaldialog.h \
     ../LibreVNA-GUI/Calibration/LibreCAL/usbdevice.h \
-    ../LibreVNA-GUI/Calibration/amplitudecaldialog.h \
     ../LibreVNA-GUI/Calibration/calibration.h \
     ../LibreVNA-GUI/Calibration/calibrationmeasurement.h \
     ../LibreVNA-GUI/Calibration/calkit.h \
     ../LibreVNA-GUI/Calibration/calkitdialog.h \
     ../LibreVNA-GUI/Calibration/calstandard.h \
-    ../LibreVNA-GUI/Calibration/frequencycaldialog.h \
     ../LibreVNA-GUI/Calibration/manualcalibrationdialog.h \
-    ../LibreVNA-GUI/Calibration/receivercaldialog.h \
-    ../LibreVNA-GUI/Calibration/sourcecaldialog.h \
     ../LibreVNA-GUI/CustomWidgets/colorpickerbutton.h \
     ../LibreVNA-GUI/CustomWidgets/csvimport.h \
     ../LibreVNA-GUI/CustomWidgets/informationbox.h \
@@ -199,6 +195,14 @@ HEADERS += \
     ../LibreVNA-GUI/CustomWidgets/toggleswitch.h \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.h \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.h \
+    ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/librevnadriver.h \
+    ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.h \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/sourcecaldialog.h \
     ../LibreVNA-GUI/Device/compounddevice.h \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.h \
     ../LibreVNA-GUI/Device/device.h \
@@ -206,10 +210,6 @@ HEADERS += \
     ../LibreVNA-GUI/Device/devicelog.h \
     ../LibreVNA-GUI/Device/deviceusblog.h \
     ../LibreVNA-GUI/Device/deviceusblogview.h \
-    ../LibreVNA-GUI/Device/firmwareupdatedialog.h \
-    ../LibreVNA-GUI/Device/librevnadriver.h \
-    ../LibreVNA-GUI/Device/librevnausbdriver.h \
-    ../LibreVNA-GUI/Device/manualcontroldialog.h \
     ../LibreVNA-GUI/Device/virtualdevice.h \
     ../LibreVNA-GUI/Generator/generator.h \
     ../LibreVNA-GUI/Generator/signalgenwidget.h \
@@ -340,22 +340,22 @@ FORMS += \
     ../LibreVNA-GUI/Calibration/CalStandardShortEditDialog.ui \
     ../LibreVNA-GUI/Calibration/CalStandardThroughEditDialog.ui \
     ../LibreVNA-GUI/Calibration/LibreCAL/librecaldialog.ui \
-    ../LibreVNA-GUI/Calibration/addamplitudepointsdialog.ui \
-    ../LibreVNA-GUI/Calibration/amplitudecaldialog.ui \
-    ../LibreVNA-GUI/Calibration/automaticamplitudedialog.ui \
     ../LibreVNA-GUI/Calibration/calibrationdialogui.ui \
     ../LibreVNA-GUI/Calibration/calkitdialog.ui \
-    ../LibreVNA-GUI/Calibration/frequencycaldialog.ui \
     ../LibreVNA-GUI/Calibration/manualcalibrationdialog.ui \
     ../LibreVNA-GUI/CustomWidgets/csvimport.ui \
     ../LibreVNA-GUI/CustomWidgets/jsonpickerdialog.ui \
     ../LibreVNA-GUI/CustomWidgets/tilewidget.ui \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/addamplitudepointsdialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/automaticamplitudedialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.ui \
     ../LibreVNA-GUI/Device/compounddeviceeditdialog.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \
     ../LibreVNA-GUI/Device/deviceusblogview.ui \
-    ../LibreVNA-GUI/Device/firmwareupdatedialog.ui \
-    ../LibreVNA-GUI/Device/manualcontroldialog.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \
     ../LibreVNA-GUI/Tools/impedancematchdialog.ui \
     ../LibreVNA-GUI/Tools/mixedmodeconversion.ui \

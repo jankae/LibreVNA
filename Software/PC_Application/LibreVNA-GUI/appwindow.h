@@ -10,8 +10,8 @@
 #include "preferences.h"
 #include "scpi.h"
 #include "tcpserver.h"
-#include "Device/manualcontroldialog.h"
 #include "Device/devicedriver.h"
+//#include "modehandler.h"
 
 #include <QWidget>
 #include <QMainWindow>
@@ -32,6 +32,7 @@ class VNA;
 class Generator;
 class SpectrumAnalyzer;
 class ModeHandler;
+class Mode;
 
 class AppWindow : public QMainWindow
 {
@@ -105,6 +106,7 @@ private:
     } toolbars;
 
     ModeHandler *modeHandler;
+    Mode *lastActiveMode;
 
 //    VirtualDevice *vdevice;
     std::vector<DeviceDriver*> deviceDrivers;
@@ -127,8 +129,6 @@ private:
     DeviceLog deviceLog;
     QString deviceSerial;
     QActionGroup *deviceActionGroup;
-
-    ManualControlDialog *manual;
 
     // Status bar widgets
     QLabel lConnectionStatus;

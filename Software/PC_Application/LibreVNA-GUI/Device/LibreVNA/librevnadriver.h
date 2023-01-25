@@ -1,7 +1,7 @@
 #ifndef LIBREVNADRIVER_H
 #define LIBREVNADRIVER_H
 
-#include "devicedriver.h"
+#include "../devicedriver.h"
 
 #include "../../VNA_embedded/Application/Communication/Protocol.hpp"
 
@@ -54,32 +54,6 @@ public:
      * @return Status string
      */
     virtual QString getStatus() override;
-
-    /**
-     * @brief Returns the driver specific settings
-     *
-     * The settings are returned as a map.
-     * Key: user-readable setting name
-     * Value: SettingDescription, consisting of:
-     *      - var: Pointer to the setting variable (should be a private member of the derived class)
-     *      - name: Arbitrary string used to persistently store this setting (never visible to the user)
-     *      - def: Default value of the setting
-     *
-     * These settings will be persistent across reboots. For each device driver, a section within the preferences
-     * will be created where these settings can be changed.
-     *
-     * @return Map of driver specific settings
-     */
-     virtual std::vector<Savable::SettingDescription> driverSpecificSettings() override;
-
-    /**
-     * @brief Return driver specific actions.
-     *
-     * The returned actions will be appended to the device menu.
-     *
-     * @return List of actions
-     */
-    virtual std::vector<QAction*> driverSpecificActions() override;
 
     /**
      * @brief Names of available measurements.
@@ -173,20 +147,22 @@ signals:
     void passOnReceivedPacket(const Protocol::PacketInfo& packet);
 public:
     virtual bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500) = 0;
+    bool sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb = nullptr);
 
-protected:
+    int getMaxAmplitudePoints() const;
+
 signals:
-    void receivedAnswer(TransmissionResult result);
+    void receivedAnswer(const LibreVNADriver::TransmissionResult &result);
     void receivedPacket(const Protocol::PacketInfo& packet);
 
 protected slots:
     void handleReceivedPacket(const Protocol::PacketInfo& packet);
 protected:
-    bool sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb = nullptr);
 
     bool connected;
     QString serial;
     Info info;
+    int limits_maxAmplitudePoints;
 
     Protocol::DeviceStatusV1 lastStatus;
 
@@ -198,6 +174,7 @@ protected:
 
     // Driver specific settings
     bool captureRawReceiverValues;
+    bool harmonicMixing;
     bool SASignalID;
     bool SAUseDFT;
     double SARBWLimitForDFT;

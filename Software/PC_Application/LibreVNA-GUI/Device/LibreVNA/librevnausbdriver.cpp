@@ -1,7 +1,7 @@
 #include "librevnausbdriver.h"
 
 #include "CustomWidgets/informationbox.h"
-#include "deviceusblog.h"
+#include "../deviceusblog.h"
 
 #include <QTimer>
 
@@ -211,9 +211,9 @@ bool LibreVNAUSBDriver::connectTo(QString serial)
     connect(dataBuffer, &USBInBuffer::DataReceived, this, &LibreVNAUSBDriver::ReceivedData, Qt::DirectConnection);
     connect(dataBuffer, &USBInBuffer::TransferError, this, &LibreVNAUSBDriver::ConnectionLost);
     connect(logBuffer, &USBInBuffer::DataReceived, this, &LibreVNAUSBDriver::ReceivedLog, Qt::DirectConnection);
-    connect(&transmissionTimer, &QTimer::timeout, this, &LibreVNAUSBDriver::transmissionTimeout);
-    connect(this, &LibreVNAUSBDriver::receivedAnswer, this, &LibreVNAUSBDriver::transmissionFinished, Qt::QueuedConnection);
-    connect(this, &LibreVNAUSBDriver::receivedPacket, this, &LibreVNAUSBDriver::handleReceivedPacket, Qt::QueuedConnection);
+    connect(&transmissionTimer, &QTimer::timeout, this, &LibreVNAUSBDriver::transmissionTimeout, Qt::UniqueConnection);
+    connect(this, &LibreVNAUSBDriver::receivedAnswer, this, &LibreVNAUSBDriver::transmissionFinished, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
+    connect(this, &LibreVNAUSBDriver::receivedPacket, this, &LibreVNAUSBDriver::handleReceivedPacket, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
     transmissionTimer.setSingleShot(true);
     transmissionActive = false;
 
@@ -251,8 +251,8 @@ void LibreVNAUSBDriver::disconnect()
 
 void LibreVNAUSBDriver::registerTypes()
 {
-    qRegisterMetaType<Protocol::PacketInfo>("LibreVNAUSBPacket");
-    qRegisterMetaType<TransmissionResult>("LibreVNAUSBResult");
+    qDebug() << "Registering meta type: " << qRegisterMetaType<Protocol::PacketInfo>();
+    qDebug() << "Registering meta type: " << qRegisterMetaType<TransmissionResult>();
 }
 
 void LibreVNAUSBDriver::ReceivedData()

@@ -4,16 +4,12 @@ HEADERS += \
     Calibration/LibreCAL/caldevice.h \
     Calibration/LibreCAL/librecaldialog.h \
     Calibration/LibreCAL/usbdevice.h \
-    Calibration/amplitudecaldialog.h \
     Calibration/calibration.h \
     Calibration/calibrationmeasurement.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
     Calibration/calstandard.h \
-    Calibration/frequencycaldialog.h \
     Calibration/manualcalibrationdialog.h \
-    Calibration/receivercaldialog.h \
-    Calibration/sourcecaldialog.h \
     CustomWidgets/colorpickerbutton.h \
     CustomWidgets/csvimport.h \
     CustomWidgets/informationbox.h \
@@ -23,6 +19,14 @@ HEADERS += \
     CustomWidgets/toggleswitch.h \
     CustomWidgets/touchstoneimport.h \
     CustomWidgets/tracesetselector.h \
+    Device/LibreVNA/amplitudecaldialog.h \
+    Device/LibreVNA/firmwareupdatedialog.h \
+    Device/LibreVNA/frequencycaldialog.h \
+    Device/LibreVNA/librevnadriver.h \
+    Device/LibreVNA/librevnausbdriver.h \
+    Device/LibreVNA/manualcontroldialog.h \
+    Device/LibreVNA/receivercaldialog.h \
+    Device/LibreVNA/sourcecaldialog.h \
     Device/compounddevice.h \
     Device/compounddeviceeditdialog.h \
     Device/device.h \
@@ -30,10 +34,6 @@ HEADERS += \
     Device/devicelog.h \
     Device/deviceusblog.h \
     Device/deviceusblogview.h \
-    Device/firmwareupdatedialog.h \
-    Device/librevnadriver.h \
-    Device/librevnausbdriver.h \
-    Device/manualcontroldialog.h \
     Device/virtualdevice.h \
     Generator/generator.h \
     Generator/signalgenwidget.h \
@@ -155,16 +155,12 @@ SOURCES += \
     Calibration/LibreCAL/caldevice.cpp \
     Calibration/LibreCAL/librecaldialog.cpp \
     Calibration/LibreCAL/usbdevice.cpp \
-    Calibration/amplitudecaldialog.cpp \
     Calibration/calibration.cpp \
     Calibration/calibrationmeasurement.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
     Calibration/calstandard.cpp \
-    Calibration/frequencycaldialog.cpp \
     Calibration/manualcalibrationdialog.cpp \
-    Calibration/receivercaldialog.cpp \
-    Calibration/sourcecaldialog.cpp \
     CustomWidgets/colorpickerbutton.cpp \
     CustomWidgets/csvimport.cpp \
     CustomWidgets/informationbox.cpp \
@@ -174,6 +170,14 @@ SOURCES += \
     CustomWidgets/toggleswitch.cpp \
     CustomWidgets/touchstoneimport.cpp \
     CustomWidgets/tracesetselector.cpp \
+    Device/LibreVNA/amplitudecaldialog.cpp \
+    Device/LibreVNA/firmwareupdatedialog.cpp \
+    Device/LibreVNA/frequencycaldialog.cpp \
+    Device/LibreVNA/librevnadriver.cpp \
+    Device/LibreVNA/librevnausbdriver.cpp \
+    Device/LibreVNA/manualcontroldialog.cpp \
+    Device/LibreVNA/receivercaldialog.cpp \
+    Device/LibreVNA/sourcecaldialog.cpp \
     Device/compounddevice.cpp \
     Device/compounddeviceeditdialog.cpp \
     Device/device.cpp \
@@ -181,10 +185,6 @@ SOURCES += \
     Device/devicelog.cpp \
     Device/deviceusblog.cpp \
     Device/deviceusblogview.cpp \
-    Device/firmwareupdatedialog.cpp \
-    Device/librevnadriver.cpp \
-    Device/librevnausbdriver.cpp \
-    Device/manualcontroldialog.cpp \
     Device/virtualdevice.cpp \
     Generator/generator.cpp \
     Generator/signalgenwidget.cpp \
@@ -304,22 +304,22 @@ FORMS += \
     Calibration/CalStandardShortEditDialog.ui \
     Calibration/CalStandardThroughEditDialog.ui \
     Calibration/LibreCAL/librecaldialog.ui \
-    Calibration/addamplitudepointsdialog.ui \
-    Calibration/amplitudecaldialog.ui \
-    Calibration/automaticamplitudedialog.ui \
     Calibration/calibrationdialogui.ui \
     Calibration/calkitdialog.ui \
-    Calibration/frequencycaldialog.ui \
     Calibration/manualcalibrationdialog.ui \
     CustomWidgets/csvimport.ui \
     CustomWidgets/jsonpickerdialog.ui \
     CustomWidgets/tilewidget.ui \
     CustomWidgets/touchstoneimport.ui \
+    Device/LibreVNA/addamplitudepointsdialog.ui \
+    Device/LibreVNA/amplitudecaldialog.ui \
+    Device/LibreVNA/automaticamplitudedialog.ui \
+    Device/LibreVNA/firmwareupdatedialog.ui \
+    Device/LibreVNA/frequencycaldialog.ui \
+    Device/LibreVNA/manualcontroldialog.ui \
     Device/compounddeviceeditdialog.ui \
     Device/devicelog.ui \
     Device/deviceusblogview.ui \
-    Device/firmwareupdatedialog.ui \
-    Device/manualcontroldialog.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
     Tools/mixedmodeconversion.ui \

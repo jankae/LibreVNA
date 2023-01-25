@@ -2,7 +2,6 @@
 
 #include "unit.h"
 #include "CustomWidgets/toggleswitch.h"
-#include "Device/manualcontroldialog.h"
 #include "Traces/tracemodel.h"
 #include "tracewidgetvna.h"
 #include "Traces/tracesmithchart.h"
@@ -14,7 +13,6 @@
 #include "Tools/impedancematchdialog.h"
 #include "Tools/mixedmodeconversion.h"
 #include "ui_main.h"
-#include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
 #include "CustomWidgets/informationbox.h"

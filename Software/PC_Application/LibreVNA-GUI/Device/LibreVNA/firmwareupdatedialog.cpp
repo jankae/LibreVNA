@@ -6,7 +6,7 @@
 #include <QFileDialog>
 #include <QStyle>
 
-FirmwareUpdateDialog::FirmwareUpdateDialog(Device *dev, QWidget *parent) :
+FirmwareUpdateDialog::FirmwareUpdateDialog(LibreVNADriver *dev, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FirmwareUpdateDialog),
     dev(dev),
@@ -15,6 +15,8 @@ FirmwareUpdateDialog::FirmwareUpdateDialog(Device *dev, QWidget *parent) :
     state(State::Idle),
     transferredBytes(0)
 {
+    dev->acquireControl();
+    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     ui->bFile->setIcon(this->style()->standardPixmap(QStyle::SP_FileDialogStart));
     ui->bStart->setIcon(this->style()->standardPixmap(QStyle::SP_MediaPlay));
@@ -23,6 +25,7 @@ FirmwareUpdateDialog::FirmwareUpdateDialog(Device *dev, QWidget *parent) :
 
 FirmwareUpdateDialog::~FirmwareUpdateDialog()
 {
+    dev->releaseControl();
     delete ui;
 }
 
@@ -62,10 +65,15 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     }
     file->seek(0);
     state = State::ErasingFLASH;
-    connect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck, Qt::QueuedConnection);
-    connect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack, Qt::QueuedConnection);
+    connect(dev, &LibreVNADriver::receivedAnswer, this, [=](const LibreVNADriver::TransmissionResult &res) {
+        if(res == LibreVNADriver::TransmissionResult::Ack) {
+            receivedAck();
+        } else if(res == LibreVNADriver::TransmissionResult::Nack) {
+            receivedNack();
+        }
+    }, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
     addStatus("Erasing device memory...");
-    dev->SendCommandWithoutPayload(Protocol::PacketType::ClearFlash);
+    dev->sendWithoutPayload(Protocol::PacketType::ClearFlash);
     timer.setSingleShot(true);
     timer.start(20000);
 }
@@ -78,8 +86,6 @@ void FirmwareUpdateDialog::addStatus(QString line)
 void FirmwareUpdateDialog::abortWithError(QString error)
 {
     timer.stop();
-    disconnect(dev, &Device::AckReceived, this, &FirmwareUpdateDialog::receivedAck);
-    disconnect(dev, &Device::NackReceived, this, &FirmwareUpdateDialog::receivedNack);
 
     QTextCharFormat tf;
     tf = ui->status->currentCharFormat();
@@ -97,7 +103,7 @@ void FirmwareUpdateDialog::timerCallback()
     switch(state) {
     case State::WaitingForReboot: {
         // Currently waiting for the reboot, check device list
-        auto devices = Device::GetDevices();
+        auto devices = dev->GetAvailableDevices();
         if(devices.find(serialnumber) != devices.end()) {
             // the device rebooted and is available again
             addStatus("...device enumerated, update complete");
@@ -109,7 +115,7 @@ void FirmwareUpdateDialog::timerCallback()
     case State::WaitBeforeInitializing:
         // Device had enough time to initialize, indicate that rebooted device is ready
         timer.stop();
-        emit DeviceRebooted(serialnumber);
+        dev->connectDevice(serialnumber);
         delete this;
         break;
     default:
@@ -139,7 +145,7 @@ void FirmwareUpdateDialog::receivedAck()
             // complete file transferred
             addStatus("Triggering device update...");
             state = State::TriggeringUpdate;
-            dev->SendCommandWithoutPayload(Protocol::PacketType::PerformFirmwareUpdate);
+            dev->sendWithoutPayload(Protocol::PacketType::PerformFirmwareUpdate);
             timer.start(5000);
         } else {
             sendNextFirmwareChunk();
@@ -148,8 +154,8 @@ void FirmwareUpdateDialog::receivedAck()
         break;
     case State::TriggeringUpdate:
         addStatus("Rebooting device...");
-        serialnumber = dev->serial();
-        emit DeviceRebooting();
+        serialnumber = dev->getSerial();
+        dev->disconnectDevice();
         state = State::WaitingForReboot;
         timer.setSingleShot(false);
         timer.start(2000);
@@ -174,8 +180,9 @@ void FirmwareUpdateDialog::receivedNack()
 
 void FirmwareUpdateDialog::sendNextFirmwareChunk()
 {
-    Protocol::FirmwarePacket fw;
-    fw.address = transferredBytes;
-    file->read((char*) &fw.data, PacketConstants::FW_CHUNK_SIZE);
-    dev->SendFirmwareChunk(fw);
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::FirmwarePacket;
+    p.firmware.address = transferredBytes;
+    file->read((char*) &p.firmware.data, PacketConstants::FW_CHUNK_SIZE);
+    dev->SendPacket(p);
 }

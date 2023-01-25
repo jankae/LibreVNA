@@ -2,6 +2,13 @@
 
 DeviceDriver *DeviceDriver::activeDriver = nullptr;
 
+DeviceDriver::~DeviceDriver()
+{
+    for(auto a : specificActions) {
+        delete a;
+    }
+}
+
 bool DeviceDriver::connectDevice(QString serial)
 {
     if(activeDriver && activeDriver != this) {

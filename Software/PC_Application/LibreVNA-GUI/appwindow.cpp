@@ -2,7 +2,6 @@
 
 #include "unit.h"
 #include "CustomWidgets/toggleswitch.h"
-#include "Device/manualcontroldialog.h"
 #include "Device/deviceusblogview.h"
 #include "Traces/tracemodel.h"
 #include "Traces/tracewidget.h"
@@ -14,15 +13,11 @@
 #include "Traces/Marker/markerwidget.h"
 #include "Tools/impedancematchdialog.h"
 #include "ui_main.h"
-#include "Device/firmwareupdatedialog.h"
 #include "preferences.h"
 #include "Generator/signalgenwidget.h"
 #include "VNA/vna.h"
 #include "Generator/generator.h"
 #include "SpectrumAnalyzer/spectrumanalyzer.h"
-#include "Calibration/sourcecaldialog.h"
-#include "Calibration/receivercaldialog.h"
-#include "Calibration/frequencycaldialog.h"
 #include "CustomWidgets/jsonpickerdialog.h"
 #include "CustomWidgets/informationbox.h"
 #include "Util/app_common.h"
@@ -30,7 +25,7 @@
 #include "mode.h"
 #include "modehandler.h"
 #include "modewindow.h"
-#include "Device/librevnausbdriver.h"
+#include "Device/LibreVNA/librevnausbdriver.h"
 
 #include <QDockWidget>
 #include <QDesktopWidget>
@@ -75,7 +70,6 @@ static bool noGUIset = false;
 AppWindow::AppWindow(QWidget *parent)
     : QMainWindow(parent)
     , deviceActionGroup(new QActionGroup(this))
-    , manual(nullptr)
     , ui(new Ui::MainWindow)
     , server(nullptr)
     , appVersion(APP_VERSION)
@@ -326,14 +320,14 @@ void AppWindow::closeEvent(QCloseEvent *event)
         device->disconnectDevice();
         device = nullptr;
     }
-    for(auto driver : deviceDrivers) {
-        delete driver;
-    }
     delete modeHandler;
     modeHandler = nullptr;
     pref.store();
     for(auto driver : deviceDrivers) {
         Preferences::getInstance().store(driver->driverSpecificSettings());
+    }
+    for(auto driver : deviceDrivers) {
+        delete driver;
     }
     QMainWindow::closeEvent(event);
 }
@@ -375,8 +369,31 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
         connect(device, &DeviceDriver::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &DeviceDriver::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
         connect(device, &DeviceDriver::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
+        connect(device, &DeviceDriver::releaseControl, [=](){
+            if(lastActiveMode) {
+                modeHandler->activate(lastActiveMode);
+            }
+        });
+        connect(device, &DeviceDriver::acquireControl, [=](){
+           lastActiveMode = modeHandler->getActiveMode();
+           modeHandler->deactivate(lastActiveMode);
+        });
 //        connect(vdevice, &VirtualDevice::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
+        // find correct position to add device specific actions at
+        QAction *before = nullptr;
+        for(int i=0;i<ui->menuDevice->actions().size();i++) {
+            auto comp = ui->menuDevice->actions()[i];
+            if(comp == ui->actionDisconnect) {
+                if(i + 2 < ui->menuDevice->actions().size()) {
+                    before = ui->menuDevice->actions()[i+2];
+                }
+                break;
+             }
+        }
+        for(auto a : device->driverSpecificActions()) {
+            ui->menuDevice->insertAction(before, a);
+        }
 //        if(!vdevice->isCompoundDevice()) {
 //            ui->actionManual_Control->setEnabled(true);
 //            ui->actionFirmware_Update->setEnabled(true);
@@ -419,6 +436,9 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
 void AppWindow::DisconnectDevice()
 {
     if(device) {
+        for(auto a : device->driverSpecificActions()) {
+            ui->menuDevice->removeAction(a);
+        }
         device->disconnectDevice();
         device = nullptr;
     }
@@ -701,232 +721,233 @@ void AppWindow::SetupSCPI()
         return QString::number(DeviceDriver::getInfo(getDevice()).Limits.VNA.maxFreq);
     }));
 
-    auto scpi_manual = new SCPINode("MANual");
-    scpi_manual->add(new SCPICommand("STArt",[=](QStringList) -> QString {
-//        StartManualControl();
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
-    scpi_manual->add(new SCPICommand("STOp",[=](QStringList) -> QString {
-        manual->close();
-        delete manual;
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
+    // TODO
+//    auto scpi_manual = new SCPINode("MANual");
+//    scpi_manual->add(new SCPICommand("STArt",[=](QStringList) -> QString {
+////        StartManualControl();
+//        return SCPI::getResultName(SCPI::Result::Empty);
+//    }, nullptr));
+//    scpi_manual->add(new SCPICommand("STOp",[=](QStringList) -> QString {
+//        manual->close();
+//        delete manual;
+//        return SCPI::getResultName(SCPI::Result::Empty);
+//    }, nullptr));
+//
+//    auto addBooleanManualSetting = [=](QString cmd, void(ManualControlDialog::*set)(bool), bool(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
+//            bool enable;
+//            if(!manual || !SCPI::paramToBool(params, 0, enable)) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto set_fn = std::bind(set, manual, std::placeholders::_1);
+//            set_fn(enable);
+//            return SCPI::getResultName(SCPI::Result::Empty);
+//        }, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            return get_fn() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+//        }));
+//    };
 
-    auto addBooleanManualSetting = [=](QString cmd, void(ManualControlDialog::*set)(bool), bool(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
-            bool enable;
-            if(!manual || !SCPI::paramToBool(params, 0, enable)) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto set_fn = std::bind(set, manual, std::placeholders::_1);
-            set_fn(enable);
-            return SCPI::getResultName(SCPI::Result::Empty);
-        }, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            return get_fn() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
-        }));
-    };
+//    auto addDoubleManualSetting = [=](QString cmd, void(ManualControlDialog::*set)(double), double(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
+//            double value;
+//            if(!manual || !SCPI::paramToDouble(params, 0, value)) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto set_fn = std::bind(set, manual, std::placeholders::_1);
+//            set_fn(value);
+//            return SCPI::getResultName(SCPI::Result::Empty);
+//        }, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            return QString::number(get_fn());
+//        }));
+//    };
+//    auto addIntegerManualSetting = [=](QString cmd, void(ManualControlDialog::*set)(int), int(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
+//            double value;
+//            if(!manual || !SCPI::paramToDouble(params, 0, value)) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto set_fn = std::bind(set, manual, std::placeholders::_1);
+//            set_fn(value);
+//            return SCPI::getResultName(SCPI::Result::Empty);
+//        }, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            return QString::number(get_fn());
+//        }));
+//    };
+//    auto addIntegerManualSettingWithReturnValue = [=](QString cmd, bool(ManualControlDialog::*set)(int), int(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
+//            double value;
+//            if(!manual || !SCPI::paramToDouble(params, 0, value)) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto set_fn = std::bind(set, manual, std::placeholders::_1);
+//            if(set_fn(value)) {
+//                return SCPI::getResultName(SCPI::Result::Empty);
+//            } else {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//        }, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            return QString::number(get_fn());
+//        }));
+//    };
+//    auto addIntegerManualQuery = [=](QString cmd, int(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            return QString::number(get_fn());
+//        }));
+//    };
+//    auto addDoubleManualQuery = [=](QString cmd, double(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            return QString::number(get_fn());
+//        }));
+//    };
+//    auto addBooleanManualQuery = [=](QString cmd, bool(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            return get_fn() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+//        }));
+//    };
+//    auto addComplexManualQuery = [=](QString cmd, std::complex<double>(ManualControlDialog::*get)(void)) {
+//        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
+//            if(!manual) {
+//                return SCPI::getResultName(SCPI::Result::Error);
+//            }
+//            auto get_fn = std::bind(get, manual);
+//            auto res = get_fn();
+//            return QString::number(res.real())+","+QString::number(res.imag());
+//        }));
+//    };
 
-    auto addDoubleManualSetting = [=](QString cmd, void(ManualControlDialog::*set)(double), double(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
-            double value;
-            if(!manual || !SCPI::paramToDouble(params, 0, value)) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto set_fn = std::bind(set, manual, std::placeholders::_1);
-            set_fn(value);
-            return SCPI::getResultName(SCPI::Result::Empty);
-        }, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            return QString::number(get_fn());
-        }));
-    };
-    auto addIntegerManualSetting = [=](QString cmd, void(ManualControlDialog::*set)(int), int(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
-            double value;
-            if(!manual || !SCPI::paramToDouble(params, 0, value)) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto set_fn = std::bind(set, manual, std::placeholders::_1);
-            set_fn(value);
-            return SCPI::getResultName(SCPI::Result::Empty);
-        }, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            return QString::number(get_fn());
-        }));
-    };
-    auto addIntegerManualSettingWithReturnValue = [=](QString cmd, bool(ManualControlDialog::*set)(int), int(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, [=](QStringList params) -> QString {
-            double value;
-            if(!manual || !SCPI::paramToDouble(params, 0, value)) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto set_fn = std::bind(set, manual, std::placeholders::_1);
-            if(set_fn(value)) {
-                return SCPI::getResultName(SCPI::Result::Empty);
-            } else {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-        }, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            return QString::number(get_fn());
-        }));
-    };
-    auto addIntegerManualQuery = [=](QString cmd, int(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            return QString::number(get_fn());
-        }));
-    };
-    auto addDoubleManualQuery = [=](QString cmd, double(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            return QString::number(get_fn());
-        }));
-    };
-    auto addBooleanManualQuery = [=](QString cmd, bool(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            return get_fn() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
-        }));
-    };
-    auto addComplexManualQuery = [=](QString cmd, std::complex<double>(ManualControlDialog::*get)(void)) {
-        scpi_manual->add(new SCPICommand(cmd, nullptr, [=](QStringList) -> QString {
-            if(!manual) {
-                return SCPI::getResultName(SCPI::Result::Error);
-            }
-            auto get_fn = std::bind(get, manual);
-            auto res = get_fn();
-            return QString::number(res.real())+","+QString::number(res.imag());
-        }));
-    };
+//    addBooleanManualSetting("HSRC_CE", &ManualControlDialog::setHighSourceChipEnable, &ManualControlDialog::getHighSourceChipEnable);
+//    addBooleanManualSetting("HSRC_RFEN", &ManualControlDialog::setHighSourceRFEnable, &ManualControlDialog::getHighSourceRFEnable);
+//    addBooleanManualQuery("HSRC_LOCKed", &ManualControlDialog::getHighSourceLocked);
+//    addIntegerManualSettingWithReturnValue("HSRC_PWR", &ManualControlDialog::setHighSourcePower, &ManualControlDialog::getHighSourcePower);
+//    addDoubleManualSetting("HSRC_FREQ", &ManualControlDialog::setHighSourceFrequency, &ManualControlDialog::getHighSourceFrequency);
+//    scpi_manual->add(new SCPICommand("HSRC_LPF", [=](QStringList params) -> QString {
+//        long value;
+//        if(!manual || !SCPI::paramToLong(params, 0, value)) {
+//            return SCPI::getResultName(SCPI::Result::Error);
+//        }
+//        switch(value) {
+//        case 947:
+//            manual->setHighSourceLPF(ManualControlDialog::LPF::M947);
+//            break;
+//        case 1880:
+//            manual->setHighSourceLPF(ManualControlDialog::LPF::M1880);
+//            break;
+//        case 3500:
+//            manual->setHighSourceLPF(ManualControlDialog::LPF::M3500);
+//            break;
+//        case 0:
+//            manual->setHighSourceLPF(ManualControlDialog::LPF::None);
+//            break;
+//        default:
+//            return SCPI::getResultName(SCPI::Result::Error);
+//        }
+//        return SCPI::getResultName(SCPI::Result::Empty);
+//    }, [=](QStringList) -> QString {
+//        if(!manual) {
+//            return SCPI::getResultName(SCPI::Result::Error);
+//        }
+//        auto lpf = manual->getHighSourceLPF();
+//        switch(lpf) {
+//        case ManualControlDialog::LPF::M947: return "947";
+//        case ManualControlDialog::LPF::M1880: return "1880";
+//        case ManualControlDialog::LPF::M3500: return "3500";
+//        case ManualControlDialog::LPF::None: return "0";
+//        default: return SCPI::getResultName(SCPI::Result::Error);
+//        }
+//    }));
+//    addBooleanManualSetting("LSRC_EN", &ManualControlDialog::setLowSourceEnable, &ManualControlDialog::getLowSourceEnable);
+//    addIntegerManualSettingWithReturnValue("LSRC_PWR", &ManualControlDialog::setLowSourcePower, &ManualControlDialog::getLowSourcePower);
+//    addDoubleManualSetting("LSRC_FREQ", &ManualControlDialog::setLowSourceFrequency, &ManualControlDialog::getLowSourceFrequency);
+//    addBooleanManualSetting("BAND_SW", &ManualControlDialog::setHighband, &ManualControlDialog::getHighband);
+//    addDoubleManualSetting("ATTenuator", &ManualControlDialog::setAttenuator, &ManualControlDialog::getAttenuator);
+//    addBooleanManualSetting("AMP_EN", &ManualControlDialog::setAmplifierEnable, &ManualControlDialog::getAmplifierEnable);
+//    addIntegerManualSettingWithReturnValue("PORT_SW", &ManualControlDialog::setPortSwitch, &ManualControlDialog::getPortSwitch);
+//    addBooleanManualSetting("LO1_CE", &ManualControlDialog::setLO1ChipEnable, &ManualControlDialog::getLO1ChipEnable);
+//    addBooleanManualSetting("LO1_RFEN", &ManualControlDialog::setLO1RFEnable, &ManualControlDialog::getLO1RFEnable);
+//    addBooleanManualQuery("LO1_LOCKed", &ManualControlDialog::getLO1Locked);
+//    addDoubleManualSetting("LO1_FREQ", &ManualControlDialog::setLO1Frequency, &ManualControlDialog::getLO1Frequency);
+//    addDoubleManualSetting("IF1_FREQ", &ManualControlDialog::setIF1Frequency, &ManualControlDialog::getIF1Frequency);
+//    addBooleanManualSetting("LO2_EN", &ManualControlDialog::setLO2Enable, &ManualControlDialog::getLO2Enable);
+//    addDoubleManualSetting("LO2_FREQ", &ManualControlDialog::setLO2Frequency, &ManualControlDialog::getLO2Frequency);
+//    addDoubleManualSetting("IF2_FREQ", &ManualControlDialog::setIF2Frequency, &ManualControlDialog::getIF2Frequency);
+//    addBooleanManualSetting("PORT1_EN", &ManualControlDialog::setPort1Enable, &ManualControlDialog::getPort1Enable);
+//    addBooleanManualSetting("PORT2_EN", &ManualControlDialog::setPort2Enable, &ManualControlDialog::getPort2Enable);
+//    addBooleanManualSetting("REF_EN", &ManualControlDialog::setRefEnable, &ManualControlDialog::getRefEnable);
+//    addIntegerManualSetting("SAMPLES", &ManualControlDialog::setNumSamples, &ManualControlDialog::getNumSamples);
+//    scpi_manual->add(new SCPICommand("WINdow", [=](QStringList params) -> QString {
+//        if(!manual || params.size() < 1) {
+//            return SCPI::getResultName(SCPI::Result::Error);
+//        }
+//        if (params[0] == "NONE") {
+//            manual->setWindow(ManualControlDialog::Window::None);
+//        } else if(params[0] == "KAISER") {
+//            manual->setWindow(ManualControlDialog::Window::Kaiser);
+//        } else if(params[0] == "HANN") {
+//            manual->setWindow(ManualControlDialog::Window::Hann);
+//        } else if(params[0] == "FLATTOP") {
+//            manual->setWindow(ManualControlDialog::Window::FlatTop);
+//        } else {
+//            return "INVALID WINDOW";
+//        }
+//        return SCPI::getResultName(SCPI::Result::Empty);
+//    }, [=](QStringList) -> QString {
+//        if(!manual) {
+//            return SCPI::getResultName(SCPI::Result::Error);
+//        }
+//        switch((ManualControlDialog::Window) manual->getWindow()) {
+//        case ManualControlDialog::Window::None: return "NONE";
+//        case ManualControlDialog::Window::Kaiser: return "KAISER";
+//        case ManualControlDialog::Window::Hann: return "HANN";
+//        case ManualControlDialog::Window::FlatTop: return "FLATTOP";
+//        default: return SCPI::getResultName(SCPI::Result::Error);
+//        }
+//    }));
+//    addIntegerManualQuery("PORT1_MIN", &ManualControlDialog::getPort1MinADC);
+//    addIntegerManualQuery("PORT1_MAX", &ManualControlDialog::getPort1MaxADC);
+//    addDoubleManualQuery("PORT1_MAG", &ManualControlDialog::getPort1Magnitude);
+//    addDoubleManualQuery("PORT1_PHAse", &ManualControlDialog::getPort1Phase);
+//    addComplexManualQuery("PORT1_REFerenced", &ManualControlDialog::getPort1Referenced);
 
-    addBooleanManualSetting("HSRC_CE", &ManualControlDialog::setHighSourceChipEnable, &ManualControlDialog::getHighSourceChipEnable);
-    addBooleanManualSetting("HSRC_RFEN", &ManualControlDialog::setHighSourceRFEnable, &ManualControlDialog::getHighSourceRFEnable);
-    addBooleanManualQuery("HSRC_LOCKed", &ManualControlDialog::getHighSourceLocked);
-    addIntegerManualSettingWithReturnValue("HSRC_PWR", &ManualControlDialog::setHighSourcePower, &ManualControlDialog::getHighSourcePower);
-    addDoubleManualSetting("HSRC_FREQ", &ManualControlDialog::setHighSourceFrequency, &ManualControlDialog::getHighSourceFrequency);
-    scpi_manual->add(new SCPICommand("HSRC_LPF", [=](QStringList params) -> QString {
-        long value;
-        if(!manual || !SCPI::paramToLong(params, 0, value)) {
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        switch(value) {
-        case 947:
-            manual->setHighSourceLPF(ManualControlDialog::LPF::M947);
-            break;
-        case 1880:
-            manual->setHighSourceLPF(ManualControlDialog::LPF::M1880);
-            break;
-        case 3500:
-            manual->setHighSourceLPF(ManualControlDialog::LPF::M3500);
-            break;
-        case 0:
-            manual->setHighSourceLPF(ManualControlDialog::LPF::None);
-            break;
-        default:
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, [=](QStringList) -> QString {
-        if(!manual) {
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        auto lpf = manual->getHighSourceLPF();
-        switch(lpf) {
-        case ManualControlDialog::LPF::M947: return "947";
-        case ManualControlDialog::LPF::M1880: return "1880";
-        case ManualControlDialog::LPF::M3500: return "3500";
-        case ManualControlDialog::LPF::None: return "0";
-        default: return SCPI::getResultName(SCPI::Result::Error);
-        }
-    }));
-    addBooleanManualSetting("LSRC_EN", &ManualControlDialog::setLowSourceEnable, &ManualControlDialog::getLowSourceEnable);
-    addIntegerManualSettingWithReturnValue("LSRC_PWR", &ManualControlDialog::setLowSourcePower, &ManualControlDialog::getLowSourcePower);
-    addDoubleManualSetting("LSRC_FREQ", &ManualControlDialog::setLowSourceFrequency, &ManualControlDialog::getLowSourceFrequency);
-    addBooleanManualSetting("BAND_SW", &ManualControlDialog::setHighband, &ManualControlDialog::getHighband);
-    addDoubleManualSetting("ATTenuator", &ManualControlDialog::setAttenuator, &ManualControlDialog::getAttenuator);
-    addBooleanManualSetting("AMP_EN", &ManualControlDialog::setAmplifierEnable, &ManualControlDialog::getAmplifierEnable);
-    addIntegerManualSettingWithReturnValue("PORT_SW", &ManualControlDialog::setPortSwitch, &ManualControlDialog::getPortSwitch);
-    addBooleanManualSetting("LO1_CE", &ManualControlDialog::setLO1ChipEnable, &ManualControlDialog::getLO1ChipEnable);
-    addBooleanManualSetting("LO1_RFEN", &ManualControlDialog::setLO1RFEnable, &ManualControlDialog::getLO1RFEnable);
-    addBooleanManualQuery("LO1_LOCKed", &ManualControlDialog::getLO1Locked);
-    addDoubleManualSetting("LO1_FREQ", &ManualControlDialog::setLO1Frequency, &ManualControlDialog::getLO1Frequency);
-    addDoubleManualSetting("IF1_FREQ", &ManualControlDialog::setIF1Frequency, &ManualControlDialog::getIF1Frequency);
-    addBooleanManualSetting("LO2_EN", &ManualControlDialog::setLO2Enable, &ManualControlDialog::getLO2Enable);
-    addDoubleManualSetting("LO2_FREQ", &ManualControlDialog::setLO2Frequency, &ManualControlDialog::getLO2Frequency);
-    addDoubleManualSetting("IF2_FREQ", &ManualControlDialog::setIF2Frequency, &ManualControlDialog::getIF2Frequency);
-    addBooleanManualSetting("PORT1_EN", &ManualControlDialog::setPort1Enable, &ManualControlDialog::getPort1Enable);
-    addBooleanManualSetting("PORT2_EN", &ManualControlDialog::setPort2Enable, &ManualControlDialog::getPort2Enable);
-    addBooleanManualSetting("REF_EN", &ManualControlDialog::setRefEnable, &ManualControlDialog::getRefEnable);
-    addIntegerManualSetting("SAMPLES", &ManualControlDialog::setNumSamples, &ManualControlDialog::getNumSamples);
-    scpi_manual->add(new SCPICommand("WINdow", [=](QStringList params) -> QString {
-        if(!manual || params.size() < 1) {
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        if (params[0] == "NONE") {
-            manual->setWindow(ManualControlDialog::Window::None);
-        } else if(params[0] == "KAISER") {
-            manual->setWindow(ManualControlDialog::Window::Kaiser);
-        } else if(params[0] == "HANN") {
-            manual->setWindow(ManualControlDialog::Window::Hann);
-        } else if(params[0] == "FLATTOP") {
-            manual->setWindow(ManualControlDialog::Window::FlatTop);
-        } else {
-            return "INVALID WINDOW";
-        }
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, [=](QStringList) -> QString {
-        if(!manual) {
-            return SCPI::getResultName(SCPI::Result::Error);
-        }
-        switch((ManualControlDialog::Window) manual->getWindow()) {
-        case ManualControlDialog::Window::None: return "NONE";
-        case ManualControlDialog::Window::Kaiser: return "KAISER";
-        case ManualControlDialog::Window::Hann: return "HANN";
-        case ManualControlDialog::Window::FlatTop: return "FLATTOP";
-        default: return SCPI::getResultName(SCPI::Result::Error);
-        }
-    }));
-    addIntegerManualQuery("PORT1_MIN", &ManualControlDialog::getPort1MinADC);
-    addIntegerManualQuery("PORT1_MAX", &ManualControlDialog::getPort1MaxADC);
-    addDoubleManualQuery("PORT1_MAG", &ManualControlDialog::getPort1Magnitude);
-    addDoubleManualQuery("PORT1_PHAse", &ManualControlDialog::getPort1Phase);
-    addComplexManualQuery("PORT1_REFerenced", &ManualControlDialog::getPort1Referenced);
+//    addIntegerManualQuery("PORT2_MIN", &ManualControlDialog::getPort2MinADC);
+//    addIntegerManualQuery("PORT2_MAX", &ManualControlDialog::getPort2MaxADC);
+//    addDoubleManualQuery("PORT2_MAG", &ManualControlDialog::getPort2Magnitude);
+//    addDoubleManualQuery("PORT2_PHAse", &ManualControlDialog::getPort2Phase);
+//    addComplexManualQuery("PORT2_REFerenced", &ManualControlDialog::getPort2Referenced);
 
-    addIntegerManualQuery("PORT2_MIN", &ManualControlDialog::getPort2MinADC);
-    addIntegerManualQuery("PORT2_MAX", &ManualControlDialog::getPort2MaxADC);
-    addDoubleManualQuery("PORT2_MAG", &ManualControlDialog::getPort2Magnitude);
-    addDoubleManualQuery("PORT2_PHAse", &ManualControlDialog::getPort2Phase);
-    addComplexManualQuery("PORT2_REFerenced", &ManualControlDialog::getPort2Referenced);
+//    addIntegerManualQuery("REF_MIN", &ManualControlDialog::getRefMinADC);
+//    addIntegerManualQuery("REF_MAX", &ManualControlDialog::getRefMaxADC);
+//    addDoubleManualQuery("REF_MAG", &ManualControlDialog::getRefMagnitude);
+//    addDoubleManualQuery("REF_PHAse", &ManualControlDialog::getRefPhase);
 
-    addIntegerManualQuery("REF_MIN", &ManualControlDialog::getRefMinADC);
-    addIntegerManualQuery("REF_MAX", &ManualControlDialog::getRefMaxADC);
-    addDoubleManualQuery("REF_MAG", &ManualControlDialog::getRefMagnitude);
-    addDoubleManualQuery("REF_PHAse", &ManualControlDialog::getRefPhase);
-
-    scpi.add(scpi_manual);
+//    scpi.add(scpi_manual);
 }
 
 void AppWindow::StartTCPServer(int port)

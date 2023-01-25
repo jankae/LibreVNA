@@ -1730,7 +1730,6 @@ void Calibration::addMeasurements(std::set<CalibrationMeasurement::Base *> m, co
         meas->addPoint(data);
     }
     unsavedChanges = true;
-    // TODO
     if(DeviceDriver::getActiveDriver()) {
         validDevice = DeviceDriver::getActiveDriver()->getSerial();
     }
