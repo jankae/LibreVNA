@@ -29,6 +29,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/librevnadriver.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/librevnatcpdriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.cpp \
@@ -199,6 +200,7 @@ HEADERS += \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/librevnadriver.h \
+    ../LibreVNA-GUI/Device/LibreVNA/librevnatcpdriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.h \

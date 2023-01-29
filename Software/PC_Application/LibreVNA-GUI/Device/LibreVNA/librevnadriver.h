@@ -141,6 +141,14 @@ public:
      */
     virtual bool setExtRef(QString option_in, QString option_out) override;
 
+    /**
+     * @brief Registers metatypes within the Qt Framework.
+     *
+     * If the device driver uses a queued signal/slot connection with custom data types, these types must be registered before emitting the signal.
+     * Register them within this function with qRegisterMetaType<Type>("Name");
+     */
+    virtual void registerTypes();
+
 public:
 signals:
     // Required for the compound device driver
@@ -149,7 +157,7 @@ public:
     virtual bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500) = 0;
     bool sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb = nullptr);
 
-    int getMaxAmplitudePoints() const;
+    unsigned int getMaxAmplitudePoints() const;
 
 signals:
     void receivedAnswer(const LibreVNADriver::TransmissionResult &result);
@@ -162,7 +170,7 @@ protected:
     bool connected;
     QString serial;
     Info info;
-    int limits_maxAmplitudePoints;
+    unsigned int limits_maxAmplitudePoints;
 
     Protocol::DeviceStatusV1 lastStatus;
 
@@ -181,5 +189,9 @@ protected:
     bool VNASuppressInvalidPeaks;
     bool VNAAdjustPowerLevel;
 };
+
+Q_DECLARE_METATYPE(Protocol::PacketInfo)
+Q_DECLARE_METATYPE(LibreVNADriver::TransmissionResult)
+
 
 #endif // LIBREVNADRIVER_H

@@ -26,6 +26,7 @@
 #include "modehandler.h"
 #include "modewindow.h"
 #include "Device/LibreVNA/librevnausbdriver.h"
+#include "Device/LibreVNA/librevnatcpdriver.h"
 
 #include <QDockWidget>
 #include <QDesktopWidget>
@@ -101,6 +102,7 @@ AppWindow::AppWindow(QWidget *parent)
 
     // Register device drivers
     deviceDrivers.push_back(new LibreVNAUSBDriver());
+    deviceDrivers.push_back(new LibreVNATCPDriver());
 
     for(auto driver : deviceDrivers) {
         driver->registerTypes();
@@ -240,7 +242,7 @@ void AppWindow::SetupMenu()
     });
 
 //    connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
-    connect(ui->actionUSB_log, &QAction::triggered, this, &AppWindow::ShowUSBLog);
+    connect(ui->actionDevice_log, &QAction::triggered, this, &AppWindow::ShowDeviceLog);
 //    connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
 //    connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
 //    connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
@@ -369,12 +371,13 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
         connect(device, &DeviceDriver::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &DeviceDriver::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
         connect(device, &DeviceDriver::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
-        connect(device, &DeviceDriver::releaseControl, [=](){
+        connect(device, &DeviceDriver::FlagsUpdated, this, &AppWindow::DeviceFlagsUpdated);
+        connect(device, &DeviceDriver::releaseControl, this, [=](){
             if(lastActiveMode) {
                 modeHandler->activate(lastActiveMode);
             }
         });
-        connect(device, &DeviceDriver::acquireControl, [=](){
+        connect(device, &DeviceDriver::acquireControl, this, [=](){
            lastActiveMode = modeHandler->getActiveMode();
            modeHandler->deactivate(lastActiveMode);
         });
@@ -440,6 +443,8 @@ void AppWindow::DisconnectDevice()
             ui->menuDevice->removeAction(a);
         }
         device->disconnectDevice();
+        disconnect(device, nullptr, &deviceLog, nullptr);
+        disconnect(device, nullptr, this, nullptr);
         device = nullptr;
     }
     ui->actionDisconnect->setEnabled(false);
@@ -465,7 +470,7 @@ void AppWindow::DisconnectDevice()
 void AppWindow::DeviceConnectionLost()
 {
     DisconnectDevice();
-    InformationBox::ShowError("Disconnected", "The USB connection to the device has been lost");
+    InformationBox::ShowError("Disconnected", "The connection to the device has been lost");
     UpdateDeviceList();
 }
 
@@ -1084,7 +1089,7 @@ void AppWindow::UpdateReference()
     device->setExtRef(toolbars.reference.type->currentText(), toolbars.reference.outFreq->currentText());
 }
 
-void AppWindow::ShowUSBLog()
+void AppWindow::ShowDeviceLog()
 {
     auto d = new DeviceUSBLogView();
     if(AppWindow::showGUI()) {

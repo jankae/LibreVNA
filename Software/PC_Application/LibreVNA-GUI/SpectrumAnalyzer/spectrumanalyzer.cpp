@@ -527,7 +527,7 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
         UpdateAverageCount();
         markerModel->updateMarkers();
     }
-    static int lastPoint = 0;
+    static unsigned int lastPoint = 0;
     if(m_avg.pointNum > 0 && m_avg.pointNum != lastPoint + 1) {
         qWarning() << "Got point" << m_avg.pointNum << "but last received point was" << lastPoint << "("<<(m_avg.pointNum-lastPoint-1)<<"missed points)";
     }

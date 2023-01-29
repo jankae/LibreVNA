@@ -50,7 +50,7 @@
     <addaction name="actionDisconnect"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="actionUSB_log"/>
+    <addaction name="actionDevice_log"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -221,12 +221,12 @@
     <string>Preset</string>
    </property>
   </action>
-  <action name="actionUSB_log">
+  <action name="actionDevice_log">
    <property name="enabled">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>View USB log</string>
+    <string>View Device Log</string>
    </property>
   </action>
   <action name="actionCreate_Debug_Data">

@@ -23,6 +23,7 @@ HEADERS += \
     Device/LibreVNA/firmwareupdatedialog.h \
     Device/LibreVNA/frequencycaldialog.h \
     Device/LibreVNA/librevnadriver.h \
+    Device/LibreVNA/librevnatcpdriver.h \
     Device/LibreVNA/librevnausbdriver.h \
     Device/LibreVNA/manualcontroldialog.h \
     Device/LibreVNA/receivercaldialog.h \
@@ -174,6 +175,7 @@ SOURCES += \
     Device/LibreVNA/firmwareupdatedialog.cpp \
     Device/LibreVNA/frequencycaldialog.cpp \
     Device/LibreVNA/librevnadriver.cpp \
+    Device/LibreVNA/librevnatcpdriver.cpp \
     Device/LibreVNA/librevnausbdriver.cpp \
     Device/LibreVNA/manualcontroldialog.cpp \
     Device/LibreVNA/receivercaldialog.cpp \

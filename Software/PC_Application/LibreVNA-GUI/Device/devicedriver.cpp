@@ -1,4 +1,4 @@
-#include "devicedriver.h"
+﻿#include "devicedriver.h"
 
 DeviceDriver *DeviceDriver::activeDriver = nullptr;
 

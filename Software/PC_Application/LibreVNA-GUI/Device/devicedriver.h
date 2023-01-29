@@ -320,7 +320,7 @@ public:
     class SAMeasurement {
     public:
         // Number of point in the sweep
-        int pointNum;
+        unsigned int pointNum;
         union {
             struct {
                 // for non-zero span

@@ -249,12 +249,6 @@ void LibreVNAUSBDriver::disconnect()
     }
 }
 
-void LibreVNAUSBDriver::registerTypes()
-{
-    qDebug() << "Registering meta type: " << qRegisterMetaType<Protocol::PacketInfo>();
-    qDebug() << "Registering meta type: " << qRegisterMetaType<TransmissionResult>();
-}
-
 void LibreVNAUSBDriver::ReceivedData()
 {
     Protocol::PacketInfo packet;

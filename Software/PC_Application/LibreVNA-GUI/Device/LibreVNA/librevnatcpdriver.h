@@ -1,46 +1,23 @@
-﻿#ifndef LIBREVNAUSBDRIVER_H
-#define LIBREVNAUSBDRIVER_H
+﻿#ifndef LIBREVNATCPDRIVER_H
+#define LIBREVNATCPDRIVER_H
 
 #include "librevnadriver.h"
 
-#include <libusb-1.0/libusb.h>
 #include <condition_variable>
 #include <thread>
+#include <deque>
 
 #include <QQueue>
 #include <QTimer>
+#include <QUdpSocket>
+#include <QTcpSocket>
+#include <QDateTime>
 
-class USBInBuffer : public QObject {
-    Q_OBJECT
-public:
-    USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size);
-    ~USBInBuffer();
-
-    void removeBytes(int handled_bytes);
-    int getReceived() const;
-    uint8_t *getBuffer() const;
-
-signals:
-    void DataReceived();
-    void TransferError();
-
-private:
-    void Callback(libusb_transfer *transfer);
-    static void LIBUSB_CALL CallbackTrampoline(libusb_transfer *transfer);
-    libusb_transfer *transfer;
-    unsigned char *buffer;
-    int buffer_size;
-    int received_size;
-    bool inCallback;
-    bool cancelling;
-    std::condition_variable cv;
-};
-
-class LibreVNAUSBDriver : public LibreVNADriver
+class LibreVNATCPDriver : public LibreVNADriver
 {
     Q_OBJECT
 public:
-    LibreVNAUSBDriver();
+    LibreVNATCPDriver();
 
     /**
      * @brief Returns the driver name. It must be unique across all implemented drivers and is used to identify the driver
@@ -63,7 +40,16 @@ public:
      */
     virtual void disconnect() override;
 
+    /**
+     * @brief Registers metatypes within the Qt Framework.
+     *
+     * If the device driver uses a queued signal/slot connection with custom data types, these types must be registered before emitting the signal.
+     * Register them within this function with qRegisterMetaType<Type>("Name");
+     */
+    virtual void registerTypes();
+
 private slots:
+    void SSDPreceived(QUdpSocket *sock);
     void ReceivedData();
     void ReceivedLog();
     void transmissionTimeout() {
@@ -77,15 +63,27 @@ private:
 
     virtual bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500) override;
 
-    void USBHandleThread();
-    // foundCallback is called for every device that is found. If it returns true the search continues, otherwise it is aborted.
-    // When the search is aborted the last found device is still opened
-    static void SearchDevices(std::function<bool(libusb_device_handle *handle, QString getSerial)> foundCallback, libusb_context *context, bool ignoreOpenError);
+    // Sockets for SSDP protocol
+    std::vector<QUdpSocket*> ssdpSockets;
+    class DetectedDevice {
+    public:
+        QString serial;
+        QHostAddress address;
+        QDateTime responseTime;
+        int maxAgeSeconds;
+    };
 
-    libusb_device_handle *m_handle;
-    libusb_context *m_context;
-    USBInBuffer *dataBuffer;
-    USBInBuffer *logBuffer;
+    void addDetectedDevice(const DetectedDevice &d);
+    // removes entries that are too old
+    void pruneDetectedDevices();
+    std::vector<DetectedDevice> detectedDevices;
+
+    // Connection sockets
+    QTcpSocket dataSocket;
+    QTcpSocket logSocket;
+
+    QByteArray dataBuffer;
+    QByteArray logBuffer;
 
     class Transmission {
     public:
@@ -93,6 +91,7 @@ private:
         unsigned int timeout;
         std::function<void(TransmissionResult)> callback;
     };
+
 
     std::mutex transmissionMutex;
     QQueue<Transmission> transmissionQueue;
@@ -105,4 +104,4 @@ private:
     std::mutex accessMutex;
 };
 
-#endif // LIBREVNAUSBDRIVER_H
+#endif // LibreVNATCPDriver_H

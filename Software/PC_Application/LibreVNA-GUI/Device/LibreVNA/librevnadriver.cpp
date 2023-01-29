@@ -420,6 +420,12 @@ bool LibreVNADriver::setExtRef(QString option_in, QString option_out)
     return SendPacket(p);
 }
 
+void LibreVNADriver::registerTypes()
+{
+    qRegisterMetaType<Protocol::PacketInfo>();
+    qRegisterMetaType<TransmissionResult>();
+}
+
 void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
 {
     emit passOnReceivedPacket(packet);
@@ -533,7 +539,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
     }
 }
 
-int LibreVNADriver::getMaxAmplitudePoints() const
+unsigned int LibreVNADriver::getMaxAmplitudePoints() const
 {
     return limits_maxAmplitudePoints;
 }
