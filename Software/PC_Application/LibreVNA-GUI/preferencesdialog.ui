@@ -76,6 +76,11 @@
          <string>Debug</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Device Drivers</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>
@@ -712,8 +717,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>565</width>
-              <height>863</height>
+              <width>763</width>
+              <height>561</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -734,64 +739,11 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="AcquisitionSuppressPeaks">
-                  <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Due to limited fractional divider settings, the source and 1.LO PLLs are not able to reach every frequency exactly. At some specific frequencies this causes the final IF to shift. At these frequencies there will be a positive or negative peak in the trace measurement that is not actually there.&lt;br/&gt;&lt;br/&gt;Checking this option shifts the 2.LO for points where this could be an issue. This will remove the peaks but slows down the sweep slightly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="text">
-                   <string>Suppress invalid peaks</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="AcquisitionAdjustPowerLevel">
-                  <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled, the step attenuator setting will be changed during the sweep to keep the selected output power across frequency as accurate as possible.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="text">
-                   <string>Adjust power level during sweep</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="AcquisitionUseHarmonic">
-                  <property name="text">
-                   <string>Use harmonic mixing</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QCheckBox" name="AcquisitionAllowSegmentedSweep">
                   <property name="text">
                    <string>Allow segmented sweep (increases maximum number of points)</string>
                   </property>
                  </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="groupBox_7">
-               <property name="title">
-                <string>Spectrum Analyzer</string>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_7">
-                <item>
-                 <layout class="QFormLayout" name="formLayout_5">
-                  <item row="0" column="0">
-                   <widget class="QCheckBox" name="AcquisitionUseDFT">
-                    <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Normally, the spectrum analyzer mode tunes the LO for each point and measures the final IF only at one frequency. When this option is enabled, a DFT of the final IF is calculated instead which covers multiple frequencies with one measurement.&lt;/p&gt;&lt;p&gt;This can speed up the measurement at low RBWs significantly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                    <property name="text">
-                     <string>Use DFT when RBW is below</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="SIUnitEdit" name="AcquisitionDFTlimitRBW"/>
-                  </item>
-                 </layout>
                 </item>
                </layout>
               </widget>
@@ -826,117 +778,6 @@
                    </widget>
                   </item>
                  </layout>
-                </item>
-                <item>
-                 <widget class="QGroupBox" name="groupBox_15">
-                  <property name="title">
-                   <string>IF frequencies</string>
-                  </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_5">
-                   <item>
-                    <widget class="QLabel" name="label_34">
-                     <property name="text">
-                      <string>This section contains advanced system settings. It is recommended to leave them at default values unless you know what you are doing. Slight changes of the IF frequencies can be used to shift possible spikes to less problematic frequencies. Large changes of these frequencies may severely impact device performance.</string>
-                     </property>
-                     <property name="wordWrap">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <layout class="QFormLayout" name="formLayout">
-                     <item row="0" column="0">
-                      <widget class="QLabel" name="label_29">
-                       <property name="text">
-                        <string>IF 1:</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="0" column="1">
-                      <widget class="SIUnitEdit" name="AcquisitionIF1">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency of the first IF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="1" column="0">
-                      <widget class="QLabel" name="label_30">
-                       <property name="text">
-                        <string>ADC prescaler:</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="1" column="1">
-                      <widget class="QSpinBox" name="AcquisitionADCpresc">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ADC prescaler in FPGA. The ADC sample rate is determined by 102.4MHz/prescaler&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                       <property name="minimum">
-                        <number>112</number>
-                       </property>
-                       <property name="maximum">
-                        <number>255</number>
-                       </property>
-                       <property name="value">
-                        <number>128</number>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="2" column="0">
-                      <widget class="QLabel" name="label_31">
-                       <property name="text">
-                        <string>ADC sample rate:</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="2" column="1">
-                      <widget class="SIUnitEdit" name="AcquisitionADCRate">
-                       <property name="enabled">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="3" column="0">
-                      <widget class="QLabel" name="label_32">
-                       <property name="text">
-                        <string>Phase increment:</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="3" column="1">
-                      <widget class="QSpinBox" name="AcquisitionADCphaseInc">
-                       <property name="toolTip">
-                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Phase increment per ADC sample. Together with the ADC sample rate this determines the frequency of the second IF&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                       </property>
-                       <property name="minimum">
-                        <number>1</number>
-                       </property>
-                       <property name="maximum">
-                        <number>4095</number>
-                       </property>
-                       <property name="value">
-                        <number>1280</number>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="4" column="0">
-                      <widget class="QLabel" name="label_33">
-                       <property name="text">
-                        <string>IF 2:</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="4" column="1">
-                      <widget class="SIUnitEdit" name="AcquisitionIF2">
-                       <property name="enabled">
-                        <bool>false</bool>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                  </layout>
-                 </widget>
                 </item>
                 <item>
                  <widget class="QGroupBox" name="groupBox_19">
@@ -1033,8 +874,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>553</width>
-              <height>969</height>
+              <width>749</width>
+              <height>952</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1455,7 +1296,7 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>0</y>
+              <y>-44</y>
               <width>749</width>
               <height>605</height>
              </rect>
@@ -1992,22 +1833,6 @@
                    <widget class="QCheckBox" name="DebugSaveTraceData">
                     <property name="text">
                      <string>Include datapoints</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QGroupBox" name="groupBox_25">
-                 <property name="title">
-                  <string>Acquisition</string>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_32">
-                  <item>
-                   <widget class="QCheckBox" name="DebugCaptureRawReceiverValues">
-                    <property name="text">
-                     <string>Capture raw receiver values</string>
                     </property>
                    </widget>
                   </item>

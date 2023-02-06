@@ -219,6 +219,7 @@ bool LibreVNAUSBDriver::connectTo(QString serial)
 
     sendWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
     sendWithoutPayload(Protocol::PacketType::RequestDeviceStatus);
+    updateIFFrequencies();
     return true;
 }
 

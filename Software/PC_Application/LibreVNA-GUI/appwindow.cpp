@@ -100,11 +100,7 @@ AppWindow::AppWindow(QWidget *parent)
         Preferences::getInstance().load();
     }
 
-    // Register device drivers
-    deviceDrivers.push_back(new LibreVNAUSBDriver());
-    deviceDrivers.push_back(new LibreVNATCPDriver());
-
-    for(auto driver : deviceDrivers) {
+    for(auto driver : DeviceDriver::getDrivers()) {
         driver->registerTypes();
         Preferences::getInstance().load(driver->driverSpecificSettings());
     }
@@ -325,10 +321,10 @@ void AppWindow::closeEvent(QCloseEvent *event)
     delete modeHandler;
     modeHandler = nullptr;
     pref.store();
-    for(auto driver : deviceDrivers) {
+    for(auto driver : DeviceDriver::getDrivers()) {
         Preferences::getInstance().store(driver->driverSpecificSettings());
     }
-    for(auto driver : deviceDrivers) {
+    for(auto driver : DeviceDriver::getDrivers()) {
         delete driver;
     }
     QMainWindow::closeEvent(event);
@@ -347,7 +343,7 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
     }
     try {
         qDebug() << "Attempting to connect to device...";
-        for(auto d : deviceDrivers) {
+        for(auto d : DeviceDriver::getDrivers()) {
             if(driver && driver != d) {
                 // not the specified driver
                 continue;
@@ -522,7 +518,7 @@ void AppWindow::SetupSCPI()
     }));
     scpi_dev->add(new SCPICommand("LIST", nullptr, [=](QStringList) -> QString {
         QString ret;
-        for(auto driver : deviceDrivers) {
+        for(auto driver : DeviceDriver::getDrivers()) {
             for(auto d : driver->GetAvailableDevices()) {
                 ret += d + ",";
             }
@@ -983,7 +979,7 @@ int AppWindow::UpdateDeviceList()
     deviceActionGroup->setExclusive(true);
     ui->menuConnect_to->clear();
     deviceList.clear();
-    for(auto driver : deviceDrivers) {
+    for(auto driver : DeviceDriver::getDrivers()) {
         for(auto serial : driver->GetAvailableDevices()) {
             DeviceEntry e;
             e.driver = driver;

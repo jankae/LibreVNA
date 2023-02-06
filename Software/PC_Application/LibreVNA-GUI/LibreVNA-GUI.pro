@@ -318,6 +318,7 @@ FORMS += \
     Device/LibreVNA/automaticamplitudedialog.ui \
     Device/LibreVNA/firmwareupdatedialog.ui \
     Device/LibreVNA/frequencycaldialog.ui \
+    Device/LibreVNA/librevnadriversettingswidget.ui \
     Device/LibreVNA/manualcontroldialog.ui \
     Device/compounddeviceeditdialog.ui \
     Device/devicelog.ui \

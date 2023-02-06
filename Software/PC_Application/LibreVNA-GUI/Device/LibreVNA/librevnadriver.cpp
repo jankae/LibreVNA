@@ -5,9 +5,10 @@
 #include "frequencycaldialog.h"
 #include "sourcecaldialog.h"
 #include "receivercaldialog.h"
-
 #include "unit.h"
 #include "CustomWidgets/informationbox.h"
+
+#include "ui_librevnadriversettingswidget.h"
 
 using namespace std;
 
@@ -153,6 +154,9 @@ LibreVNADriver::LibreVNADriver()
     specificSettings.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "adjustPowerLevel", false));
     specificSettings.push_back(Savable::SettingDescription(&SAUseDFT, "useDFT", true));
     specificSettings.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "RBWlimitDFT", 3000));
+    specificSettings.push_back(Savable::SettingDescription(&IF1, "IF1", 62000000));
+    specificSettings.push_back(Savable::SettingDescription(&ADCprescaler, "ADCprescaler", 128));
+    specificSettings.push_back(Savable::SettingDescription(&DFTPhaseInc, "DFTPhaseInc", 1280));
 }
 
 std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
@@ -190,6 +194,94 @@ QString LibreVNADriver::getStatus()
         }
     }
     return ret;
+}
+
+QWidget *LibreVNADriver::createSettingsWidget()
+{
+    auto w = new QWidget;
+    auto ui = new Ui::LibreVNADriverSettingsWidget;
+    ui->setupUi(w);
+
+    // Set initial values
+    ui->CaptureRawReceiverValues->setChecked(captureRawReceiverValues);
+    ui->UseHarmonicMixing->setChecked(harmonicMixing);
+    ui->UseSignalID->setChecked(SASignalID);
+    ui->SuppressPeaks->setChecked(VNASuppressInvalidPeaks);
+    ui->AdjustPowerLevel->setChecked(VNAAdjustPowerLevel);
+    ui->DFTlimitRBW->setEnabled(false);
+    connect(ui->UseDFT, &QCheckBox::toggled, ui->DFTlimitRBW, &SIUnitEdit::setEnabled);
+    ui->UseDFT->setChecked(SAUseDFT);
+    ui->DFTlimitRBW->setUnit("Hz");
+    ui->DFTlimitRBW->setPrefixes(" kM");
+    ui->DFTlimitRBW->setPrecision(3);
+    ui->DFTlimitRBW->setValue(SARBWLimitForDFT);
+
+    auto updateADCRate = [=]() {
+        // update ADC rate, see FPGA protocol for calculation
+        ui->ADCRate->setValue(102400000.0 / ui->ADCpresc->value());
+    };
+    auto updateIF2 = [=]() {
+        auto ADCrate = ui->ADCRate->value();
+        ui->IF2->setValue(ADCrate * ui->ADCphaseInc->value() / 4096);
+    };
+
+    connect(ui->ADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateADCRate);
+    connect(ui->ADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
+    connect(ui->ADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
+
+    ui->IF1->setUnit("Hz");
+    ui->IF1->setPrefixes(" kM");
+    ui->IF1->setPrecision(5);
+    ui->IF1->setValue(IF1);
+    ui->ADCpresc->setValue(ADCprescaler);
+    ui->ADCphaseInc->setValue(DFTPhaseInc);
+
+    updateADCRate();
+    updateIF2();
+
+    connect(ui->UseHarmonicMixing, &QCheckBox::toggled, [=](bool enabled) {
+       if(enabled) {
+           InformationBox::ShowMessage("Harmonic Mixing", "When harmonic mixing is enabled, the frequency range of the VNA is (theoretically) extended up to 18GHz "
+                                       "by using higher harmonics of the source signal as well as the 1.LO. The fundamental frequency is still present "
+                                       "in the output signal and might disturb the measurement if the DUT is not linear. Performance above 6GHz is not "
+                                       "specified and generally not very good. However, this mode might be useful if the signal of interest is just above "
+                                       "6GHz (typically useful values up to 7-8GHz). Performance below 6GHz is not affected by this setting");
+       }
+    });
+
+    // make connections to change the values
+    connect(ui->CaptureRawReceiverValues, &QCheckBox::toggled, this, [=](){
+        captureRawReceiverValues = ui->CaptureRawReceiverValues->isChecked();
+    });
+    connect(ui->UseHarmonicMixing, &QCheckBox::toggled, this, [=](){
+        harmonicMixing = ui->UseHarmonicMixing->isChecked();
+    });
+    connect(ui->UseSignalID, &QCheckBox::toggled, this, [=](){
+        SASignalID = ui->UseSignalID->isChecked();
+    });
+    connect(ui->SuppressPeaks, &QCheckBox::toggled, this, [=](){
+        VNASuppressInvalidPeaks = ui->SuppressPeaks->isChecked();
+    });
+    connect(ui->AdjustPowerLevel, &QCheckBox::toggled, this, [=](){
+        VNAAdjustPowerLevel = ui->AdjustPowerLevel->isChecked();
+    });
+    connect(ui->UseDFT, &QCheckBox::toggled, this, [=](){
+        SAUseDFT = ui->UseDFT->isChecked();
+    });
+    connect(ui->DFTlimitRBW, &SIUnitEdit::valueChanged, this, [=](){
+       SARBWLimitForDFT = ui->DFTlimitRBW->value();
+    });
+    connect(ui->IF1, &SIUnitEdit::valueChanged, this, [=](){
+        IF1 = ui->IF1->value();
+    });
+    connect(ui->ADCpresc, qOverload<int>(&QSpinBox::valueChanged), this, [=](){
+        ADCprescaler = ui->ADCpresc->value();
+    });
+    connect(ui->ADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), this, [=](){
+        DFTPhaseInc = ui->ADCphaseInc->value();
+    });
+
+    return w;
 }
 
 QStringList LibreVNADriver::availableVNAMeasurements()
@@ -537,6 +629,16 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
     default:
         break;
     }
+}
+
+void LibreVNADriver::updateIFFrequencies()
+{
+    Protocol::PacketInfo p;
+    p.type = Protocol::PacketType::AcquisitionFrequencySettings;
+    p.acquisitionFrequencySettings.IF1 = IF1;
+    p.acquisitionFrequencySettings.ADCprescaler = ADCprescaler;
+    p.acquisitionFrequencySettings.DFTphaseInc = DFTPhaseInc;
+    SendPacket(p);
 }
 
 unsigned int LibreVNADriver::getMaxAmplitudePoints() const

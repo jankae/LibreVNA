@@ -8,7 +8,7 @@
   * - Derive from this class
   * - Implement all pure virtual functions
   * - Implement the virtual functions if the device supports the specific function
-  * - register the driver during application start
+  * - Add the new driver to getDrivers()
   */
 
 #include "Tools/parameters.h"
@@ -26,6 +26,12 @@ class DeviceDriver : public QObject
 public:
     DeviceDriver() {}
     virtual ~DeviceDriver();
+
+    /**
+     * @brief Returns a list of all available drivers
+     * @return driverlist
+     */
+    static std::vector<DeviceDriver*> getDrivers();
 
     /**
      * @brief Returns the driver name. It must be unique across all implemented drivers and is used to identify the driver
@@ -202,6 +208,18 @@ public:
      * @return Map of driver specific settings
      */
     std::vector<Savable::SettingDescription> driverSpecificSettings() {return specificSettings;}
+
+    /**
+     * @brief Returns a widget to edit the driver specific settings.
+     *
+     * The widget is displayed in the global settings dialog and allows the user to edit the settings
+     * specific to this driver. The application takes ownership of the widget after returning,
+     * create a new widget for every call to this function. If the driver has no specific settings
+     * or the settings do not need to be editable by the user, return a nullptr. In this case, no
+     * page for this driver is created in the settings dialog
+     * @return newly constructed settings widget or nullptr
+     */
+    virtual QWidget* createSettingsWidget() {return nullptr;}
 
     /**
      * @brief Return driver specific actions.

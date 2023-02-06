@@ -96,18 +96,8 @@ public:
     } Startup;
     struct {
         bool alwaysExciteAllPorts;
-        bool suppressPeaks;
-        bool adjustPowerLevel;
-        bool harmonicMixing;
         bool allowSegmentedSweep;
-        bool useDFTinSAmode;
-        double RBWLimitForDFT;
         bool useMedianAveraging;
-
-        // advanced, hardware specific settings
-        double IF1;
-        int ADCprescaler;
-        int DFTPhaseInc;
 
         // Full span settings
         bool fullSpanManual;
@@ -165,7 +155,6 @@ public:
     struct {
         double USBlogSizeLimit;
         bool saveTraceData;
-        bool makeRawReceiverValuesAvailable;
     } Debug;
 
     bool TCPoverride; // in case of manual port specification via command line
@@ -212,16 +201,8 @@ private:
         {&Startup.SA.averaging, "Startup.SA.averaging", 1},
         {&Startup.SA.signalID, "Startup.SA.signalID", true},
         {&Acquisition.alwaysExciteAllPorts, "Acquisition.alwaysExciteBothPorts", true},
-        {&Acquisition.suppressPeaks, "Acquisition.suppressPeaks", true},
-        {&Acquisition.adjustPowerLevel, "Acquisition.adjustPowerLevel", false},
-        {&Acquisition.harmonicMixing, "Acquisition.harmonicMixing", false},
         {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", false},
-        {&Acquisition.useDFTinSAmode, "Acquisition.useDFTinSAmode", true},
-        {&Acquisition.RBWLimitForDFT, "Acquisition.RBWLimitForDFT", 3000.0},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
-        {&Acquisition.IF1, "Acquisition.IF1", 62000000},
-        {&Acquisition.ADCprescaler, "Acquisition.ADCprescaler", 128},
-        {&Acquisition.DFTPhaseInc, "Acquisition.DFTPhaseInc", 1280},
         {&Acquisition.fullSpanManual, "Acquisition.fullSpanManual", false},
         {&Acquisition.fullSpanStart, "Acquisition.fullSpanStart", 0.0},
         {&Acquisition.fullSpanStop, "Acquisition.fullSpanStop", 6000000000.0},
@@ -277,7 +258,6 @@ private:
         {&SCPIServer.port, "SCPIServer.port", 19542},
         {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&Debug.saveTraceData, "Debug.saveTraceData", false},
-        {&Debug.makeRawReceiverValuesAvailable, "Debug.makeRawReceiverValuesAvailable", false},
         {&compoundDeviceJSON, "compoundDeviceJSON", "[]"},
     }};
 };

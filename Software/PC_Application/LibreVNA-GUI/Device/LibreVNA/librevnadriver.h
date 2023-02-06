@@ -1,4 +1,4 @@
-#ifndef LIBREVNADRIVER_H
+﻿#ifndef LIBREVNADRIVER_H
 #define LIBREVNADRIVER_H
 
 #include "../devicedriver.h"
@@ -54,6 +54,18 @@ public:
      * @return Status string
      */
     virtual QString getStatus() override;
+
+    /**
+     * @brief Returns a widget to edit the driver specific settings.
+     *
+     * The widget is displayed in the global settings dialog and allows the user to edit the settings
+     * specific to this driver. The application takes ownership of the widget after returning,
+     * create a new widget for every call to this function. If the driver has no specific settings
+     * or the settings do not need to be editable by the user, return a nullptr. In this case, no
+     * page for this driver is created in the settings dialog
+     * @return newly constructed settings widget or nullptr
+     */
+    virtual QWidget* createSettingsWidget() override;
 
     /**
      * @brief Names of available measurements.
@@ -166,6 +178,7 @@ signals:
 protected slots:
     void handleReceivedPacket(const Protocol::PacketInfo& packet);
 protected:
+    void updateIFFrequencies();
 
     bool connected;
     QString serial;
@@ -188,6 +201,9 @@ protected:
     double SARBWLimitForDFT;
     bool VNASuppressInvalidPeaks;
     bool VNAAdjustPowerLevel;
+    double IF1;
+    unsigned int ADCprescaler;
+    unsigned int DFTPhaseInc;
 };
 
 Q_DECLARE_METATYPE(Protocol::PacketInfo)

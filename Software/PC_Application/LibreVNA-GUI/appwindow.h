@@ -109,7 +109,6 @@ private:
     Mode *lastActiveMode;
 
 //    VirtualDevice *vdevice;
-    std::vector<DeviceDriver*> deviceDrivers;
     DeviceDriver *device;
 
     class DeviceEntry {

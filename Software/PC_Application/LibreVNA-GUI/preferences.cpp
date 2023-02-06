@@ -89,20 +89,6 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->StartupSARBW->setPrefixes(" k");
 
     // Acquisition page
-    ui->AcquisitionDFTlimitRBW->setUnit("Hz");
-    ui->AcquisitionDFTlimitRBW->setPrefixes(" k");
-    connect(ui->AcquisitionUseDFT, &QCheckBox::toggled, [=](bool enabled) {
-       ui->AcquisitionDFTlimitRBW->setEnabled(enabled);
-    });
-    ui->AcquisitionIF1->setUnit("Hz");
-    ui->AcquisitionIF1->setPrefixes(" kM");
-    ui->AcquisitionIF1->setPrecision(6);
-    ui->AcquisitionADCRate->setUnit("Hz");
-    ui->AcquisitionADCRate->setPrefixes(" kM");
-    ui->AcquisitionADCRate->setPrecision(6);
-    ui->AcquisitionIF2->setUnit("Hz");
-    ui->AcquisitionIF2->setPrefixes(" kM");
-    ui->AcquisitionIF2->setPrecision(6);
     ui->AcquisitionFullSpanStart->setUnit("Hz");
     ui->AcquisitionFullSpanStart->setPrefixes(" kMG");
     ui->AcquisitionFullSpanStart->setPrecision(6);
@@ -111,17 +97,6 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->AcquisitionFullSpanStop->setPrefixes(" kMG");
     ui->AcquisitionFullSpanStop->setPrecision(6);
     ui->AcquisitionFullSpanStop->setEnabled(false);
-    auto updateADCRate = [=]() {
-        // update ADC rate, see FPGA protocol for calculation
-        ui->AcquisitionADCRate->setValue(102400000.0 / ui->AcquisitionADCpresc->value());
-    };
-    auto updateIF2 = [=]() {
-        auto ADCrate = ui->AcquisitionADCRate->value();
-        ui->AcquisitionIF2->setValue(ADCrate * ui->AcquisitionADCphaseInc->value() / 4096);
-    };
-    connect(ui->AcquisitionADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateADCRate);
-    connect(ui->AcquisitionADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
-    connect(ui->AcquisitionADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
 
     connect(ui->AcquisitionFullSpanBehavior, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
         ui->AcquisitionFullSpanStart->setEnabled(ui->AcquisitionFullSpanBehavior->currentIndex() == 1);
@@ -216,6 +191,20 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->DebugMaxUSBlogSize->setUnit("B");
     ui->DebugMaxUSBlogSize->setPrefixes(" kMG");
 
+    // Add device driver settings
+    QTreeWidgetItem *item = ui->treeWidget->findItems("Device Drivers", Qt::MatchExactly)[0];
+    for(auto driver : DeviceDriver::getDrivers()) {
+        auto w = driver->createSettingsWidget();
+        if(!w) {
+            continue;
+        }
+        w->setObjectName(driver->getDriverName());
+        ui->pageWidget->addWidget(w);
+        auto driverItem = new QTreeWidgetItem();
+        driverItem->setText(0, driver->getDriverName());
+        item->addChild(driverItem);
+    }
+
     // Page selection
     connect(ui->treeWidget, &QTreeWidget::currentItemChanged, [=](QTreeWidgetItem *current, QTreeWidgetItem *) {
         auto name = current->text(0);
@@ -270,18 +259,6 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     });
 
     setInitialGUIState();
-    updateADCRate();
-    updateIF2();
-
-    connect(ui->AcquisitionUseHarmonic, &QCheckBox::toggled, [=](bool enabled) {
-       if(enabled) {
-           InformationBox::ShowMessage("Harmonic Mixing", "When harmonic mixing is enabled, the frequency range of the VNA is (theoretically) extended up to 18GHz "
-                                       "by using higher harmonics of the source signal as well as the 1.LO. The fundamental frequency is still present "
-                                       "in the output signal and might disturb the measurement if the DUT is not linear. Performance above 6GHz is not "
-                                       "specified and generally not very good. However, this mode might be useful if the signal of interest is just above "
-                                       "6GHz (typically useful values up to 7-8GHz). Performance below 6GHz is not affected by this setting");
-       }
-    });
 }
 
 PreferencesDialog::~PreferencesDialog()
@@ -322,16 +299,8 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupSASignalID->setChecked(p->Startup.SA.signalID);
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteAllPorts);
-    ui->AcquisitionSuppressPeaks->setChecked(p->Acquisition.suppressPeaks);
-    ui->AcquisitionAdjustPowerLevel->setChecked(p->Acquisition.adjustPowerLevel);
-    ui->AcquisitionUseHarmonic->setChecked(p->Acquisition.harmonicMixing);
     ui->AcquisitionAllowSegmentedSweep->setChecked(p->Acquisition.allowSegmentedSweep);
-    ui->AcquisitionUseDFT->setChecked(p->Acquisition.useDFTinSAmode);
-    ui->AcquisitionDFTlimitRBW->setValue(p->Acquisition.RBWLimitForDFT);
     ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
-    ui->AcquisitionIF1->setValue(p->Acquisition.IF1);
-    ui->AcquisitionADCpresc->setValue(p->Acquisition.ADCprescaler);
-    ui->AcquisitionADCphaseInc->setValue(p->Acquisition.DFTPhaseInc);
     ui->AcquisitionFullSpanBehavior->setCurrentIndex(p->Acquisition.fullSpanManual ? 1 : 0);
     ui->AcquisitionFullSpanStart->setValue(p->Acquisition.fullSpanStart);
     ui->AcquisitionFullSpanStop->setValue(p->Acquisition.fullSpanStop);
@@ -392,7 +361,6 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->DebugMaxUSBlogSize->setValue(p->Debug.USBlogSizeLimit);
     ui->DebugSaveTraceData->setChecked(p->Debug.saveTraceData);
-    ui->DebugCaptureRawReceiverValues->setChecked(p->Debug.makeRawReceiverValuesAvailable);
 
     for(auto cd : p->compoundDevices) {
         ui->compoundList->addItem(cd->getDesription());
@@ -431,16 +399,8 @@ void PreferencesDialog::updateFromGUI()
     p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
 
     p->Acquisition.alwaysExciteAllPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
-    p->Acquisition.suppressPeaks = ui->AcquisitionSuppressPeaks->isChecked();
-    p->Acquisition.adjustPowerLevel = ui->AcquisitionAdjustPowerLevel->isChecked();
-    p->Acquisition.harmonicMixing = ui->AcquisitionUseHarmonic->isChecked();
     p->Acquisition.allowSegmentedSweep = ui->AcquisitionAllowSegmentedSweep->isChecked();
-    p->Acquisition.useDFTinSAmode = ui->AcquisitionUseDFT->isChecked();
-    p->Acquisition.RBWLimitForDFT = ui->AcquisitionDFTlimitRBW->value();
     p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
-    p->Acquisition.IF1 = ui->AcquisitionIF1->value();
-    p->Acquisition.ADCprescaler = ui->AcquisitionADCpresc->value();
-    p->Acquisition.DFTPhaseInc = ui->AcquisitionADCphaseInc->value();
     p->Acquisition.fullSpanManual = ui->AcquisitionFullSpanBehavior->currentIndex() == 1;
     p->Acquisition.fullSpanStart = ui->AcquisitionFullSpanStart->value();
     p->Acquisition.fullSpanStop = ui->AcquisitionFullSpanStop->value();
@@ -500,7 +460,6 @@ void PreferencesDialog::updateFromGUI()
 
     p->Debug.USBlogSizeLimit = ui->DebugMaxUSBlogSize->value();
     p->Debug.saveTraceData = ui->DebugSaveTraceData->isChecked();
-    p->Debug.makeRawReceiverValuesAvailable = ui->DebugCaptureRawReceiverValues->isChecked();
 
     p->nonTrivialWriting();
 }

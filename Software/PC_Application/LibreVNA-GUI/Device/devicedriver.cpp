@@ -1,5 +1,8 @@
 ﻿#include "devicedriver.h"
 
+#include "LibreVNA/librevnatcpdriver.h"
+#include "LibreVNA/librevnausbdriver.h"
+
 DeviceDriver *DeviceDriver::activeDriver = nullptr;
 
 DeviceDriver::~DeviceDriver()
@@ -7,6 +10,17 @@ DeviceDriver::~DeviceDriver()
     for(auto a : specificActions) {
         delete a;
     }
+}
+
+std::vector<DeviceDriver *> DeviceDriver::getDrivers()
+{
+    static std::vector<DeviceDriver*> ret;
+    if (ret.size() == 0) {
+        // first function call
+        ret.push_back(new LibreVNAUSBDriver);
+        ret.push_back(new LibreVNATCPDriver);
+    }
+    return ret;
 }
 
 bool DeviceDriver::connectDevice(QString serial)
