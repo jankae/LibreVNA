@@ -100,11 +100,6 @@ AppWindow::AppWindow(QWidget *parent)
         Preferences::getInstance().load();
     }
 
-    for(auto driver : DeviceDriver::getDrivers()) {
-        driver->registerTypes();
-        Preferences::getInstance().load(driver->driverSpecificSettings());
-    }
-
     device = nullptr;
 //    vdevice = nullptr;
     modeHandler = nullptr;
@@ -254,6 +249,8 @@ void AppWindow::SetupMenu()
         auto SCPIenabled = p.SCPIServer.enabled;
         auto SCPIport = p.SCPIServer.port;
         p.edit();
+        // store the updated settings
+        p.store();
         if(SCPIenabled != p.SCPIServer.enabled || SCPIport != p.SCPIServer.port) {
             StopTCPServer();
             if(p.SCPIServer.enabled) {
@@ -322,9 +319,6 @@ void AppWindow::closeEvent(QCloseEvent *event)
     modeHandler = nullptr;
     pref.store();
     for(auto driver : DeviceDriver::getDrivers()) {
-        Preferences::getInstance().store(driver->driverSpecificSettings());
-    }
-    for(auto driver : DeviceDriver::getDrivers()) {
         delete driver;
     }
     QMainWindow::closeEvent(event);
@@ -350,9 +344,11 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
             }
             if(d->GetAvailableDevices().count(serial)) {
                 // this driver can connect to the device
+                connect(d, &DeviceDriver::InfoUpdated, this, &AppWindow::DeviceInfoUpdated, Qt::QueuedConnection);
                 if(d->connectDevice(serial)) {
                     device = d;
                 } else {
+                    disconnect(d, nullptr, this, nullptr);
                     break;
                 }
             }
@@ -363,7 +359,6 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
             return false;
         }
         UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
-        connect(device, &DeviceDriver::InfoUpdated, this, &AppWindow::DeviceInfoUpdated);
         connect(device, &DeviceDriver::LogLineReceived, &deviceLog, &DeviceLog::addLine);
         connect(device, &DeviceDriver::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
         connect(device, &DeviceDriver::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
@@ -420,9 +415,9 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
 //        vdevice->initialize();
 
 //        UpdateAcquisitionFrequencies();
-        if (modeHandler->getActiveMode()) {
-            modeHandler->getActiveMode()->initializeDevice();
-        }
+//        if (modeHandler->getActiveMode()) {
+//            modeHandler->getActiveMode()->initializeDevice();
+//        }
         return true;
     } catch (const runtime_error &e) {
         qWarning() << "Failed to connect:" << e.what();
@@ -1370,7 +1365,7 @@ void AppWindow::UpdateStatusBar(DeviceStatusBar status)
         break;
     case DeviceStatusBar::Disconnected:
         lConnectionStatus.setText("No device connected");
-        lDeviceInfo.setText("No device information available yet");
+        lDeviceInfo.setText("No status information available yet");
         break;
     default:
         // invalid status

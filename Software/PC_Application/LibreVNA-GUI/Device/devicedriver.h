@@ -51,7 +51,7 @@ protected:
      * @param serial Serial number of device that should be connected to
      * @return true if connection successful, otherwise false
      */
-    virtual bool connectTo(QString getSerial) = 0;
+    virtual bool connectTo(QString serial) = 0;
     /**
      * @brief Disconnects from device. Has no effect if no device was connected
      */
@@ -120,6 +120,7 @@ public:
                 double mindBm, maxdBm;
             } SA;
         } Limits;
+        void subset(const Info &info);
     };
 
     /**
@@ -486,7 +487,7 @@ signals:
     void releaseControl();
 
 public:
-    bool connectDevice(QString serial);
+    bool connectDevice(QString serial, bool isIndepedentDriver = false);
     void disconnectDevice();
     static DeviceDriver* getActiveDriver() {return activeDriver;}
     static unsigned int SApoints();

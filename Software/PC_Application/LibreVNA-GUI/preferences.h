@@ -4,7 +4,7 @@
 #include "Util/qpointervariant.h"
 #include "savable.h"
 
-#include "Device/compounddevice.h"
+#include "Device/LibreVNA/Compound/compounddevice.h"
 
 #include <QDialog>
 #include <QVariant>
@@ -56,6 +56,7 @@ public:
     void store(std::vector<Savable::SettingDescription> descr);
     void edit();
     void setDefault();
+    void setDefault(std::vector<Savable::SettingDescription> descr);
 
     void manualTCPport() { TCPoverride = true; }
 
@@ -159,9 +160,6 @@ public:
 
     bool TCPoverride; // in case of manual port specification via command line
 
-    QString compoundDeviceJSON;
-    std::vector<CompoundDevice*> compoundDevices;
-
     void fromJSON(nlohmann::json j) override;
     nlohmann::json toJSON() override;
 
@@ -258,7 +256,6 @@ private:
         {&SCPIServer.port, "SCPIServer.port", 19542},
         {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&Debug.saveTraceData, "Debug.saveTraceData", false},
-        {&compoundDeviceJSON, "compoundDeviceJSON", "[]"},
     }};
 };
 

@@ -173,7 +173,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     // Acquisition toolbar
     auto tb_acq = new QToolBar("Acquisition");
 
-    auto eBandwidth = new SIUnitEdit("Hz", " k", 3);
+    auto eBandwidth = new SIUnitEdit("Hz", " kM", 3);
     eBandwidth->setFixedWidth(70);
     eBandwidth->setToolTip("RBW");
     connect(eBandwidth, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetRBW);
@@ -221,7 +221,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     toolbars.insert(tb_acq);
 
     // Tracking generator toolbar
-    auto tb_trackgen = new QToolBar("Tracking Generator");
+    tb_trackgen = new QToolBar("Tracking Generator");
     auto cbTrackGenEnable = new QCheckBox("Tracking Generator");
     connect(cbTrackGenEnable, &QCheckBox::toggled, this, &SpectrumAnalyzer::SetTGEnabled);
     connect(this, &SpectrumAnalyzer::TGStateChanged, cbTrackGenEnable, &QCheckBox::setChecked);
@@ -231,8 +231,12 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     cbTrackGenPort->addItem("Port 1");
     cbTrackGenPort->addItem("Port 2");
     cbTrackGenPort->setCurrentIndex(0);
-    connect(cbTrackGenPort, qOverload<int>(&QComboBox::currentIndexChanged), this, &SpectrumAnalyzer::SetTGPort);
-    connect(this, &SpectrumAnalyzer::TGPortChanged, cbTrackGenPort, qOverload<int>(&QComboBox::setCurrentIndex));
+    connect(cbTrackGenPort, qOverload<int>(&QComboBox::currentIndexChanged), this, [=](int index) {
+        SetTGPort(index + 1);
+    });
+    connect(this, &SpectrumAnalyzer::TGPortChanged, this, [=](int port) {
+        cbTrackGenPort->setCurrentIndex(port - 1);
+    });
     tb_trackgen->addWidget(cbTrackGenPort);
 
     auto dbm = new QDoubleSpinBox();
@@ -247,7 +251,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_trackgen->addWidget(new QLabel("Level:"));
     tb_trackgen->addWidget(dbm);
 
-    auto tgOffset = new SIUnitEdit("Hz", " kMG", 6);
+    tgOffset = new SIUnitEdit("Hz", " kMG", 6);
     tgOffset->setFixedWidth(width);
     tgOffset->setToolTip("Tracking generator offset");
     connect(tgOffset, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetTGOffset);
@@ -330,6 +334,20 @@ void SpectrumAnalyzer::deactivate()
 
 void SpectrumAnalyzer::initializeDevice()
 {
+    if(!window->getDevice()->supports(DeviceDriver::Feature::SA)) {
+        InformationBox::ShowError("Unsupported", "The connected device does not support spectrum analyzer mode");
+        return;
+    }
+    bool hasTG = window->getDevice()->supports(DeviceDriver::Feature::SATrackingGenerator);
+    bool hasTGoffset = window->getDevice()->supports(DeviceDriver::Feature::SATrackingOffset);
+    tb_trackgen->setEnabled(hasTG);
+    if(hasTG) {
+        SetTGEnabled(settings.trackingGenerator);
+        if(!hasTGoffset) {
+            tgOffset->setValue(0);
+            tgOffset->setEnabled(false);
+        }
+    }
     connect(window->getDevice(), &DeviceDriver::SAmeasurementReceived, this, &SpectrumAnalyzer::NewDatapoint, Qt::UniqueConnection);
 
     // Configure initial state of device
@@ -358,9 +376,9 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     sweep["acquisition"] = acq;
     nlohmann::json tracking;
     tracking["enabled"] = settings.trackingGenerator ? true : false;
-    tracking["port"] = settings.trackingPort ? 2 : 1;
+    tracking["port"] = settings.trackingPort;
     tracking["offset"] = settings.trackingOffset;
-    tracking["power"] = (double) settings.trackingPower / 100.0; // convert to dBm
+    tracking["power"] = settings.trackingPower;
     sweep["trackingGenerator"] = tracking;
 
     if(normalize.active) {
@@ -426,8 +444,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
             auto tracking = sweep["trackingGenerator"];
             SetTGEnabled(tracking.value("enabled", settings.trackingGenerator ? true : false));
             int port = tracking.value("port", 1);
-            // Function expects 0 for port1, 1 for port2
-            SetTGPort(port - 1);
+            SetTGPort(port);
             SetTGLevel(tracking.value("power", settings.trackingPower));
             SetTGOffset(tracking.value("offset", settings.trackingOffset));
         }
@@ -699,7 +716,7 @@ void SpectrumAnalyzer::SetTGEnabled(bool enabled)
 
 void SpectrumAnalyzer::SetTGPort(int port)
 {
-    if(port < 0 || port >= cbTrackGenPort->count()) {
+    if(port < 1 || port > cbTrackGenPort->count()) {
         return;
     }
     if(port != settings.trackingPort) {
@@ -719,7 +736,7 @@ void SpectrumAnalyzer::SetTGLevel(double level)
         level = DeviceDriver::getInfo(window->getDevice()).Limits.SA.mindBm;
     }
     emit TGLevelChanged(level);
-    settings.trackingPower = level * 100;
+    settings.trackingPower = level;
     if(settings.trackingGenerator) {
         SettingsChanged();
     }
@@ -1058,7 +1075,7 @@ void SpectrumAnalyzer::SetupSCPI()
         if(!SCPI::paramToULongLong(params, 0, newval)) {
             return SCPI::getResultName(SCPI::Result::Error);
         } else if(newval > 0 && newval <= DeviceDriver::getInfo(window->getDevice()).Limits.SA.ports){
-            SetTGPort(newval-1);
+            SetTGPort(newval);
             return SCPI::getResultName(SCPI::Result::Empty);
         } else {
             // invalid port number
@@ -1066,7 +1083,7 @@ void SpectrumAnalyzer::SetupSCPI()
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
-        return QString::number(settings.trackingPort+1);
+        return QString::number(settings.trackingPort);
     }));
     scpi_tg->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
         double newval;
@@ -1077,7 +1094,7 @@ void SpectrumAnalyzer::SetupSCPI()
             return SCPI::getResultName(SCPI::Result::Empty);
         }
     }, [=](QStringList) -> QString {
-        return QString::number(settings.trackingPower / 100.0);
+        return QString::number(settings.trackingPower);
     }));
     scpi_tg->add(new SCPICommand("OFFset", [=](QStringList params) -> QString {
         long newval;

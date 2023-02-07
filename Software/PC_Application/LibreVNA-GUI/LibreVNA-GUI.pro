@@ -19,6 +19,9 @@ HEADERS += \
     CustomWidgets/toggleswitch.h \
     CustomWidgets/touchstoneimport.h \
     CustomWidgets/tracesetselector.h \
+    Device/LibreVNA/Compound/compounddevice.h \
+    Device/LibreVNA/Compound/compounddeviceeditdialog.h \
+    Device/LibreVNA/Compound/compounddriver.h \
     Device/LibreVNA/amplitudecaldialog.h \
     Device/LibreVNA/firmwareupdatedialog.h \
     Device/LibreVNA/frequencycaldialog.h \
@@ -28,8 +31,7 @@ HEADERS += \
     Device/LibreVNA/manualcontroldialog.h \
     Device/LibreVNA/receivercaldialog.h \
     Device/LibreVNA/sourcecaldialog.h \
-    Device/compounddevice.h \
-    Device/compounddeviceeditdialog.h \
+    Device/SSA3000X/ssa3000xdriver.h \
     Device/device.h \
     Device/devicedriver.h \
     Device/devicelog.h \
@@ -171,6 +173,9 @@ SOURCES += \
     CustomWidgets/toggleswitch.cpp \
     CustomWidgets/touchstoneimport.cpp \
     CustomWidgets/tracesetselector.cpp \
+    Device/LibreVNA/Compound/compounddevice.cpp \
+    Device/LibreVNA/Compound/compounddeviceeditdialog.cpp \
+    Device/LibreVNA/Compound/compounddriver.cpp \
     Device/LibreVNA/amplitudecaldialog.cpp \
     Device/LibreVNA/firmwareupdatedialog.cpp \
     Device/LibreVNA/frequencycaldialog.cpp \
@@ -180,8 +185,7 @@ SOURCES += \
     Device/LibreVNA/manualcontroldialog.cpp \
     Device/LibreVNA/receivercaldialog.cpp \
     Device/LibreVNA/sourcecaldialog.cpp \
-    Device/compounddevice.cpp \
-    Device/compounddeviceeditdialog.cpp \
+    Device/SSA3000X/ssa3000xdriver.cpp \
     Device/device.cpp \
     Device/devicedriver.cpp \
     Device/devicelog.cpp \
@@ -313,6 +317,8 @@ FORMS += \
     CustomWidgets/jsonpickerdialog.ui \
     CustomWidgets/tilewidget.ui \
     CustomWidgets/touchstoneimport.ui \
+    Device/LibreVNA/Compound/compounddeviceeditdialog.ui \
+    Device/LibreVNA/Compound/compounddriversettingswidget.ui \
     Device/LibreVNA/addamplitudepointsdialog.ui \
     Device/LibreVNA/amplitudecaldialog.ui \
     Device/LibreVNA/automaticamplitudedialog.ui \
@@ -320,7 +326,6 @@ FORMS += \
     Device/LibreVNA/frequencycaldialog.ui \
     Device/LibreVNA/librevnadriversettingswidget.ui \
     Device/LibreVNA/manualcontroldialog.ui \
-    Device/compounddeviceeditdialog.ui \
     Device/devicelog.ui \
     Device/deviceusblogview.ui \
     Generator/signalgenwidget.ui \

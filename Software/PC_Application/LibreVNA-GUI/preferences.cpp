@@ -3,7 +3,7 @@
 #include "ui_preferencesdialog.h"
 #include "CustomWidgets/informationbox.h"
 #include "appwindow.h"
-#include "Device/compounddeviceeditdialog.h"
+#include "Device/LibreVNA/Compound/compounddeviceeditdialog.h"
 
 #include <QSettings>
 #include <QPushButton>
@@ -136,56 +136,6 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
          ui->MarkerShowAvgMod->setEnabled(enabled);
          ui->MarkerShowP1dB->setEnabled(enabled);
     });
-
-    // Compound device page
-//    connect(ui->compoundList, &QListWidget::currentRowChanged, [=](){
-//        if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[ui->compoundList->currentRow()]) {
-//            // can't remove the device we are connected to
-//            ui->compoundDelete->setEnabled(false);
-//        } else {
-//            ui->compoundDelete->setEnabled(true);
-//        }
-//    });
-    connect(ui->compoundList, &QListWidget::doubleClicked, [=](){
-        auto index = ui->compoundList->currentRow();
-        if(index >= 0 && index < (int) p->compoundDevices.size()) {
-            auto d = new CompoundDeviceEditDialog(p->compoundDevices[index]);
-            connect(d, &QDialog::accepted, [=](){
-                ui->compoundList->item(index)->setText(p->compoundDevices[index]->getDesription());
-                p->nonTrivialWriting();
-            });
-            d->show();
-        }
-    });
-    connect(ui->compoundAdd, &QPushButton::clicked, [=](){
-        auto cd = new CompoundDevice;
-        auto d = new CompoundDeviceEditDialog(cd);
-        connect(d, &QDialog::accepted, [=](){
-            p->compoundDevices.push_back(cd);
-            ui->compoundList->addItem(cd->getDesription());
-            p->nonTrivialWriting();
-        });
-        connect(d, &QDialog::rejected, [=](){
-            delete cd;
-        });
-        d->show();
-    });
-//    connect(ui->compoundDelete, &QPushButton::clicked, [=](){
-//        auto index = ui->compoundList->currentRow();
-//        if(index >= 0 && index < (int) p->compoundDevices.size()) {
-//            // delete the actual compound device
-//            if(VirtualDevice::getConnected() && VirtualDevice::getConnected()->getCompoundDevice() == p->compoundDevices[index]) {
-//                // can't remove the device we are currently connected to
-//                return;
-//            }
-//            delete p->compoundDevices[index];
-//            // delete the line in the GUI list
-//            delete ui->compoundList->takeItem(index);
-//            // remove compound device from list
-//            p->compoundDevices.erase(p->compoundDevices.begin() + index);
-//            p->nonTrivialWriting();
-//        }
-//    });
 
     // Debug page
     ui->DebugMaxUSBlogSize->setUnit("B");
@@ -362,10 +312,6 @@ void PreferencesDialog::setInitialGUIState()
     ui->DebugMaxUSBlogSize->setValue(p->Debug.USBlogSizeLimit);
     ui->DebugSaveTraceData->setChecked(p->Debug.saveTraceData);
 
-    for(auto cd : p->compoundDevices) {
-        ui->compoundList->addItem(cd->getDesription());
-    }
-
     QTreeWidgetItem *item = ui->treeWidget->topLevelItem(0);
     if (item != nullptr) {
         ui->treeWidget->setCurrentItem(item);     // visually select first item
@@ -466,9 +412,7 @@ void PreferencesDialog::updateFromGUI()
 
 Preferences::~Preferences()
 {
-    for(auto cd : compoundDevices) {
-        delete cd;
-    }
+
 }
 
 void Preferences::load()
@@ -476,6 +420,10 @@ void Preferences::load()
     // load settings, using default values if not present
     qInfo() << "Loading preferences";
     load(descr);
+    for(auto driver : DeviceDriver::getDrivers()) {
+        driver->registerTypes();
+        load(driver->driverSpecificSettings());
+    }
     nonTrivialParsing();
 }
 
@@ -495,6 +443,9 @@ void Preferences::store()
 {
     nonTrivialWriting();
     store(descr);
+    for(auto driver : DeviceDriver::getDrivers()) {
+        store(driver->driverSpecificSettings());
+    }
 }
 
 void Preferences::store(std::vector<Savable::SettingDescription> descr)
@@ -519,44 +470,57 @@ void Preferences::setDefault()
     for(auto d : descr) {
         d.var.setValue(d.def);
     }
+    for(auto driver : DeviceDriver::getDrivers()) {
+        setDefault(driver->driverSpecificSettings());
+    }
+}
+
+void Preferences::setDefault(std::vector<Savable::SettingDescription> descr)
+{
+    for(auto d : descr) {
+        d.var.setValue(d.def);
+    }
 }
 
 void Preferences::fromJSON(nlohmann::json j)
 {
     parseJSON(j, descr);
+    for(auto driver : DeviceDriver::getDrivers()) {
+        Savable::parseJSON(j, driver->driverSpecificSettings());
+    }
     nonTrivialParsing();
+}
+
+static nlohmann::json merge(const nlohmann::json &a, const nlohmann::json &b)
+{
+    nlohmann::json result = a.flatten();
+    nlohmann::json tmp = b.flatten();
+
+    for (nlohmann::json::iterator it = tmp.begin(); it != tmp.end(); ++it)
+    {
+        result[it.key()] = it.value();
+    }
+
+    return result.unflatten();
 }
 
 nlohmann::json Preferences::toJSON()
 {
     nonTrivialWriting();
-    return createJSON(descr);
+    auto j = createJSON(descr);
+    for(auto driver : DeviceDriver::getDrivers()) {
+        j = merge(j, Savable::createJSON(driver->driverSpecificSettings()));
+    }
+
+    return j;
 }
 
 void Preferences::nonTrivialParsing()
 {
-    try {
-        compoundDevices.clear();
-        nlohmann::json jc = nlohmann::json::parse(compoundDeviceJSON.toStdString());
-        for(auto j : jc) {
-            auto cd = new CompoundDevice();
-            cd->fromJSON(j);
-            compoundDevices.push_back(cd);
-        }
-    } catch(const exception& e){
-        qDebug() << "Failed to parse compound device string: " << e.what();
-    }
+
 }
 
 void Preferences::nonTrivialWriting()
 {
-    if(compoundDevices.size() > 0) {
-        nlohmann::json j;
-        for(auto cd : compoundDevices) {
-            j.push_back(cd->toJSON());
-        }
-        compoundDeviceJSON = QString::fromStdString(j.dump());
-    } else {
-        compoundDeviceJSON = "[]";
-    }
+
 }

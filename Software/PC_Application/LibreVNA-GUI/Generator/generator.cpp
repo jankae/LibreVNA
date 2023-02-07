@@ -1,5 +1,7 @@
 #include "generator.h"
 
+#include "CustomWidgets/informationbox.h"
+
 #include <QSettings>
 
 Generator::Generator(AppWindow *window, QString name)
@@ -37,6 +39,10 @@ void Generator::deactivate()
 
 void Generator::initializeDevice()
 {
+    if(!window->getDevice()->supports(DeviceDriver::Feature::Generator)) {
+        InformationBox::ShowError("Unsupported", "The connected device does not support generator mode");
+        return;
+    }
     updateDevice();
 }
 

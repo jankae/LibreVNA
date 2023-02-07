@@ -403,7 +403,7 @@ VNA::VNA(AppWindow *window, QString name)
     tb_acq->addWidget(new QLabel("Points:"));
     tb_acq->addWidget(points);
 
-    auto eBandwidth = new SIUnitEdit("Hz", " k", 3);
+    auto eBandwidth = new SIUnitEdit("Hz", " kM", 3);
     eBandwidth->setFixedWidth(70);
     eBandwidth->setToolTip("IF bandwidth");
     connect(eBandwidth, &SIUnitEdit::valueChanged, this, &VNA::SetIFBandwidth);
@@ -675,6 +675,10 @@ void VNA::deactivate()
 
 void VNA::initializeDevice()
 {
+    if(!window->getDevice()->supports(DeviceDriver::Feature::VNA)) {
+        InformationBox::ShowError("Unsupported", "The connected device does not support VNA mode");
+        return;
+    }
     defaultCalMenu->setEnabled(true);
     connect(window->getDevice(), &DeviceDriver::VNAmeasurementReceived, this, &VNA::NewDatapoint, Qt::UniqueConnection);
     // Check if default calibration exists and attempt to load it
@@ -1680,11 +1684,11 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
         DeviceDriver::VNASettings s = {};
         s.IFBW = settings.bandwidth;
         if(Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-            for(unsigned int i=0;i<DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
+            for(unsigned int i=1;i<=DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
                 s.excitedPorts.push_back(i);
             }
         } else {
-            for(unsigned int i=0;i<DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
+            for(unsigned int i=1;i<=DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
                 if(traceModel.PortExcitationRequired(i))
                 s.excitedPorts.push_back(i);
             }

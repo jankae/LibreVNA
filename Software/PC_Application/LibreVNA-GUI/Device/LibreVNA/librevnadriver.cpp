@@ -107,6 +107,7 @@ LibreVNADriver::LibreVNADriver()
     connected = false;
     skipOwnPacketHandling = false;
     SApoints = 0;
+    setSynchronization(Synchronization::Disabled, false);
 
     auto manual = new QAction("Manual Control");
     connect(manual, &QAction::triggered, this, [=](){
@@ -146,17 +147,6 @@ LibreVNADriver::LibreVNADriver()
        d->show();
     });
     specificActions.push_back(freqcal);
-
-    specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "captureRawReceiverValues", false));
-    specificSettings.push_back(Savable::SettingDescription(&harmonicMixing, "harmonicMixing", false));
-    specificSettings.push_back(Savable::SettingDescription(&SASignalID, "signalID", true));
-    specificSettings.push_back(Savable::SettingDescription(&VNASuppressInvalidPeaks, "suppressInvalidPeaks", true));
-    specificSettings.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "adjustPowerLevel", false));
-    specificSettings.push_back(Savable::SettingDescription(&SAUseDFT, "useDFT", true));
-    specificSettings.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "RBWlimitDFT", 3000));
-    specificSettings.push_back(Savable::SettingDescription(&IF1, "IF1", 62000000));
-    specificSettings.push_back(Savable::SettingDescription(&ADCprescaler, "ADCprescaler", 128));
-    specificSettings.push_back(Savable::SettingDescription(&DFTPhaseInc, "DFTPhaseInc", 1280));
 }
 
 std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
@@ -232,6 +222,12 @@ QWidget *LibreVNADriver::createSettingsWidget()
     ui->IF1->setUnit("Hz");
     ui->IF1->setPrefixes(" kM");
     ui->IF1->setPrecision(5);
+    ui->ADCRate->setUnit("Hz");
+    ui->ADCRate->setPrefixes(" kM");
+    ui->ADCRate->setPrecision(5);
+    ui->IF2->setUnit("Hz");
+    ui->IF2->setPrefixes(" kM");
+    ui->IF2->setPrecision(5);
     ui->IF1->setValue(IF1);
     ui->ADCpresc->setValue(ADCprescaler);
     ui->ADCphaseInc->setValue(DFTPhaseInc);
@@ -333,10 +329,10 @@ bool LibreVNADriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
     p.settings.logSweep = s.logSweep ? 1 : 0;
 
     zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
-    p.settings.port1Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 0) - s.excitedPorts.begin();
-    p.settings.port2Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) - s.excitedPorts.begin();
-    p.settings.syncMode = 0;
-    p.settings.syncMaster = 0;
+    p.settings.port1Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) - s.excitedPorts.begin();
+    p.settings.port2Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 2) - s.excitedPorts.begin();
+    p.settings.syncMode = (int) sync;
+    p.settings.syncMaster = syncMaster ? 1 : 0;
 
     return SendPacket(p, [=](TransmissionResult r){
         if(cb) {
@@ -385,12 +381,12 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     }
     p.spectrumSettings.applyReceiverCorrection = 1;
     p.spectrumSettings.trackingGeneratorOffset = s.trackingOffset;
-    p.spectrumSettings.trackingPower = s.trackingPower;
+    p.spectrumSettings.trackingPower = s.trackingPower * 100;
 
     p.spectrumSettings.trackingGenerator = s.trackingGenerator ? 1 : 0;
-    p.spectrumSettings.trackingGeneratorPort = s.trackingPort;
-    p.spectrumSettings.syncMode = 0;
-    p.spectrumSettings.syncMaster = 0;
+    p.spectrumSettings.trackingGeneratorPort = s.trackingPort == 2 ? 1 : 0;
+    p.spectrumSettings.syncMode = (int) sync;
+    p.spectrumSettings.syncMaster = syncMaster ? 1 : 0;
 
     if(p.spectrumSettings.trackingGenerator && p.spectrumSettings.f_stop >= 25000000) {
         // Check point spacing.
@@ -518,6 +514,12 @@ void LibreVNADriver::registerTypes()
     qRegisterMetaType<TransmissionResult>();
 }
 
+void LibreVNADriver::setSynchronization(LibreVNADriver::Synchronization s, bool master)
+{
+    sync = s;
+    syncMaster = master;
+}
+
 void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
 {
     emit passOnReceivedPacket(packet);
@@ -591,20 +593,20 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
             m.dBm = (double) res->cdBm / 100;
         }
         for(auto map : portStageMapping) {
-            // map.first is the port (starts at zero)
+            // map.first is the port (starts at one)
             // map.second is the stage at which this port had the stimulus (starts at zero)
-            complex<double> ref = res->getValue(map.second, map.first, true);
-            for(unsigned int i=0;i<info.Limits.VNA.ports;i++) {
-                complex<double> input = res->getValue(map.second, i, false);
+            complex<double> ref = res->getValue(map.second, map.first-1, true);
+            for(unsigned int i=1;i<=info.Limits.VNA.ports;i++) {
+                complex<double> input = res->getValue(map.second, i-1, false);
                 if(!std::isnan(ref.real()) && !std::isnan(input.real())) {
                     // got both required measurements
-                    QString name = "S"+QString::number(i+1)+QString::number(map.first+1);
+                    QString name = "S"+QString::number(i)+QString::number(map.first);
                     m.measurements[name] = input / ref;
                 }
                 if(captureRawReceiverValues) {
-                    QString name = "RawPort"+QString::number(i+1)+"Stage"+QString::number(map.first);
+                    QString name = "RawPort"+QString::number(i)+"Stage"+QString::number(map.second);
                     m.measurements[name] = input;
-                    name = "RawPort"+QString::number(i+1)+"Stage"+QString::number(map.first)+"Ref";
+                    name = "RawPort"+QString::number(i)+"Stage"+QString::number(map.second)+"Ref";
                     m.measurements[name] = res->getValue(map.second, i, true);
                 }
             }

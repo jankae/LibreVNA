@@ -62,6 +62,8 @@ protected:
     AppWindow *window;
     std::set<QAction*> actions;
     std::set<QToolBar*> toolbars;
+    QToolBar *tb_trackgen;
+    SIUnitEdit *tgOffset;
     std::set<QDockWidget*> docks;
 
 private:

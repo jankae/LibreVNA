@@ -26,16 +26,26 @@ LibreVNATCPDriver::LibreVNATCPDriver()
 
     auto interfaces = QNetworkInterface::allInterfaces();
     for(auto i : interfaces) {
-        qDebug() << "Creating socket for interface" << i.name();
         auto socket = new QUdpSocket();
         socket->bind(QHostAddress::AnyIPv4, 0, QUdpSocket::ShareAddress);
         socket->setMulticastInterface(i);
-        qDebug() << socket->joinMulticastGroup(SSDPaddress, i);
+        socket->joinMulticastGroup(SSDPaddress, i);
         connect(socket, &QUdpSocket::readyRead, this, [=](){
             SSDPreceived(socket);
         });
         ssdpSockets.push_back(socket);
     }
+
+    specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "LibreVNATCPDriver.captureRawReceiverValues", false));
+    specificSettings.push_back(Savable::SettingDescription(&harmonicMixing, "LibreVNATCPDriver.harmonicMixing", false));
+    specificSettings.push_back(Savable::SettingDescription(&SASignalID, "LibreVNATCPDriver.signalID", true));
+    specificSettings.push_back(Savable::SettingDescription(&VNASuppressInvalidPeaks, "LibreVNATCPDriver.suppressInvalidPeaks", true));
+    specificSettings.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "LibreVNATCPDriver.adjustPowerLevel", false));
+    specificSettings.push_back(Savable::SettingDescription(&SAUseDFT, "LibreVNATCPDriver.useDFT", true));
+    specificSettings.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "LibreVNATCPDriver.RBWlimitDFT", 3000));
+    specificSettings.push_back(Savable::SettingDescription(&IF1, "LibreVNATCPDriver.IF1", 62000000));
+    specificSettings.push_back(Savable::SettingDescription(&ADCprescaler, "LibreVNATCPDriver.ADCprescaler", 128));
+    specificSettings.push_back(Savable::SettingDescription(&DFTPhaseInc, "LibreVNATCPDriver.DFTPhaseInc", 1280));
 }
 
 QString LibreVNATCPDriver::getDriverName()

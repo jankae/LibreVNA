@@ -126,6 +126,17 @@ LibreVNAUSBDriver::LibreVNAUSBDriver()
     dataBuffer = nullptr;
     logBuffer = nullptr;
     m_receiveThread = nullptr;
+
+    specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "LibreVNAUSBDriver.captureRawReceiverValues", false));
+    specificSettings.push_back(Savable::SettingDescription(&harmonicMixing, "LibreVNAUSBDriver.harmonicMixing", false));
+    specificSettings.push_back(Savable::SettingDescription(&SASignalID, "LibreVNAUSBDriver.signalID", true));
+    specificSettings.push_back(Savable::SettingDescription(&VNASuppressInvalidPeaks, "LibreVNAUSBDriver.suppressInvalidPeaks", true));
+    specificSettings.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "LibreVNAUSBDriver.adjustPowerLevel", false));
+    specificSettings.push_back(Savable::SettingDescription(&SAUseDFT, "LibreVNAUSBDriver.useDFT", true));
+    specificSettings.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "LibreVNAUSBDriver.RBWlimitDFT", 3000));
+    specificSettings.push_back(Savable::SettingDescription(&IF1, "LibreVNAUSBDriver.IF1", 62000000));
+    specificSettings.push_back(Savable::SettingDescription(&ADCprescaler, "LibreVNAUSBDriver.ADCprescaler", 128));
+    specificSettings.push_back(Savable::SettingDescription(&DFTPhaseInc, "LibreVNAUSBDriver.DFTPhaseInc", 1280));
 }
 
 QString LibreVNAUSBDriver::getDriverName()

@@ -2,6 +2,7 @@
 #define COMPOUNDDEVICE_H
 
 #include "savable.h"
+#include "../librevnadriver.h"
 
 #include <vector>
 
@@ -18,25 +19,18 @@ public:
 
     class PortMapping {
     public:
-        unsigned int device;
-        unsigned int port;
-        static int findActiveStage(std::vector<PortMapping> map, unsigned int device, unsigned int port);
+        unsigned int device; // starts at zero
+        unsigned int port;   // starts at zero
+        static unsigned int findActiveStage(std::vector<PortMapping> map, unsigned int device, unsigned int port);
     };
 
-    enum class Synchronization {
-        USB,
-        ExtRef,
-        Trigger,
-        Last
-    };
-
-    static QString SyncToString(Synchronization sync);
-    static Synchronization SyncFromString(QString s);
+    static QString SyncToString(LibreVNADriver::Synchronization sync);
+    static LibreVNADriver::Synchronization SyncFromString(QString s);
 
     QString getDesription();
 
     QString name;
-    Synchronization sync;
+    LibreVNADriver::Synchronization sync;
     std::vector<QString> deviceSerials;
     std::vector<PortMapping> portMapping;
 };

@@ -224,7 +224,6 @@ std::vector<Trace *> TraceModel::getLiveTraces() const
 
 bool TraceModel::PortExcitationRequired(int port)
 {
-    port++;
     for(auto t : traces) {
         if(t->getSource() == Trace::Source::Live && !t->isPaused()) {
             // this trace needs measurements from VNA, check if port has to be excited for its measurement

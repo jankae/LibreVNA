@@ -1,32 +1,45 @@
-﻿#ifndef LIBREVNADRIVER_H
-#define LIBREVNADRIVER_H
+#ifndef COMPOUNDDRIVER_H
+#define COMPOUNDDRIVER_H
 
-#include "../devicedriver.h"
+#include "../../devicedriver.h"
+#include "compounddevice.h"
 
-#include "../../VNA_embedded/Application/Communication/Protocol.hpp"
-
-#include <functional>
-
-class LibreVNADriver : public DeviceDriver
+class CompoundDriver : public DeviceDriver
 {
-    friend class CompoundDriver;
-    Q_OBJECT
 public:
-    enum class TransmissionResult {
-        Ack,
-        Nack,
-        Timeout,
-        InternalError,
-    };
-    Q_ENUM(TransmissionResult)
+    CompoundDriver();
+    ~CompoundDriver();
 
-    LibreVNADriver();
+    /**
+     * @brief Returns the driver name. It must be unique across all implemented drivers and is used to identify the driver
+     * @return driver name
+     */
+    virtual QString getDriverName() override {return "LibreVNA/Compound";}
+    /**
+     * @brief Lists all available devices by their serial numbers
+     * @return Serial numbers of detected devices
+     */
+    virtual std::set<QString> GetAvailableDevices() override;
 
+protected:
+    /**
+     * @brief Connects to a device, given by its serial number
+     *
+     * @param serial Serial number of device that should be connected to
+     * @return true if connection successful, otherwise false
+     */
+    virtual bool connectTo(QString getSerial) override;
+    /**
+     * @brief Disconnects from device. Has no effect if no device was connected
+     */
+    virtual void disconnect() override;
+
+public:
     /**
      * @brief Returns the serial number of the connected device
      * @return Serial number of connected device (empty string if no device is connected)
      */
-    virtual QString getSerial() override {return serial;}
+    virtual QString getSerial() override;
 
     /**
      * @brief Returns the device information. This function will be called when a device has been connected. Its return value must be valid
@@ -107,7 +120,7 @@ public:
      * @brief Returns the number of points in one spectrum analyzer sweep (as configured by the last setSA() call)
      * @return Number of points in the sweep
      */
-    virtual unsigned int getSApoints() {return SApoints;}
+    virtual unsigned int getSApoints() override {return SApoints;}
 
     /**
      * @brief Names of available generator ports.
@@ -154,74 +167,44 @@ public:
      */
     virtual bool setExtRef(QString option_in, QString option_out) override;
 
-    /**
-     * @brief Registers metatypes within the Qt Framework.
-     *
-     * If the device driver uses a queued signal/slot connection with custom data types, these types must be registered before emitting the signal.
-     * Register them within this function with qRegisterMetaType<Type>("Name");
-     */
-    virtual void registerTypes();
+private:
+    void parseCompoundJSON();
+    void createCompoundJSON();
+    void incomingPacket(LibreVNADriver *device, const Protocol::PacketInfo &p);
+    void updatedInfo(LibreVNADriver *device);
+    void updatedStatus(LibreVNADriver *device, const Protocol::DeviceStatusV1 &status);
+    void datapointReceivecd(LibreVNADriver *dev, Protocol::VNADatapoint<32> *data);
+    void spectrumResultReceived(LibreVNADriver *dev, Protocol::SpectrumAnalyzerResult res);
 
-    enum class Synchronization {
-        Disabled = 0,
-        GUI = 1,
-        Reserved = 2,
-        ExternalTrigger = 3,
-        Last = 4,
-    };
-
-    void setSynchronization(Synchronization s, bool master);
-
-public:
-signals:
-    // Required for the compound device driver
-    void passOnReceivedPacket(const Protocol::PacketInfo& packet);
-public:
-    virtual bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500) = 0;
-    bool sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb = nullptr);
-
-    unsigned int getMaxAmplitudePoints() const;
-
-signals:
-    void receivedAnswer(const LibreVNADriver::TransmissionResult &result);
-    void receivedPacket(const Protocol::PacketInfo& packet);
-
-protected slots:
-    void handleReceivedPacket(const Protocol::PacketInfo& packet);
-protected:
-    void updateIFFrequencies();
-
-    bool connected;
-    QString serial;
     Info info;
-    unsigned int limits_maxAmplitudePoints;
-
+    std::map<LibreVNADriver*, Info> deviceInfos;
+    std::map<LibreVNADriver*, Protocol::DeviceStatusV1> deviceStatus;
+    std::map<int, std::map<LibreVNADriver*, Protocol::VNADatapoint<32>*>> compoundVNABuffer;
+    std::map<int, std::map<LibreVNADriver*, Protocol::SpectrumAnalyzerResult>> compoundSABuffer;
     Protocol::DeviceStatusV1 lastStatus;
 
-    bool skipOwnPacketHandling;
-    bool zerospan;
-    unsigned int SApoints;
-
-    Synchronization sync;
-    bool syncMaster;
+    // Parsed configuration of compound devices (as extracted from compoundJSONString
+    std::vector<CompoundDevice*> configuredDevices;
 
     std::map<int, int> portStageMapping; // maps from excitedPort (count starts at one) to stage (count starts at zero)
 
+    // All possible drivers to interact with a LibreVNA
+    std::vector<LibreVNADriver*> drivers;
+
+    // Configuration of the device we are connected to
+    CompoundDevice activeDevice;
+    bool connected;
+    std::vector<LibreVNADriver*> devices;
+    bool zerospan;
+    unsigned int SApoints;
+
     // Driver specific settings
     bool captureRawReceiverValues;
-    bool harmonicMixing;
-    bool SASignalID;
-    bool SAUseDFT;
-    double SARBWLimitForDFT;
-    bool VNASuppressInvalidPeaks;
-    bool VNAAdjustPowerLevel;
-    double IF1;
-    unsigned int ADCprescaler;
-    unsigned int DFTPhaseInc;
+    QString compoundJSONString;
+
+    // Buffers for storing individual device answers
+    std::map<LibreVNADriver*, bool> results;
+    void checkIfAllTransmissionsComplete(std::function<void(bool)> cb = nullptr);
 };
 
-Q_DECLARE_METATYPE(Protocol::PacketInfo)
-Q_DECLARE_METATYPE(LibreVNADriver::TransmissionResult)
-
-
-#endif // LIBREVNADRIVER_H
+#endif // COMPOUNDDRIVER_H

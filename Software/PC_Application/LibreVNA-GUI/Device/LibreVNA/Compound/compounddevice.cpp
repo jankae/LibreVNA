@@ -3,7 +3,7 @@
 CompoundDevice::CompoundDevice()
 {
     name = "";
-    sync = Synchronization::USB;
+    sync = LibreVNADriver::Synchronization::GUI;
 }
 
 nlohmann::json CompoundDevice::toJSON()
@@ -49,26 +49,26 @@ void CompoundDevice::fromJSON(nlohmann::json j)
     }
 }
 
-QString CompoundDevice::SyncToString(CompoundDevice::Synchronization sync)
+QString CompoundDevice::SyncToString(LibreVNADriver::Synchronization sync)
 {
     switch(sync) {
-    case Synchronization::USB: return "USB";
-    case Synchronization::ExtRef: return "Ext. Ref.";
-    case Synchronization::Trigger: return "Trigger";
+    case LibreVNADriver::Synchronization::Disabled: return "Disabled";
+    case LibreVNADriver::Synchronization::GUI: return "GUI";
+    case LibreVNADriver::Synchronization::ExternalTrigger: return "Trigger";
     default:
-    case Synchronization::Last: return "Invalid";
+        return "Invalid";
     }
 }
 
-CompoundDevice::Synchronization CompoundDevice::SyncFromString(QString s)
+LibreVNADriver::Synchronization CompoundDevice::SyncFromString(QString s)
 {
-    for(int i=0;i<(int) Synchronization::Last;i++) {
-        if(SyncToString((Synchronization)i) == s) {
-            return (Synchronization) i;
+    for(int i=0;i<(int) LibreVNADriver::Synchronization::Last;i++) {
+        if(SyncToString((LibreVNADriver::Synchronization)i) == s) {
+            return (LibreVNADriver::Synchronization) i;
         }
     }
-    // default to USB
-    return Synchronization::USB;
+    // default to GUI
+    return LibreVNADriver::Synchronization::GUI;
 }
 
 QString CompoundDevice::getDesription()
@@ -76,7 +76,7 @@ QString CompoundDevice::getDesription()
     return name + ", "+QString::number(deviceSerials.size())+" devices, "+QString::number(portMapping.size())+" ports in total";
 }
 
-int CompoundDevice::PortMapping::findActiveStage(std::vector<CompoundDevice::PortMapping> map, unsigned int device, unsigned int port)
+unsigned int CompoundDevice::PortMapping::findActiveStage(std::vector<CompoundDevice::PortMapping> map, unsigned int device, unsigned int port)
 {
     for(unsigned int i=0;i<map.size();i++) {
         if(map[i].device == device && map[i].port == port) {

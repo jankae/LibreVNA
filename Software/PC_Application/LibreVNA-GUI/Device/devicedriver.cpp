@@ -2,6 +2,8 @@
 
 #include "LibreVNA/librevnatcpdriver.h"
 #include "LibreVNA/librevnausbdriver.h"
+#include "LibreVNA/Compound/compounddriver.h"
+#include "SSA3000X/ssa3000xdriver.h"
 
 DeviceDriver *DeviceDriver::activeDriver = nullptr;
 
@@ -19,17 +21,23 @@ std::vector<DeviceDriver *> DeviceDriver::getDrivers()
         // first function call
         ret.push_back(new LibreVNAUSBDriver);
         ret.push_back(new LibreVNATCPDriver);
+        ret.push_back(new CompoundDriver);
+        ret.push_back(new SSA3000XDriver);
     }
     return ret;
 }
 
-bool DeviceDriver::connectDevice(QString serial)
+bool DeviceDriver::connectDevice(QString serial, bool isIndepedentDriver)
 {
-    if(activeDriver && activeDriver != this) {
-        activeDriver->disconnect();
+    if(!isIndepedentDriver) {
+        if(activeDriver && activeDriver != this) {
+            activeDriver->disconnect();
+        }
     }
     if(connectTo(serial)) {
-        activeDriver = this;
+        if(!isIndepedentDriver) {
+            activeDriver = this;
+        }
         return true;
     } else {
         return false;
@@ -122,4 +130,42 @@ DeviceDriver::Info::Info()
     Limits.SA.maxdBm = 30;
     Limits.SA.minRBW = 1;
     Limits.SA.maxRBW = 1000000;
+}
+
+void DeviceDriver::Info::subset(const DeviceDriver::Info &info)
+{
+    if (info.firmware_version != firmware_version) {
+        firmware_version = "Mixed";
+    }
+    if (info.hardware_version != hardware_version) {
+        hardware_version = "Mixed";
+    }
+
+    Limits.VNA.ports += info.Limits.VNA.ports;
+    Limits.VNA.minFreq = std::max(Limits.VNA.minFreq, info.Limits.VNA.minFreq);
+    Limits.VNA.maxFreq = std::min(Limits.VNA.maxFreq, info.Limits.VNA.maxFreq);
+    Limits.VNA.mindBm = std::max(Limits.VNA.mindBm, info.Limits.VNA.mindBm);
+    Limits.VNA.maxdBm = std::min(Limits.VNA.maxdBm, info.Limits.VNA.maxdBm);
+    Limits.VNA.minIFBW = std::max(Limits.VNA.minIFBW, info.Limits.VNA.minIFBW);
+    Limits.VNA.maxIFBW = std::min(Limits.VNA.maxIFBW, info.Limits.VNA.maxIFBW);
+    Limits.VNA.maxPoints = std::min(Limits.VNA.maxPoints, info.Limits.VNA.maxPoints);
+
+    Limits.Generator.ports += info.Limits.Generator.ports;
+    Limits.Generator.minFreq = std::max(Limits.Generator.minFreq, info.Limits.Generator.minFreq);
+    Limits.Generator.maxFreq = std::min(Limits.Generator.maxFreq, info.Limits.Generator.maxFreq);
+    Limits.Generator.mindBm = std::max(Limits.Generator.mindBm, info.Limits.Generator.mindBm);
+    Limits.Generator.maxdBm = std::min(Limits.Generator.maxdBm, info.Limits.Generator.maxdBm);
+
+    Limits.SA.ports += info.Limits.SA.ports;
+    Limits.SA.minFreq = std::max(Limits.SA.minFreq, info.Limits.SA.minFreq);
+    Limits.SA.maxFreq = std::min(Limits.SA.maxFreq, info.Limits.SA.maxFreq);
+    Limits.SA.mindBm = std::max(Limits.SA.mindBm, info.Limits.SA.mindBm);
+    Limits.SA.maxdBm = std::min(Limits.SA.maxdBm, info.Limits.SA.maxdBm);
+    Limits.SA.minRBW = std::max(Limits.SA.minRBW, info.Limits.SA.minRBW);
+    Limits.SA.maxRBW = std::min(Limits.SA.maxRBW, info.Limits.SA.maxRBW);
+
+    std::set<Feature> intersectFeatures;
+    std::set_intersection(supportedFeatures.begin(), supportedFeatures.end(), info.supportedFeatures.begin(), info.supportedFeatures.end(),
+                          std::inserter(intersectFeatures, intersectFeatures.begin()));
+    supportedFeatures = intersectFeatures;
 }

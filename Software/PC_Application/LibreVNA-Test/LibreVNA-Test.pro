@@ -34,8 +34,10 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/sourcecaldialog.cpp \
-    ../LibreVNA-GUI/Device/compounddevice.cpp \
-    ../LibreVNA-GUI/Device/compounddeviceeditdialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddevice.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddriver.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.cpp \
+    ../LibreVNA-GUI/Device/SSA3000X/ssa3000xdriver.cpp \
     ../LibreVNA-GUI/Device/device.cpp \
     ../LibreVNA-GUI/Device/devicedriver.cpp \
     ../LibreVNA-GUI/Device/devicelog.cpp \
@@ -205,8 +207,10 @@ HEADERS += \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/sourcecaldialog.h \
-    ../LibreVNA-GUI/Device/compounddevice.h \
-    ../LibreVNA-GUI/Device/compounddeviceeditdialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddevice.h \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddriver.h \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.h \
+    ../LibreVNA-GUI/Device/SSA3000X/ssa3000xdriver.h \
     ../LibreVNA-GUI/Device/device.h \
     ../LibreVNA-GUI/Device/devicedriver.h \
     ../LibreVNA-GUI/Device/devicelog.h \
@@ -355,7 +359,7 @@ FORMS += \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.ui \
-    ../LibreVNA-GUI/Device/compounddeviceeditdialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \
     ../LibreVNA-GUI/Device/deviceusblogview.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \

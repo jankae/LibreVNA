@@ -53,6 +53,7 @@ public:
             switch(static_cast<QMetaType::Type>(val.type())) {
             case QMetaType::Double: e.var.setValue((*json_entry).get<double>()); break;
             case QMetaType::Int: e.var.setValue((*json_entry).get<int>()); break;
+            case QMetaType::UInt: e.var.setValue((*json_entry).get<unsigned int>()); break;
             case QMetaType::Bool: e.var.setValue((*json_entry).get<bool>()); break;
             case QMetaType::QString: {
                 auto s = QString::fromStdString((*json_entry).get<std::string>());
@@ -82,6 +83,7 @@ public:
             switch(static_cast<QMetaType::Type>(val.type())) {
             case QMetaType::Double: *json_entry = val.toDouble(); break;
             case QMetaType::Int: *json_entry = val.toInt(); break;
+            case QMetaType::UInt: *json_entry = val.toUInt(); break;
             case QMetaType::Bool: *json_entry = val.toBool(); break;
             case QMetaType::QString: *json_entry = val.toString().toStdString(); break;
             case QMetaType::QColor: *json_entry = val.value<QColor>().name().toStdString(); break;

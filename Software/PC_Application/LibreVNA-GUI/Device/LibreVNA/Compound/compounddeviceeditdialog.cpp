@@ -1,7 +1,7 @@
 #include "compounddeviceeditdialog.h"
 #include "ui_compounddeviceeditdialog.h"
 
-#include "device.h"
+#include "../../device.h"
 
 #include <QPushButton>
 #include <QDrag>
@@ -25,9 +25,9 @@ CompoundDeviceEditDialog::CompoundDeviceEditDialog(CompoundDevice *cdev, QWidget
        ldev.name = ui->name->text();
        checkIfOkay();
     });
-    for(int i=0;i<(int)CompoundDevice::Synchronization::Last;i++) {
-        ui->sync->addItem(CompoundDevice::SyncToString((CompoundDevice::Synchronization) i));
-        if((CompoundDevice::Synchronization) i == CompoundDevice::Synchronization::Trigger) {
+    for(int i=0;i<(int)LibreVNADriver::Synchronization::Last;i++) {
+        ui->sync->addItem(CompoundDevice::SyncToString((LibreVNADriver::Synchronization) i));
+        if((LibreVNADriver::Synchronization) i == LibreVNADriver::Synchronization::ExternalTrigger) {
             // Disable for now
             auto *model = qobject_cast<QStandardItemModel *>(ui->sync->model());
             Q_ASSERT(model != nullptr);
@@ -522,9 +522,9 @@ void DeviceFrame::update()
 //    }
     serial->setCurrentText(s);
 
-    if(dev->sync == CompoundDevice::Synchronization::USB) {
+    if(dev->sync == LibreVNADriver::Synchronization::GUI) {
         setStyleSheet("image: url(:/icons/compound_V1_USB.png);");
-    } else if(dev->sync == CompoundDevice::Synchronization::ExtRef) {
+    } else if(dev->sync == LibreVNADriver::Synchronization::Reserved) {
         if(position == 0) {
             setStyleSheet("image: url(:/icons/compound_V1_Ref_Left.png);");
         } else if(position == dev->deviceSerials.size() - 1) {
