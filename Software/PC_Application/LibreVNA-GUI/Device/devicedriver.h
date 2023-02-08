@@ -352,7 +352,7 @@ public:
         };
         // S parameter measurements
         // Key: S parameter name, e.g. "PORT1"
-        // Value: measurement in mW (linear, not in dB). A value of 1.0 means 0dBm
+        // Value: measurement in linear voltage (linear, not in dB). A value of 1.0 means 0dBm
         std::map<QString, double> measurements;
     };
 

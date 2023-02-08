@@ -3,8 +3,11 @@
 
 #include "../devicedriver.h"
 
+#include "../tracedifferencegenerator.h"
+
 #include <QHostAddress>
 #include <QTcpSocket>
+#include <QTimer>
 
 class SSA3000XDriver : public DeviceDriver
 {
@@ -139,6 +142,8 @@ public:
      */
     virtual bool setExtRef(QString option_in, QString option_out) override;
 
+private slots:
+    void extractTracePoints();
 private:
     void write(QString s);
     QString serial;
@@ -146,6 +151,21 @@ private:
 
     bool connected;
     Info info;
+
+    double startFreq, stopFreq;
+
+    class SpectrumPoint {
+    public:
+        unsigned int index;
+        double frequency;
+        double dBm;
+        bool operator==(const SpectrumPoint& rhs) {
+            return index == rhs.index && frequency == rhs.frequency && dBm == rhs.dBm;
+        }
+    };
+
+    QTimer traceTimer;
+    TraceDifferenceGenerator<SpectrumPoint, 10> *diffGen;
 
     std::vector<QHostAddress> searchAddresses;
     std::map<QString, QHostAddress> detectedDevices;

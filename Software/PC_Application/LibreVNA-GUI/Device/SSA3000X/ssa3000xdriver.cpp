@@ -1,17 +1,28 @@
 #include "ssa3000xdriver.h"
 
 #include "CustomWidgets/informationbox.h"
+#include "Util/util.h"
 
 #include <QTcpSocket>
+#include <QDateTime>
 
 SSA3000XDriver::SSA3000XDriver()
 {
+    diffGen = new TraceDifferenceGenerator<SpectrumPoint, 10>([=](const SpectrumPoint &p){
+        SAMeasurement m;
+        m.pointNum = p.index;
+        m.frequency = p.frequency;
+        m.measurements["PORT1"] = pow(10.0, p.dBm / 20.0);
+        emit SAmeasurementReceived(m);
+    });
     searchAddresses.push_back(QHostAddress("192.168.22.2"));
+    connect(&traceTimer, &QTimer::timeout, this, &SSA3000XDriver::extractTracePoints);
+    traceTimer.setSingleShot(true);
 }
 
 SSA3000XDriver::~SSA3000XDriver()
 {
-
+    delete diffGen;
 }
 
 std::set<QString> SSA3000XDriver::GetAvailableDevices()
@@ -80,6 +91,8 @@ bool SSA3000XDriver::connectTo(QString serial)
         InformationBox::ShowError("Error", "TCP connection timed out");
         return false;
     }
+
+    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &SSA3000XDriver::ConnectionLost, Qt::QueuedConnection);
 
     // grab model information
     dataSocket.write("*IDN?\r\n");
@@ -188,6 +201,9 @@ bool SSA3000XDriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     if(!connected) {
         return false;
     }
+    startFreq = s.freqStart;
+    stopFreq = s.freqStop;
+
     write(":FREQ:STAR "+QString::number(s.freqStart));
     write(":FREQ:STOP "+QString::number(s.freqStop));
     write(":BWID "+QString::number(s.RBW));
@@ -235,12 +251,17 @@ bool SSA3000XDriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     write(":OUTP:STAT " + (s.trackingGenerator ? QString("ON") : QString("OFF")));
     write(":SOUR:POW "+QString::number((int) s.trackingPower));
 
+    traceTimer.start(100);
+    if(cb) {
+        cb(true);
+    }
+
     return true;
 }
 
 unsigned int SSA3000XDriver::getSApoints()
 {
-    return 0;
+    return 751;
 }
 
 QStringList SSA3000XDriver::availableSGPorts()
@@ -269,6 +290,7 @@ bool SSA3000XDriver::setIdle(std::function<void (bool)> cb)
     if(!connected) {
         return false;
     }
+    traceTimer.stop();
     write("*RST\r\n");
     if(cb) {
         cb(true);
@@ -293,4 +315,42 @@ bool SSA3000XDriver::setExtRef(QString option_in, QString option_out)
 void SSA3000XDriver::write(QString s)
 {
     dataSocket.write(QString(s + "\r\n").toLocal8Bit());
+    dataSocket.readAll();
 }
+
+void SSA3000XDriver::extractTracePoints()
+{
+    if(!connected) {
+        return;
+    }
+    write(":TRAC? 1");
+    auto start = QDateTime::currentDateTimeUtc();
+    while(!dataSocket.canReadLine()) {
+        dataSocket.waitForReadyRead(100);
+        if(start.msecsTo(QDateTime::currentDateTimeUtc()) >= 100) {
+            // timed out
+            qWarning() << "Timed out waiting for trace data response";
+            return;
+        }
+    }
+    QString line = QString(dataSocket.readLine());
+    QStringList values = line.split(",");
+    // line contains a trailing comma, remove last item
+    values.pop_back();
+    std::vector<SpectrumPoint> trace;
+    for(unsigned int i=0;i<values.size();i++) {
+        SpectrumPoint p;
+        p.index = i;
+        p.frequency = Util::Scale((double) i, (double) 0, (double) values.size() - 1, startFreq, stopFreq);
+        bool ok = false;
+        p.dBm = values[i].toDouble(&ok);
+        if(!ok) {
+            // parsing failed, abort
+            return;
+        }
+        trace.push_back(p);
+    }
+    diffGen->newTrace(trace);
+    traceTimer.start(100);
+}
+

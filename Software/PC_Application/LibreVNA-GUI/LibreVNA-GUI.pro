@@ -37,6 +37,7 @@ HEADERS += \
     Device/devicelog.h \
     Device/deviceusblog.h \
     Device/deviceusblogview.h \
+    Device/tracedifferencegenerator.h \
     Device/virtualdevice.h \
     Generator/generator.h \
     Generator/signalgenwidget.h \
