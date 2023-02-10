@@ -603,6 +603,11 @@ void Calibration::edit()
         std::set<CalibrationMeasurement::Base*> m;
         auto selected = ui->table->selectionModel()->selectedRows();
         for(auto s : selected) {
+            auto meas = measurements[s.row()];
+            if(!meas->readyForMeasurement()) {
+                InformationBox::ShowError("Unable to measure", CalibrationMeasurement::Base::TypeToString(meas->getType())+" measurement is not ready, please check that a valid calibration standard is selected");
+                return;
+            }
             m.insert(measurements[s.row()]);
         }
         if(!CalibrationMeasurement::Base::canMeasureSimultaneously(m)) {
@@ -1656,7 +1661,7 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
                 // missing measurement
                 return false;
             } else if (!meas->readyForCalculation()){
-                // measurement not ready (either not calkit standard definded or no measurements
+                // measurement not ready (either not calkit standard definded or no measurements)
                 return false;
             } else {
                 foundMeasurements.push_back(meas);
