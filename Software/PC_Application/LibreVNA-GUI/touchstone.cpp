@@ -1,6 +1,7 @@
 #include "touchstone.h"
 
 #include "Util/util.h"
+#include "unit.h"
 
 #include <limits>
 #include <algorithm>
@@ -162,14 +163,16 @@ Touchstone Touchstone::fromFile(string filename)
     Datapoint point;
 
     string line;
+    unsigned int lineCnt = 0;
     while(getline(file, line)) {
+        lineCnt++;
         // remove comments
         auto comment = line.find_first_of('!');
         if(comment != string::npos) {
             line.erase(comment);
         }
         // remove leading whitespace
-        size_t first = line.find_first_not_of(" \t");
+        size_t first = line.find_first_not_of(" \t\r\n");
         if (string::npos == first) {
             // string does only contain whitespace, skip line
             continue;
@@ -231,10 +234,11 @@ Touchstone Touchstone::fromFile(string filename)
             if(!option_line_found) {
                 throw runtime_error("First dataline before option line");
             }
-            auto parseDatapoint = [format](istream &in) -> complex<double> {
+            auto parseDatapoint = [format, &point, &lineCnt](istream &in) -> complex<double> {
                 double part1, part2;
-                in >> part1;
-                in >> part2;
+                if(!(in >> part1) || !(in >> part2)) {
+                    throw runtime_error("Failed to parse parameters on line "+std::to_string(lineCnt)+" with frequency "+Unit::ToString(point.frequency,"Hz", " kMG", 10).toStdString());
+                }
                 complex<double> ret;
                 switch(format) {
                 case Format::MagnitudeAngle:
