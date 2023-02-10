@@ -110,13 +110,14 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  MX_I2C2_Init();
+  uint8_t ctrl = 0x0A;
+  HAL_I2C_Mem_Write(&hi2c2, 0x42, 0x01, I2C_MEMADD_SIZE_8BIT, &ctrl, 1, 100);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_I2C2_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
   MX_UCPD1_Init();
