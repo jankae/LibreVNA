@@ -23,6 +23,9 @@
   - made USB communication more robust
   - PLL locking issue fixed
 
+## v1.4.1
+- Bugfix: Configure voltage regulator for correct voltage at startup
+
 ## v1.4.0
 
 - New features:
