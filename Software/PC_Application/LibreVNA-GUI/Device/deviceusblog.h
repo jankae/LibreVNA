@@ -50,6 +50,7 @@ public:
         QString serial;
         std::vector<uint8_t> bytes;
         Protocol::PacketInfo *p;
+        Protocol::VNADatapoint<32> *datapoint;
         unsigned int storageSize() const {
             unsigned long size = sizeof(type) + sizeof(timestamp) + serial.size();
             switch(type) {

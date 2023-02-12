@@ -44,7 +44,6 @@ void ReceiverCalDialog::UpdateAmplitude(AmplitudeCalDialog::CorrectionPoint &poi
     // This point was just received from the device, it is not possible to know the actual amplitude because the
     // applied power level during the calibration is not saved (only the correction value). This is not a problem
     // because the correction value is still valid but the missing values look weird in the GUI
-    // TODO change this?
     point.amplitudePort1 = std::numeric_limits<double>::quiet_NaN();
     point.amplitudePort2 = std::numeric_limits<double>::quiet_NaN();
     point.port1set = true;

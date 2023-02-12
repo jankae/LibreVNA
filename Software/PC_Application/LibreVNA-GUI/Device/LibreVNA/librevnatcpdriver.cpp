@@ -70,7 +70,7 @@ std::set<QString> LibreVNATCPDriver::GetAvailableDevices()
         s->writeDatagram(data.data(), SSDPaddress, SSDPport);
     }
 
-    // TODO need delay here while still processing events
+    // need delay here while still processing events
     SynSleep::sleep(100);
 
     std::set<QString> serials;

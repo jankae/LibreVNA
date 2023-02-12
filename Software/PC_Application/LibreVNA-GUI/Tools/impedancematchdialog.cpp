@@ -255,9 +255,9 @@ void ImpedanceMatchDialog::calculateMatch()
             } else if(X < 0 && B < 0) {
                 ui->Image->setPixmap(QPixmap(":/icons/sCpL_small.png"));
             } else if(X >= 0 && B < 0) {
-                ui->Image->setPixmap(QPixmap(":/icons/sCpC_small.png")); // TODO check
+                ui->Image->setPixmap(QPixmap(":/icons/sCpC_small.png"));
             } else {
-                ui->Image->setPixmap(QPixmap(":/icons/sLpL_small.png")); // TODO check
+                ui->Image->setPixmap(QPixmap(":/icons/sLpL_small.png"));
             }
         } else {
             if(X >= 0 && B >= 0) {

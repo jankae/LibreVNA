@@ -237,40 +237,39 @@ void DeviceUSBLogView::addEntry(const DeviceUSBLog::LogEntry &e)
         }
             break;
         case Protocol::PacketType::VNADatapoint: {
-            // TODO VNAdatapoint will already be deleted. Create deep copy when creating the log entry?
-//            Protocol::VNADatapoint<32>* s = e.p->VNAdatapoint;
-//            addInteger(item, "Point number", s->pointNum);
-//            addDouble(item, "Frequency/time", s->frequency, "Hz");
-//            addDouble(item, "Power", (double) s->cdBm / 100.0, "dBm");
-//            for(unsigned int i=0;i<s->getNumValues();i++) {
-//                auto v = s->getValue(i);
-//                vector<int> ports;
-//                if(v.flags & 0x01) {
-//                    ports.push_back(1);
-//                }
-//                if(v.flags & 0x02) {
-//                    ports.push_back(2);
-//                }
-//                if(v.flags & 0x04) {
-//                    ports.push_back(3);
-//                }
-//                if(v.flags & 0x08) {
-//                    ports.push_back(4);
-//                }
-//                bool reference = v.flags & 0x10;
-//                int stage = v.flags >> 5;
-//                auto vitem = new QTreeWidgetItem;
-//                vitem->setData(2, Qt::DisplayRole, "Measurement "+QString::number(i+1));
-//                vitem->setData(3, Qt::DisplayRole, "Real: "+QString::number(v.value.real())+" Imag: "+QString::number(v.value.imag()));
-//                addInteger(vitem, "Stage", stage);
-//                addBool(vitem, "Reference", reference);
-//                QString sports = QString::number(ports.front());
-//                for(unsigned int j=1;j<ports.size();j++) {
-//                    sports += ","+QString::number(ports[j]);
-//                }
-//                addString(vitem, "Ports", sports);
-//                item->addChild(vitem);
-//            }
+            Protocol::VNADatapoint<32>* s = e.datapoint;
+            addInteger(item, "Point number", s->pointNum);
+            addDouble(item, "Frequency/time", s->frequency, "Hz");
+            addDouble(item, "Power", (double) s->cdBm / 100.0, "dBm");
+            for(unsigned int i=0;i<s->getNumValues();i++) {
+                auto v = s->getValue(i);
+                vector<int> ports;
+                if(v.flags & 0x01) {
+                    ports.push_back(1);
+                }
+                if(v.flags & 0x02) {
+                    ports.push_back(2);
+                }
+                if(v.flags & 0x04) {
+                    ports.push_back(3);
+                }
+                if(v.flags & 0x08) {
+                    ports.push_back(4);
+                }
+                bool reference = v.flags & 0x10;
+                int stage = v.flags >> 5;
+                auto vitem = new QTreeWidgetItem;
+                vitem->setData(2, Qt::DisplayRole, "Measurement "+QString::number(i+1));
+                vitem->setData(3, Qt::DisplayRole, "Real: "+QString::number(v.value.real())+" Imag: "+QString::number(v.value.imag()));
+                addInteger(vitem, "Stage", stage);
+                addBool(vitem, "Reference", reference);
+                QString sports = QString::number(ports.front());
+                for(unsigned int j=1;j<ports.size();j++) {
+                    sports += ","+QString::number(ports[j]);
+                }
+                addString(vitem, "Ports", sports);
+                item->addChild(vitem);
+            }
         }
             break;
         case Protocol::PacketType::SpectrumAnalyzerResult: {

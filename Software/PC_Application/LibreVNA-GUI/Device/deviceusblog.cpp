@@ -35,6 +35,11 @@ void DeviceUSBLog::addPacket(Protocol::PacketInfo &p, QString serial)
     e.type = LogEntry::Type::Packet;
     e.p = new Protocol::PacketInfo;
     *e.p = p;
+    if(p.type == Protocol::PacketType::VNADatapoint) {
+        e.datapoint = new Protocol::VNADatapoint<32>(*p.VNAdatapoint);
+    } else {
+        e.datapoint = nullptr;
+    }
     addEntry(e);
 }
 
