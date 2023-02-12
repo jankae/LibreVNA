@@ -524,7 +524,7 @@ void Calibration::edit()
             ui->table->setItem(i, 0, new QTableWidgetItem(CalibrationMeasurement::Base::TypeToString(measurements[i]->getType())));
             ui->table->setCellWidget(i, 1, measurements[i]->createStandardWidget());
             ui->table->setCellWidget(i, 2, measurements[i]->createSettingsWidget());
-            ui->table->setItem(i, 3, new QTableWidgetItem(measurements[i]->getStatistics()));
+            ui->table->setItem(i, 3, measurements[i]->getStatisticsItem());
             ui->table->setItem(i, 4, new QTableWidgetItem(measurements[i]->getTimestamp().toString()));
         }
         ui->table->selectRow(row);
@@ -1847,12 +1847,12 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
         if(meas->numPoints() < 2) {
             return false;
         }
-        auto resolution = (meas->maxFreq() - meas->minFreq()) / (meas->numPoints() - 1);
-        if(meas->maxFreq() < maxFreq) {
-            maxFreq = meas->maxFreq();
+        auto resolution = (meas->maxUsableFreq() - meas->minUsableFreq()) / (meas->numPoints() - 1);
+        if(meas->maxUsableFreq() < maxFreq) {
+            maxFreq = meas->maxUsableFreq();
         }
-        if(meas->minFreq() > minFreq) {
-            minFreq = meas->minFreq();
+        if(meas->minUsableFreq() > minFreq) {
+            minFreq = meas->minUsableFreq();
         }
         if(resolution < minResolution) {
             minResolution = resolution;

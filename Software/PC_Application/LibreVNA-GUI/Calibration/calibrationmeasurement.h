@@ -6,6 +6,7 @@
 
 #include <QDateTime>
 #include <QObject>
+#include <QTableWidgetItem>
 
 class Calibration;
 
@@ -33,8 +34,11 @@ public:
     virtual bool setFirstSupportedStandard();
     virtual bool setStandard(CalStandard::Virtual *standard);
 
+    virtual QTableWidgetItem *getStatisticsItem();
     QString getStatistics();
 
+    virtual double minUsableFreq() = 0;
+    virtual double maxUsableFreq() = 0;
     virtual double minFreq() = 0;
     virtual double maxFreq() = 0;
     virtual unsigned int numPoints() = 0;
@@ -78,8 +82,12 @@ public:
         Base(cal),
         port(0) {}
 
-    virtual double minFreq() override;
-    virtual double maxFreq() override;
+    virtual QTableWidgetItem *getStatisticsItem() override;
+
+    virtual double minUsableFreq() override;
+    virtual double maxUsableFreq() override;
+    virtual double minFreq() override {return points.size() > 0 ? points.front().frequency : std::numeric_limits<double>::max();}
+    virtual double maxFreq() override {return points.size() > 0 ? points.back().frequency : 0;}
     virtual unsigned int numPoints() override {return points.size();}
     virtual bool readyForMeasurement() override {return standard != nullptr;}
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
@@ -193,8 +201,12 @@ public:
         port2(0),
         reverseStandard(false){}
 
-    virtual double minFreq() override;
-    virtual double maxFreq() override;
+    virtual QTableWidgetItem *getStatisticsItem() override;
+
+    virtual double minUsableFreq() override;
+    virtual double maxUsableFreq() override;
+    virtual double minFreq() override {return points.size() > 0 ? points.front().frequency : std::numeric_limits<double>::max();}
+    virtual double maxFreq() override {return points.size() > 0 ? points.back().frequency : 0;}
     virtual unsigned int numPoints() override {return points.size();}
     virtual bool readyForMeasurement() override {return standard != nullptr;}
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
@@ -265,8 +277,10 @@ public:
     Isolation(Calibration *cal) :
         Base(cal){}
 
-    virtual double minFreq() override;
-    virtual double maxFreq() override;
+    virtual double minUsableFreq() override {return minFreq();}
+    virtual double maxUsableFreq() override {return maxFreq();}
+    virtual double minFreq() override {return points.size() > 0 ? points.front().frequency : std::numeric_limits<double>::max();}
+    virtual double maxFreq() override {return points.size() > 0 ? points.back().frequency : 0;}
     virtual unsigned int numPoints() override;
     virtual bool readyForMeasurement() override {return true;}
     virtual bool readyForCalculation() override {return points.size() > 0;}

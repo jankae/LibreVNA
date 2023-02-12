@@ -66,6 +66,11 @@ bool CalibrationMeasurement::Base::setStandard(CalStandard::Virtual *standard)
     }
 }
 
+QTableWidgetItem *CalibrationMeasurement::Base::getStatisticsItem()
+{
+    return new QTableWidgetItem(getStatistics());
+}
+
 QString CalibrationMeasurement::Base::getStatistics()
 {
     if(numPoints() > 0) {
@@ -222,7 +227,22 @@ CalStandard::Virtual* CalibrationMeasurement::Base::getStandard() const
     return standard;
 }
 
-double CalibrationMeasurement::OnePort::minFreq()
+QTableWidgetItem *CalibrationMeasurement::OnePort::getStatisticsItem()
+{
+    auto ret = Base::getStatisticsItem();
+    if(numPoints() > 0) {
+        if(!standard) {
+            ret->setBackgroundColor(Qt::red);
+            ret->setToolTip("No calibration standard assigned, unable to use this measurement");
+        } else if(standard->minFrequency() > points.front().frequency || standard->maxFrequency() < points.back().frequency) {
+            ret->setBackgroundColor(Qt::yellow);
+            ret->setToolTip("Usable frequency range constrained by calibration standard to "+Unit::ToString(minUsableFreq(), "Hz", " kMG", 4)+" - "+Unit::ToString(maxUsableFreq(), "Hz", " kMG", 4));
+        }
+    }
+    return ret;
+}
+
+double CalibrationMeasurement::OnePort::minUsableFreq()
 {
     if(points.size() > 0 && standard) {
         return max(points.front().frequency, standard->minFrequency());
@@ -231,7 +251,7 @@ double CalibrationMeasurement::OnePort::minFreq()
     }
 }
 
-double CalibrationMeasurement::OnePort::maxFreq()
+double CalibrationMeasurement::OnePort::maxUsableFreq()
 {
     if(points.size() > 0 && standard) {
         return min(points.back().frequency, standard->maxFrequency());
@@ -366,7 +386,22 @@ std::vector<CalibrationMeasurement::OnePort::Point> CalibrationMeasurement::OneP
     return points;
 }
 
-double CalibrationMeasurement::TwoPort::minFreq()
+QTableWidgetItem *CalibrationMeasurement::TwoPort::getStatisticsItem()
+{
+    auto ret = Base::getStatisticsItem();
+    if(numPoints() > 0) {
+        if(!standard) {
+            ret->setBackgroundColor(Qt::red);
+            ret->setToolTip("No calibration standard assigned, unable to use this measurement");
+        } else if(standard->minFrequency() > points.front().frequency || standard->maxFrequency() < points.back().frequency) {
+            ret->setBackgroundColor(Qt::yellow);
+            ret->setToolTip("Usable frequency range constrained by calibration standard to "+Unit::ToString(minUsableFreq(), "Hz", " kMG", 4)+" - "+Unit::ToString(maxUsableFreq(), "Hz", " kMG", 4));
+        }
+    }
+    return ret;
+}
+
+double CalibrationMeasurement::TwoPort::minUsableFreq()
 {
     if(points.size() > 0 && standard) {
         return max(points.front().frequency, standard->minFrequency());
@@ -375,7 +410,7 @@ double CalibrationMeasurement::TwoPort::minFreq()
     }
 }
 
-double CalibrationMeasurement::TwoPort::maxFreq()
+double CalibrationMeasurement::TwoPort::maxUsableFreq()
 {
     if(points.size() > 0 && standard) {
         return min(points.back().frequency, standard->maxFrequency());
@@ -572,24 +607,6 @@ std::vector<CalibrationMeasurement::TwoPort::Point> CalibrationMeasurement::TwoP
 int CalibrationMeasurement::TwoPort::getPort1() const
 {
     return port1;
-}
-
-double CalibrationMeasurement::Isolation::minFreq()
-{
-    if(points.size() > 0) {
-        return points.front().frequency;
-    } else {
-        return numeric_limits<double>::max();
-    }
-}
-
-double CalibrationMeasurement::Isolation::maxFreq()
-{
-    if(points.size() > 0) {
-        return points.back().frequency;
-    } else {
-        return 0;
-    }
 }
 
 unsigned int CalibrationMeasurement::Isolation::numPoints()
