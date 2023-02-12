@@ -351,11 +351,13 @@ FORMS += \
     ../LibreVNA-GUI/CustomWidgets/jsonpickerdialog.ui \
     ../LibreVNA-GUI/CustomWidgets/tilewidget.ui \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddriversettingswidget.ui \
     ../LibreVNA-GUI/Device/LibreVNA/addamplitudepointsdialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/automaticamplitudedialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/librevnadriversettingswidget.ui \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \
