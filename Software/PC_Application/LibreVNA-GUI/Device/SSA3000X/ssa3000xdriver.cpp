@@ -7,6 +7,7 @@
 #include <QDateTime>
 
 SSA3000XDriver::SSA3000XDriver()
+    : DeviceTCPDriver("SSA3000X")
 {
     diffGen = new TraceDifferenceGenerator<SpectrumPoint, 10>([=](const SpectrumPoint &p){
         SAMeasurement m;
@@ -15,7 +16,6 @@ SSA3000XDriver::SSA3000XDriver()
         m.measurements["PORT1"] = pow(10.0, p.dBm / 20.0);
         emit SAmeasurementReceived(m);
     });
-    searchAddresses.push_back(QHostAddress("192.168.22.2"));
     connect(&traceTimer, &QTimer::timeout, this, &SSA3000XDriver::extractTracePoints);
     traceTimer.setSingleShot(true);
 }
@@ -32,7 +32,7 @@ std::set<QString> SSA3000XDriver::GetAvailableDevices()
     // attempt to establish a connection to check if the device is available and extract the serial number
     detectedDevices.clear();
     auto sock = QTcpSocket();
-    for(auto address : searchAddresses) {
+    for(auto address : getSearchAddresses()) {
         sock.connectToHost(address, 5024);
         if(sock.waitForConnected(50)) {
            // connection successful
@@ -54,8 +54,6 @@ std::set<QString> SSA3000XDriver::GetAvailableDevices()
                 }
             }
             sock.disconnect();
-        } else {
-            qDebug() << "SSA3000X failed to connect";
         }
     }
     return ret;
@@ -113,7 +111,7 @@ bool SSA3000XDriver::connectTo(QString serial)
     info.supportedFeatures.insert(DeviceDriver::Feature::SA);
     info.supportedFeatures.insert(DeviceDriver::Feature::SATrackingGenerator);
     info.supportedFeatures.insert(DeviceDriver::Feature::Generator);
-    info.supportedFeatures.insert(DeviceDriver::Feature::ExtRefIn);
+//    info.supportedFeatures.insert(DeviceDriver::Feature::ExtRefIn);
 
     double maxFreq = 0;
     if(info.hardware_version == "SSA3032X") {
@@ -146,27 +144,6 @@ bool SSA3000XDriver::connectTo(QString serial)
 
     emit InfoUpdated();
 
-//    // sockets are connected now
-//    dataBuffer.clear();
-//    logBuffer.clear();
-//    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
-//    connect(&logSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
-
-//    qInfo() << "TCP connection established" << flush;
-//    this->serial = serial;
-//    connected = true;
-
-//    connect(&dataSocket, &QTcpSocket::readyRead, this, &LibreVNATCPDriver::ReceivedData, Qt::UniqueConnection);
-//    connect(&logSocket, &QTcpSocket::readyRead, this, &LibreVNATCPDriver::ReceivedLog, Qt::UniqueConnection);
-//    connect(&transmissionTimer, &QTimer::timeout, this, &LibreVNATCPDriver::transmissionTimeout, Qt::UniqueConnection);
-//    connect(this, &LibreVNATCPDriver::receivedAnswer, this, &LibreVNATCPDriver::transmissionFinished, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
-//    connect(this, &LibreVNATCPDriver::receivedPacket, this, &LibreVNATCPDriver::handleReceivedPacket, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
-//    transmissionTimer.setSingleShot(true);
-//    transmissionActive = false;
-
-//    sendWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
-//    sendWithoutPayload(Protocol::PacketType::RequestDeviceStatus);
-//    updateIFFrequencies();
     return true;
 }
 
@@ -295,6 +272,7 @@ bool SSA3000XDriver::setIdle(std::function<void (bool)> cb)
     if(cb) {
         cb(true);
     }
+    return true;
 }
 
 QStringList SSA3000XDriver::availableExtRefInSettings()

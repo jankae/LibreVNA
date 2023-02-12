@@ -156,6 +156,9 @@ private:
     QString getCalStyle();
     QString getCalToolTip();
 
+    QComboBox *cbSweepType;
+    QCheckBox *cbLogSweep;
+    QPushButton *bZero;
 
     QMenu *defaultCalMenu;
     QAction *assignDefaultCal, *removeDefaultCal;

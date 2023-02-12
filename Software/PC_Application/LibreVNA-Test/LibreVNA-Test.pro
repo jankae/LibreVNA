@@ -42,6 +42,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/devicelog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlogview.cpp \
+    ../LibreVNA-GUI/Device/devicetcpdriver.cpp \
     ../LibreVNA-GUI/Generator/generator.cpp \
     ../LibreVNA-GUI/Generator/signalgenwidget.cpp \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.cpp \
@@ -213,6 +214,7 @@ HEADERS += \
     ../LibreVNA-GUI/Device/devicelog.h \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlog.h \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlogview.h \
+    ../LibreVNA-GUI/Device/devicetcpdriver.h \
     ../LibreVNA-GUI/Generator/generator.h \
     ../LibreVNA-GUI/Generator/signalgenwidget.h \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.h \
@@ -358,6 +360,7 @@ FORMS += \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlogview.ui \
+    ../LibreVNA-GUI/Device/devicetcpdriversettings.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \
     ../LibreVNA-GUI/Tools/impedancematchdialog.ui \
     ../LibreVNA-GUI/Tools/mixedmodeconversion.ui \

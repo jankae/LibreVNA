@@ -51,6 +51,7 @@
 #include <QDebug>
 #include <QStyle>
 #include <QScrollArea>
+#include <QStandardItemModel>
 
 VNA::VNA(AppWindow *window, QString name)
     : Mode(window, name, "VNA"),
@@ -267,7 +268,7 @@ VNA::VNA(AppWindow *window, QString name)
     tb_sweep->addWidget(bSingle);
 
     tb_sweep->addWidget(new QLabel("Sweep type:"));
-    auto cbSweepType = new QComboBox();
+    cbSweepType = new QComboBox();
     cbSweepType->addItem("Frequency");
     cbSweepType->addItem("Power");
     tb_sweep->addWidget(cbSweepType);
@@ -321,14 +322,14 @@ VNA::VNA(AppWindow *window, QString name)
     connect(bZoomOut, &QPushButton::clicked, this, &VNA::SpanZoomOut);
     frequencySweepActions.push_back(tb_sweep->addWidget(bZoomOut));
 
-    auto bZero = new QPushButton("0");
+    bZero = new QPushButton("0");
     bZero->setToolTip("Zero span");
     bZero->setMaximumWidth(28);
     bZero->setMaximumHeight(24);
     connect(bZero, &QPushButton::clicked, this, &VNA::SetZeroSpan);
     frequencySweepActions.push_back(tb_sweep->addWidget(bZero));
 
-    auto cbLogSweep = new  QCheckBox("Log");
+    cbLogSweep = new  QCheckBox("Log");
     cbLogSweep->setToolTip("Logarithmic sweep");
     connect(cbLogSweep, &QCheckBox::toggled, this, &VNA::SetLogSweep);
     connect(this, &VNA::logSweepChanged, cbLogSweep, &QCheckBox::setChecked);
@@ -673,12 +674,33 @@ void VNA::deactivate()
     Mode::deactivate();
 }
 
+static void SetComboBoxItemEnabled(QComboBox * comboBox, int index, bool enabled)
+{
+    auto * model = qobject_cast<QStandardItemModel*>(comboBox->model());
+    assert(model);
+    if(!model) return;
+
+    auto * item = model->item(index);
+    assert(item);
+    if(!item) return;
+    item->setEnabled(enabled);
+}
+
 void VNA::initializeDevice()
 {
     if(!window->getDevice()->supports(DeviceDriver::Feature::VNA)) {
         InformationBox::ShowError("Unsupported", "The connected device does not support VNA mode");
         return;
     }
+    cbLogSweep->setEnabled(window->getDevice()->supports(DeviceDriver::Feature::VNALogSweep));
+    if(!window->getDevice()->supports(DeviceDriver::Feature::VNALogSweep)) {
+        SetLogSweep(false);
+    }
+
+    bZero->setEnabled(window->getDevice()->supports(DeviceDriver::Feature::VNAZeroSpan));
+    SetComboBoxItemEnabled(cbSweepType, 0, window->getDevice()->supports(DeviceDriver::Feature::VNAFrequencySweep));
+    SetComboBoxItemEnabled(cbSweepType, 1, window->getDevice()->supports(DeviceDriver::Feature::VNAPowerSweep));
+
     defaultCalMenu->setEnabled(true);
     connect(window->getDevice(), &DeviceDriver::VNAmeasurementReceived, this, &VNA::NewDatapoint, Qt::UniqueConnection);
     // Check if default calibration exists and attempt to load it

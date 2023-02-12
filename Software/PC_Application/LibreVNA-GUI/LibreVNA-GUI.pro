@@ -36,6 +36,7 @@ HEADERS += \
     Device/SSA3000X/ssa3000xdriver.h \
     Device/devicedriver.h \
     Device/devicelog.h \
+    Device/devicetcpdriver.h \
     Device/tracedifferencegenerator.h \
     Generator/generator.h \
     Generator/signalgenwidget.h \
@@ -189,6 +190,7 @@ SOURCES += \
     Device/SSA3000X/ssa3000xdriver.cpp \
     Device/devicedriver.cpp \
     Device/devicelog.cpp \
+    Device/devicetcpdriver.cpp \
     Generator/generator.cpp \
     Generator/signalgenwidget.cpp \
     SpectrumAnalyzer/spectrumanalyzer.cpp \
@@ -325,6 +327,7 @@ FORMS += \
     Device/LibreVNA/librevnadriversettingswidget.ui \
     Device/LibreVNA/manualcontroldialog.ui \
     Device/devicelog.ui \
+    Device/devicetcpdriversettings.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
     Tools/mixedmodeconversion.ui \

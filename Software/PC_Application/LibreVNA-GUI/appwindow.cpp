@@ -1032,8 +1032,8 @@ void AppWindow::UpdateReferenceToolbar()
 {
     toolbars.reference.type->blockSignals(true);
     toolbars.reference.outFreq->blockSignals(true);
-    toolbars.reference.type->setEnabled(device || device->supports(DeviceDriver::Feature::ExtRefIn));
-    toolbars.reference.outFreq->setEnabled(device || device->supports(DeviceDriver::Feature::ExtRefOut));
+    toolbars.reference.type->setEnabled(device && device->supports(DeviceDriver::Feature::ExtRefIn));
+    toolbars.reference.outFreq->setEnabled(device && device->supports(DeviceDriver::Feature::ExtRefOut));
     if(device) {
         // save current setting
         auto refInBuf = toolbars.reference.type->currentText();

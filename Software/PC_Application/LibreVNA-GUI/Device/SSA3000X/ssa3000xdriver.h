@@ -1,7 +1,7 @@
 #ifndef SSA3000XDRIVER_H
 #define SSA3000XDRIVER_H
 
-#include "../devicedriver.h"
+#include "../devicetcpdriver.h"
 
 #include "../tracedifferencegenerator.h"
 
@@ -9,7 +9,7 @@
 #include <QTcpSocket>
 #include <QTimer>
 
-class SSA3000XDriver : public DeviceDriver
+class SSA3000XDriver : public DeviceTCPDriver
 {
 public:
     SSA3000XDriver();
@@ -167,7 +167,6 @@ private:
     QTimer traceTimer;
     TraceDifferenceGenerator<SpectrumPoint, 10> *diffGen;
 
-    std::vector<QHostAddress> searchAddresses;
     std::map<QString, QHostAddress> detectedDevices;
 };
 
