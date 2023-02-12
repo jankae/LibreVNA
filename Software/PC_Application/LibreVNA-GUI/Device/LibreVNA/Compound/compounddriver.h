@@ -167,6 +167,8 @@ public:
      */
     virtual bool setExtRef(QString option_in, QString option_out) override;
 
+    static std::set<QString> getIndividualDeviceSerials();
+
 private:
     void parseCompoundJSON();
     void createCompoundJSON();

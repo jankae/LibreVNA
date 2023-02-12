@@ -3,7 +3,6 @@
 
 #include "caldevice.h"
 #include "usbdevice.h"
-#include "Device/virtualdevice.h"
 #include "CustomWidgets/informationbox.h"
 
 #include <set>

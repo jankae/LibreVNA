@@ -1,6 +1,5 @@
 ﻿#include "appwindow.h"
 #include <QtWidgets/QApplication>
-#include "Device/device.h"
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #endif
@@ -19,8 +18,6 @@ static void tryExitGracefully(int s) {
 int main(int argc, char *argv[]) {
 
     qSetMessagePattern("%{time process}: [%{type}] %{message}");
-
-    Device::RegisterTypes();
 
     app = new QApplication(argc, argv);
     QCoreApplication::setOrganizationName("LibreVNA");

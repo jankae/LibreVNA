@@ -92,7 +92,6 @@ public:
             int window;
             int detector;
             int averaging;
-            bool signalID;
         } SA;
     } Startup;
     struct {
@@ -197,7 +196,6 @@ private:
         {&Startup.SA.window, "Startup.SA.window", 1},
         {&Startup.SA.detector, "Startup.SA.detector", 0},
         {&Startup.SA.averaging, "Startup.SA.averaging", 1},
-        {&Startup.SA.signalID, "Startup.SA.signalID", true},
         {&Acquisition.alwaysExciteAllPorts, "Acquisition.alwaysExciteBothPorts", true},
         {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", false},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},

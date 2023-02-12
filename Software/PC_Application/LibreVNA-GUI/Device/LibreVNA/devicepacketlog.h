@@ -11,16 +11,16 @@
 #include <QObject>
 #include <mutex>
 
-class DeviceUSBLog : public QObject, public Savable
+class DevicePacketLog : public QObject, public Savable
 {
     Q_OBJECT
 public:
-    static DeviceUSBLog& getInstance() {
-        static DeviceUSBLog instance;
+    static DevicePacketLog& getInstance() {
+        static DevicePacketLog instance;
         return instance;
     }
-    DeviceUSBLog(const DeviceUSBLog&) = delete;
-    virtual ~DeviceUSBLog();
+    DevicePacketLog(const DevicePacketLog&) = delete;
+    virtual ~DevicePacketLog();
 
     void reset();
 
@@ -34,9 +34,10 @@ public:
     class LogEntry : public Savable {
     public:
         LogEntry()
-            : type(Type::InvalidBytes), timestamp(QDateTime()), serial(""), p(nullptr) {}
+            : type(Type::InvalidBytes), timestamp(QDateTime()), serial(""), p(nullptr), datapoint(nullptr) {}
         ~LogEntry() {
             delete p;
+            delete datapoint;
         }
 
         LogEntry(const LogEntry &e);
@@ -55,7 +56,12 @@ public:
             unsigned long size = sizeof(type) + sizeof(timestamp) + serial.size();
             switch(type) {
             case Type::InvalidBytes: size += bytes.size(); break;
-            case Type::Packet: size += sizeof(Protocol::PacketInfo); break;
+            case Type::Packet:
+                size += sizeof(Protocol::PacketInfo);
+                if(p && p->type == Protocol::PacketType::VNADatapoint) {
+                    size += sizeof(Protocol::VNADatapoint<32>);
+                }
+                break;
             }
             return size;
         }
@@ -73,7 +79,7 @@ signals:
     void entryAdded(const LogEntry &e);
 
 private:
-    DeviceUSBLog();
+    DevicePacketLog();
 
     void addEntry(const LogEntry &e);
 

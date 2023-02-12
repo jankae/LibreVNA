@@ -23,6 +23,8 @@ HEADERS += \
     Device/LibreVNA/Compound/compounddeviceeditdialog.h \
     Device/LibreVNA/Compound/compounddriver.h \
     Device/LibreVNA/amplitudecaldialog.h \
+    Device/LibreVNA/devicepacketlog.h \
+    Device/LibreVNA/devicepacketlogview.h \
     Device/LibreVNA/firmwareupdatedialog.h \
     Device/LibreVNA/frequencycaldialog.h \
     Device/LibreVNA/librevnadriver.h \
@@ -32,13 +34,9 @@ HEADERS += \
     Device/LibreVNA/receivercaldialog.h \
     Device/LibreVNA/sourcecaldialog.h \
     Device/SSA3000X/ssa3000xdriver.h \
-    Device/device.h \
     Device/devicedriver.h \
     Device/devicelog.h \
-    Device/deviceusblog.h \
-    Device/deviceusblogview.h \
     Device/tracedifferencegenerator.h \
-    Device/virtualdevice.h \
     Generator/generator.h \
     Generator/signalgenwidget.h \
     SpectrumAnalyzer/spectrumanalyzer.h \
@@ -178,6 +176,8 @@ SOURCES += \
     Device/LibreVNA/Compound/compounddeviceeditdialog.cpp \
     Device/LibreVNA/Compound/compounddriver.cpp \
     Device/LibreVNA/amplitudecaldialog.cpp \
+    Device/LibreVNA/devicepacketlog.cpp \
+    Device/LibreVNA/devicepacketlogview.cpp \
     Device/LibreVNA/firmwareupdatedialog.cpp \
     Device/LibreVNA/frequencycaldialog.cpp \
     Device/LibreVNA/librevnadriver.cpp \
@@ -187,12 +187,8 @@ SOURCES += \
     Device/LibreVNA/receivercaldialog.cpp \
     Device/LibreVNA/sourcecaldialog.cpp \
     Device/SSA3000X/ssa3000xdriver.cpp \
-    Device/device.cpp \
     Device/devicedriver.cpp \
     Device/devicelog.cpp \
-    Device/deviceusblog.cpp \
-    Device/deviceusblogview.cpp \
-    Device/virtualdevice.cpp \
     Generator/generator.cpp \
     Generator/signalgenwidget.cpp \
     SpectrumAnalyzer/spectrumanalyzer.cpp \
@@ -323,12 +319,12 @@ FORMS += \
     Device/LibreVNA/addamplitudepointsdialog.ui \
     Device/LibreVNA/amplitudecaldialog.ui \
     Device/LibreVNA/automaticamplitudedialog.ui \
+    Device/LibreVNA/devicepacketlogview.ui \
     Device/LibreVNA/firmwareupdatedialog.ui \
     Device/LibreVNA/frequencycaldialog.ui \
     Device/LibreVNA/librevnadriversettingswidget.ui \
     Device/LibreVNA/manualcontroldialog.ui \
     Device/devicelog.ui \
-    Device/deviceusblogview.ui \
     Generator/signalgenwidget.ui \
     Tools/impedancematchdialog.ui \
     Tools/mixedmodeconversion.ui \

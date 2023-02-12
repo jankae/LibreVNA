@@ -2,7 +2,6 @@
 
 #include "unit.h"
 #include "CustomWidgets/toggleswitch.h"
-#include "Device/deviceusblogview.h"
 #include "Traces/tracemodel.h"
 #include "Traces/tracewidget.h"
 #include "Traces/tracesmithchart.h"
@@ -231,13 +230,6 @@ void AppWindow::SetupMenu()
     connect(ui->actionSave_image, &QAction::triggered, [=](){
         modeHandler->getActiveMode()->saveSreenshot();
     });
-
-//    connect(ui->actionManual_Control, &QAction::triggered, this, &AppWindow::StartManualControl);
-    connect(ui->actionDevice_log, &QAction::triggered, this, &AppWindow::ShowDeviceLog);
-//    connect(ui->actionFirmware_Update, &QAction::triggered, this, &AppWindow::StartFirmwareUpdateDialog);
-//    connect(ui->actionSource_Calibration, &QAction::triggered, this, &AppWindow::SourceCalibrationDialog);
-//    connect(ui->actionReceiver_Calibration, &QAction::triggered, this, &AppWindow::ReceiverCalibrationDialog);
-//    connect(ui->actionFrequency_Calibration, &QAction::triggered, this, &AppWindow::FrequencyCalibrationDialog);
 
     connect(ui->actionPreset, &QAction::triggered, [=](){
         modeHandler->getActiveMode()->preset();
@@ -1078,14 +1070,6 @@ void AppWindow::UpdateReference()
         return;
     }
     device->setExtRef(toolbars.reference.type->currentText(), toolbars.reference.outFreq->currentText());
-}
-
-void AppWindow::ShowDeviceLog()
-{
-    auto d = new DeviceUSBLogView();
-    if(AppWindow::showGUI()) {
-        d->exec();
-    }
 }
 
 //void AppWindow::DeviceNeedsUpdate(int reported, int expected)

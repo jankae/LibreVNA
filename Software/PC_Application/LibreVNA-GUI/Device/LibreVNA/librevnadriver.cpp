@@ -7,6 +7,7 @@
 #include "receivercaldialog.h"
 #include "unit.h"
 #include "CustomWidgets/informationbox.h"
+#include "devicepacketlogview.h"
 
 #include "ui_librevnadriversettingswidget.h"
 
@@ -147,6 +148,17 @@ LibreVNADriver::LibreVNADriver()
        d->show();
     });
     specificActions.push_back(freqcal);
+
+    sep = new QAction();
+    sep->setSeparator(true);
+    specificActions.push_back(sep);
+
+    auto log = new QAction("View Packet Log");
+    connect(log, &QAction::triggered, this, [=](){
+       auto d = new DevicePacketLogView();
+       d->show();
+    });
+    specificActions.push_back(log);
 }
 
 std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()

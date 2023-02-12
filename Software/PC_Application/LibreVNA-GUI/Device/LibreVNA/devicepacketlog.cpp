@@ -1,4 +1,4 @@
-#include "deviceusblog.h"
+#include "devicepacketlog.h"
 
 #include "preferences.h"
 
@@ -8,26 +8,26 @@
 
 using namespace std;
 
-DeviceUSBLog::DeviceUSBLog()
+DevicePacketLog::DevicePacketLog()
     : usedStorageSize(0)
 {
     auto &pref = Preferences::getInstance();
     maxStorageSize = pref.Debug.USBlogSizeLimit;
 }
 
-DeviceUSBLog::~DeviceUSBLog()
+DevicePacketLog::~DevicePacketLog()
 {
 
 }
 
-void DeviceUSBLog::reset()
+void DevicePacketLog::reset()
 {
     std::lock_guard<mutex> guard(access);
     entries.clear();
     usedStorageSize = 0;
 }
 
-void DeviceUSBLog::addPacket(Protocol::PacketInfo &p, QString serial)
+void DevicePacketLog::addPacket(Protocol::PacketInfo &p, QString serial)
 {
     LogEntry e;
     e.timestamp = QDateTime::currentDateTimeUtc();
@@ -43,7 +43,7 @@ void DeviceUSBLog::addPacket(Protocol::PacketInfo &p, QString serial)
     addEntry(e);
 }
 
-void DeviceUSBLog::addInvalidBytes(const uint8_t *bytes, uint16_t len, QString serial)
+void DevicePacketLog::addInvalidBytes(const uint8_t *bytes, uint16_t len, QString serial)
 {
     LogEntry e;
     e.timestamp = QDateTime::currentDateTimeUtc();
@@ -55,7 +55,7 @@ void DeviceUSBLog::addInvalidBytes(const uint8_t *bytes, uint16_t len, QString s
     addEntry(e);
 }
 
-nlohmann::json DeviceUSBLog::toJSON()
+nlohmann::json DevicePacketLog::toJSON()
 {
     nlohmann::json j;
     for(auto &e : entries) {
@@ -64,7 +64,7 @@ nlohmann::json DeviceUSBLog::toJSON()
     return j;
 }
 
-void DeviceUSBLog::fromJSON(nlohmann::json j)
+void DevicePacketLog::fromJSON(nlohmann::json j)
 {
     reset();
     for(auto jd : j) {
@@ -74,7 +74,7 @@ void DeviceUSBLog::fromJSON(nlohmann::json j)
     }
 }
 
-DeviceUSBLog::LogEntry DeviceUSBLog::getEntry(unsigned int index)
+DevicePacketLog::LogEntry DevicePacketLog::getEntry(unsigned int index)
 {
     std::lock_guard<mutex> guard(access);
     if(index < entries.size()) {
@@ -84,7 +84,7 @@ DeviceUSBLog::LogEntry DeviceUSBLog::getEntry(unsigned int index)
     }
 }
 
-void DeviceUSBLog::addEntry(const DeviceUSBLog::LogEntry &e)
+void DevicePacketLog::addEntry(const DevicePacketLog::LogEntry &e)
 {
     std::lock_guard<mutex> guard(access);
     usedStorageSize += e.storageSize();
@@ -96,17 +96,17 @@ void DeviceUSBLog::addEntry(const DeviceUSBLog::LogEntry &e)
     emit entryAdded(e);
 }
 
-unsigned long DeviceUSBLog::getMaxStorageSize() const
+unsigned long DevicePacketLog::getMaxStorageSize() const
 {
     return maxStorageSize;
 }
 
-unsigned long DeviceUSBLog::getUsedStorageSize() const
+unsigned long DevicePacketLog::getUsedStorageSize() const
 {
     return usedStorageSize;
 }
 
-DeviceUSBLog::LogEntry::LogEntry(const DeviceUSBLog::LogEntry &e)
+DevicePacketLog::LogEntry::LogEntry(const DevicePacketLog::LogEntry &e)
 {
     timestamp = e.timestamp;
     type = e.type;
@@ -115,12 +115,18 @@ DeviceUSBLog::LogEntry::LogEntry(const DeviceUSBLog::LogEntry &e)
     if(e.p) {
         p = new Protocol::PacketInfo;
         *p = *e.p;
+        if(p->type == Protocol::PacketType::VNADatapoint) {
+            datapoint = new Protocol::VNADatapoint<32>(*e.datapoint);
+        } else {
+            datapoint = nullptr;
+        }
     } else {
+        datapoint = nullptr;
         p = nullptr;
     }
 }
 
-nlohmann::json DeviceUSBLog::LogEntry::toJSON()
+nlohmann::json DevicePacketLog::LogEntry::toJSON()
 {
     nlohmann::json j;
     j["type"] = type == Type::Packet ? "Packet" : "InvalidBytes";
@@ -131,6 +137,13 @@ nlohmann::json DeviceUSBLog::LogEntry::toJSON()
         for(unsigned int i=0;i<sizeof(Protocol::PacketInfo);i++) {
             jdata.push_back(*(((uint8_t*) p) + i));
         }
+        if(datapoint) {
+            nlohmann::json jdatapoint;
+            for(unsigned int i=0;i<sizeof(*datapoint);i++) {
+                jdatapoint.push_back(*(((uint8_t*) datapoint) + i));
+            }
+            j["datapoint"] = jdatapoint;
+        }
     } else {
         for(auto b : bytes) {
             jdata.push_back(b);
@@ -140,16 +153,25 @@ nlohmann::json DeviceUSBLog::LogEntry::toJSON()
     return j;
 }
 
-void DeviceUSBLog::LogEntry::fromJSON(nlohmann::json j)
+void DevicePacketLog::LogEntry::fromJSON(nlohmann::json j)
 {
     type = QString::fromStdString(j.value("type", "")) == "Packet" ? Type::Packet : Type::InvalidBytes;
     timestamp = QDateTime::fromMSecsSinceEpoch(j.value("timestamp", 0UL), Qt::TimeSpec::UTC);
     serial = QString::fromStdString(j.value("serial", ""));
+    datapoint = nullptr;
+    p = nullptr;
     if(type == Type::Packet) {
         p = new Protocol::PacketInfo;
         auto jdata = j["data"];
         for(unsigned int i=0;i<sizeof(Protocol::PacketInfo);i++) {
             *(((uint8_t*) p) + i) = jdata[i];
+        }
+        if(j.contains("datapoint")) {
+            datapoint = new Protocol::VNADatapoint<32>();
+            auto jdatapoint = j["datapoint"];
+            for(unsigned int i=0;i<sizeof(*datapoint);i++) {
+                *(((uint8_t*) datapoint) + i) = jdatapoint[i];
+            }
         }
     } else {
         for(auto v : j["data"]) {

@@ -1,7 +1,6 @@
 ﻿#ifndef APPWINDOW_H
 #define APPWINDOW_H
 
-#include "Device/virtualdevice.h"
 #include "Traces/traceplot.h"
 #include "Traces/tracemodel.h"
 #include "Traces/Marker/markermodel.h"
@@ -11,7 +10,6 @@
 #include "scpi.h"
 #include "tcpserver.h"
 #include "Device/devicedriver.h"
-//#include "modehandler.h"
 
 #include <QWidget>
 #include <QMainWindow>
@@ -65,16 +63,9 @@ private slots:
 //    void StartManualControl();
     void UpdateReferenceToolbar();
     void UpdateReference();
-//    void UpdateAcquisitionFrequencies();
-    void ShowDeviceLog();
-//    void StartFirmwareUpdateDialog();
-//    void DeviceNeedsUpdate(int reported, int expected);
     void DeviceStatusUpdated();
     void DeviceFlagsUpdated();
     void DeviceInfoUpdated();
-//    void SourceCalibrationDialog();
-//    void ReceiverCalibrationDialog();
-//    void FrequencyCalibrationDialog();
     nlohmann::json SaveSetup();
     void SaveSetup(QString filename);
     void LoadSetup(QString filename);

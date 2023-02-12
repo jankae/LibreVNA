@@ -449,6 +449,21 @@ bool CompoundDriver::setExtRef(QString option_in, QString option_out)
     return success;
 }
 
+std::set<QString> CompoundDriver::getIndividualDeviceSerials()
+{
+    std::vector<LibreVNADriver*> drivers;
+    drivers.push_back(new LibreVNAUSBDriver);
+    drivers.push_back(new LibreVNATCPDriver);
+
+    auto &p = Preferences::getInstance();
+    std::set<QString> ret;
+    for(auto d : drivers) {
+        p.load(d->driverSpecificSettings());
+        ret.merge(d->GetAvailableDevices());
+    }
+    return ret;
+}
+
 void CompoundDriver::parseCompoundJSON()
 {
     try {

@@ -1,7 +1,7 @@
 #include "librevnatcpdriver.h"
 
 #include "CustomWidgets/informationbox.h"
-#include "../deviceusblog.h"
+#include "devicepacketlog.h"
 #include "Util/util.h"
 
 #include <QTimer>
@@ -224,7 +224,7 @@ void LibreVNATCPDriver::ReceivedData()
         handled_len = Protocol::DecodeBuffer((uint8_t*) dataBuffer.data(), dataBuffer.size(), &packet);
 //        qDebug() << "Handled" << handled_len << "Bytes, type:" << (int) packet.type;
         if(handled_len > 0) {
-            auto &log = DeviceUSBLog::getInstance();
+            auto &log = DevicePacketLog::getInstance();
             if(packet.type != Protocol::PacketType::None) {
                 log.addPacket(packet, serial);
             } else {
@@ -354,7 +354,7 @@ bool LibreVNATCPDriver::startNextTransmission()
         qCritical() << "Failed to encode packet";
         return false;
     }
-    auto &log = DeviceUSBLog::getInstance();
+    auto &log = DevicePacketLog::getInstance();
     log.addPacket(t.packet);
     auto ret = dataSocket.write((char*) buffer, length);
     if(ret < 0) {

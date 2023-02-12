@@ -93,7 +93,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -106,9 +106,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-334</y>
              <width>683</width>
-             <height>920</height>
+             <height>897</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -638,20 +638,6 @@
                           </item>
                          </widget>
                         </item>
-                        <item row="6" column="0">
-                         <widget class="QLabel" name="label_14">
-                          <property name="text">
-                           <string>Signal Identification:</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item row="6" column="1">
-                         <widget class="QCheckBox" name="StartupSASignalID">
-                          <property name="text">
-                           <string/>
-                          </property>
-                         </widget>
-                        </item>
                         <item row="5" column="0">
                          <widget class="QLabel" name="label_19">
                           <property name="text">
@@ -712,8 +698,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>565</width>
-             <height>365</height>
+             <width>697</width>
+             <height>563</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -869,8 +855,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>553</width>
-             <height>969</height>
+             <width>683</width>
+             <height>952</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">

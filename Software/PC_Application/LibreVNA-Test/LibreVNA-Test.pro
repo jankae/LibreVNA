@@ -38,12 +38,10 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.cpp \
     ../LibreVNA-GUI/Device/SSA3000X/ssa3000xdriver.cpp \
-    ../LibreVNA-GUI/Device/device.cpp \
     ../LibreVNA-GUI/Device/devicedriver.cpp \
     ../LibreVNA-GUI/Device/devicelog.cpp \
-    ../LibreVNA-GUI/Device/deviceusblog.cpp \
-    ../LibreVNA-GUI/Device/deviceusblogview.cpp \
-    ../LibreVNA-GUI/Device/virtualdevice.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/devicepacketlog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/devicepacketlogview.cpp \
     ../LibreVNA-GUI/Generator/generator.cpp \
     ../LibreVNA-GUI/Generator/signalgenwidget.cpp \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.cpp \
@@ -211,12 +209,10 @@ HEADERS += \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.h \
     ../LibreVNA-GUI/Device/SSA3000X/ssa3000xdriver.h \
-    ../LibreVNA-GUI/Device/device.h \
     ../LibreVNA-GUI/Device/devicedriver.h \
     ../LibreVNA-GUI/Device/devicelog.h \
-    ../LibreVNA-GUI/Device/deviceusblog.h \
-    ../LibreVNA-GUI/Device/deviceusblogview.h \
-    ../LibreVNA-GUI/Device/virtualdevice.h \
+    ../LibreVNA-GUI/Device/LibreVNA/devicepacketlog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/devicepacketlogview.h \
     ../LibreVNA-GUI/Generator/generator.h \
     ../LibreVNA-GUI/Generator/signalgenwidget.h \
     ../LibreVNA-GUI/SpectrumAnalyzer/spectrumanalyzer.h \
@@ -361,7 +357,7 @@ FORMS += \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \
-    ../LibreVNA-GUI/Device/deviceusblogview.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/devicepacketlogview.ui \
     ../LibreVNA-GUI/Generator/signalgenwidget.ui \
     ../LibreVNA-GUI/Tools/impedancematchdialog.ui \
     ../LibreVNA-GUI/Tools/mixedmodeconversion.ui \

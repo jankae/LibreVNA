@@ -1,7 +1,7 @@
 #include "librevnausbdriver.h"
 
 #include "CustomWidgets/informationbox.h"
-#include "../deviceusblog.h"
+#include "devicepacketlog.h"
 
 #include <QTimer>
 
@@ -271,7 +271,7 @@ void LibreVNAUSBDriver::ReceivedData()
         handled_len = Protocol::DecodeBuffer(dataBuffer->getBuffer(), dataBuffer->getReceived(), &packet);
 //        qDebug() << "Handled" << handled_len << "Bytes, type:" << (int) packet.type;
         if(handled_len > 0) {
-            auto &log = DeviceUSBLog::getInstance();
+            auto &log = DevicePacketLog::getInstance();
             if(packet.type != Protocol::PacketType::None) {
                 log.addPacket(packet, serial);
             } else {
@@ -458,7 +458,7 @@ bool LibreVNAUSBDriver::startNextTransmission()
         return false;
     }
     int actual_length;
-    auto &log = DeviceUSBLog::getInstance();
+    auto &log = DevicePacketLog::getInstance();
     log.addPacket(t.packet);
     auto ret = libusb_bulk_transfer(m_handle, EP_Data_Out_Addr, buffer, length, &actual_length, 0);
     if(ret < 0) {

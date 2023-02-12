@@ -1,5 +1,5 @@
-#include "deviceusblogview.h"
-#include "ui_deviceusblogview.h"
+#include "devicepacketlogview.h"
+#include "ui_devicepacketlogview.h"
 
 #include "CustomWidgets/informationbox.h"
 #include "unit.h"
@@ -13,16 +13,16 @@
 
 using namespace std;
 
-DeviceUSBLogView::DeviceUSBLogView(QWidget *parent) :
+DevicePacketLogView::DevicePacketLogView(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::DeviceUSBLogView)
+    ui(new Ui::DevicePacketLogView)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
 
 //    connect(&log, &DeviceUSBLog::entryAdded, this, &DeviceUSBLogView::addEntry);
     connect(ui->buttonBox->button(QDialogButtonBox::Reset), &QPushButton::clicked, [=](){
-        DeviceUSBLog::getInstance().reset();
+        DevicePacketLog::getInstance().reset();
         updateTree();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
@@ -36,7 +36,7 @@ DeviceUSBLogView::DeviceUSBLogView(QWidget *parent) :
         }
         ofstream file;
         file.open(filename.toStdString());
-        file << setw(1) << DeviceUSBLog::getInstance().toJSON() << endl;
+        file << setw(1) << DevicePacketLog::getInstance().toJSON() << endl;
         file.close();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
@@ -62,21 +62,21 @@ DeviceUSBLogView::DeviceUSBLogView(QWidget *parent) :
             return;
         }
         file.close();
-        DeviceUSBLog::getInstance().fromJSON(j);
+        DevicePacketLog::getInstance().fromJSON(j);
         updateTree();
     });
 
     updateTree();
 }
 
-DeviceUSBLogView::~DeviceUSBLogView()
+DevicePacketLogView::~DevicePacketLogView()
 {
     delete ui;
 }
 
-void DeviceUSBLogView::updateTree()
+void DevicePacketLogView::updateTree()
 {
-    auto &log = DeviceUSBLog::getInstance();
+    auto &log = DevicePacketLog::getInstance();
 
     ui->tree->clear();
     ui->tree->setColumnCount(4);
@@ -96,13 +96,13 @@ void DeviceUSBLogView::updateTree()
     ui->status->setText(status);
 }
 
-void DeviceUSBLogView::addEntry(const DeviceUSBLog::LogEntry &e)
+void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
 {
     auto item = new QTreeWidgetItem;
     item->setData(0, Qt::DisplayRole, e.timestamp.toString(Qt::DateFormat::ISODateWithMs));
     item->setData(1, Qt::DisplayRole, e.serial.size() > 0 ? e.serial : "LibreVNA-GUI");
-    item->setData(2, Qt::DisplayRole, e.type == DeviceUSBLog::LogEntry::Type::Packet ? "Packet" : "Invalid bytes");
-    if(e.type == DeviceUSBLog::LogEntry::Type::Packet) {
+    item->setData(2, Qt::DisplayRole, e.type == DevicePacketLog::LogEntry::Type::Packet ? "Packet" : "Invalid bytes");
+    if(e.type == DevicePacketLog::LogEntry::Type::Packet) {
         item->setData(2, Qt::DisplayRole, "Packet");
 
         static const QStringList packetNames = {"None", "Datapoint", "SweepSettings", "ManualStatusV1", "ManualControlV1", "DeviceInfo", "FirmwarePacket", "Ack",

@@ -6,7 +6,6 @@
 #include "CustomWidgets/tilewidget.h"
 #include "scpi.h"
 #include "Traces/tracewidget.h"
-#include "Device/virtualdevice.h"
 
 #include <QObject>
 #include <QWidget>

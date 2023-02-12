@@ -45,7 +45,6 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         ui->StartupSAWindow->setEnabled(en);
         ui->StartupSADetector->setEnabled(en);
         ui->StartupSAAveraging->setEnabled(en);
-        ui->StartupSASignalID->setEnabled(en);
     };
 
     // Setup GUI connections and adjustments
@@ -246,7 +245,6 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupSAWindow->setCurrentIndex(p->Startup.SA.window);
     ui->StartupSADetector->setCurrentIndex(p->Startup.SA.detector);
     ui->StartupSAAveraging->setValue(p->Startup.SA.averaging);
-    ui->StartupSASignalID->setChecked(p->Startup.SA.signalID);
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteAllPorts);
     ui->AcquisitionAllowSegmentedSweep->setChecked(p->Acquisition.allowSegmentedSweep);
@@ -342,7 +340,6 @@ void PreferencesDialog::updateFromGUI()
     p->Startup.SA.RBW = ui->StartupSARBW->value();
     p->Startup.SA.window = ui->StartupSAWindow->currentIndex();
     p->Startup.SA.detector = ui->StartupSADetector->currentIndex();
-    p->Startup.SA.signalID = ui->StartupSASignalID->isChecked();
 
     p->Acquisition.alwaysExciteAllPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
     p->Acquisition.allowSegmentedSweep = ui->AcquisitionAllowSegmentedSweep->isChecked();

@@ -1,7 +1,7 @@
 #include "compounddeviceeditdialog.h"
 #include "ui_compounddeviceeditdialog.h"
 
-#include "../../device.h"
+#include "compounddriver.h"
 
 #include <QPushButton>
 #include <QDrag>
@@ -513,13 +513,9 @@ void DeviceFrame::update()
         port2->setCurrentIndex(0);
     }
 
-    auto devices = Device::GetDevices();
-    for(auto d : devices) {
+    for(auto d : CompoundDriver::getIndividualDeviceSerials()) {
         serial->addItem(d);
     }
-//    if(!serial->findText(s) >= 0) {
-//        serial->addItem(s);
-//    }
     serial->setCurrentText(s);
 
     if(dev->sync == LibreVNADriver::Synchronization::GUI) {
