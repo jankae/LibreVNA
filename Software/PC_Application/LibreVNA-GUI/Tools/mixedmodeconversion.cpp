@@ -119,10 +119,10 @@ void MixedModeConversion::selectionChanged()
         Destination(sources, prefix+"SDD21", "0.5*(S21-S23-S41+S43)"),
         Destination(sources, prefix+"SDD22", "0.5*(S22-S24-S42+S44)"),
 
-        Destination(sources, prefix+"SDC11", "0.5*(S11+S13-S31+S33)"),
-        Destination(sources, prefix+"SDC12", "0.5*(S12+S14-S32+S34)"),
-        Destination(sources, prefix+"SDC21", "0.5*(S21+S23-S41+S43)"),
-        Destination(sources, prefix+"SDC22", "0.5*(S22+S24-S42+S44)"),
+        Destination(sources, prefix+"SDC11", "0.5*(S11+S13-S31-S33)"),
+        Destination(sources, prefix+"SDC12", "0.5*(S12+S14-S32-S34)"),
+        Destination(sources, prefix+"SDC21", "0.5*(S21+S23-S41-S43)"),
+        Destination(sources, prefix+"SDC22", "0.5*(S22+S24-S42-S44)"),
 
         Destination(sources, prefix+"SCD11", "0.5*(S11-S13+S31-S33)"),
         Destination(sources, prefix+"SCD12", "0.5*(S12-S14+S32-S34)"),
