@@ -571,7 +571,8 @@ void TracePlot::traceDeleted(Trace *t)
 void TracePlot::triggerReplot()
 {
     auto now = QTime::currentTime();
-    if (lastUpdate.msecsTo(now) >= MinUpdateInterval) {
+    if (lastUpdate.msecsTo(now) >= MinUpdateInterval // last update was a sufficiently long time ago
+            || lastUpdate.msecsTo(now) < 0) { // or the time rolled over at midnight
         lastUpdate = now;
         replot();
     } else {
