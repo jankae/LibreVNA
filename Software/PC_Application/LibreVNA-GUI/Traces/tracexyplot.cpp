@@ -585,28 +585,10 @@ void TraceXYPlot::draw(QPainter &p)
                     if(!m->isVisible()) {
                         continue;
                     }
-                    double xPosition = m->getPosition();
-                    if (xPosition < xAxis.getRangeMin() || xPosition > xAxis.getRangeMax()) {
-                        // marker not in graph range
+                    auto point = markerToPixel(m);
+                    if(point.isNull()) {
                         continue;
                     }
-                    if(xPosition < t->minX() || xPosition > t->maxX()) {
-                        // marker not in trace range
-                        continue;
-                    }
-                    auto t = m->getTrace();
-                    auto index = t->index(xPosition);
-                    QPointF markerPoint;
-                    if(xPosition < t->sample(index).x && index > 0) {
-                        // marker is not located exactly at this point, interpolate display location
-                        QPointF l0 = traceToCoordinate(t, index - 1, yAxis[i]);
-                        QPointF l1 = traceToCoordinate(t, index, yAxis[i]);
-                        auto t0 = (xPosition - t->sample(index - 1).x) / (t->sample(index).x - t->sample(index - 1).x);
-                        markerPoint = l0 + (l1 - l0) * t0;
-                    } else {
-                        markerPoint = traceToCoordinate(t, t->index(xPosition), yAxis[i]);
-                    }
-                    auto point = plotValueToPixel(markerPoint, i);
 
                     for(auto line : m->getLines()) {
                         QPointF pF1 = QPointF(numeric_limits<double>::quiet_NaN(), numeric_limits<double>::quiet_NaN());
@@ -1062,8 +1044,31 @@ QPointF TraceXYPlot::pixelToPlotValue(QPoint pixel, int Yaxis)
 QPoint TraceXYPlot::markerToPixel(Marker *m)
 {
     auto t = m->getTrace();
-    QPointF plotPoint = traceToCoordinate(t, t->index(m->getPosition()), yAxis[0]);
-    return plotValueToPixel(plotPoint, 0);
+    double xPosition = m->getPosition();
+    double xPosGraph = xPosition;
+    if(xAxis.getType() == XAxis::Type::Distance) {
+        xPosGraph = t->timeToDistance(xPosition);
+    }
+    if (xPosGraph < xAxis.getRangeMin() || xPosGraph > xAxis.getRangeMax()) {
+        // marker not in graph range
+        return QPoint(0.0, 0.0);
+    }
+    if(xPosition < t->minX() || xPosition > t->maxX()) {
+        // marker not in trace range
+        return QPoint(0.0, 0.0);
+    }
+    auto index = t->index(xPosition);
+    QPointF markerPoint;
+    if(xPosition < t->sample(index).x && index > 0) {
+        // marker is not located exactly at this point, interpolate display location
+        QPointF l0 = traceToCoordinate(t, index - 1, yAxis[0]);
+        QPointF l1 = traceToCoordinate(t, index, yAxis[0]);
+        auto t0 = (xPosition - t->sample(index - 1).x) / (t->sample(index).x - t->sample(index - 1).x);
+        markerPoint = l0 + (l1 - l0) * t0;
+    } else {
+        markerPoint = traceToCoordinate(t, t->index(xPosition), yAxis[0]);
+    }
+    return plotValueToPixel(markerPoint, 0);
 }
 
 double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
