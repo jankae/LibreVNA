@@ -1117,7 +1117,6 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
     if(distance) {
         *distance = closestDistance;
     }
-    qDebug() << "Xpos: "<<closestXpos;
     return closestXpos;
 }
 
