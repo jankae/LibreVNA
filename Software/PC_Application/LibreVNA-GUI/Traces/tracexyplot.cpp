@@ -1090,6 +1090,9 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
             closestIndex = i;
         }
     }
+    if(xAxis.getType() == XAxis::Type::Distance) {
+        closestXpos = t->distanceToTime(closestXpos);
+    }
     closestDistance = sqrt(closestDistance);
     if(closestIndex > 0) {
         auto l1 = plotValueToPixel(traceToCoordinate(t, closestIndex - 1, yAxis[0]), 0);
@@ -1111,12 +1114,10 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
             closestXpos = t->sample(closestIndex).x + (t->sample(closestIndex+1).x - t->sample(closestIndex).x) * ratio;
         }
     }
-    if(xAxis.getType() == XAxis::Type::Distance) {
-        closestXpos = t->distanceToTime(closestXpos);
-    }
     if(distance) {
         *distance = closestDistance;
     }
+    qDebug() << "Xpos: "<<closestXpos;
     return closestXpos;
 }
 
