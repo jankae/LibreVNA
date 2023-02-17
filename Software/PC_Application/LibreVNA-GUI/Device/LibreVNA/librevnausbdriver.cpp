@@ -412,7 +412,7 @@ void LibreVNAUSBDriver::SearchDevices(std::function<bool (libusb_device_handle *
                                "On Windows this most likely means that you are already connected to "
                                "this device (is another instance of the application already runnning?)");
                 qWarning() << message;
-                InformationBox::ShowError("Error opening device", message);
+                InformationBox::ShowMessage("Error opening device", message);
             }
             continue;
         }
