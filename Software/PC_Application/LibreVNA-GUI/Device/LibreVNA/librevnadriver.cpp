@@ -541,7 +541,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
     }
 
     switch(packet.type) {
-    case Protocol::PacketType::DeviceInfo:
+    case Protocol::PacketType::DeviceInfo: {
         // Check protocol version
         if(packet.info.ProtocolVersion != Protocol::Version) {
             auto ret = InformationBox::AskQuestion("Warning",
@@ -562,7 +562,8 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
             Feature::SA, Feature::SATrackingGenerator, Feature::SATrackingOffset,
             Feature::ExtRefIn, Feature::ExtRefOut,
         };
-        info.Limits.VNA.ports = 2;
+        auto ports = packet.info.hardware_version == 0xFF ? 1 : 2;
+        info.Limits.VNA.ports = ports;
         info.Limits.VNA.minFreq = packet.info.limits_minFreq;
         info.Limits.VNA.maxFreq = harmonicMixing ? packet.info.limits_maxFreqHarmonic : packet.info.limits_maxFreq;
         info.Limits.VNA.maxPoints = packet.info.limits_maxPoints;
@@ -571,13 +572,13 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         info.Limits.VNA.mindBm = (double) packet.info.limits_cdbm_min / 100;
         info.Limits.VNA.maxdBm = (double) packet.info.limits_cdbm_max / 100;
 
-        info.Limits.Generator.ports = 2;
+        info.Limits.Generator.ports = ports;
         info.Limits.Generator.minFreq = packet.info.limits_minFreq;
         info.Limits.Generator.maxFreq = packet.info.limits_maxFreq;
         info.Limits.Generator.mindBm = (double) packet.info.limits_cdbm_min / 100;
         info.Limits.Generator.maxdBm = (double) packet.info.limits_cdbm_max / 100;
 
-        info.Limits.SA.ports = 2;
+        info.Limits.SA.ports = ports;
         info.Limits.SA.minFreq = packet.info.limits_minFreq;
         info.Limits.SA.maxFreq = packet.info.limits_maxFreq;
         info.Limits.SA.minRBW = packet.info.limits_minRBW;
@@ -587,6 +588,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
 
         limits_maxAmplitudePoints = packet.info.limits_maxAmplitudePoints;
         emit InfoUpdated();
+    }
         break;
     case Protocol::PacketType::DeviceStatusV1:
         lastStatus = packet.statusV1;

@@ -18,14 +18,23 @@ static constexpr int SSDPport = 1900;
 LibreVNATCPDriver::LibreVNATCPDriver()
     : LibreVNADriver()
 {
-//    dataSocket = nullptr;
-//    logSocket = nullptr;
     connected = false;
     m_receiveThread = nullptr;
 
 
     auto interfaces = QNetworkInterface::allInterfaces();
     for(auto i : interfaces) {
+        qDebug() << this << i.type();
+        switch(i.type()) {
+        case QNetworkInterface::Ethernet:
+        case QNetworkInterface::Wifi:
+        case QNetworkInterface::Virtual:
+        case QNetworkInterface::Unknown:
+            break;
+        default:
+            // skip all other interface types
+            continue;
+        }
         auto socket = new QUdpSocket();
         socket->bind(QHostAddress::AnyIPv4, 0, QUdpSocket::ShareAddress);
         socket->setMulticastInterface(i);
@@ -103,9 +112,6 @@ bool LibreVNATCPDriver::connectTo(QString serial)
     }
 
     // attempt to connect to the device
-//    dataSocket = new QTcpSocket();
-//    logSocket = new QTcpSocket();
-
     dataSocket.connectToHost(devInfo.address, DataPort);
     logSocket.connectToHost(devInfo.address, LogPort);
 
@@ -114,10 +120,6 @@ bool LibreVNATCPDriver::connectTo(QString serial)
         // at least one socket failed
         dataSocket.close();
         logSocket.close();
-//        delete dataSocket;
-//        delete logSocket;
-//        dataSocket = nullptr;
-//        logSocket = nullptr;
         InformationBox::ShowError("Error", "TCP connection timed out");
         return false;
     }

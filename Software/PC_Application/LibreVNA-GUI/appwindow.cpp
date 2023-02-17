@@ -17,7 +17,6 @@
 #include "VNA/vna.h"
 #include "Generator/generator.h"
 #include "SpectrumAnalyzer/spectrumanalyzer.h"
-#include "CustomWidgets/jsonpickerdialog.h"
 #include "CustomWidgets/informationbox.h"
 #include "Util/app_common.h"
 #include "about.h"
@@ -337,6 +336,20 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
             if(d->GetAvailableDevices().count(serial)) {
                 // this driver can connect to the device
                 connect(d, &DeviceDriver::InfoUpdated, this, &AppWindow::DeviceInfoUpdated, Qt::QueuedConnection);
+                connect(d, &DeviceDriver::LogLineReceived, &deviceLog, &DeviceLog::addLine);
+                connect(d, &DeviceDriver::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
+                connect(d, &DeviceDriver::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
+                connect(d, &DeviceDriver::FlagsUpdated, this, &AppWindow::DeviceFlagsUpdated);
+                connect(d, &DeviceDriver::releaseControl, this, [=](){
+                    if(lastActiveMode) {
+                        modeHandler->activate(lastActiveMode);
+                    }
+                });
+                connect(d, &DeviceDriver::acquireControl, this, [=](){
+                   lastActiveMode = modeHandler->getActiveMode();
+                   modeHandler->deactivate(lastActiveMode);
+                });
+
                 if(d->connectDevice(serial)) {
                     device = d;
                 } else {
@@ -351,19 +364,6 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
             return false;
         }
         UpdateStatusBar(AppWindow::DeviceStatusBar::Connected);
-        connect(device, &DeviceDriver::LogLineReceived, &deviceLog, &DeviceLog::addLine);
-        connect(device, &DeviceDriver::ConnectionLost, this, &AppWindow::DeviceConnectionLost);
-        connect(device, &DeviceDriver::StatusUpdated, this, &AppWindow::DeviceStatusUpdated);
-        connect(device, &DeviceDriver::FlagsUpdated, this, &AppWindow::DeviceFlagsUpdated);
-        connect(device, &DeviceDriver::releaseControl, this, [=](){
-            if(lastActiveMode) {
-                modeHandler->activate(lastActiveMode);
-            }
-        });
-        connect(device, &DeviceDriver::acquireControl, this, [=](){
-           lastActiveMode = modeHandler->getActiveMode();
-           modeHandler->deactivate(lastActiveMode);
-        });
 //        connect(vdevice, &VirtualDevice::NeedsFirmwareUpdate, this, &AppWindow::DeviceNeedsUpdate);
         ui->actionDisconnect->setEnabled(true);
         // find correct position to add device specific actions at
