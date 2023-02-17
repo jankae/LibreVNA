@@ -1542,66 +1542,81 @@ void VNA::createDefaultTracesAndGraphs(int ports)
         }
     };
 
-    vector<vector<TracePlot*>> plots;
-    for(int i=0;i<ports;i++) {
-        plots.push_back(vector<TracePlot*>());
-        for(int j=0;j<ports;j++) {
-            QString param = "S"+QString::number(i+1)+QString::number(j+1);
-            auto trace = new Trace(param, getDefaultColor(ports, i, j), param);
-            traceModel.addTrace(trace);
-            TracePlot *plot;
-            if(i == j) {
-                plot = new TraceSmithChart(traceModel);
-            } else {
-                plot = new TraceXYPlot(traceModel);
-            }
-            plot->updateSpan(settings.Freq.start, settings.Freq.stop);
-            plot->enableTrace(trace, true);
-            plots[i].push_back(plot);
-        }
-    }
-    // Add created graphs to tiles
-    tiles->clear();
-    TileWidget *tile = tiles;
-    for(int i=0;i<ports;i++) {
-        TileWidget *row;
-        if(i != ports - 1) {
-            // this is not the last row, split tile
-            tile->splitVertically();
-            row = tile->Child1();
-            tile = tile->Child2();
-        } else {
-            row = tile;
-        }
-        for(int j=0;j<ports;j++) {
-            TileWidget *graphTile;
-            if(j != ports - 1) {
-                row->splitHorizontally();
-                graphTile = row->Child1();
-                row = row->Child2();
-            } else {
-                graphTile = row;
-            }
-            graphTile->setPlot(plots[i][j]);
-        }
-    }
-    if(ports >= 3) {
-        // default split at the middle does not result in all plots being the same size, adjust
-        tile = tiles;
+    if(ports > 1) {
+        vector<vector<TracePlot*>> plots;
         for(int i=0;i<ports;i++) {
-            TileWidget *rowTile;
-            if(i < ports - 1) {
-                tile->setSplitPercentage(100 / (ports - i));
-                rowTile = tile->Child1();
-            } else {
-                rowTile = tile;
+            plots.push_back(vector<TracePlot*>());
+            for(int j=0;j<ports;j++) {
+                QString param = "S"+QString::number(i+1)+QString::number(j+1);
+                auto trace = new Trace(param, getDefaultColor(ports, i, j), param);
+                traceModel.addTrace(trace);
+                TracePlot *plot;
+                if(i == j) {
+                    plot = new TraceSmithChart(traceModel);
+                } else {
+                    plot = new TraceXYPlot(traceModel);
+                }
+                plot->updateSpan(settings.Freq.start, settings.Freq.stop);
+                plot->enableTrace(trace, true);
+                plots[i].push_back(plot);
             }
-            for(int j=0;j<ports-1;j++) {
-                rowTile->setSplitPercentage(100 / (ports - j));
-                rowTile = rowTile->Child2();
-            }
-            tile = tile->Child2();
         }
+        // Add created graphs to tiles
+        tiles->clear();
+        TileWidget *tile = tiles;
+        for(int i=0;i<ports;i++) {
+            TileWidget *row;
+            if(i != ports - 1) {
+                // this is not the last row, split tile
+                tile->splitVertically();
+                row = tile->Child1();
+                tile = tile->Child2();
+            } else {
+                row = tile;
+            }
+            for(int j=0;j<ports;j++) {
+                TileWidget *graphTile;
+                if(j != ports - 1) {
+                    row->splitHorizontally();
+                    graphTile = row->Child1();
+                    row = row->Child2();
+                } else {
+                    graphTile = row;
+                }
+                graphTile->setPlot(plots[i][j]);
+            }
+        }
+        if(ports >= 3) {
+            // default split at the middle does not result in all plots being the same size, adjust
+            tile = tiles;
+            for(int i=0;i<ports;i++) {
+                TileWidget *rowTile;
+                if(i < ports - 1) {
+                    tile->setSplitPercentage(100 / (ports - i));
+                    rowTile = tile->Child1();
+                } else {
+                    rowTile = tile;
+                }
+                for(int j=0;j<ports-1;j++) {
+                    rowTile->setSplitPercentage(100 / (ports - j));
+                    rowTile = rowTile->Child2();
+                }
+                tile = tile->Child2();
+            }
+        }
+    } else if(ports == 1) {
+        tiles->clear();
+        tiles->splitHorizontally();
+        auto trace = new Trace("S11", getDefaultColor(ports, 0, 0), "S11");
+        traceModel.addTrace(trace);
+        auto smithchart = new TraceSmithChart(traceModel);
+        auto xyplot = new TraceXYPlot(traceModel);
+        smithchart->updateSpan(settings.Freq.start, settings.Freq.stop);
+        smithchart->enableTrace(trace, true);
+        xyplot->updateSpan(settings.Freq.start, settings.Freq.stop);
+        xyplot->enableTrace(trace, true);
+        tiles->Child1()->setPlot(smithchart);
+        tiles->Child2()->setPlot(xyplot);
     }
 }
 
