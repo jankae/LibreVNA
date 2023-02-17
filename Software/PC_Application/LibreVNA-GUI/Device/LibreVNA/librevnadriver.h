@@ -182,6 +182,8 @@ public:
 
     unsigned int getMaxAmplitudePoints() const;
 
+    QString getFirmwareMagicString();
+
 signals:
     void receivedAnswer(const LibreVNADriver::TransmissionResult &result);
     void receivedPacket(const Protocol::PacketInfo& packet);
@@ -190,10 +192,12 @@ protected slots:
     void handleReceivedPacket(const Protocol::PacketInfo& packet);
 protected:
     void updateIFFrequencies();
+    QString hardwareVersionToString(uint8_t version);
 
     bool connected;
     QString serial;
     Info info;
+    uint8_t hardwareVersion;
     unsigned int limits_maxAmplitudePoints;
 
     Protocol::DeviceStatusV1 lastStatus;

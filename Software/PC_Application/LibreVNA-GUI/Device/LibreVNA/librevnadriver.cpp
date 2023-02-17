@@ -108,6 +108,7 @@ LibreVNADriver::LibreVNADriver()
     connected = false;
     skipOwnPacketHandling = false;
     SApoints = 0;
+    hardwareVersion = 0;
     setSynchronization(Synchronization::Disabled, false);
 
     auto manual = new QAction("Manual Control");
@@ -182,7 +183,7 @@ std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
 QString LibreVNADriver::getStatus()
 {
     QString ret;
-    ret.append("HW Rev.");
+    ret.append("HW ");
     ret.append(info.hardware_version);
     ret.append(" FW "+info.firmware_version);
     ret.append(" Temps: "+QString::number(lastStatus.temp_source)+"°C/"+QString::number(lastStatus.temp_LO1)+"°C/"+QString::number(lastStatus.temp_MCU)+"°C");
@@ -555,8 +556,9 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
             }
         }
 
+        hardwareVersion = packet.info.hardware_version;
         info.firmware_version = QString::number(packet.info.FW_major)+"."+QString::number(packet.info.FW_minor)+"."+QString::number(packet.info.FW_patch);
-        info.hardware_version = QString::number(packet.info.hardware_version)+QString(packet.info.HW_Revision);
+        info.hardware_version = hardwareVersionToString(packet.info.hardware_version)+" Rev."+QString(packet.info.HW_Revision);
         info.supportedFeatures = {
             Feature::VNA, Feature::VNAFrequencySweep, Feature::VNALogSweep, Feature::VNAPowerSweep, Feature::VNAZeroSpan,
             Feature::Generator,
@@ -658,9 +660,27 @@ void LibreVNADriver::updateIFFrequencies()
     SendPacket(p);
 }
 
+QString LibreVNADriver::hardwareVersionToString(uint8_t version)
+{
+    switch(version) {
+    case 1: return "1";
+    case 255: return "PT";
+    default: return "Unknown";
+    }
+}
+
 unsigned int LibreVNADriver::getMaxAmplitudePoints() const
 {
     return limits_maxAmplitudePoints;
+}
+
+QString LibreVNADriver::getFirmwareMagicString()
+{
+    switch(hardwareVersion) {
+    case 1: return "VNA!";
+    case 255: return "VNPT";
+    default: return "XXXX";
+    }
 }
 
 bool LibreVNADriver::sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb)

@@ -59,7 +59,7 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     }
     char header[24];
     file->read(header, sizeof(header));
-    if(strncmp(header, "VNA!", 4)) {
+    if(strncmp(header, dev->getFirmwareMagicString().toStdString().c_str(), 4)) {
         abortWithError("Invalid magic header constant");
         return;
     }
