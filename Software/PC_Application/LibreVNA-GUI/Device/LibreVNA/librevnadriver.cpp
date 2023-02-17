@@ -524,6 +524,7 @@ void LibreVNADriver::registerTypes()
 {
     qRegisterMetaType<Protocol::PacketInfo>();
     qRegisterMetaType<TransmissionResult>();
+    qRegisterMetaType<Protocol::AmplitudeCorrectionPoint>();
 }
 
 void LibreVNADriver::setSynchronization(LibreVNADriver::Synchronization s, bool master)

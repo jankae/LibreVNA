@@ -192,7 +192,7 @@ void AmplitudeCalDialog::setAmplitude(double amplitude, unsigned int point, bool
 
 void AmplitudeCalDialog::ReceivedPoint(Protocol::AmplitudeCorrectionPoint p)
 {
-//    qDebug() << "Received amplitude calibration point" << p.pointNum << "/" << p.totalPoints;
+    qDebug() << "Received amplitude calibration point" << p.pointNum << "/" << p.totalPoints;
     CorrectionPoint c;
     c.frequency = p.freq * 10.0;
     c.correctionPort1 = p.port1;
@@ -216,7 +216,7 @@ void AmplitudeCalDialog::LoadFromDevice()
     ui->load->setEnabled(false);
     dev->setIdle();
     RemoveAllPoints();
-//    qDebug() << "Asking for amplitude calibration";
+    qDebug() << "Asking for amplitude calibration";
     connect(this, &AmplitudeCalDialog::AmplitudeCorrectionPointReceived, this, &AmplitudeCalDialog::ReceivedPoint, Qt::QueuedConnection);
     dev->sendWithoutPayload(requestCommand());
     edited = false;

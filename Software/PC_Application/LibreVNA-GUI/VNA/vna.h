@@ -4,7 +4,6 @@
 #include "appwindow.h"
 #include "mode.h"
 #include "CustomWidgets/tilewidget.h"
-#include "Device/device.h"
 #include "Deembedding/deembedding.h"
 #include "scpi.h"
 #include "Traces/tracewidget.h"

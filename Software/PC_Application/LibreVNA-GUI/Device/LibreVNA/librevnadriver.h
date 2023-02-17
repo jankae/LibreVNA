@@ -160,7 +160,7 @@ public:
      * If the device driver uses a queued signal/slot connection with custom data types, these types must be registered before emitting the signal.
      * Register them within this function with qRegisterMetaType<Type>("Name");
      */
-    virtual void registerTypes();
+    virtual void registerTypes() override;
 
     enum class Synchronization {
         Disabled = 0,
@@ -222,6 +222,7 @@ protected:
 
 Q_DECLARE_METATYPE(Protocol::PacketInfo)
 Q_DECLARE_METATYPE(LibreVNADriver::TransmissionResult)
+Q_DECLARE_METATYPE(Protocol::AmplitudeCorrectionPoint);
 
 
 #endif // LIBREVNADRIVER_H
