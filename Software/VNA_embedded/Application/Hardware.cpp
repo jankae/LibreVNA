@@ -322,7 +322,7 @@ void HW::SetOutputUnlevel(bool unlev) {
 	unlevel = unlev;
 }
 
-void HW::getDeviceStatus(Protocol::DeviceStatusV1 *status, bool updateEvenWhenBusy) {
+void HW::getDeviceStatus(Protocol::DeviceStatus *status, bool updateEvenWhenBusy) {
 	if(activeMode == Mode::Idle || updateEvenWhenBusy) {
 		// updating values from FPGA allowed
 
@@ -339,21 +339,21 @@ void HW::getDeviceStatus(Protocol::DeviceStatusV1 *status, bool updateEvenWhenBu
 		if(limits.P1min < -ADC_LIMIT || limits.P1max > ADC_LIMIT
 				|| limits.P2min < -ADC_LIMIT || limits.P2max > ADC_LIMIT
 				|| limits.Rmin < -ADC_LIMIT || limits.Rmax > ADC_LIMIT) {
-			status->ADC_overload = true;
+			status->V1.ADC_overload = true;
 		} else {
-			status->ADC_overload = false;
+			status->V1.ADC_overload = false;
 		}
 		auto FPGA_status = FPGA::GetStatus();
-		status->LO1_locked = (FPGA_status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
-		status->source_locked = (FPGA_status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
-		status->extRefAvailable = Ref::available();
-		status->extRefInUse = extRefInUse;
-		status->unlevel = unlevel;
-		status->temp_LO1 = tempLO;
-		status->temp_source = tempSource;
+		status->V1.LO1_locked = (FPGA_status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
+		status->V1.source_locked = (FPGA_status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
+		status->V1.extRefAvailable = Ref::available();
+		status->V1.extRefInUse = extRefInUse;
+		status->V1.unlevel = unlevel;
+		status->V1.temp_LO1 = tempLO;
+		status->V1.temp_source = tempSource;
 		FPGA::ResetADCLimits();
 	}
-	status->temp_MCU = STM::getTemperature();
+	status->V1.temp_MCU = STM::getTemperature();
 }
 
 bool HW::Ref::available() {
@@ -413,10 +413,10 @@ void HW::Ref::update() {
 	}
 }
 
-void HW::setAcquisitionFrequencies(Protocol::AcquisitionFrequencySettings s) {
-	IF1 = s.IF1;
-	ADCprescaler = s.ADCprescaler;
-	DFTphaseInc = s.DFTphaseInc;
+void HW::setAcquisitionFrequencies(Protocol::DeviceConfig s) {
+	IF1 = s.V1.IF1;
+	ADCprescaler = s.V1.ADCprescaler;
+	DFTphaseInc = s.V1.DFTphaseInc;
 	float ADCrate = (float) FPGA::Clockrate / ADCprescaler;
 	IF2 = ADCrate * DFTphaseInc / 4096;
 	ADCsamplerate = ADCrate;
@@ -457,13 +457,13 @@ void HW::updateDeviceStatus() {
 			last_update = HAL_GetTick();
 			HW::Ref::update();
 			Protocol::PacketInfo packet;
-			packet.type = Protocol::PacketType::DeviceStatusV1;
+			packet.type = Protocol::PacketType::DeviceStatus;
 			// Enable PLL chips for temperature reading
 			bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
 			bool LOEn = FPGA::IsEnabled(FPGA::Periphery::LO1Chip);
 			FPGA::Enable(FPGA::Periphery::SourceChip);
 			FPGA::Enable(FPGA::Periphery::LO1Chip);
-			HW::getDeviceStatus(&packet.statusV1, true);
+			HW::getDeviceStatus(&packet.status, true);
 			// restore PLL state
 			FPGA::Enable(FPGA::Periphery::SourceChip, srcEn);
 			FPGA::Enable(FPGA::Periphery::LO1Chip, LOEn);

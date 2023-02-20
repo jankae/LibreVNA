@@ -5,7 +5,7 @@
 
 namespace Manual {
 
-void Setup(Protocol::ManualControlV1 m);
+void Setup(Protocol::ManualControl m);
 bool MeasurementDone(const FPGA::SamplingResult &result);
 void Work();
 void Stop();

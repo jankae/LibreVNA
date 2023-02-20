@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ManualControlDialog</class>
- <widget class="QDialog" name="ManualControlDialog">
+ <class>ManualControlDialogV1</class>
+ <widget class="QDialog" name="ManualControlDialogV1">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -776,7 +776,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="PortSwitchGroup"/>
   <buttongroup name="SourceSwitchGroup"/>
+  <buttongroup name="PortSwitchGroup"/>
  </buttongroups>
 </ui>

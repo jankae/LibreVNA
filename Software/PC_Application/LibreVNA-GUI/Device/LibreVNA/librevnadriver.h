@@ -191,7 +191,6 @@ signals:
 protected slots:
     void handleReceivedPacket(const Protocol::PacketInfo& packet);
 protected:
-    void updateIFFrequencies();
     QString hardwareVersionToString(uint8_t version);
 
     bool connected;
@@ -200,7 +199,7 @@ protected:
     uint8_t hardwareVersion;
     unsigned int limits_maxAmplitudePoints;
 
-    Protocol::DeviceStatusV1 lastStatus;
+    Protocol::DeviceStatus lastStatus;
 
     bool skipOwnPacketHandling;
     bool zerospan;
@@ -219,9 +218,6 @@ protected:
     double SARBWLimitForDFT;
     bool VNASuppressInvalidPeaks;
     bool VNAAdjustPowerLevel;
-    double IF1;
-    unsigned int ADCprescaler;
-    unsigned int DFTPhaseInc;
 };
 
 Q_DECLARE_METATYPE(Protocol::PacketInfo)

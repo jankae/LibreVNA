@@ -52,9 +52,6 @@ LibreVNATCPDriver::LibreVNATCPDriver()
     specificSettings.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "LibreVNATCPDriver.adjustPowerLevel", false));
     specificSettings.push_back(Savable::SettingDescription(&SAUseDFT, "LibreVNATCPDriver.useDFT", true));
     specificSettings.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "LibreVNATCPDriver.RBWlimitDFT", 3000));
-    specificSettings.push_back(Savable::SettingDescription(&IF1, "LibreVNATCPDriver.IF1", 62000000));
-    specificSettings.push_back(Savable::SettingDescription(&ADCprescaler, "LibreVNATCPDriver.ADCprescaler", 128));
-    specificSettings.push_back(Savable::SettingDescription(&DFTPhaseInc, "LibreVNATCPDriver.DFTPhaseInc", 1280));
 }
 
 QString LibreVNATCPDriver::getDriverName()
@@ -74,7 +71,9 @@ std::set<QString> LibreVNATCPDriver::GetAvailableDevices()
     data.append("\r\n"
                 "\r\n");
 
-    pruneDetectedDevices();
+    // just delete everything instead of keeping old entries (they will answer again if they are still available)
+    detectedDevices.clear();
+//    pruneDetectedDevices();
     for(auto s : ssdpSockets) {
         s->writeDatagram(data.data(), SSDPaddress, SSDPport);
     }
@@ -144,7 +143,7 @@ bool LibreVNATCPDriver::connectTo(QString serial)
 
     sendWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
     sendWithoutPayload(Protocol::PacketType::RequestDeviceStatus);
-    updateIFFrequencies();
+//    updateIFFrequencies();
     return true;
 }
 

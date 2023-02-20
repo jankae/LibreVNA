@@ -26,12 +26,15 @@ SOURCES +=  \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.cpp \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvff.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/librevnadriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/librevnatcpdriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.cpp \
-    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogV1.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvff.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/sourcecaldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddevice.cpp \
@@ -198,12 +201,15 @@ HEADERS += \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.h \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.h \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.h \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvff.h \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/librevnadriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/librevnatcpdriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.h \
-    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.h \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogV1.h \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvff.h \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/sourcecaldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddevice.h \
@@ -355,11 +361,14 @@ FORMS += \
     ../LibreVNA-GUI/Device/LibreVNA/addamplitudepointsdialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/automaticamplitudedialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvff.ui \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/frequencycaldialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/librevnadriversettingswidget.ui \
-    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogV1.ui \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvff.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlogview.ui \
     ../LibreVNA-GUI/Device/devicetcpdriversettings.ui \

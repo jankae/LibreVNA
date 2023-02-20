@@ -119,7 +119,7 @@ using AmplitudeSettings = struct _amplitudeSettings {
 AmplitudeSettings GetAmplitudeSettings(int16_t cdbm, uint64_t freq = 0, bool applyCorrections = false, bool port2 = false);
 
 bool GetTemps(uint8_t *source, uint8_t *lo);
-void getDeviceStatus(Protocol::DeviceStatusV1 *status, bool updateEvenWhenBusy = false);
+void getDeviceStatus(Protocol::DeviceStatus *status, bool updateEvenWhenBusy = false);
 namespace Ref {
 	bool available();
 	bool usingExternal();
@@ -129,7 +129,7 @@ namespace Ref {
 }
 
 // Acquisition frequency settings
-void setAcquisitionFrequencies(Protocol::AcquisitionFrequencySettings s);
+void setAcquisitionFrequencies(Protocol::DeviceConfig s);
 uint32_t getIF1();
 uint32_t getIF2();
 uint32_t getADCRate();

@@ -351,6 +351,7 @@ void SpectrumAnalyzer::initializeDevice()
     connect(window->getDevice(), &DeviceDriver::SAmeasurementReceived, this, &SpectrumAnalyzer::NewDatapoint, Qt::UniqueConnection);
 
     // Configure initial state of device
+    ConstrainAndUpdateFrequencies();
     SettingsChanged();
 }
 

@@ -1,5 +1,5 @@
-#ifndef MANUALCONTROLDIALOG_H
-#define MANUALCONTROLDIALOG_H
+#ifndef MANUALCONTROLDIALOGV1_H
+#define MANUALCONTROLDIALOGV1_H
 
 #include "librevnadriver.h"
 
@@ -7,16 +7,16 @@
 #include <complex>
 
 namespace Ui {
-class ManualControlDialog;
+class ManualControlDialogV1;
 }
 
-class ManualControlDialog : public QDialog
+class ManualControlDialogV1 : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ManualControlDialog(LibreVNADriver &dev, QWidget *parent = nullptr);
-    ~ManualControlDialog();
+    explicit ManualControlDialogV1(LibreVNADriver &dev, QWidget *parent = nullptr);
+    ~ManualControlDialogV1();
 
     void setHighSourceChipEnable(bool enable);
     bool getHighSourceChipEnable();
@@ -103,14 +103,14 @@ public:
     double getRefPhase();
 
 public slots:
-    void NewStatus(Protocol::ManualStatusV1 status);
+    void NewStatus(Protocol::ManualStatus status);
 
 private:
     void UpdateDevice();
-    Ui::ManualControlDialog *ui;
+    Ui::ManualControlDialogV1 *ui;
     LibreVNADriver &dev;
     std::complex<double> port1referenced;
     std::complex<double> port2referenced;
 };
 
-#endif // MANUALCONTROLDIALOG_H
+#endif // MANUALCONTROLDIALOGV1_H

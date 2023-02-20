@@ -99,9 +99,9 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
 	case PacketType::SweepSettings: payload_size = sizeof(packet.settings); break;
 	case PacketType::Reference:	payload_size = sizeof(packet.reference); break;
     case PacketType::DeviceInfo: payload_size = sizeof(packet.info); break;
-    case PacketType::DeviceStatusV1: payload_size = sizeof(packet.statusV1); break;
-    case PacketType::ManualStatusV1: payload_size = sizeof(packet.manualStatusV1); break;
-    case PacketType::ManualControlV1: payload_size = sizeof(packet.manual); break;
+    case PacketType::DeviceStatus: payload_size = sizeof(packet.status); break;
+    case PacketType::ManualStatus: payload_size = sizeof(packet.manualStatus); break;
+    case PacketType::ManualControl: payload_size = sizeof(packet.manual); break;
     case PacketType::FirmwarePacket: payload_size = sizeof(packet.firmware); break;
     case PacketType::Generator:	payload_size = sizeof(packet.generator); break;
     case PacketType::SpectrumAnalyzerSettings: payload_size = sizeof(packet.spectrumSettings); break;
@@ -109,7 +109,7 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::SourceCalPoint:
     case PacketType::ReceiverCalPoint: payload_size = sizeof(packet.amplitudePoint); break;
     case PacketType::FrequencyCorrection: payload_size = sizeof(packet.frequencyCorrection); break;
-    case PacketType::AcquisitionFrequencySettings: payload_size = sizeof(packet.acquisitionFrequencySettings); break;
+    case PacketType::DeviceConfiguration: payload_size = sizeof(packet.deviceConfig); break;
     case PacketType::Ack:
     case PacketType::PerformFirmwareUpdate:
     case PacketType::ClearFlash:
@@ -119,7 +119,7 @@ uint16_t Protocol::EncodePacket(const PacketInfo &packet, uint8_t *dest, uint16_
     case PacketType::RequestReceiverCal:
     case PacketType::SetIdle:
     case PacketType::RequestFrequencyCorrection:
-    case PacketType::RequestAcquisitionFrequencySettings:
+    case PacketType::RequestDeviceConfiguration:
     case PacketType::RequestDeviceStatus:
     case PacketType::SetTrigger:
     case PacketType::ClearTrigger:

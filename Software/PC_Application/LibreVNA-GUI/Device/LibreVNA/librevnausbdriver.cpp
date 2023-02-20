@@ -134,9 +134,6 @@ LibreVNAUSBDriver::LibreVNAUSBDriver()
     specificSettings.push_back(Savable::SettingDescription(&VNAAdjustPowerLevel, "LibreVNAUSBDriver.adjustPowerLevel", false));
     specificSettings.push_back(Savable::SettingDescription(&SAUseDFT, "LibreVNAUSBDriver.useDFT", true));
     specificSettings.push_back(Savable::SettingDescription(&SARBWLimitForDFT, "LibreVNAUSBDriver.RBWlimitDFT", 3000));
-    specificSettings.push_back(Savable::SettingDescription(&IF1, "LibreVNAUSBDriver.IF1", 62000000));
-    specificSettings.push_back(Savable::SettingDescription(&ADCprescaler, "LibreVNAUSBDriver.ADCprescaler", 128));
-    specificSettings.push_back(Savable::SettingDescription(&DFTPhaseInc, "LibreVNAUSBDriver.DFTPhaseInc", 1280));
 }
 
 QString LibreVNAUSBDriver::getDriverName()
@@ -230,7 +227,7 @@ bool LibreVNAUSBDriver::connectTo(QString serial)
 
     sendWithoutPayload(Protocol::PacketType::RequestDeviceInfo);
     sendWithoutPayload(Protocol::PacketType::RequestDeviceStatus);
-    updateIFFrequencies();
+//    updateIFFrequencies();
     return true;
 }
 

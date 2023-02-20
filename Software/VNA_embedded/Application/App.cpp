@@ -129,7 +129,7 @@ inline void App_Process() {
 					sweepActive = VNA::Setup(recv_packet.settings);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-				case Protocol::PacketType::ManualControlV1:
+				case Protocol::PacketType::ManualControl:
 					sweepActive = false;
 					last_measure_packet = recv_packet;
 					Manual::Setup(recv_packet.manual);
@@ -168,8 +168,8 @@ inline void App_Process() {
 				case Protocol::PacketType::RequestDeviceStatus: {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					Protocol::PacketInfo p;
-					p.type = Protocol::PacketType::DeviceStatusV1;
-					HW::getDeviceStatus(&p.statusV1);
+					p.type = Protocol::PacketType::DeviceStatus;
+					HW::getDeviceStatus(&p.status);
 					Communication::Send(p);
 				}
 					break;
@@ -263,19 +263,19 @@ inline void App_Process() {
 					Cal::setFrequencyCal(recv_packet.frequencyCorrection.ppm);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
-				case Protocol::PacketType::RequestAcquisitionFrequencySettings:
+				case Protocol::PacketType::RequestDeviceConfiguration:
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					{
 						Protocol::PacketInfo send;
-						send.type = Protocol::PacketType::AcquisitionFrequencySettings;
-						send.acquisitionFrequencySettings.IF1 = HW::getIF1();
-						send.acquisitionFrequencySettings.ADCprescaler = HW::getADCPrescaler();
-						send.acquisitionFrequencySettings.DFTphaseInc = HW::getDFTPhaseInc();
+						send.type = Protocol::PacketType::DeviceConfiguration;
+						send.deviceConfig.V1.IF1 = HW::getIF1();
+						send.deviceConfig.V1.ADCprescaler = HW::getADCPrescaler();
+						send.deviceConfig.V1.DFTphaseInc = HW::getDFTPhaseInc();
 						Communication::Send(send);
 					}
 					break;
-				case Protocol::PacketType::AcquisitionFrequencySettings:
-					HW::setAcquisitionFrequencies(recv_packet.acquisitionFrequencySettings);
+				case Protocol::PacketType::DeviceConfiguration:
+					HW::setAcquisitionFrequencies(recv_packet.deviceConfig);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::SetTrigger:

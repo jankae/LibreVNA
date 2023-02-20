@@ -160,16 +160,16 @@ QString CompoundDriver::getSerial()
 std::set<DeviceDriver::Flag> CompoundDriver::getFlags()
 {
     std::set<DeviceDriver::Flag> ret;
-    if(lastStatus.extRefInUse) {
+    if(lastStatus.V1.extRefInUse) {
         ret.insert(Flag::ExtRef);
     }
-    if(!lastStatus.source_locked || !lastStatus.LO1_locked) {
+    if(!lastStatus.V1.source_locked || !lastStatus.V1.LO1_locked) {
         ret.insert(Flag::Unlocked);
     }
-    if(lastStatus.unlevel) {
+    if(lastStatus.V1.unlevel) {
         ret.insert(Flag::Unlevel);
     }
-    if(lastStatus.ADC_overload) {
+    if(lastStatus.V1.ADC_overload) {
         ret.insert(Flag::Overload);
     }
     return ret;
@@ -181,13 +181,13 @@ QString CompoundDriver::getStatus()
     ret.append("HW Rev.");
     ret.append(info.hardware_version);
     ret.append(" FW "+info.firmware_version);
-    ret.append(" Temps: "+QString::number(lastStatus.temp_source)+"°C/"+QString::number(lastStatus.temp_LO1)+"°C/"+QString::number(lastStatus.temp_MCU)+"°C");
+    ret.append(" Temps: "+QString::number(lastStatus.V1.temp_source)+"°C/"+QString::number(lastStatus.V1.temp_LO1)+"°C/"+QString::number(lastStatus.V1.temp_MCU)+"°C");
     ret.append(" Reference:");
-    if(lastStatus.extRefInUse) {
+    if(lastStatus.V1.extRefInUse) {
         ret.append("External");
     } else {
         ret.append("Internal");
-        if(lastStatus.extRefAvailable) {
+        if(lastStatus.V1.extRefAvailable) {
             ret.append(" (External available)");
         }
     }
@@ -495,8 +495,8 @@ void CompoundDriver::createCompoundJSON()
 void CompoundDriver::incomingPacket(LibreVNADriver *device, const Protocol::PacketInfo &p)
 {
     switch(p.type) {
-    case Protocol::PacketType::DeviceStatusV1:
-        updatedStatus(device, p.statusV1);
+    case Protocol::PacketType::DeviceStatus:
+        updatedStatus(device, p.status);
         break;
     case Protocol::PacketType::VNADatapoint:
         datapointReceivecd(device, p.VNAdatapoint);
@@ -557,7 +557,7 @@ void CompoundDriver::updatedInfo(LibreVNADriver *device)
     }
 }
 
-void CompoundDriver::updatedStatus(LibreVNADriver *device, const Protocol::DeviceStatusV1 &status)
+void CompoundDriver::updatedStatus(LibreVNADriver *device, const Protocol::DeviceStatus &status)
 {
     deviceStatus[device] = status;
     if(deviceStatus.size() == devices.size()) {
@@ -567,16 +567,16 @@ void CompoundDriver::updatedStatus(LibreVNADriver *device, const Protocol::Devic
             if(i==0) {
                 lastStatus = devStat;
             } else {
-                lastStatus.extRefAvailable &= devStat.extRefAvailable;
-                lastStatus.extRefInUse |= devStat.extRefInUse;
-                lastStatus.FPGA_configured &= devStat.FPGA_configured;
-                lastStatus.source_locked &= devStat.source_locked;
-                lastStatus.LO1_locked &= devStat.LO1_locked;
-                lastStatus.ADC_overload |= devStat.ADC_overload;
-                lastStatus.unlevel |= devStat.unlevel;
-                lastStatus.temp_source = std::max(lastStatus.temp_source, devStat.temp_source);
-                lastStatus.temp_LO1 = std::max(lastStatus.temp_LO1, devStat.temp_LO1);
-                lastStatus.temp_MCU = std::max(lastStatus.temp_MCU, devStat.temp_MCU);
+                lastStatus.V1.extRefAvailable &= devStat.V1.extRefAvailable;
+                lastStatus.V1.extRefInUse |= devStat.V1.extRefInUse;
+                lastStatus.V1.FPGA_configured &= devStat.V1.FPGA_configured;
+                lastStatus.V1.source_locked &= devStat.V1.source_locked;
+                lastStatus.V1.LO1_locked &= devStat.V1.LO1_locked;
+                lastStatus.V1.ADC_overload |= devStat.V1.ADC_overload;
+                lastStatus.V1.unlevel |= devStat.V1.unlevel;
+                lastStatus.V1.temp_source = std::max(lastStatus.V1.temp_source, devStat.V1.temp_source);
+                lastStatus.V1.temp_LO1 = std::max(lastStatus.V1.temp_LO1, devStat.V1.temp_LO1);
+                lastStatus.V1.temp_MCU = std::max(lastStatus.V1.temp_MCU, devStat.V1.temp_MCU);
             }
         }
         emit StatusUpdated();

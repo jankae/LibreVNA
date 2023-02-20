@@ -724,6 +724,7 @@ void VNA::initializeDevice()
         removeDefaultCal->setEnabled(false);
     }
     // Configure initial state of device
+    ConstrainAndUpdateFrequencies();
     SettingsChanged();
     emit deviceInitialized();
     if(window->getDevice() && !cal.validForDevice(window->getDevice()->getSerial())) {

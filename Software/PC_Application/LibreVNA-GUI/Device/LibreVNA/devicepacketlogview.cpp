@@ -10,6 +10,8 @@
 #include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QHostAddress>
+#include <QtEndian>
 
 using namespace std;
 
@@ -105,11 +107,11 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
     if(e.type == DevicePacketLog::LogEntry::Type::Packet) {
         item->setData(2, Qt::DisplayRole, "Packet");
 
-        static const QStringList packetNames = {"None", "Datapoint", "SweepSettings", "ManualStatusV1", "ManualControlV1", "DeviceInfo", "FirmwarePacket", "Ack",
+        static const QStringList packetNames = {"None", "Datapoint", "SweepSettings", "ManualStatus", "ManualControl", "DeviceInfo", "FirmwarePacket", "Ack",
                                                "ClearFlash", "PerformFirmwareUpdate", "Nack", "Reference", "Generator", "SpectrumAnalyzerSettings",
                                                "SpectrumAnalyzerResult", "RequestDeviceInfo", "RequestSourceCal", "RequestReceiverCal", "SourceCalPoint",
-                                               "ReceiverCalPoint", "SetIdle", "RequestFrequencyCorrection", "FrequencyCorrection", "RequestAcquisitionFrequencySettings",
-                                               "AcquisitionFrequencySettings", "DeviceStatusV1", "RequestDeviceStatus", "VNADatapoint", "SetTrigger", "ClearTrigger"};
+                                               "ReceiverCalPoint", "SetIdle", "RequestFrequencyCorrection", "FrequencyCorrection", "RequestDeviceConfiguration",
+                                               "DeviceConfiguration", "DeviceStatus", "RequestDeviceStatus", "VNADatapoint", "SetTrigger", "ClearTrigger"};
 
         item->setData(3, Qt::DisplayRole, "Type "+QString::number((int)e.p->type)+"("+packetNames[(int)e.p->type]+")");
         auto addDouble = [=](QTreeWidgetItem *parent, QString name, double value, QString unit = "", int precision = 8) {
@@ -177,18 +179,31 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addInteger(item, "Active port", s.activePort);
         }
             break;
-        case Protocol::PacketType::DeviceStatusV1: {
-            Protocol::DeviceStatusV1 s = e.p->statusV1;
-            addBool(item, "External reference available", s.extRefAvailable);
-            addBool(item, "External reference in use", s.extRefInUse);
-            addBool(item, "FPGA configured", s.FPGA_configured);
-            addBool(item, "Source locked", s.source_locked);
-            addBool(item, "1.LO locked", s.LO1_locked);
-            addBool(item, "ADC overload", s.ADC_overload);
-            addBool(item, "Unlevel", s.unlevel);
-            addInteger(item, "Source temperature", s.temp_source);
-            addInteger(item, "1.LO temperature", s.temp_LO1);
-            addInteger(item, "MCU temperature", s.temp_MCU);
+        case Protocol::PacketType::DeviceStatus: {
+            auto s = e.p->status.V1;
+            auto V1 = new QTreeWidgetItem();
+            V1->setData(2, Qt::DisplayRole, "V1");
+            item->addChild(V1);
+            addBool(V1, "External reference available", s.extRefAvailable);
+            addBool(V1, "External reference in use", s.extRefInUse);
+            addBool(V1, "FPGA configured", s.FPGA_configured);
+            addBool(V1, "Source locked", s.source_locked);
+            addBool(V1, "1.LO locked", s.LO1_locked);
+            addBool(V1, "ADC overload", s.ADC_overload);
+            addBool(V1, "Unlevel", s.unlevel);
+            addInteger(V1, "Source temperature", s.temp_source);
+            addInteger(V1, "1.LO temperature", s.temp_LO1);
+            addInteger(V1, "MCU temperature", s.temp_MCU);
+
+            auto sFF = e.p->status.VFF;
+            auto VFF = new QTreeWidgetItem();
+            VFF->setData(2, Qt::DisplayRole, "VFF");
+            item->addChild(VFF);
+            addBool(VFF, "Source locked", sFF.source_locked);
+            addBool(VFF, "LO locked", sFF.LO_locked);
+            addBool(VFF, "ADC overload", sFF.ADC_overload);
+            addBool(VFF, "Unlevel", sFF.unlevel);
+            addInteger(VFF, "MCU temperature", s.temp_MCU);
         }
             break;
         case Protocol::PacketType::DeviceInfo: {
@@ -212,8 +227,8 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addDouble(item, "Maximum harmonic frequency", s.limits_maxFreqHarmonic, "Hz");
         }
             break;
-        case Protocol::PacketType::ManualControlV1:
-        case Protocol::PacketType::ManualStatusV1:
+        case Protocol::PacketType::ManualControl:
+        case Protocol::PacketType::ManualStatus:
             // TODO
             break;
         case Protocol::PacketType::SpectrumAnalyzerSettings: {
@@ -295,11 +310,23 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addDouble(item, "ppm", s.ppm, "");
         }
             break;
-        case Protocol::PacketType::AcquisitionFrequencySettings: {
-            Protocol::AcquisitionFrequencySettings s = e.p->acquisitionFrequencySettings;
-            addDouble(item, "1.IF", s.IF1, "Hz");
-            addInteger(item, "ADC prescaler", s.ADCprescaler);
-            addInteger(item, "DFT phase increment", s.DFTphaseInc);
+        case Protocol::PacketType::DeviceConfiguration: {
+            auto s1 = e.p->deviceConfig.V1;
+            auto V1 = new QTreeWidgetItem();
+            V1->setData(2, Qt::DisplayRole, "V1");
+            item->addChild(V1);
+            addDouble(V1, "1.IF", s1.IF1, "Hz");
+            addInteger(V1, "ADC prescaler", s1.ADCprescaler);
+            addInteger(V1, "DFT phase increment", s1.DFTphaseInc);
+
+            auto sFF = e.p->deviceConfig.VFF;
+            auto VFF = new QTreeWidgetItem();
+            VFF->setData(2, Qt::DisplayRole, "VFF");
+            item->addChild(VFF);
+            addBool(VFF, "DHCP enabled", sFF.dhcp);
+            addString(VFF, "IP", QHostAddress(qFromBigEndian(sFF.ip)).toString());
+            addString(VFF, "Mask", QHostAddress(qFromBigEndian(sFF.mask)).toString());
+            addString(VFF, "Gateway", QHostAddress(qFromBigEndian(sFF.gw)).toString());
         }
             break;
         default:

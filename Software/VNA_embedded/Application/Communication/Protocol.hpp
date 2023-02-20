@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <cstdint>
 #include <cstring>
 #include <limits>
@@ -210,62 +209,112 @@ using DeviceInfo = struct _deviceInfo {
     uint64_t limits_maxFreqHarmonic;
 };
 
-using DeviceStatusV1 = struct _deviceStatusV1 {
-    uint8_t extRefAvailable:1;
-    uint8_t extRefInUse:1;
-    uint8_t FPGA_configured:1;
-    uint8_t source_locked:1;
-    uint8_t LO1_locked:1;
-    uint8_t ADC_overload:1;
-    uint8_t unlevel:1;
-	uint8_t temp_source;
-	uint8_t temp_LO1;
-	uint8_t temp_MCU;
+using DeviceStatus = struct _deviceStatus {
+	union {
+		struct {
+		    uint8_t extRefAvailable:1;
+		    uint8_t extRefInUse:1;
+		    uint8_t FPGA_configured:1;
+		    uint8_t source_locked:1;
+		    uint8_t LO1_locked:1;
+		    uint8_t ADC_overload:1;
+		    uint8_t unlevel:1;
+			uint8_t temp_source;
+			uint8_t temp_LO1;
+			uint8_t temp_MCU;
+		} V1;
+		struct {
+			uint8_t source_locked:1;
+			uint8_t LO_locked:1;
+			uint8_t ADC_overload:1;
+			uint8_t unlevel:1;
+			uint8_t temp_MCU;
+		} VFF;
+	};
 };
 
 
-using ManualStatusV1 = struct _manualstatusV1 {
-        int16_t port1min, port1max;
-        int16_t port2min, port2max;
-        int16_t refmin, refmax;
-        float port1real, port1imag;
-        float port2real, port2imag;
-        float refreal, refimag;
-        uint8_t temp_source;
-        uint8_t temp_LO;
-        uint8_t source_locked :1;
-        uint8_t LO_locked :1;
+using ManualStatus = struct _manualstatus {
+	union {
+		struct {
+	        int16_t port1min, port1max;
+	        int16_t port2min, port2max;
+	        int16_t refmin, refmax;
+	        float port1real, port1imag;
+	        float port2real, port2imag;
+	        float refreal, refimag;
+	        uint8_t temp_source;
+	        uint8_t temp_LO;
+	        uint8_t source_locked :1;
+	        uint8_t LO_locked :1;
+		} V1;
+		struct {
+	        int16_t portmin, portmax;
+	        int16_t refmin, refmax;
+	        float portreal, portimag;
+	        float refreal, refimag;
+	        uint8_t source_locked :1;
+	        uint8_t LO_locked :1;
+		} VFF;
+	};
 };
 
-using ManualControlV1 = struct _manualControlV1 {
-    // Highband Source
-    uint8_t SourceHighCE :1;
-    uint8_t SourceHighRFEN :1;
-    uint8_t SourceHighPower :2;
-    uint8_t SourceHighLowpass :2;
-    uint64_t SourceHighFrequency;
-    // Lowband Source
-    uint8_t SourceLowEN :1;
-    uint8_t SourceLowPower :2;
-    uint32_t SourceLowFrequency;
-    // Source signal path
-    uint8_t attenuator :7;
-    uint8_t SourceHighband :1;
-    uint8_t AmplifierEN :1;
-    uint8_t PortSwitch :1;
-    // LO1
-    uint8_t LO1CE :1;
-    uint8_t LO1RFEN :1;
-    uint64_t LO1Frequency;
-    // LO2
-    uint8_t LO2EN :1;
-    uint32_t LO2Frequency;
-    // Acquisition
-    uint8_t Port1EN :1;
-    uint8_t Port2EN :1;
-    uint8_t RefEN :1;
-    uint32_t Samples;
-    uint8_t WindowType :2;
+using ManualControl = struct _manualControl {
+	union {
+		struct {
+		    // Highband Source
+		    uint8_t SourceHighCE :1;
+		    uint8_t SourceHighRFEN :1;
+		    uint8_t SourceHighPower :2;
+		    uint8_t SourceHighLowpass :2;
+		    uint64_t SourceHighFrequency;
+		    // Lowband Source
+		    uint8_t SourceLowEN :1;
+		    uint8_t SourceLowPower :2;
+		    uint32_t SourceLowFrequency;
+		    // Source signal path
+		    uint8_t attenuator :7;
+		    uint8_t SourceHighband :1;
+		    uint8_t AmplifierEN :1;
+		    uint8_t PortSwitch :1;
+		    // LO1
+		    uint8_t LO1CE :1;
+		    uint8_t LO1RFEN :1;
+		    uint64_t LO1Frequency;
+		    // LO2
+		    uint8_t LO2EN :1;
+		    uint32_t LO2Frequency;
+		    // Acquisition
+		    uint8_t Port1EN :1;
+		    uint8_t Port2EN :1;
+		    uint8_t RefEN :1;
+		    uint32_t Samples;
+		    uint8_t WindowType :2;
+		} V1;
+		struct {
+		    // Source
+		    uint8_t SourceCE :1;
+		    uint8_t SourceRFEN :1;
+            uint8_t SourcePower :3;
+            uint64_t SourceFrequency;
+		    // Source signal path
+		    uint8_t attenuator :7;
+            uint8_t SourceAmplifierEN :1;
+		    // LO
+		    uint8_t LOCE :1;
+		    uint8_t LORFEN :1;
+            uint8_t LOAmplifierEN :1;
+            uint8_t LOexternal :1;
+            uint64_t LOFrequency;
+		    // Acquisition
+		    uint8_t PortEN :1;
+		    uint8_t RefEN :1;
+		    uint8_t WindowType :2;
+		    uint8_t PortGain :4;
+		    uint8_t RefGain :4;
+		    uint16_t Samples;
+		} VFF;
+	};
 };
 
 using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
@@ -327,18 +376,28 @@ using FrequencyCorrection = struct _frequencycorrection {
 	float ppm;
 };
 
-using AcquisitionFrequencySettings = struct _acquisitionfrequencysettigns {
-	uint32_t IF1;
-	uint8_t ADCprescaler;
-	uint16_t DFTphaseInc;
+using DeviceConfig = struct _deviceconfig {
+	union {
+		struct {
+			uint32_t IF1;
+			uint8_t ADCprescaler;
+			uint16_t DFTphaseInc;
+		} V1;
+		struct {
+            uint32_t ip;
+            uint32_t mask;
+            uint32_t gw;
+			uint8_t dhcp :1;
+		} VFF;
+	};
 };
 
 enum class PacketType : uint8_t {
 	None = 0,
 	//Datapoint = 1, // Deprecated, replaced by VNADatapoint
 	SweepSettings = 2,
-    ManualStatusV1 = 3,
-    ManualControlV1 = 4,
+    ManualStatus = 3,
+    ManualControl = 4,
     DeviceInfo = 5,
     FirmwarePacket = 6,
     Ack = 7,
@@ -357,9 +416,9 @@ enum class PacketType : uint8_t {
 	SetIdle = 20,
 	RequestFrequencyCorrection = 21,
 	FrequencyCorrection = 22,
-	RequestAcquisitionFrequencySettings = 23,
-	AcquisitionFrequencySettings = 24,
-	DeviceStatusV1 = 25,
+	RequestDeviceConfiguration = 23,
+	DeviceConfiguration = 24,
+	DeviceStatus = 25,
 	RequestDeviceStatus = 26,
 	VNADatapoint = 27,
 	SetTrigger = 28,
@@ -376,16 +435,16 @@ using PacketInfo = struct _packetinfo {
 		SweepSettings settings;
 		ReferenceSettings reference;
 		GeneratorSettings generator;
-		DeviceStatusV1 statusV1;
+		DeviceStatus status;
         DeviceInfo info;
-        ManualControlV1 manual;
+        ManualControl manual;
         FirmwarePacket firmware;
-        ManualStatusV1 manualStatusV1;
+        ManualStatus manualStatus;
         SpectrumAnalyzerSettings spectrumSettings;
         SpectrumAnalyzerResult spectrumResult;
         AmplitudeCorrectionPoint amplitudePoint;
         FrequencyCorrection frequencyCorrection;
-        AcquisitionFrequencySettings acquisitionFrequencySettings;
+        DeviceConfig deviceConfig;
         /*
          * When encoding: Pointer may go invalid after call to EncodePacket
          * When decoding: VNADatapoint is created on heap by DecodeBuffer, freeing is up to the caller

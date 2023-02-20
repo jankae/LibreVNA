@@ -1,6 +1,9 @@
 #include "librevnadriver.h"
 
-#include "manualcontroldialog.h"
+#include "manualcontroldialogV1.h"
+#include "manualcontroldialogvff.h"
+#include "deviceconfigurationdialogv1.h"
+#include "deviceconfigurationdialogvff.h"
 #include "firmwareupdatedialog.h"
 #include "frequencycaldialog.h"
 #include "sourcecaldialog.h"
@@ -113,10 +116,37 @@ LibreVNADriver::LibreVNADriver()
 
     auto manual = new QAction("Manual Control");
     connect(manual, &QAction::triggered, this, [=](){
-        auto d = new ManualControlDialog(*this);
-        d->show();
+        QDialog *d = nullptr;
+        switch(hardwareVersion) {
+        case 1:
+            d = new ManualControlDialogV1(*this);
+            break;
+        case 0xFF:
+            d = new ManualControlDialogVFF(*this);
+            break;
+        }
+        if(d) {
+            d->show();
+        }
     });
     specificActions.push_back(manual);
+
+    auto config = new QAction("Configuration");
+    connect(config, &QAction::triggered, this, [=](){
+        QDialog *d = nullptr;
+        switch(hardwareVersion) {
+        case 1:
+            d = new DeviceConfigurationDialogV1(*this);
+            break;
+        case 0xFF:
+            d = new DeviceConfigurationDialogVFF(*this);
+            break;
+        }
+        if(d) {
+            d->show();
+        }
+    });
+    specificActions.push_back(config);
 
     auto update = new QAction("Firmware Update");
     connect(update, &QAction::triggered, this, [=](){
@@ -165,17 +195,32 @@ LibreVNADriver::LibreVNADriver()
 std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
 {
     std::set<DeviceDriver::Flag> ret;
-    if(lastStatus.extRefInUse) {
-        ret.insert(Flag::ExtRef);
-    }
-    if(!lastStatus.source_locked || !lastStatus.LO1_locked) {
-        ret.insert(Flag::Unlocked);
-    }
-    if(lastStatus.unlevel) {
-        ret.insert(Flag::Unlevel);
-    }
-    if(lastStatus.ADC_overload) {
-        ret.insert(Flag::Overload);
+    switch(hardwareVersion) {
+    case 1:
+        if(lastStatus.V1.extRefInUse) {
+            ret.insert(Flag::ExtRef);
+        }
+        if(!lastStatus.V1.source_locked || !lastStatus.V1.LO1_locked) {
+            ret.insert(Flag::Unlocked);
+        }
+        if(lastStatus.V1.unlevel) {
+            ret.insert(Flag::Unlevel);
+        }
+        if(lastStatus.V1.ADC_overload) {
+            ret.insert(Flag::Overload);
+        }
+        break;
+    case 0xFF:
+        if(!lastStatus.VFF.source_locked || !lastStatus.VFF.LO_locked) {
+            ret.insert(Flag::Unlocked);
+        }
+        if(lastStatus.VFF.unlevel) {
+            ret.insert(Flag::Unlevel);
+        }
+        if(lastStatus.VFF.ADC_overload) {
+            ret.insert(Flag::Overload);
+        }
+        break;
     }
     return ret;
 }
@@ -186,15 +231,22 @@ QString LibreVNADriver::getStatus()
     ret.append("HW ");
     ret.append(info.hardware_version);
     ret.append(" FW "+info.firmware_version);
-    ret.append(" Temps: "+QString::number(lastStatus.temp_source)+"°C/"+QString::number(lastStatus.temp_LO1)+"°C/"+QString::number(lastStatus.temp_MCU)+"°C");
-    ret.append(" Reference:");
-    if(lastStatus.extRefInUse) {
-        ret.append("External");
-    } else {
-        ret.append("Internal");
-        if(lastStatus.extRefAvailable) {
-            ret.append(" (External available)");
+    switch (hardwareVersion) {
+    case 1:
+        ret.append(" Temps: "+QString::number(lastStatus.V1.temp_source)+"°C/"+QString::number(lastStatus.V1.temp_LO1)+"°C/"+QString::number(lastStatus.V1.temp_MCU)+"°C");
+        ret.append(" Reference:");
+        if(lastStatus.V1.extRefInUse) {
+            ret.append("External");
+        } else {
+            ret.append("Internal");
+            if(lastStatus.V1.extRefAvailable) {
+                ret.append(" (External available)");
+            }
         }
+        break;
+    case 0xFF:
+        ret.append("MCU Temp: "+QString::number(lastStatus.VFF.temp_MCU)+"°C");
+        break;
     }
     return ret;
 }
@@ -218,35 +270,6 @@ QWidget *LibreVNADriver::createSettingsWidget()
     ui->DFTlimitRBW->setPrefixes(" kM");
     ui->DFTlimitRBW->setPrecision(3);
     ui->DFTlimitRBW->setValue(SARBWLimitForDFT);
-
-    auto updateADCRate = [=]() {
-        // update ADC rate, see FPGA protocol for calculation
-        ui->ADCRate->setValue(102400000.0 / ui->ADCpresc->value());
-    };
-    auto updateIF2 = [=]() {
-        auto ADCrate = ui->ADCRate->value();
-        ui->IF2->setValue(ADCrate * ui->ADCphaseInc->value() / 4096);
-    };
-
-    connect(ui->ADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateADCRate);
-    connect(ui->ADCpresc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
-    connect(ui->ADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), updateIF2);
-
-    ui->IF1->setUnit("Hz");
-    ui->IF1->setPrefixes(" kM");
-    ui->IF1->setPrecision(5);
-    ui->ADCRate->setUnit("Hz");
-    ui->ADCRate->setPrefixes(" kM");
-    ui->ADCRate->setPrecision(5);
-    ui->IF2->setUnit("Hz");
-    ui->IF2->setPrefixes(" kM");
-    ui->IF2->setPrecision(5);
-    ui->IF1->setValue(IF1);
-    ui->ADCpresc->setValue(ADCprescaler);
-    ui->ADCphaseInc->setValue(DFTPhaseInc);
-
-    updateADCRate();
-    updateIF2();
 
     connect(ui->UseHarmonicMixing, &QCheckBox::toggled, [=](bool enabled) {
        if(enabled) {
@@ -279,15 +302,6 @@ QWidget *LibreVNADriver::createSettingsWidget()
     });
     connect(ui->DFTlimitRBW, &SIUnitEdit::valueChanged, this, [=](){
        SARBWLimitForDFT = ui->DFTlimitRBW->value();
-    });
-    connect(ui->IF1, &SIUnitEdit::valueChanged, this, [=](){
-        IF1 = ui->IF1->value();
-    });
-    connect(ui->ADCpresc, qOverload<int>(&QSpinBox::valueChanged), this, [=](){
-        ADCprescaler = ui->ADCpresc->value();
-    });
-    connect(ui->ADCphaseInc, qOverload<int>(&QSpinBox::valueChanged), this, [=](){
-        DFTPhaseInc = ui->ADCphaseInc->value();
     });
 
     return w;
@@ -593,8 +607,8 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         emit InfoUpdated();
     }
         break;
-    case Protocol::PacketType::DeviceStatusV1:
-        lastStatus = packet.statusV1;
+    case Protocol::PacketType::DeviceStatus:
+        lastStatus = packet.status;
         emit StatusUpdated();
         emit FlagsUpdated();
         break;
@@ -648,16 +662,6 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
     default:
         break;
     }
-}
-
-void LibreVNADriver::updateIFFrequencies()
-{
-    Protocol::PacketInfo p;
-    p.type = Protocol::PacketType::AcquisitionFrequencySettings;
-    p.acquisitionFrequencySettings.IF1 = IF1;
-    p.acquisitionFrequencySettings.ADCprescaler = ADCprescaler;
-    p.acquisitionFrequencySettings.DFTphaseInc = DFTPhaseInc;
-    SendPacket(p);
 }
 
 QString LibreVNADriver::hardwareVersionToString(uint8_t version)

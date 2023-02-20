@@ -23,6 +23,8 @@ HEADERS += \
     Device/LibreVNA/Compound/compounddeviceeditdialog.h \
     Device/LibreVNA/Compound/compounddriver.h \
     Device/LibreVNA/amplitudecaldialog.h \
+    Device/LibreVNA/deviceconfigurationdialogv1.h \
+    Device/LibreVNA/deviceconfigurationdialogvff.h \
     Device/LibreVNA/devicepacketlog.h \
     Device/LibreVNA/devicepacketlogview.h \
     Device/LibreVNA/firmwareupdatedialog.h \
@@ -30,7 +32,8 @@ HEADERS += \
     Device/LibreVNA/librevnadriver.h \
     Device/LibreVNA/librevnatcpdriver.h \
     Device/LibreVNA/librevnausbdriver.h \
-    Device/LibreVNA/manualcontroldialog.h \
+    Device/LibreVNA/manualcontroldialogV1.h \
+    Device/LibreVNA/manualcontroldialogvff.h \
     Device/LibreVNA/receivercaldialog.h \
     Device/LibreVNA/sourcecaldialog.h \
     Device/SSA3000X/ssa3000xdriver.h \
@@ -177,6 +180,8 @@ SOURCES += \
     Device/LibreVNA/Compound/compounddeviceeditdialog.cpp \
     Device/LibreVNA/Compound/compounddriver.cpp \
     Device/LibreVNA/amplitudecaldialog.cpp \
+    Device/LibreVNA/deviceconfigurationdialogv1.cpp \
+    Device/LibreVNA/deviceconfigurationdialogvff.cpp \
     Device/LibreVNA/devicepacketlog.cpp \
     Device/LibreVNA/devicepacketlogview.cpp \
     Device/LibreVNA/firmwareupdatedialog.cpp \
@@ -184,7 +189,8 @@ SOURCES += \
     Device/LibreVNA/librevnadriver.cpp \
     Device/LibreVNA/librevnatcpdriver.cpp \
     Device/LibreVNA/librevnausbdriver.cpp \
-    Device/LibreVNA/manualcontroldialog.cpp \
+    Device/LibreVNA/manualcontroldialogV1.cpp \
+    Device/LibreVNA/manualcontroldialogvff.cpp \
     Device/LibreVNA/receivercaldialog.cpp \
     Device/LibreVNA/sourcecaldialog.cpp \
     Device/SSA3000X/ssa3000xdriver.cpp \
@@ -321,11 +327,14 @@ FORMS += \
     Device/LibreVNA/addamplitudepointsdialog.ui \
     Device/LibreVNA/amplitudecaldialog.ui \
     Device/LibreVNA/automaticamplitudedialog.ui \
+    Device/LibreVNA/deviceconfigurationdialogv1.ui \
+    Device/LibreVNA/deviceconfigurationdialogvff.ui \
     Device/LibreVNA/devicepacketlogview.ui \
     Device/LibreVNA/firmwareupdatedialog.ui \
     Device/LibreVNA/frequencycaldialog.ui \
     Device/LibreVNA/librevnadriversettingswidget.ui \
-    Device/LibreVNA/manualcontroldialog.ui \
+    Device/LibreVNA/manualcontroldialogV1.ui \
+    Device/LibreVNA/manualcontroldialogvff.ui \
     Device/devicelog.ui \
     Device/devicetcpdriversettings.ui \
     Generator/signalgenwidget.ui \

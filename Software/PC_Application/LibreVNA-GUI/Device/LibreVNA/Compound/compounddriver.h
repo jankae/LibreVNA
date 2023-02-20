@@ -174,16 +174,16 @@ private:
     void createCompoundJSON();
     void incomingPacket(LibreVNADriver *device, const Protocol::PacketInfo &p);
     void updatedInfo(LibreVNADriver *device);
-    void updatedStatus(LibreVNADriver *device, const Protocol::DeviceStatusV1 &status);
+    void updatedStatus(LibreVNADriver *device, const Protocol::DeviceStatus &status);
     void datapointReceivecd(LibreVNADriver *dev, Protocol::VNADatapoint<32> *data);
     void spectrumResultReceived(LibreVNADriver *dev, Protocol::SpectrumAnalyzerResult res);
 
     Info info;
     std::map<LibreVNADriver*, Info> deviceInfos;
-    std::map<LibreVNADriver*, Protocol::DeviceStatusV1> deviceStatus;
+    std::map<LibreVNADriver*, Protocol::DeviceStatus> deviceStatus;
     std::map<int, std::map<LibreVNADriver*, Protocol::VNADatapoint<32>*>> compoundVNABuffer;
     std::map<int, std::map<LibreVNADriver*, Protocol::SpectrumAnalyzerResult>> compoundSABuffer;
-    Protocol::DeviceStatusV1 lastStatus;
+    Protocol::DeviceStatus lastStatus;
 
     // Parsed configuration of compound devices (as extracted from compoundJSONString
     std::vector<CompoundDevice*> configuredDevices;
