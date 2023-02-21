@@ -280,6 +280,7 @@ void CompoundDeviceEditDialog::createDragFrame(DeviceFrame *c)
     drag->setMimeData(mimeData);
 
     drag->exec(Qt::MoveAction);
+    dragFrame = nullptr;
 }
 
 void CompoundDeviceEditDialog::updateInsertIndicator(int xcoord)
