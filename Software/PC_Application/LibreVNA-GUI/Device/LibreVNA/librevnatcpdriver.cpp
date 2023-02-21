@@ -24,7 +24,6 @@ LibreVNATCPDriver::LibreVNATCPDriver()
 
     auto interfaces = QNetworkInterface::allInterfaces();
     for(auto i : interfaces) {
-        qDebug() << this << i.type();
         switch(i.type()) {
         case QNetworkInterface::Ethernet:
         case QNetworkInterface::Wifi:
