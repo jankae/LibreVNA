@@ -384,10 +384,13 @@ using DeviceConfig = struct _deviceconfig {
 			uint16_t DFTphaseInc;
 		} V1;
 		struct {
-            uint32_t ip;
-            uint32_t mask;
-            uint32_t gw;
-			uint8_t dhcp :1;
+			uint32_t ip;
+			uint32_t mask;
+			uint32_t gw;
+            uint16_t dhcp :1;
+            uint16_t autogain :1;
+            uint16_t portGain :4;
+            uint16_t refGain :4;
 		} VFF;
 	};
 };

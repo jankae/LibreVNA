@@ -40,6 +40,11 @@ DeviceConfigurationDialogVFF::DeviceConfigurationDialogVFF(LibreVNADriver &dev, 
         }
     });
 
+    connect(ui->autogain, &QCheckBox::toggled, this, [=](){
+       ui->portgain->setEnabled(!ui->autogain->isChecked());
+       ui->refgain->setEnabled(!ui->autogain->isChecked());
+    });
+
     dev.sendWithoutPayload(Protocol::PacketType::RequestDeviceConfiguration);
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, [=](){
@@ -66,6 +71,10 @@ void DeviceConfigurationDialogVFF::updateGUI(const Protocol::DeviceConfig &c)
     ui->mask->setText(mask.toString());
     gateway = QHostAddress(qFromBigEndian(c.VFF.gw));
     ui->gateway->setText(gateway.toString());
+
+    ui->autogain->setChecked(c.VFF.autogain);
+    ui->portgain->setCurrentIndex(c.VFF.portGain);
+    ui->refgain->setCurrentIndex(c.VFF.refGain);
 }
 
 void DeviceConfigurationDialogVFF::updateDevice()
@@ -76,5 +85,9 @@ void DeviceConfigurationDialogVFF::updateDevice()
     p.deviceConfig.VFF.ip = qToBigEndian(ip.toIPv4Address());
     p.deviceConfig.VFF.mask = qToBigEndian(mask.toIPv4Address());
     p.deviceConfig.VFF.gw = qToBigEndian(gateway.toIPv4Address());
+
+    p.deviceConfig.VFF.autogain = ui->autogain->isChecked() ? 1 : 0;
+    p.deviceConfig.VFF.portGain = ui->portgain->currentIndex();
+    p.deviceConfig.VFF.refGain = ui->refgain->currentIndex();
     dev.SendPacket(p);
 }

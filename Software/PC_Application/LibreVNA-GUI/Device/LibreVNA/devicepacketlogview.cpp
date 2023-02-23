@@ -327,6 +327,9 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addString(VFF, "IP", QHostAddress(qFromBigEndian(sFF.ip)).toString());
             addString(VFF, "Mask", QHostAddress(qFromBigEndian(sFF.mask)).toString());
             addString(VFF, "Gateway", QHostAddress(qFromBigEndian(sFF.gw)).toString());
+            addBool(VFF, "PGA autogain", sFF.autogain);
+            addInteger(VFF, "Port gain", sFF.portGain);
+            addInteger(VFF, "Reference gain", sFF.refGain);
         }
             break;
         default:
