@@ -10,7 +10,7 @@ using namespace PacketConstants;
 
 namespace Protocol {
 
-static constexpr uint16_t Version = 12;
+static constexpr uint16_t Version = 13;
 
 #pragma pack(push, 1)
 
@@ -158,21 +158,27 @@ using SweepSettings = struct _sweepSettings {
     uint16_t points;
     uint32_t if_bandwidth;
     int16_t cdbm_excitation_start; // in 1/100 dbm
-	uint16_t standby:1;
-	uint16_t syncMaster:1;
-	uint16_t suppressPeaks:1;
-	uint16_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
-	uint16_t logSweep:1;
-	uint16_t stages:3;
-	uint16_t port1Stage:3;
-	uint16_t port2Stage:3;
+    uint8_t standby:1;
+	uint8_t syncMaster:1;
+	uint8_t suppressPeaks:1;
+	uint8_t fixedPowerSetting:1; // if set the attenuator and source PLL power will not be changed across the sweep
+	uint8_t logSweep:1;
 	/*
 	 * 0: no synchronization
 	 * 1: USB synchronization
 	 * 2: External reference synchronization
 	 * 3: Trigger synchronization (not supported yet by hardware)
 	 */
-	uint16_t syncMode:2;
+	uint8_t syncMode:2;
+	uint8_t unused1:1;
+
+	uint16_t stages:3;
+	uint16_t port1Stage:3;
+	uint16_t port2Stage:3;
+	uint16_t port3Stage:3;
+	uint16_t port4Stage:3;
+	uint16_t unused2:1;
+
     int16_t cdbm_excitation_stop; // in 1/100 dbm
 };
 
@@ -185,8 +191,9 @@ using ReferenceSettings = struct _referenceSettings {
 using GeneratorSettings = struct _generatorSettings {
 	uint64_t frequency;
 	int16_t cdbm_level;
-    uint8_t activePort :2;
+    uint8_t activePort :3;
     uint8_t applyAmplitudeCorrection :1;
+    uint8_t unused :4;
 };
 
 using DeviceInfo = struct _deviceInfo {
@@ -207,6 +214,7 @@ using DeviceInfo = struct _deviceInfo {
 	uint32_t limits_maxRBW;
     uint8_t limits_maxAmplitudePoints;
     uint64_t limits_maxFreqHarmonic;
+    uint8_t num_ports;
 };
 
 using DeviceStatus = struct _deviceStatus {
@@ -307,11 +315,11 @@ using ManualControl = struct _manualControl {
             uint8_t LOexternal :1;
             uint64_t LOFrequency;
 		    // Acquisition
-		    uint8_t PortEN :1;
-		    uint8_t RefEN :1;
-		    uint8_t WindowType :2;
-		    uint8_t PortGain :4;
-		    uint8_t RefGain :4;
+		    uint16_t PortEN :1;
+		    uint16_t RefEN :1;
+		    uint16_t WindowType :2;
+		    uint16_t PortGain :4;
+		    uint16_t RefGain :4;
 		    uint16_t Samples;
 		} VFF;
 	};
@@ -329,11 +337,11 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
     uint8_t applyReceiverCorrection :1;
     uint8_t trackingGenerator :1;
     uint8_t applySourceCorrection :1;
-    uint8_t trackingGeneratorPort :1; // 0 for port1, 1 for port2
+    uint8_t trackingGeneratorPort :2; // port count starts at zero
 	/*
 	 * 0: no synchronization
-	 * 1: USB synchronization
-	 * 2: External reference synchronization
+	 * 1: Protocol synchronization (via SetTrigger and ClearTrigger packets)
+	 * 2: Reserved
 	 * 3: Trigger synchronization (not supported yet by hardware)
 	 */
     uint8_t syncMode :2;
@@ -345,6 +353,8 @@ using SpectrumAnalyzerSettings = struct _spectrumAnalyzerSettings {
 using SpectrumAnalyzerResult = struct _spectrumAnalyzerResult {
 	float port1;
 	float port2;
+	float port3;
+	float port4;
 	union {
 		struct {
 			// for non-zero span
@@ -370,6 +380,8 @@ using AmplitudeCorrectionPoint = struct _amplitudecorrectionpoint {
 	uint32_t freq;
 	int16_t port1;
 	int16_t port2;
+	int16_t port3;
+	int16_t port4;
 };
 
 using FrequencyCorrection = struct _frequencycorrection {
@@ -387,7 +399,8 @@ using DeviceConfig = struct _deviceconfig {
 			uint32_t ip;
 			uint32_t mask;
 			uint32_t gw;
-            uint16_t dhcp :1;
+            uint8_t dhcp :1;
+            uint8_t unused :7;
             uint16_t autogain :1;
             uint16_t portGain :4;
             uint16_t refGain :4;

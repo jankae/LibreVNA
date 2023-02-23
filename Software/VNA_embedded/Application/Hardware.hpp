@@ -83,6 +83,7 @@ static constexpr Protocol::DeviceInfo Info = {
 		.limits_maxRBW = (uint32_t) (DefaultADCSamplerate * 2.23f / MinSamples),
 		.limits_maxAmplitudePoints = Cal::maxPoints,
 		.limits_maxFreqHarmonic = 18000000000,
+		.num_ports = 2,
 };
 
 enum class Mode {

@@ -245,7 +245,7 @@ QString LibreVNADriver::getStatus()
         }
         break;
     case 0xFF:
-        ret.append("MCU Temp: "+QString::number(lastStatus.VFF.temp_MCU)+"°C");
+        ret.append(" MCU Temp: "+QString::number(lastStatus.VFF.temp_MCU)+"°C");
         break;
     }
     return ret;
@@ -358,6 +358,8 @@ bool LibreVNADriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
     zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
     p.settings.port1Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) - s.excitedPorts.begin();
     p.settings.port2Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 2) - s.excitedPorts.begin();
+    p.settings.port3Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 3) - s.excitedPorts.begin();
+    p.settings.port4Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 4) - s.excitedPorts.begin();
     p.settings.syncMode = (int) sync;
     p.settings.syncMaster = syncMaster ? 1 : 0;
 
@@ -411,7 +413,7 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     p.spectrumSettings.trackingPower = s.trackingPower * 100;
 
     p.spectrumSettings.trackingGenerator = s.trackingGenerator ? 1 : 0;
-    p.spectrumSettings.trackingGeneratorPort = s.trackingPort == 2 ? 1 : 0;
+    p.spectrumSettings.trackingGeneratorPort = s.trackingPort - 1;
     p.spectrumSettings.syncMode = (int) sync;
     p.spectrumSettings.syncMaster = syncMaster ? 1 : 0;
 
@@ -482,8 +484,10 @@ bool LibreVNADriver::setIdle(std::function<void (bool)> cb)
 QStringList LibreVNADriver::availableExtRefInSettings()
 {
     QStringList ret;
-    for(auto r : Reference::getReferencesIn()) {
-        ret.push_back(Reference::TypeToLabel(r));
+    if(hardwareVersion == 0x01) {
+        for(auto r : Reference::getReferencesIn()) {
+            ret.push_back(Reference::TypeToLabel(r));
+        }
     }
     return ret;
 }
@@ -491,8 +495,10 @@ QStringList LibreVNADriver::availableExtRefInSettings()
 QStringList LibreVNADriver::availableExtRefOutSettings()
 {
     QStringList ret;
-    for(auto r : Reference::getOutFrequencies()) {
-        ret.push_back(Reference::OutFreqToLabel(r));
+    if(hardwareVersion == 0x01) {
+        for(auto r : Reference::getOutFrequencies()) {
+            ret.push_back(Reference::OutFreqToLabel(r));
+        }
     }
     return ret;
 }
@@ -579,8 +585,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
             Feature::SA, Feature::SATrackingGenerator, Feature::SATrackingOffset,
             Feature::ExtRefIn, Feature::ExtRefOut,
         };
-        auto ports = packet.info.hardware_version == 0xFF ? 1 : 2;
-        info.Limits.VNA.ports = ports;
+        info.Limits.VNA.ports = packet.info.num_ports;
         info.Limits.VNA.minFreq = packet.info.limits_minFreq;
         info.Limits.VNA.maxFreq = harmonicMixing ? packet.info.limits_maxFreqHarmonic : packet.info.limits_maxFreq;
         info.Limits.VNA.maxPoints = packet.info.limits_maxPoints;
@@ -589,13 +594,13 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         info.Limits.VNA.mindBm = (double) packet.info.limits_cdbm_min / 100;
         info.Limits.VNA.maxdBm = (double) packet.info.limits_cdbm_max / 100;
 
-        info.Limits.Generator.ports = ports;
+        info.Limits.Generator.ports = packet.info.num_ports;
         info.Limits.Generator.minFreq = packet.info.limits_minFreq;
         info.Limits.Generator.maxFreq = packet.info.limits_maxFreq;
         info.Limits.Generator.mindBm = (double) packet.info.limits_cdbm_min / 100;
         info.Limits.Generator.maxdBm = (double) packet.info.limits_cdbm_max / 100;
 
-        info.Limits.SA.ports = ports;
+        info.Limits.SA.ports = packet.info.num_ports;
         info.Limits.SA.minFreq = packet.info.limits_minFreq;
         info.Limits.SA.maxFreq = packet.info.limits_maxFreq;
         info.Limits.SA.minRBW = packet.info.limits_minRBW;
