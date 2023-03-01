@@ -66,12 +66,13 @@ void MixedModeConversion::selectionChanged()
 
     class Destination {
     public:
-        Destination(std::vector<Source> sources, QString name, QString formula)
+        Destination(std::vector<Source> sources, QString name, QString formula, double reference_impedance)
         {
             this->name = name;
             t = new Trace(name);
             t->fromMath();
             t->setMathFormula(formula);
+            t->setReferenceImpedance(reference_impedance);
             // is a reflection trace if the last two chars in the name are the same
             t->setReflection(name[name.size()-1] == name[name.size()-2]);
             // add math sources
@@ -114,25 +115,25 @@ void MixedModeConversion::selectionChanged()
     auto prefix = ui->prefix->text();
 
     std::vector<Destination> destinations = {
-        Destination(sources, prefix+"SDD11", "0.5*(S11-S13-S31+S33)"),
-        Destination(sources, prefix+"SDD12", "0.5*(S12-S14-S32+S34)"),
-        Destination(sources, prefix+"SDD21", "0.5*(S21-S23-S41+S43)"),
-        Destination(sources, prefix+"SDD22", "0.5*(S22-S24-S42+S44)"),
+        Destination(sources, prefix+"SDD11", "0.5*(S11-S13-S31+S33)", 2*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SDD12", "0.5*(S12-S14-S32+S34)", 2*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SDD21", "0.5*(S21-S23-S41+S43)", 2*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SDD22", "0.5*(S22-S24-S42+S44)", 2*ui->selector->getReferenceImpedance()),
 
-        Destination(sources, prefix+"SDC11", "0.5*(S11+S13-S31-S33)"),
-        Destination(sources, prefix+"SDC12", "0.5*(S12+S14-S32-S34)"),
-        Destination(sources, prefix+"SDC21", "0.5*(S21+S23-S41-S43)"),
-        Destination(sources, prefix+"SDC22", "0.5*(S22+S24-S42-S44)"),
+        Destination(sources, prefix+"SDC11", "0.5*(S11+S13-S31-S33)", 0.5*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SDC12", "0.5*(S12+S14-S32-S34)", 0.5*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SDC21", "0.5*(S21+S23-S41-S43)", 0.5*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SDC22", "0.5*(S22+S24-S42-S44)", 0.5*ui->selector->getReferenceImpedance()),
 
-        Destination(sources, prefix+"SCD11", "0.5*(S11-S13+S31-S33)"),
-        Destination(sources, prefix+"SCD12", "0.5*(S12-S14+S32-S34)"),
-        Destination(sources, prefix+"SCD21", "0.5*(S21-S23+S41-S43)"),
-        Destination(sources, prefix+"SCD22", "0.5*(S22-S24+S42-S44)"),
+        Destination(sources, prefix+"SCD11", "0.5*(S11-S13+S31-S33)", 2*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SCD12", "0.5*(S12-S14+S32-S34)", 2*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SCD21", "0.5*(S21-S23+S41-S43)", 2*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SCD22", "0.5*(S22-S24+S42-S44)", 2*ui->selector->getReferenceImpedance()),
 
-        Destination(sources, prefix+"SCC11", "0.5*(S11+S13+S31+S33)"),
-        Destination(sources, prefix+"SCC12", "0.5*(S12+S14+S32+S34)"),
-        Destination(sources, prefix+"SCC21", "0.5*(S21+S23+S41+S43)"),
-        Destination(sources, prefix+"SCC22", "0.5*(S22+S24+S42+S44)"),
+        Destination(sources, prefix+"SCC11", "0.5*(S11+S13+S31+S33)", 0.5*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SCC12", "0.5*(S12+S14+S32+S34)", 0.5*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SCC21", "0.5*(S21+S23+S41+S43)", 0.5*ui->selector->getReferenceImpedance()),
+        Destination(sources, prefix+"SCC22", "0.5*(S22+S24+S42+S44)", 0.5*ui->selector->getReferenceImpedance()),
     };
 
     ui->list->clear();

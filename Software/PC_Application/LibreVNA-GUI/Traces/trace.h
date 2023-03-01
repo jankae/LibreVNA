@@ -171,6 +171,8 @@ public:
     // after all traces from the setup file have been created. It will look for the missing traces
     bool resolveMathSourceHashes();
 
+    void setReferenceImpedance(double value);
+
 public slots:
     void setVisible(bool visible);
     void setColor(QColor color);

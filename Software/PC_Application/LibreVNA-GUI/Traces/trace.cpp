@@ -576,6 +576,11 @@ bool Trace::addMathSource(unsigned int hash, QString variableName)
     return false;
 }
 
+void Trace::setReferenceImpedance(double value)
+{
+    reference_impedance = value;
+}
+
 bool Trace::mathDependsOn(Trace *t, bool onlyDirectDependency)
 {
     if(mathSourceTraces.count(t)) {
