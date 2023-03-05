@@ -643,7 +643,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
                     QString name = "RawPort"+QString::number(i)+"Stage"+QString::number(map.second);
                     m.measurements[name] = input;
                     name = "RawPort"+QString::number(i)+"Stage"+QString::number(map.second)+"Ref";
-                    m.measurements[name] = res->getValue(map.second, i, true);
+                    m.measurements[name] = res->getValue(map.second, i-1, true);
                 }
             }
         }
