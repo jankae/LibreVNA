@@ -36,6 +36,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         if(live) {
             ui->stack->setCurrentIndex(0);
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+            ui->impedance->setEnabled(false);
         }
     });
     connect(ui->bFile, &QPushButton::clicked, [&](bool file) {
@@ -48,6 +49,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
                 // attempt to parse as touchstone
                 ui->stack->setCurrentIndex(1);
                 ui->touchstoneImport->setFile(t.getFilename());
+                ui->impedance->setEnabled(false);
             }
         }
     });
@@ -55,6 +57,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
        if(math) {
            ui->stack->setCurrentIndex(3);
            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+           ui->impedance->setEnabled(true);
        }
     });
 
@@ -336,6 +339,7 @@ void TraceEditDialog::okClicked()
 {
     trace.setName(ui->name->text());
     trace.setVelocityFactor(ui->vFactor->value());
+    trace.setReferenceImpedance(ui->impedance->value());
     if(trace.getSource() != Trace::Source::Calibration) {
         // only apply changes if it is not a calibration trace
         if (ui->bFile->isChecked()) {
