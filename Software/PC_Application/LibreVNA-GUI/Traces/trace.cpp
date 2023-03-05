@@ -779,6 +779,7 @@ nlohmann::json Trace::toJSON()
         break;
     }
     j["velocityFactor"] = vFactor;
+    j["referenceImpedance"] = reference_impedance;
     j["reflection"] = reflection;
 
     auto &pref = Preferences::getInstance();
@@ -913,6 +914,7 @@ void Trace::fromJSON(nlohmann::json j)
         // data has already been loaded if present in the file
     }
     vFactor = j.value("velocityFactor", 0.66);
+    reference_impedance = j.value("referenceImpedance", 50.0);
     reflection = j.value("reflection", false);
     for(auto jm : j["math"]) {
         QString operation = QString::fromStdString(jm.value("operation", ""));
