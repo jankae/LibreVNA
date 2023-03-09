@@ -6,6 +6,7 @@
 #include "ui_compounddriversettingswidget.h"
 #include "compounddeviceeditdialog.h"
 #include "preferences.h"
+#include "Device/LibreVNA/devicepacketlogview.h"
 
 #include <exception>
 
@@ -15,6 +16,13 @@ CompoundDriver::CompoundDriver()
 
     drivers.push_back(new LibreVNAUSBDriver);
     drivers.push_back(new LibreVNATCPDriver);
+
+    auto log = new QAction("View Packet Log");
+    connect(log, &QAction::triggered, this, [=](){
+       auto d = new DevicePacketLogView();
+       d->show();
+    });
+    specificActions.push_back(log);
 
     auto &p = Preferences::getInstance();
     for(auto d : drivers) {
@@ -91,7 +99,9 @@ bool CompoundDriver::connectTo(QString getSerial)
                     device = new LibreVNAUSBDriver();
                     break;
                 } else if(i == 1) {
-                    device = new LibreVNATCPDriver();
+                    auto tcp = new LibreVNATCPDriver();
+                    tcp->copyDetectedDevices(*static_cast<LibreVNATCPDriver*>(drivers[i]));
+                    device = tcp;
                     break;
                 }
             }
@@ -287,6 +297,7 @@ bool CompoundDriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
     }
 
     zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
+    VNApoints = s.points;
     // create vector of currently used stimulus ports
     std::vector<CompoundDevice::PortMapping> activeMapping;
     for(auto p : s.excitedPorts) {
@@ -689,15 +700,17 @@ void CompoundDriver::datapointReceivecd(LibreVNADriver *dev, Protocol::VNADatapo
 
         // Clear this and all (incomplete) older datapoint buffers
         int pointNum = data->pointNum;
-        auto it = compoundVNABuffer.begin();
-        while(it != compoundVNABuffer.end()) {
-            if(it->first <= pointNum) {
-                for(auto d : it->second) {
-                    delete d.second;
-                }
-                it = compoundVNABuffer.erase(it);
+        while(compoundVNABuffer.count(pointNum)) {
+            auto &buf = compoundVNABuffer[pointNum];
+            for(auto d : buf) {
+                delete d.second;
+            }
+            compoundVNABuffer.erase(pointNum);
+            // move on to previous point
+            if(pointNum > 0) {
+                pointNum--;
             } else {
-                it++;
+                pointNum = VNApoints - 1;
             }
         }
     }

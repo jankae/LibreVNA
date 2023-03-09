@@ -27,7 +27,9 @@ CompoundDeviceEditDialog::CompoundDeviceEditDialog(CompoundDevice *cdev, QWidget
     });
     for(int i=0;i<(int)LibreVNADriver::Synchronization::Last;i++) {
         ui->sync->addItem(CompoundDevice::SyncToString((LibreVNADriver::Synchronization) i));
-        if((LibreVNADriver::Synchronization) i == LibreVNADriver::Synchronization::ExternalTrigger) {
+        switch((LibreVNADriver::Synchronization) i) {
+        case LibreVNADriver::Synchronization::Disabled:
+        case LibreVNADriver::Synchronization::Reserved: {
             // Disable for now
             auto *model = qobject_cast<QStandardItemModel *>(ui->sync->model());
             Q_ASSERT(model != nullptr);
@@ -35,6 +37,10 @@ CompoundDeviceEditDialog::CompoundDeviceEditDialog(CompoundDevice *cdev, QWidget
             auto *item = model->item(i);
             item->setFlags(disabled ? item->flags() & ~Qt::ItemIsEnabled
                                   : item->flags() | Qt::ItemIsEnabled);
+        }
+            break;
+        default:
+            break;
         }
     }
     connect(ui->sync, &QComboBox::currentTextChanged, [=](){

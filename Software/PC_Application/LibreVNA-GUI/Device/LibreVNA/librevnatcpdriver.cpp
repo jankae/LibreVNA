@@ -153,6 +153,7 @@ void LibreVNATCPDriver::disconnect()
         transmissionTimer.stop();
         transmissionQueue.clear();
         transmissionActive = false;
+        dataSocket.flush();
         dataSocket.close();
         logSocket.close();
 //        delete dataSocket;

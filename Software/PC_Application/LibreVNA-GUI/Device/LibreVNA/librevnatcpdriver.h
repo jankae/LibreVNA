@@ -46,7 +46,11 @@ public:
      * If the device driver uses a queued signal/slot connection with custom data types, these types must be registered before emitting the signal.
      * Register them within this function with qRegisterMetaType<Type>("Name");
      */
-    virtual void registerTypes();
+    virtual void registerTypes() override;
+
+    void copyDetectedDevices(const LibreVNATCPDriver &other) {
+        detectedDevices = other.detectedDevices;
+    }
 
 private slots:
     void SSDPreceived(QUdpSocket *sock);

@@ -198,6 +198,7 @@ private:
     bool connected;
     std::vector<LibreVNADriver*> devices;
     bool zerospan;
+    unsigned int VNApoints;
     unsigned int SApoints;
 
     // Driver specific settings
