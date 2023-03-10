@@ -3,6 +3,8 @@
 
 #include "modehandler.h"
 
+#include <QMenu>
+
 class ModeWindow: public QWidget
 {
     Q_OBJECT
@@ -10,11 +12,18 @@ public:
     explicit ModeWindow(ModeHandler* handler, AppWindow* aw);
     ~ModeWindow();
 
+    QMenu *getMenu() const;
+
 private:
     ModeHandler* handler;
     void SetupUi();
+
+    void updateMenuActions();
     AppWindow* aw;
     QTabBar* tabBar;
+    QMenu *menu;
+    QList<QAction*> menuActions;
+    QActionGroup *modeMenuGroup;
 
 private slots:
     void ModeCreated(int modeIndex);

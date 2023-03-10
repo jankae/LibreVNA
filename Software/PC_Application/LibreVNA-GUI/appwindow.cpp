@@ -138,7 +138,8 @@ AppWindow::AppWindow(QWidget *parent)
     }
 
     modeHandler = new ModeHandler(this);
-    new ModeWindow(modeHandler, this);
+    auto modeWindow = new ModeWindow(modeHandler, this);
+    ui->menubar->insertMenu(ui->menuHelp->menuAction(), modeWindow->getMenu());
 
     central = new QStackedWidget;
     setCentralWidget(central);

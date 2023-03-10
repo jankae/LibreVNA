@@ -7,6 +7,7 @@
 #include <QInputDialog>
 #include <QPushButton>
 #include <QMenuBar>
+#include <QActionGroup>
 
 ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw):
     QWidget(nullptr),
@@ -22,6 +23,10 @@ ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw):
     connect(tabBar, &QTabBar::currentChanged, handler, &ModeHandler::setCurrentIndex);
     connect(tabBar, &QTabBar::tabCloseRequested, handler, &ModeHandler::closeMode);
     connect(tabBar, &QTabBar::tabMoved, handler, &ModeHandler::currentModeMoved);
+    connect(tabBar, &QTabBar::tabMoved, this, [=](int from, int to) {
+        std::swap(menuActions[from], menuActions[to]);
+        updateMenuActions();
+    });
 }
 
 ModeWindow::~ModeWindow()
@@ -55,25 +60,53 @@ void ModeWindow::SetupUi()
     bAdd->setMaximumHeight(aw->menuBar()->height());
     bAdd->setMaximumWidth(40);
 
+    auto createNew = [=](Mode::Type type) {
+        bool ok;
+        QString text = QInputDialog::getText(aw,
+                                            "Create new "+Mode::TypeToName(type)+" tab",
+                                            "Name:", QLineEdit::Normal,
+                                            Mode::TypeToName(type), &ok);
+        if(ok) {
+            if(!handler->nameAllowed(text)) {
+                InformationBox::ShowError("Name collision", "Unable to create tab, " \
+                                          "no duplicate names allowed");
+            } else {
+                handler->createMode(text, type);
+            }
+        }
+    };
+
+    menu = new QMenu("Mode");
+    menu->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(menu, &QMenu::customContextMenuRequested, this, [=](const QPoint &p) {
+        auto action = menu->actionAt(p);
+        if(menuActions.contains(action)) {
+            QMenu contextMenu(tr("Context menu"), this);
+            QAction del("Delete", this);
+            connect(&del, &QAction::triggered, this, [=](){
+                handler->closeMode(menuActions.indexOf(action));
+            });
+            contextMenu.addAction(&del);
+            contextMenu.exec(menu->mapToGlobal(p));
+        }
+    });
+    modeMenuGroup = new QActionGroup(menu);
+    menu->addSeparator();
+    auto submenuAdd = new QMenu("Create new");
+    menu->addMenu(submenuAdd);
+
     auto mAdd = new QMenu();
     for(unsigned int i=0;i<(int) Mode::Type::Last;i++) {
         auto type = (Mode::Type) i;
         auto action = new QAction(Mode::TypeToName(type));
         mAdd->addAction(action);
-        connect(action, &QAction::triggered, [=](){
-            bool ok;
-            QString text = QInputDialog::getText(aw,
-                                                "Create new "+Mode::TypeToName(type)+" tab",
-                                                "Name:", QLineEdit::Normal,
-                                                Mode::TypeToName(type), &ok);
-            if(ok) {
-                if(!handler->nameAllowed(text)) {
-                    InformationBox::ShowError("Name collision", "Unable to create tab, " \
-                                              "no duplicate names allowed");
-                } else {
-                    handler->createMode(text, type);
-                }
-            }
+        connect(action, &QAction::triggered, this, [=](){
+            createNew(type);
+        });
+        auto action2 = new QAction(Mode::TypeToName(type));
+        submenuAdd->addAction(action2);
+        connect(action2, &QAction::triggered, this, [=](){
+            createNew(type);
         });
     }
     bAdd->setMenu(mAdd);
@@ -83,6 +116,24 @@ void ModeWindow::SetupUi()
     aw->menuBar()->setCornerWidget(cornerWidget);
 }
 
+void ModeWindow::updateMenuActions()
+{
+    // remove currently assigned actions from menu
+    while(!menu->actions()[0]->isSeparator()) {
+        menu->removeAction(menu->actions()[0]);
+    }
+    // add actions in correct order
+    auto before = menu->actions()[0];
+    for(auto a : menuActions) {
+        menu->insertAction(before, a);
+    }
+}
+
+QMenu *ModeWindow::getMenu() const
+{
+    return menu;
+}
+
 void ModeWindow::ModeCreated(int modeIndex)
 {
     auto mode = handler->getMode(modeIndex);
@@ -90,6 +141,18 @@ void ModeWindow::ModeCreated(int modeIndex)
     if (mode)
     {
         const auto name = mode->getName();
+
+        auto action = new QAction(name, modeMenuGroup);
+        action->setCheckable(true);
+        action->setChecked(true);
+        menuActions.insert(modeIndex, action);
+        updateMenuActions();
+        connect(action, &QAction::triggered, this, [=](){
+             auto index = menuActions.indexOf(action);
+             if(index >= 0) {
+                 tabBar->setCurrentIndex(index);
+             }
+        });
 
         tabBar->blockSignals(true);
         tabBar->insertTab(modeIndex, name);
@@ -104,6 +167,9 @@ void ModeWindow::ModeClosed(int modeIndex)
     tabBar->blockSignals(true);
     tabBar->removeTab(modeIndex);
     tabBar->blockSignals(false);
+
+    delete menuActions.takeAt(modeIndex);
+    updateMenuActions();
 }
 
 
@@ -113,4 +179,5 @@ void ModeWindow::CurrentModeChanged(int modeIndex)
     {
         tabBar->setCurrentIndex(modeIndex);
     }
+    menuActions[modeIndex]->setChecked(true);
 }
