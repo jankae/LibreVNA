@@ -203,6 +203,7 @@ private:
 
     // Driver specific settings
     bool captureRawReceiverValues;
+    bool preservePhase;
     QString compoundJSONString;
 
     // Buffers for storing individual device answers

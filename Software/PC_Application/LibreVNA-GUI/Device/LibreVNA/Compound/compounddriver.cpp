@@ -31,6 +31,7 @@ CompoundDriver::CompoundDriver()
 
     specificSettings.push_back(Savable::SettingDescription(&compoundJSONString, "compoundDriver.compoundDeviceJSON", ""));
     specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "compoundDriver.captureRawReceiverValues", false));
+    specificSettings.push_back(Savable::SettingDescription(&preservePhase, "compoundDriver.preservePhase", false));
 }
 
 CompoundDriver::~CompoundDriver()
@@ -212,10 +213,14 @@ QWidget *CompoundDriver::createSettingsWidget()
 
     // Set initial values
     ui->CaptureRawReceiverValues->setChecked(captureRawReceiverValues);
+    ui->PreservePhase->setChecked(preservePhase);
 
     // make connections
     connect(ui->CaptureRawReceiverValues, &QCheckBox::toggled, this, [=](){
         captureRawReceiverValues = ui->CaptureRawReceiverValues->isChecked();
+    });
+    connect(ui->PreservePhase, &QCheckBox::toggled, this, [=](){
+        preservePhase = ui->PreservePhase->isChecked();
     });
 
     connect(ui->compoundList, &QListWidget::doubleClicked, [=](){
@@ -680,7 +685,7 @@ void CompoundDriver::datapointReceivecd(LibreVNADriver *dev, Protocol::VNADatapo
                     // got both required measurements
                     QString name = "S"+QString::number(i+1)+QString::number(map.first);
                     auto S = input / ref;
-                    if(inputDevice != stimulusDev) {
+                    if(!preservePhase && (inputDevice != stimulusDev)) {
                         // can't use phase information when measuring across devices
                         S = abs(S);
                     }

@@ -75,6 +75,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="PreservePhase">
+        <property name="text">
+         <string>Preserve phase for measurements between devices</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
