@@ -52,6 +52,7 @@
 #include <QStyle>
 #include <QScrollArea>
 #include <QStandardItemModel>
+#include <QDateTime>
 
 VNA::VNA(AppWindow *window, QString name)
     : Mode(window, name, "VNA"),
@@ -841,6 +842,16 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     if(changingSettings) {
         // already setting new sweep settings, ignore incoming points from old settings
         return;
+    }
+
+    // Calculate sweep time
+    if(m.pointNum == 0) {
+        // new sweep started
+        static auto lastStart = QDateTime::currentDateTimeUtc();
+        auto now = QDateTime::currentDateTimeUtc();
+        auto sweepTime = lastStart.msecsTo(now);
+        lastStart = now;
+        qDebug() << "Sweep took"<<sweepTime<<"milliseconds";
     }
 
     if(singleSweep && average.getLevel() == averages) {
