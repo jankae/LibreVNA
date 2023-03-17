@@ -491,9 +491,13 @@ void AppWindow::SetupSCPI()
         QString serial;
         if(params.size() > 0) {
             serial = params[0];
+        } else if(UpdateDeviceList() > 0) {
+            serial = deviceList[0].serial;
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
         }
         if(!ConnectToDevice(serial)) {
-            return "Device not found";
+            return SCPI::getResultName(SCPI::Result::Error);
         } else {
             return SCPI::getResultName(SCPI::Result::Empty);
         }
