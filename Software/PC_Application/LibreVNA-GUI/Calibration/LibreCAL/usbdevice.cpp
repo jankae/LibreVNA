@@ -64,7 +64,7 @@ USBDevice::USBDevice(QString serial)
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
     }
-    qInfo() << "USB connection established" << flush;
+    qInfo() << "USB connection established" << Qt::flush;
 }
 
 USBDevice::~USBDevice()

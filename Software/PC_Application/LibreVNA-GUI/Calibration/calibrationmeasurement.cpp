@@ -119,7 +119,7 @@ QWidget *CalibrationMeasurement::Base::createStandardWidget()
 {
     auto cbStandard = new QComboBox();
     for(auto s : supportedStandards()) {
-        cbStandard->addItem(s->getDescription(), qVariantFromValue((void*) s));
+        cbStandard->addItem(s->getDescription(), QVariant::fromValue((void*) s));
         if(standard == s) {
             cbStandard->setCurrentText(s->getDescription());
         }

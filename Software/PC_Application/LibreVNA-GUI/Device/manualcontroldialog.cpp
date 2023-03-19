@@ -84,7 +84,7 @@ ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
     connect(ui->LO2Frequency, &SIUnitEdit::valueChanged, [=](double) {
         UpdateLO2();
     });
-    connect(ui->SourceSwitchGroup, qOverload<int, bool>(&QButtonGroup::buttonToggled), [=](int, bool) {
+    connect(ui->SourceSwitchGroup, &QButtonGroup::idToggled, [=](int, bool) {
         UpdateLO1();
         UpdateLO2();
     });
@@ -161,9 +161,9 @@ ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
     connect(ui->Port2Enable, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->RefEnable, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
 
-    connect(ui->SourceHighPower, qOverload<int>(&QComboBox::activated), [=](int) { UpdateDevice(); });
-    connect(ui->SourceLowpass, qOverload<int>(&QComboBox::activated), [=](int) { UpdateDevice(); });
-    connect(ui->SourceLowPower, qOverload<int>(&QComboBox::activated), [=](int) { UpdateDevice(); });
+    connect(ui->SourceHighPower, &QComboBox::activated, [=](int) { UpdateDevice(); });
+    connect(ui->SourceLowpass, &QComboBox::activated, [=](int) { UpdateDevice(); });
+    connect(ui->SourceLowPower, &QComboBox::activated, [=](int) { UpdateDevice(); });
 
     connect(ui->SourceHighFrequency, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
     connect(ui->SourceLowFrequency, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
@@ -172,12 +172,12 @@ ManualControlDialog::ManualControlDialog(Device &dev, QWidget *parent) :
     connect(ui->LO2Frequency, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
     connect(ui->IF2, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
 
-    connect(ui->PortSwitchGroup, qOverload<int, bool>(&QButtonGroup::buttonToggled), [=](int, bool) { UpdateDevice(); });
-    connect(ui->SourceSwitchGroup, qOverload<int, bool>(&QButtonGroup::buttonToggled), [=](int, bool) { UpdateDevice(); });
+    connect(ui->PortSwitchGroup, &QButtonGroup::idToggled, [=](int, bool) { UpdateDevice(); });
+    connect(ui->SourceSwitchGroup, &QButtonGroup::idToggled, [=](int, bool) { UpdateDevice(); });
 
-    connect(ui->Attenuator, qOverload<double>(&QDoubleSpinBox::valueChanged), [=](double) { UpdateDevice(); });
-    connect(ui->Samples, qOverload<int>(&QSpinBox::valueChanged), [=](double) { UpdateDevice(); });
-    connect(ui->cbWindow, qOverload<int>(&QComboBox::activated), [=](int) { UpdateDevice(); });
+    connect(ui->Attenuator, &QDoubleSpinBox::valueChanged, [=](double) { UpdateDevice(); });
+    connect(ui->Samples, &QSpinBox::valueChanged, [=](double) { UpdateDevice(); });
+    connect(ui->cbWindow, &QComboBox::activated, [=](int) { UpdateDevice(); });
 
     UpdateDevice();
 }

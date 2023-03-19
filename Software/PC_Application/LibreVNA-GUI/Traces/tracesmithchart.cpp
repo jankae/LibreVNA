@@ -13,6 +13,7 @@
 #include <math.h>
 #include <QDebug>
 #include <QColorDialog>
+#include <QActionGroup>
 
 using namespace std;
 
@@ -747,7 +748,7 @@ QVariant SmithChartContantLineModel::data(const QModelIndex &index, int role) co
     auto line = chart.constantLines[index.row()];
     switch(index.column()) {
     case ColIndexColor:
-        if (role == Qt::BackgroundColorRole) {
+        if (role == Qt::BackgroundRole) {
             return line.getColor();
         }
         break;

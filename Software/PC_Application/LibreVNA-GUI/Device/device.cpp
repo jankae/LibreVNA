@@ -224,7 +224,7 @@ Device::Device(QString serial)
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
     }
-    qInfo() << "USB connection established" << flush;
+    qInfo() << "USB connection established" << Qt::flush;
     m_connected = true;
     m_receiveThread = new std::thread(&Device::USBHandleThread, this);
     dataBuffer = new USBInBuffer(m_handle, EP_Data_In_Addr, 65536);

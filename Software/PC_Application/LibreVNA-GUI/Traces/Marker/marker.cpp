@@ -1424,7 +1424,6 @@ QWidget *Marker::getTypeEditor(QAbstractItemDelegate *delegate)
         layout->addWidget(c);
         c->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         layout->setContentsMargins(0,0,0,0);
-        layout->setMargin(0);
         layout->setSpacing(0);
         layout->addWidget(new QLabel("to"));
         auto deltaChooser = new QComboBox;

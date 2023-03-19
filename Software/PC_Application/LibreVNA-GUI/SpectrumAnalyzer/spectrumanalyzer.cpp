@@ -18,7 +18,6 @@
 #include "Generator/signalgenwidget.h"
 
 #include <QDockWidget>
-#include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
 #include "CustomWidgets/informationbox.h"
@@ -112,7 +111,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
 
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
     // calculate width required with expected string length
-    auto width = QFontMetrics(eStart->font()).width("3.00000GHz") + 15;
+    auto width = QFontMetrics(eStart->font()).horizontalAdvance("3.00000GHz") + 15;
     eStart->setFixedWidth(width);
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetStartFreq);

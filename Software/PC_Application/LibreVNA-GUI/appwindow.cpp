@@ -32,7 +32,6 @@
 #include "modewindow.h"
 
 #include <QDockWidget>
-#include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
 #include <QDebug>
