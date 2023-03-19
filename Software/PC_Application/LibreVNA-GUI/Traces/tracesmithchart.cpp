@@ -107,14 +107,22 @@ void TraceSmithChart::axisSetupDialog()
     ui->lineTable->setItemDelegateForColumn(SmithChartContantLineModel::ColIndexType, new SmithChartTypeDelegate);
     ui->lineTable->setItemDelegateForColumn(SmithChartContantLineModel::ColIndexParam, new SmithChartParamDelegate);
 
+    auto updateSettings = [=]() {
+        limitToSpan = ui->displayModeFreq->currentIndex() == 1;
+        limitToEdge = ui->displayModeImp->currentIndex() == 1;
+        manualFrequencyRange = ui->displayFreqOverride->isChecked();
+        fmin = ui->displayStartFreq->value();
+        fmax = ui->displayStopFreq->value();
+        updateContextMenu();
+        triggerReplot();
+    };
+
+    connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, [=](){
+       updateSettings();
+    });
+
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
-       limitToSpan = ui->displayModeFreq->currentIndex() == 1;
-       limitToEdge = ui->displayModeImp->currentIndex() == 1;
-       manualFrequencyRange = ui->displayFreqOverride->isChecked();
-       fmin = ui->displayStartFreq->value();
-       fmax = ui->displayStopFreq->value();
-       updateContextMenu();
-       triggerReplot();
+       updateSettings();
     });
     connect(ui->zoomFactor, &SIUnitEdit::valueChanged, [=](){
         edgeReflection = 1.0 / ui->zoomFactor->value();

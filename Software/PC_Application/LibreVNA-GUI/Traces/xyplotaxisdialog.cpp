@@ -258,6 +258,9 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         editLine(plot->constantLines[ui->lineList->currentRow()]);
     });
 
+    connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, [=](){
+       on_buttonBox_accepted();
+    });
 }
 
 XYplotAxisDialog::~XYplotAxisDialog()

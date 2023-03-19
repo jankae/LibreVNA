@@ -3,6 +3,7 @@
 #include "ui_waterfallaxisdialog.h"
 
 #include <QStandardItemModel>
+#include <QPushButton>
 
 using namespace std;
 
@@ -100,6 +101,10 @@ WaterfallAxisDialog::WaterfallAxisDialog(TraceWaterfall *plot) :
         ui->Xlinear->setChecked(true);
     }
     ui->Xalignment->setCurrentIndex((int) plot->align);
+
+    connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, [=](){
+       on_buttonBox_accepted();
+    });
 }
 
 WaterfallAxisDialog::~WaterfallAxisDialog()

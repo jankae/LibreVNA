@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>814</width>
-    <height>439</height>
+    <height>458</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -541,7 +541,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
@@ -592,8 +592,8 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="Y1group"/>
   <buttongroup name="Xgroup"/>
+  <buttongroup name="Y1group"/>
   <buttongroup name="Y2group"/>
  </buttongroups>
 </ui>
