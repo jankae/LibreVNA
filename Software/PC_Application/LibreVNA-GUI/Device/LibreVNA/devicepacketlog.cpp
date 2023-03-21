@@ -156,7 +156,7 @@ nlohmann::json DevicePacketLog::LogEntry::toJSON()
 void DevicePacketLog::LogEntry::fromJSON(nlohmann::json j)
 {
     type = QString::fromStdString(j.value("type", "")) == "Packet" ? Type::Packet : Type::InvalidBytes;
-    timestamp = QDateTime::fromMSecsSinceEpoch(j.value("timestamp", 0UL), Qt::TimeSpec::UTC);
+    timestamp = QDateTime::fromMSecsSinceEpoch(j.value("timestamp", 0ULL), Qt::TimeSpec::UTC);
     serial = QString::fromStdString(j.value("serial", ""));
     datapoint = nullptr;
     p = nullptr;

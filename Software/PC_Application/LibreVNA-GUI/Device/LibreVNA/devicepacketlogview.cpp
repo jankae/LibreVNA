@@ -28,7 +28,7 @@ DevicePacketLogView::DevicePacketLogView(QWidget *parent) :
         updateTree();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
-        QString filename = QFileDialog::getSaveFileName(nullptr, "Load USB log data", "", "USB log files (*.usblog)", nullptr, QFileDialog::DontUseNativeDialog);
+        QString filename = QFileDialog::getSaveFileName(nullptr, "Load LibreVNA log data", "", "LibreVNA log files (*.vnalog)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.isEmpty()) {
             // aborted selection
             return;
@@ -42,7 +42,7 @@ DevicePacketLogView::DevicePacketLogView(QWidget *parent) :
         file.close();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
-        QString filename = QFileDialog::getOpenFileName(nullptr, "Load USB log data", "", "USB log files (*.usblog)", nullptr, QFileDialog::DontUseNativeDialog);
+        QString filename = QFileDialog::getOpenFileName(nullptr, "Load LibreVNA log data", "", "LibreVNA log files (*.vnalog)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.isEmpty()) {
             // aborted selection
             return;
