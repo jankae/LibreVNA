@@ -106,9 +106,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-334</y>
-             <width>683</width>
-             <height>897</height>
+             <y>0</y>
+             <width>679</width>
+             <height>836</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -698,8 +698,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>697</width>
-             <height>563</height>
+             <width>450</width>
+             <height>320</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -855,8 +855,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>683</width>
-             <height>952</height>
+             <width>437</width>
+             <height>862</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1278,8 +1278,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>683</width>
-             <height>605</height>
+             <width>402</width>
+             <height>540</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1617,8 +1617,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>168</width>
-             <height>127</height>
+             <width>138</width>
+             <height>112</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -1707,8 +1707,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>211</width>
-             <height>168</height>
+             <width>194</width>
+             <height>146</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_19">
@@ -1792,7 +1792,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
      </property>
      <property name="centerButtons">
       <bool>false</bool>

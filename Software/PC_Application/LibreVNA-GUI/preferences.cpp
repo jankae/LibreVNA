@@ -181,6 +181,10 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         updateFromGUI();
         accept();
     });
+    connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, [=](){
+        // apply GUI state to settings
+        updateFromGUI();
+    });
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
         auto filename = QFileDialog::getSaveFileName(this, "Save preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, QFileDialog::DontUseNativeDialog);
         if(filename.length() > 0) {
