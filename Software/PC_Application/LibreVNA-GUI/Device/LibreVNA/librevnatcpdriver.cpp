@@ -125,8 +125,8 @@ bool LibreVNATCPDriver::connectTo(QString serial)
     // sockets are connected now
     dataBuffer.clear();
     logBuffer.clear();
-    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
-    connect(&logSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
+    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::errorOccurred), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
+    connect(&logSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::errorOccurred), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
 
     qInfo() << "TCP connection established" << Qt::flush;
     this->serial = serial;

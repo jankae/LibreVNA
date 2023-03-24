@@ -90,7 +90,7 @@ bool SSA3000XDriver::connectTo(QString serial)
         return false;
     }
 
-    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &SSA3000XDriver::ConnectionLost, Qt::QueuedConnection);
+    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::errorOccurred), this, &SSA3000XDriver::ConnectionLost, Qt::QueuedConnection);
 
     // grab model information
     dataSocket.write("*IDN?\r\n");
