@@ -70,7 +70,7 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
             key = tolower(key);
         }
         if(key <= 255) {
-            if (prefixes.indexOf(key) >= 0) {
+            if (prefixes.indexOf(static_cast<QChar>(key)) >= 0) {
                 // a valid prefix key was pressed
                 parseNewValue(Unit::SIPrefixToFactor(key));
                 continueEditing();
