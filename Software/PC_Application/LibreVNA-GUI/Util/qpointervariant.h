@@ -19,7 +19,7 @@ public:
         mt.construct(ptr, variant.constData());
     }
     QVariant value() {
-        return QVariant(variant.type(), ptr);
+        return QVariant(variant.metaType(), ptr);
     }
     void* getPtr(){return ptr;}
 private:
