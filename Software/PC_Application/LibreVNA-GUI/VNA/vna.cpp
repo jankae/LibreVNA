@@ -275,7 +275,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
     // calculate width required with expected string length
-    auto width = QFontMetrics(eStart->font()).width("3.00000GHz") + 15;
+    auto width = QFontMetrics(eStart->font()).horizontalAdvance("3.00000GHz") + 15;
     eStart->setFixedWidth(width);
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &VNA::SetStartFreq);
@@ -337,7 +337,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     // power sweep widgets
     auto sbPowerLow = new QDoubleSpinBox();
-    width = QFontMetrics(sbPowerLow->font()).width("-30.00dBm") + 20;
+    width = QFontMetrics(sbPowerLow->font()).horizontalAdvance("-30.00dBm") + 20;
     sbPowerLow->setFixedWidth(width);
     sbPowerLow->setRange(-100.0, 100.0);
     sbPowerLow->setSingleStep(0.25);
@@ -350,7 +350,7 @@ VNA::VNA(AppWindow *window, QString name)
     powerSweepActions.push_back(tb_sweep->addWidget(sbPowerLow));
 
     auto sbPowerHigh = new QDoubleSpinBox();
-    width = QFontMetrics(sbPowerHigh->font()).width("-30.00dBm") + 20;
+    width = QFontMetrics(sbPowerHigh->font()).horizontalAdvance("-30.00dBm") + 20;
     sbPowerHigh->setFixedWidth(width);
     sbPowerHigh->setRange(-100.0, 100.0);
     sbPowerHigh->setSingleStep(0.25);
@@ -363,7 +363,7 @@ VNA::VNA(AppWindow *window, QString name)
     powerSweepActions.push_back(tb_sweep->addWidget(sbPowerHigh));
 
     auto ePowerFreq = new SIUnitEdit("Hz", " kMG", 6);
-    width = QFontMetrics(ePowerFreq->font()).width("3.00000GHz") + 15;
+    width = QFontMetrics(ePowerFreq->font()).horizontalAdvance("3.00000GHz") + 15;
     ePowerFreq->setFixedWidth(width);
     ePowerFreq->setToolTip("Start frequency");
     connect(ePowerFreq, &SIUnitEdit::valueChanged, this, &VNA::SetPowerSweepFrequency);
@@ -377,7 +377,7 @@ VNA::VNA(AppWindow *window, QString name)
     // Acquisition toolbar
     auto tb_acq = new QToolBar("Acquisition");
     auto dbm = new QDoubleSpinBox();
-    width = QFontMetrics(dbm->font()).width("-30.00dBm") + 20;
+    width = QFontMetrics(dbm->font()).horizontalAdvance("-30.00dBm") + 20;
     dbm->setFixedWidth(width);
     dbm->setRange(-100.0, 100.0);
     dbm->setSingleStep(0.25);
