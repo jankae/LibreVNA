@@ -413,11 +413,12 @@ void TracePlot::leaveEvent(QEvent *event)
 void TracePlot::wheelEvent(QWheelEvent *event)
 {
     auto &pref = Preferences::getInstance();
-    if(pref.Graphs.enablePanAndZoom && positionWithinGraphArea(event->pos())) {
+    QPoint position(event->position().x(), event->position().y());
+    if(pref.Graphs.enablePanAndZoom && positionWithinGraphArea(position)) {
         bool horizontally = !(QApplication::keyboardModifiers() & Qt::ShiftModifier);
         bool vertically = !(QApplication::keyboardModifiers() & Qt::ControlModifier);
         double factor = pow(pref.Graphs.zoomFactor, (double) event->angleDelta().y() / 120.0);
-        zoom(event->pos(), factor, horizontally, vertically);
+        zoom(position, factor, horizontally, vertically);
         event->accept();
     }
 }
