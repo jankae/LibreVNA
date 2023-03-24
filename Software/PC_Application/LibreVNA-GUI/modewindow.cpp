@@ -38,7 +38,6 @@ void ModeWindow::SetupUi()
     auto cornerWidget = new QWidget();
     cornerWidget->setLayout(new QHBoxLayout);
     cornerWidget->layout()->setSpacing(0);
-    cornerWidget->layout()->setMargin(0);
     cornerWidget->layout()->setContentsMargins(0,0,0,0);
     cornerWidget->setMaximumHeight(aw->menuBar()->height());
 
