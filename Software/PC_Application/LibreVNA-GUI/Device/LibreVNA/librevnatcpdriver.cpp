@@ -66,7 +66,7 @@ std::set<QString> LibreVNATCPDriver::GetAvailableDevices()
                 "MAN: \"ssdp:discover\"\r\n"
                 "MX: 1\r\n"
                 "ST: ");
-    data.append(service_name);
+    data.append(service_name.toUtf8());
     data.append("\r\n"
                 "\r\n");
 
