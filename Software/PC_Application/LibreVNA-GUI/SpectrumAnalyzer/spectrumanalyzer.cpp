@@ -16,7 +16,6 @@
 #include "Generator/signalgenwidget.h"
 
 #include <QDockWidget>
-#include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
 #include "CustomWidgets/informationbox.h"

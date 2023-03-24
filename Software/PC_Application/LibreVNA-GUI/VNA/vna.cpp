@@ -44,7 +44,6 @@
 #include <QDateTime>
 #include <QDockWidget>
 #include <queue>
-#include <QDesktopWidget>
 #include <QApplication>
 #include <QActionGroup>
 #include <QErrorMessage>
