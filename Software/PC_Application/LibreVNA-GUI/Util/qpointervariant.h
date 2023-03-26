@@ -9,7 +9,7 @@ public:
         : ptr(static_cast<void*>(ptr)),
           variant(QVariant(*ptr)){}
     void setValue(const QVariant &value) {
-        auto destType = variant.type();
+        auto destType = variant.metaType();
         if(!value.canConvert(destType)) {
             throw std::runtime_error("Unable to convert QVariant to requested type");
         }

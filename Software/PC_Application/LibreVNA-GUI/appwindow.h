@@ -1,6 +1,7 @@
 ﻿#ifndef APPWINDOW_H
 #define APPWINDOW_H
 
+#include "json.hpp"
 #include "Traces/traceplot.h"
 #include "Traces/tracemodel.h"
 #include "Traces/Marker/markermodel.h"
@@ -66,11 +67,11 @@ private slots:
     void DeviceStatusUpdated();
     void DeviceFlagsUpdated();
     void DeviceInfoUpdated();
-    nlohmann::json SaveSetup();
     void SaveSetup(QString filename);
     void LoadSetup(QString filename);
-    void LoadSetup(nlohmann::json j);
 private:
+    nlohmann::json SaveSetup();
+    void LoadSetup(nlohmann::json j);
 
     enum class DeviceStatusBar {
         Connected,

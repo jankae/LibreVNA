@@ -523,7 +523,7 @@ void TracePlot::dragEnterEvent(QDragEnterEvent *event)
 void TracePlot::dropEvent(QDropEvent *event)
 {
     if(dropTrace) {
-        traceDropped(dropTrace, event->pos() -  - QPoint(marginLeft, marginTop));
+        traceDropped(dropTrace, event->position().toPoint() -  - QPoint(marginLeft, marginTop));
     }
     dropPending = false;
     dropTrace = nullptr;

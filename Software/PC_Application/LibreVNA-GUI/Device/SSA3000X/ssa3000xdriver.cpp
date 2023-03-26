@@ -200,6 +200,7 @@ bool SSA3000XDriver::setSA(const DeviceDriver::SASettings &s, std::function<void
         windowName = "HAMMing"; // kaiser is not available
         break;
     case SASettings::Window::None:
+    case SASettings::Window::Last:
         windowName = "RECTangular";
         break;
     }
@@ -217,6 +218,7 @@ bool SSA3000XDriver::setSA(const DeviceDriver::SASettings &s, std::function<void
         detName = "NEGative";
         break;
     case SASettings::Detector::PPeak:
+    case SASettings::Detector::Last:
         detName = "POSitive";
         break;
     case SASettings::Detector::Sample:
@@ -287,6 +289,8 @@ QStringList SSA3000XDriver::availableExtRefOutSettings()
 
 bool SSA3000XDriver::setExtRef(QString option_in, QString option_out)
 {
+    Q_UNUSED(option_in)
+    Q_UNUSED(option_out)
     return false;
 }
 

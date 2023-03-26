@@ -10,9 +10,9 @@ template<typename T, int minUnchanged>
 class TraceDifferenceGenerator {
 public:
     TraceDifferenceGenerator(std::function<void(const T&)> changeCallback) :
+        nextCallbackIndex(0),
         last{},
-        callback(changeCallback),
-        nextCallbackIndex(0)
+        callback(changeCallback)
     {}
 
     void reset() {
