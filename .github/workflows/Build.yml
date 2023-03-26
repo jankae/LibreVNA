@@ -4,20 +4,22 @@ on:
   push:
     branches:
       - master
+      - qt6
   pull_request:
     branches:
       - master
 
 jobs:
   PC_Application_Ubuntu:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v1
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libusb-1.0-0-dev qt5-default qt5-qmake qtbase5-dev
+          sudo apt-get install -y libusb-1.0-0-dev qt6-tools-dev qt6-base-dev
+          qtchooser -install qt6 $(which qmake6)
 
       - name: Get build timestamp
         id: id_date
@@ -35,6 +37,7 @@ jobs:
       - name: Build application
         run: |
           cd Software/PC_Application/LibreVNA-GUI
+          export QT_SELECT=qt6
           qmake LibreVNA-GUI.pro
           make -j9
         shell: bash
@@ -56,14 +59,14 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
-          version: '5.15.2'
+          version: '6.2.0'
           arch: 'win64_mingw81'
       
       - name: Download libusb
         run: |
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.25/libusb-1.0.25.7z
           7z x libusb.7z -r -olibusb
-          Xcopy /E /I /Y libusb\include ..\Qt\5.15.2\mingw81_64\include
+          Xcopy /E /I /Y libusb\include ..\Qt\6.2.0\mingw81_64\include
           Xcopy /E /I /Y libusb\MinGW64\static\libusb-1.0.a Software\PC_Application\LibreVNA-GUI
         shell: cmd
 
@@ -94,10 +97,10 @@ jobs:
           cd Software/PC_Application/LibreVNA-GUI/release
           del *.o *.cpp
           windeployqt.exe .
-          copy ..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\libwinpthread-1.dll .
-          copy ..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\libgcc_s_seh-1.dll .
-          copy "..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\libstdc++-6.dll" .
-          copy ..\..\..\..\..\Qt\5.15.2\mingw81_64\bin\Qt5OpenGL.dll .
+          copy ..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\libwinpthread-1.dll .
+          copy ..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\libgcc_s_seh-1.dll .
+          copy "..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\libstdc++-6.dll" .
+          copy ..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\Qt6OpenGL.dll .
         shell: cmd
         
       - name: Upload
@@ -115,11 +118,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install qt@5 libusb pcre
+          brew install qt@6 libusb pcre
           
       - name: Set Environment
         run: |
-          echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
+          echo "/usr/local/opt/qt@6/bin" >> $GITHUB_PATH
           
       - name: Get build timestamp
         id: id_date
