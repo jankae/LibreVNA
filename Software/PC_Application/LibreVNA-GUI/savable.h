@@ -50,7 +50,7 @@ public:
             }
             // json library does not now about QVariant, handle used cases
             auto val = e.var.value();
-            switch(static_cast<QMetaType::Type>(val.type())) {
+            switch(val.metaType().id()) {
             case QMetaType::Double: e.var.setValue((*json_entry).get<double>()); break;
             case QMetaType::Int: e.var.setValue((*json_entry).get<int>()); break;
             case QMetaType::UInt: e.var.setValue((*json_entry).get<unsigned int>()); break;
@@ -80,7 +80,7 @@ public:
             }
             // json library does not now about QVariant, handle used cases
             auto val = e.var.value();
-            switch(static_cast<QMetaType::Type>(val.type())) {
+            switch(val.metaType().id()) {
             case QMetaType::Double: *json_entry = val.toDouble(); break;
             case QMetaType::Int: *json_entry = val.toInt(); break;
             case QMetaType::UInt: *json_entry = val.toUInt(); break;

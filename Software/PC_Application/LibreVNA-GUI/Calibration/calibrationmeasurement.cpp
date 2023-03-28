@@ -124,7 +124,7 @@ QWidget *CalibrationMeasurement::Base::createStandardWidget()
 {
     auto cbStandard = new QComboBox();
     for(auto s : supportedStandards()) {
-        cbStandard->addItem(s->getDescription(), qVariantFromValue((void*) s));
+        cbStandard->addItem(s->getDescription(), QVariant::fromValue((void*) s));
         if(standard == s) {
             cbStandard->setCurrentText(s->getDescription());
         }
@@ -232,10 +232,10 @@ QTableWidgetItem *CalibrationMeasurement::OnePort::getStatisticsItem()
     auto ret = Base::getStatisticsItem();
     if(numPoints() > 0) {
         if(!standard) {
-            ret->setBackgroundColor(Qt::red);
+            ret->setBackground(Qt::red);
             ret->setToolTip("No calibration standard assigned, unable to use this measurement");
         } else if(standard->minFrequency() > points.front().frequency || standard->maxFrequency() < points.back().frequency) {
-            ret->setBackgroundColor(Qt::yellow);
+            ret->setBackground(Qt::yellow);
             ret->setToolTip("Usable frequency range constrained by calibration standard to "+Unit::ToString(minUsableFreq(), "Hz", " kMG", 4)+" - "+Unit::ToString(maxUsableFreq(), "Hz", " kMG", 4));
         }
     }
@@ -391,10 +391,10 @@ QTableWidgetItem *CalibrationMeasurement::TwoPort::getStatisticsItem()
     auto ret = Base::getStatisticsItem();
     if(numPoints() > 0) {
         if(!standard) {
-            ret->setBackgroundColor(Qt::red);
+            ret->setBackground(Qt::red);
             ret->setToolTip("No calibration standard assigned, unable to use this measurement");
         } else if(standard->minFrequency() > points.front().frequency || standard->maxFrequency() < points.back().frequency) {
-            ret->setBackgroundColor(Qt::yellow);
+            ret->setBackground(Qt::yellow);
             ret->setToolTip("Usable frequency range constrained by calibration standard to "+Unit::ToString(minUsableFreq(), "Hz", " kMG", 4)+" - "+Unit::ToString(maxUsableFreq(), "Hz", " kMG", 4));
         }
     }

@@ -428,17 +428,17 @@ bool MatchingNetwork::eventFilter(QObject *object, QEvent *event)
                 insertIndicator->setMaximumSize(2, imageHeight);
                 insertIndicator->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
                 insertIndicator->setStyleSheet("background-color:red;");
-                updateInsertIndicator(dragEvent->pos().x());
+                updateInsertIndicator(dragEvent->position().toPoint().x());
                 return true;
             }
         } else if(event->type() == QEvent::DragMove) {
             auto dragEvent = static_cast<QDragMoveEvent*>(event);
-            updateInsertIndicator(dragEvent->pos().x());
+            updateInsertIndicator(dragEvent->position().toPoint().x());
             return true;
         } else if(event->type() == QEvent::Drop) {
             auto dragEvent = static_cast<QDropEvent*>(event);
             delete insertIndicator;
-            addComponentAtPosition(dragEvent->pos().x(), dropComponent);
+            addComponentAtPosition(dragEvent->position().toPoint().x(), dropComponent);
             return true;
         } else if(event->type() == QEvent::DragLeave) {
             dropPending = false;

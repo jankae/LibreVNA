@@ -211,7 +211,7 @@ bool LibreVNAUSBDriver::connectTo(QString serial)
         libusb_exit(m_context);
         throw std::runtime_error(message.toStdString());
     }
-    qInfo() << "USB connection established" << flush;
+    qInfo() << "USB connection established" << Qt::flush;
     connected = true;
     m_receiveThread = new std::thread(&LibreVNAUSBDriver::USBHandleThread, this);
     dataBuffer = new USBInBuffer(m_handle, EP_Data_In_Addr, 65536);

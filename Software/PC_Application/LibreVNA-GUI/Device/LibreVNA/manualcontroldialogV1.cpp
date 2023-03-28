@@ -87,7 +87,7 @@ ManualControlDialogV1::ManualControlDialogV1(LibreVNADriver &dev, QWidget *paren
     connect(ui->LO2Frequency, &SIUnitEdit::valueChanged, [=](double) {
         UpdateLO2();
     });
-    connect(ui->SourceSwitchGroup, qOverload<int, bool>(&QButtonGroup::buttonToggled), [=](int, bool) {
+    connect(ui->SourceSwitchGroup, qOverload<int, bool>(&QButtonGroup::idToggled), [=](int, bool) {
         UpdateLO1();
         UpdateLO2();
     });
@@ -179,8 +179,8 @@ ManualControlDialogV1::ManualControlDialogV1(LibreVNADriver &dev, QWidget *paren
     connect(ui->LO2Frequency, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
     connect(ui->IF2, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
 
-    connect(ui->PortSwitchGroup, qOverload<int, bool>(&QButtonGroup::buttonToggled), [=](int, bool) { UpdateDevice(); });
-    connect(ui->SourceSwitchGroup, qOverload<int, bool>(&QButtonGroup::buttonToggled), [=](int, bool) { UpdateDevice(); });
+    connect(ui->PortSwitchGroup, qOverload<int, bool>(&QButtonGroup::idToggled), [=](int, bool) { UpdateDevice(); });
+    connect(ui->SourceSwitchGroup, qOverload<int, bool>(&QButtonGroup::idToggled), [=](int, bool) { UpdateDevice(); });
 
     connect(ui->Attenuator, qOverload<double>(&QDoubleSpinBox::valueChanged), [=](double) { UpdateDevice(); });
     connect(ui->Samples, qOverload<int>(&QSpinBox::valueChanged), [=](double) { UpdateDevice(); });

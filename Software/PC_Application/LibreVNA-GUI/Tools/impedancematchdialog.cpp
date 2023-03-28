@@ -33,11 +33,11 @@ ImpedanceMatchDialog::ImpedanceMatchDialog(MarkerModel &model, Marker *marker, Q
     connect(ui->zFreq, &SIUnitEdit::valueChanged, this, &ImpedanceMatchDialog::calculateMatch);
     connect(ui->zImag, &SIUnitEdit::valueChanged, this, &ImpedanceMatchDialog::calculateMatch);
     connect(ui->zReal, &SIUnitEdit::valueChanged, this, &ImpedanceMatchDialog::calculateMatch);
-    connect(ui->zGroup, qOverload<int>(&QButtonGroup::buttonClicked), this, &ImpedanceMatchDialog::calculateMatch);
+    connect(ui->zGroup, qOverload<int>(&QButtonGroup::idClicked), this, &ImpedanceMatchDialog::calculateMatch);
     connect(ui->cMatchType, qOverload<int>(&QComboBox::currentIndexChanged), this, &ImpedanceMatchDialog::calculateMatch);
-    connect(ui->lGroup, qOverload<int>(&QButtonGroup::buttonClicked), this, &ImpedanceMatchDialog::calculateMatch);
-    connect(ui->cGroup, qOverload<int>(&QButtonGroup::buttonClicked), this, &ImpedanceMatchDialog::calculateMatch);
-    connect(ui->zGroup, qOverload<int>(&QButtonGroup::buttonClicked), this, &ImpedanceMatchDialog::calculateMatch);
+    connect(ui->lGroup, qOverload<int>(&QButtonGroup::idClicked), this, &ImpedanceMatchDialog::calculateMatch);
+    connect(ui->cGroup, qOverload<int>(&QButtonGroup::idClicked), this, &ImpedanceMatchDialog::calculateMatch);
+    connect(ui->zGroup, qOverload<int>(&QButtonGroup::idClicked), this, &ImpedanceMatchDialog::calculateMatch);
 
     // populate marker options
     auto markers = model.getMarkers();

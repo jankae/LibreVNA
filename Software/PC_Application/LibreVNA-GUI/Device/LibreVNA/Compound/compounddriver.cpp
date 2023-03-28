@@ -437,11 +437,13 @@ QStringList CompoundDriver::availableExtRefInSettings()
     if(!connected) {
         return QStringList();
     }
-    auto set = devices[0]->availableExtRefInSettings().toSet();
+    auto list = devices[0]->availableExtRefInSettings();
+    QSet<QString> set(list.begin(), list.end());
     for(unsigned int i=1;i<devices.size();i++) {
-        set = set.intersect(devices[i]->availableExtRefInSettings().toSet());
+        list = devices[i]->availableExtRefInSettings();
+        set = set.intersect({list.begin(), list.end()});
     }
-    return QStringList(set.toList());
+    return QStringList(set.begin(), set.end());
 }
 
 QStringList CompoundDriver::availableExtRefOutSettings()
@@ -449,11 +451,13 @@ QStringList CompoundDriver::availableExtRefOutSettings()
     if(!connected) {
         return QStringList();
     }
-    auto set = devices[0]->availableExtRefOutSettings().toSet();
+    auto list = devices[0]->availableExtRefOutSettings();
+    QSet<QString> set(list.begin(), list.end());
     for(unsigned int i=1;i<devices.size();i++) {
-        set = set.intersect(devices[i]->availableExtRefOutSettings().toSet());
+        list = devices[i]->availableExtRefOutSettings();
+        set = set.intersect({list.begin(), list.end()});
     }
-    return QStringList(set.toList());
+    return QStringList(set.begin(), set.end());
 }
 
 bool CompoundDriver::setExtRef(QString option_in, QString option_out)

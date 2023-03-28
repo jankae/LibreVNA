@@ -29,10 +29,10 @@ TouchstoneImport::TouchstoneImport(QWidget *parent, int ports) :
     ui->port2Group->setId(ui->port2_3, 2);
     ui->port2Group->setId(ui->port2_4, 3);
     // prevent selection of same port for port1 and 2
-    connect(ui->port1Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](int id) {
+    connect(ui->port1Group, qOverload<int>(&QButtonGroup::idClicked), [=](int id) {
         preventCollisionWithGroup(ui->port2Group, id);
     });
-    connect(ui->port2Group, qOverload<int>(&QButtonGroup::buttonClicked), [=](int id) {
+    connect(ui->port2Group, qOverload<int>(&QButtonGroup::idClicked), [=](int id) {
         preventCollisionWithGroup(ui->port1Group, id);
     });
     connect(ui->file, &QLineEdit::textChanged, this, &TouchstoneImport::setFile);

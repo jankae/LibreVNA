@@ -66,7 +66,7 @@ std::set<QString> LibreVNATCPDriver::GetAvailableDevices()
                 "MAN: \"ssdp:discover\"\r\n"
                 "MX: 1\r\n"
                 "ST: ");
-    data.append(service_name);
+    data.append(service_name.toUtf8());
     data.append("\r\n"
                 "\r\n");
 
@@ -125,10 +125,10 @@ bool LibreVNATCPDriver::connectTo(QString serial)
     // sockets are connected now
     dataBuffer.clear();
     logBuffer.clear();
-    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
-    connect(&logSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
+    connect(&dataSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::errorOccurred), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
+    connect(&logSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::errorOccurred), this, &LibreVNATCPDriver::ConnectionLost, Qt::QueuedConnection);
 
-    qInfo() << "TCP connection established" << flush;
+    qInfo() << "TCP connection established" << Qt::flush;
     this->serial = serial;
     connected = true;
 
