@@ -12,7 +12,7 @@ Creating all the different parts from the source code requires quite a few tools
 ## Building the PC application:
 * Install the required tools (Qt and libusb-1.0):
   ```
-  sudo apt-get install qt5-default qt5-qmake qtbase5-dev libusb-1.0-0-dev 
+  sudo apt-get install libusb-1.0-0-dev qt6-tools-dev qt6-base-dev
   ```
 * Build the application:
   * either:
