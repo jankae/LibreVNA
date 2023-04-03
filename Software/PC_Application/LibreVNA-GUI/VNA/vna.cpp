@@ -855,6 +855,7 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
 
     if(singleSweep && average.getLevel() == averages) {
         Stop();
+        return;
     }
 
     auto m_avg = m;

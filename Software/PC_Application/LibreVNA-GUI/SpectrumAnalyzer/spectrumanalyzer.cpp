@@ -493,6 +493,7 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
 
     if(singleSweep && average.getLevel() == averages) {
         Stop();
+        return;
     }
 
     auto m_avg = average.process(m);

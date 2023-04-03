@@ -203,7 +203,7 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addBool(VFF, "LO locked", sFF.LO_locked);
             addBool(VFF, "ADC overload", sFF.ADC_overload);
             addBool(VFF, "Unlevel", sFF.unlevel);
-            addInteger(VFF, "MCU temperature", s.temp_MCU);
+            addInteger(VFF, "MCU temperature", sFF.temp_MCU);
         }
             break;
         case Protocol::PacketType::DeviceInfo: {
