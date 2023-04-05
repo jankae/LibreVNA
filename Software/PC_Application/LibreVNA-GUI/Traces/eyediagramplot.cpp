@@ -478,7 +478,7 @@ void EyeDiagramPlot::draw(QPainter &p)
                 prefix = "um ";
             }
             auto tickValue = Unit::ToString(yAxis.getTicks()[j], unit, prefix, significantDigits);
-            p.drawText(QRectF(0, yCoord - pref.Graphs.fontSizeAxis/2 - 2, tickStart + 2 * tickLen, pref.Graphs.fontSizeAxis), Qt::AlignRight, tickValue);
+            p.drawText(QRectF(0, yCoord - pref.Graphs.fontSizeAxis/2 - 2, tickStart + 2 * tickLen, pref.Graphs.fontSizeAxis*1.5), Qt::AlignRight, tickValue);
 
             // tick lines
             if(yCoord == plotAreaTop || yCoord == plotAreaBottom) {
@@ -547,7 +547,7 @@ void EyeDiagramPlot::draw(QPainter &p)
             p.setPen(QPen(pref.Graphs.Color.axis, 1));
             QRect bounding;
             p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*4, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*8,
-                             pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
+                             pref.Graphs.fontSizeAxis*1.5), Qt::AlignHCenter, tickValue, &bounding);
             lastTickLabelEnd = bounding.x() + bounding.width();
         }
     }

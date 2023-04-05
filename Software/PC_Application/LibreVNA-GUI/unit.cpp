@@ -46,7 +46,7 @@ QString Unit::ToString(double value, QString unit, QString prefixes, int precisi
             value = -value;
         }
         int prefixIndex = 0; //prefixes.indexOf(' ');
-        int preDotDigits = log10(value / SIPrefixToFactor(prefixes[prefixIndex].toLatin1())) + 1;
+        int preDotDigits = log10(value / SIPrefixToFactor(prefixes[prefixIndex].toLatin1())) + (1.0-log10(0.5));
         while(preDotDigits > 3 && prefixIndex < prefixes.length() - 1) {
             prefixIndex++;
             preDotDigits = log10(value / SIPrefixToFactor(prefixes[prefixIndex].toLatin1())) + 1;

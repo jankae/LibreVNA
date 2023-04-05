@@ -487,9 +487,9 @@ void TraceXYPlot::draw(QPainter &p)
                 }
                 auto tickValue = Unit::ToString(yAxis[i].getTicks()[j], unit, prefix, significantDigits);
                 if(i == 0) {
-                    p.drawText(QRectF(0, yCoord - pref.Graphs.fontSizeAxis/2 - 2, tickStart + 2 * tickLen, pref.Graphs.fontSizeAxis), Qt::AlignRight, tickValue);
+                    p.drawText(QRectF(0, yCoord - pref.Graphs.fontSizeAxis/2 - 2, tickStart + 2 * tickLen, pref.Graphs.fontSizeAxis*1.5), Qt::AlignRight, tickValue);
                 } else {
-                    p.drawText(QRectF(tickStart + 2 * tickLen + 2, yCoord - pref.Graphs.fontSizeAxis/2 - 2, yAxisSpace, pref.Graphs.fontSizeAxis), Qt::AlignLeft, tickValue);
+                    p.drawText(QRectF(tickStart + 2 * tickLen + 2, yCoord - pref.Graphs.fontSizeAxis/2 - 2, yAxisSpace, pref.Graphs.fontSizeAxis*1.5), Qt::AlignLeft, tickValue);
                 }
 
                 // tick lines
@@ -682,9 +682,9 @@ void TraceXYPlot::draw(QPainter &p)
             back.append("..");
             p.setPen(QPen(QColor("orange")));
             QRect bounding;
-            p.drawText(QRect(2, plotAreaBottom + pref.Graphs.fontSizeAxis + 5, w.width(), pref.Graphs.fontSizeAxis), 0, front, &bounding);
+            p.drawText(QRect(2, plotAreaBottom + pref.Graphs.fontSizeAxis + 5, w.width(), pref.Graphs.fontSizeAxis*1.5), 0, front, &bounding);
             p.setPen(pref.Graphs.Color.axis);
-            p.drawText(QRect(bounding.x() + bounding.width(), plotAreaBottom + pref.Graphs.fontSizeAxis + 5, w.width(), pref.Graphs.fontSizeAxis), 0, back);
+            p.drawText(QRect(bounding.x() + bounding.width(), plotAreaBottom + pref.Graphs.fontSizeAxis + 5, w.width(), pref.Graphs.fontSizeAxis*1.5), 0, back);
         }
 
         int lastTickLabelEnd = 0;
@@ -705,7 +705,7 @@ void TraceXYPlot::draw(QPainter &p)
             if(displayFullFreq) {
                 QRect bounding;
                 p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*4, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*8,
-                                 pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
+                                 pref.Graphs.fontSizeAxis*1.5), Qt::AlignHCenter, tickValue, &bounding);
                 lastTickLabelEnd = bounding.x() + bounding.width();
             } else {
                 // check if the same prefix was used as in the fullFreq string
@@ -716,10 +716,10 @@ void TraceXYPlot::draw(QPainter &p)
 
                 tickValue.remove(0, tickValue.size() - displayLastDigits - unit.length());
                 QRect bounding;
-                p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*4, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*8, pref.Graphs.fontSizeAxis), Qt::AlignHCenter, tickValue, &bounding);
+                p.drawText(QRect(xCoord - pref.Graphs.fontSizeAxis*4, plotAreaBottom + 5, pref.Graphs.fontSizeAxis*8, pref.Graphs.fontSizeAxis*1.5), Qt::AlignHCenter, tickValue, &bounding);
                 lastTickLabelEnd = bounding.x() + bounding.width();
                 p.setPen(QPen(QColor("orange")));
-                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, pref.Graphs.fontSizeAxis), Qt::AlignRight, "..", &bounding);
+                p.drawText(QRect(0, plotAreaBottom + 5, bounding.x() - 1, pref.Graphs.fontSizeAxis*1.5), Qt::AlignRight, "..", &bounding);
             }
         }
     }
