@@ -63,10 +63,10 @@
   * @{
   */
 
-#define USBD_VID     					0x0483
+#define USBD_VID     					0x1209
 #define USBD_PID_FS     				0x4121
 #define USBD_LANGID_STRING     			0x0409
-#define USBD_MANUFACTURER_STRING    	"STMicroelectronics"
+#define USBD_MANUFACTURER_STRING    	"LibreVNA"
 #define USBD_PRODUCT_STRING_FS     		"VNA"
 #define USBD_CONFIGURATION_STRING_FS	"CustomUSBDevice Config"
 #define USBD_INTERFACE_STRING_FS     	"CustomUSBDevice Interface"

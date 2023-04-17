@@ -14,6 +14,7 @@ using USBID = struct {
 static constexpr USBID IDs[] = {
     {0x0483, 0x564e},
     {0x0483, 0x4121},
+    {0x1209, 0x4121},
 };
 
 USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, int buffer_size) :
