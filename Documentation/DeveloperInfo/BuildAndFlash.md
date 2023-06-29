@@ -22,7 +22,7 @@ Creating all the different parts from the source code requires quite a few tools
   make
   ```
   * or:
-    * Open Software/PC_Application/Application.pro with Qt Creator
+    * Open Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.pro with Qt Creator
     * Build the application with Qt Creator
 
 ## Building the MCU firmware:
