@@ -212,7 +212,9 @@ Some commands are both events and queries, depending on whether the question mar
 \section{Commands}
 \subsection{General Commands}
 \subsubsection{*IDN}
-\query{Returns the identifications string}{*IDN?}{None}{LibreVNA-GUI}
+\query{Returns the identifications string}{*IDN?}{None}{LibreVNA,LibreVNA-GUI,dummy\_serial,<software version>}
+\subsubsection{*OPC}
+\query{Returns a 1 after every previous command has been handled}{*OPC?}{None}{1}
 \subsubsection{*LST}
 \query{Lists all available commands}{*LST?}{None}{List of commands, separated by newline}
 \subsection{Device Commands}

@@ -477,7 +477,10 @@ void AppWindow::CreateToolbars()
 void AppWindow::SetupSCPI()
 {
     scpi.add(new SCPICommand("*IDN", nullptr, [=](QStringList){
-        return "LibreVNA-GUI";
+        return "LibreVNA,LibreVNA-GUI,dummy_serial,"+appVersion;
+    }));
+    scpi.add(new SCPICommand("*OPC", nullptr, [=](QStringList){
+        return "1";
     }));
     auto scpi_dev = new SCPINode("DEVice");
     scpi.add(scpi_dev);
