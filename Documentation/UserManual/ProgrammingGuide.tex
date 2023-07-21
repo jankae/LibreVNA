@@ -251,6 +251,22 @@ This section contains general device commands, available regardless of the curre
 VNA
 \end{example}
 
+\subsubsection{DEVice:SETUP:SAVE}
+\event{Saves the GUI setup to a file}{DEVice:SETUP:SAVE}{<filename>}
+Important points when saving/loading setup files through SCPI commands:
+\begin{itemize}
+\item Filenames must be either absolute or relative to the location of the GUI application.
+\item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the setup files will be saved/loaded from the machine that runs the GUI.
+\item If no (or a wrong) file ending is specified, ``.setup'' is automatically added to the filename.
+\end{itemize}
+
+\subsubsection{DEVice:SETUP:LOAD}
+\query{Loads a setup file}{DEVice:SETUP:LOAD?}{<filename>}{TRUE or FALSE}
+\begin{itemize}
+\item Filenames must be either absolute or relative to the location of the GUI application.
+\item The filename must include the file ending ``.setup''.
+\end{itemize}
+
 \subsubsection{DEVice:REFerence:OUT}
 \event{Sets the reference output frequency}{DEVice:REFerence:OUT <freq>}{<freq> in MHz, either 0 (disabled), 10 or 100}
 \query{Queries the reference output frequency}{DEVice:REFerence:OUT?}{None}{Output frequency in MHz}
@@ -563,7 +579,6 @@ Any number of measurements can be specified (by their number). These measurement
 Important points when saving/loading calibration files through SCPI commands:
 \begin{itemize}
 \item Filenames must be either absolute or relative to the location of the GUI application.
-\item SCPI parsing implicitly capitalizes all commands, the file will be saved using only uppercase letters. Similarly, it is not possible to load a file whose filename contains lowercase characters.
 \item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the calibration files will be saved/loaded from the machine that runs the GUI.
 \end{itemize}
 

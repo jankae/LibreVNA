@@ -8,20 +8,23 @@
 
 class SCPICommand {
 public:
-    SCPICommand(QString name, std::function<QString(QStringList)> cmd, std::function<QString(QStringList)> query) :
+    SCPICommand(QString name, std::function<QString(QStringList)> cmd, std::function<QString(QStringList)> query, bool convertToUppercase = true) :
         _name(name),
         fn_cmd(cmd),
-        fn_query(query){}
+        fn_query(query),
+        argAlwaysUppercase(convertToUppercase){}
 
     QString execute(QStringList params);
     QString query(QStringList params);
     QString name() {return _name;}
     bool queryable() { return fn_query != nullptr;}
     bool executable() { return fn_cmd != nullptr;}
+    bool convertToUppercase() { return argAlwaysUppercase;}
 private:
     const QString _name;
     std::function<QString(QStringList)> fn_cmd;
     std::function<QString(QStringList)> fn_query;
+    bool argAlwaysUppercase;
 };
 
 class SCPINode {

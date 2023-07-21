@@ -105,7 +105,6 @@ void SCPI::input(QString line)
         if(cmd[0] == ':') {
             cmd.remove(0, 1);
         }
-        cmd = cmd.toUpper();
         auto response = lastNode->parse(cmd, lastNode);
         emit output(response);
     }
@@ -274,7 +273,7 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
         // have not reached a leaf, find next subnode
         auto subnode = cmd.left(splitPos);
         for(auto n : subnodes) {
-            if(SCPI::match(n->name, subnode)) {
+            if(SCPI::match(n->name, subnode.toUpper())) {
                 // pass on to next level
                 return n->parse(cmd.right(cmd.size() - splitPos - 1), lastNode);
             }
@@ -292,9 +291,14 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
             cmd.chop(1);
         }
         for(auto c : commands) {
-            if(SCPI::match(c->name(), cmd)) {
+            if(SCPI::match(c->name(), cmd.toUpper())) {
                 // save current node in case of non-root for the next command
                 lastNode = this;
+                if(c->convertToUppercase()) {
+                    for(auto &p : params) {
+                        p = p.toUpper();
+                    }
+                }
                 if(isQuery) {
                     return c->query(params);
                 } else {
