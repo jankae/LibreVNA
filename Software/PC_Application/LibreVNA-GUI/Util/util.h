@@ -99,7 +99,8 @@ namespace Util {
         return SparamToImpedance(d, Z0).imag() / (2.0 * M_PI * freq);
     }
     static inline double SparamToQualityFactor(std::complex<double> d) {
-        return abs(d.imag()) / d.real();
+        auto imp = SparamToImpedance(d);
+        return abs(imp.imag()) / imp.real();
     }
     // attempts to return a font color with good contrast against the given background color
     static inline QColor getFontColorFromBackground(QColor q) {
