@@ -68,7 +68,7 @@ private slots:
     void DeviceFlagsUpdated();
     void DeviceInfoUpdated();
     void SaveSetup(QString filename);
-    void LoadSetup(QString filename);
+    bool LoadSetup(QString filename);
 private:
     nlohmann::json SaveSetup();
     void LoadSetup(nlohmann::json j);

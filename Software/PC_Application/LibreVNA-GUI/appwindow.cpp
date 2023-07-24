@@ -477,7 +477,10 @@ void AppWindow::CreateToolbars()
 void AppWindow::SetupSCPI()
 {
     scpi.add(new SCPICommand("*IDN", nullptr, [=](QStringList){
-        return "LibreVNA-GUI";
+        return "LibreVNA,LibreVNA-GUI,dummy_serial,"+appVersion;
+    }));
+    scpi.add(new SCPICommand("*OPC", nullptr, [=](QStringList){
+        return "1";
     }));
     auto scpi_dev = new SCPINode("DEVice");
     scpi.add(scpi_dev);
@@ -518,6 +521,27 @@ void AppWindow::SetupSCPI()
         ret.chop(1);
         return ret;
     }));
+    auto scpi_setup = new SCPINode("SETUP");
+    scpi_dev->add(scpi_setup);
+    scpi_setup->add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // no filename given
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        SaveSetup(params[0]);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr, false));
+    scpi_setup->add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // no filename given
+            return SCPI::getResultName(SCPI::Result::False);
+        }
+        if(!LoadSetup(params[0])) {
+            // some error when loading the setup file
+            return SCPI::getResultName(SCPI::Result::False);
+        }
+        return SCPI::getResultName(SCPI::Result::True);
+    }, false));
     auto scpi_ref = new SCPINode("REFerence");
     scpi_dev->add(scpi_ref);
     scpi_ref->add(new SCPICommand("OUT", [=](QStringList params) -> QString {
@@ -1182,13 +1206,13 @@ nlohmann::json AppWindow::SaveSetup()
     return j;
 }
 
-void AppWindow::LoadSetup(QString filename)
+bool AppWindow::LoadSetup(QString filename)
 {
     ifstream file;
     file.open(filename.toStdString());
     if(!file.is_open()) {
         qWarning() << "Unable to open file:" << filename;
-        return;
+        return false;
     }
     nlohmann::json j;
     try {
@@ -1197,12 +1221,13 @@ void AppWindow::LoadSetup(QString filename)
         InformationBox::ShowError("Error", "Failed to parse the setup file (" + QString(e.what()) + ")");
         qWarning() << "Parsing of setup file failed: " << e.what();
         file.close();
-        return;
+        return false;
     }
     file.close();
     LoadSetup(j);
     QFileInfo fi(filename);
     lSetupName.setText("Setup: "+fi.fileName());
+    return true;
 }
 
 void AppWindow::LoadSetup(nlohmann::json j)
