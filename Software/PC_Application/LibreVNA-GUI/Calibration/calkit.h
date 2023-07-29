@@ -53,6 +53,8 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    void setIdealDefault();
+
 private:
     void clearStandards();
     QString manufacturer, serialnumber, description;

@@ -157,6 +157,8 @@ VNA::VNA(AppWindow *window, QString name)
         }
     });
 
+    cal.getKit().setIdealDefault();
+
 //    portExtension.setCalkit(&cal.getCalibrationKit());
 
     // De-embedding menu
