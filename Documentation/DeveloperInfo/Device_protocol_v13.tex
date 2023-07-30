@@ -174,7 +174,7 @@ This document describes the device protocol of the LibreVNA. This is the protoco
 Depending on the LibreVNA, different hardware interfaces may be used for the implementation of this protocol.
 
 \subsection{USB device}
-The LibreVNA implements a ``custom class'' USB device. It uses a VID of 0x0483 and a PID of 0x4121. The custom class contains a single interface with three bulk endpoints:
+The LibreVNA implements a ``custom class'' USB device. It uses a VID of 0x1209 and a PID of 0x4121. The custom class contains a single interface with three bulk endpoints:
 \begin{itemize}
 \item \textbf{Endpoint 0x01:} Communication data from the USB host to the LibreVNA
 \item \textbf{Endpoint 0x81:} Communication data from the LibreVNA to the USB host
@@ -766,7 +766,7 @@ The packet contains the following fields:
 %\insertTableNotes  % tell LaTeX where to insert the table-related notes
 \endlastfoot
 
-0 & 2 & UINT16 & ProtocolVersion & Set to 12. If another value is reported, refer to the corresponding protocol description.\\
+0 & 2 & UINT16 & ProtocolVersion & Set to 13. If another value is reported, refer to the corresponding protocol description.\\
 2 & 1 & UINT8 & FW\_major & Major firmware version \\
 3 & 1 & UINT8 & FW\_minor & Minor firmware version \\
 4 & 1 & UINT8 & FW\_patch & Patch of the firmware version \\
