@@ -109,6 +109,7 @@ static bool needs2LOshift(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32
 bool VNA::Setup(Protocol::SweepSettings s) {
 	VNA::Stop();
 	vTaskDelay(5);
+	data.clear();
 	HW::SetMode(HW::Mode::VNA);
 	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
