@@ -150,7 +150,7 @@ private:
     std::set<CalibrationMeasurement::Base*> calMeasurements;
     bool calMeasuring;
     bool calWaitFirst;
-    QProgressDialog calDialog;
+    QProgressDialog *calDialog;
     Calibration::InterpolationType getCalInterpolation();
     QString getCalStyle();
     QString getCalToolTip();

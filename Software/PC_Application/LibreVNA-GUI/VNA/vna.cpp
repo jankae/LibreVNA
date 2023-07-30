@@ -66,10 +66,8 @@ VNA::VNA(AppWindow *window, QString name)
     singleSweep = false;
     calMeasuring = false;
     calWaitFirst = false;
-    calDialog.reset();
-    // A modal QProgressDialog calls processEvents() in setValue(). Needs to use a queued connection to update the progress
-    // value from within the NewDatapoint slot to prevent possible re-entrancy.
-    connect(this, &VNA::calibrationMeasurementPercentage, &calDialog, &QProgressDialog::setValue, Qt::QueuedConnection);
+    calDialog = nullptr;
+
     changingSettings = false;
     settings.sweepType = SweepType::Frequency;
     settings.zerospan = false;
@@ -891,7 +889,7 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
                 if(m_avg.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
                     cal.measurementsComplete();
-                    calDialog.reset();
+                    delete calDialog;
                 }
             }
         }
@@ -1249,18 +1247,24 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
     } else {
         text.append("multiple calibration standards.");
     }
-    calDialog.setLabelText(text);
-    calDialog.setCancelButtonText("Abort");
-    calDialog.setWindowTitle("Taking calibration measurement...");
-    calDialog.setValue(0);
-    calDialog.setWindowModality(Qt::ApplicationModal);
+    calDialog = new QProgressDialog();
+    calDialog->setLabelText(text);
+    calDialog->setCancelButtonText("Abort");
+    calDialog->setWindowTitle("Taking calibration measurement...");
+    calDialog->setValue(0);
+    calDialog->setWindowModality(Qt::ApplicationModal);
     // always show the dialog
-    calDialog.setMinimumDuration(0);
-    connect(&calDialog, &QProgressDialog::canceled, [=]() {
+    calDialog->setMinimumDuration(0);
+    // A modal QProgressDialog calls processEvents() in setValue(). Needs to use a queued connection to update the progress
+    // value from within the NewDatapoint slot to prevent possible re-entrancy.
+    connect(this, &VNA::calibrationMeasurementPercentage, calDialog, &QProgressDialog::setValue, Qt::QueuedConnection);
+
+    connect(calDialog, &QProgressDialog::canceled, this, [=]() {
         // the user aborted the calibration measurement
         calMeasuring = false;
         cal.clearMeasurements(calMeasurements);
-    });
+        delete calDialog;
+    }, Qt::UniqueConnection);
     // Trigger sweep to start from beginning
     running = true;
     ConfigureDevice(true, [=](bool){
