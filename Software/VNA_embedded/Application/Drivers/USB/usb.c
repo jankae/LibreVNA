@@ -26,7 +26,7 @@ static bool data_transmission_active = false;
 static bool log_transmission_active = true;
 static uint32_t last_transmission = 0;
 
-#define USB_TRANMISSION_TIMEOUT		100
+#define USB_TRANSMISSION_TIMEOUT		100
 
 USBD_ClassTypeDef  USBD_ClassDriver =
 {
@@ -166,7 +166,7 @@ static bool trigger_next_fifo_transmission() {
 }
 
 static bool connection_okay() {
-	if(data_transmission_active && HAL_GetTick() - last_transmission > USB_TRANMISSION_TIMEOUT) {
+	if((data_transmission_active || log_transmission_active) && HAL_GetTick() - last_transmission > USB_TRANSMISSION_TIMEOUT) {
 		return false;
 	} else {
 		return true;
@@ -237,6 +237,7 @@ bool usb_transmit(const uint8_t *data, uint16_t length) {
 	if(!connection_okay()) {
 		// clear buffer and attempt to restart the transfer
 		data_transmission_active = false;
+		log_transmission_active = false;
 		usb_transmit_fifo_level = 0;
 	}
 	// attempt to add data to fifo
@@ -278,9 +279,10 @@ void usb_log(const char *log, uint16_t length) {
 	if(!log_transmission_active) {
 		static uint8_t buffer[256];
 		memcpy(buffer, log, length);
-		log_transmission_active = true;
 		hUsbDeviceFS.ep_in[EP_LOG_IN_ADDRESS & 0x7F].total_length = length;
-		USBD_LL_Transmit(&hUsbDeviceFS, EP_LOG_IN_ADDRESS, buffer, length);
+		if (USBD_LL_Transmit(&hUsbDeviceFS, EP_LOG_IN_ADDRESS, buffer, length) == USBD_OK) {
+		    log_transmission_active = true;
+		}
 	} else {
 		// still busy, unable to send log
 	}
