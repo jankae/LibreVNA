@@ -414,3 +414,14 @@ void Calkit::fromJSON(nlohmann::json j)
         standards.push_back(s);
     }
 }
+
+void Calkit::setIdealDefault()
+{
+    manufacturer = "LibreVNA";
+    description = "Default calibration kit with ideal standards";
+    clearStandards();
+    addStandard(new CalStandard::Open("Ideal Open Standard", 50.0, 0, 0, 0, 0, 0, 0));
+    addStandard(new CalStandard::Short("Ideal Short Standard", 50.0, 0, 0, 0, 0, 0, 0));
+    addStandard(new CalStandard::Load("Ideal Load Standard", 50.0, 0, 0, 50.0, 0, 0));
+    addStandard(new CalStandard::Through("Ideal Through Standard", 50.0, 0, 0));
+}
