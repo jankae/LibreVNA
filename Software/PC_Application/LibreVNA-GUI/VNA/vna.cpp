@@ -76,7 +76,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     configurationTimer.setSingleShot(true);
     connect(&configurationTimer, &QTimer::timeout, this, [=](){
-        ConfigureDevice();
+        ConfigureDevice(configurationTimerResetTraces);
     });
 
     // Create default traces
@@ -725,7 +725,7 @@ void VNA::initializeDevice()
     }
     // Configure initial state of device
     ConstrainAndUpdateFrequencies();
-    SettingsChanged();
+    SettingsChanged(true);
     emit deviceInitialized();
     if(window->getDevice() && !cal.validForDevice(window->getDevice()->getSerial())) {
         InformationBox::ShowMessage("Invalid calibration", "The current calibration was created for a different device. You can still use it but the resulting "
@@ -940,13 +940,12 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     lastPoint = m_avg.pointNum;
 
     if (needsSegmentUpdate) {
-        changingSettings = true;
         if( settings.activeSegment < settings.segments - 1) {
             settings.activeSegment++;
         } else {
             settings.activeSegment = 0;
         }
-        SettingsChanged();
+        SettingsChanged(false);
     }
 }
 
@@ -955,11 +954,14 @@ void VNA::UpdateAverageCount()
     lAverages->setText(QString::number(average.getLevel()) + "/");
 }
 
-void VNA::SettingsChanged()
+void VNA::SettingsChanged(bool resetTraces)
 {
     configurationTimer.start(100);
     changingSettings = true;
-    ResetLiveTraces();
+    configurationTimerResetTraces = resetTraces;
+    if(resetTraces) {
+        ResetLiveTraces();
+    }
 }
 
 void VNA::StartImpedanceMatching()

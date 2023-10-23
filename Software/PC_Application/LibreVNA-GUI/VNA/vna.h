@@ -118,7 +118,7 @@ private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
     void SetupSCPI();
     void UpdateAverageCount();
-    void SettingsChanged();
+    void SettingsChanged(bool resetTraces = true);
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();
@@ -143,6 +143,7 @@ private:
     bool singleSweep;
     bool running;
     QTimer configurationTimer;
+    bool configurationTimerResetTraces;
 
     // Calibration
     Calibration cal;
