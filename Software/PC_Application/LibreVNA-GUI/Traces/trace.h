@@ -66,6 +66,7 @@ public:
     QString liveParameter() { return liveParam; }
     LivedataType liveType() { return _liveType; }
     TraceMath::DataType outputType() const { return lastMath->getDataType(); }
+    TraceMath *getLastMath() { return lastMath;}
     unsigned int size() const;
 
     bool isDeembeddingActive();
@@ -211,6 +212,7 @@ signals:
     void markerAdded(Marker *m);
     void markerRemoved(Marker *m);
     void markerFormatChanged(Marker *m);
+    void lastMathChanged();
 
 private slots:
     void markerVisibilityChanged(Marker *m);

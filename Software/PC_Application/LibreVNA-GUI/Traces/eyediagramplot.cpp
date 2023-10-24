@@ -82,9 +82,13 @@ void EyeDiagramPlot::enableTrace(Trace *t, bool enabled)
     TracePlot::enableTrace(t, enabled);
     if(enabled) {
         trace = t;
-        tdr->assignInput(trace);
+        tdr->assignInput(trace->getLastMath());
+        connect(trace, &Trace::lastMathChanged, this, [=](){
+            tdr->assignInput(trace->getLastMath());
+        });
     } else {
         if(trace) {
+            disconnect(trace, &Trace::lastMathChanged, this, nullptr);
             tdr->removeInput();
             std::lock_guard<std::mutex> calc(calcMutex);
             displayData->clear();
