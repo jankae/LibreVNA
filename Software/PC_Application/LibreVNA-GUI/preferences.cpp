@@ -258,6 +258,8 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionFullSpanStop->setValue(p->Acquisition.fullSpanStop);
     ui->AcquisitionFullSpanCalibrated->setChecked(p->Acquisition.fullSpanCalibratedRange);
 
+    ui->GraphsDefaultTransmission->setCurrentText(p->Graphs.defaultGraphs.transmission);
+    ui->GraphsDefaultReflection->setCurrentText(p->Graphs.defaultGraphs.reflection);
     ui->GraphsShowUnit->setChecked(p->Graphs.showUnits);
     ui->GraphsColorBackground->setColor(p->Graphs.Color.background);
     ui->GraphsColorAxis->setColor(p->Graphs.Color.axis);
@@ -353,6 +355,8 @@ void PreferencesDialog::updateFromGUI()
     p->Acquisition.fullSpanStop = ui->AcquisitionFullSpanStop->value();
     p->Acquisition.fullSpanCalibratedRange = ui->AcquisitionFullSpanCalibrated->isChecked();
 
+    p->Graphs.defaultGraphs.transmission = ui->GraphsDefaultTransmission->currentText();
+    p->Graphs.defaultGraphs.reflection = ui->GraphsDefaultReflection->currentText();
     p->Graphs.showUnits = ui->GraphsShowUnit->isChecked();
     p->Graphs.Color.background = ui->GraphsColorBackground->getColor();
     p->Graphs.Color.axis = ui->GraphsColorAxis->getColor();

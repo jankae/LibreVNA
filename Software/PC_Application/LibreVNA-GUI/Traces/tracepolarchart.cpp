@@ -207,22 +207,20 @@ void TracePolarChart::draw(QPainter &p) {
         }
     }
 
-    if(dropPending) {
+    if(dropPending && supported(dropTrace)) {
         // adjust coords due to shifted restore
-        p.setOpacity(0.5);
-        p.setBrush(Qt::white);
-        p.setPen(Qt::white);
-        p.drawEllipse(-polarCoordMax, -polarCoordMax, 2*polarCoordMax, 2*polarCoordMax);
+        p.setOpacity(dropOpacity);
+        p.setBrush(dropBackgroundColor);
+        p.setPen(dropForegroundColor);
+        p.drawRect(getDropRect());
         auto font = p.font();
         font.setPixelSize(20);
         p.setFont(font);
         p.setOpacity(1.0);
-        p.setPen(Qt::white);
+        p.setPen(dropSection == DropSection::OnPlot ? dropHighlightColor : dropForegroundColor);
         auto text = "Drop here to add\n" + dropTrace->name() + "\nto polar chart";
         p.drawText(p.window(), Qt::AlignCenter, text);
-    } else {
     }
-
 }
 
 bool TracePolarChart::dropSupported(Trace *t)

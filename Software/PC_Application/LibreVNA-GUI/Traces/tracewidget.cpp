@@ -15,6 +15,7 @@
 #include <QMimeData>
 #include <QDebug>
 #include <QMenu>
+#include <QTableView>
 
 
 TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
@@ -30,6 +31,11 @@ TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
     ui->view->viewport()->installEventFilter(this);
     connect(ui->bImport, &QPushButton::clicked, this, &TraceWidget::importDialog);
     connect(ui->bExport, &QPushButton::clicked, this, &TraceWidget::exportDialog);
+    connect(ui->view->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [=](const QModelIndex &current, const QModelIndex &previous){
+        Q_UNUSED(previous)
+        ui->edit->setEnabled(current.isValid());
+        ui->remove->setEnabled(current.isValid());
+    });
     installEventFilter(this);
     createCount = 0;
     SetupSCPI();
@@ -65,6 +71,8 @@ bool TraceWidget::eventFilter(QObject *, QEvent *event)
         int key = static_cast<QKeyEvent *>(event)->key();
         if(key == Qt::Key_Escape) {
             ui->view->clearSelection();
+            ui->edit->setEnabled(false);
+            ui->remove->setEnabled(false);
             return true;
         } else if(key == Qt::Key_Delete) {
             model.removeTrace(ui->view->currentIndex().row());

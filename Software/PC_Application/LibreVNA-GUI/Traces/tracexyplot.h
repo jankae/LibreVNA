@@ -115,6 +115,9 @@ private:
     void traceDropped(Trace *t, QPoint position) override;
     QString mouseText(QPoint pos) override;
 
+    bool dropOnLeftAxis;
+    bool dropOnRightAxis;
+
     std::set<Trace*> tracesAxis[2];
 
     YAxis yAxis[2];

@@ -39,6 +39,7 @@ public slots:
     void splitHorizontally(bool moveContentToSecondChild = false);
     void closeTile();
     void setPlot(TracePlot *plot);
+    void removePlot();
 
 private slots:
     void on_bSmithchart_clicked();

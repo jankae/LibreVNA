@@ -32,7 +32,6 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     setXAxis(XAxis::Type::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 600000000);
     initializeTraceInfo();
 }
-
 TraceXYPlot::~TraceXYPlot()
 {
     for(auto l : constantLines) {
@@ -782,40 +781,66 @@ void TraceXYPlot::draw(QPainter &p)
     }
 
     if(dropPending) {
-        p.setOpacity(0.5);
-        p.setBrush(Qt::white);
-        p.setPen(Qt::white);
+        p.setOpacity(dropOpacity);
+        p.setBrush(dropBackgroundColor);
+        p.setPen(dropForegroundColor);
+
+        auto dropRect = getDropRect();
+
         if((yAxis[0].getType() == YAxis::Type::Disabled || !supported(dropTrace, yAxis[0].getType()))
             || (yAxis[1].getType() == YAxis::Type::Disabled || !supported(dropTrace, yAxis[1].getType()))) {
             // only one axis enabled, show drop area over whole plot
-            p.drawRect(plotRect);
+            p.drawRect(dropRect);
             auto font = p.font();
             font.setPixelSize(20);
             p.setFont(font);
             p.setOpacity(1.0);
-            p.setPen(Qt::white);
+            p.setPen(dropSection == DropSection::OnPlot ? dropHighlightColor : dropForegroundColor);
             auto text = "Drop here to add\n" + dropTrace->name() + "\nto XY-plot";
-            p.drawText(plotRect, Qt::AlignCenter, text);
+            p.drawText(dropRect, Qt::AlignCenter, text);
+            dropOnLeftAxis = true;
+            dropOnRightAxis = true;
         } else {
             // both axis enabled, show regions
-            auto leftRect = plotRect;
-            leftRect.setWidth(plotRect.width() * 0.3);
-            auto centerRect = plotRect;
-            centerRect.setX(centerRect.x() + plotRect.width() * 0.35);
-            centerRect.setWidth(plotRect.width() * 0.3);
-            auto rightRect = plotRect;
-            rightRect.setX(rightRect.x() + plotRect.width() * 0.7);
-            rightRect.setWidth(plotRect.width() * 0.3);
+            auto leftRect = dropRect;
+            leftRect.setWidth(dropRect.width() * 0.333);
+            auto centerRect = dropRect;
+            centerRect.setX(centerRect.x() + dropRect.width() * 0.333);
+            centerRect.setWidth(dropRect.width() * 0.333);
+            auto rightRect = dropRect;
+            rightRect.setX(rightRect.x() + dropRect.width() * 0.666);
+            rightRect.setWidth(dropRect.width() * 0.333);
             p.drawRect(leftRect);
             p.drawRect(centerRect);
             p.drawRect(rightRect);
             p.setOpacity(1.0);
-            p.setPen(Qt::white);
+            p.setPen(dropForegroundColor);
             auto font = p.font();
             font.setPixelSize(20);
             p.setFont(font);
+            if(dropSection == DropSection::OnPlot && leftRect.contains(dropPosition)) {
+                p.setPen(dropHighlightColor);
+                dropOnLeftAxis = true;
+                dropOnRightAxis = false;
+            } else {
+                p.setPen(dropForegroundColor);
+            }
             p.drawText(leftRect, Qt::AlignCenter, "Drop here to add\nto primary axis");
+            if(dropSection == DropSection::OnPlot && centerRect.contains(dropPosition)) {
+                p.setPen(dropHighlightColor);
+                dropOnLeftAxis = true;
+                dropOnRightAxis = true;
+            } else {
+                p.setPen(dropForegroundColor);
+            }
             p.drawText(centerRect, Qt::AlignCenter, "Drop here to add\nto boths axes");
+            if(dropSection == DropSection::OnPlot && rightRect.contains(dropPosition)) {
+                p.setPen(dropHighlightColor);
+                dropOnLeftAxis = false;
+                dropOnRightAxis = true;
+            } else {
+                p.setPen(dropForegroundColor);
+            }
             p.drawText(rightRect, Qt::AlignCenter, "Drop here to add\nto secondary axis");
         }
     }
@@ -1162,12 +1187,11 @@ void TraceXYPlot::traceDropped(Trace *t, QPoint position)
         enableTraceAxis(t, 0, true);
         return;
     }
-    // both axis enabled, check drop position
-    auto drop = Util::Scale<double>(position.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth, 0.0, 1.0);
-    if(drop < 0.66) {
+    // both axis enabled
+    if(dropOnLeftAxis) {
         enableTraceAxis(t, 0, true);
     }
-    if(drop > 0.33) {
+    if(dropOnRightAxis) {
         enableTraceAxis(t, 1, true);
     }
 }

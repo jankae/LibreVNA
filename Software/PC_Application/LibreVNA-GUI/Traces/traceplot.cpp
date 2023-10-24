@@ -6,6 +6,11 @@
 #include "preferences.h"
 #include "Util/util.h"
 #include "CustomWidgets/tilewidget.h"
+#include "tracexyplot.h"
+#include "tracesmithchart.h"
+#include "eyediagramplot.h"
+#include "tracewaterfall.h"
+#include "tracepolarchart.h"
 
 #include <QPainter>
 #include <QPainterPath>
@@ -99,6 +104,41 @@ void TracePlot::updateSpan(double min, double max)
     sweep_fmin = min;
     sweep_fmax = max;
     triggerReplot();
+}
+
+QString TracePlot::TypeToString(Type t)
+{
+    switch(t) {
+    case Type::EyeDiagram: return "Eye Diagram";
+    case Type::PolarChart: return "Polar Chart";
+    case Type::SmithChart: return "Smith Chart";
+    case Type::Waterfall: return "Waterfall";
+    case Type::XYPlot: return "XY Plot";
+    }
+}
+
+TracePlot::Type TracePlot::TypeFromString(QString s)
+{
+    for(unsigned int i=0;i<=(int) Type::EyeDiagram;i++) {
+        if(TypeToString((Type) i) == s) {
+            return (Type) i;
+        }
+    }
+    // use default
+    return Type::XYPlot;
+}
+
+TracePlot *TracePlot::createFromType(TraceModel &model, Type t)
+{
+    switch(t) {
+    case Type::EyeDiagram: return new EyeDiagramPlot(model);
+    case Type::PolarChart: return new TracePolarChart(model);
+    case Type::SmithChart: return new TraceSmithChart(model);
+    case Type::Waterfall: return new TraceWaterfall(model);
+    case Type::XYPlot: return new TraceXYPlot(model);
+    default:
+        return nullptr;
+    }
 }
 
 void TracePlot::initializeTraceInfo()
@@ -295,6 +335,46 @@ void TracePlot::paintEvent(QPaintEvent *event)
     p.setWindow(0, 0, w, h);
 
     draw(p);
+
+    if(dropPending) {
+        p.setOpacity(dropOpacity);
+        p.setBrush(dropBackgroundColor);
+        p.setPen(dropForegroundColor);
+
+        auto dropRect = getDropRect();
+
+        p.fillRect(0, 0, dropRect.left(), h-1, p.brush());
+        p.fillRect(dropRect.left(), 0, dropRect.width()-1, dropRect.top(), p.brush());
+        p.fillRect(dropRect.left(), dropRect.bottom(), dropRect.width()-1, h-1, p.brush());
+        p.fillRect(dropRect.right(), 0, w-1, h-1, p.brush());
+
+        p.setOpacity(1.0);
+        p.drawLine(QPoint(0, 0), dropRect.topLeft());
+        p.drawLine(QPoint(0, h-1), dropRect.bottomLeft());
+        p.drawLine(QPoint(w-1, 0), dropRect.topRight());
+        p.drawLine(QPoint(w-1, h-1), dropRect.bottomRight());
+        p.drawLine(QPoint(0, 0), QPoint(0, h-1));
+        p.drawLine(QPoint(0, h-1), QPoint(w-1, h-1));
+        p.drawLine(QPoint(w-1, h-1), QPoint(w-1, 0));
+        p.drawLine(QPoint(w-1, 0), QPoint(0, 0));
+        p.drawLine(dropRect.topLeft(), dropRect.topRight());
+        p.drawLine(dropRect.topRight(), dropRect.bottomRight());
+        p.drawLine(dropRect.bottomRight(), dropRect.bottomLeft());
+        p.drawLine(dropRect.bottomLeft(), dropRect.topLeft());
+
+        auto font = p.font();
+        font.setPixelSize(20);
+        p.setFont(font);
+        p.setPen(dropSection == DropSection::Above ? dropHighlightColor : dropForegroundColor);
+        p.drawText(QRect(0, 0, w, dropRect.top()), Qt::AlignCenter, "Insert above");
+        p.setPen(dropSection == DropSection::Below ? dropHighlightColor : dropForegroundColor);
+        p.drawText(QRect(0, dropRect.bottom(), w, dropRect.top()), Qt::AlignCenter, "Insert below");
+        p.setPen(dropSection == DropSection::ToTheLeft ? dropHighlightColor : dropForegroundColor);
+        p.drawText(QRect(0, 0, dropRect.left(), h), Qt::AlignCenter, "Insert to\nthe left");
+        p.setPen(dropSection == DropSection::ToTheRight ? dropHighlightColor : dropForegroundColor);
+        p.drawText(QRect(dropRect.right(), 0, dropRect.left(), h), Qt::AlignCenter, "Insert to\nthe right");
+    }
+
     replotTimer.start(MaxUpdateInterval);
 }
 
@@ -329,6 +409,15 @@ void TracePlot::finishContextMenu()
         add->addAction(below);
         contextmenu->addMenu(add);
     }
+
+    auto removeTile = new QAction("Remove Tile", contextmenu);
+    contextmenu->addAction(removeTile);
+    connect(removeTile, &QAction::triggered, [=]() {
+        markedForDeletion = true;
+        QTimer::singleShot(0, [=](){
+            parentTile->closeTile();
+        });
+    });
 
     auto close = new QAction("Close", contextmenu);
     contextmenu->addAction(close);
@@ -511,19 +600,91 @@ void TracePlot::dragEnterEvent(QDragEnterEvent *event)
         quintptr dropPtr;
         stream >> dropPtr;
         auto trace = (Trace*) dropPtr;
-        if(dropSupported(trace)) {
+//        if(dropSupported(trace)) {
             event->acceptProposedAction();
             dropPending = true;
             dropTrace = trace;
-        }
+//        }
     }
     triggerReplot();
+}
+
+void TracePlot::dragMoveEvent(QDragMoveEvent *event)
+{
+    if(!dropPending) {
+        return;
+    }
+    auto dropRect = getDropRect();
+    auto pos = event->position().toPoint() - QPoint(marginLeft, marginTop);
+    if(dropRect.contains(pos)) {
+        dropSection = DropSection::OnPlot;
+    } else {
+        // transform to relative coordinates from 0 to 1
+        auto x = (double) pos.x() / (width() - marginLeft - marginRight);
+        auto y = (double) pos.y() / (height() - marginTop - marginBottom);
+        qDebug() << "x:" << x << "y:" << y;
+        if(y < 0.5) {
+            if(x < y) {
+                dropSection = DropSection::ToTheLeft;
+            } else if(x > (1.0 - y)) {
+                dropSection = DropSection::ToTheRight;
+            } else {
+                dropSection = DropSection::Above;
+            }
+        } else {
+            if(x < (1.0 - y)) {
+                dropSection = DropSection::ToTheLeft;
+            } else if(x > y) {
+                dropSection = DropSection::ToTheRight;
+            } else {
+                dropSection = DropSection::Below;
+            }
+        }
+    }
+    dropPosition = pos;
+    replot();
 }
 
 void TracePlot::dropEvent(QDropEvent *event)
 {
     if(dropTrace) {
-        traceDropped(dropTrace, event->position().toPoint() -  - QPoint(marginLeft, marginTop));
+        if(dropSection == DropSection::OnPlot) {
+            traceDropped(dropTrace, event->position().toPoint() -  - QPoint(marginLeft, marginTop));
+        } else {
+            TileWidget *newTile = nullptr;
+            // parentTile will be modified by the split, save here
+            TileWidget *oldParent = parentTile;
+            switch(dropSection) {
+            case DropSection::Above:
+                parentTile->splitVertically(true);
+                newTile = oldParent->Child1();
+                break;
+            case DropSection::Below:
+                parentTile->splitVertically(false);
+                newTile = oldParent->Child2();
+                break;
+            case DropSection::ToTheLeft:
+                parentTile->splitHorizontally(true);
+                newTile = oldParent->Child1();
+                break;
+            case DropSection::ToTheRight:
+                parentTile->splitHorizontally(false);
+                newTile = oldParent->Child2();
+                break;
+            case DropSection::OnPlot:
+                // already handled above
+                break;
+            }
+            TracePlot *graph = createDefaultPlotForTrace(model, dropTrace);
+            if(!graph->configureForTrace(dropTrace)) {
+                // can't be used for the configuration the trace is in, fall back to XY-Plot
+                delete graph;
+                graph = new TraceXYPlot(model);
+                graph->configureForTrace(dropTrace);
+            }
+            newTile->setPlot(graph);
+            graph->enableTrace(dropTrace, true);
+        }
     }
     dropPending = false;
     dropTrace = nullptr;
@@ -547,9 +708,30 @@ void TracePlot::traceDropped(Trace *t, QPoint position)
     }
 }
 
+QRect TracePlot::getDropRect()
+{
+    constexpr double dropBorders = 0.2;
+    auto w = width() - marginLeft - marginRight;
+    auto h = height() - marginTop - marginBottom;
+    return QRect(QPoint(w*dropBorders, h*dropBorders), QSize(w*(1.0-2*dropBorders), h*(1.0-2*dropBorders)));
+}
+
 std::set<TracePlot *> TracePlot::getPlots()
 {
     return plots;
+}
+
+TracePlot *TracePlot::createDefaultPlotForTrace(TraceModel &model, Trace *t)
+{
+    auto &p = Preferences::getInstance();
+
+    TracePlot *ret = nullptr;
+    if(t->isReflection()) {
+        ret = createFromType(model, TypeFromString(p.Graphs.defaultGraphs.reflection));
+    } else {
+        ret = createFromType(model, TypeFromString(p.Graphs.defaultGraphs.transmission));
+    }
+    return ret;
 }
 
 void TracePlot::newTraceAvailable(Trace *t)

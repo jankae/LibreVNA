@@ -137,6 +137,11 @@ public:
             bool hide;
             double hidePercent;
         } SweepIndicator;
+
+        struct {
+            QString transmission;
+            QString reflection;
+        } defaultGraphs;
     } Graphs;
     struct {
         struct {
@@ -223,6 +228,8 @@ private:
         {&Graphs.SweepIndicator.line, "Graphs.SweepIndicator.line", false},
         {&Graphs.SweepIndicator.hide, "Graphs.SweepIndicator.hide", false},
         {&Graphs.SweepIndicator.hidePercent, "Graphs.SweepIndicator.hidePercent", 3.0},
+        {&Graphs.defaultGraphs.transmission, "Graphs.defaultGraphs.transmission", "XY Plot"},
+        {&Graphs.defaultGraphs.reflection, "Graphs.defaultGraphs.reflection", "Smith Chart"},
         {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
         {&Marker.defaultBehavior.showdB, "Marker.defaultBehavior.showdB", true},
         {&Marker.defaultBehavior.showdBm, "Marker.defaultBehavior.showdBm", true},

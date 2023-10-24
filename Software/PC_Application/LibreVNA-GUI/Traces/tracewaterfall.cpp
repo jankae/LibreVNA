@@ -470,18 +470,18 @@ void TraceWaterfall::draw(QPainter &p)
     }
 
     if(dropPending) {
-        p.setOpacity(0.5);
-        p.setBrush(Qt::white);
-        p.setPen(Qt::white);
+        p.setOpacity(dropOpacity);
+        p.setBrush(dropBackgroundColor);
+        p.setPen(dropForegroundColor);
         // show drop area over whole plot
-        p.drawRect(plotRect);
+        p.drawRect(getDropRect());
         auto font = p.font();
         font.setPixelSize(20);
         p.setFont(font);
         p.setOpacity(1.0);
-        p.setPen(Qt::white);
+        p.setPen(dropSection == DropSection::OnPlot ? dropHighlightColor : dropForegroundColor);
         auto text = "Drop here to add\n" + dropTrace->name() + "\nto waterfall plot";
-        p.drawText(plotRect, Qt::AlignCenter, text);
+        p.drawText(getDropRect(), Qt::AlignCenter, text);
     }
 }
 

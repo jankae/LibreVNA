@@ -93,7 +93,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -107,8 +107,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>679</width>
-             <height>836</height>
+             <width>683</width>
+             <height>897</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -698,8 +698,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>450</width>
-             <height>320</height>
+             <width>697</width>
+             <height>563</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -855,13 +855,84 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>437</width>
-             <height>862</height>
+             <width>683</width>
+             <height>1058</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_11">
+              <item>
+               <widget class="QGroupBox" name="groupBox_7">
+                <property name="title">
+                 <string>Default Graphs</string>
+                </property>
+                <layout class="QFormLayout" name="formLayout">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_14">
+                   <property name="text">
+                    <string>For transmission measurements:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_29">
+                   <property name="text">
+                    <string>For reflection measurements:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QComboBox" name="GraphsDefaultTransmission">
+                   <item>
+                    <property name="text">
+                     <string>XY Plot</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Polar Chart</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Waterfall</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Eye Diagram</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QComboBox" name="GraphsDefaultReflection">
+                   <item>
+                    <property name="text">
+                     <string>XY-Plot</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Smith Chart</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Polar Chart</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Waterfall</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
               <item>
                <widget class="QCheckBox" name="GraphsShowUnit">
                 <property name="text">
@@ -1278,8 +1349,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>402</width>
-             <height>540</height>
+             <width>683</width>
+             <height>605</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1617,8 +1688,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>138</width>
-             <height>112</height>
+             <width>168</width>
+             <height>127</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -1707,8 +1778,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>194</width>
-             <height>146</height>
+             <width>215</width>
+             <height>168</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_19">

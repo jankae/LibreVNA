@@ -1,4 +1,4 @@
-#ifndef TRACEPLOT_H
+﻿#ifndef TRACEPLOT_H
 #define TRACEPLOT_H
 
 #include "tracemodel.h"
@@ -33,6 +33,10 @@ public:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     virtual void updateSpan(double min, double max);
     virtual Type getType() = 0;
+    static QString TypeToString(Type t);
+    static Type TypeFromString(QString s);
+    static TracePlot* createFromType(TraceModel &model, Type t);
+    static TracePlot *createDefaultPlotForTrace(TraceModel &model, Trace *t);
 
     static std::set<TracePlot *> getPlots();
 
@@ -92,10 +96,12 @@ protected:
     // handle trace drops
     virtual bool dropSupported(Trace *t);
     void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     virtual void traceDropped(Trace *t, QPoint position);
     virtual QString mouseText(QPoint pos) {Q_UNUSED(pos) return QString();}
+    QRect getDropRect();
 
 protected slots:
     void newTraceAvailable(Trace *t);
@@ -110,6 +116,11 @@ protected:
     static constexpr unsigned int marginLeft = 0;
     static constexpr unsigned int marginRight = 0;
 
+    static constexpr double dropOpacity = 0.9;
+    static constexpr auto dropBackgroundColor = Qt::darkGray;
+    static constexpr auto dropForegroundColor = Qt::white;
+    static constexpr auto dropHighlightColor = Qt::red;
+
     double sweep_fmin, sweep_fmax;
     double xSweep; // current position in the sweep (NaN if no live traces are active on the plot)
     TraceModel &model;
@@ -123,6 +134,15 @@ protected:
 
     bool dropPending;
     QPoint dropPosition;
+    enum class DropSection {
+        Above,
+        Below,
+        ToTheLeft,
+        ToTheRight,
+        OnPlot,
+    };
+    DropSection dropSection;
+
     Trace *dropTrace;
 
     QLabel *cursorLabel;

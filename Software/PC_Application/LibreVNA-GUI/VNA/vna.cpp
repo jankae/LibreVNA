@@ -1570,12 +1570,7 @@ void VNA::createDefaultTracesAndGraphs(int ports)
                 QString param = "S"+QString::number(i+1)+QString::number(j+1);
                 auto trace = new Trace(param, getDefaultColor(ports, i, j), param);
                 traceModel.addTrace(trace);
-                TracePlot *plot;
-                if(i == j) {
-                    plot = new TraceSmithChart(traceModel);
-                } else {
-                    plot = new TraceXYPlot(traceModel);
-                }
+                TracePlot *plot = TracePlot::createDefaultPlotForTrace(traceModel, trace);
                 plot->updateSpan(settings.Freq.start, settings.Freq.stop);
                 plot->enableTrace(trace, true);
                 plots[i].push_back(plot);

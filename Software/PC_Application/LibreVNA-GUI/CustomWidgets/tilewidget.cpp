@@ -214,6 +214,14 @@ void TileWidget::setPlot(TracePlot *plot)
     }
 }
 
+void TileWidget::removePlot()
+{
+    if(hasContent) {
+        content->setParentTile(nullptr);
+        removeContent();
+    }
+}
+
 TileWidget::TileWidget(TraceModel &model, TileWidget &parent)
     : TileWidget(model)
 {
