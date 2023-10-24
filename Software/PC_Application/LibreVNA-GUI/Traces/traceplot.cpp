@@ -114,6 +114,7 @@ QString TracePlot::TypeToString(Type t)
     case Type::SmithChart: return "Smith Chart";
     case Type::Waterfall: return "Waterfall";
     case Type::XYPlot: return "XY Plot";
+    default: return "Invalid";
     }
 }
 

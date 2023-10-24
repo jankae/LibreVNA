@@ -71,3 +71,17 @@ class TestVNASweep(TestBase):
             # Change something irrelevant (to force reconfiguration of device)
             self.vna.cmd(":VNA:FREQuency:START "+str(1000000+i))
             self.waitSweepTimeout(2)
+            
+    def test_segmented_sweep(self):
+        self.vna.cmd(":DEV:MODE VNA")
+        self.vna.cmd(":VNA:SWEEP FREQUENCY")
+        self.vna.cmd(":VNA:STIM:LVL -10")
+        self.vna.cmd(":VNA:ACQ:IFBW 50000")
+        self.vna.cmd(":VNA:ACQ:AVG 1")
+        self.vna.cmd(":VNA:ACQ:POINTS 10000")
+        self.vna.cmd(":VNA:FREQuency:START 1000000")
+        self.vna.cmd(":VNA:FREQuency:STOP 6000000000")
+        self.waitSweepTimeout(10)
+        
+        S11 = self.vna.parse_VNA_trace_data(self.vna.query(":VNA:TRACE:DATA? S11"))
+        self.assertEqual(len(S11), 10000)

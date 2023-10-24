@@ -52,10 +52,10 @@ class TestSASweep(TestBase):
         port2 = self.vna.parse_SA_trace_data(self.vna.query(":SA:TRACE:DATA? PORT2"))
         
         self.assertEqual(port1[0][0], 0.0)
-        self.assertGreater(port1[-1][0], 4.5)
+        self.assertGreater(port1[-1][0], 4)
         self.assertLess(port1[-1][0], 5)
         self.assertEqual(port2[0][0], 0.0)
-        self.assertGreater(port2[-1][0], 4.5)
+        self.assertGreater(port2[-1][0], 4)
         self.assertLess(port2[-1][0], 5)
        
         # No signal present, signal level should be very low

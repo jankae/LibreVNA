@@ -1161,6 +1161,7 @@ bool TraceXYPlot::markerVisible(double x)
 
 void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 {
+    Q_UNUSED(position)
     if(!supported(t)) {
         // needs to switch to a different domain for the graph
         if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a trace that is not supported with the currently selected X axis domain."

@@ -118,7 +118,7 @@ private:
     bool CalibrationMeasurementActive() { return calWaitFirst || calMeasuring; }
     void SetupSCPI();
     void UpdateAverageCount();
-    void SettingsChanged(bool resetTraces = true);
+    void SettingsChanged(bool resetTraces = true, int delay = 100);
     void ConstrainAndUpdateFrequencies();
     void LoadSweepSettings();
     void StoreSweepSettings();

@@ -202,7 +202,7 @@ private:
         {&Startup.SA.detector, "Startup.SA.detector", 0},
         {&Startup.SA.averaging, "Startup.SA.averaging", 1},
         {&Acquisition.alwaysExciteAllPorts, "Acquisition.alwaysExciteBothPorts", true},
-        {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", false},
+        {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", true},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
         {&Acquisition.fullSpanManual, "Acquisition.fullSpanManual", false},
         {&Acquisition.fullSpanStart, "Acquisition.fullSpanStart", 0.0},

@@ -945,7 +945,7 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
         } else {
             settings.activeSegment = 0;
         }
-        SettingsChanged(false);
+        SettingsChanged(false, 0);
     }
 }
 
@@ -954,9 +954,9 @@ void VNA::UpdateAverageCount()
     lAverages->setText(QString::number(average.getLevel()) + "/");
 }
 
-void VNA::SettingsChanged(bool resetTraces)
+void VNA::SettingsChanged(bool resetTraces, int delay)
 {
-    configurationTimer.start(100);
+    configurationTimer.start(delay);
     changingSettings = true;
     configurationTimerResetTraces = resetTraces;
     if(resetTraces) {
