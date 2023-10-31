@@ -36,6 +36,7 @@ HEADERS += \
     Device/LibreVNA/manualcontroldialogvff.h \
     Device/LibreVNA/receivercaldialog.h \
     Device/LibreVNA/sourcecaldialog.h \
+    Device/SNA5000A/sna5000adriver.h \
     Device/SSA3000X/ssa3000xdriver.h \
     Device/devicedriver.h \
     Device/devicelog.h \
@@ -193,6 +194,7 @@ SOURCES += \
     Device/LibreVNA/manualcontroldialogvff.cpp \
     Device/LibreVNA/receivercaldialog.cpp \
     Device/LibreVNA/sourcecaldialog.cpp \
+    Device/SNA5000A/sna5000adriver.cpp \
     Device/SSA3000X/ssa3000xdriver.cpp \
     Device/devicedriver.cpp \
     Device/devicelog.cpp \

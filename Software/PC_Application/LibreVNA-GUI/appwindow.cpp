@@ -401,9 +401,6 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
                 break;
             }
         }
-        for(auto m : modeHandler->getModes()) {
-            connect(device, &DeviceDriver::InfoUpdated, m, &Mode::deviceInfoUpdated);
-        }
 
 //        vdevice->initialize();
 
@@ -1135,6 +1132,9 @@ void AppWindow::DeviceInfoUpdated()
         modeHandler->getActiveMode()->initializeDevice();
     }
     UpdateReferenceToolbar();
+    for(auto m : modeHandler->getModes()) {
+        m->deviceInfoUpdated();
+    }
 }
 
 //void AppWindow::SourceCalibrationDialog()

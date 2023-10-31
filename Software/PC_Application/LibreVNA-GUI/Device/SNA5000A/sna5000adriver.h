@@ -1,5 +1,5 @@
-#ifndef SSA3000XDRIVER_H
-#define SSA3000XDRIVER_H
+#ifndef SNA5000ADRIVER_H
+#define SNA5000ADRIVER_H
 
 #include "../devicetcpdriver.h"
 
@@ -7,19 +7,20 @@
 
 #include <QHostAddress>
 #include <QTcpSocket>
-#include <QTimer>
+#include <QThread>
 
-class SSA3000XDriver : public DeviceTCPDriver
+class SNA5000ADriver : public DeviceTCPDriver
 {
+    Q_OBJECT
 public:
-    SSA3000XDriver();
-    virtual ~SSA3000XDriver();
+    SNA5000ADriver();
+    virtual ~SNA5000ADriver();
 
     /**
      * @brief Returns the driver name. It must be unique across all implemented drivers and is used to identify the driver
      * @return driver name
      */
-    virtual QString getDriverName() override {return "SSA3000X";}
+    virtual QString getDriverName() override {return "SNA5000A";}
     /**
      * @brief Lists all available devices by their serial numbers
      * @return Serial numbers of detected devices
@@ -77,25 +78,20 @@ public:
     /**
      * @brief Names of available measurements.
      *
-     * The names must be identical to the names used in the returned SAMeasurement.
-     * Typically the port names, e.g. this function may return {"PORT1","PORT2"} but any other names are also allowed.
+     * The names must be identical to the names used in the returned VNAMeasurement.
+     * Typically the S parameters, e.g. this function may return {"S11","S12","S21","S22"} but any other names are also allowed.
      *
-     * @return List of available SA measurement parameters
+     * @return List of available VNA measurement parameters
      */
-    virtual QStringList availableSAMeasurements() override;
-    /**
-     * @brief Configures the SA and starts a sweep
-     * @param s SA settings
-     * @param cb Callback, must be called after the SA has been configured
-     * @return true if configuration successful, false otherwise
-     */
-    virtual bool setSA(const SASettings &s, std::function<void(bool)> cb = nullptr) override;
+    virtual QStringList availableVNAMeasurements() override;
 
     /**
-     * @brief Returns the number of points in one spectrum analyzer sweep (as configured by the last setSA() call)
-     * @return Number of points in the sweep
+     * @brief Configures the VNA and starts a sweep
+     * @param s VNA settings
+     * @param cb Callback, must be called after the VNA has been configured
+     * @return true if configuration successful, false otherwise
      */
-    virtual unsigned int getSApoints() override;
+    virtual bool setVNA(const VNASettings &s, std::function<void(bool)> cb = nullptr) override;
 
     /**
      * @brief Names of available generator ports.
@@ -144,30 +140,56 @@ public:
 
 private slots:
     void extractTracePoints();
+signals:
+private slots:
+    void handleIncomingData();
 private:
+    struct {
+        bool enabled;
+        unsigned int state;
+        std::vector<double> xaxis;
+        std::map<QString, std::vector<double>> data;
+        bool waitingForResponse;
+    } traceReader;
+    bool traceReaderStop(unsigned int timeout = 1000);
+    void traceReaderRestart();
+    void traceReaderStatemachine();
+    bool waitForLine(unsigned int timeout);
     void write(QString s);
+    QString query(QString s, unsigned int timeout = 100);
+    long long queryInt(QString s);
+    std::vector<double> queryDoubleList(QString s);
     QString serial;
     QTcpSocket dataSocket;
 
     bool connected;
     Info info;
 
-    double startFreq, stopFreq;
+    std::vector<int> excitedPorts;
+    double excitationPower;
 
-    class SpectrumPoint {
+    class VNAPoint {
     public:
         unsigned int index;
         double frequency;
-        double dBm;
-        bool operator==(const SpectrumPoint& rhs) {
-            return index == rhs.index && frequency == rhs.frequency && dBm == rhs.dBm;
+        std::map<QString, std::complex<double>> data;
+        bool operator==(const VNAPoint& rhs) {
+            if(index != rhs.index || frequency != rhs.frequency || data.size() != rhs.data.size()) {
+                return false;
+            }
+            if(data.size() == 0) {
+                return true;
+            } else {
+                return std::prev(data.end())->second == std::prev(rhs.data.end())->second;
+            }
+//            return index == rhs.index && frequency == rhs.frequency && data.size() == rhs.data.size() && std::equal(data.begin(), data.end(), rhs.data.begin());
         }
     };
 
-    QTimer traceTimer;
-    TraceDifferenceGenerator<SpectrumPoint> *diffGen;
+    TraceDifferenceGenerator<VNAPoint> *diffGen;
 
     std::map<QString, QHostAddress> detectedDevices;
 };
 
-#endif // SSA3000XDRIVER_H
+
+#endif // SNA5000ADRIVER_H

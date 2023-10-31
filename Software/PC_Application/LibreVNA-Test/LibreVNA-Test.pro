@@ -41,6 +41,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.cpp \
     ../LibreVNA-GUI/Device/SSA3000X/ssa3000xdriver.cpp \
+    ../LibreVNA-GUI/Device/SNA5000A/sna5000adriver.cpp \
     ../LibreVNA-GUI/Device/devicedriver.cpp \
     ../LibreVNA-GUI/Device/devicelog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlog.cpp \
@@ -216,6 +217,7 @@ HEADERS += \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.h \
     ../LibreVNA-GUI/Device/SSA3000X/ssa3000xdriver.h \
+    ../LibreVNA-GUI/Device/SNA5000A/sna5000adriver.h \
     ../LibreVNA-GUI/Device/devicedriver.h \
     ../LibreVNA-GUI/Device/devicelog.h \
     ../LibreVNA-GUI/Device/LibreVNA/devicepacketlog.h \

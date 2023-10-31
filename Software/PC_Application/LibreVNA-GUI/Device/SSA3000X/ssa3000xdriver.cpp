@@ -9,7 +9,7 @@
 SSA3000XDriver::SSA3000XDriver()
     : DeviceTCPDriver("SSA3000X")
 {
-    diffGen = new TraceDifferenceGenerator<SpectrumPoint, 10>([=](const SpectrumPoint &p){
+    diffGen = new TraceDifferenceGenerator<SpectrumPoint>([=](const SpectrumPoint &p){
         SAMeasurement m;
         m.pointNum = p.index;
         m.frequency = p.frequency;
@@ -128,7 +128,7 @@ bool SSA3000XDriver::connectTo(QString serial)
     info.Limits.SA.minFreq = 0;
     info.Limits.SA.maxFreq = maxFreq;
     info.Limits.SA.minRBW = 1;
-    info.Limits.SA.maxRBW = 1000000;
+    info.Limits.SA.maxRBW = 3000000;
     info.Limits.SA.mindBm = -20;
     info.Limits.SA.maxdBm = 0;
     info.Limits.Generator.ports = 1;

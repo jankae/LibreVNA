@@ -39,6 +39,7 @@ void TraceModel::addTrace(Trace *t)
     endInsertRows();
     t->setModel(this);
     emit traceAdded(t);
+    emit requiredExcitation();
 }
 
 void TraceModel::removeTrace(unsigned int index)
@@ -50,6 +51,7 @@ void TraceModel::removeTrace(unsigned int index)
         traces.erase(traces.begin() + index);
         endRemoveRows();
         emit traceRemoved(trace);
+        emit requiredExcitation();
     }
 }
 

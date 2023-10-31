@@ -189,7 +189,8 @@ void SignalgeneratorWidget::deviceInfoUpdated()
         delete cb;
     }
     portCheckboxes.clear();
-    for(unsigned int i=1;i<=DeviceDriver::getInfo(window->getDevice()).Limits.Generator.ports;i++) {
+    auto info = DeviceDriver::getInfo(window->getDevice());
+    for(unsigned int i=1;i<=info.Limits.Generator.ports;i++) {
         auto cb = new QCheckBox("Port "+QString::number(i));
         ui->portBox->layout()->addWidget(cb);
         portCheckboxes.push_back(cb);
@@ -207,6 +208,11 @@ void SignalgeneratorWidget::deviceInfoUpdated()
         });
     }
     setPort(port);
+
+    ui->levelSlider->setMaximum(info.Limits.Generator.maxdBm * 100);
+    ui->levelSlider->setMinimum(info.Limits.Generator.mindBm * 100);
+    ui->levelSpin->setMaximum(info.Limits.Generator.maxdBm);
+    ui->levelSpin->setMinimum(info.Limits.Generator.mindBm);
 }
 
 void SignalgeneratorWidget::setLevel(double level)

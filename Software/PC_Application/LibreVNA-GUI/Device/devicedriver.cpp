@@ -4,6 +4,7 @@
 #include "LibreVNA/librevnausbdriver.h"
 #include "LibreVNA/Compound/compounddriver.h"
 #include "SSA3000X/ssa3000xdriver.h"
+#include "SNA5000A/sna5000adriver.h"
 
 DeviceDriver *DeviceDriver::activeDriver = nullptr;
 
@@ -23,6 +24,7 @@ std::vector<DeviceDriver *> DeviceDriver::getDrivers()
         ret.push_back(new LibreVNATCPDriver);
         ret.push_back(new CompoundDriver);
         ret.push_back(new SSA3000XDriver);
+        ret.push_back(new SNA5000ADriver);
     }
     return ret;
 }
@@ -110,26 +112,26 @@ DeviceDriver::Info::Info()
     hardware_version = "missing";
     Limits.VNA.ports = 2;
     Limits.VNA.minFreq = 0;
-    Limits.VNA.maxFreq = 6000000000;
+    Limits.VNA.maxFreq = 100000000000;
     Limits.VNA.mindBm = -100;
     Limits.VNA.maxdBm = 30;
     Limits.VNA.minIFBW = 1;
-    Limits.VNA.maxIFBW = 1000000;
+    Limits.VNA.maxIFBW = 100000000;
     Limits.VNA.maxPoints = 65535;
 
     Limits.Generator.ports = 2;
     Limits.Generator.minFreq = 0;
-    Limits.Generator.maxFreq = 6000000000;
+    Limits.Generator.maxFreq = 100000000000;
     Limits.Generator.mindBm = -100;
     Limits.Generator.maxdBm = 30;
 
     Limits.SA.ports = 2;
     Limits.SA.minFreq = 0;
-    Limits.SA.maxFreq = 6000000000;
+    Limits.SA.maxFreq = 100000000000;
     Limits.SA.mindBm = -100;
     Limits.SA.maxdBm = 30;
     Limits.SA.minRBW = 1;
-    Limits.SA.maxRBW = 1000000;
+    Limits.SA.maxRBW = 100000000;
 }
 
 void DeviceDriver::Info::subset(const DeviceDriver::Info &info)
