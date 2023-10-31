@@ -354,6 +354,7 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
                     device = d;
                 } else {
                     disconnect(d, nullptr, this, nullptr);
+                    UpdateDeviceList();
                     break;
                 }
             }
@@ -999,6 +1000,10 @@ int AppWindow::UpdateDeviceList()
             DeviceEntry e;
             e.driver = driver;
             e.serial = serial;
+            if(!parser.value("device").isEmpty() && parser.value("device") != e.serial) {
+                // specified device does not match, ignore
+                continue;
+            }
             deviceList.push_back(e);
         }
     }
@@ -1014,10 +1019,6 @@ int AppWindow::UpdateDeviceList()
     int available = 0;
     bool found = false;
     for(auto d : deviceList) {
-        if(!parser.value("device").isEmpty() && parser.value("device") != d.serial) {
-            // specified device does not match, ignore
-            continue;
-        }
         auto connectAction = ui->menuConnect_to->addAction(d.toString());
         connectAction->setCheckable(true);
         connectAction->setActionGroup(deviceActionGroup);
