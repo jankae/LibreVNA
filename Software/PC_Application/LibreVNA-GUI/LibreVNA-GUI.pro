@@ -24,6 +24,7 @@ HEADERS += \
     Device/LibreVNA/Compound/compounddriver.h \
     Device/LibreVNA/amplitudecaldialog.h \
     Device/LibreVNA/deviceconfigurationdialogv1.h \
+    Device/LibreVNA/deviceconfigurationdialogvfe.h \
     Device/LibreVNA/deviceconfigurationdialogvff.h \
     Device/LibreVNA/devicepacketlog.h \
     Device/LibreVNA/devicepacketlogview.h \
@@ -33,6 +34,7 @@ HEADERS += \
     Device/LibreVNA/librevnatcpdriver.h \
     Device/LibreVNA/librevnausbdriver.h \
     Device/LibreVNA/manualcontroldialogV1.h \
+    Device/LibreVNA/manualcontroldialogvfe.h \
     Device/LibreVNA/manualcontroldialogvff.h \
     Device/LibreVNA/receivercaldialog.h \
     Device/LibreVNA/sourcecaldialog.h \
@@ -182,6 +184,7 @@ SOURCES += \
     Device/LibreVNA/Compound/compounddriver.cpp \
     Device/LibreVNA/amplitudecaldialog.cpp \
     Device/LibreVNA/deviceconfigurationdialogv1.cpp \
+    Device/LibreVNA/deviceconfigurationdialogvfe.cpp \
     Device/LibreVNA/deviceconfigurationdialogvff.cpp \
     Device/LibreVNA/devicepacketlog.cpp \
     Device/LibreVNA/devicepacketlogview.cpp \
@@ -191,6 +194,7 @@ SOURCES += \
     Device/LibreVNA/librevnatcpdriver.cpp \
     Device/LibreVNA/librevnausbdriver.cpp \
     Device/LibreVNA/manualcontroldialogV1.cpp \
+    Device/LibreVNA/manualcontroldialogvfe.cpp \
     Device/LibreVNA/manualcontroldialogvff.cpp \
     Device/LibreVNA/receivercaldialog.cpp \
     Device/LibreVNA/sourcecaldialog.cpp \
@@ -330,12 +334,14 @@ FORMS += \
     Device/LibreVNA/amplitudecaldialog.ui \
     Device/LibreVNA/automaticamplitudedialog.ui \
     Device/LibreVNA/deviceconfigurationdialogv1.ui \
+    Device/LibreVNA/deviceconfigurationdialogvfe.ui \
     Device/LibreVNA/deviceconfigurationdialogvff.ui \
     Device/LibreVNA/devicepacketlogview.ui \
     Device/LibreVNA/firmwareupdatedialog.ui \
     Device/LibreVNA/frequencycaldialog.ui \
     Device/LibreVNA/librevnadriversettingswidget.ui \
     Device/LibreVNA/manualcontroldialogV1.ui \
+    Device/LibreVNA/manualcontroldialogvfe.ui \
     Device/LibreVNA/manualcontroldialogvff.ui \
     Device/devicelog.ui \
     Device/devicetcpdriversettings.ui \

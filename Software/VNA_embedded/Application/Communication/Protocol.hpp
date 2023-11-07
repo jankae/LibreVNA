@@ -238,6 +238,15 @@ using DeviceStatus = struct _deviceStatus {
 			uint8_t unlevel:1;
 			uint8_t temp_MCU;
 		} VFF;
+        struct {
+            uint8_t source_locked:1;
+            uint8_t LO_locked:1;
+            uint8_t ADC_overload:1;
+            uint8_t unlevel:1;
+            uint8_t temp_MCU;
+            uint16_t temp_eCal; // in 1/100 °C
+            uint16_t power_heater; // in mW
+        } VFE;
 	};
 };
 
@@ -264,6 +273,16 @@ using ManualStatus = struct _manualstatus {
 	        uint8_t source_locked :1;
 	        uint8_t LO_locked :1;
 		} VFF;
+        struct {
+            int16_t portmin, portmax;
+            int16_t refmin, refmax;
+            float portreal, portimag;
+            float refreal, refimag;
+            uint8_t source_locked :1;
+            uint8_t LO_locked :1;
+            uint16_t temp_eCal; // in 1/100 °C
+            uint16_t power_heater; // in mW
+        } VFE;
 	};
 };
 
@@ -322,6 +341,30 @@ using ManualControl = struct _manualControl {
 		    uint16_t RefGain :4;
 		    uint16_t Samples;
 		} VFF;
+        struct {
+            // Source
+            uint8_t SourceCE :1;
+            uint8_t SourceRFEN :1;
+            uint64_t SourceFrequency;
+            // Source signal path
+            uint8_t attenuator :7;
+            uint8_t SourceAmplifier1EN :1;
+            uint8_t SourceAmplifier2EN :1;
+            // LO
+            uint8_t LOCE :1;
+            uint8_t LORFEN :1;
+            uint64_t LOFrequency;
+            // Acquisition
+            uint16_t PortEN :1;
+            uint16_t RefEN :1;
+            uint16_t WindowType :2;
+            uint16_t PortGain :4;
+            uint16_t RefGain :4;
+            uint16_t Samples;
+            // other settings
+            uint8_t eCal_state :2;
+            uint16_t eCal_target; // in 1/100 °C
+        } VFE;
 	};
 };
 
@@ -405,6 +448,11 @@ using DeviceConfig = struct _deviceconfig {
             uint16_t portGain :4;
             uint16_t refGain :4;
 		} VFF;
+        struct {
+            uint16_t autogain :1;
+            uint16_t portGain :4;
+            uint16_t refGain :4;
+        } VFE;
 	};
 };
 

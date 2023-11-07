@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DeviceConfigurationDialogVFE</class>
+ <widget class="QWidget" name="DeviceConfigurationDialogVFE">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>307</width>
+    <height>180</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>PGA configuration (reset after reboot)</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QCheckBox" name="autogain">
+        <property name="text">
+         <string>Autogain</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Port gain:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="portgain">
+          <item>
+           <property name="text">
+            <string>1V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>10V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>20V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>30V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>40V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>60V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>80V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>120V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>157V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.25V/V</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Reference gain:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="refgain">
+          <item>
+           <property name="text">
+            <string>1V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>10V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>20V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>30V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>40V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>60V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>80V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>120V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>157V/V</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>0.25V/V</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

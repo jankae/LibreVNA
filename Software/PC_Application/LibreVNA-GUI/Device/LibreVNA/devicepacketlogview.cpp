@@ -204,6 +204,18 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addBool(VFF, "ADC overload", sFF.ADC_overload);
             addBool(VFF, "Unlevel", sFF.unlevel);
             addInteger(VFF, "MCU temperature", sFF.temp_MCU);
+
+            auto sFE = e.p->status.VFE;
+            auto VFE = new QTreeWidgetItem();
+            VFE->setData(2, Qt::DisplayRole, "VFE");
+            item->addChild(VFE);
+            addBool(VFE, "Source locked", sFE.source_locked);
+            addBool(VFE, "LO locked", sFE.LO_locked);
+            addBool(VFE, "ADC overload", sFE.ADC_overload);
+            addBool(VFE, "Unlevel", sFE.unlevel);
+            addInteger(VFE, "MCU temperature", sFE.temp_MCU);
+            addDouble(VFE, "eCal temperature", (double) sFE.temp_eCal / 100.0);
+            addDouble(VFE, "eCal heater power", (double) sFE.power_heater / 1000.0);
         }
             break;
         case Protocol::PacketType::DeviceInfo: {
@@ -227,9 +239,129 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addDouble(item, "Maximum harmonic frequency", s.limits_maxFreqHarmonic, "Hz");
         }
             break;
-        case Protocol::PacketType::ManualControl:
-        case Protocol::PacketType::ManualStatus:
-            // TODO
+        case Protocol::PacketType::ManualControl: {
+            Protocol::ManualControl s = e.p->manual;
+            auto V1 = new QTreeWidgetItem();
+            V1->setData(2, Qt::DisplayRole, "V1");
+            item->addChild(V1);
+            addBool(V1, "High Source chip enable", s.V1.SourceHighCE);
+            addBool(V1, "High Source RF enable", s.V1.SourceHighRFEN);
+            addEnum(V1, "High Source power", s.V1.SourceHighPower, {"-4 dBm", "-1 dBm", "2 dBm", "5 dBm"});
+            addEnum(V1, "High Source lowpass", s.V1.SourceHighLowpass, {"947 MHz", "1880 MHz", "3550 MHz", "None"});
+            addDouble(V1, "High Source frequency", s.V1.SourceHighFrequency);
+            addBool(V1, "Low Source enable", s.V1.SourceLowEN);
+            addEnum(V1, "Low Source power", s.V1.SourceLowPower, {"2 mA", "4 mA", "6 mA", "8 mA"});
+            addDouble(V1, "Low Source frequency", s.V1.SourceLowFrequency);
+            addDouble(V1, "Attenuator", s.V1.attenuator * 0.25);
+            addEnum(V1, "Source band selection", s.V1.SourceHighband, {"Low Source", "High Source"});
+            addBool(V1, "Amplifier enable", s.V1.AmplifierEN);
+            addEnum(V1, "Port switch", s.V1.PortSwitch, {"Port 1", "Port 2"});
+            addBool(V1, "LO1 chip enable", s.V1.LO1CE);
+            addBool(V1, "LO1 RF enable", s.V1.LO1RFEN);
+            addDouble(V1, "LO1 frequency", s.V1.LO1Frequency);
+            addBool(V1, "LO2 enable", s.V1.LO2EN);
+            addDouble(V1, "LO2 frequency", s.V1.LO2Frequency);
+            addBool(V1, "Port 1 receiver enable", s.V1.Port1EN);
+            addBool(V1, "Port 2 receiver enable", s.V1.Port2EN);
+            addBool(V1, "Reference receiver enable", s.V1.RefEN);
+            addInteger(V1, "Samples", s.V1.Samples);
+            addEnum(V1, "Window type", s.V1.WindowType, {"None", "Kaiser", "Hann", "Flattop"});
+
+            auto VFF = new QTreeWidgetItem();
+            VFF->setData(2, Qt::DisplayRole, "VFF");
+            item->addChild(VFF);
+            addBool(VFF, "Source chip enable", s.VFF.SourceCE);
+            addBool(VFF, "Source RF enable", s.VFF.SourceRFEN);
+            addEnum(VFF, "Source power", s.VFF.SourcePower, {"-1 dBm", "1 dBm", "2.5 dBm", "3.5 dBm", "4.5 dBm", "5.5 dBm", "6.5 dBm", "7 dBm"});
+            addDouble(VFF, "Source frequency", s.VFF.SourceFrequency);
+            addDouble(VFF, "Attenuator", s.VFF.attenuator * 0.25);
+            addBool(VFF, "Source amplifier enable", s.VFF.SourceAmplifierEN);
+            addBool(VFF, "LO chip enable", s.VFF.LOCE);
+            addBool(VFF, "LO RF enable", s.VFF.LORFEN);
+            addBool(VFF, "LO amplifier enable", s.VFF.LOAmplifierEN);
+            addEnum(VFF, "LO selection", s.VFF.LOexternal, {"Internal", "External"});
+            addDouble(VFF, "LO frequency", s.VFF.LOFrequency);
+            addBool(VFF, "Port receiver enable", s.VFF.PortEN);
+            addBool(VFF, "Reference receiver enable", s.VFF.RefEN);
+            addInteger(VFF, "Samples", s.VFF.Samples);
+            addEnum(VFF, "Window type", s.VFF.WindowType, {"None", "Kaiser", "Hann", "Flattop"});
+            addEnum(VFF, "Port gain", s.VFF.PortGain, {"1 V/V", "10 V/V", "20 V/V", "30 V/V", "40 V/V", "60 V/V", "80 V/V", "120 V/V", "157 V/V", "0.25 V/V"});
+            addEnum(VFF, "Reference gain", s.VFF.RefGain, {"1 V/V", "10 V/V", "20 V/V", "30 V/V", "40 V/V", "60 V/V", "80 V/V", "120 V/V", "157 V/V", "0.25 V/V"});
+
+            auto VFE = new QTreeWidgetItem();
+            VFE->setData(2, Qt::DisplayRole, "VFE");
+            item->addChild(VFE);
+            addBool(VFE, "Source chip enable", s.VFE.SourceCE);
+            addBool(VFE, "Source RF enable", s.VFE.SourceRFEN);
+            addDouble(VFE, "Source frequency", s.VFE.SourceFrequency);
+            addDouble(VFE, "Attenuator", s.VFE.attenuator * 0.25);
+            addBool(VFE, "Source amplifier 1 enable", s.VFE.SourceAmplifier1EN);
+            addBool(VFE, "Source amplifier 2 enable", s.VFE.SourceAmplifier2EN);
+            addBool(VFE, "LO chip enable", s.VFE.LOCE);
+            addBool(VFE, "LO RF enable", s.VFE.LORFEN);
+            addDouble(VFE, "LO frequency", s.VFE.LOFrequency);
+            addBool(VFE, "Port receiver enable", s.VFE.PortEN);
+            addBool(VFE, "Reference receiver enable", s.VFE.RefEN);
+            addInteger(VFE, "Samples", s.VFE.Samples);
+            addEnum(VFE, "Window type", s.VFE.WindowType, {"None", "Kaiser", "Hann", "Flattop"});
+            addEnum(VFE, "Port gain", s.VFE.PortGain, {"1 V/V", "10 V/V", "20 V/V", "30 V/V", "40 V/V", "60 V/V", "80 V/V", "120 V/V", "157 V/V", "0.25 V/V"});
+            addEnum(VFE, "Reference gain", s.VFE.RefGain, {"1 V/V", "10 V/V", "20 V/V", "30 V/V", "40 V/V", "60 V/V", "80 V/V", "120 V/V", "157 V/V", "0.25 V/V"});
+            addEnum(VFE, "eCal state", s.VFE.eCal_state, {"Port", "Open", "Short", "Load"});
+            addDouble(VFE, "eCal target temperature", (double) s.VFE.eCal_target / 100.0);
+        }
+            break;
+        case Protocol::PacketType::ManualStatus: {
+            Protocol::ManualStatus s = e.p->manualStatus;
+            auto V1 = new QTreeWidgetItem();
+            V1->setData(2, Qt::DisplayRole, "V1");
+            item->addChild(V1);
+            addInteger(V1, "ADC port 1 minimum", s.V1.port1min);
+            addInteger(V1, "ADC port 1 maximum", s.V1.port1max);
+            addInteger(V1, "ADC port 2 minimum", s.V1.port2min);
+            addInteger(V1, "ADC port 2 maximum", s.V1.port2max);
+            addInteger(V1, "ADC reference minimum", s.V1.refmin);
+            addInteger(V1, "ADC reference maximum", s.V1.refmax);
+            addDouble(V1, "Port 1 real", s.V1.port1real);
+            addDouble(V1, "Port 1 imaginary", s.V1.port1imag);
+            addDouble(V1, "Port 2 real", s.V1.port2real);
+            addDouble(V1, "Port 2 imaginary", s.V1.port2imag);
+            addDouble(V1, "Reference real", s.V1.refreal);
+            addDouble(V1, "Reference imaginary", s.V1.refimag);
+            addInteger(V1, "Source temperature", s.V1.temp_source);
+            addInteger(V1, "LO1 temperature", s.V1.temp_LO);
+            addBool(V1, "Source locked", s.V1.source_locked);
+            addBool(V1, "LO1 locked", s.V1.LO_locked);
+
+            auto VFF = new QTreeWidgetItem();
+            VFF->setData(2, Qt::DisplayRole, "VFF");
+            item->addChild(VFF);
+            addInteger(VFF, "ADC port minimum", s.VFF.portmin);
+            addInteger(VFF, "ADC port maximum", s.VFF.portmax);
+            addInteger(VFF, "ADC reference minimum", s.VFF.refmin);
+            addInteger(VFF, "ADC reference maximum", s.VFF.refmax);
+            addDouble(VFF, "Port real", s.VFF.portreal);
+            addDouble(VFF, "Port imaginary", s.VFF.portimag);
+            addDouble(VFF, "Reference real", s.VFF.refreal);
+            addDouble(VFF, "Reference imaginary", s.VFF.refimag);
+            addBool(VFF, "Source locked", s.VFF.source_locked);
+            addBool(VFF, "LO locked", s.VFF.LO_locked);
+
+            auto VFE = new QTreeWidgetItem();
+            VFE->setData(2, Qt::DisplayRole, "VFE");
+            item->addChild(VFE);
+            addInteger(VFE, "ADC port minimum", s.VFE.portmin);
+            addInteger(VFE, "ADC port maximum", s.VFE.portmax);
+            addInteger(VFE, "ADC reference minimum", s.VFE.refmin);
+            addInteger(VFE, "ADC reference maximum", s.VFE.refmax);
+            addDouble(VFE, "Port real", s.VFE.portreal);
+            addDouble(VFE, "Port imaginary", s.VFE.portimag);
+            addDouble(VFE, "Reference real", s.VFE.refreal);
+            addDouble(VFE, "Reference imaginary", s.VFE.refimag);
+            addBool(VFE, "Source locked", s.VFE.source_locked);
+            addBool(VFE, "LO locked", s.VFE.LO_locked);
+            addDouble(VFE, "eCal temperature", (double) s.VFE.temp_eCal / 100.0);
+            addDouble(VFE, "eCal heater power", (double) s.VFE.power_heater / 1000.0);
+        }
             break;
         case Protocol::PacketType::SpectrumAnalyzerSettings: {
             Protocol::SpectrumAnalyzerSettings s = e.p->spectrumSettings;
@@ -330,6 +462,14 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addBool(VFF, "PGA autogain", sFF.autogain);
             addInteger(VFF, "Port gain", sFF.portGain);
             addInteger(VFF, "Reference gain", sFF.refGain);
+
+            auto sFE = e.p->deviceConfig.VFE;
+            auto VFE = new QTreeWidgetItem();
+            VFE->setData(2, Qt::DisplayRole, "VFE");
+            item->addChild(VFE);
+            addBool(VFE, "PGA autogain", sFE.autogain);
+            addInteger(VFE, "Port gain", sFE.portGain);
+            addInteger(VFE, "Reference gain", sFE.refGain);
         }
             break;
         default:

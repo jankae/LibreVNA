@@ -2,8 +2,10 @@
 
 #include "manualcontroldialogV1.h"
 #include "manualcontroldialogvff.h"
+#include "manualcontroldialogvfe.h"
 #include "deviceconfigurationdialogv1.h"
 #include "deviceconfigurationdialogvff.h"
+#include "deviceconfigurationdialogvfe.h"
 #include "firmwareupdatedialog.h"
 #include "frequencycaldialog.h"
 #include "sourcecaldialog.h"
@@ -121,6 +123,9 @@ LibreVNADriver::LibreVNADriver()
         case 1:
             d = new ManualControlDialogV1(*this);
             break;
+        case 0xFE:
+            d = new ManualControlDialogVFE(*this);
+            break;
         case 0xFF:
             d = new ManualControlDialogVFF(*this);
             break;
@@ -137,6 +142,9 @@ LibreVNADriver::LibreVNADriver()
         switch(hardwareVersion) {
         case 1:
             d = new DeviceConfigurationDialogV1(*this);
+            break;
+        case 0xFE:
+            d = new DeviceConfigurationDialogVFE(*this);
             break;
         case 0xFF:
             d = new DeviceConfigurationDialogVFF(*this);
@@ -210,6 +218,17 @@ std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
             ret.insert(Flag::Overload);
         }
         break;
+    case 0xFE:
+        if(!lastStatus.VFE.source_locked || !lastStatus.VFE.LO_locked) {
+            ret.insert(Flag::Unlocked);
+        }
+        if(lastStatus.VFE.unlevel) {
+            ret.insert(Flag::Unlevel);
+        }
+        if(lastStatus.VFE.ADC_overload) {
+            ret.insert(Flag::Overload);
+        }
+        break;
     case 0xFF:
         if(!lastStatus.VFF.source_locked || !lastStatus.VFF.LO_locked) {
             ret.insert(Flag::Unlocked);
@@ -243,6 +262,11 @@ QString LibreVNADriver::getStatus()
                 ret.append(" (External available)");
             }
         }
+        break;
+    case 0xFE:
+        ret.append(" MCU Temp: "+QString::number(lastStatus.VFE.temp_MCU)+"°C");
+        ret.append(" eCal Temp: "+QString::number(lastStatus.VFE.temp_eCal / 100.0)+"°C");
+        ret.append(" eCal Power: "+QString::number(lastStatus.VFE.power_heater / 1000.0)+"W");
         break;
     case 0xFF:
         ret.append(" MCU Temp: "+QString::number(lastStatus.VFF.temp_MCU)+"°C");
@@ -672,8 +696,9 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
 QString LibreVNADriver::hardwareVersionToString(uint8_t version)
 {
     switch(version) {
-    case 1: return "1";
-    case 255: return "PT";
+    case 0x01: return "1";
+    case 0xFE: return "P2";
+    case 0xFF: return "PT";
     default: return "Unknown";
     }
 }
@@ -686,8 +711,9 @@ unsigned int LibreVNADriver::getMaxAmplitudePoints() const
 QString LibreVNADriver::getFirmwareMagicString()
 {
     switch(hardwareVersion) {
-    case 1: return "VNA!";
-    case 255: return "VNPT";
+    case 0x01: return "VNA!";
+    case 0xFE: return "VNP2";
+    case 0xFF: return "VNPT";
     default: return "XXXX";
     }
 }

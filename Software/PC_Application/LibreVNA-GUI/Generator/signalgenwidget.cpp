@@ -207,6 +207,10 @@ void SignalgeneratorWidget::deviceInfoUpdated()
             emit SettingsChanged();
         });
     }
+
+    setFrequency(ui->frequency->value());
+    setLevel(ui->levelSpin->value());
+
     setPort(port);
 
     ui->levelSlider->setMaximum(info.Limits.Generator.maxdBm * 100);
@@ -217,7 +221,13 @@ void SignalgeneratorWidget::deviceInfoUpdated()
 
 void SignalgeneratorWidget::setLevel(double level)
 {
-    // TODO constrain to frequency dependent levels
+    auto info = DeviceDriver::getInfo(window->getDevice());
+    if(level < info.Limits.Generator.mindBm) {
+        level = info.Limits.Generator.mindBm;
+    }
+    if(level > info.Limits.Generator.maxdBm) {
+        level = info.Limits.Generator.maxdBm;
+    }
     ui->levelSpin->blockSignals(true);
     ui->levelSlider->blockSignals(true);
     ui->levelSpin->setValue(level);
@@ -229,6 +239,13 @@ void SignalgeneratorWidget::setLevel(double level)
 
 void SignalgeneratorWidget::setFrequency(double frequency)
 {
+    auto info = DeviceDriver::getInfo(window->getDevice());
+    if(frequency < info.Limits.Generator.minFreq) {
+        frequency = info.Limits.Generator.minFreq;
+    }
+    if(frequency > info.Limits.Generator.maxFreq) {
+        frequency = info.Limits.Generator.maxFreq;
+    }
     ui->frequency->setValue(frequency);
 }
 
