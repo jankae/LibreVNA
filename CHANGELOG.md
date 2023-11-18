@@ -1,14 +1,17 @@
 # Changelog
 
 ## v1.5.0
-**v1.5.0 is in a pre-release state for now:** The following changes are implemented but not sufficiently tested for productive use. The v1.5.0-alpha.2 release allows testing of these features, proceed at your own risk.
-
 - New features:
   - Further abstraction from the LibreVNA hardware. The GUI now supports VNAs with up to 8 ports
-  - Allow cascading of muliple LibreVNAs, see Preferences->Compound Devices. You need to configure a compound device first (consisting of up to 4 LibreVNAs). Afterwards, you are able to use them as one larger, virtual VNA with more ports (or more physical separation between the ports). Measurements within one physical LibreVNA will contain phase information, measurements between different LibreVNAs have their phase set to zero
+  - Capsulation of communication to the hardware inside of the DeviceDriver class. This simplifies the integration of drivers for other equipment
+    - Experimental drivers for Siglent SSA3000X and SNA5000A series devices as examples
+  - Allow cascading of muliple LibreVNAs, see Preferences->Device Drivers->LibreVNA/Compound. You need to configure a compound device first (consisting of up to 4 LibreVNAs). Afterwards, you are able to use them as one larger, virtual VNA with more ports (or more physical separation between the ports). Measurements within one physical LibreVNA will contain phase information, measurements between different LibreVNAs have their phase set to zero
   - Support for calibrating with sliding loads
   - New graph type: Eye Diagram
   - Restrict markers to a certain frequency range
+  - Switched to a dedicated USB VID/PID thanks to pid.codes
+  - Switched to Qt6
+  - Easier 
 
 - API-breaking changes: Unfortunately, some major rework was required to make the GUI compatible to devices with more than two ports. In some areas, the file storage format and the SCPI API had to change. Almost all changes are within the calibration system.
   - Calibration kit file format changed (old calibration kits can be imported)
@@ -22,6 +25,7 @@
   - Valgrind issues fixed (mostly variable initializations)
   - made USB communication more robust
   - PLL locking issue fixed
+  - no more disappearing device log
 
 ## v1.4.1
 - Bugfix: Configure voltage regulator for correct voltage at startup
