@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: LibreVNA-GUI-Ubuntu-${{env.LIBREVNA_VERSION}}
           path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI
@@ -56,7 +56,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: '6.2.0'
           arch: 'win64_mingw81'
@@ -103,7 +103,7 @@ jobs:
         shell: cmd
         
       - name: Upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
         with:
@@ -111,7 +111,7 @@ jobs:
           path: Software/PC_Application/LibreVNA-GUI/release
 
   PC_Application_OSX:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v1
 
@@ -148,7 +148,7 @@ jobs:
       - name: Upload artifact
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: LibreVNA-GUI-OSX-${{env.LIBREVNA_VERSION}}
           path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
@@ -189,7 +189,7 @@ jobs:
         shell: bash
 
       - name: Upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
         with:
