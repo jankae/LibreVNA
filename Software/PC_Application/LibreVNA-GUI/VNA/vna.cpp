@@ -164,6 +164,7 @@ VNA::VNA(AppWindow *window, QString name)
     window->menuBar()->insertMenu(window->getUi()->menuWindow->menuAction(), menuDeembed);
     actions.insert(menuDeembed->menuAction());
     auto confDeembed = menuDeembed->addAction("Setup...");
+    confDeembed->setMenuRole(QAction::NoRole);
     connect(confDeembed, &QAction::triggered, &deembedding, &Deembedding::configure);
 
     enableDeembeddingAction = menuDeembed->addAction("De-embed VNA samples");
