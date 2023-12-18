@@ -237,13 +237,6 @@ QVariant MarkerModel::data(const QModelIndex &index, int role) const
                 return QString::number(marker->getGroup()->getNumber());
             }
             break;
-        case ColIndexTrace:
-            if(marker->getTrace()) {
-                return marker->getTrace()->name();
-            }
-            break;
-        case ColIndexType:
-            return marker->readableType();
         case ColIndexSettings:
             return marker->readableSettings();
         case ColIndexData:
