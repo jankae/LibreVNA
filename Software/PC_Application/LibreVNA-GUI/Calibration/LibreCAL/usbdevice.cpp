@@ -16,6 +16,7 @@ using USBID = struct {
 };
 static constexpr USBID IDs[] = {
     {0x0483, 0x4122},
+    {0x1209, 0x4122},
 };
 
 USBDevice::USBDevice(QString serial)
