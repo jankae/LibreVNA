@@ -44,6 +44,8 @@ public:
     QString getFirmware() const;
     unsigned int getNumPorts() const;
 
+    QString getDateTimeUTC();
+
     bool enterBootloader();
 
     class CoefficientSet {
@@ -96,6 +98,8 @@ private:
     USBDevice *usb;
     QString firmware;
     int numPorts;
+
+    float firmware_major_minor;
 
     std::vector<CoefficientSet> coeffSets;
 };

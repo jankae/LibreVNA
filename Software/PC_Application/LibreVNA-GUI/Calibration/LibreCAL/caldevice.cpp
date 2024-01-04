@@ -3,20 +3,59 @@
 #include <thread>
 
 #include <QDebug>
-
+#include <QDateTime>
 using namespace std;
+
+static QString getLocalDateTimeWithUtcOffset()
+{
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    int year = currentDateTime.date().year();
+    int month = currentDateTime.date().month();
+    int day = currentDateTime.date().day();
+    int hour = currentDateTime.time().hour();
+    int minute = currentDateTime.time().minute();
+    int second = currentDateTime.time().second();
+    int utcOffset = currentDateTime.offsetFromUtc() / 3600;
+    int utcOffsetMinute = (currentDateTime.offsetFromUtc() % 3600) / 60;
+    QString dateTimeString = QString("%1/%2/%3 %4:%5:%6 UTC%7%8:%9")
+        .arg(year, 4, 10, QChar('0'))
+        .arg(month, 2, 10, QChar('0'))
+        .arg(day, 2, 10, QChar('0'))
+        .arg(hour, 2, 10, QChar('0'))
+        .arg(minute, 2, 10, QChar('0'))
+        .arg(second, 2, 10, QChar('0'))
+        .arg(utcOffset > 0 ? "+" : "-") // Add a plus sign for positive offsets
+        .arg(qAbs(utcOffset), 2, 10, QChar('0'))
+        .arg(utcOffsetMinute, 2, 10, QChar('0'));
+    return dateTimeString;
+}
 
 CalDevice::CalDevice(QString serial) :
     usb(new USBDevice(serial))
 {
     // Check device identification
     auto id = usb->Query("*IDN?");
-    if(!id.startsWith("LibreCAL_")) {
+    if(!id.startsWith("LibreCAL,")) {
         delete usb;
         throw std::runtime_error("Invalid response to *IDN?: "+id.toStdString());
     }
 
     firmware = usb->Query(":FIRMWARE?");
+    QList<QString> fw_version = firmware.split(".");
+    if (fw_version.size() == 3) {
+        int firmware_major = fw_version[0].toInt();
+        int firmware_minor = fw_version[1].toInt();
+        this->firmware_major_minor = firmware_major + ((float)firmware_minor/10.0f);
+        if(this->firmware_major_minor >= 0.2)
+        {
+            /* Set Date Time UTC */
+            QString LocalDateTimeWithUtcOffset = getLocalDateTimeWithUtcOffset();
+            QString ret = usb->Query(":DATE_TIME "+LocalDateTimeWithUtcOffset);
+        }
+    } else {
+        // fw_version invalid
+        this->firmware_major_minor = 0.0;
+    }
     QString ports = usb->Query(":PORTS?");
     bool okay;
     numPorts = ports.toInt(&okay);
@@ -117,6 +156,17 @@ unsigned int CalDevice::getNumPorts() const
 bool CalDevice::enterBootloader()
 {
     return usb->Cmd(":BOOTloader");
+}
+
+QString CalDevice::getDateTimeUTC()
+{
+    if(this->firmware_major_minor >= 0.2)
+    {
+        return usb->Query(":DATE_TIME?");
+    }else
+    {
+        return ""; // Not available
+    }
 }
 
 void CalDevice::loadCoefficientSets(QStringList names)

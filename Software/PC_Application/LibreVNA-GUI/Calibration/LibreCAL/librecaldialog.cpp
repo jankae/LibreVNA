@@ -33,11 +33,12 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
             device = new CalDevice(text);
         } catch (exception &e) {
             device = nullptr;
+            InformationBox::ShowError("Failed to connect", e.what(), this);
         }
         if(device) {
             createPortAssignmentUI();
             connect(device, &CalDevice::updateCoefficientsPercent, ui->progressCoeff, &QProgressBar::setValue);
-            connect(device, &CalDevice::updateCoefficientsDone, [=](bool success){
+            connect(device, &CalDevice::updateCoefficientsDone, this, [=](bool success){
                 busy = false;
                 if(success) {
                     ui->progressCoeff->setValue(100);
@@ -48,7 +49,7 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
                     ui->lCoefficientStatus->setText("Failed to load coefficients");
                 }
                 updateCalibrationStartStatus();
-            });
+            }, Qt::QueuedConnection);
 
             ui->cbCoefficients->clear();
             ui->cbCoefficients->addItem("Select...");
@@ -389,7 +390,7 @@ void LibreCALDialog::startCalibration()
             }
             setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::None));
             auto m = throughMeasurements[throughIndex];
-            device->setStandard(m->getPort1(), CalDevice::Standard(m->getPort2()));
+            device->setStandard(portAssignment[m->getPort1()-1], CalDevice::Standard(portAssignment[m->getPort2()-1]));
             emit cal->startMeasurements({m});
         }
             break;
