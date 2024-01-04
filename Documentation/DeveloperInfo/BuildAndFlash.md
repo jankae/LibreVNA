@@ -17,8 +17,8 @@ Creating all the different parts from the source code requires quite a few tools
 * Build the application:
   * either:
   ```
-  cd Software/PC_Application
-  qmake
+  cd Software/PC_Application/LibreVNA-GUI
+  qmake6
   make
   ```
   * or:
