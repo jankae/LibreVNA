@@ -184,6 +184,8 @@ public:
 
     QString getFirmwareMagicString();
 
+    unsigned int getProtocolVersion() const;
+
 signals:
     void receivedAnswer(const LibreVNADriver::TransmissionResult &result);
     void receivedPacket(const Protocol::PacketInfo& packet);
@@ -194,6 +196,7 @@ protected:
     QString hardwareVersionToString(uint8_t version);
 
     bool connected;
+    unsigned int protocolVersion;
     QString serial;
     Info info;
     uint8_t hardwareVersion;

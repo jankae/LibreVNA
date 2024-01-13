@@ -2,6 +2,7 @@
 
 #include "ui_firmwareupdatedialog.h"
 #include "../../VNA_embedded/Application/Communication/PacketConstants.h"
+#include "CustomWidgets/informationbox.h"
 
 #include <QFileDialog>
 #include <QStyle>
@@ -60,8 +61,25 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     char header[24];
     file->read(header, sizeof(header));
     if(strncmp(header, dev->getFirmwareMagicString().toStdString().c_str(), 4)) {
-        abortWithError("Invalid magic header constant");
-        return;
+        // might be a firmware file for a wrong LibreVNA
+        if(dev->getProtocolVersion() == Protocol::Version) {
+            // we are talking to a LibreVNA with the correct protocol, this is definitely the wrong firmware file
+            abortWithError("Invalid magic header constant");
+            return;
+        } else {
+            // we might be talking to the correct hardware but with the wrong protocol version (which might result
+            // in the magic string check falsely failing. Process after user confirmation
+            auto confirm = InformationBox::AskQuestion("Continue?", "The firmware magic header constant does not match the expected"
+                                                     " value for your LibreVNA. Either this is the wrong firmware file"
+                                                     " or the hardware ID of your LibreVNA was read incorrectly. This"
+                                                     " can happen if the LibreVNA uses a different protocol version than"
+                                                     " what it expected by the GUI. Do you want to continue with the firmware update?", true);
+            if(!confirm) {
+                abortWithError("Aborted by user");
+                return;
+            }
+        }
+
     }
     file->seek(0);
     state = State::ErasingFLASH;

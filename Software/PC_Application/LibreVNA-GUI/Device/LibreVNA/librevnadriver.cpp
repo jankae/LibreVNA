@@ -114,6 +114,7 @@ LibreVNADriver::LibreVNADriver()
     skipOwnPacketHandling = false;
     SApoints = 0;
     hardwareVersion = 0;
+    protocolVersion = 0;
     setSynchronization(Synchronization::Disabled, false);
 
     auto manual = new QAction("Manual Control");
@@ -589,6 +590,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
     switch(packet.type) {
     case Protocol::PacketType::DeviceInfo: {
         // Check protocol version
+        protocolVersion = packet.info.ProtocolVersion;
         if(packet.info.ProtocolVersion != Protocol::Version) {
             auto ret = InformationBox::AskQuestion("Warning",
                                         "The device reports a different protocol"
@@ -701,6 +703,11 @@ QString LibreVNADriver::hardwareVersionToString(uint8_t version)
     case 0xFF: return "PT";
     default: return "Unknown";
     }
+}
+
+unsigned int LibreVNADriver::getProtocolVersion() const
+{
+    return protocolVersion;
 }
 
 unsigned int LibreVNADriver::getMaxAmplitudePoints() const
