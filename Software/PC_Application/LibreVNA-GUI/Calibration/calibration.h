@@ -101,6 +101,8 @@ public:
 public slots:
     // Call once all datapoints of the current span have been added
     void measurementsComplete();
+    // Call once when a measurement is aborted before all points have been captured
+    void measurementsAbort();
     // Attempts to calculate the calibration coefficients. If not enough measurements are available, false is returned and the currently used coefficients are not changed
     bool compute(CalType type);
     // Deactivates the calibration, resets the calibration coefficients. Calibration measurements are NOT deleted.
@@ -110,6 +112,8 @@ signals:
     void startMeasurements(std::set<CalibrationMeasurement::Base*> m);
     // emitted whenever a measurement is complete (triggered by calling measurementsComplete())
     void measurementsUpdated();
+    // emitted when taking a calibration measurement is aborted
+    void measurementsAborted();
     // emitted when calibration coefficients were calculated/updated successfully
     void activated(CalType type);
     // emitted when the calibrationo coefficients were reset

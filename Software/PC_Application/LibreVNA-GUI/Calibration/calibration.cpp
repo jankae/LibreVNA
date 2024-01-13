@@ -1753,6 +1753,11 @@ void Calibration::measurementsComplete()
     emit measurementsUpdated();
 }
 
+void Calibration::measurementsAbort()
+{
+    emit measurementsAborted();
+}
+
 void Calibration::deactivate()
 {
     lock_guard<recursive_mutex> guard(access);

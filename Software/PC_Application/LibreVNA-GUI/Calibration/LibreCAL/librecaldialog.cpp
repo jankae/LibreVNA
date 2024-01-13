@@ -398,7 +398,11 @@ void LibreCALDialog::startCalibration()
         measurementsTaken++;
     };
 
+    disconnect(cal, &Calibration::measurementsUpdated, this, nullptr);
     connect(cal, &Calibration::measurementsUpdated, this, startNextCalibrationStep);
+    connect(cal, &Calibration::measurementsAborted, this, [=](){
+        enableUI();
+    });
 
     startNextCalibrationStep();
 }

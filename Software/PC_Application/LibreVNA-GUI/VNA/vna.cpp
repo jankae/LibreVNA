@@ -889,8 +889,9 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
                 cal.addMeasurements(calMeasurements, m_avg);
                 if(m_avg.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
-                    cal.measurementsComplete();
                     delete calDialog;
+                    calDialog = nullptr;
+                    cal.measurementsComplete();
                 }
             }
         }
@@ -1266,6 +1267,7 @@ void VNA::StartCalibrationMeasurements(std::set<CalibrationMeasurement::Base*> m
         // the user aborted the calibration measurement
         calMeasuring = false;
         cal.clearMeasurements(calMeasurements);
+        cal.measurementsAbort();
         delete calDialog;
     }, Qt::UniqueConnection);
     // Trigger sweep to start from beginning
