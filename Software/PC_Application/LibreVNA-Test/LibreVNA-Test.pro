@@ -150,6 +150,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/touchstone.cpp \
     ../LibreVNA-GUI/unit.cpp \
     main.cpp \
+    parametertests.cpp \
     portextensiontests.cpp \
     utiltests.cpp
 
@@ -339,6 +340,7 @@ HEADERS += \
     ../LibreVNA-GUI/tcpserver.h \
     ../LibreVNA-GUI/touchstone.h \
     ../LibreVNA-GUI/unit.h \
+    parametertests.h \
     portextensiontests.h \
     utiltests.h
 

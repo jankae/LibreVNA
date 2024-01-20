@@ -579,7 +579,13 @@ Sparam Through::toSparam(double freq)
         double through_att = pow(10.0, -through_att_db / 10.0);
         auto through = polar<double>(through_att, through_phaseshift);
         // Assume symmetric and perfectly matched through for other parameters
-        return Sparam(0.0, through, through, 0.0);
+        auto S = Sparam(0.0, through, through, 0.0);
+        // update S parameters if Z0 does not match system impedance exactly
+        if(Z0 != 50.0) {
+            auto abcd = ABCDparam(S, Z0);
+            S = Sparam(abcd, 50.0);
+        }
+        return S;
     }
 }
 
