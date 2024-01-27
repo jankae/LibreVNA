@@ -98,6 +98,11 @@ VNA::VNA(AppWindow *window, QString name)
             InformationBox::ShowMessage("Invalid calibration", "The selected calibration was created for a different device. You can still load it but the resulting "
                                         "data likely isn't useful.");
         }
+        if(cal.getCaltype().type != Calibration::Type::None) {
+            if(InformationBox::AskQuestion("Adjust span?", "Do you want to adjust the span to match the loaded calibration file?", false)) {
+                SpanMatchCal();
+            }
+        }
     });
 
     connect(saveCal, &QAction::triggered, [=](){
@@ -330,6 +335,14 @@ VNA::VNA(AppWindow *window, QString name)
     connect(bZero, &QPushButton::clicked, this, &VNA::SetZeroSpan);
     frequencySweepActions.push_back(tb_sweep->addWidget(bZero));
 
+    bMatchCal = new QPushButton("Cal");
+    bMatchCal->setToolTip("Match span of calibration");
+    bMatchCal->setMaximumWidth(28);
+    bMatchCal->setMaximumHeight(24);
+    bMatchCal->setEnabled(false);
+    connect(bMatchCal, &QPushButton::clicked, this, &VNA::SpanMatchCal);
+    frequencySweepActions.push_back(tb_sweep->addWidget(bMatchCal));
+
     cbLogSweep = new  QCheckBox("Log");
     cbLogSweep->setToolTip("Logarithmic sweep");
     connect(cbLogSweep, &QCheckBox::toggled, this, &VNA::SetLogSweep);
@@ -479,6 +492,7 @@ VNA::VNA(AppWindow *window, QString name)
         calImportTerms->setEnabled(false);
         calImportMeas->setEnabled(false);
         calApplyToTraces->setEnabled(false);
+        bMatchCal->setEnabled(false);
 //        saveCal->setEnabled(false);
     });
     connect(&cal, &Calibration::activated, [=](Calibration::CalType applied){
@@ -494,6 +508,7 @@ VNA::VNA(AppWindow *window, QString name)
         calImportTerms->setEnabled(true);
         calImportMeas->setEnabled(true);
         calApplyToTraces->setEnabled(true);
+        bMatchCal->setEnabled(true);
         saveCal->setEnabled(true);
     });
 
@@ -1099,6 +1114,18 @@ void VNA::SpanZoomOut()
     }
     settings.Freq.stop = center + old_span;
     ConstrainAndUpdateFrequencies();
+}
+
+bool VNA::SpanMatchCal()
+{
+    if(cal.getCaltype().type == Calibration::Type::None) {
+        // no cal, nothing to adjust
+        return false;
+    }
+    SetStartFreq(cal.getMinFreq());
+    SetStopFreq(cal.getMaxFreq());
+    SetPoints(cal.getNumPoints());
+    return true;
 }
 
 void VNA::SetLogSweep(bool log)

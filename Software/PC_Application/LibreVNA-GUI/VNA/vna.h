@@ -93,6 +93,7 @@ private slots:
     void SetZeroSpan();
     void SpanZoomIn();
     void SpanZoomOut();
+    bool SpanMatchCal();
 
     void SetLogSweep(bool log);
     // Acquisition control
@@ -158,7 +159,7 @@ private:
 
     QComboBox *cbSweepType;
     QCheckBox *cbLogSweep;
-    QPushButton *bZero;
+    QPushButton *bZero, *bMatchCal;
 
     QMenu *defaultCalMenu;
     QAction *assignDefaultCal, *removeDefaultCal;
