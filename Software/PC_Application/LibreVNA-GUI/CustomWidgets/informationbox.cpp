@@ -74,7 +74,7 @@ bool InformationBox::AskQuestion(QString title, QString question, bool defaultAn
         }
     } else {
         // don't show this question anymore
-        return defaultAnswer;
+        return s.value(hashToSettingsKey(hash)).toBool();
     }
 }
 
@@ -105,8 +105,13 @@ InformationBox::~InformationBox()
 {
     auto cb = checkBox();
     if(cb->isChecked()) {
+        auto value = true;
+        auto clicked = clickedButton();
+        if(clicked && QMessageBox::standardButton(clicked) == StandardButton::No) {
+            value = false;
+        }
         QSettings s;
-        s.setValue(hashToSettingsKey(hash), true);
+        s.setValue(hashToSettingsKey(hash), value);
     }
 }
 
