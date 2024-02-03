@@ -1217,7 +1217,7 @@ void VNA::SetAveraging(unsigned int averages)
 void VNA::ExcitationRequired()
 {
     if(!Preferences::getInstance().Acquisition.alwaysExciteAllPorts) {
-        for(unsigned int i=1;i<DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
+        for(unsigned int i=1;i<=DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
             auto required = traceModel.PortExcitationRequired(i);
             auto set = find(settings.excitedPorts.begin(), settings.excitedPorts.end(), i) != settings.excitedPorts.end();
             if(required != set) {
