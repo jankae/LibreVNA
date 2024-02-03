@@ -466,6 +466,7 @@ void TracePlot::mouseMoveEvent(QMouseEvent *event)
         auto trace = selectedMarker->getTrace();
         selectedMarker->setPosition(nearestTracePoint(trace, clickPoint));
         cursorLabel->hide();
+        triggerReplot();
     } else if(movingGraph) {
         move(clickPoint - lastMousePoint);
         lastMousePoint = clickPoint;
