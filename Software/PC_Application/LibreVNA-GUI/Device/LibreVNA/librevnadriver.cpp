@@ -430,7 +430,7 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     p.spectrumSettings.SignalID = SASignalID ? 1 : 0;
     p.spectrumSettings.Detector = (int) s.detector;
     p.spectrumSettings.UseDFT = 0;
-    if(!s.trackingGenerator && SAUseDFT && s.RBW <= SARBWLimitForDFT) {
+    if(!s.trackingGenerator && SAUseDFT && s.RBW <= SARBWLimitForDFT && s.freqStart != s.freqStop) {
         p.spectrumSettings.UseDFT = 1;
     }
     p.spectrumSettings.applyReceiverCorrection = 1;
