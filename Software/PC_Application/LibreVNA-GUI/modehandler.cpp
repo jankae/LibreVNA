@@ -74,7 +74,9 @@ void ModeHandler::activate(Mode * mode)
 
 void ModeHandler::deactivate(Mode* mode)
 {
-    mode->deactivate();
+    if(mode) {
+        mode->deactivate();
+    }
     activeMode = nullptr;
 }
 
