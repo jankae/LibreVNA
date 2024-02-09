@@ -379,6 +379,7 @@ void VNA::SweepHalted() {
 		LOG_DEBUG("Halted before point %d", pointCnt);
 		bool adcShiftRequired = false;
 		uint64_t frequency = getPointFrequency(pointCnt);
+		frequency = Cal::FrequencyCorrectionToDevice(frequency);
 		int16_t power = settings.cdbm_excitation_start
 				+ (settings.cdbm_excitation_stop - settings.cdbm_excitation_start)
 						* pointCnt / (settings.points - 1);
