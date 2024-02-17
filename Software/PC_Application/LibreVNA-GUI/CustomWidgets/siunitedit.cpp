@@ -146,6 +146,10 @@ void SIUnitEdit::setValueQuiet(double value)
 {
     _value = value;
     setPlaceholderText(Unit::ToString(value, unit, prefixes, precision));
+    if(!text().isEmpty()) {
+        // currently editing, update the text as well
+        continueEditing();
+    }
 }
 
 void SIUnitEdit::parseNewValue(double factor)
