@@ -33,8 +33,8 @@ DevicePacketLogView::DevicePacketLogView(QWidget *parent) :
             // aborted selection
             return;
         }
-        if(!filename.endsWith(".usblog")) {
-            filename.append(".usblog");
+        if(!filename.endsWith(".vnalog")) {
+            filename.append(".vnalog");
         }
         ofstream file;
         file.open(filename.toStdString());
