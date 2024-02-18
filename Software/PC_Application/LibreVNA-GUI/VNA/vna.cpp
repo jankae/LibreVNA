@@ -904,7 +904,7 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
                 cal.addMeasurements(calMeasurements, m_avg);
                 if(m_avg.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
-                    delete calDialog;
+                    calDialog->deleteLater();
                     calDialog = nullptr;
                     cal.measurementsComplete();
                 }
