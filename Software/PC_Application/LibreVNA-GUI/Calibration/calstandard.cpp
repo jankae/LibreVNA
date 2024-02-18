@@ -574,18 +574,25 @@ Sparam Through::toSparam(double freq)
         return Sparam(interp[0], interp[1], interp[2], interp[3]);
     } else {
         // calculate effect of through
-        double through_phaseshift = -2 * M_PI * freq * delay * 1e-12;
-        double through_att_db = loss * 1e9 * 4.3429 * delay * 1e-12 / Z0 * sqrt(freq / 1e9);;
-        double through_att = pow(10.0, -through_att_db / 10.0);
-        auto through = polar<double>(through_att, through_phaseshift);
-        // Assume symmetric and perfectly matched through for other parameters
-        auto S = Sparam(0.0, through, through, 0.0);
-        // update S parameters if Z0 does not match system impedance exactly
-        if(Z0 != 50.0) {
-            auto abcd = ABCDparam(S, Z0);
-            S = Sparam(abcd, 50.0);
-        }
-        return S;
+        // nomenclature and formulas from https://loco.lab.asu.edu/loco-memos/edges_reports/report_20130807.pdf
+        auto w = 2.0 * M_PI * freq;
+        auto f_sqrt = sqrt(freq / 1e9);
+        auto offset_impedance = Z0;         // lossless characteristic impedance
+        auto offset_loss = loss * 1e9;
+        auto offset_delay = delay * 1e-12;
+
+        auto Z_c = std::complex<double>(offset_impedance + (offset_loss / (2*w)) * f_sqrt, -(offset_loss / (2*w)) * f_sqrt);
+        auto gamma_l = std::complex<double>(offset_loss*offset_delay/(2*offset_impedance)*f_sqrt, w*offset_delay+offset_loss*offset_delay/(2*offset_impedance)*f_sqrt);
+        auto p = exp(-gamma_l); // propagation factor
+
+        auto Z_r = std::complex<double>(50.0);
+        auto Gamma = (Z_c - Z_r) / (Z_c + Z_r);
+
+        // S-parameter of a transmission line, see e.g. "Specifying Calibration Standards and Kits for Keysight Vector Network Analyzers"
+        // Keysight application note equations (6) and (7)
+        auto Sxx = Gamma * (1.0 - p*p) / (1.0 - p*p*Gamma*Gamma);
+        auto Sxy = p * (1.0 - Gamma*Gamma) / (1.0 - p*p*Gamma*Gamma);
+        return Sparam(Sxx, Sxy, Sxy, Sxx);
     }
 }
 
