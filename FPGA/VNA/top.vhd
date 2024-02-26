@@ -44,12 +44,12 @@ entity top is
 			  TRIGGER_OUT : out STD_LOGIC;
            PORT2_CONVSTART : out  STD_LOGIC;
            PORT2_SDO : in  STD_LOGIC;
-           PORT2_SCLK : out  STD_LOGIC;
+           PORT2_SCLK : inout  STD_LOGIC;
            PORT2_MIX2_EN : out  STD_LOGIC;
            PORT2_MIX1_EN : out  STD_LOGIC;
            PORT1_CONVSTART : out  STD_LOGIC;
            PORT1_SDO : in  STD_LOGIC;
-           PORT1_SCLK : out  STD_LOGIC;
+           PORT1_SCLK : inout  STD_LOGIC;
            PORT1_MIX2_EN : out  STD_LOGIC;
            PORT1_MIX1_EN : out  STD_LOGIC;
            LO1_MUX : in  STD_LOGIC;
@@ -83,7 +83,7 @@ entity top is
            SOURCE_CE : out  STD_LOGIC;
            REF_CONVSTART : out  STD_LOGIC;
            REF_SDO : in  STD_LOGIC;
-           REF_SCLK : out  STD_LOGIC);
+           REF_SCLK : inout  STD_LOGIC);
 end top;
 
 architecture Behavioral of top is
@@ -213,7 +213,7 @@ architecture Behavioral of top is
 		MAX : out STD_LOGIC_VECTOR (15 downto 0);
 		RESET_MINMAX : in STD_LOGIC;
 		CONVSTART : OUT std_logic;
-		SCLK : OUT std_logic
+		SCLK : INOUT std_logic
 		);
 	END COMPONENT;
 	COMPONENT MAX2871

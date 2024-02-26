@@ -53,7 +53,7 @@ ARCHITECTURE behavior OF Test_MCP33131 IS
 			RESET_MINMAX : in STD_LOGIC;
          SDO : IN  std_logic;
          CONVSTART : OUT  std_logic;
-         SCLK : OUT  std_logic
+         SCLK : INOUT  std_logic
         );
     END COMPONENT;
     
