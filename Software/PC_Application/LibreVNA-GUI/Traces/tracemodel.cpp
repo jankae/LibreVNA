@@ -314,7 +314,7 @@ void TraceModel::addVNAData(const DeviceDriver::VNAMeasurement& d, TraceMath::Da
             if(!deembedded) {
                 t->addData(td, datatype, d.Z0, index);
             } else {
-                t->addDeembeddingData(td, index);
+                t->addDeembeddingData(td, d.Z0, index);
             }
         }
     }

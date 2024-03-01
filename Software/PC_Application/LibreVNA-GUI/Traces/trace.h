@@ -46,7 +46,7 @@ public:
     void clear(bool force = false);
     void addData(const Data& d, DataType domain, double reference_impedance = 50.0, int index = -1);
     void addData(const Data& d, const DeviceDriver::SASettings &s, int index = -1);
-    void addDeembeddingData(const Data& d, int index = -1);
+    void addDeembeddingData(const Data& d, double reference_impedance = 50.0, int index = -1);
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
@@ -288,6 +288,7 @@ private:
     // de-embedding variables
     std::vector<Data> deembeddingData;
     bool deembeddingActive;
+    double deembedded_reference_impedance;
 
     std::vector<MathInfo> mathOps;
     TraceMath *lastMath;

@@ -46,7 +46,7 @@ void ImpedanceRenormalization::transformDatapoint(DeviceDriver::VNAMeasurement &
     for(auto i=1;i<=ports;i++) {
         auto S11name = "S"+QString::number(i)+QString::number(i);
         auto S11 = p.measurements[S11name];
-        transformed[S11name] = Sparam(ABCDparam(Sparam(S11, 0.0, 0.0, 1.0), p.Z0), impedance).m11;
+        transformed[S11name] = Sparam(ABCDparam(Sparam(S11, 0.1, 0.1, 1.0), p.Z0), impedance).m11;
         for(auto j=i+1;j<=ports;j++) {
                 auto S12name = "S"+QString::number(i)+QString::number(j);
                 auto S21name = "S"+QString::number(j)+QString::number(i);

@@ -151,7 +151,7 @@ void Trace::addData(const Trace::Data &d, const DeviceDriver::SASettings &s, int
     addData(d, domain, 50.0, index);
 }
 
-void Trace::addDeembeddingData(const Trace::Data &d, int index)
+void Trace::addDeembeddingData(const Trace::Data &d, double reference_impedance, int index)
 {
     bool wasAvailable = deembeddingAvailable();
     if(index >= 0) {
@@ -179,6 +179,7 @@ void Trace::addDeembeddingData(const Trace::Data &d, int index)
             deembeddingData.insert(lower, d);
         }
     }
+    deembedded_reference_impedance = reference_impedance;
     if(deembeddingActive) {
         emit outputSamplesChanged(index, index + 1);
     }
@@ -687,7 +688,11 @@ void Trace::setModel(TraceModel *model)
 
 double Trace::getReferenceImpedance() const
 {
-    return reference_impedance;
+    if(deembeddingActive) {
+        return deembedded_reference_impedance;
+    } else {
+        return reference_impedance;
+    }
 }
 
 const std::vector<Trace::MathInfo>& Trace::getMathOperations() const
@@ -1316,6 +1321,10 @@ bool Trace::deembeddingAvailable()
 
 void Trace::setDeembeddingActive(bool active)
 {
+    if(active == deembeddingActive) {
+        // no change
+        return;
+    }
     deembeddingActive = active;
     if(deembeddingAvailable()) {
         if(active) {
@@ -1330,6 +1339,7 @@ void Trace::setDeembeddingActive(bool active)
 void Trace::clearDeembedding()
 {
     deembeddingData.clear();
+    setDeembeddingActive(false);
     deembeddingChanged();
 }
 

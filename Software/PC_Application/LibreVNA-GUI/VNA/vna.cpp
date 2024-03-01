@@ -94,10 +94,6 @@ VNA::VNA(AppWindow *window, QString name)
 
     connect(calLoad, &QAction::triggered, [=](){
         LoadCalibration();
-        if(window->getDevice() && !cal.validForDevice(window->getDevice()->getSerial())) {
-            InformationBox::ShowMessage("Invalid calibration", "The selected calibration was created for a different device. You can still load it but the resulting "
-                                        "data likely isn't useful.");
-        }
         if(cal.getCaltype().type != Calibration::Type::None) {
             if(InformationBox::AskQuestion("Adjust span?", "Do you want to adjust the span to match the loaded calibration file?", false)) {
                 SpanMatchCal();
@@ -510,6 +506,10 @@ VNA::VNA(AppWindow *window, QString name)
         calApplyToTraces->setEnabled(true);
         bMatchCal->setEnabled(true);
         saveCal->setEnabled(true);
+        if(window->getDevice() && !cal.validForDevice(window->getDevice()->getSerial())) {
+            InformationBox::ShowMessage("Invalid calibration", "The selected calibration was created for a different device. You can still load it but the resulting "
+                                                               "data likely isn't useful.");
+        }
     });
 
     tb_cal->addWidget(cbType);
