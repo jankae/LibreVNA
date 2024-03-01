@@ -111,7 +111,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   MX_I2C2_Init();
-  uint8_t ctrl = 0x0A;
+  uint8_t ctrl = 0x09;
   HAL_I2C_Mem_Write(&hi2c2, 0x42, 0x01, I2C_MEMADD_SIZE_8BIT, &ctrl, 1, 100);
   /* USER CODE END SysInit */
 

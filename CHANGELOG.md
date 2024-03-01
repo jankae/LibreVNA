@@ -1,6 +1,26 @@
 # Changelog
 
+## v1.5.1
+
+Mostly bugfixes with only minor new features
+
+- New features:
+  - Z0 of through standard now adjustable
+  - Option to automatically adjust the span to the active calibration
+- Bugfixes:
+  - Make De-embedding menu visible on MacOS
+  - Detection of handling of LibreCAL in the automatic calibration dialog
+  - Allow updates of devices with older firmwares (a matching older GUI version had to be used previously)
+  - Fix port excitation when not all S-parameters are measured
+  - Do not use DFT in spectrum analyzer when in zero span mode
+  - Readback of certain GUI values on Windows now correct (was stuck on 0 before)
+  - Prevent crash when disconnecting the device while a dialog was open
+  - Prevent occasional crash at the end of calibration measurements
+  - Fix spikes in sweep when a frequency calibration is set
+  - Improve sample timing between ADC and FPGA (resulted in very noisy traces on some devices)
+
 ## v1.5.0
+
 - New features:
   - Further abstraction from the LibreVNA hardware. The GUI now supports VNAs with up to 8 ports
   - Capsulation of communication to the hardware inside of the DeviceDriver class. This simplifies the integration of drivers for other equipment
@@ -56,7 +76,7 @@
 ## v1.3.0
 
 Some new software features along with a few bug fixes.
-  
+
 - New features:
   - Allow multiple VNA/Signal generator/Spectrum analyzer tabs
   - Software work-around to allow up to 65535 points per sweep

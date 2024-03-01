@@ -42,15 +42,16 @@ entity MCP33131 is
 			  RESET_MINMAX : in STD_LOGIC;
            SDO : in  STD_LOGIC;
            CONVSTART : out  STD_LOGIC;
-           SCLK : out  STD_LOGIC);
+           SCLK : inout  STD_LOGIC);
 end MCP33131;
 
 architecture Behavioral of MCP33131 is
 	signal conv_cnt : integer range 0 to CONVCYCLES-1;
 	signal div_cnt : integer range 0 to (CLK_DIV/2)-1;
+	signal bit_cnt : integer range 0 to 15;
 	signal sclk_phase : std_logic;
 	signal adc_data : std_logic_vector(15 downto 0);
-	type States is (Idle, Conversion, WAIT_tEN, Transmission);
+	type States is (Idle, Conversion, WAIT_tEN, Transmission, Done);
 	signal state : States;
 	signal min_int, max_int, data_int : signed(15 downto 0);
 begin
@@ -58,6 +59,14 @@ begin
 	MIN <= std_logic_vector(min_int);
 	MAX <= std_logic_vector(max_int);
 	DATA <= std_logic_vector(data_int);
+	SCLK <= sclk_phase;
+
+	process(SCLK)
+	begin
+		if(falling_edge(SCLK)) then
+			adc_data <= adc_data(14 downto 0) & SDO;
+		end if;
+	end process;
 
 	process(CLK, RESET)
 	begin
@@ -70,6 +79,7 @@ begin
 				CONVSTART <= '0';
 				conv_cnt <= 0;
 				div_cnt <= 0;
+				bit_cnt <= 0;
 				min_int <= to_signed(32767, 16);
 				max_int <= to_signed(-32768, 16);
 			else
@@ -86,8 +96,8 @@ begin
 				end if;
 				case state is
 					when Idle =>
-						SCLK <= '0';
 						READY <= '0';
+						bit_cnt <= 0;
 						if START = '1' then
 							state <= Conversion;
 							conv_cnt <= 0;
@@ -99,7 +109,6 @@ begin
 						else
 							div_cnt <= 0;
 							CONVSTART <= '0';
-							adc_data <= "0000000000000001";
 							state <= WAIT_tEN;
 						end if;
 					when WAIT_tEN =>
@@ -110,22 +119,20 @@ begin
 						else
 							if(sclk_phase = '0') then
 								sclk_phase <= '1';
-								SCLK <= '1';
 							else
 								sclk_phase <= '0';
-								SCLK <= '0';
-								if(adc_data(15) = '0') then
-									-- not the last bit yet
-									adc_data <= adc_data(14 downto 0) & SDO;
+								if bit_cnt = 15 then
+									state <= Done;
 								else
-									-- last bit, move to output and indicate ready state
-									data_int <= signed(adc_data(14 downto 0) & SDO);
-									READY <= '1';
-									state <= Idle;
+									bit_cnt <= bit_cnt + 1;
 								end if;
 							end if;
 							div_cnt <= 0;
 						end if;
+					when Done =>
+						data_int <= signed(adc_data);
+						READY <= '1';
+						state <= Idle;
 				end case;
 			end if;
 		end if;
