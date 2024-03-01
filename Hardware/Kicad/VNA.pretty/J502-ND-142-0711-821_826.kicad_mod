@@ -1,0 +1,376 @@
+(footprint "J502-ND-142-0711-821_826"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(descr "SMA 50 Ohm Board Thickness 0.062 Inch, End Launch Jack Receptacle\n\nJohnson Components\nSource: www.johnsoncomponents.com .. J502-ND.pdf")
+	(property "Reference" "REF**"
+		(at 0.35 -5.2 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "499ebb52-77cb-4296-b10a-c226b60f4baa")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.25)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+	)
+	(property "Value" "J502-ND-142-0711-821_826"
+		(at 1.27 8.89 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "2fc8ea1c-a574-4163-b611-80bdc3ae9655")
+		(effects
+			(font
+				(size 1.63576 1.63576)
+				(thickness 0.14224)
+			)
+			(justify left bottom)
+		)
+	)
+	(property "Footprint" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "9bc17a08-e486-4c05-aa13-0fbb60c09895")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "85bb0dcd-3c1a-487b-9517-77020460f80c")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "b1ffe357-7bee-4375-a8b1-0d96897e2c76")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -9.425 -1.9)
+		(end -8.25 -1.9)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "8881d430-05b9-41bb-86b8-817bfe680621")
+	)
+	(fp_line
+		(start -9.425 1.9)
+		(end -9.425 -1.9)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "6121c67a-5eb2-415d-a933-32d59aa4a1d2")
+	)
+	(fp_line
+		(start -8.25 -2.75)
+		(end -4.45 -2.75)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "5d22dc82-6c69-4d1a-84cc-cbc94f3d79a5")
+	)
+	(fp_line
+		(start -8.25 -1.9)
+		(end -8.25 -2.75)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "393b41f8-3c53-4478-9e18-33f9eabb7718")
+	)
+	(fp_line
+		(start -8.25 1.9)
+		(end -9.425 1.9)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "1805f1e2-3954-4706-8bf7-840535d434b1")
+	)
+	(fp_line
+		(start -8.25 2.75)
+		(end -8.25 1.9)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "cb5b8580-7eff-4ff6-92c5-f166a328481e")
+	)
+	(fp_line
+		(start -4.45 -2.75)
+		(end -3.7 -2)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "610100e1-9e30-420c-9cc6-4d546f6b6bad")
+	)
+	(fp_line
+		(start -4.45 2.75)
+		(end -8.25 2.75)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "3ae7c91b-0ffa-47a5-aab8-dbd9b1734903")
+	)
+	(fp_line
+		(start -3.7 -2)
+		(end -1.55 -2)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "015d4ed9-819d-4c9f-ae96-7dbb44fbb33e")
+	)
+	(fp_line
+		(start -3.7 2)
+		(end -4.45 2.75)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "d9a1abfc-b682-44ec-b292-2ca51bf27ee9")
+	)
+	(fp_line
+		(start -1.55 -2.95)
+		(end -0.1 -2.95)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "330e77af-5b63-439c-8644-10dc5f8063ac")
+	)
+	(fp_line
+		(start -1.55 -2)
+		(end -1.55 -2.95)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "d2ffcd9d-de92-45b0-955e-24872db7fe23")
+	)
+	(fp_line
+		(start -1.55 2)
+		(end -3.7 2)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "133a1269-754c-4913-b25c-0bab95996c21")
+	)
+	(fp_line
+		(start -1.55 2.95)
+		(end -1.55 2)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "a5d7b4bd-05e7-479b-a724-7a242909d428")
+	)
+	(fp_line
+		(start -0.1 -2.15)
+		(end 4.1 -2.15)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "b4a86a1a-7d6e-4b40-ba6c-ddbadc3b9a20")
+	)
+	(fp_line
+		(start -0.1 2.15)
+		(end -0.1 -2.15)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "3491984c-c00a-4ab8-816b-508db975ae2d")
+	)
+	(fp_line
+		(start -0.1 2.95)
+		(end -1.55 2.95)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "78f07954-554a-4bfd-92fb-4ddb5bf4cdff")
+	)
+	(fp_line
+		(start 0 -5.588)
+		(end 0 5.588)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "f7a3785e-2466-4176-8329-48bef7918870")
+	)
+	(fp_line
+		(start 4.1 -2.95)
+		(end -1.55 -2.95)
+		(stroke
+			(width 0.2032)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "6b3a6277-8a7d-4a68-877b-5f068aa69ea2")
+	)
+	(fp_line
+		(start 4.1 -2.15)
+		(end 4.1 -2.95)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "b46367b4-ebf0-46cb-b72b-9d121e870ae4")
+	)
+	(fp_line
+		(start 4.1 2.15)
+		(end -0.1 2.15)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "4121af1c-e142-44ed-b9d7-35f797763687")
+	)
+	(fp_line
+		(start 4.1 2.95)
+		(end -1.55 2.95)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "81d3132e-44f6-4f84-90bc-6d85f600fe9f")
+	)
+	(fp_line
+		(start 4.1 2.95)
+		(end 4.1 2.15)
+		(stroke
+			(width 0.2032)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "bcf46232-7572-48dc-a827-5e4417be44e6")
+	)
+	(fp_poly
+		(pts
+			(xy -0.025 0.5) (xy 4.05 0.5) (xy 4.05 -0.5) (xy -0.025 -0.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill solid)
+		(layer "F.Fab")
+		(uuid "e31f0caa-5015-467f-9340-ba73f3dfe22a")
+	)
+	(fp_text user "${REFERENCE}"
+		(at -0.9 0 90)
+		(layer "F.Fab")
+		(uuid "4e03aadb-9abb-451f-b402-7fe57abe8ec3")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.25)
+				(bold yes)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at 2.1154 0)
+		(size 4 1)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(solder_mask_margin 0.1016)
+		(thermal_bridge_angle 0)
+		(uuid "54c0a3d9-7ae1-422c-8e35-40cec67d730f")
+	)
+	(pad "G@1" smd rect
+		(at 2.1154 -3.4946)
+		(size 4.191 2.667)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(solder_mask_margin 0.1016)
+		(thermal_bridge_angle 0)
+		(uuid "5e5258c8-4ce7-4511-954b-2bc04a3e318c")
+	)
+	(pad "G@2" smd rect
+		(at 2.1154 3.4946)
+		(size 4.191 2.667)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(solder_mask_margin 0.1016)
+		(thermal_bridge_angle 0)
+		(uuid "0ae70331-5cd8-42fa-bcdc-d070c6384f04")
+	)
+	(pad "G@3" smd rect
+		(at 2.1154 -3.4946)
+		(size 4.191 2.667)
+		(layers "B.Cu" "B.Paste" "B.Mask")
+		(solder_mask_margin 0.1016)
+		(thermal_bridge_angle 0)
+		(uuid "61df7d32-8c57-4304-8f56-aa69f0142793")
+	)
+	(pad "G@4" smd rect
+		(at 2.1154 3.4946)
+		(size 4.191 2.667)
+		(layers "B.Cu" "B.Paste" "B.Mask")
+		(solder_mask_margin 0.1016)
+		(thermal_bridge_angle 0)
+		(uuid "2d3ef918-29d2-4c04-8c15-4aee5eac629b")
+	)
+	(model "${KICAD8_3DMODEL_DIR}/Connector_Coaxial.3dshapes/SMA_Molex_73251-1153_EdgeMount_Horizontal.wrl"
+		(offset
+			(xyz 5 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

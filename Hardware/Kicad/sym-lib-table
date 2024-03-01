@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "VNA")(type "KiCad")(uri "${KIPRJMOD}/VNA.kicad_sym")(options "")(descr ""))
+)
