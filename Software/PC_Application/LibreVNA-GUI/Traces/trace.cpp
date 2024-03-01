@@ -179,12 +179,17 @@ void Trace::addDeembeddingData(const Trace::Data &d, double reference_impedance,
             deembeddingData.insert(lower, d);
         }
     }
-    deembedded_reference_impedance = reference_impedance;
+    if(deembedded_reference_impedance != reference_impedance) {
+        deembedded_reference_impedance = reference_impedance;
+        if(deembeddingActive) {
+            emit typeChanged(this);
+        }
+    }
     if(deembeddingActive) {
         emit outputSamplesChanged(index, index + 1);
     }
     if(!wasAvailable) {
-        emit deembeddingChanged();
+        emit deembeddingChanged(this);
     }
 }
 
@@ -1333,14 +1338,13 @@ void Trace::setDeembeddingActive(bool active)
             emit outputSamplesChanged(0, data.size());
         }
     }
-    emit deembeddingChanged();
+    emit deembeddingChanged(this);
 }
 
 void Trace::clearDeembedding()
 {
     deembeddingData.clear();
     setDeembeddingActive(false);
-    deembeddingChanged();
 }
 
 double Trace::minX()

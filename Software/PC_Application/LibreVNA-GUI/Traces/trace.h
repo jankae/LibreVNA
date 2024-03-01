@@ -207,7 +207,7 @@ signals:
     void dataChanged(unsigned int begin, unsigned int end);
     void nameChanged();
     void pauseChanged();
-    void deembeddingChanged();
+    void deembeddingChanged(Trace *t);
     void colorChanged(Trace *t);
     void markerAdded(Marker *m);
     void markerRemoved(Marker *m);

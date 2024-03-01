@@ -279,7 +279,7 @@ void TraceSmithChart::draw(QPainter &p) {
         // center line visible
         p.drawLine(dataToPixel(p1),dataToPixel(p2));
     }
-    constexpr std::array<double, 5> impedanceLines = {10, 25, 50, 100, 250};
+    const std::array<double, 5> impedanceLines = {Z0*0.2, Z0*0.5, Z0, Z0*2, Z0*5};
     for(auto z : impedanceLines) {
         z /= Z0;
         auto radius = 1.0/z;
