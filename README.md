@@ -37,7 +37,7 @@ cd $UNPACKED_ZIP_FOLDER$
 
 ## Quick Start
 * You can find released versions of the GUI application and the device firmware [here](https://github.com/jankae/LibreVNA/releases).
-* If you would like to try out the newest features, the compiled versions of each commit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete).
+* If you would like to try out the newest features, the compiled versions of each commit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete). If you are having trouble downloading them, please refer to this [guide](Documentation/DeveloperInfo/DownloadActionBuilds.md).
 * An (incomplete) [user manual](Documentation/UserManual/manual.pdf) is also available.
 * If you would like to control the LibreVNA with a script, see the [SCPI Programming Guide](Documentation/UserManual/ProgrammingGuide.pdf).
 
