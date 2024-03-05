@@ -620,6 +620,15 @@ void Calibration::edit()
     connect(this, &Calibration::measurementsUpdated, d, [=](){
         updateMeasurementTable();
         updateCalibrationList();
+        if(caltype.type != Type::None) {
+            // update the calibration with the new measurement
+            if(canCompute(caltype)) {
+                compute(caltype);
+            } else {
+                // can not keep the calibration, disabled
+                deactivate();
+            }
+        }
     });
 
     connect(ui->clearMeasurement, &QPushButton::clicked, [=](){
