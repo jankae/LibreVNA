@@ -8634,7 +8634,7 @@
 		)
 		(uuid "6a050446-9491-4c97-b889-8925a8c9d433")
 	)
-	(label "LED1C"
+	(label "LED2C"
 		(at 393.7 40.64 90)
 		(fields_autoplaced yes)
 		(effects
@@ -18816,7 +18816,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "cac3ae09-b0c6-44d7-a1c2-e6c80d1cb86f")
-		(property "Reference" "LED1"
+		(property "Reference" "LED2"
 			(at 395.478 32.766 90)
 			(effects
 				(font
@@ -18887,7 +18887,7 @@
 		(instances
 			(project "VNA"
 				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2/798b71c1-ee2e-4e21-b7d2-78d3e660f322"
-					(reference "LED1")
+					(reference "LED2")
 					(unit 1)
 				)
 			)
