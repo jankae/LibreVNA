@@ -15105,7 +15105,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD_AKL:D_SMB"
+		(property "Footprint" "Diode_SMD:D_SMB"
 			(at 116.84 104.14 0)
 			(effects
 				(font
