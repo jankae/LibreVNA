@@ -75,7 +75,7 @@ void Trace::clear(bool force) {
         return;
     }
     data.clear();
-    clearDeembedding();
+    deembeddingData.clear();
     settings.valid = false;
     warning("No data");
     emit cleared(this);
