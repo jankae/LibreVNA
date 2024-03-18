@@ -22,7 +22,7 @@
 
 (version 1)
 
-(rule "RF Clearence"
+(rule "RF Clearance"
    (constraint clearance (min 0.36mm))
    (condition "(A.NetClass == 'RF') && (B.Type == 'Zone')")
 )

@@ -407,7 +407,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:Housing")
-		(at 52.07 147.32 0)
+		(at 27.94 144.78 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -416,7 +416,7 @@
 		(fields_autoplaced yes)
 		(uuid "a8a8b741-623f-470d-9536-2b5e32a3c305")
 		(property "Reference" "N1"
-			(at 55.88 146.3674 0)
+			(at 31.75 143.8274 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -425,7 +425,7 @@
 			)
 		)
 		(property "Value" "Top Cover"
-			(at 55.88 148.9074 0)
+			(at 31.75 146.3674 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -434,7 +434,7 @@
 			)
 		)
 		(property "Footprint" "VNA:VNA_COVER_TOP"
-			(at 53.34 146.05 0)
+			(at 29.21 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -443,7 +443,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 53.34 146.05 0)
+			(at 29.21 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -452,7 +452,7 @@
 			)
 		)
 		(property "Description" "Housing"
-			(at 52.07 147.32 0)
+			(at 27.94 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -471,7 +471,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:Housing")
-		(at 52.07 158.75 0)
+		(at 49.53 144.78 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -480,7 +480,7 @@
 		(fields_autoplaced yes)
 		(uuid "c5b1b395-939e-4257-bcde-94f4c980dd96")
 		(property "Reference" "N2"
-			(at 55.88 157.7974 0)
+			(at 53.34 143.8274 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -489,7 +489,7 @@
 			)
 		)
 		(property "Value" "Bottom Cover"
-			(at 55.88 160.3374 0)
+			(at 53.34 146.3674 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -498,7 +498,7 @@
 			)
 		)
 		(property "Footprint" "VNA:VNA_COVER_BOTTOM"
-			(at 53.34 157.48 0)
+			(at 50.8 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -507,7 +507,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 53.34 157.48 0)
+			(at 50.8 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -516,7 +516,7 @@
 			)
 		)
 		(property "Description" "Housing"
-			(at 52.07 158.75 0)
+			(at 49.53 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
