@@ -4100,6 +4100,29 @@
 	(netclass_flag ""
 		(length 2.54)
 		(shape round)
+		(at 180.34 154.94 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2b891ecd-e27b-4ce2-be3f-229a71176c5d")
+		(property "Netclass" "RF"
+			(at 181.0385 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
 		(at 180.34 144.78 0)
 		(fields_autoplaced yes)
 		(effects
@@ -4146,6 +4169,98 @@
 	(netclass_flag ""
 		(length 2.54)
 		(shape round)
+		(at 180.34 139.7 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "538fa209-abc9-4cc6-aec4-c44284233d8a")
+		(property "Netclass" "RF"
+			(at 181.0385 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
+		(at 180.34 165.1 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "86141dcf-0d8b-4237-87cc-4847e1ec966d")
+		(property "Netclass" "RF"
+			(at 181.0385 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
+		(at 180.34 129.54 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a64f9e33-f9c5-49d1-92dc-74d4dc6144aa")
+		(property "Netclass" "RF"
+			(at 181.0385 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
+		(at 180.34 149.86 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b094a001-57e1-4316-838a-2f3e2d626d9d")
+		(property "Netclass" "RF"
+			(at 181.0385 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
 		(at 297.18 193.04 0)
 		(fields_autoplaced yes)
 		(effects
@@ -4169,6 +4284,29 @@
 	(netclass_flag ""
 		(length 2.54)
 		(shape round)
+		(at 180.34 134.62 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b721d4da-8b36-4a74-b465-ebe3da5dd9d4")
+		(property "Netclass" "RF"
+			(at 181.0385 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
 		(at 82.55 142.24 0)
 		(fields_autoplaced yes)
 		(effects
@@ -4180,6 +4318,29 @@
 		(uuid "b8248fce-42f2-45f2-8502-910e7b318b08")
 		(property "Netclass" "RF"
 			(at 83.2485 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
+		(at 180.34 160.02 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fe8c7cb9-6e79-47b4-95ae-f01a4512ff9f")
+		(property "Netclass" "RF"
+			(at 181.0385 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6211,7 +6372,7 @@
 				)
 			)
 		)
-		(property "Footprint" "VNA:2.5X2.0_KXO-86-TCXO"
+		(property "Footprint" "VNA:Oscillator_SMD_ECS_20CSMV4_2.0x1.6mm"
 			(at 99.568 103.632 0)
 			(effects
 				(font
@@ -6220,7 +6381,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.geyer-electronic.de/wp-content/uploads/2022/09/GEYER-KXO-86-TCXO-HCMOS.pdf"
+		(property "Datasheet" "https://ecsxtal.com/store/pdf/ECS-TXO-20CSMV4.pdf"
 			(at 99.06 116.84 0)
 			(effects
 				(font
@@ -6238,7 +6399,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "DSB221SDN/26MHz"
+		(property "MPN" "ECS-TXO-20CSMV4-260-AN-TR"
 			(at 99.06 116.84 0)
 			(effects
 				(font

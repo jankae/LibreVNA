@@ -1,0 +1,6 @@
+Default	True	2.0	3
+3V3	True	2.0	3
+5V	True	2.0	3
+RF	True	2.0	3
+VCCINT	True	2.0	3
+False	True	False

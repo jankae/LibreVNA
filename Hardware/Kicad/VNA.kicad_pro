@@ -6,14 +6,14 @@
         "apply_defaults_to_fp_fields": false,
         "apply_defaults_to_fp_shapes": false,
         "apply_defaults_to_fp_text": false,
-        "board_outline_line_width": 0.049999999999999996,
-        "copper_line_width": 0.19999999999999998,
+        "board_outline_line_width": 0.05,
+        "copper_line_width": 0.2,
         "copper_text_italic": false,
         "copper_text_size_h": 1.5,
         "copper_text_size_v": 1.5,
         "copper_text_thickness": 0.3,
         "copper_text_upright": false,
-        "courtyard_line_width": 0.049999999999999996,
+        "courtyard_line_width": 0.05,
         "dimension_precision": 4,
         "dimension_units": 3,
         "dimensions": {
@@ -24,7 +24,7 @@
           "text_position": 0,
           "units_format": 1
         },
-        "fab_line_width": 0.09999999999999999,
+        "fab_line_width": 0.1,
         "fab_text_italic": false,
         "fab_text_size_h": 1.0,
         "fab_text_size_v": 1.0,
@@ -37,9 +37,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 0.762,
-          "height": 1.524,
-          "width": 1.524
+          "drill": 0.0,
+          "height": 0.2,
+          "width": 0.688
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -59,6 +59,8 @@
         }
       ],
       "drc_exclusions": [
+        "connection_width|137345220|91954490|35facea9-fb50-40ee-bb03-b954cad4e79e|58490212-5471-4d23-b539-0ea1a0e4398a",
+        "connection_width|137345265|91154462|c15c1eaa-c176-4766-bff7-4dacb1aacd6c|cd9644d7-8a15-4349-9fd4-b3e77dfd3efb",
         "copper_edge_clearance|102677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|0c260be4-6962-42fc-83d0-f2839082e315",
         "copper_edge_clearance|102677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|3f9a6a22-2c07-464a-a822-75fb8ccdae25",
         "copper_edge_clearance|180240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|1700e507-0c10-4941-ae38-80a3b3671d8b",
@@ -142,16 +144,16 @@
         "max_error": 0.005,
         "min_clearance": 0.09,
         "min_connection": 0.09,
-        "min_copper_edge_clearance": 0.19999999999999998,
+        "min_copper_edge_clearance": 0.2,
         "min_hole_clearance": 0.254,
         "min_hole_to_hole": 0.254,
         "min_microvia_diameter": 0.0,
-        "min_microvia_drill": 0.19999999999999998,
+        "min_microvia_drill": 0.2,
         "min_resolved_spokes": 2,
         "min_silk_clearance": 0.15,
         "min_text_height": 1.0,
         "min_text_thickness": 0.15,
-        "min_through_hole_diameter": 0.19999999999999998,
+        "min_through_hole_diameter": 0.2,
         "min_track_width": 0.09,
         "min_via_annular_width": 0.075,
         "min_via_diameter": 0.35,
@@ -554,7 +556,7 @@
       },
       {
         "bus_width": 12,
-        "clearance": 0.15,
+        "clearance": 0.18,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -564,7 +566,7 @@
         "name": "RF",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.2,
+        "track_width": 0.35,
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
@@ -596,6 +598,10 @@
       "/2.LO + Ref Clock/CLKOUT": "RF",
       "/2.LO + Ref Clock/CLK_CLKIN": "RF",
       "/2.LO + Ref Clock/CLK_CLKOUT": "RF",
+      "/2.LO + Ref Clock/CLK_PORT1LO2": "RF",
+      "/2.LO + Ref Clock/CLK_PORT2_LO2": "RF",
+      "/2.LO + Ref Clock/CLK_REFLO2": "RF",
+      "/2.LO + Ref Clock/CLK_SOURCE_LB": "RF",
       "/HF Source/SRC_FILT_IN_ANT": "RF",
       "/HF Source/SRC_FILT_IN_RF1": "RF",
       "/HF Source/SRC_FILT_IN_RF3": "RF",
@@ -608,6 +614,8 @@
       "/HF Source/SRC_REF_IN": "RF",
       "/HF Source/SRC_RFOUTA_N": "RF",
       "/HF Source/SRC_RFOUTA_P": "RF",
+      "FPGA_CLK": "RF",
+      "LO1_REF": "RF",
       "Net-(C112-Pad2)": "RF",
       "Net-(C113-Pad1)": "RF",
       "Net-(C120-Pad2)": "RF",
@@ -723,6 +731,30 @@
       {
         "netclass": "VCCINT",
         "pattern": "*VCCINT*"
+      },
+      {
+        "netclass": "RF",
+        "pattern": "*RFOUT*"
+      },
+      {
+        "netclass": "RF",
+        "pattern": "/HF Source/SRC_RFOUTA_P"
+      },
+      {
+        "netclass": "RF",
+        "pattern": "SOURCE_LOWBAND"
+      },
+      {
+        "netclass": "RF",
+        "pattern": "/2.LO + Ref Clock/CLK_SOURCE_LB"
+      },
+      {
+        "netclass": "RF",
+        "pattern": "/2.LO + Ref Clock/CLK_REFLO2"
+      },
+      {
+        "netclass": "RF",
+        "pattern": "/1.LO/LO1_REFC"
       }
     ]
   },
@@ -732,7 +764,7 @@
       "idf": "",
       "netlist": "",
       "plot": "Production/",
-      "pos_files": "",
+      "pos_files": "Production/",
       "specctra_dsn": "",
       "step": "",
       "svg": "",
