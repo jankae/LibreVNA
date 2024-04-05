@@ -431,6 +431,12 @@ VNA::VNA(AppWindow *window, QString name)
     connect(sbAverages, qOverload<int>(&QSpinBox::valueChanged), this, &VNA::SetAveraging);
     connect(this, &VNA::averagingChanged, sbAverages, &QSpinBox::setValue);
     tb_acq->addWidget(sbAverages);
+    auto bResetAvg = new QPushButton("Reset");
+    connect(bResetAvg, &QPushButton::clicked, this, [=](){
+        average.reset(settings.npoints);
+        UpdateAverageCount();
+    });
+    tb_acq->addWidget(bResetAvg);
 
     window->addToolBar(tb_acq);
     toolbars.insert(tb_acq);
@@ -1211,7 +1217,7 @@ void VNA::SetAveraging(unsigned int averages)
     this->averages = averages;
     average.setAverages(averages);
     emit averagingChanged(averages);
-    SettingsChanged();
+    UpdateAverageCount();
 }
 
 void VNA::ExcitationRequired()

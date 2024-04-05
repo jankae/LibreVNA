@@ -215,6 +215,12 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     connect(sbAverages, qOverload<int>(&QSpinBox::valueChanged), this, &SpectrumAnalyzer::SetAveraging);
     connect(this, &SpectrumAnalyzer::averagingChanged, sbAverages, &QSpinBox::setValue);
     tb_acq->addWidget(sbAverages);
+    auto bResetAvg = new QPushButton("Reset");
+    connect(bResetAvg, &QPushButton::clicked, this, [=](){
+        average.reset(DeviceDriver::SApoints());
+        UpdateAverageCount();
+    });
+    tb_acq->addWidget(bResetAvg);
 
     window->addToolBar(tb_acq);
     toolbars.insert(tb_acq);
@@ -696,7 +702,7 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     this->averages = averages;
     average.setAverages(averages);
     emit averagingChanged(averages);
-    SettingsChanged();
+    UpdateAverageCount();
 }
 
 void SpectrumAnalyzer::SetTGEnabled(bool enabled)

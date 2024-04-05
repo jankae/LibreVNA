@@ -20,7 +20,12 @@ void Averaging::reset(unsigned int points)
 void Averaging::setAverages(unsigned int a)
 {
     averages = a;
-    reset(avg.size());
+    // throw away additional stored data if averaging has been reduced
+    for(auto &d : avg) {
+        while(d.size() > averages) {
+            d.pop_front();
+        }
+    }
 }
 
 DeviceDriver::VNAMeasurement Averaging::process(DeviceDriver::VNAMeasurement d)
@@ -109,7 +114,7 @@ void Averaging::process(unsigned int pointNum, std::vector<std::complex<double>>
         // add newest sample to queue
         deque->push_back(data);
         // remove oldest sample if required number of averages reached
-        if(deque->size() > averages) {
+        while(deque->size() > averages) {
             deque->pop_front();
         }
 
