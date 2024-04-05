@@ -317,6 +317,11 @@ YAxis::Type YAxis::getType() const
     return type;
 }
 
+bool YAxis::isSupported(XAxis::Type type, TraceModel::DataSource source)
+{
+    return getSupported(type, source).count(this->type);
+}
+
 std::set<YAxis::Type> YAxis::getSupported(XAxis::Type type, TraceModel::DataSource source)
 {
     std::set<YAxis::Type> ret = {YAxis::Type::Disabled};

@@ -159,20 +159,25 @@ void TraceWaterfall::resetWaterfall()
 
 bool TraceWaterfall::configureForTrace(Trace *t)
 {
+    YAxis::Type yDefault = YAxis::Type::Disabled;
+
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
         xAxis.set(XAxis::Type::Frequency, false, true, 0, 1, 0.1);
-        yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
+        yDefault = YAxis::Type::Magnitude;
         break;
     case Trace::DataType::Power:
         xAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
-        yAxis.set(YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
+        yDefault = YAxis::Type::Magnitude;
         break;
     case Trace::DataType::Time:
     case Trace::DataType::TimeZeroSpan:
     case Trace::DataType::Invalid:
         // unable to add
         return false;
+    }
+    if(!yAxis.isSupported(xAxis.getType(), getModel().getSource())) {
+        yAxis.set(yDefault, false, true, 0, 1, 1.0);
     }
     traceRemovalPending = true;
     return true;

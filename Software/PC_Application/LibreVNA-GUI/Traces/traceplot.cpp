@@ -788,12 +788,18 @@ void TracePlot::checkIfStillSupported(Trace *t)
             // attempt to configure the graph for the changed trace, remove only if this fails
             if(!configureForTrace(t)) {
                 enableTrace(t, false);
-            }
-            // remove non-supported traces after graph has been adjusted
-            for(auto t : activeTraces()) {
-                if(!supported(t)) {
-                    enableTrace(t, false);
-                }
+            } else {
+                // other trace may need to be removed because the graph no longer supports them. However, they (the traces)
+                // may change soon as well (e.g. because multiple traces changed at the same time and we are only handling
+                // the first changed trace right now). Postpone the deletion of other traces until all currently executing
+                // slots have completed
+                QTimer::singleShot(0, [this]{
+                    for(auto t : activeTraces()) {
+                        if(!supported(t)) {
+                            enableTrace(t, false);
+                        }
+                    }
+                });
             }
             break;
         }

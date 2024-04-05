@@ -287,30 +287,38 @@ void TraceXYPlot::axisSetupDialog()
 
 bool TraceXYPlot::configureForTrace(Trace *t)
 {
+    YAxis::Type yLeftDefault = YAxis::Type::Disabled;
+    YAxis::Type yRightDefault = YAxis::Type::Disabled;
+
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
         setXAxis(XAxis::Type::Frequency, XAxisMode::FitTraces, false, 0, 1, 0.1);
-        setYAxis(0, YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
-        setYAxis(1, YAxis::Type::Phase, false, true, 0, 1, 1.0);
+        yLeftDefault = YAxis::Type::Magnitude;
+        yRightDefault = YAxis::Type::Phase;
         break;
     case Trace::DataType::Time:
         setXAxis(XAxis::Type::Time, XAxisMode::FitTraces, false, 0, 1, 0.1);
-        setYAxis(0, YAxis::Type::ImpulseMag, false, true, 0, 1, 1.0);
-        setYAxis(1, YAxis::Type::Disabled, false, true, 0, 1, 1.0);
+        yLeftDefault = YAxis::Type::ImpulseMag;
         break;
     case Trace::DataType::Power:
         setXAxis(XAxis::Type::Power, XAxisMode::FitTraces, false, 0, 1, 0.1);
-        setYAxis(0, YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
-        setYAxis(1, YAxis::Type::Phase, false, true, 0, 1, 1.0);
+        yLeftDefault = YAxis::Type::Magnitude;
+        yRightDefault = YAxis::Type::Phase;
         break;
     case Trace::DataType::TimeZeroSpan:
         setXAxis(XAxis::Type::TimeZeroSpan, XAxisMode::FitTraces, false, 0, 1, 0.1);
-        setYAxis(0, YAxis::Type::Magnitude, false, true, 0, 1, 1.0);
-        setYAxis(1, YAxis::Type::Phase, false, true, 0, 1, 1.0);
+        yLeftDefault = YAxis::Type::Magnitude;
+        yRightDefault = YAxis::Type::Phase;
         break;
     case Trace::DataType::Invalid:
         // unable to add
         return false;
+    }
+    if(!yAxis[0].isSupported(xAxis.getType(), getModel().getSource())) {
+        setYAxis(0, yLeftDefault, false, true, 0, 1, 1.0);
+    }
+    if(!yAxis[1].isSupported(xAxis.getType(), getModel().getSource())) {
+        setYAxis(1, yRightDefault, false, true, 0, 1, 1.0);
     }
     traceRemovalPending = true;
     return true;

@@ -98,6 +98,7 @@ public:
 
     Type getType() const;
 
+    bool isSupported(XAxis::Type type, TraceModel::DataSource source);
     static std::set<YAxis::Type> getSupported(XAxis::Type type, TraceModel::DataSource source);
     static std::complex<double> reconstructValueFromYAxisType(std::map<Type, double> yaxistypes);
 
