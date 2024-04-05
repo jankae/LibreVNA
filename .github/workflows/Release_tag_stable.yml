@@ -132,7 +132,7 @@ jobs:
           
   PC_Application_OSX:
     needs: PC_Application_Ubuntu
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v1
 
@@ -159,6 +159,9 @@ jobs:
           qmake LibreVNA-GUI.pro
           make -j9
           macdeployqt LibreVNA-GUI.app
+          # Unfortunately, we have to do some hackery to fix the loading path errors
+          # and missing dylibs from macdeployqt.
+          ./fixMacDylibs.sh
           zip -ry LibreVNA-GUI.zip LibreVNA-GUI.app
         shell: bash
 
