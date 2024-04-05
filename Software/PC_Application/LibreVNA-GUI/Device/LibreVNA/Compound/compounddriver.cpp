@@ -192,7 +192,7 @@ QString CompoundDriver::getStatus()
     ret.append("HW Rev.");
     ret.append(info.hardware_version);
     ret.append(" FW "+info.firmware_version);
-    ret.append(" Temps: "+QString::number(lastStatus.V1.temp_source)+"°C/"+QString::number(lastStatus.V1.temp_LO1)+"°C/"+QString::number(lastStatus.V1.temp_MCU)+"°C");
+    ret.append(" Temps: Source PLL: "+QString::number(lastStatus.V1.temp_source)+"°C LO PLL: "+QString::number(lastStatus.V1.temp_LO1)+"°C MCU: "+QString::number(lastStatus.V1.temp_MCU)+"°C");
     ret.append(" Reference:");
     if(lastStatus.V1.extRefInUse) {
         ret.append("External");
