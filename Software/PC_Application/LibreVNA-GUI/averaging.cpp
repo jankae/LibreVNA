@@ -84,6 +84,11 @@ unsigned int Averaging::currentSweep()
     }
 }
 
+bool Averaging::settled()
+{
+    return getLevel() == averages;
+}
+
 Averaging::Mode Averaging::getMode() const
 {
     return mode;

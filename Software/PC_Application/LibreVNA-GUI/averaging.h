@@ -26,6 +26,8 @@ public:
     // Returns the number of the currently active sweep. Value is incremented whenever the the first point of the sweep is added
     // Returned values are in range 0 (when no data has been added yet) to averages
     unsigned int currentSweep();
+    // Returns true if all required averages have been taken
+    bool settled();
     Mode getMode() const;
     void setMode(const Mode &value);
 

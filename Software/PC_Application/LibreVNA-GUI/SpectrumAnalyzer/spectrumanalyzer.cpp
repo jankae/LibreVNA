@@ -333,6 +333,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
 
 void SpectrumAnalyzer::deactivate()
 {
+    setOperationPending(false);
     StoreSweepSettings();
     Mode::deactivate();
 }
@@ -503,6 +504,9 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
     }
 
     auto m_avg = average.process(m);
+    if(average.settled()) {
+        setOperationPending(false);
+    }
 
     if(settings.freqStart == settings.freqStop) {
         // keep track of first point time
@@ -560,6 +564,7 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
 
 void SpectrumAnalyzer::SettingsChanged()
 {
+    setOperationPending(true);
     configurationTimer.start(100);
     ResetLiveTraces();
 }
@@ -703,6 +708,7 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     average.setAverages(averages);
     emit averagingChanged(averages);
     UpdateAverageCount();
+    setOperationPending(!average.settled());
 }
 
 void SpectrumAnalyzer::SetTGEnabled(bool enabled)
@@ -887,6 +893,7 @@ void SpectrumAnalyzer::ConfigureDevice()
 
 void SpectrumAnalyzer::ResetLiveTraces()
 {
+    setOperationPending(true);
     average.reset(DeviceDriver::SApoints());
     traceModel.clearLiveData();
     UpdateAverageCount();

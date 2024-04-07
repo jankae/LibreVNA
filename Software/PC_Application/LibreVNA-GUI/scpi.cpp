@@ -5,6 +5,40 @@
 SCPI::SCPI() :
     SCPINode("")
 {
+    WAIexecuting = false;
+    OPCQueryScheduled = false;
+    OCAS = false;
+    ESR = 0x00;
+
+    add(new SCPICommand("*OPC", [=](QStringList){
+        // OPC command
+        if(isOperationPending()) {
+            OCAS = true;
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        // OPC query
+        if(isOperationPending()) {
+            // operation pending
+            OPCQueryScheduled = true;
+            OCAS = true;
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } else {
+            // no operation, can return immediately
+            OCAS = false;
+            setFlag(Flag::OPC);
+            return "1";
+        }
+    }));
+
+    add(new SCPICommand("*WAI", [=](QStringList){
+        // WAI command
+        if(isOperationPending()) {
+            WAIexecuting = true;
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+
     add(new SCPICommand("*LST", nullptr, [=](QStringList){
         QString list;
         createCommandList("", list);
@@ -95,21 +129,66 @@ QString SCPI::getResultName(SCPI::Result r)
 
 void SCPI::input(QString line)
 {
-    auto cmds = line.split(";");
-    SCPINode *lastNode = this;
-    for(auto cmd : cmds) {
-        if(cmd.size() > 0) {
-            if(cmd[0] == ':' || cmd[0] == '*') {
-                // reset to root node
-                lastNode = this;
+    cmdQueue.append(line);
+    process();
+}
+
+void SCPI::process()
+{
+    while(!WAIexecuting && !cmdQueue.isEmpty()) {
+        auto cmd = cmdQueue.front();
+        cmdQueue.pop_front();
+        auto cmds = cmd.split(";");
+        SCPINode *lastNode = this;
+        for(auto cmd : cmds) {
+            if(cmd.size() > 0) {
+                if(cmd[0] == ':' || cmd[0] == '*') {
+                    // reset to root node
+                    lastNode = this;
+                }
+                if(cmd[0] == ':') {
+                    cmd.remove(0, 1);
+                }
+                auto response = lastNode->parse(cmd, lastNode);
+                emit output(response);
             }
-            if(cmd[0] == ':') {
-                cmd.remove(0, 1);
-            }
-            auto response = lastNode->parse(cmd, lastNode);
-            emit output(response);
         }
     }
+}
+
+void SCPI::someOperationCompleted()
+{
+    if(!isOperationPending()) {
+        // all operations are complete
+        if(OCAS) {
+            OCAS = false;
+            setFlag(Flag::OPC);
+            if(OPCQueryScheduled) {
+                output("1");
+                OPCQueryScheduled = false;
+            }
+        }
+        if(WAIexecuting) {
+            WAIexecuting = false;
+            // process any queued commands
+            process();
+        }
+    }
+}
+
+void SCPI::setFlag(Flag flag)
+{
+    ESR |= ((int) flag);
+}
+
+void SCPI::clearFlag(Flag flag)
+{
+    ESR &= ~((int) flag);
+}
+
+bool SCPI::getFlag(Flag flag)
+{
+    return ESR & (int) flag;
 }
 
 SCPINode::~SCPINode()
@@ -233,6 +312,36 @@ bool SCPINode::changeName(QString newname)
     }
     name = newname;
     return true;
+}
+
+void SCPINode::setOperationPending(bool pending)
+{
+    if(operationPending != pending) {
+        operationPending = pending;
+        if(!operationPending) {
+            // operation completed, needs to perform check if all operations are complete
+            auto root = this;
+            while(root->parent) {
+                root = root->parent;
+            }
+            auto scpi = static_cast<SCPI*>(root);
+            scpi->someOperationCompleted();
+        }
+    }
+}
+
+bool SCPINode::isOperationPending()
+{
+    if(operationPending) {
+        return true;
+    }
+    for(auto node : subnodes) {
+        if(node->isOperationPending()) {
+            return true;
+        }
+    }
+    // no node has any pending operations
+    return false;
 }
 
 bool SCPINode::nameCollision(QString name)

@@ -490,9 +490,6 @@ void AppWindow::SetupSCPI()
         SetInitialState();
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
-    scpi.add(new SCPICommand("*OPC", nullptr, [=](QStringList){
-        return "1";
-    }));
     auto scpi_dev = new SCPINode("DEVice");
     scpi.add(scpi_dev);
     scpi_dev->add(new SCPICommand("DISConnect", [=](QStringList params) -> QString {

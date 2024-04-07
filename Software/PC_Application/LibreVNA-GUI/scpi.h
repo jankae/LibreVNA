@@ -31,7 +31,7 @@ class SCPINode {
     friend class SCPI;
 public:
     SCPINode(QString name) :
-        name(name), parent(nullptr){}
+        name(name), parent(nullptr), operationPending(false){}
     virtual ~SCPINode();
 
     bool add(SCPINode *node);
@@ -44,6 +44,11 @@ public:
 
     bool changeName(QString newname);
 
+protected:
+    void setOperationPending(bool pending);
+
+    bool isOperationPending();
+
 private:
     QString parse(QString cmd, SCPINode* &lastNode);
     bool nameCollision(QString name);
@@ -52,6 +57,7 @@ private:
     std::vector<SCPINode*> subnodes;
     std::vector<SCPICommand*> commands;
     SCPINode *parent;
+    bool operationPending;
 };
 
 class SCPI : public QObject, public SCPINode
@@ -77,10 +83,39 @@ public:
 
     static QString getResultName(SCPI::Result r);
 
+    // call whenever a subnode completes an operation
+    void someOperationCompleted();
+
 public slots:
     void input(QString line);
+    void process();
 signals:
     void output(QString line);
+
+private:
+
+    enum class Flag  {
+        OPC = 0x01, // Operation complete
+        RQC = 0x02, // device wants to become the controller (of the bus)
+        QYE = 0x04, // query error
+        DDE = 0x08, // device-dependent error
+        EXE = 0x10, // execution error
+        CME = 0x20, // command error
+        URQ = 0x40, // user request
+        PON = 0x80, // power on
+    };
+
+    void setFlag(Flag flag);
+    void clearFlag(Flag flag);
+    bool getFlag(Flag flag);
+
+    unsigned int ESR;
+
+    bool OCAS;
+    bool OPCQueryScheduled;
+    bool WAIexecuting;
+
+    QList<QString> cmdQueue;
 };
 
 #endif // SCPI_H
