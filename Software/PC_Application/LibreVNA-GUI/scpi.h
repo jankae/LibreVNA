@@ -112,7 +112,8 @@ private:
     void clearFlag(Flag flag);
     bool getFlag(Flag flag);
 
-    unsigned int ESR;
+    unsigned int SESR;
+    unsigned int ESE;
 
     bool OCAS;
     bool OPCQueryScheduled;

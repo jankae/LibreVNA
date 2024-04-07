@@ -8,12 +8,41 @@ SCPI::SCPI() :
     WAIexecuting = false;
     OPCQueryScheduled = false;
     OCAS = false;
-    ESR = 0x00;
+    SESR = 0x00;
+    ESE = 0xFF;
+
+    add(new SCPICommand("*CLS", [=](QStringList) {
+        SESR = 0x00;
+        OCAS = false;
+        OPCQueryScheduled = false;
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+
+    add(new SCPICommand("*ESE", [=](QStringList params){
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval) || newval >= 256) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            ESE = newval;
+            return SCPI::getResultName(SCPI::Result::Empty);
+        }
+    }, [=](QStringList){
+        return QString::number(ESE);
+    }));
+
+    add(new SCPICommand("*ESR", nullptr, [=](QStringList){
+        auto ret = QString::number(SESR);
+        SESR = 0x00;
+        return ret;
+    }));
 
     add(new SCPICommand("*OPC", [=](QStringList){
         // OPC command
         if(isOperationPending()) {
             OCAS = true;
+        } else {
+            // operation already complete
+            setFlag(Flag::OPC);
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, [=](QStringList) -> QString {
@@ -194,17 +223,17 @@ void SCPI::someOperationCompleted()
 
 void SCPI::setFlag(Flag flag)
 {
-    ESR |= ((int) flag);
+    SESR |= ((int) flag);
 }
 
 void SCPI::clearFlag(Flag flag)
 {
-    ESR &= ~((int) flag);
+    SESR &= ~((int) flag);
 }
 
 bool SCPI::getFlag(Flag flag)
 {
-    return ESR & (int) flag;
+    return SESR & (int) flag;
 }
 
 SCPINode::~SCPINode()
