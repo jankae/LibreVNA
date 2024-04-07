@@ -58,6 +58,7 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *event) override;
 private slots:
+    void SetInitialState();
     bool ConnectToDevice(QString serial = QString(), DeviceDriver *driver = nullptr);
     void DisconnectDevice();
     int UpdateDeviceList();

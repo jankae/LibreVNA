@@ -143,11 +143,6 @@ AppWindow::AppWindow(QWidget *parent)
     central = new QStackedWidget;
     setCentralWidget(central);
 
-    auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
-    modeHandler->createMode("Signal Generator", Mode::Type::SG);
-    modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
-    modeHandler->setCurrentIndex(vnaIndex);
-
     auto setModeStatusbar = [=](const QString &msg) {
         lModeInfo.setText(msg);
     };
@@ -170,10 +165,9 @@ AppWindow::AppWindow(QWidget *parent)
 
     SetupSCPI();
 
+    SetInitialState();
+
     auto& pref = Preferences::getInstance();
-    if(pref.Startup.UseSetupFile) {
-        LoadSetup(pref.Startup.SetupFile);
-    }
     // List available devices
     UpdateDeviceList();
     if(pref.Startup.ConnectToFirstDevice && deviceList.size() > 0) {
@@ -313,6 +307,21 @@ void AppWindow::closeEvent(QCloseEvent *event)
         delete driver;
     }
     QMainWindow::closeEvent(event);
+}
+
+void AppWindow::SetInitialState()
+{
+    modeHandler->closeModes();
+
+    auto& pref = Preferences::getInstance();
+    if(pref.Startup.UseSetupFile) {
+        LoadSetup(pref.Startup.SetupFile);
+    } else {
+        auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+        modeHandler->createMode("Signal Generator", Mode::Type::SG);
+        modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
+        modeHandler->setCurrentIndex(vnaIndex);
+    }
 }
 
 bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
@@ -477,6 +486,10 @@ void AppWindow::SetupSCPI()
     scpi.add(new SCPICommand("*IDN", nullptr, [=](QStringList){
         return "LibreVNA,LibreVNA-GUI,dummy_serial,"+appVersion;
     }));
+    scpi.add(new SCPICommand("*RST", [=](QStringList){
+        SetInitialState();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     scpi.add(new SCPICommand("*OPC", nullptr, [=](QStringList){
         return "1";
     }));

@@ -5,7 +5,6 @@
 SCPI::SCPI() :
     SCPINode("")
 {
-    lastNode = this;
     add(new SCPICommand("*LST", nullptr, [=](QStringList){
         QString list;
         createCommandList("", list);
@@ -97,16 +96,19 @@ QString SCPI::getResultName(SCPI::Result r)
 void SCPI::input(QString line)
 {
     auto cmds = line.split(";");
+    SCPINode *lastNode = this;
     for(auto cmd : cmds) {
-        if(cmd[0] == ':' || cmd[0] == '*') {
-            // reset to root node
-            lastNode = this;
+        if(cmd.size() > 0) {
+            if(cmd[0] == ':' || cmd[0] == '*') {
+                // reset to root node
+                lastNode = this;
+            }
+            if(cmd[0] == ':') {
+                cmd.remove(0, 1);
+            }
+            auto response = lastNode->parse(cmd, lastNode);
+            emit output(response);
         }
-        if(cmd[0] == ':') {
-            cmd.remove(0, 1);
-        }
-        auto response = lastNode->parse(cmd, lastNode);
-        emit output(response);
     }
 }
 

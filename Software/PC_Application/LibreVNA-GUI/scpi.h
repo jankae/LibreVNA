@@ -81,9 +81,6 @@ public slots:
     void input(QString line);
 signals:
     void output(QString line);
-
-private:
-    SCPINode *lastNode;
 };
 
 #endif // SCPI_H
