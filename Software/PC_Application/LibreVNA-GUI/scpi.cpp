@@ -120,6 +120,12 @@ QString SCPI::getResultName(SCPI::Result r)
     case Result::Error:
     default:
         return "ERROR";
+    case Result::CmdError:
+        return "CMD_ERROR";
+    case Result::QueryError:
+        return "QUERY_ERROR";
+    case Result::ExecError:
+        return "EXEC_ERROR";
     case Result::False:
         return "FALSE";
     case Result::True:
@@ -150,7 +156,17 @@ void SCPI::process()
                     cmd.remove(0, 1);
                 }
                 auto response = lastNode->parse(cmd, lastNode);
-                emit output(response);
+                if(response == getResultName(Result::Error)) {
+                    setFlag(Flag::CME);
+                } else if(response == getResultName(Result::QueryError)) {
+                    setFlag(Flag::QYE);
+                } else if(response == getResultName(Result::ExecError)) {
+                    setFlag(Flag::EXE);
+                } else if(response == getResultName(Result::Empty)) {
+                    // do nothing
+                } else {
+                    emit output(response);
+                }
             }
         }
     }
@@ -425,17 +441,25 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
 QString SCPICommand::execute(QStringList params)
 {
     if(fn_cmd == nullptr) {
-        return SCPI::getResultName(SCPI::Result::Error);
+        return SCPI::getResultName(SCPI::Result::CmdError);
     } else {
-        return fn_cmd(params);
+        auto ret = fn_cmd(params);
+        if(ret == SCPI::getResultName(SCPI::Result::Error)) {
+            ret = SCPI::getResultName(SCPI::Result::CmdError);
+        }
+        return ret;
     }
 }
 
 QString SCPICommand::query(QStringList params)
 {
     if(fn_query == nullptr) {
-        return SCPI::getResultName(SCPI::Result::Error);
+        return SCPI::getResultName(SCPI::Result::QueryError);
     } else {
-        return fn_query(params);
+        auto ret = fn_query(params);
+        if(ret == SCPI::getResultName(SCPI::Result::Error)) {
+            ret = SCPI::getResultName(SCPI::Result::QueryError);
+        }
+        return ret;
     }
 }

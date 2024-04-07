@@ -77,6 +77,9 @@ public:
     enum class Result {
         Empty,
         Error,
+        CmdError,
+        QueryError,
+        ExecError,
         False,
         True
     };
