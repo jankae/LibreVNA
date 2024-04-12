@@ -983,7 +983,9 @@ void VNA::UpdateAverageCount()
 
 void VNA::SettingsChanged(bool resetTraces, int delay)
 {
-    setOperationPending(true);
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
     configurationTimer.start(delay);
     changingSettings = true;
     configurationTimerResetTraces = resetTraces;
@@ -1859,7 +1861,9 @@ void VNA::ResetLiveTraces()
     traceModel.clearLiveData();
     UpdateAverageCount();
     UpdateCalWidget();
-    setOperationPending(true);
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
 }
 
 bool VNA::LoadCalibration(QString filename)

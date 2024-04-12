@@ -564,7 +564,9 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
 
 void SpectrumAnalyzer::SettingsChanged()
 {
-    setOperationPending(true);
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
     configurationTimer.start(100);
     ResetLiveTraces();
 }
@@ -893,7 +895,9 @@ void SpectrumAnalyzer::ConfigureDevice()
 
 void SpectrumAnalyzer::ResetLiveTraces()
 {
-    setOperationPending(true);
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
     average.reset(DeviceDriver::SApoints());
     traceModel.clearLiveData();
     UpdateAverageCount();
