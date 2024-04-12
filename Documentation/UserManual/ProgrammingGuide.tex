@@ -177,44 +177,68 @@ The syntax follows the usual SCPI rules:
 \item All commands are case insensitive (implicitly converted to uppercase before evaluated)
 \item The command tree is organized in branches, separated by a colon:
 \begin{lstlisting}
-:VNA:TRACE:LIST?
+VNA:TRACE:LIST?
 \end{lstlisting}
 \item Multiple commands can be concatenated in one line using a semicolon:
 \begin{lstlisting}
-:DEVice:CONNECT;:DEVice:INFo:FWRevision?
+DEVice:CONNECT;:DEVice:INFo:FWRevision?
 \end{lstlisting}
-\item If a command starts with a colon it is evaluated from the root branch, otherwise the last used branch is assumed:
+\item If a subsequent command starts with a colon it is evaluated from the root branch, otherwise the last used branch is assumed:
 \begin{lstlisting}
-:VNA:FREQuency:START 1000000
-STOP 2000000 #No colon, VNA:FREQuency branch was used before
+VNA:FREQuency:START 1000000;STOP 2000000 #No colon, VNA:FREQuency branch was used before
 \end{lstlisting}
 \item Branches and commands can be abbreviated by using only the uppercase part of their name, the following commands are identical:
 \begin{lstlisting}
-:DEVice:INFo:LIMits:MINFrequency?
-:DEV:INF:LIM:MINF?
+DEVice:INFo:LIMits:MINFrequency?
+DEV:INF:LIM:MINF?
 \end{lstlisting}
-\item Every command generates a (possibly empty) response, terminated with a newline character.
+\item Every query generates a response, terminated with a newline character (exceptions exist for a few queries which return more than one line)
 \item Some commands require additional arguments that have to be passed after the command (separated by spaces):
 \begin{lstlisting}
-:DEV:REF:OUT 10
+DEV:REF:OUT 10
 \end{lstlisting}
 \item Two types of commands are available:
 \begin{itemize}
-\item \textbf{Events} change a setting or trigger an action. They usually have an empty response (unless there was an error).
+\item \textbf{Events} change a setting or trigger an action. They have no response
 \item \textbf{Queries} request information. They end with a question mark.
 \end{itemize}
 Some commands are both events and queries, depending on whether the question mark is present:
 \begin{lstlisting}
-:VNA:FREQ:SPAN 50000000 # Set the span
-:VNA:FREQ:SPAN? # Read the current span
+VNA:FREQ:SPAN 50000000 # Set the span
+VNA:FREQ:SPAN? # Read the current span
 \end{lstlisting}
 \end{itemize}
 \section{Commands}
 \subsection{General Commands}
 \subsubsection{*IDN}
 \query{Returns the identifications string}{*IDN?}{None}{LibreVNA,LibreVNA-GUI,dummy\_serial,<software version>}
+\subsubsection{*RST}
+\event{Resets the GUI (and any connected device) to the default state}{*RST}{None}
+\subsubsection{*CLS}
+\event{Clears the event status register}{*CLI}{None}
+\subsubsection{*ESE}
+\event{Configures the event status enable register}{*ESE}{<enabled\_bits\_decimal>}
+\query{Returns the event status enable register}{*ESE?}{None}{<enabled\_bits\_decimal>}
+\subsubsection{*ESR}
+\query{Returns the event status register}{*ESR?}{None}{<set\_bits\_decimal>}
+The bits are used according to IEEE 488:
+\begin{longtable}{p{.1\textwidth} | p{.1\textwidth} | p{.4\textwidth} }
+\textbf{Bitvalue} & \textbf{Name} & \textbf{Meaning}\\
+\hline
+1 & OPC & Operation complete\\
+2 & RQC & Request control (not used)\\
+4 & QYE & Query error (not used)\\
+8 & DDE & Device dependent error (not used)\\
+16 & EXE & Execution error (not used)\\
+32 & CME & Command error\\
+64 & URQ & User request (not used)\\
+128 & PON & Power on (not used)\\
+\end{longtable}
 \subsubsection{*OPC}
-\query{Returns a 1 after every previous command has been handled}{*OPC?}{None}{1}
+\event{Sets the OPC bit in the event status register after all operations are complete}{*OPC}{None}
+\query{Returns a 1 after every active operation has completed}{*OPC?}{None}{1}
+\subsubsection{*WAI}
+\event{Blocks further command parsing until all active operations are complete}{*WAI}{None}
 \subsubsection{*LST}
 \query{Lists all available commands}{*LST?}{None}{List of commands, separated by newline}
 \subsection{Device Commands}
