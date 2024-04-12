@@ -6,6 +6,7 @@ SCPI::SCPI() :
     SCPINode("")
 {
     WAIexecuting = false;
+    OPCsetBitScheduled = false;
     OPCQueryScheduled = false;
     OCAS = false;
     SESR = 0x00;
@@ -39,6 +40,7 @@ SCPI::SCPI() :
     add(new SCPICommand("*OPC", [=](QStringList){
         // OPC command
         if(isOperationPending()) {
+            OPCsetBitScheduled = true;
             OCAS = true;
         } else {
             // operation already complete
@@ -55,7 +57,6 @@ SCPI::SCPI() :
         } else {
             // no operation, can return immediately
             OCAS = false;
-            setFlag(Flag::OPC);
             return "1";
         }
     }));
@@ -110,8 +111,14 @@ bool SCPI::paramToULongLong(QStringList params, int index, unsigned long long &d
     if(index >= params.size()) {
         return false;
     }
-    bool okay;
-    dest = params[index].toULongLong(&okay);
+    double res;
+    bool okay = paramToDouble(params, index, res);
+    if(res > std::numeric_limits<unsigned long long>::max() || res < std::numeric_limits<unsigned long long>::min()) {
+        okay = false;
+    }
+    if(okay) {
+        dest = res;
+    }
     return okay;
 }
 
@@ -120,8 +127,14 @@ bool SCPI::paramToLong(QStringList params, int index, long &dest)
     if(index >= params.size()) {
         return false;
     }
-    bool okay;
-    dest = params[index].toLong(&okay);
+    double res;
+    bool okay = paramToDouble(params, index, res);
+    if(res > std::numeric_limits<long>::max() || res < std::numeric_limits<long>::min()) {
+        okay = false;
+    }
+    if(okay) {
+        dest = res;
+    }
     return okay;
 }
 
@@ -131,10 +144,10 @@ bool SCPI::paramToBool(QStringList params, int index, bool &dest)
         return false;
     }
     bool okay = false;
-    if(params[index] == "TRUE") {
+    if(params[index] == "TRUE" || params[index] == "ON" || params[index] == "1") {
         dest = true;
         okay = true;
-    } else if(params[index] == "FALSE") {
+    } else if(params[index] == "FALSE" || params[index] == "OFF" || params[index] == "0") {
         dest = false;
         okay = true;
     }
@@ -188,7 +201,9 @@ void SCPI::process()
                 if(response == getResultName(Result::Error)) {
                     setFlag(Flag::CME);
                 } else if(response == getResultName(Result::QueryError)) {
-                    setFlag(Flag::QYE);
+                    setFlag(Flag::CME);
+                } else if(response == getResultName(Result::CmdError)) {
+                    setFlag(Flag::CME);
                 } else if(response == getResultName(Result::ExecError)) {
                     setFlag(Flag::EXE);
                 } else if(response == getResultName(Result::Empty)) {
@@ -207,7 +222,10 @@ void SCPI::someOperationCompleted()
         // all operations are complete
         if(OCAS) {
             OCAS = false;
-            setFlag(Flag::OPC);
+            if(OPCsetBitScheduled) {
+                setFlag(Flag::OPC);
+                OPCsetBitScheduled = false;
+            }
             if(OPCQueryScheduled) {
                 output("1");
                 OPCQueryScheduled = false;

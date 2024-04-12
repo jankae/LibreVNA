@@ -116,6 +116,7 @@ private:
     unsigned int ESE;
 
     bool OCAS;
+    bool OPCsetBitScheduled;
     bool OPCQueryScheduled;
     bool WAIexecuting;
 
