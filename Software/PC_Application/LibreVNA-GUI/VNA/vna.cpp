@@ -1418,6 +1418,14 @@ void VNA::SetupSCPI()
     }));
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
+    scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
+        Run();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
+        Stop();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     scpi_acq->add(new SCPICommand("IFBW", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
