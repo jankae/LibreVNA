@@ -1070,6 +1070,7 @@ bool TraceXYPlot::supported(Trace *t, YAxis::Type type)
     case YAxis::Type::Capacitance:
     case YAxis::Type::Inductance:
     case YAxis::Type::QualityFactor:
+    case YAxis::Type::AbsImpedance:
         if(!t->isReflection()) {
             return false;
         }
@@ -1206,9 +1207,9 @@ void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 {
     Q_UNUSED(position)
     if(!supported(t)) {
-        // needs to switch to a different domain for the graph
-        if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a trace that is not supported with the currently selected X axis domain."
-                                    " Do you want to remove all traces and change the graph to the correct domain?", true, "DomainChangeRequest")) {
+        // needs to switch to a different setting for the graph
+        if(!InformationBox::AskQuestion("Graph Configuration Change", "You dropped a trace that is not supported with the currently configured axes."
+                                    " Do you want to remove all traces and change the graph to the correct configuration?", true, "DomainChangeRequest")) {
             // user declined to change domain, to not add trace
             return;
         }
