@@ -75,7 +75,7 @@
          <item>
           <widget class="QRadioButton" name="Y1log">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="text">
             <string>Log</string>
@@ -204,7 +204,7 @@
          <item>
           <widget class="QRadioButton" name="Y2log">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="text">
             <string>Log</string>
@@ -592,8 +592,8 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="Xgroup"/>
   <buttongroup name="Y1group"/>
+  <buttongroup name="Xgroup"/>
   <buttongroup name="Y2group"/>
  </buttongroups>
 </ui>

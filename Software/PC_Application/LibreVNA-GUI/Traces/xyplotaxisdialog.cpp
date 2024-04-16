@@ -50,7 +50,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
 
     // Setup GUI connections
     connect(ui->Y1type, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       //ui->Y1log->setEnabled(index != 0);
+       ui->Y1log->setEnabled(index != 0);
        ui->Y1linear->setEnabled(index != 0);
        ui->Y1auto->setEnabled(index != 0);
        bool autoRange = ui->Y1auto->isChecked();
@@ -74,7 +74,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     });
 
     connect(ui->Y2type, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       //ui->Y2log->setEnabled(index != 0);
+       ui->Y2log->setEnabled(index != 0);
        ui->Y2linear->setEnabled(index != 0);
        ui->Y2auto->setEnabled(index != 0);
        bool autoRange = ui->Y2auto->isChecked();
