@@ -41,6 +41,14 @@ static double createAutomaticTicks(vector<double>& ticks, double start, double s
 }
 
 static void createLogarithmicTicks(vector<double>& ticks, double start, double stop, int minDivisions) {
+    double mult = 1.0;
+    if(start < 0.0 && stop < 0.0) {
+        mult = -1.0;
+        auto buf = -stop;
+        stop = -start;
+        start = buf;
+    }
+
     // enforce usable log settings
     if(start <= 0) {
         start = 1.0;
@@ -55,7 +63,9 @@ static void createLogarithmicTicks(vector<double>& ticks, double start, double s
     int zeros = floor(log10(max_div_decade));
     double decimals_shift = pow(10, zeros);
     max_div_decade /= decimals_shift;
-    if(max_div_decade < 2) {
+    if(max_div_decade <= 1) {
+        max_div_decade = 1;
+    } else if(max_div_decade < 2) {
         max_div_decade = 2;
     } else if(max_div_decade < 5) {
         max_div_decade = 5;
@@ -70,15 +80,17 @@ static void createLogarithmicTicks(vector<double>& ticks, double start, double s
         step *= 10;
     }
     do {
-        ticks.push_back(div);
-        if(ticks.size() > 1 && div != step && floor(log10(div)) != floor(log10(div - step))) {
+        ticks.push_back(div * mult);
+        if(ticks.size() > 1 && div != step && floor(log10(div)+std::numeric_limits<double>::epsilon()) != floor(log10(div - step)+std::numeric_limits<double>::epsilon())) {
             // reached a new decade with this switch
             step *= 10;
-            div = step;
-        } else {
-            div += step;
         }
+        div += step;
     } while(div <= stop);
+
+    if(mult == -1.0) {
+        std::reverse(ticks.begin(), ticks.end());
+    }
 }
 
 YAxis::YAxis()
@@ -285,7 +297,7 @@ QString YAxis::Prefixes(Type type, TraceModel::DataSource source)
         case Type::Real: return "pnum ";
         case Type::Imaginary: return "pnum ";
         case Type::QualityFactor: return " ";
-        case Type::AbsImpedance: return " ";
+        case Type::AbsImpedance: return "m k";
         case Type::SeriesR: return "m kM";
         case Type::Reactance: return "m kM";
         case Type::Capacitance: return "pnum ";
