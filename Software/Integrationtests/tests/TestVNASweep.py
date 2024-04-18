@@ -4,11 +4,9 @@ import time
 class TestVNASweep(TestBase):
     def waitSweepTimeout(self, timeout = 1):
         self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "FALSE")
-        stoptime = time.time() + timeout
-        while self.vna.query(":VNA:ACQ:FIN?") == "FALSE":
-            if time.time() > stoptime:
-                raise AssertionError("Sweep timed out")
-            
+        self.vna.cmd("*WAI", timeout=timeout)
+        self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "TRUE")
+
     def test_sweep_frequency(self):
         self.vna.cmd(":DEV:MODE VNA")
         self.vna.cmd(":VNA:SWEEP FREQUENCY")

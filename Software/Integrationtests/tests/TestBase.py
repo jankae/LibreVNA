@@ -25,7 +25,7 @@ class TestBase(unittest.TestCase):
         
         self.vna = libreVNA('localhost', 19544)
         try:
-            self.vna.cmd(":DEV:CONN")
+            self.vna.cmd("*CLS;:DEV:CONN")
         except Exception as e:
             self.tearDown()
             raise e
