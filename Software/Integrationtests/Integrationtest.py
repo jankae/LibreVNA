@@ -2,6 +2,7 @@ import unittest
 
 testmodules = [
     'tests.TestConnect',
+    'tests.TestStatusRegisters',
     'tests.TestMode',
     'tests.TestVNASweep',
     'tests.TestCalibration',
