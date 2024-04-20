@@ -70,15 +70,15 @@ class SocketStreamReader:
 
 class libreVNA:
     def __init__(self, host='localhost', port=19542,
-                 default_check_cmds=True, default_timeout=1):
+                 check_cmds=True, timeout=1):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.sock.connect((host, port))
         except:
             raise Exception("Unable to connect to LibreVNA-GUI. Make sure it is running and the TCP server is enabled.")
         self.reader = SocketStreamReader(self.sock,
-                                         default_timeout=default_timeout)
-        self.default_check_cmds = default_check_cmds
+                                         default_timeout=timeout)
+        self.default_check_cmds = check_cmds
 
     def __del__(self):
         self.sock.close()
