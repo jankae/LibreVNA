@@ -1,5 +1,6 @@
 import re
 from tests.TestBase import TestBase
+import time
 
 float_re = re.compile(r'^[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]\d+)?$')
 int_re = re.compile(r'^\d+$')
@@ -240,7 +241,4 @@ class TestRST(TestBase):
         self.vna.cmd("*RST")
         settings2 = self.query_settings()
         for key, value in settings1.items():
-            # TODO-check: *RST does not reset this parameter.
-            if key == "DEV:REF:OUT":
-                continue
             self.assertEqual(value, settings2[key])

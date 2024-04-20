@@ -8,7 +8,7 @@ class TestCalibration(TestBase):
         self.vna.cmd(":VNA:CAL:MEAS "+str(number))
         # wait for the measurement to finish
         assert self.vna.query(":VNA:CAL:BUSY?") == "TRUE"
-        self.vna.cmd("*WAI")
+        self.vna.cmd("*WAI", timeout=timeout)
         assert self.vna.query(":VNA:CAL:BUSY?") == "FALSE"
     
     def test_dummy_calibration(self):
@@ -152,9 +152,9 @@ class TestCalibration(TestBase):
 
         # Start measurement and grab data
         self.vna.cmd(":VNA:ACQ:SINGLE TRUE")
-        self.assertEqual(self.vna.query(":VNA:ACQ:FIN?") == "FALSE")
+        self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "FALSE")
         self.vna.cmd("*WAI")
-        self.assertEqual(self.vna.query(":VNA:ACQ:FIN?") == "TRUE")
+        self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "TRUE")
 
         cal.reset()
         
