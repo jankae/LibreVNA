@@ -71,6 +71,7 @@ public:
         Real,
         Imaginary,
         // derived parameter options
+        AbsImpedance,
         SeriesR,
         Reactance,
         Capacitance,

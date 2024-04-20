@@ -478,7 +478,11 @@ void TraceXYPlot::draw(QPainter &p)
                 step = max / 1000;
             }
             int significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
+            if(yAxis[i].getLog() && yAxis[i].getRangeMax()/yAxis[i].getRangeMin() >= 100) {
+                significantDigits = floor(log10(max)) + 1;
+            }
 
+            int lastTickLabelEnd = std::numeric_limits<int>::max();
             for(unsigned int j = 0; j < yAxis[i].getTicks().size(); j++) {
                 auto yCoord = yAxis[i].transform(yAxis[i].getTicks()[j], w.height() - xAxisSpace, plotAreaTop);
                 p.setPen(QPen(pref.Graphs.Color.axis, 1));
@@ -486,17 +490,23 @@ void TraceXYPlot::draw(QPainter &p)
                 auto tickStart = i == 0 ? plotAreaLeft : plotAreaLeft + plotAreaWidth;
                 auto tickLen = i == 0 ? -2 : 2;
                 p.drawLine(tickStart, yCoord, tickStart + tickLen, yCoord);
-                QString unit = "";
-                QString prefix = " ";
-                if(pref.Graphs.showUnits) {
-                    unit = yAxis[i].Unit();
-                    prefix = yAxis[i].Prefixes();
-                }
-                auto tickValue = Unit::ToString(yAxis[i].getTicks()[j], unit, prefix, significantDigits);
-                if(i == 0) {
-                    p.drawText(QRectF(0, yCoord - pref.Graphs.fontSizeAxis/2 - 2, tickStart + 2 * tickLen, pref.Graphs.fontSizeAxis*1.5), Qt::AlignRight, tickValue);
+                if(yCoord + pref.Graphs.fontSizeAxis >= lastTickLabelEnd) {
+                    // would overlap previous tick label, skip
                 } else {
-                    p.drawText(QRectF(tickStart + 2 * tickLen + 2, yCoord - pref.Graphs.fontSizeAxis/2 - 2, yAxisSpace, pref.Graphs.fontSizeAxis*1.5), Qt::AlignLeft, tickValue);
+                    QString unit = "";
+                    QString prefix = " ";
+                    if(pref.Graphs.showUnits) {
+                        unit = yAxis[i].Unit();
+                        prefix = yAxis[i].Prefixes();
+                    }
+                    auto tickValue = Unit::ToString(yAxis[i].getTicks()[j], unit, prefix, significantDigits);
+                    QRect bounding;
+                    if(i == 0) {
+                        p.drawText(QRect(0, yCoord - pref.Graphs.fontSizeAxis/2 - 2, tickStart + 2 * tickLen, pref.Graphs.fontSizeAxis*1.5), Qt::AlignRight, tickValue, &bounding);
+                    } else {
+                        p.drawText(QRect(tickStart + 2 * tickLen + 2, yCoord - pref.Graphs.fontSizeAxis/2 - 2, yAxisSpace, pref.Graphs.fontSizeAxis*1.5), Qt::AlignLeft, tickValue, &bounding);
+                    }
+                    lastTickLabelEnd = bounding.y();
                 }
 
                 // tick lines
@@ -509,8 +519,8 @@ void TraceXYPlot::draw(QPainter &p)
                     if (pref.Graphs.Color.Ticks.Background.enabled) {
                         if (j%2)
                         {
-                            int yCoordTop = yAxis[i].transform(yAxis[i].getTicks()[j], plotAreaTop, w.height() - xAxisSpace);
-                            int yCoordBot = yAxis[i].transform(yAxis[i].getTicks()[j-1], plotAreaTop, w.height() - xAxisSpace);
+                            int yCoordTop = yCoord;
+                            int yCoordBot = yAxis[i].transform(yAxis[i].getTicks()[j-1], w.height() - xAxisSpace, plotAreaTop);
                             if(yCoordTop > yCoordBot) {
                                 auto buf = yCoordBot;
                                 yCoordBot = yCoordTop;
@@ -925,26 +935,51 @@ void TraceXYPlot::updateAxisTicks()
             }
             if(max >= min) {
                 auto range = max - min;
-                if(range == 0.0) {
-                    // this could happen if all values in a trace are identical (e.g. imported ideal touchstone files)
-                    if(max == 0.0) {
-                        // simply use +/-1 range
-                        max = 1.0;
-                        min = -1.0;
-                    } else {
-                        // +/-5% around value
-                        max += abs(max * 0.05);
-                        min -= abs(max * 0.05);
+                if(yAxis[i].getLog()){
+                    // log axis
+
+                    double maxLog10 = log10(abs(max));
+                    // prevent zero-crossing
+                    if(min <= 0.0 && max > 0) {
+                        min = pow(10, maxLog10 - 3); // just show 3 decades by default
+                    } else if(min >= 0.0 && max < 0) {
+                        // same thing if negative
+                        min = -pow(10, maxLog10 - 3);
                     }
+                    // add 5% visible range
+                    double ratio = log10(max/min);
+                    max *= pow(10, ratio * 0.05);
+                    min /= pow(10, ratio * 0.05);
                 } else {
-                    // add 5% of range at both ends
-                    min -= range * 0.05;
-                    max += range * 0.05;
+                    // linear axis
+                    if(range == 0.0) {
+                        // this could happen if all values in a trace are identical (e.g. imported ideal touchstone files)
+                        if(max == 0.0) {
+                            // simply use +/-1 range
+                            max = 1.0;
+                            min = -1.0;
+                        } else {
+                            // +/-5% around value
+                            max += abs(max * 0.05);
+                            min -= abs(max * 0.05);
+                        }
+                    } else {
+                        // add 5% of range at both ends
+                        min -= range * 0.05;
+                        max += range * 0.05;
+                    }
                 }
             } else {
                 // max/min still at default values, no valid samples are available for this axis, use default range
-                max = 1.0;
-                min = -1.0;
+                if(!yAxis[i].getLog()) {
+                    // linear axis
+                    max = 1.0;
+                    min = -1.0;
+                } else {
+                    // log axis
+                    max = 100.0;
+                    min = 0.1;
+                }
             }
             yAxis[i].set(yAxis[i].getType(), yAxis[i].getLog(), true, min, max, 0);
         }
@@ -1035,6 +1070,7 @@ bool TraceXYPlot::supported(Trace *t, YAxis::Type type)
     case YAxis::Type::Capacitance:
     case YAxis::Type::Inductance:
     case YAxis::Type::QualityFactor:
+    case YAxis::Type::AbsImpedance:
         if(!t->isReflection()) {
             return false;
         }
@@ -1171,9 +1207,9 @@ void TraceXYPlot::traceDropped(Trace *t, QPoint position)
 {
     Q_UNUSED(position)
     if(!supported(t)) {
-        // needs to switch to a different domain for the graph
-        if(!InformationBox::AskQuestion("X Axis Domain Change", "You dropped a trace that is not supported with the currently selected X axis domain."
-                                    " Do you want to remove all traces and change the graph to the correct domain?", true, "DomainChangeRequest")) {
+        // needs to switch to a different setting for the graph
+        if(!InformationBox::AskQuestion("Graph Configuration Change", "You dropped a trace that is not supported with the currently configured axes."
+                                    " Do you want to remove all traces and change the graph to the correct configuration?", true, "DomainChangeRequest")) {
             // user declined to change domain, to not add trace
             return;
         }
