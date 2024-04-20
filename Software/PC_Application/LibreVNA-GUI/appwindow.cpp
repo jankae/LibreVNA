@@ -322,6 +322,8 @@ void AppWindow::SetInitialState()
         modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
         modeHandler->setCurrentIndex(vnaIndex);
     }
+
+    ResetReference();
 }
 
 bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
@@ -1041,6 +1043,12 @@ int AppWindow::UpdateDeviceList()
     ui->menuConnect_to->setEnabled(found);
     qDebug() << "Updated device list, found" << available;
     return available;
+}
+
+void AppWindow::ResetReference()
+{
+    toolbars.reference.type->setCurrentIndex(0);
+    toolbars.reference.outFreq->setCurrentIndex(0);
 }
 
 //void AppWindow::StartManualControl()

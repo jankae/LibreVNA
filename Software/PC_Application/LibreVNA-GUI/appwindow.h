@@ -63,6 +63,7 @@ private slots:
     void DisconnectDevice();
     int UpdateDeviceList();
 //    void StartManualControl();
+    void ResetReference();
     void UpdateReferenceToolbar();
     void UpdateReference();
     void DeviceStatusUpdated();

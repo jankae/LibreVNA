@@ -966,7 +966,9 @@ void SpectrumAnalyzer::SetupSCPI()
     scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
             Run();
             return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
+    }, [=](QStringList) -> QString {
+        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
     scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
             Stop();
             return SCPI::getResultName(SCPI::Result::Empty);

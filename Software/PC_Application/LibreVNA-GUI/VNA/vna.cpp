@@ -1421,7 +1421,9 @@ void VNA::SetupSCPI()
     scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
         Run();
         return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
+    }, [=](QStringList) -> QString {
+        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
     scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
         Stop();
         return SCPI::getResultName(SCPI::Result::Empty);
@@ -1479,16 +1481,6 @@ void VNA::SetupSCPI()
     }, [=](QStringList) -> QString {
         return singleSweep ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
-    scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
-        Run();
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, [=](QStringList) -> QString {
-        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
-    }));
-    scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
-        Stop();
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);
     scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
