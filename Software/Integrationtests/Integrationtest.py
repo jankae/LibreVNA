@@ -9,6 +9,7 @@ testmodules = [
     'tests.TestCalibration',
     'tests.TestGenerator',
     'tests.TestSASweep',
+    'tests.TestRST',
     ]
 
 suite = unittest.TestSuite()
