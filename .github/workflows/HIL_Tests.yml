@@ -9,12 +9,16 @@ on:
     branches:
       - master
 
-jobs:         
-  PC_Application_RPi5:
+jobs:
+  Get Repository:
     runs-on: RPi-HIL
     steps:
       - uses: actions/checkout@v1
-
+          
+  PC_Application_RPi5:
+    runs-on: RPi-HIL
+    needs: Get Repository
+    steps:
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -29,9 +33,8 @@ jobs:
           
   Embedded_Firmware:
     runs-on: RPi-HIL
+    needs: Get Repository
     steps:
-      - uses: actions/checkout@v1
-
       - name: Install toolchain
         run: |
           sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
