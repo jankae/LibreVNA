@@ -242,6 +242,10 @@ class TestRST(TestBase):
 
         # Reset and verify all settings revert.
         self.vna.cmd("*RST")
+        
+        # ... and wait a little bit here again to let the changes from the RST propagate from the device and back to the GUI (otherwise we might still read wrong external reference settings for example)
+        time.sleep(2)
+        
         settings2 = self.query_settings()
         for key, value in settings1.items():
             self.assertEqual(value, settings2[key])
