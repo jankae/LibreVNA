@@ -62,7 +62,7 @@ void FirmwareUpdateDialog::reloadFile()
 {
     delete file;
     file = new QFile(ui->lFile->text());
-    ui->bStart->setEnabled(false);
+    ui->bStart->setEnabled(true);
 }
 
 void FirmwareUpdateDialog::on_bStart_clicked()
@@ -107,13 +107,14 @@ void FirmwareUpdateDialog::on_bStart_clicked()
     }
     file->seek(0);
     state = State::ErasingFLASH;
+    disconnect(dev, nullptr, this, nullptr);
     connect(dev, &LibreVNADriver::receivedAnswer, this, [=](const LibreVNADriver::TransmissionResult &res) {
         if(res == LibreVNADriver::TransmissionResult::Ack) {
             receivedAck();
         } else if(res == LibreVNADriver::TransmissionResult::Nack) {
             receivedNack();
         }
-    }, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
+    }, Qt::QueuedConnection);
     addStatus("Erasing device memory...");
     dev->sendWithoutPayload(Protocol::PacketType::ClearFlash);
     timer.setSingleShot(true);
