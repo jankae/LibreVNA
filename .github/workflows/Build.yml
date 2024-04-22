@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - HIL_actions
   pull_request:
     branches:
       - master
@@ -48,6 +49,46 @@ jobs:
         with:
           name: LibreVNA-GUI-Ubuntu-${{env.LIBREVNA_VERSION}}
           path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI
+          
+  PC_Application_RPi5:
+    runs-on: RPi-HIL
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libusb-1.0-0-dev qt6-tools-dev qt6-base-dev
+          qtchooser -install qt6 $(which qmake6)
+
+      - name: Get build timestamp
+        id: id_date
+        run: echo "timestamp=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_OUTPUT
+
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          echo "app_version=v$fw_major.$fw_minor.$fw_patch-${{steps.id_date.outputs.timestamp}}" >> $GITHUB_OUTPUT
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          export QT_SELECT=qt6
+          qmake LibreVNA-GUI.pro
+          make -j9
+        shell: bash
+
+      - name: Upload artifact
+        env: 
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+        uses: actions/upload-artifact@v3
+        with:
+          name: LibreVNA-GUI-RPi5-${{env.LIBREVNA_VERSION}}
+          path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI          
           
   PC_Application_Windows:
     runs-on: windows-2019

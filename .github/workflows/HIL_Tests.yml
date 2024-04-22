@@ -1,0 +1,88 @@
+name: HIL_Tests
+
+on:
+  push:
+    branches:
+      - master
+      - HIL_actions
+  pull_request:
+    branches:
+      - master
+
+jobs:         
+  PC_Application_RPi5:
+    runs-on: RPi-HIL
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libusb-1.0-0-dev qt6-tools-dev qt6-base-dev
+          qtchooser -install qt6 $(which qmake6)
+
+      - name: Get build timestamp
+        id: id_date
+        run: echo "timestamp=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_OUTPUT
+
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          echo "app_version=v$fw_major.$fw_minor.$fw_patch-${{steps.id_date.outputs.timestamp}}" >> $GITHUB_OUTPUT
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          export QT_SELECT=qt6
+          qmake LibreVNA-GUI.pro
+          make -j9
+        shell: bash
+          
+  Embedded_Firmware:
+    runs-on: RPi-HIL
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+        
+      - name: Get build timestamp
+        id: id_date
+        run: echo "timestamp=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_OUTPUT
+
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/VNA_embedded
+          fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' Makefile`
+          fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' Makefile`
+          fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' Makefile`
+          hw_revision=`grep "DHW_REVISION=" Makefile | sed "s/-DHW_REVISION=\"'//" | sed "sr'\" [\]rr"`
+          echo "app_version=hw-rev-$hw_revision-v$fw_major.$fw_minor.$fw_patch-${{steps.id_date.outputs.timestamp}}" >> $GITHUB_OUTPUT
+
+      - name: Build application
+        run: |
+          cd Software/VNA_embedded
+          make -j9
+          cp build/VNA_embedded.elf ../../
+        shell: bash
+
+      - name: Combine with FPGA bitstream
+        run: |
+          python3 AssembleFirmware.py
+        shell: bash
+        
+  HIL:
+    runs-on: RPi-HIL
+    needs: [PC_Application_RPi5, Embedded_Firmware]
+    steps:
+      - name: Run HIL tests
+        run: |
+          cd Software/Integrationtests
+          python3 Integrationtest.py
+
