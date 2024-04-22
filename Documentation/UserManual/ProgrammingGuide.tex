@@ -257,6 +257,14 @@ This section contains general device commands, available regardless of the curre
 206039903350
 \end{example}
 
+\subsubsection{DEVice:UPDATE}
+\event{Updates the firmware of the connected device}{DEVice:UPDATE <fw\_file>}{<fw\_file> Path to the firmware file}
+Important points when saving/loading setup files through SCPI commands:
+\begin{itemize}
+\item The path must be either absolute or relative to the location of the GUI application.
+\item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the firmware file must be stored on the machine that runs the GUI.
+\end{itemize}
+
 \subsubsection{DEVice:LIST}
 \query{Lists all available devices by their serial numbers}{DEVice:LIST?}{None}{List of serialnumbers}
 \begin{example}
@@ -393,6 +401,13 @@ These commands change or query VNA settings. Although most of them are available
 \subsubsection{VNA:POWer:STOP}
 \event{Sets the stop power of the power sweep}{VNA:POWer:STOP}{<stop power>, in dBm}
 \query{Queries the currently selected stop power}{VNA:POWer:STOP?}{None}{stop power in dBm}
+
+\subsubsection{VNA:ACQuisition:RUN}
+\event{Puts the VNA into run mode (sweep active)}{VNA:ACQuisition:RUN}{None}
+\query{Queries whether the VNA is in run mode}{VNA:ACQuisition:RUN?}{None}{TRUE or FALSE}
+
+\subsubsection{VNA:ACQuisition:STOP}
+\event{Puts the VNA into stop mode (sweep inactive)}{VNA:ACQuisition:STOP}{None}
 
 \subsubsection{VNA:ACQuisition:IFBW}
 \event{Sets the IF bandwidth}{VNA:ACQuisition:IFBW}{<IF bandwidth>, in Hz}
@@ -651,6 +666,13 @@ These commands change or query spectrum analyzer settings. Although most of them
 
 \subsubsection{SA:FREQuency:ZERO}
 \event{Sets the device to zero span mode}{SA:FREQuency:ZERO}{None}
+
+\subsubsection{SA:ACQuisition:RUN}
+\event{Puts the spectrum analyzer into run mode (sweep active)}{SA:ACQuisition:RUN}{None}
+\query{Queries whether the spectrum analyzer is in run mode}{SA:ACQuisition:RUN?}{None}{TRUE or FALSE}
+
+\subsubsection{SA:ACQuisition:STOP}
+\event{Puts the spectrum analyzer into stop mode (sweep inactive)}{SA:ACQuisition:STOP}{None}
 
 \subsubsection{SA:ACQuisition:RBW}
 \event{Sets the resolution bandwidth}{SA:ACQuisition:IFBW}{<resolution bandwidth>, in Hz}
