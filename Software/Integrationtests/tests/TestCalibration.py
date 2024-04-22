@@ -7,11 +7,9 @@ class TestCalibration(TestBase):
     def cal_measure(self, number, timeout = 3):
         self.vna.cmd(":VNA:CAL:MEAS "+str(number))
         # wait for the measurement to finish
-        stoptime = time.time() + timeout
-        while self.vna.query(":VNA:CAL:BUSY?") == "TRUE":
-            if time.time() > stoptime:
-                raise AssertionError("Calibration measurement timed out")
-            time.sleep(0.1)
+        assert self.vna.query(":VNA:CAL:BUSY?") == "TRUE"
+        self.vna.cmd("*WAI", timeout=timeout)
+        assert self.vna.query(":VNA:CAL:BUSY?") == "FALSE"
     
     def test_dummy_calibration(self):
         # This test just iterates through the calibration steps. As no actual standards
@@ -29,7 +27,8 @@ class TestCalibration(TestBase):
         self.vna.cmd(":VNA:CAL:RESET")
 
         # No measurements yet, activating should fail
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_1"), "ERROR")
+        self.vna.cmd(":VNA:CAL:ACT SOLT_1", check=False)
+        self.assertTrue(self.vna.get_status() & 0x3C)
 
         # Load calibration kit
         self.assertEqual(self.vna.query(":VNA:CAL:KIT:LOAD? DUMMY.CALKIT"), "TRUE")
@@ -47,11 +46,14 @@ class TestCalibration(TestBase):
         self.cal_measure(2)
                            
         # SOLT_1 should now be available
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_1"), "")
+        self.vna.cmd(":VNA:CAL:ACT SOLT_1", check=False)
+        self.assertFalse(self.vna.get_status() & 0x3C)
 
         # SOLT_2 and SOLT_12 should still be unavailable
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_2"), "ERROR")
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_12"), "ERROR")
+        self.vna.cmd(":VNA:CAL:ACT SOLT_2", check=False)
+        self.assertTrue(self.vna.get_status() & 0x3C)
+        self.vna.cmd(":VNA:CAL:ACT SOLT_12", check=False)
+        self.assertTrue(self.vna.get_status() & 0x3C)
 
         # Take measurements for SOLT_2
         self.vna.cmd(":VNA:CAL:ADD OPEN")
@@ -66,11 +68,14 @@ class TestCalibration(TestBase):
         self.cal_measure(5)
 
         # SOLT_1 and SOLT_2 should now be available
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_1"), "")
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_2"), "")
-        
+        self.vna.cmd(":VNA:CAL:ACT SOLT_1", check=False)
+        self.assertFalse(self.vna.get_status() & 0x3C)
+        self.vna.cmd(":VNA:CAL:ACT SOLT_2", check=False)
+        self.assertFalse(self.vna.get_status() & 0x3C)
+
         # SOLT_12 should still be unavailable
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_12"), "ERROR")
+        self.vna.cmd(":VNA:CAL:ACT SOLT_12", check=False)
+        self.assertTrue(self.vna.get_status() & 0x3C)
 
         # Take the final through measurement for SOLT_12
         self.vna.cmd(":VNA:CAL:ADD THROUGH")
@@ -79,9 +84,12 @@ class TestCalibration(TestBase):
         self.cal_measure(6)
         
         # SOLT_1, SOLT_2 and SOLT_12 should now be available
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_1"), "")
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_2"), "")
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_12"), "")
+        self.vna.cmd(":VNA:CAL:ACT SOLT_1", check=False)
+        self.assertFalse(self.vna.get_status() & 0x3C)
+        self.vna.cmd(":VNA:CAL:ACT SOLT_2", check=False)
+        self.assertFalse(self.vna.get_status() & 0x3C)
+        self.vna.cmd(":VNA:CAL:ACT SOLT_12", check=False)
+        self.assertFalse(self.vna.get_status() & 0x3C)
         
     def assertTrace_dB(self, trace, dB_nominal, dB_deviation):
         for S in trace:
@@ -135,7 +143,8 @@ class TestCalibration(TestBase):
         self.cal_measure(6, 15)
         
         # activate calibration
-        self.assertEqual(self.vna.query(":VNA:CAL:ACT SOLT_12"), "")
+        self.vna.cmd(":VNA:CAL:ACT SOLT_12", check=False)
+        self.assertFalse(self.vna.get_status() & 0x3C)
 
         # switch in 6dB attenuator
         cal.setPort(cal.Standard.THROUGH, 1, 2)        
@@ -143,8 +152,9 @@ class TestCalibration(TestBase):
 
         # Start measurement and grab data
         self.vna.cmd(":VNA:ACQ:SINGLE TRUE")
-        while self.vna.query(":VNA:ACQ:FIN?") == "FALSE":
-            time.sleep(0.1)
+        self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "FALSE")
+        self.vna.cmd("*WAI")
+        self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "TRUE")
 
         cal.reset()
         
@@ -162,5 +172,4 @@ class TestCalibration(TestBase):
         # Reflection should be below -10dB (much lower for most frequencies)
         self.assertTrace_dB(S11, -100, 90)
         self.assertTrace_dB(S22, -100, 90)
-        
-        
+

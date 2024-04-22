@@ -692,6 +692,7 @@ QString VNA::getCalToolTip()
 
 void VNA::deactivate()
 {
+    setOperationPending(false);
     StoreSweepSettings();
     Mode::deactivate();
 }
@@ -901,6 +902,9 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     }
 
     m_avg = average.process(m_avg);
+    if(average.settled()) {
+        setOperationPending(false);
+    }
 
     if(calMeasuring) {
         if(average.currentSweep() == averages) {
@@ -979,6 +983,9 @@ void VNA::UpdateAverageCount()
 
 void VNA::SettingsChanged(bool resetTraces, int delay)
 {
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
     configurationTimer.start(delay);
     changingSettings = true;
     configurationTimerResetTraces = resetTraces;
@@ -1218,6 +1225,7 @@ void VNA::SetAveraging(unsigned int averages)
     average.setAverages(averages);
     emit averagingChanged(averages);
     UpdateAverageCount();
+    setOperationPending(!average.settled());
 }
 
 void VNA::ExcitationRequired()
@@ -1317,7 +1325,6 @@ void VNA::SetupSCPI()
         if(params.size() >= 1) {
             if(params[0] == "FREQUENCY") {
                 SetSweepType(SweepType::Frequency);
-                ResetLiveTraces();
                 return SCPI::getResultName(SCPI::Result::Empty);
             } else if(params[0] == "POWER") {
                 SetSweepType(SweepType::Power);
@@ -1378,7 +1385,6 @@ void VNA::SetupSCPI()
     scpi_freq->add(new SCPICommand("FULL", [=](QStringList params) -> QString {
         Q_UNUSED(params)
         SetFullSpan();
-        ResetLiveTraces();
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     scpi_freq->add(new SCPICommand("ZERO", [=](QStringList params) -> QString {
@@ -1412,6 +1418,16 @@ void VNA::SetupSCPI()
     }));
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
+    scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
+        Run();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
+    scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
+        Stop();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     scpi_acq->add(new SCPICommand("IFBW", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {
@@ -1449,7 +1465,7 @@ void VNA::SetupSCPI()
         return QString::number(average.getLevel());
     }));
     scpi_acq->add(new SCPICommand("FINished", nullptr, [=](QStringList) -> QString {
-        return average.getLevel() == averages ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+        return average.settled() ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
     scpi_acq->add(new SCPICommand("LIMit", nullptr, [=](QStringList) -> QString {
         return tiles->allLimitsPassing() ? "PASS" : "FAIL";
@@ -1465,16 +1481,6 @@ void VNA::SetupSCPI()
     }, [=](QStringList) -> QString {
         return singleSweep ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     }));
-    scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
-        Run();
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, [=](QStringList) -> QString {
-        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
-    }));
-    scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
-        Stop();
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);
     scpi_stim->add(new SCPICommand("LVL", [=](QStringList params) -> QString {
@@ -1855,6 +1861,9 @@ void VNA::ResetLiveTraces()
     traceModel.clearLiveData();
     UpdateAverageCount();
     UpdateCalWidget();
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
 }
 
 bool VNA::LoadCalibration(QString filename)

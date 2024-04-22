@@ -1,13 +1,14 @@
+import re
 import socket
 from asyncio import IncompleteReadError  # only import the exception class
 import time
 
 class SocketStreamReader:
-    def __init__(self, sock: socket.socket):
+    def __init__(self, sock: socket.socket, default_timeout=1):
         self._sock = sock
         self._sock.setblocking(0)
         self._recv_buffer = bytearray()
-        self.timeout = 1.0
+        self.default_timeout = default_timeout
 
     def read(self, num_bytes: int = -1) -> bytes:
         raise NotImplementedError
@@ -22,12 +23,14 @@ class SocketStreamReader:
             pos += n
         return bytes(buf)
 
-    def readline(self) -> bytes:
-        return self.readuntil(b"\n")
+    def readline(self, timeout=None) -> bytes:
+        return self.readuntil(b"\n", timeout=timeout)
 
-    def readuntil(self, separator: bytes = b"\n") -> bytes:
+    def readuntil(self, separator: bytes = b"\n", timeout=None) -> bytes:
         if len(separator) != 1:
             raise ValueError("Only separators of length 1 are supported.")
+        if timeout is None:
+            timeout = self.default_timeout
 
         chunk = bytearray(4096)
         start = 0
@@ -35,12 +38,12 @@ class SocketStreamReader:
         bytes_read = self._recv_into(memoryview(buf))
         assert bytes_read == len(buf)
 
-        timeout = time.time() + self.timeout
+        time_limit = time.time() + timeout
         while True:
             idx = buf.find(separator, start)
             if idx != -1:
                 break
-            elif time.time() > timeout:
+            elif time.time() > time_limit:
                 raise Exception("Timed out waiting for response from GUI")
 
             start = len(self._recv_buffer)
@@ -66,31 +69,54 @@ class SocketStreamReader:
         return bytes_read
 
 class libreVNA:
-    def __init__(self, host='localhost', port=19542):
+    def __init__(self, host='localhost', port=19542,
+                 check_cmds=True, timeout=1):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.sock.connect((host, port))
         except:
             raise Exception("Unable to connect to LibreVNA-GUI. Make sure it is running and the TCP server is enabled.")
-        self.reader = SocketStreamReader(self.sock)
+        self.reader = SocketStreamReader(self.sock,
+                                         default_timeout=timeout)
+        self.default_check_cmds = check_cmds
 
     def __del__(self):
         self.sock.close()
 
-    def __read_response(self):
-        return self.reader.readline().decode().rstrip()
+    def __read_response(self, timeout=None):
+        return self.reader.readline(timeout=timeout).decode().rstrip()
 
-    def cmd(self, cmd):
+    def cmd(self, cmd, check=None, timeout=None):
         self.sock.sendall(cmd.encode())
         self.sock.send(b"\n")
-        resp = self.__read_response()
-        if len(resp) > 0:
-        	raise Exception("Expected empty response but got "+resp)
+        if check or (check is None and self.default_check_cmds):
+            status = self.get_status(timeout=timeout)
+            if self.get_status() & 0x20:
+                raise Exception("Command Error")
+            if self.get_status() & 0x10:
+                raise Exception("Execution Error")
+            if self.get_status() & 0x08:
+                raise Exception("Device Error")
+            if self.get_status() & 0x04:
+                raise Exception("Query Error")
+            return status
+        else:
+            return None
 
-    def query(self, query):
+    def query(self, query, timeout=None):
         self.sock.sendall(query.encode())
         self.sock.send(b"\n")
-        return self.__read_response()
+        return self.__read_response(timeout=timeout)
+
+    def get_status(self, timeout=None):
+        resp = self.query("*ESR?", timeout=timeout)
+        if not re.match(r'^\d+$', resp):
+            raise Exception("Expected numeric response from *ESR? but got "
+                            f"'{resp}'")
+        status = int(resp)
+        if status < 0 or status > 255:
+            raise Exception(f"*ESR? returned invalid value {status}.")
+        return status
     
     @staticmethod
     def parse_VNA_trace_data(data):

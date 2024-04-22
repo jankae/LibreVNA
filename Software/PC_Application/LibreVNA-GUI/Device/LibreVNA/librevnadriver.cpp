@@ -546,6 +546,9 @@ bool LibreVNADriver::setExtRef(QString option_in, QString option_out)
     case Reference::TypeIn::None:
         p.reference.UseExternalRef = 0;
         p.reference.AutomaticSwitch = 0;
+        if(hardwareVersion == 0x01) {
+            lastStatus.V1.extRefInUse = 0;
+        }
         break;
     case Reference::TypeIn::Auto:
         p.reference.UseExternalRef = 0;
@@ -554,6 +557,9 @@ bool LibreVNADriver::setExtRef(QString option_in, QString option_out)
     case Reference::TypeIn::External:
         p.reference.UseExternalRef = 1;
         p.reference.AutomaticSwitch = 0;
+        if(hardwareVersion == 0x01) {
+            lastStatus.V1.extRefInUse = 1;
+        }
         break;
     }
     switch(refOut) {

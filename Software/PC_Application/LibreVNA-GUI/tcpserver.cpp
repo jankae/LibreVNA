@@ -12,7 +12,7 @@ TCPServer::TCPServer(int port)
         delete socket;
         socket = server.nextPendingConnection();
         connect(socket, &QTcpSocket::readyRead, [=](){
-            if(socket->canReadLine()) {
+            while(socket->canReadLine()) {
                 auto available = socket->bytesAvailable();
                 char data[available+1];
                 socket->readLine(data, sizeof(data));

@@ -5,7 +5,70 @@
 SCPI::SCPI() :
     SCPINode("")
 {
-    lastNode = this;
+    WAIexecuting = false;
+    OPCsetBitScheduled = false;
+    OPCQueryScheduled = false;
+    OCAS = false;
+    SESR = 0x00;
+    ESE = 0xFF;
+
+    add(new SCPICommand("*CLS", [=](QStringList) {
+        SESR = 0x00;
+        OCAS = false;
+        OPCQueryScheduled = false;
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+
+    add(new SCPICommand("*ESE", [=](QStringList params){
+        unsigned long long newval;
+        if(!SCPI::paramToULongLong(params, 0, newval) || newval >= 256) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            ESE = newval;
+            return SCPI::getResultName(SCPI::Result::Empty);
+        }
+    }, [=](QStringList){
+        return QString::number(ESE);
+    }));
+
+    add(new SCPICommand("*ESR", nullptr, [=](QStringList){
+        auto ret = QString::number(SESR);
+        SESR = 0x00;
+        return ret;
+    }));
+
+    add(new SCPICommand("*OPC", [=](QStringList){
+        // OPC command
+        if(isOperationPending()) {
+            OPCsetBitScheduled = true;
+            OCAS = true;
+        } else {
+            // operation already complete
+            setFlag(Flag::OPC);
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        // OPC query
+        if(isOperationPending()) {
+            // operation pending
+            OPCQueryScheduled = true;
+            OCAS = true;
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } else {
+            // no operation, can return immediately
+            OCAS = false;
+            return "1";
+        }
+    }));
+
+    add(new SCPICommand("*WAI", [=](QStringList){
+        // WAI command
+        if(isOperationPending()) {
+            WAIexecuting = true;
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+
     add(new SCPICommand("*LST", nullptr, [=](QStringList){
         QString list;
         createCommandList("", list);
@@ -48,8 +111,14 @@ bool SCPI::paramToULongLong(QStringList params, int index, unsigned long long &d
     if(index >= params.size()) {
         return false;
     }
-    bool okay;
-    dest = params[index].toULongLong(&okay);
+    double res;
+    bool okay = paramToDouble(params, index, res);
+    if(res > std::numeric_limits<unsigned long long>::max() || res < std::numeric_limits<unsigned long long>::min()) {
+        okay = false;
+    }
+    if(okay) {
+        dest = res;
+    }
     return okay;
 }
 
@@ -58,8 +127,14 @@ bool SCPI::paramToLong(QStringList params, int index, long &dest)
     if(index >= params.size()) {
         return false;
     }
-    bool okay;
-    dest = params[index].toLong(&okay);
+    double res;
+    bool okay = paramToDouble(params, index, res);
+    if(res > std::numeric_limits<long>::max() || res < std::numeric_limits<long>::min()) {
+        okay = false;
+    }
+    if(okay) {
+        dest = res;
+    }
     return okay;
 }
 
@@ -69,10 +144,10 @@ bool SCPI::paramToBool(QStringList params, int index, bool &dest)
         return false;
     }
     bool okay = false;
-    if(params[index] == "TRUE") {
+    if(params[index] == "TRUE" || params[index] == "ON" || params[index] == "1") {
         dest = true;
         okay = true;
-    } else if(params[index] == "FALSE") {
+    } else if(params[index] == "FALSE" || params[index] == "OFF" || params[index] == "0") {
         dest = false;
         okay = true;
     }
@@ -87,6 +162,12 @@ QString SCPI::getResultName(SCPI::Result r)
     case Result::Error:
     default:
         return "ERROR";
+    case Result::CmdError:
+        return "CMD_ERROR";
+    case Result::QueryError:
+        return "QUERY_ERROR";
+    case Result::ExecError:
+        return "EXEC_ERROR";
     case Result::False:
         return "FALSE";
     case Result::True:
@@ -96,18 +177,81 @@ QString SCPI::getResultName(SCPI::Result r)
 
 void SCPI::input(QString line)
 {
-    auto cmds = line.split(";");
-    for(auto cmd : cmds) {
-        if(cmd[0] == ':' || cmd[0] == '*') {
-            // reset to root node
-            lastNode = this;
+    cmdQueue.append(line);
+    process();
+}
+
+void SCPI::process()
+{
+    while(!WAIexecuting && !cmdQueue.isEmpty()) {
+        auto cmd = cmdQueue.front();
+        cmdQueue.pop_front();
+        auto cmds = cmd.split(";");
+        SCPINode *lastNode = this;
+        for(auto cmd : cmds) {
+            if(cmd.size() > 0) {
+                if(cmd[0] == ':' || cmd[0] == '*') {
+                    // reset to root node
+                    lastNode = this;
+                }
+                if(cmd[0] == ':') {
+                    cmd.remove(0, 1);
+                }
+                auto response = lastNode->parse(cmd, lastNode);
+                if(response == getResultName(Result::Error)) {
+                    setFlag(Flag::CME);
+                } else if(response == getResultName(Result::QueryError)) {
+                    setFlag(Flag::CME);
+                } else if(response == getResultName(Result::CmdError)) {
+                    setFlag(Flag::CME);
+                } else if(response == getResultName(Result::ExecError)) {
+                    setFlag(Flag::EXE);
+                } else if(response == getResultName(Result::Empty)) {
+                    // do nothing
+                } else {
+                    emit output(response);
+                }
+            }
         }
-        if(cmd[0] == ':') {
-            cmd.remove(0, 1);
-        }
-        auto response = lastNode->parse(cmd, lastNode);
-        emit output(response);
     }
+}
+
+void SCPI::someOperationCompleted()
+{
+    if(!isOperationPending()) {
+        // all operations are complete
+        if(OCAS) {
+            OCAS = false;
+            if(OPCsetBitScheduled) {
+                setFlag(Flag::OPC);
+                OPCsetBitScheduled = false;
+            }
+            if(OPCQueryScheduled) {
+                output("1");
+                OPCQueryScheduled = false;
+            }
+        }
+        if(WAIexecuting) {
+            WAIexecuting = false;
+            // process any queued commands
+            process();
+        }
+    }
+}
+
+void SCPI::setFlag(Flag flag)
+{
+    SESR |= ((int) flag);
+}
+
+void SCPI::clearFlag(Flag flag)
+{
+    SESR &= ~((int) flag);
+}
+
+bool SCPI::getFlag(Flag flag)
+{
+    return SESR & (int) flag;
 }
 
 SCPINode::~SCPINode()
@@ -233,6 +377,36 @@ bool SCPINode::changeName(QString newname)
     return true;
 }
 
+void SCPINode::setOperationPending(bool pending)
+{
+    if(operationPending != pending) {
+        operationPending = pending;
+        if(!operationPending) {
+            // operation completed, needs to perform check if all operations are complete
+            auto root = this;
+            while(root->parent) {
+                root = root->parent;
+            }
+            auto scpi = static_cast<SCPI*>(root);
+            scpi->someOperationCompleted();
+        }
+    }
+}
+
+bool SCPINode::isOperationPending()
+{
+    if(operationPending) {
+        return true;
+    }
+    for(auto node : subnodes) {
+        if(node->isOperationPending()) {
+            return true;
+        }
+    }
+    // no node has any pending operations
+    return false;
+}
+
 bool SCPINode::nameCollision(QString name)
 {
     for(auto n : subnodes) {
@@ -314,17 +488,25 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
 QString SCPICommand::execute(QStringList params)
 {
     if(fn_cmd == nullptr) {
-        return SCPI::getResultName(SCPI::Result::Error);
+        return SCPI::getResultName(SCPI::Result::CmdError);
     } else {
-        return fn_cmd(params);
+        auto ret = fn_cmd(params);
+        if(ret == SCPI::getResultName(SCPI::Result::Error)) {
+            ret = SCPI::getResultName(SCPI::Result::CmdError);
+        }
+        return ret;
     }
 }
 
 QString SCPICommand::query(QStringList params)
 {
     if(fn_query == nullptr) {
-        return SCPI::getResultName(SCPI::Result::Error);
+        return SCPI::getResultName(SCPI::Result::QueryError);
     } else {
-        return fn_query(params);
+        auto ret = fn_query(params);
+        if(ret == SCPI::getResultName(SCPI::Result::Error)) {
+            ret = SCPI::getResultName(SCPI::Result::QueryError);
+        }
+        return ret;
     }
 }

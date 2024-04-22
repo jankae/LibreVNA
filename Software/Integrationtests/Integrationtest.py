@@ -2,11 +2,14 @@ import unittest
 
 testmodules = [
     'tests.TestConnect',
+    'tests.TestStatusRegisters',
     'tests.TestMode',
+    'tests.TestSync',
     'tests.TestVNASweep',
     'tests.TestCalibration',
     'tests.TestGenerator',
     'tests.TestSASweep',
+    'tests.TestRST',
     ]
 
 suite = unittest.TestSuite()

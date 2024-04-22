@@ -333,6 +333,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
 
 void SpectrumAnalyzer::deactivate()
 {
+    setOperationPending(false);
     StoreSweepSettings();
     Mode::deactivate();
 }
@@ -503,6 +504,9 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
     }
 
     auto m_avg = average.process(m);
+    if(average.settled()) {
+        setOperationPending(false);
+    }
 
     if(settings.freqStart == settings.freqStop) {
         // keep track of first point time
@@ -560,6 +564,9 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
 
 void SpectrumAnalyzer::SettingsChanged()
 {
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
     configurationTimer.start(100);
     ResetLiveTraces();
 }
@@ -703,6 +710,7 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     average.setAverages(averages);
     emit averagingChanged(averages);
     UpdateAverageCount();
+    setOperationPending(!average.settled());
 }
 
 void SpectrumAnalyzer::SetTGEnabled(bool enabled)
@@ -887,6 +895,9 @@ void SpectrumAnalyzer::ConfigureDevice()
 
 void SpectrumAnalyzer::ResetLiveTraces()
 {
+    if(window->getDevice()) {
+        setOperationPending(true);
+    }
     average.reset(DeviceDriver::SApoints());
     traceModel.clearLiveData();
     UpdateAverageCount();
@@ -952,6 +963,16 @@ void SpectrumAnalyzer::SetupSCPI()
     }, nullptr));
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
+    scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
+            Run();
+            return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
+    scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
+            Stop();
+            return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     scpi_acq->add(new SCPICommand("RBW", [=](QStringList params) -> QString {
         unsigned long long newval;
         if(!SCPI::paramToULongLong(params, 0, newval)) {

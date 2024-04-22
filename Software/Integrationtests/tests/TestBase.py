@@ -25,13 +25,15 @@ class TestBase(unittest.TestCase):
         
         self.vna = libreVNA('localhost', 19544)
         try:
-            self.vna.cmd(":DEV:CONN")
+            self.vna.cmd("*CLS;:DEV:CONN")
         except Exception as e:
             self.tearDown()
             raise e
         if self.vna.query(":DEV:CONN?") == "Not connected":
             self.tearDown()
             raise AssertionError("Not connected")
+        # Tests occasionally fail without this timeout - give GUI a little bit more time to properly start
+        time.sleep(1)
                
     def tearDown(self):
         self.gui.send_signal(SIGINT)
