@@ -55,5 +55,6 @@ jobs:
       - name: Run HIL tests
         run: |
           cd Software/Integrationtests
+          export DISPLAY=:0
           python3 Integrationtest.py
 
