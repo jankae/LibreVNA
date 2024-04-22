@@ -63,6 +63,45 @@ jobs:
           asset_name: LibreVNA-GUI-Ubuntu-${{env.LIBREVNA_VERSION}}.zip
           asset_content_type: application/tar+gzip
           
+  PC_Application_RPi5:
+    needs: PC_Application_Ubuntu
+    runs-on: RPi-HIL
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libusb-1.0-0-dev qt6-tools-dev qt6-base-dev
+
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          fw_major=`grep -oP '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`grep -oP '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`grep -oP '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          echo "app_version=v$fw_major.$fw_minor.$fw_patch" >> $GITHUB_OUTPUT
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          qmake6 LibreVNA-GUI.pro
+          make -j9
+          zip LibreVNA-GUI.zip LibreVNA-GUI
+        shell: bash
+
+      - name: 'Upload release asset'
+        uses: actions/upload-release-asset@v1
+        env:
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.bump_release.outputs.upload_url }}
+          asset_path: ./Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
+          asset_name: LibreVNA-GUI-RPi5-${{env.LIBREVNA_VERSION}}.zip
+          asset_content_type: application/tar+gzip
+          
   PC_Application_Windows:
     needs: PC_Application_Ubuntu
     runs-on: windows-2019
