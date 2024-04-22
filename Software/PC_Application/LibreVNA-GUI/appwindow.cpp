@@ -508,6 +508,23 @@ void AppWindow::SetupSCPI()
             return "Not connected";
         }
     }));
+    scpi_dev->add(new SCPICommand("UPDATE", [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            // no file given
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(!device) {
+            // not connected to any device
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(!device->updateFirmware(params[0])) {
+            // update failed
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            // update succeeded
+            return SCPI::getResultName(SCPI::Result::Empty);
+        }
+    }, nullptr, false));
     scpi_dev->add(new SCPICommand("LIST", nullptr, [=](QStringList) -> QString {
         QString ret;
         for(auto driver : DeviceDriver::getDrivers()) {

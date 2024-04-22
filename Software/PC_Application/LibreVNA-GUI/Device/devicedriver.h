@@ -489,6 +489,7 @@ signals:
 public:
     bool connectDevice(QString serial, bool isIndepedentDriver = false);
     void disconnectDevice();
+    virtual bool updateFirmware(QString file) {Q_UNUSED(file) return false;}
     static DeviceDriver* getActiveDriver() {return activeDriver;}
     static unsigned int SApoints();
 

@@ -14,13 +14,16 @@ FirmwareUpdateDialog::FirmwareUpdateDialog(LibreVNADriver *dev, QWidget *parent)
     file(),
     timer(),
     state(State::Idle),
-    transferredBytes(0)
+    transferredBytes(0),
+    success(false),
+    deleteAfterUpdate(true)
 {
     dev->acquireControl();
     setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     ui->bFile->setIcon(this->style()->standardPixmap(QStyle::SP_FileDialogStart));
     ui->bStart->setIcon(this->style()->standardPixmap(QStyle::SP_MediaPlay));
+    connect(ui->lFile, &QLineEdit::textChanged, this, &FirmwareUpdateDialog::reloadFile);
     connect(&timer, &QTimer::timeout, this, &FirmwareUpdateDialog::timerCallback);
 }
 
@@ -30,20 +33,41 @@ FirmwareUpdateDialog::~FirmwareUpdateDialog()
     delete ui;
 }
 
+bool FirmwareUpdateDialog::FirmwareUpdate(LibreVNADriver *dev, QString file)
+{
+    FirmwareUpdateDialog d(dev);
+    d.deleteAfterUpdate = false;
+    d.ui->lFile->setText(file);
+    d.reloadFile();
+    d.on_bStart_clicked();
+    d.show();
+    QEventLoop loop;
+    while(d.state != State::Idle) {
+        loop.processEvents(QEventLoop::AllEvents, 100);
+    }
+    return d.success;
+}
+
 void FirmwareUpdateDialog::on_bFile_clicked()
 {
     ui->bStart->setEnabled(false);
     auto filename = QFileDialog::getOpenFileName(nullptr, "Open firmware file", "", "Firmware file (*.vnafw)", nullptr, QFileDialog::DontUseNativeDialog);
     if (filename.length() > 0) {
         ui->lFile->setText(filename);
-        delete file;
-        file = new QFile(filename);
-        ui->bStart->setEnabled(true);
+        reloadFile();
     }
+}
+
+void FirmwareUpdateDialog::reloadFile()
+{
+    delete file;
+    file = new QFile(ui->lFile->text());
+    ui->bStart->setEnabled(false);
 }
 
 void FirmwareUpdateDialog::on_bStart_clicked()
 {
+    success = false;
     ui->status->clear();
     ui->bStart->setEnabled(false);
     if(!file->isOpen()) {
@@ -113,6 +137,7 @@ void FirmwareUpdateDialog::abortWithError(QString error)
     tf.setForeground(QBrush(Qt::black));
     ui->status->setCurrentCharFormat(tf);
     ui->bStart->setEnabled(true);
+    success = false;
     state = State::Idle;
 }
 
@@ -133,8 +158,15 @@ void FirmwareUpdateDialog::timerCallback()
     case State::WaitBeforeInitializing:
         // Device had enough time to initialize, indicate that rebooted device is ready
         timer.stop();
-        dev->connectDevice(serialnumber);
-        delete this;
+        if(dev->connectDevice(serialnumber)) {
+            success = true;
+            if(deleteAfterUpdate) {
+                delete this;
+            }
+        } else {
+            abortWithError("Failed to connect to updated device");
+        }
+        state = State::Idle;
         break;
     default:
         abortWithError("Response timed out");

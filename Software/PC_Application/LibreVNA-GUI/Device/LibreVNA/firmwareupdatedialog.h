@@ -26,12 +26,15 @@ public:
     explicit FirmwareUpdateDialog(LibreVNADriver *dev, QWidget *parent = nullptr);
     ~FirmwareUpdateDialog();
 
+    static bool FirmwareUpdate(LibreVNADriver *dev, QString file);
+
 signals:
     void DeviceRebooting(); // emitted when the update process is triggered, the device should be disconnected
     void DeviceRebooted(QString serial); // emitted when an updated device is enumerated after the update
 
 private slots:
     void on_bFile_clicked();
+    void reloadFile();
     void on_bStart_clicked();
     void timerCallback();
     void receivedAck();
@@ -57,6 +60,8 @@ private:
     State state;
     unsigned int transferredBytes;
     QString serialnumber;
+    bool success;
+    bool deleteAfterUpdate;
 };
 
 #endif // FIRMWAREUPDATEDIALOG_H

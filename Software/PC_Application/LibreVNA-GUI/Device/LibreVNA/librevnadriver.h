@@ -179,6 +179,7 @@ signals:
 public:
     virtual bool SendPacket(const Protocol::PacketInfo& packet, std::function<void(TransmissionResult)> cb = nullptr, unsigned int timeout = 500) = 0;
     bool sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb = nullptr);
+    virtual bool updateFirmware(QString file) override;
 
     unsigned int getMaxAmplitudePoints() const;
 

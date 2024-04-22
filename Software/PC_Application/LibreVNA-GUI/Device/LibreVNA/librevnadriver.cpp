@@ -731,3 +731,8 @@ bool LibreVNADriver::sendWithoutPayload(Protocol::PacketType type, std::function
     p.type = type;
     return SendPacket(p, cb);
 }
+
+bool LibreVNADriver::updateFirmware(QString file)
+{
+    return FirmwareUpdateDialog::FirmwareUpdate(this, file);
+}
