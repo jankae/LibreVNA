@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - HIL_actions
   pull_request:
     branches:
       - master
