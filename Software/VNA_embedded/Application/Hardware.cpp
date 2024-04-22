@@ -347,7 +347,7 @@ void HW::getDeviceStatus(Protocol::DeviceStatus *status, bool updateEvenWhenBusy
 		status->V1.LO1_locked = (FPGA_status & (int) FPGA::Interrupt::LO1Unlock) ? 0 : 1;
 		status->V1.source_locked = (FPGA_status & (int) FPGA::Interrupt::SourceUnlock) ? 0 : 1;
 		status->V1.extRefAvailable = Ref::available();
-		status->V1.extRefInUse = extRefInUse;
+		status->V1.extRefInUse = Ref::usingExternal();
 		status->V1.unlevel = unlevel;
 		status->V1.temp_LO1 = tempLO;
 		status->V1.temp_source = tempSource;
@@ -365,7 +365,7 @@ void HW::Ref::set(Protocol::ReferenceSettings s) {
 }
 
 bool HW::Ref::usingExternal() {
-	return extRefInUse;
+	return extRefInUse && (ref.UseExternalRef || ref.AutomaticSwitch);
 }
 
 void HW::Ref::update() {

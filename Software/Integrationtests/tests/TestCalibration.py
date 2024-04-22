@@ -153,7 +153,7 @@ class TestCalibration(TestBase):
         # Start measurement and grab data
         self.vna.cmd(":VNA:ACQ:SINGLE TRUE")
         self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "FALSE")
-        self.vna.cmd("*WAI")
+        self.vna.cmd("*WAI", timeout=3)
         self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "TRUE")
 
         cal.reset()

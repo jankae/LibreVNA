@@ -91,13 +91,13 @@ class libreVNA:
         self.sock.send(b"\n")
         if check or (check is None and self.default_check_cmds):
             status = self.get_status(timeout=timeout)
-            if self.get_status() & 0x20:
+            if status & 0x20:
                 raise Exception("Command Error")
-            if self.get_status() & 0x10:
+            if status & 0x10:
                 raise Exception("Execution Error")
-            if self.get_status() & 0x08:
+            if status & 0x08:
                 raise Exception("Device Error")
-            if self.get_status() & 0x04:
+            if status & 0x04:
                 raise Exception("Query Error")
             return status
         else:

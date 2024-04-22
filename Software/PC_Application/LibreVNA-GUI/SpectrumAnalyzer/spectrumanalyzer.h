@@ -36,6 +36,10 @@ public:
 
     virtual void deviceInfoUpdated() override;
 
+public slots:
+    void Run();
+    void Stop();
+
 private:
     static QString WindowToString(DeviceDriver::SASettings::Window w);
     static DeviceDriver::SASettings::Window WindowFromString(QString s);
@@ -70,8 +74,6 @@ private slots:
     void ClearNormalization();
     void SetNormalizationLevel(double level);
 
-    void Run();
-    void Stop();
     void ConfigureDevice();
     void ResetLiveTraces();
 

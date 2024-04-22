@@ -1,6 +1,7 @@
 import unittest
 
 testmodules = [
+    'tests.TestUpdate',     # Must go first because it updates the connected VNA to the firwmare which should be tested
     'tests.TestConnect',
     'tests.TestStatusRegisters',
     'tests.TestMode',

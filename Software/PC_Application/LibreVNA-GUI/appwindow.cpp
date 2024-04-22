@@ -322,8 +322,6 @@ void AppWindow::SetInitialState()
         modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
         modeHandler->setCurrentIndex(vnaIndex);
     }
-
-    ResetReference();
 }
 
 bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
@@ -490,6 +488,15 @@ void AppWindow::SetupSCPI()
     }));
     scpi.add(new SCPICommand("*RST", [=](QStringList){
         SetInitialState();
+        auto vna = dynamic_cast<VNA*>(modeHandler->getActiveMode());
+        if(vna) {
+            vna->Stop();
+        }
+        auto sa = dynamic_cast<SpectrumAnalyzer*>(modeHandler->getActiveMode());
+        if(sa) {
+            sa->Stop();
+        }
+        ResetReference();
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
     auto scpi_dev = new SCPINode("DEVice");
@@ -529,7 +536,10 @@ void AppWindow::SetupSCPI()
             // not connected to any device
             return SCPI::getResultName(SCPI::Result::Error);
         }
-        if(!device->updateFirmware(params[0])) {
+        scpi.setOperationPending(true);
+        auto ret = device->updateFirmware(params[0]);
+        scpi.setOperationPending(false);
+        if(!ret) {
             // update failed
             return SCPI::getResultName(SCPI::Result::Error);
         } else {
@@ -1064,8 +1074,13 @@ int AppWindow::UpdateDeviceList()
 
 void AppWindow::ResetReference()
 {
+    toolbars.reference.type->blockSignals(true);
+    toolbars.reference.outFreq->blockSignals(true);
     toolbars.reference.type->setCurrentIndex(0);
     toolbars.reference.outFreq->setCurrentIndex(0);
+    toolbars.reference.type->blockSignals(false);
+    toolbars.reference.outFreq->blockSignals(false);
+    UpdateReference();
 }
 
 //void AppWindow::StartManualControl()

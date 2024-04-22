@@ -44,9 +44,9 @@ public:
 
     bool changeName(QString newname);
 
-protected:
     void setOperationPending(bool pending);
 
+protected:
     bool isOperationPending();
 
 private:

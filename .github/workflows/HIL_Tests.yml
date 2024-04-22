@@ -56,7 +56,7 @@ jobs:
     needs: [PC_Application_RPi5, Embedded_Firmware]
     steps:
       - name: Run HIL tests
-        run: |
+        run: |      
           cd Software/Integrationtests
           export DISPLAY=:0
           python3 Integrationtest.py

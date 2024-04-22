@@ -225,7 +225,7 @@ class TestRST(TestBase):
         self.vna.cmd("SA:TRACK:EN TRUE")
         self.vna.cmd(f"SA:TRACK:LVL {pwr_1_2}")
         self.vna.cmd("SA:TRACK:NORM:EN TRUE")
-        self.vna.cmd("SA:TRACK:NORM:LVL {pwr_1_3}")
+        self.vna.cmd(f"SA:TRACK:NORM:LVL {pwr_1_3}")
         self.vna.cmd("SA:TRACK:OFF 1.0e+6;PORT 2")
         self.vna.cmd("VNA:ACQ:AVG 10")
         self.vna.cmd(f"VNA:ACQ:IFBW {ifbw_1_2}")
@@ -236,6 +236,9 @@ class TestRST(TestBase):
         self.vna.cmd(f"VNA:STIM:FREQ {f_1_3}")
         self.vna.cmd(f"VNA:STIM:LVL {pwr_min}")
         self.vna.cmd("VNA:SWEEP POWER")
+        
+        # We just configured a lot of settings, give some time to empty the output queue from the GUI to the device
+        time.sleep(2)
 
         # Reset and verify all settings revert.
         self.vna.cmd("*RST")

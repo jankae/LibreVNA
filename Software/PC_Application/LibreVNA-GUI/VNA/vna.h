@@ -76,6 +76,8 @@ public:
     };
 
 public slots:
+    void Run();
+    void Stop();
     bool LoadCalibration(QString filename = "");
     bool SaveCalibration(QString filename = "");
 
@@ -130,8 +132,6 @@ private slots:
     void EnableDeembedding(bool enable);
     void UpdateStatusbar();
     void SetSingleSweep(bool single);
-    void Run();
-    void Stop();
     void ConfigureDevice(bool resetTraces = true, std::function<void(bool)> cb = nullptr);
     void ResetLiveTraces();
 private:
