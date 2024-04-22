@@ -10,14 +10,14 @@ on:
       - master
 
 jobs:
-  Get Repository:
+  Get_Repository:
     runs-on: RPi-HIL
     steps:
       - uses: actions/checkout@v1
           
   PC_Application_RPi5:
     runs-on: RPi-HIL
-    needs: Get Repository
+    needs: Get_Repository
     steps:
       - name: Install dependencies
         run: |
@@ -33,7 +33,7 @@ jobs:
           
   Embedded_Firmware:
     runs-on: RPi-HIL
-    needs: Get Repository
+    needs: Get_Repository
     steps:
       - name: Install toolchain
         run: |
