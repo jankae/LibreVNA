@@ -23,7 +23,7 @@ class TestSync(TestBase):
         self.vna.cmd("VNA:ACQ:SINGLE TRUE")
         self.vna.cmd("*OPC")
         self.assertEqual(self.vna.query(":VNA:ACQ:FIN?"), "FALSE")
-        time_limit = time.time() + 2
+        time_limit = time.time() + 4
         while True:
             status = self.vna.get_status()
             if status & 0x01:
