@@ -21,7 +21,7 @@ class TestBase(unittest.TestCase):
                 if "Listening on port 19544" in line:
                     break
        
-        time.sleep(0.2)
+        time.sleep(1)
         
         self.vna = libreVNA('localhost', 19544)
         try:
@@ -38,7 +38,7 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         self.gui.send_signal(SIGINT)
         try:
-            self.gui.wait(timeout = 0.1)
+            self.gui.wait(timeout = 3)
         except subprocess.TimeoutExpired:
             self.gui.kill()
             
