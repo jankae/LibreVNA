@@ -27,6 +27,8 @@ public:
 
     virtual Type getType() override { return Type::VNA;}
 
+    virtual void resetSettings() override;
+
     // Only save/load user changeable stuff, no need to save the widgets/mode name etc.
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;

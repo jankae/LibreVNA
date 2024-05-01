@@ -772,6 +772,23 @@ void VNA::shutdown()
     }
 }
 
+void VNA::resetSettings()
+{
+    settings.Freq.start = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq;
+    settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
+    SetLogSweep(false);
+    SetSourceLevel(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxdBm);
+    ConstrainAndUpdateFrequencies();
+    SetStartPower(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.mindBm);
+    SetStopPower(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxdBm);
+    SetPowerSweepFrequency(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq);
+    SetIFBandwidth(1000);
+    SetAveraging(1);
+    SetPoints(501);
+    SetSweepType(SweepType::Frequency);
+    Stop();
+}
+
 nlohmann::json VNA::toJSON()
 {
     nlohmann::json j;

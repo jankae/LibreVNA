@@ -46,6 +46,13 @@ void Generator::initializeDevice()
     updateDevice();
 }
 
+void Generator::resetSettings()
+{
+    central->setFrequency(1000000000);
+    central->setLevel(0);
+    central->setPort(0);
+}
+
 nlohmann::json Generator::toJSON()
 {
     return central->toJSON();

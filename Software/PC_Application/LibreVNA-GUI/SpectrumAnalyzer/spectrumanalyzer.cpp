@@ -366,6 +366,18 @@ void SpectrumAnalyzer::deviceDisconnected()
     emit sweepStopped();
 }
 
+void SpectrumAnalyzer::resetSettings()
+{
+    settings.freqStart = DeviceDriver::getInfo(window->getDevice()).Limits.SA.minFreq;
+    settings.freqStop = DeviceDriver::getInfo(window->getDevice()).Limits.SA.maxFreq;
+    ConstrainAndUpdateFrequencies();
+    SetRBW(1000000);
+    SetAveraging(1);
+    SetWindow(DeviceDriver::SASettings::Window::FlatTop);
+    SetDetector(DeviceDriver::SASettings::Detector::PPeak);
+    Stop();
+}
+
 nlohmann::json SpectrumAnalyzer::toJSON()
 {
     nlohmann::json j;

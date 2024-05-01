@@ -324,6 +324,20 @@ void AppWindow::SetInitialState()
     }
 }
 
+void AppWindow::SetResetState()
+{
+    modeHandler->closeModes();
+    auto vnaIndex = modeHandler->createMode("Vector Network Analyzer", Mode::Type::VNA);
+    modeHandler->createMode("Signal Generator", Mode::Type::SG);
+    modeHandler->createMode("Spectrum Analyzer", Mode::Type::SA);
+
+    for(auto m : modeHandler->getModes()) {
+        m->resetSettings();
+    }
+
+    modeHandler->setCurrentIndex(vnaIndex);
+}
+
 bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
 {
     if(serial.isEmpty()) {
@@ -487,15 +501,7 @@ void AppWindow::SetupSCPI()
         return "LibreVNA,LibreVNA-GUI,dummy_serial,"+appVersion;
     }));
     scpi.add(new SCPICommand("*RST", [=](QStringList){
-        SetInitialState();
-        auto vna = dynamic_cast<VNA*>(modeHandler->getActiveMode());
-        if(vna) {
-            vna->Stop();
-        }
-        auto sa = dynamic_cast<SpectrumAnalyzer*>(modeHandler->getActiveMode());
-        if(sa) {
-            sa->Stop();
-        }
+        SetResetState();
         ResetReference();
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));

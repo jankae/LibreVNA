@@ -15,6 +15,8 @@ public:
 
     virtual Type getType() override { return Type::SG;}
 
+    virtual void resetSettings() override;
+
     // Nothing to do for now
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;

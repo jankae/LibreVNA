@@ -36,6 +36,8 @@ public:
     static Type TypeFromName(QString s);
     virtual Type getType() = 0;
 
+    virtual void resetSettings(){}
+
     virtual void initializeDevice() = 0;
     virtual void deviceDisconnected(){}
 
