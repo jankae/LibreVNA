@@ -88,6 +88,22 @@ void TraceSetSelector::setPorts(unsigned int newPorts)
     emit selectionChanged();
 }
 
+void TraceSetSelector::setDefaultTraces()
+{
+    auto traces = model->getTraces();
+    for(unsigned int i=1;i<=ports;i++) {
+        for(unsigned int j=1;j<=ports;j++) {
+            QString defaultTraceName = "S"+QString::number(i)+QString::number(j);
+            for(auto t : traces) {
+                if(t->name() == defaultTraceName) {
+                    setTrace(i, j, t);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 bool TraceSetSelector::setTrace(unsigned int destPort, unsigned int srcPort, Trace *t)
 {
     if(destPort < 1 || destPort > ports || srcPort < 1 || srcPort > ports) {

@@ -19,6 +19,7 @@ MixedModeConversion::MixedModeConversion(TraceModel &m, QWidget *parent) :
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &QDialog::reject);
     selectionChanged();
+    ui->selector->setDefaultTraces();
 }
 
 MixedModeConversion::~MixedModeConversion()

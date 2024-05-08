@@ -20,6 +20,7 @@ public:
 
     unsigned int getPorts() const;
     void setPorts(unsigned int newPorts);
+    void setDefaultTraces();
 
     bool setTrace(unsigned int destPort, unsigned int srcPort, Trace *t);
     Trace *getTrace(unsigned int destPort, unsigned int srcPort);
