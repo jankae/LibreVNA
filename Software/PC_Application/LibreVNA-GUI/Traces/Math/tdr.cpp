@@ -6,6 +6,9 @@
 #include "Util/util.h"
 #include "appwindow.h"
 
+#include <chrono>
+#include <thread>
+
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDebug>
@@ -201,11 +204,6 @@ void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
     Q_UNUSED(end);
     if(input->rData().size() >= 2) {
-        // TDR is computationally expensive, only update at the end of sweep -> check if this is the first changed data in the next sweep
-        if(begin != 0) {
-            // not the end, do nothing
-            return;
-        }
         // trigger calculation in thread
         semphr.release();
         success();
@@ -244,6 +242,8 @@ TDRThread::TDRThread(TDR &tdr)
 void TDRThread::run()
 {
     qDebug() << "TDR thread starting";
+    using namespace std::chrono;
+    auto lastCalc = system_clock::now();
     while(1) {
         tdr.semphr.acquire();
         // clear possible additional semaphores
@@ -253,7 +253,13 @@ void TDRThread::run()
             qDebug() << "TDR thread exiting";
             return;
         }
-        qDebug() << "TDR thread calculating";
+        // limit update rate if configured in preferences
+        auto &p = Preferences::getInstance();
+        if(p.Acquisition.limitDFT) {
+            std::this_thread::sleep_until(lastCalc + duration<double>(1.0 / p.Acquisition.maxDFTrate));
+            lastCalc = system_clock::now();
+        }
+//        qDebug() << "TDR thread calculating";
         // perform calculation
         vector<complex<double>> frequencyDomain;
         auto stepSize = (tdr.input->rData().back().x - tdr.input->rData().front().x) / (tdr.input->rData().size() - 1);

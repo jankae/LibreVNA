@@ -210,6 +210,9 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
            setInitialGUIState();
         }
     });
+    connect(ui->AcquisitionLimitTDRCheckbox, &QCheckBox::toggled, [=](bool enabled){
+        ui->AcquisitionDFTLimitValue->setEnabled(enabled);
+    });
 
     setInitialGUIState();
 }
@@ -257,6 +260,8 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionFullSpanStart->setValue(p->Acquisition.fullSpanStart);
     ui->AcquisitionFullSpanStop->setValue(p->Acquisition.fullSpanStop);
     ui->AcquisitionFullSpanCalibrated->setChecked(p->Acquisition.fullSpanCalibratedRange);
+    ui->AcquisitionLimitTDRCheckbox->setChecked(p->Acquisition.limitDFT);
+    ui->AcquisitionDFTLimitValue->setValue(p->Acquisition.maxDFTrate);
 
     ui->GraphsDefaultTransmission->setCurrentText(p->Graphs.defaultGraphs.transmission);
     ui->GraphsDefaultReflection->setCurrentText(p->Graphs.defaultGraphs.reflection);
@@ -354,6 +359,8 @@ void PreferencesDialog::updateFromGUI()
     p->Acquisition.fullSpanStart = ui->AcquisitionFullSpanStart->value();
     p->Acquisition.fullSpanStop = ui->AcquisitionFullSpanStop->value();
     p->Acquisition.fullSpanCalibratedRange = ui->AcquisitionFullSpanCalibrated->isChecked();
+    p->Acquisition.limitDFT = ui->AcquisitionLimitTDRCheckbox->isChecked();
+    p->Acquisition.maxDFTrate = ui->AcquisitionDFTLimitValue->value();
 
     p->Graphs.defaultGraphs.transmission = ui->GraphsDefaultTransmission->currentText();
     p->Graphs.defaultGraphs.reflection = ui->GraphsDefaultReflection->currentText();

@@ -104,6 +104,10 @@ public:
         double fullSpanStart;
         double fullSpanStop;
         bool fullSpanCalibratedRange;
+
+        // Math settings
+        bool limitDFT;
+        double maxDFTrate;
     } Acquisition;
     struct {
         bool showUnits;
@@ -208,6 +212,8 @@ private:
         {&Acquisition.fullSpanStart, "Acquisition.fullSpanStart", 0.0},
         {&Acquisition.fullSpanStop, "Acquisition.fullSpanStop", 6000000000.0},
         {&Acquisition.fullSpanCalibratedRange, "Acquisition.fullSpanCalibratedRange", false},
+        {&Acquisition.limitDFT, "Acquisition.limitDFT", true},
+        {&Acquisition.maxDFTrate, "Acquisition.maxDFTrate", 1.0},
         {&Graphs.showUnits, "Graphs.showUnits", true},
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
