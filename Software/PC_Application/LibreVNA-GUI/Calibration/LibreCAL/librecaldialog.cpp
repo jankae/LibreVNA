@@ -245,21 +245,21 @@ void LibreCALDialog::startCalibration()
             o->setName("Port "+QString::number(i));
             o->setMeasurement(coeffSet.opens[i-1]->t);
             openStandards.push_back(o);
-            kit.standards.push_back(o);
+            kit.addStandard(o);
         }
         if(coeffSet.shorts[i-1]->t.points() > 0) {
             auto o = new CalStandard::Short();
             o->setName("Port "+QString::number(i));
             o->setMeasurement(coeffSet.shorts[i-1]->t);
             shortStandards.push_back(o);
-            kit.standards.push_back(o);
+            kit.addStandard(o);
         }
         if(coeffSet.loads[i-1]->t.points() > 0) {
             auto o = new CalStandard::Load();
             o->setName("Port "+QString::number(i));
             o->setMeasurement(coeffSet.loads[i-1]->t);
             loadStandards.push_back(o);
-            kit.standards.push_back(o);
+            kit.addStandard(o);
         }
         for(unsigned int j=i+1;j<=device->getNumPorts();j++) {
             auto c = coeffSet.getThrough(i,j);
@@ -271,7 +271,7 @@ void LibreCALDialog::startCalibration()
                 o->setName("Port "+QString::number(i)+" to "+QString::number(j));
                 o->setMeasurement(c->t);
                 throughStandards.push_back(o);
-                kit.standards.push_back(o);
+                kit.addStandard(o);
             }
         }
     }

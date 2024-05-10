@@ -286,7 +286,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.open_m.file.toStdString());
             open_m->setMeasurement(ts, SOLT.open_m.Sparam);
         }
-        c.standards.push_back(open_m);
+        c.addStandard(open_m);
         if(SOLT.separate_male_female) {
             auto open_f = new CalStandard::Open("Default female standard", SOLT.open_f.Z0, SOLT.open_f.delay, SOLT.open_f.loss, SOLT.open_f.C0, SOLT.open_f.C1, SOLT.open_f.C2, SOLT.open_f.C3);
             if(SOLT.open_f.useMeasurements) {
@@ -294,7 +294,7 @@ Calkit Calkit::fromFile(QString filename)
                 ts.fromFile(SOLT.open_f.file.toStdString());
                 open_m->setMeasurement(ts, SOLT.open_f.Sparam);
             }
-            c.standards.push_back(open_f);
+            c.addStandard(open_f);
         }
 
         auto short_m = new CalStandard::Short(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.short_m.Z0, SOLT.short_m.delay, SOLT.short_m.loss, SOLT.short_m.L0, SOLT.short_m.L1, SOLT.short_m.L2, SOLT.short_m.L3);
@@ -303,7 +303,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.short_m.file.toStdString());
             short_m->setMeasurement(ts, SOLT.short_m.Sparam);
         }
-        c.standards.push_back(short_m);
+        c.addStandard(short_m);
         if(SOLT.separate_male_female) {
             auto short_f = new CalStandard::Short("Default female standard", SOLT.short_f.Z0, SOLT.short_f.delay, SOLT.short_f.loss, SOLT.short_f.L0, SOLT.short_f.L1, SOLT.short_f.L2, SOLT.short_f.L3);
             if(SOLT.short_f.useMeasurements) {
@@ -311,7 +311,7 @@ Calkit Calkit::fromFile(QString filename)
                 ts.fromFile(SOLT.short_f.file.toStdString());
                 short_m->setMeasurement(ts, SOLT.short_f.Sparam);
             }
-            c.standards.push_back(short_f);
+            c.addStandard(short_f);
         }
 
         auto load_m = new CalStandard::Load(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.load_m.Z0, SOLT.load_m.delay, 0.0, SOLT.load_m.resistance, SOLT.load_m.Cparallel, SOLT.load_m.Lseries, SOLT.loadModelCFirst);
@@ -320,7 +320,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.load_m.file.toStdString());
             load_m->setMeasurement(ts, SOLT.load_m.Sparam);
         }
-        c.standards.push_back(load_m);
+        c.addStandard(load_m);
         if(SOLT.separate_male_female) {
             auto load_f = new CalStandard::Load("Default female standard", SOLT.load_m.Z0, SOLT.load_f.delay, 0.0, SOLT.load_f.resistance, SOLT.load_f.Cparallel, SOLT.load_f.Lseries, SOLT.loadModelCFirst);
             if(SOLT.load_f.useMeasurements) {
@@ -328,7 +328,7 @@ Calkit Calkit::fromFile(QString filename)
                 ts.fromFile(SOLT.load_f.file.toStdString());
                 load_m->setMeasurement(ts, SOLT.load_f.Sparam);
             }
-            c.standards.push_back(load_f);
+            c.addStandard(load_f);
         }
 
         auto through = new CalStandard::Through("Default standard", SOLT.Through.Z0, SOLT.Through.delay, SOLT.Through.loss);
@@ -337,7 +337,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.Through.file.toStdString());
             through->setMeasurement(ts, SOLT.Through.Sparam1, SOLT.Through.Sparam2);
         }
-        c.standards.push_back(through);
+        c.addStandard(through);
 
         InformationBox::ShowMessage("Loading calkit file", "The file \"" + filename + "\" is stored in a deprecated"
                      " calibration kit format. Future versions of this application might not support"
@@ -377,6 +377,19 @@ std::vector<CalStandard::Virtual *> Calkit::getStandards() const
 
 void Calkit::addStandard(CalStandard::Virtual *s)
 {
+    // check for ID collisions. This should never happen but would mess up further
+    // usage of the standards. Better to catch this now and throw an error
+    for(auto comp : standards) {
+        if(comp->getID() == s->getID()) {
+            // collision, do not add
+            InformationBox::ShowError("Calibration standard ID collision", "New standard \""
+                                      +s->getName()+"\" of type \""+CalStandard::Virtual::TypeToString(s->getType())
+                                      +"\" has the same ID as already existing standard \""
+                                      +comp->getName()+"\" of type \""+CalStandard::Virtual::TypeToString(comp->getType())
+                                      +"\" (ID="+QString::number(s->getID())+"). It will be removed from the calibration kit");
+            return;
+        }
+    }
     standards.push_back(s);
 }
 
@@ -411,7 +424,7 @@ void Calkit::fromJSON(nlohmann::json j)
         }
         auto s = CalStandard::Virtual::create(type);
         s->fromJSON(js["params"]);
-        standards.push_back(s);
+        addStandard(s);
     }
 }
 

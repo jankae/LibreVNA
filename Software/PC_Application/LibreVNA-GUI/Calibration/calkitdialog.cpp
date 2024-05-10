@@ -58,7 +58,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
         connect(action, &QAction::triggered, [=](){
             auto newStandard = CalStandard::Virtual::create(t);
             if(newStandard) {
-                kit.standards.push_back(newStandard);
+                kit.addStandard(newStandard);
                 updateStandardList();
                 // start the edit dialog of the newly created standard
                 kit.standards.back()->edit(bind(&CalkitDialog::updateStandardList, this));
