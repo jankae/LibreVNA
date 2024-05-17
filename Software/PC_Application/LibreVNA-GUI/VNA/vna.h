@@ -170,6 +170,7 @@ private:
     Deembedding deembedding;
     QAction *enableDeembeddingAction;
     bool deembedding_active;
+    bool wasRunningBeforeDeembeddingMeasurement;
 
     // Status Labels
     QLabel *lAverages;

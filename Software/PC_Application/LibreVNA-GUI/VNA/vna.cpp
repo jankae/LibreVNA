@@ -192,6 +192,18 @@ VNA::VNA(AppWindow *window, QString name)
         enableDeembeddingAction->setEnabled(false);
         manualDeembed->setEnabled(false);
     });
+    connect(&deembedding, &Deembedding::triggerMeasurement, [=]() {
+        // de-embedding measurement requested
+        wasRunningBeforeDeembeddingMeasurement = running;
+        Run();
+    });
+    connect(&deembedding, &Deembedding::finishedMeasurement, [=](){
+        if(wasRunningBeforeDeembeddingMeasurement) {
+            Run();
+        } else {
+            Stop();
+        }
+    });
 
     // Tools menu
     auto toolsMenu = new QMenu("Tools", window);
@@ -1220,6 +1232,7 @@ void VNA::SetPoints(unsigned int points)
         settings.activeSegment = 0;
     }
     emit pointsChanged(points);
+    deembedding.setPointsInSweepForMeasurement(points);
     settings.npoints = points;
     SettingsChanged();
 }
@@ -1799,9 +1812,18 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
                 s.excitedPorts.push_back(i);
             }
         } else {
-            for(unsigned int i=1;i<=DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
-                if(traceModel.PortExcitationRequired(i))
-                s.excitedPorts.push_back(i);
+            if(deembedding.isMeasuring()) {
+                // use the required ports for the de-embedding measurement
+                for(auto p : deembedding.getAffectedPorts()) {
+                    s.excitedPorts.push_back(p);
+                }
+            } else {
+                // use the required ports from the trace model
+                for(unsigned int i=1;i<=DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports;i++) {
+                    if(traceModel.PortExcitationRequired(i)) {
+                        s.excitedPorts.push_back(i);
+                    }
+                }
             }
         }
         settings.excitedPorts = s.excitedPorts;

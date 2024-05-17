@@ -37,6 +37,7 @@ Trace::Trace(QString name, QColor color, QString live)
       reference_impedance(50.0),
       domain(DataType::Frequency),
       deembeddingActive(false),
+      deembedded_reference_impedance(50.0),
       lastMath(nullptr)
 {
     settings.valid = false;

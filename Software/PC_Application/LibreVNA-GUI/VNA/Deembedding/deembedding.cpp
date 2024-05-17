@@ -38,6 +38,12 @@ void Deembedding::startMeasurementDialog(DeembeddingOption *option)
     measurementUI = ui;
     ui->setupUi(measurementDialog);
     connect(measurementDialog, &QDialog::finished, [=](){
+        if(measuring) {
+            measuring = false;
+            emit finishedMeasurement();
+        }
+        measuringOption = nullptr;
+        measurementUI = nullptr;
         delete ui;
     });
 
@@ -52,6 +58,7 @@ void Deembedding::startMeasurementDialog(DeembeddingOption *option)
         traceChooser->setEnabled(false);
         ui->buttonBox->setEnabled(false);
         measuring = true;
+        emit triggerMeasurement();
     });
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
@@ -128,15 +135,6 @@ Deembedding::Deembedding(TraceModel &tm)
 
 void Deembedding::Deembed(DeviceDriver::VNAMeasurement &d)
 {
-    // figure out the point in one sweep based on the incomig pointNums
-    static unsigned lastPointNum;
-    if (d.pointNum == 0) {
-        sweepPoints = lastPointNum;
-    } else if(d.pointNum > sweepPoints) {
-        sweepPoints = d.pointNum;
-    }
-    lastPointNum = d.pointNum;
-
     for(auto it = options.begin();it != options.end();it++) {
         if (measuring && measuringOption == *it) {
             // this option needs a measurement
@@ -144,14 +142,17 @@ void Deembedding::Deembed(DeviceDriver::VNAMeasurement &d)
                 if(measurements.size() == 0) {
                     // this is the first point of the measurement
                     measurements.push_back(d);
-                } else {
-                    // this is the first point of the next sweep, measurement complete
-                    measuring = false;
-                    measurementCompleted();
                 }
             } else if(measurements.size() > 0) {
                 // in the middle of the measurement, add point
                 measurements.push_back(d);
+
+                if(d.pointNum == sweepPoints - 1) {
+                    // this is the last point, measurement complete
+                    measuring = false;
+                    emit finishedMeasurement();
+                    measurementCompleted();
+                }
             }
 
             if(measurementUI) {
@@ -223,6 +224,11 @@ void Deembedding::clear()
     }
 }
 
+bool Deembedding::isMeasuring()
+{
+    return measuring;
+}
+
 std::set<unsigned int> Deembedding::getAffectedPorts()
 {
     set<unsigned int> ret;
@@ -231,6 +237,11 @@ std::set<unsigned int> Deembedding::getAffectedPorts()
         ret.insert(affected.begin(), affected.end());
     }
     return ret;
+}
+
+void Deembedding::setPointsInSweepForMeasurement(unsigned int points)
+{
+    sweepPoints = points;
 }
 
 nlohmann::json Deembedding::toJSON()

@@ -30,7 +30,10 @@ public:
     void swapOptions(unsigned int index);
     void clear();
 
+    bool isMeasuring();
+
     std::set<unsigned int> getAffectedPorts();
+    void setPointsInSweepForMeasurement(unsigned int points);
 
     std::vector<DeembeddingOption*>& getOptions() {return options;}
     nlohmann::json toJSON() override;
@@ -38,7 +41,8 @@ public:
 public slots:
     void configure();
 signals:
-    void triggerMeasurement(bool S11 = true, bool S12 = true, bool S21 = true, bool S22 = true);
+    void triggerMeasurement();
+    void finishedMeasurement();
     void optionAdded();
     void allOptionsCleared();
 private:
