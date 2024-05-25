@@ -152,6 +152,9 @@ architecture Behavioral of top is
 		PORT1_ACTIVE : out STD_LOGIC;
 		PORT2_ACTIVE : out STD_LOGIC;
 		SOURCE_CE : out STD_LOGIC;
+		
+		ADC_SEL : out STD_LOGIC_VECTOR(2 downto 0);
+		
 		RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0);
 		DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
 		);
@@ -284,7 +287,16 @@ architecture Behavioral of top is
 		DFT_OUTPUT : in  STD_LOGIC_VECTOR (191 downto 0);
 		DFT_NEXT_OUTPUT : out  STD_LOGIC;
 		DFT_ENABLE : out STD_LOGIC;
-		DEBUG_STATUS : in STD_LOGIC_VECTOR (10 downto 0)
+		DEBUG_STATUS : in STD_LOGIC_VECTOR (10 downto 0);
+		
+		ADC_PRESCALER_ALT1 : out STD_LOGIC_VECTOR(7 downto 0);
+		ADC_PHASEINC_ALT1 : out STD_LOGIC_VECTOR(11 downto 0);
+		ADC_PRESCALER_ALT2 : out STD_LOGIC_VECTOR(7 downto 0);
+		ADC_PHASEINC_ALT2 : out STD_LOGIC_VECTOR(11 downto 0);
+		ADC_PRESCALER_ALT3 : out STD_LOGIC_VECTOR(7 downto 0);
+		ADC_PHASEINC_ALT3 : out STD_LOGIC_VECTOR(11 downto 0);
+		ADC_PRESCALER_ALT4 : out STD_LOGIC_VECTOR(7 downto 0);
+		ADC_PHASEINC_ALT4 : out STD_LOGIC_VECTOR(11 downto 0)
 		);
 	END COMPONENT;
 	
@@ -376,6 +388,17 @@ architecture Behavioral of top is
 	signal sampling_prescaler : std_logic_vector(7 downto 0);
 	signal sampling_phaseinc : std_logic_vector(11 downto 0);
 	
+	signal ADC_PRESCALER : STD_LOGIC_VECTOR(7 downto 0);
+	signal ADC_PHASEINC : STD_LOGIC_VECTOR(11 downto 0);
+	signal ADC_PRESCALER_ALT1 : STD_LOGIC_VECTOR(7 downto 0);
+	signal ADC_PHASEINC_ALT1 : STD_LOGIC_VECTOR(11 downto 0);
+	signal ADC_PRESCALER_ALT2 : STD_LOGIC_VECTOR(7 downto 0);
+	signal ADC_PHASEINC_ALT2 : STD_LOGIC_VECTOR(11 downto 0);
+	signal ADC_PRESCALER_ALT3 : STD_LOGIC_VECTOR(7 downto 0);
+	signal ADC_PHASEINC_ALT3 : STD_LOGIC_VECTOR(11 downto 0);
+	signal ADC_PRESCALER_ALT4 : STD_LOGIC_VECTOR(7 downto 0);
+	signal ADC_PHASEINC_ALT4 : STD_LOGIC_VECTOR(11 downto 0);
+	
 	-- Sweep signals
 	signal sweep_points : std_logic_vector(12 downto 0);
 	signal sweep_stages : STD_LOGIC_VECTOR (2 downto 0);
@@ -404,6 +427,8 @@ architecture Behavioral of top is
 	
 	signal sweep_trigger_in : std_logic;
 	signal sweep_trigger_out : std_logic;
+	
+	signal sweep_adc_sel : std_logic_vector(2 downto 0);
 	
 	-- Configuration signals
 	signal settling_time : std_logic_vector(15 downto 0);
@@ -727,6 +752,7 @@ begin
 		PORT1_ACTIVE => sweep_excite_port1,
 		PORT2_ACTIVE => sweep_excite_port2,
 		SOURCE_CE => sweep_source_CE,
+		ADC_SEL => sweep_adc_sel,
 		DEBUG_STATUS => debug,
 		RESULT_INDEX => sampling_result(303 downto 288)
 	);
@@ -740,6 +766,18 @@ begin
 	
 	ATTENUATION <= sweep_attenuator when HW_overwrite_enabled = '0' else HW_overwrite_data(14 downto 8);
 	
+	-- ADC sample rate mapping
+	sampling_prescaler <= ADC_PRESCALER when sweep_adc_sel(2) = '0' else
+					ADC_PRESCALER_ALT1 when sweep_adc_sel(1 downto 0) = "00" else
+					ADC_PRESCALER_ALT2 when sweep_adc_sel(1 downto 0) = "01" else
+					ADC_PRESCALER_ALT3 when sweep_adc_sel(1 downto 0) = "10" else
+					ADC_PRESCALER_ALT4;
+	sampling_phaseinc <= ADC_PHASEINC when sweep_adc_sel(2) = '0' else
+					ADC_PHASEINC_ALT1 when sweep_adc_sel(1 downto 0) = "00" else
+					ADC_PHASEINC_ALT2 when sweep_adc_sel(1 downto 0) = "01" else
+					ADC_PHASEINC_ALT3 when sweep_adc_sel(1 downto 0) = "10" else
+					ADC_PHASEINC_ALT4;
+
 	-- PLL/SPI mux
 	-- only select FPGA SPI slave when both AUX1 and AUX2 are low
 	fpga_select <= nss_sync when aux1_sync = '0' and aux2_sync = '0' else '1';
@@ -794,8 +832,8 @@ begin
 		PORTSWITCH_EN => portswitch_en,
 		LEDS => user_leds,
 		WINDOW_SETTING => sampling_window,
-		ADC_PRESCALER => sampling_prescaler,
-		ADC_PHASEINC => sampling_phaseinc,
+		ADC_PRESCALER => ADC_PRESCALER,
+		ADC_PHASEINC => ADC_PHASEINC,
 		INTERRUPT_ASSERTED => intr,
 		RESET_MINMAX => adc_reset_minmax,
 		SWEEP_HALTED => sweep_halted,
@@ -813,7 +851,15 @@ begin
 		DFT_OUTPUT => dft_output,
 		DFT_NEXT_OUTPUT => dft_next_output,
 		DFT_ENABLE => dft_enable,
-		DEBUG_STATUS => debug
+		DEBUG_STATUS => debug,
+		ADC_PRESCALER_ALT1 => ADC_PRESCALER_ALT1,
+		ADC_PHASEINC_ALT1 => ADC_PHASEINC_ALT1,
+		ADC_PRESCALER_ALT2 => ADC_PRESCALER_ALT2,
+		ADC_PHASEINC_ALT2 => ADC_PHASEINC_ALT2,
+		ADC_PRESCALER_ALT3 => ADC_PRESCALER_ALT3,
+		ADC_PHASEINC_ALT3 => ADC_PHASEINC_ALT3,
+		ADC_PRESCALER_ALT4 => ADC_PRESCALER_ALT4,
+		ADC_PHASEINC_ALT4 => ADC_PHASEINC_ALT4
 	);
 	
 	dft_reset <= not dft_enable;

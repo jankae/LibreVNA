@@ -85,7 +85,17 @@ entity SPICommands is
            DFT_NEXT_OUTPUT : out  STD_LOGIC;
 			  DFT_ENABLE : out STD_LOGIC;
 			  			  
-			  DEBUG_STATUS : in STD_LOGIC_VECTOR(10 downto 0));
+			  DEBUG_STATUS : in STD_LOGIC_VECTOR(10 downto 0);
+			  
+			  ADC_PRESCALER_ALT1 : out STD_LOGIC_VECTOR(7 downto 0);
+			  ADC_PHASEINC_ALT1 : out STD_LOGIC_VECTOR(11 downto 0);
+			  ADC_PRESCALER_ALT2 : out STD_LOGIC_VECTOR(7 downto 0);
+			  ADC_PHASEINC_ALT2 : out STD_LOGIC_VECTOR(11 downto 0);
+			  ADC_PRESCALER_ALT3 : out STD_LOGIC_VECTOR(7 downto 0);
+			  ADC_PHASEINC_ALT3 : out STD_LOGIC_VECTOR(11 downto 0);
+			  ADC_PRESCALER_ALT4 : out STD_LOGIC_VECTOR(7 downto 0);
+			  ADC_PHASEINC_ALT4 : out STD_LOGIC_VECTOR(11 downto 0)
+			  );
 end SPICommands;
 
 architecture Behavioral of SPICommands is
@@ -270,6 +280,14 @@ begin
 							when 15 => MAX2871_DEF_4(31 downto 16) <= spi_buf_out;
 							when 18 => DFT_BIN1_PHASEINC <= spi_buf_out;
 							when 19 => DFT_DIFFBIN_PHASEINC <= spi_buf_out;
+							when 24 => ADC_PRESCALER_ALT1 <= spi_buf_out(7 downto 0);
+							when 25 => ADC_PHASEINC_ALT1 <= spi_buf_out(11 downto 0);
+							when 26 => ADC_PRESCALER_ALT2 <= spi_buf_out(7 downto 0);
+							when 27 => ADC_PHASEINC_ALT2 <= spi_buf_out(11 downto 0);
+							when 28 => ADC_PRESCALER_ALT3 <= spi_buf_out(7 downto 0);
+							when 29 => ADC_PHASEINC_ALT3 <= spi_buf_out(11 downto 0);
+							when 30 => ADC_PRESCALER_ALT4 <= spi_buf_out(7 downto 0);
+							when 31 => ADC_PHASEINC_ALT4 <= spi_buf_out(11 downto 0);
 							when others => 
 						end case;
 						selected_register <= selected_register + 1;

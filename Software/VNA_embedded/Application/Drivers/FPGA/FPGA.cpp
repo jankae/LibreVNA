@@ -199,7 +199,7 @@ void FPGA::WriteMAX2871Default(uint32_t *DefaultRegs) {
 }
 
 void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt, LowpassFilter filter) {
+		uint8_t attenuation, uint64_t frequency, SettlingTime settling, ADCSamplerate rate, bool halt, LowpassFilter filter) {
 	uint16_t send[7];
 	// select which point this sweep config is for
 	send[0] = pointnum & 0x1FFF;
@@ -223,7 +223,7 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 		send[1] |= 0x8000;
 	}
 	send[1] |= (int) settling << 13;
-	send[1] |= (int) samples << 10;
+	send[1] |= (int) rate << 10;
 	if(filter == LowpassFilter::Auto) {
 		// Select source LP filter
 		if (frequency >= 3500000000) {

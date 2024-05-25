@@ -15,6 +15,7 @@
 #include "usb.h"
 #include "Trigger.hpp"
 #include <cmath>
+#include <array>
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"VNA"
@@ -51,6 +52,8 @@ static constexpr uint32_t reservedUSBbuffer = maxPointsBetweenHalts * (sizeof(Pr
 
 using namespace HWHAL;
 
+static constexpr uint8_t alternativePrescalers[] = {112, 113, 114, 115};
+
 static uint64_t getPointFrequency(uint16_t pointNum) {
 	if(!settings.logSweep) {
 		return settings.f_start + (settings.f_stop - settings.f_start) * pointNum / (settings.points - 1);
@@ -70,51 +73,220 @@ static uint64_t getPointFrequency(uint16_t pointNum) {
 	}
 }
 
-static void setPLLFrequencies(uint64_t f) {
-	if(f > HW::Info.limits_maxFreq) {
-		Source.SetFrequency(f / sourceHarmonic);
-		LO1.SetFrequency((f + HW::getIF1()) / LOHarmonic);
-	} else {
-		if(f >= HW::BandSwitchFrequency) {
-			Source.SetFrequency(f);
+static uint32_t closestLOAlias(uint64_t LO1, uint64_t LO2, uint32_t IFBW) {
+	constexpr uint64_t max_LO_harmonic = 2000000000;
+	constexpr uint32_t max_ADC_alias = 5000000;
+
+	uint32_t closestAlias = std::numeric_limits<uint32_t>::max();
+
+	for(int64_t lo1 = LO1; lo1 <= (int64_t) max_LO_harmonic; lo1 += LO1) {
+		// figure out which 2.LO harmonics we have to check
+		uint64_t lo2_min = lo1 - max_ADC_alias;
+		uint64_t lo2_max = lo1 + max_ADC_alias;
+
+		uint16_t lo2_min_harm = ((lo2_min + LO2 - 1) / LO2);
+		uint16_t lo2_max_harm = lo2_max / LO2;
+
+		if(lo2_max_harm * LO2 > max_LO_harmonic) {
+			lo2_max_harm = max_LO_harmonic / LO2;
 		}
-		LO1.SetFrequency(f + HW::getIF1());
+
+		if(lo2_min_harm > lo2_max_harm) {
+			// no aliasing possible, skip 2.LO loop
+			continue;
+		}
+
+		for(int64_t lo2 = LO2 * lo2_min_harm; lo2 <= (int64_t) LO2 * lo2_max_harm; lo2 += LO2) {
+			uint32_t mixing = llabs(lo1 - lo2);
+			if(mixing > max_ADC_alias) {
+				continue;
+			}
+			int32_t alias = Util::Alias(mixing, HW::getADCRate());
+			uint32_t alias_dist = labs((int32_t) HW::getIF2() - alias);
+			if(alias_dist < closestAlias) {
+				closestAlias = alias_dist;
+			}
+//			if(abs(HW::getIF2() - alias) <= IFBW*3) {
+//				// we do have LO mixing products aliasing into the 2.IF
+//				return false;
+//			}
+		}
 	}
+	return closestAlias;
 }
 
-static bool needs2LOshift(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO) {
-	// Check if 2.LO needs to be shifted
-	uint64_t actualSource, actual1LO;
-	actualSource = Source.GetActualFrequency();
-	actual1LO = LO1.GetActualFrequency();
-	if(f > HW::Info.limits_maxFreq) {
-		actualSource *= sourceHarmonic;
-		actual1LO *= LOHarmonic;
-	} else if(f < HW::BandSwitchFrequency) {
-		// can use the lowband PLL with high frequency resolution, assume perfect frequency match
+static bool noLOAliasing(uint64_t LO1, uint64_t LO2, uint32_t IFBW) {
+	constexpr uint64_t max_LO_harmonic = 2000000000;
+	constexpr uint32_t max_ADC_alias = 5000000;
+
+	for(int64_t lo1 = LO1; lo1 <= (int64_t) max_LO_harmonic; lo1 += LO1) {
+		// figure out which 2.LO harmonics we have to check
+		uint64_t lo2_min = lo1 - max_ADC_alias;
+		uint64_t lo2_max = lo1 + max_ADC_alias;
+
+		uint16_t lo2_min_harm = ((lo2_min + LO2 - 1) / LO2);
+		uint16_t lo2_max_harm = lo2_max / LO2;
+
+		if(lo2_max_harm * LO2 > max_LO_harmonic) {
+			lo2_max_harm = max_LO_harmonic / LO2;
+		}
+
+		if(lo2_min_harm > lo2_max_harm) {
+			// no aliasing possible, skip 2.LO loop
+			continue;
+		}
+
+		for(int64_t lo2 = LO2 * lo2_min_harm; lo2 <= (int64_t) LO2 * lo2_max_harm; lo2 += LO2) {
+			uint32_t mixing = llabs(lo1 - lo2);
+			if(mixing > max_ADC_alias) {
+				continue;
+			}
+			int32_t alias = Util::Alias(mixing, HW::getADCRate());
+			if(abs(HW::getIF2() - alias) <= IFBW*3) {
+				// we do have LO mixing products aliasing into the 2.IF
+				return false;
+			}
+		}
+	}
+	// all good, no aliasing
+	return true;
+}
+
+static bool setPLLFrequencies(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO) {
+	const std::array<uint32_t, 21> IF_shifts = { 0, IFBW * 2, IFBW * 3,
+			IFBW * 5, IFBW * 7, IFBW * 7 / 10, IFBW * 11 / 10, IFBW * 13
+					/ 10, IFBW * 17 / 10, IFBW * 19 / 10, IFBW, IFBW * 23 / 10,
+			IFBW * 29 / 10, IFBW * 31 / 10, IFBW * 37 / 10, IFBW * 41 / 10, IFBW
+					* 43 / 10, IFBW * 47 / 10, IFBW * 53 / 10, IFBW * 59 / 10,
+			IFBW * 61 / 10 };
+
+	uint64_t actualSource;
+	// set the source, this will never change
+	if (f > HW::Info.limits_maxFreq) {
+		Source.SetFrequency(f / sourceHarmonic);
+		actualSource = Source.GetActualFrequency() * sourceHarmonic;
+	} else if (f >= HW::BandSwitchFrequency) {
+		Source.SetFrequency(f);
+		actualSource = Source.GetActualFrequency();
+	} else {
+		// source will be set in sweep halted interrupt
 		actualSource = f;
 	}
+
+	uint8_t maxIndex = IF_shifts.size();
+	if(!settings.suppressPeaks) {
+		maxIndex = 1;
+	}
+
+	uint8_t bestIndex = 0;
+	uint32_t furthestAliasDistance = 0;
+
+	for(uint8_t i = 0;i<maxIndex;i++) {
+		auto shift = IF_shifts[i];
+		// set the 1.LO
+		uint64_t actual1LO;
+		if(f > HW::Info.limits_maxFreq) {
+			LO1.SetFrequency((f + HW::getIF1() + shift) / LOHarmonic);
+			actual1LO = LO1.GetActualFrequency() * LOHarmonic;
+		} else {
+			LO1.SetFrequency(f + HW::getIF1() + shift);
+			actual1LO = LO1.GetActualFrequency();
+		}
+		// adjust 2.LO if necessary
+		*new2LO = current2LO;
+		uint32_t actualFirstIF = actual1LO - actualSource;
+		uint32_t actualFinalIF = actualFirstIF - *new2LO;
+		uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
+		if(IFdeviation > IFBW / 2) {
+			*new2LO = actualFirstIF - HW::getIF2();
+		}
+
+//		LOG_ERR("Checking F=%lu, SRC=%lu, LO1=%lu", (uint32_t) f, (uint32_t) actualSource, (uint32_t) actual1LO);
+
+		auto closest_alias = closestLOAlias(actual1LO, *new2LO, IFBW);
+		if(closest_alias > IFBW * 3) {
+			// no need to look further, chose this option
+			return true;
+		} else if(closest_alias > furthestAliasDistance) {
+			bestIndex = i;
+			furthestAliasDistance = closest_alias;
+		}
+
+//		// check if LO mixing product aliases into the ADC
+//		if(noLOAliasing(actual1LO, *new2LO, IFBW)) {
+//			// found an IF that can be used without problems
+//			if(shift != 0) {
+////				LOG_WARN("Shifting IF for f=%lu, LO1=%lu, LO2= %lu", (uint32_t) f, (uint32_t) actual1LO, *new2LO);
+//			}
+//			return true;
+//		}
+	}
+	// all available IF shifts result in aliasing in the ADC
+//	LOG_ERR("Failed to shift IF for f=%lu", (uint32_t) f);
+	// no perfect option, use best shift
+	auto shift = IF_shifts[bestIndex];
+	// set the 1.LO
+	uint64_t actual1LO;
+	if(f > HW::Info.limits_maxFreq) {
+		LO1.SetFrequency((f + HW::getIF1() + shift) / LOHarmonic);
+		actual1LO = LO1.GetActualFrequency() * LOHarmonic;
+	} else {
+		LO1.SetFrequency(f + HW::getIF1() + shift);
+		actual1LO = LO1.GetActualFrequency();
+	}
+	// adjust 2.LO if necessary
+	*new2LO = current2LO;
 	uint32_t actualFirstIF = actual1LO - actualSource;
-	uint32_t actualFinalIF = actualFirstIF - current2LO;
+	uint32_t actualFinalIF = actualFirstIF - *new2LO;
 	uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
 	if(IFdeviation > IFBW / 2) {
 		*new2LO = actualFirstIF - HW::getIF2();
-		return true;
-	} else {
-		// no shift required
-		return false;
 	}
+	return false;
 }
 
+//static bool needs2LOshift(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO) {
+//	// Check if 2.LO needs to be shifted
+//	uint64_t actualSource, actual1LO;
+//	actualSource = Source.GetActualFrequency();
+//	actual1LO = LO1.GetActualFrequency();
+//	if(f > HW::Info.limits_maxFreq) {
+//		actualSource *= sourceHarmonic;
+//		actual1LO *= LOHarmonic;
+//	} else if(f < HW::BandSwitchFrequency) {
+//		// can use the lowband PLL with high frequency resolution, assume perfect frequency match
+//		actualSource = f;
+//	}
+//	uint32_t actualFirstIF = actual1LO - actualSource;
+//	uint32_t actualFinalIF = actualFirstIF - current2LO;
+//	uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
+//	if(IFdeviation > IFBW / 2) {
+//		*new2LO = actualFirstIF - HW::getIF2();
+//		return true;
+//	} else {
+//		// no shift required
+//		return false;
+//	}
+//}
+
 bool VNA::Setup(Protocol::SweepSettings s) {
+	// Abort possible active sweep first
 	VNA::Stop();
 	vTaskDelay(5);
 	data.clear();
 	HW::SetMode(HW::Mode::VNA);
-	// Abort possible active sweep first
 	FPGA::SetMode(FPGA::Mode::FPGA);
+	// Configure the ADC prescalers
 	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
 	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescalerAlt1, alternativePrescalers[0]);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrementAlt1, alternativePrescalers[0]*10);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescalerAlt2, alternativePrescalers[1]);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrementAlt2, alternativePrescalers[1]*10);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescalerAlt3, alternativePrescalers[2]);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrementAlt3, alternativePrescalers[2]*10);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescalerAlt4, alternativePrescalers[3]);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrementAlt4, alternativePrescalers[3]*10);
 	if(settings.points > FPGA::MaxPoints) {
 		settings.points = FPGA::MaxPoints;
 	}
@@ -192,12 +364,13 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		}
 		// SetFrequency only manipulates the register content in RAM, no SPI communication is done.
 		// No mode-switch of FPGA necessary here.
-		setPLLFrequencies(freq);
-		if(s.suppressPeaks) {
-			if(needs2LOshift(freq, last_LO2, actualBandwidth, &last_LO2)) {
-				needs_halt = true;
-			}
+		uint32_t new2LO;
+		setPLLFrequencies(freq, last_LO2, actualBandwidth, &new2LO);
+		if(new2LO != last_LO2 && s.suppressPeaks) {
+			last_LO2 = new2LO;
+			needs_halt = true;
 		}
+
 		if (last_lowband && !lowband) {
 			// additional halt before first highband point to enable highband source
 			needs_halt = true;
@@ -233,7 +406,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
 				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us60,
-				FPGA::Samples::SPPRegister, needs_halt);
+				FPGA::ADCSamplerate::Default, needs_halt);
 		last_lowband = lowband;
 	}
 	// revert clk configuration to previous value (might have been changed in sweep calculation)
@@ -261,6 +434,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::EnableInterrupt(FPGA::Interrupt::NewData);
 	FPGA::EnableInterrupt(FPGA::Interrupt::SweepHalted);
 	// Start the sweep if not configured for standby
+	last_LO2 = HW::getIF1() - HW::getIF2();
 	firstPoint = true;
 	if (settings.standby) {
 		waitingInStandby = true;
@@ -426,8 +600,10 @@ void VNA::SweepHalted() {
 		if(settings.suppressPeaks) {
 			// does not actually change PLL settings, just calculates the register values and
 			// is required to determine the need for a 2.LO shift
-			setPLLFrequencies(frequency);
-			if(needs2LOshift(frequency, last_LO2, actualBandwidth, &last_LO2)) {
+			uint32_t new2LO;
+			setPLLFrequencies(frequency, last_LO2, actualBandwidth, &new2LO);
+			if(new2LO != last_LO2) {
+				last_LO2 = new2LO;
 				Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 				Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 				Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);

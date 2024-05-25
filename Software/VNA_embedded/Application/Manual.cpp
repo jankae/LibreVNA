@@ -55,7 +55,7 @@ void Manual::Setup(Protocol::ManualControl m) {
 	// Configure single sweep point
 	FPGA::WriteSweepConfig(0, !m.V1.SourceHighband, Source.GetRegisters(),
 			LO1.GetRegisters(), m.V1.attenuator, 0, FPGA::SettlingTime::us60,
-			FPGA::Samples::SPPRegister, 0,
+			FPGA::ADCSamplerate::Default, 0,
 			(FPGA::LowpassFilter) m.V1.SourceHighLowpass);
 
 	FPGA::SetWindow((FPGA::Window) m.V1.WindowType);

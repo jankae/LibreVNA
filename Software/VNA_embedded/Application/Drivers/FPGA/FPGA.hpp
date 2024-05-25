@@ -29,6 +29,14 @@ enum class Reg {
 	MAX2871Def4MSB = 0x0F,
 	DFTFirstBin = 0x12,
 	DFTFreqSpacing = 0x13,
+	ADCPrescalerAlt1 = 0x18,
+	PhaseIncrementAlt1 = 0x19,
+	ADCPrescalerAlt2 = 0x1A,
+	PhaseIncrementAlt2 = 0x1B,
+	ADCPrescalerAlt3 = 0x1C,
+	PhaseIncrementAlt3 = 0x1D,
+	ADCPrescalerAlt4 = 0x1E,
+	PhaseIncrementAlt4 = 0x1F,
 };
 
 using SamplingResult = struct _samplingresult {
@@ -89,15 +97,12 @@ enum class SettlingTime {
 	us540 = 0x03,
 };
 
-enum class Samples {
-	SPPRegister = 0x00,
-    S96 = 0x01,
-	S304 = 0x02,
-	S912 = 0x03,
-	S3040 = 0x04,
-	S9136 = 0x05,
-	S30464 = 0x06,
-	S91392 = 0x07,
+enum class ADCSamplerate {
+	Default = 0x00,
+	Alt1 = 0x04,
+	Alt2 = 0x05,
+	Alt3 = 0x06,
+	Alt4 = 0x07,
 };
 
 enum class Window {
@@ -124,7 +129,7 @@ void DisableInterrupt(Interrupt i);
 void DisableAllInterrupts();
 void WriteMAX2871Default(uint32_t *DefaultRegs);
 void WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
+		uint8_t attenuation, uint64_t frequency, SettlingTime settling, ADCSamplerate rate, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
 using ReadCallback = void(*)(const SamplingResult &result);
 bool InitiateSampleRead(ReadCallback cb);
 void SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing);

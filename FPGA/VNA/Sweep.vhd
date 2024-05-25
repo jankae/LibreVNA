@@ -82,6 +82,8 @@ entity Sweep is
 			  
 			  SOURCE_CE : out STD_LOGIC;
 			  
+			  ADC_SEL : out STD_LOGIC_VECTOR(2 downto 0);
+			  
 			  -- Debug signals
 			  DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0);
 			  RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0)
@@ -124,15 +126,16 @@ begin
 	SOURCE_FILTER <= config_reg(89 downto 88);
 	BAND_SELECT <= config_reg(48);
 	SOURCE_CE <= source_active;
+	ADC_SEL <= config_reg(92 downto 90);
 							
-	NSAMPLES <= USER_NSAMPLES when config_reg(92 downto 90) = "000" else
-					std_logic_vector(to_unsigned(6, 13)) when config_reg(92 downto 90) = "001" else
-					std_logic_vector(to_unsigned(19, 13)) when config_reg(92 downto 90) = "010" else
-					std_logic_vector(to_unsigned(57, 13)) when config_reg(92 downto 90) = "011" else
-					std_logic_vector(to_unsigned(190, 13)) when config_reg(92 downto 90) = "100" else
-					std_logic_vector(to_unsigned(571, 13)) when config_reg(92 downto 90) = "101" else
-					std_logic_vector(to_unsigned(1904, 13)) when config_reg(92 downto 90) = "110" else
-					std_logic_vector(to_unsigned(5712, 13));
+	NSAMPLES <= USER_NSAMPLES;-- when config_reg(92 downto 90) = "000" else
+					--std_logic_vector(to_unsigned(6, 13)) when config_reg(92 downto 90) = "001" else
+					--std_logic_vector(to_unsigned(19, 13)) when config_reg(92 downto 90) = "010" else
+					--std_logic_vector(to_unsigned(57, 13)) when config_reg(92 downto 90) = "011" else
+					--std_logic_vector(to_unsigned(190, 13)) when config_reg(92 downto 90) = "100" else
+					--std_logic_vector(to_unsigned(571, 13)) when config_reg(92 downto 90) = "101" else
+					--std_logic_vector(to_unsigned(1904, 13)) when config_reg(92 downto 90) = "110" else
+					--std_logic_vector(to_unsigned(5712, 13));
 	
 	DEBUG_STATUS(10 downto 7) <= "0000" when state = TriggerSetup else
 											"0001" when state = SettingUp else

@@ -175,7 +175,7 @@ static void StartNextSample() {
 
 	// Configure the sampling in the FPGA
 	FPGA::WriteSweepConfig(0, trackingLowband, Source.GetRegisters(), LO1.GetRegisters(), attenuator,
-			trackingFreq, FPGA::SettlingTime::us60, FPGA::Samples::SPPRegister, 0,
+			trackingFreq, FPGA::SettlingTime::us60, FPGA::ADCSamplerate::Default, 0,
 			FPGA::LowpassFilter::Auto);
 
 	if(firstSample && (signalIDstep == 0)) {
