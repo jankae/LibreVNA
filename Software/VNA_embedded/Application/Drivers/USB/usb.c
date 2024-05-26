@@ -19,7 +19,7 @@ static uint8_t  *USBD_Class_GetDeviceQualifierDescriptor (uint16_t *length);
 
 static usbd_recv_callback_t cb;
 static uint8_t usb_receive_buffer[1024];
-static uint8_t usb_transmit_fifo[6144];
+static uint8_t usb_transmit_fifo[4000];
 static uint16_t usb_transmit_read_index = 0;
 static uint16_t usb_transmit_fifo_level = 0;
 static bool data_transmission_active = false;

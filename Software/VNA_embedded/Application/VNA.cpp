@@ -54,6 +54,45 @@ using namespace HWHAL;
 
 static constexpr uint8_t alternativePrescalers[] = {112, 113, 114, 115};
 
+static uint8_t LO2_adjustment[FPGA::MaxPoints * 5 / 2];
+
+static void setLO2Adjustment(unsigned int point, int32_t value) {
+	if(value >= 1L<<20) {
+		value = (1L<<20)-1;
+	} else if(value <-(1L<<20)) {
+		value = -(1L<<20);
+	}
+	uint16_t base = point / 2 * 5;
+	if(point & 0x01) {
+		LO2_adjustment[base+2] = (LO2_adjustment[base+2] & 0x0F) | ((value<<4) & 0xF0);
+		LO2_adjustment[base+3] = (value >> 4) & 0xFF;
+		LO2_adjustment[base+4] = (value >> 12) & 0xFF;
+	} else {
+		LO2_adjustment[base+0] = value & 0xFF;
+		LO2_adjustment[base+1] = (value >> 8) & 0xFF;
+		LO2_adjustment[base+2] = ((value >> 16) & 0x0F) | (LO2_adjustment[base+2] & 0xF0);
+	}
+}
+static int32_t getLO2Adjustment(unsigned int point) {
+	uint16_t base = point / 2 * 5;
+	uint32_t ret = 0;
+	if(point & 0x01) {
+		ret |= (LO2_adjustment[base+2] & 0xF0) >> 4;
+		ret |= (uint16_t) LO2_adjustment[base+3] << 4;
+		ret |= (uint32_t) LO2_adjustment[base+4] << 12;
+	} else {
+		ret |= LO2_adjustment[base+0];
+		ret |= (uint16_t) LO2_adjustment[base+1] << 8;
+		ret |= (uint32_t) (LO2_adjustment[base+2]&0x0F) << 16;
+	}
+	// sign extend
+	constexpr uint32_t m = 1U << (20 - 1);
+	ret = (ret ^ m) - m;
+	return ret;
+}
+
+static uint32_t defaultLO2;
+
 static uint64_t getPointFrequency(uint16_t pointNum) {
 	if(!settings.logSweep) {
 		return settings.f_start + (settings.f_stop - settings.f_start) * pointNum / (settings.points - 1);
@@ -73,7 +112,7 @@ static uint64_t getPointFrequency(uint16_t pointNum) {
 	}
 }
 
-static uint32_t closestLOAlias(uint64_t LO1, uint64_t LO2, uint32_t IFBW) {
+static uint32_t closestLOAlias(uint64_t LO1, uint64_t LO2, uint32_t IFBW, uint32_t ADC_Samplerate) {
 	constexpr uint64_t max_LO_harmonic = 2000000000;
 	constexpr uint32_t max_ADC_alias = 5000000;
 
@@ -101,7 +140,7 @@ static uint32_t closestLOAlias(uint64_t LO1, uint64_t LO2, uint32_t IFBW) {
 			if(mixing > max_ADC_alias) {
 				continue;
 			}
-			int32_t alias = Util::Alias(mixing, HW::getADCRate());
+			int32_t alias = Util::Alias(mixing, ADC_Samplerate);
 			uint32_t alias_dist = labs((int32_t) HW::getIF2() - alias);
 			if(alias_dist < closestAlias) {
 				closestAlias = alias_dist;
@@ -115,51 +154,44 @@ static uint32_t closestLOAlias(uint64_t LO1, uint64_t LO2, uint32_t IFBW) {
 	return closestAlias;
 }
 
-static bool noLOAliasing(uint64_t LO1, uint64_t LO2, uint32_t IFBW) {
-	constexpr uint64_t max_LO_harmonic = 2000000000;
-	constexpr uint32_t max_ADC_alias = 5000000;
+//static bool noLOAliasing(uint64_t LO1, uint64_t LO2, uint32_t IFBW) {
+//	constexpr uint64_t max_LO_harmonic = 2000000000;
+//	constexpr uint32_t max_ADC_alias = 5000000;
+//
+//	for(int64_t lo1 = LO1; lo1 <= (int64_t) max_LO_harmonic; lo1 += LO1) {
+//		// figure out which 2.LO harmonics we have to check
+//		uint64_t lo2_min = lo1 - max_ADC_alias;
+//		uint64_t lo2_max = lo1 + max_ADC_alias;
+//
+//		uint16_t lo2_min_harm = ((lo2_min + LO2 - 1) / LO2);
+//		uint16_t lo2_max_harm = lo2_max / LO2;
+//
+//		if(lo2_max_harm * LO2 > max_LO_harmonic) {
+//			lo2_max_harm = max_LO_harmonic / LO2;
+//		}
+//
+//		if(lo2_min_harm > lo2_max_harm) {
+//			// no aliasing possible, skip 2.LO loop
+//			continue;
+//		}
+//
+//		for(int64_t lo2 = LO2 * lo2_min_harm; lo2 <= (int64_t) LO2 * lo2_max_harm; lo2 += LO2) {
+//			uint32_t mixing = llabs(lo1 - lo2);
+//			if(mixing > max_ADC_alias) {
+//				continue;
+//			}
+//			int32_t alias = Util::Alias(mixing, HW::getADCRate());
+//			if(abs(HW::getIF2() - alias) <= IFBW*3) {
+//				// we do have LO mixing products aliasing into the 2.IF
+//				return false;
+//			}
+//		}
+//	}
+//	// all good, no aliasing
+//	return true;
+//}
 
-	for(int64_t lo1 = LO1; lo1 <= (int64_t) max_LO_harmonic; lo1 += LO1) {
-		// figure out which 2.LO harmonics we have to check
-		uint64_t lo2_min = lo1 - max_ADC_alias;
-		uint64_t lo2_max = lo1 + max_ADC_alias;
-
-		uint16_t lo2_min_harm = ((lo2_min + LO2 - 1) / LO2);
-		uint16_t lo2_max_harm = lo2_max / LO2;
-
-		if(lo2_max_harm * LO2 > max_LO_harmonic) {
-			lo2_max_harm = max_LO_harmonic / LO2;
-		}
-
-		if(lo2_min_harm > lo2_max_harm) {
-			// no aliasing possible, skip 2.LO loop
-			continue;
-		}
-
-		for(int64_t lo2 = LO2 * lo2_min_harm; lo2 <= (int64_t) LO2 * lo2_max_harm; lo2 += LO2) {
-			uint32_t mixing = llabs(lo1 - lo2);
-			if(mixing > max_ADC_alias) {
-				continue;
-			}
-			int32_t alias = Util::Alias(mixing, HW::getADCRate());
-			if(abs(HW::getIF2() - alias) <= IFBW*3) {
-				// we do have LO mixing products aliasing into the 2.IF
-				return false;
-			}
-		}
-	}
-	// all good, no aliasing
-	return true;
-}
-
-static bool setPLLFrequencies(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO) {
-	const std::array<uint32_t, 21> IF_shifts = { 0, IFBW * 2, IFBW * 3,
-			IFBW * 5, IFBW * 7, IFBW * 7 / 10, IFBW * 11 / 10, IFBW * 13
-					/ 10, IFBW * 17 / 10, IFBW * 19 / 10, IFBW, IFBW * 23 / 10,
-			IFBW * 29 / 10, IFBW * 31 / 10, IFBW * 37 / 10, IFBW * 41 / 10, IFBW
-					* 43 / 10, IFBW * 47 / 10, IFBW * 53 / 10, IFBW * 59 / 10,
-			IFBW * 61 / 10 };
-
+static void setPLLFrequencies(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO) {
 	uint64_t actualSource;
 	// set the source, this will never change
 	if (f > HW::Info.limits_maxFreq) {
@@ -167,6 +199,114 @@ static bool setPLLFrequencies(uint64_t f, uint32_t current2LO, uint32_t IFBW, ui
 		actualSource = Source.GetActualFrequency() * sourceHarmonic;
 	} else if (f >= HW::BandSwitchFrequency) {
 		Source.SetFrequency(f);
+		actualSource = Source.GetActualFrequency();
+	} else {
+		// source will be set in sweep halted interrupt
+		actualSource = f;
+	}
+
+	// set the 1.LO
+	uint64_t actual1LO;
+	if(f > HW::Info.limits_maxFreq) {
+		LO1.SetFrequency((f + HW::getIF1()) / LOHarmonic);
+		actual1LO = LO1.GetActualFrequency() * LOHarmonic;
+	} else {
+		LO1.SetFrequency(f + HW::getIF1());
+		actual1LO = LO1.GetActualFrequency();
+	}
+	// adjust 2.LO if necessary
+	*new2LO = current2LO;
+	uint32_t actualFirstIF = actual1LO - actualSource;
+	uint32_t actualFinalIF = actualFirstIF - *new2LO;
+	uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
+	if(IFdeviation > IFBW / 2) {
+		*new2LO = actualFirstIF - HW::getIF2();
+	}
+}
+
+static bool findBestADCRate(uint64_t LO1, uint32_t LO2, uint32_t IFBW, FPGA::ADCSamplerate &bestRate) {
+
+	const std::array<uint8_t, 5> ADC_prescalers = { HW::DefaultADCprescaler,
+			alternativePrescalers[0], alternativePrescalers[1],
+			alternativePrescalers[2], alternativePrescalers[3] };
+	const std::array<FPGA::ADCSamplerate, 5> returnArray = {
+			FPGA::ADCSamplerate::Default, FPGA::ADCSamplerate::Alt1,
+			FPGA::ADCSamplerate::Alt2, FPGA::ADCSamplerate::Alt3,
+			FPGA::ADCSamplerate::Alt4 };
+
+	uint8_t maxIndex = ADC_prescalers.size();
+
+	if(!settings.suppressPeaks) {
+		maxIndex = 1;
+	}
+
+	uint8_t bestIndex = 0;
+	uint32_t furthestAliasDistance = 0;
+
+	for(uint8_t i = 0;i<maxIndex;i++) {
+//		LOG_ERR("Checking F=%lu, SRC=%lu, LO1=%lu", (uint32_t) f, (uint32_t) actualSource, (uint32_t) actual1LO);
+
+		uint32_t rate = FPGA::Clockrate / ADC_prescalers[i];
+
+		auto closest_alias = closestLOAlias(LO1, LO2, IFBW, rate);
+		if(closest_alias > IFBW * 3) {
+			// no need to look further, chose this option
+			bestRate = returnArray[i];
+			return true;
+		} else if(closest_alias > furthestAliasDistance) {
+			bestIndex = i;
+			furthestAliasDistance = closest_alias;
+		}
+
+//		// check if LO mixing product aliases into the ADC
+//		if(noLOAliasing(actual1LO, *new2LO, IFBW)) {
+//			// found an IF that can be used without problems
+//			if(shift != 0) {
+////				LOG_WARN("Shifting IF for f=%lu, LO1=%lu, LO2= %lu", (uint32_t) f, (uint32_t) actual1LO, *new2LO);
+//			}
+//			return true;
+//		}
+	}
+	// all available IF shifts result in aliasing in the ADC
+//	LOG_ERR("Failed to shift IF for f=%lu", (uint32_t) f);
+	// no perfect option, use best shift
+//	auto shift = IF_shifts[bestIndex];
+//	// set the 1.LO
+//	uint64_t actual1LO;
+//	if(f > HW::Info.limits_maxFreq) {
+//		LO1.SetFrequency((f + HW::getIF1() + shift) / LOHarmonic);
+//		actual1LO = LO1.GetActualFrequency() * LOHarmonic;
+//	} else {
+//		LO1.SetFrequency(f + HW::getIF1() + shift);
+//		actual1LO = LO1.GetActualFrequency();
+//	}
+//	// adjust 2.LO if necessary
+//	*new2LO = current2LO;
+//	uint32_t actualFirstIF = actual1LO - actualSource;
+//	uint32_t actualFinalIF = actualFirstIF - *new2LO;
+//	uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
+//	if(IFdeviation > IFBW / 2) {
+//		*new2LO = actualFirstIF - HW::getIF2();
+//	}
+	bestRate = returnArray[bestIndex];
+	return false;
+}
+
+static bool shift1IF(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO, uint32_t ADC_rate) {
+	const std::array<uint32_t, 21> IF_shifts = {0, IFBW * 2, IFBW * 3,
+			IFBW * 5, IFBW * 7, IFBW * 7 / 10, IFBW * 11 / 10, IFBW * 13
+					/ 10, IFBW * 17 / 10, IFBW * 19 / 10, IFBW, IFBW * 23 / 10,
+			IFBW * 29 / 10, IFBW * 31 / 10, IFBW * 37 / 10, IFBW * 41 / 10, IFBW
+					* 43 / 10, IFBW * 47 / 10, IFBW * 53 / 10, IFBW * 59 / 10,
+			IFBW * 61 / 10 };
+
+//	const std::array<uint32_t, 8> IF_shifts = {0, 10, 33, 100, 330, 1000, 3300, 10000};
+
+	uint64_t actualSource;
+	// set the source, this will never change
+	if (f > HW::Info.limits_maxFreq) {
+		actualSource = Source.GetActualFrequency() * sourceHarmonic;
+	} else if (f >= HW::BandSwitchFrequency) {
 		actualSource = Source.GetActualFrequency();
 	} else {
 		// source will be set in sweep halted interrupt
@@ -203,7 +343,7 @@ static bool setPLLFrequencies(uint64_t f, uint32_t current2LO, uint32_t IFBW, ui
 
 //		LOG_ERR("Checking F=%lu, SRC=%lu, LO1=%lu", (uint32_t) f, (uint32_t) actualSource, (uint32_t) actual1LO);
 
-		auto closest_alias = closestLOAlias(actual1LO, *new2LO, IFBW);
+		auto closest_alias = closestLOAlias(actual1LO, *new2LO, IFBW, ADC_rate);
 		if(closest_alias > IFBW * 3) {
 			// no need to look further, chose this option
 			return true;
@@ -333,6 +473,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
 	last_LO2 = HW::getIF1() - HW::getIF2();
+	defaultLO2 = last_LO2;
 	Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
@@ -366,6 +507,22 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		// No mode-switch of FPGA necessary here.
 		uint32_t new2LO;
 		setPLLFrequencies(freq, last_LO2, actualBandwidth, &new2LO);
+		FPGA::ADCSamplerate ADC_rate;
+		if(!findBestADCRate(LO1.GetActualFrequency(), new2LO, actualBandwidth, ADC_rate)) {
+			// all available ADC rates result in a spike
+			uint8_t presc;
+			switch(ADC_rate) {
+			case FPGA::ADCSamplerate::Default: presc = HW::DefaultADCprescaler; break;
+			case FPGA::ADCSamplerate::Alt1: presc = alternativePrescalers[0]; break;
+			case FPGA::ADCSamplerate::Alt2: presc = alternativePrescalers[1]; break;
+			case FPGA::ADCSamplerate::Alt3: presc = alternativePrescalers[2]; break;
+			case FPGA::ADCSamplerate::Alt4: presc = alternativePrescalers[3]; break;
+			}
+			uint32_t samplerate = FPGA::Clockrate / presc;
+			shift1IF(freq, new2LO, actualBandwidth, &new2LO, samplerate);
+		}
+//		LOG_WARN("F %lu 1.LO: %lu 2.LO: %lu ADC: %d", (uint32_t) freq, (uint32_t) LO1.GetActualFrequency(), new2LO, (int) ADC_rate);
+//		vTaskDelay(10);
 		if(new2LO != last_LO2 && s.suppressPeaks) {
 			last_LO2 = new2LO;
 			needs_halt = true;
@@ -404,9 +561,10 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			needs_halt = true;
 		}
 
+		setLO2Adjustment(i, (int32_t) last_LO2 - defaultLO2);
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
 				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us60,
-				FPGA::ADCSamplerate::Default, needs_halt);
+				ADC_rate, needs_halt);
 		last_lowband = lowband;
 	}
 	// revert clk configuration to previous value (might have been changed in sweep calculation)
@@ -551,7 +709,7 @@ void VNA::SweepHalted() {
 	// are handled through the STM::DispatchToInterrupt functionality, ensuring that they do not interrupt each other
 	STM::DispatchToInterrupt([](){
 		LOG_DEBUG("Halted before point %d", pointCnt);
-		bool adcShiftRequired = false;
+//		bool adcShiftRequired = false;
 		uint64_t frequency = getPointFrequency(pointCnt);
 		frequency = Cal::FrequencyCorrectionToDevice(frequency);
 		int16_t power = settings.cdbm_excitation_start
@@ -584,14 +742,14 @@ void VNA::SweepHalted() {
 			// Depending on the stimulus frequency, the resulting mixing product might alias to the 2.IF
 			// in the ADC which causes a spike. Check for this and shift the ADC sampling frequency if necessary
 
-			uint32_t LO_mixing = (HW::getIF1() + frequency) - (HW::getIF1() - HW::getIF2());
-			if(abs(Util::Alias(LO_mixing, HW::getADCRate()) - HW::getIF2()) <= actualBandwidth * 2) {
-				// the image is in or near the IF bandwidth and would cause a peak
-				// Use a slightly different ADC sample rate if possible
-				if(HW::getIF2() == HW::DefaultIF2) {
-					adcShiftRequired = true;
-				}
-			}
+//			uint32_t LO_mixing = (HW::getIF1() + frequency) - (HW::getIF1() - HW::getIF2());
+//			if(abs(Util::Alias(LO_mixing, HW::getADCRate()) - HW::getIF2()) <= actualBandwidth * 2) {
+//				// the image is in or near the IF bandwidth and would cause a peak
+//				// Use a slightly different ADC sample rate if possible
+//				if(HW::getIF2() == HW::DefaultIF2) {
+//					adcShiftRequired = true;
+//				}
+//			}
 		} else if(!FPGA::IsEnabled(FPGA::Periphery::SourceRF)){
 			// first sweep point in highband is also halted, disable lowband source
 			Si5351.Disable(SiChannel::LowbandSource);
@@ -600,8 +758,8 @@ void VNA::SweepHalted() {
 		if(settings.suppressPeaks) {
 			// does not actually change PLL settings, just calculates the register values and
 			// is required to determine the need for a 2.LO shift
-			uint32_t new2LO;
-			setPLLFrequencies(frequency, last_LO2, actualBandwidth, &new2LO);
+			uint32_t new2LO = defaultLO2 + getLO2Adjustment(pointCnt);
+//			setPLLFrequencies(frequency, last_LO2, actualBandwidth, &new2LO);
 			if(new2LO != last_LO2) {
 				last_LO2 = new2LO;
 				Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
@@ -618,16 +776,16 @@ void VNA::SweepHalted() {
 			HAL_Delay(2);
 		}
 
-		if(adcShiftRequired) {
-			FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, alternativePrescaler);
-			FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, alternativePhaseInc);
-			adcShifted = true;
-		} else if(adcShifted) {
-			// reset to default value
-			FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
-			FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
-			adcShifted = false;
-		}
+//		if(adcShiftRequired) {
+//			FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, alternativePrescaler);
+//			FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, alternativePhaseInc);
+//			adcShifted = true;
+//		} else if(adcShifted) {
+//			// reset to default value
+//			FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
+//			FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
+//			adcShifted = false;
+//		}
 
 		if(usb_available_buffer() >= reservedUSBbuffer) {
 			// enough space available, can resume immediately
