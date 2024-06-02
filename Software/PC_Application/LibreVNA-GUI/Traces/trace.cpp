@@ -69,6 +69,10 @@ Trace::Trace(QString name, QColor color, QString live)
 Trace::~Trace()
 {
     emit deleted(this);
+    // delete math operations. The first math operation is the trace itself, only delete any additional operations
+    while(mathOps.size() > 1) {
+        removeMathOperation(mathOps.size()-1);
+    }
 }
 
 void Trace::clear(bool force) {
