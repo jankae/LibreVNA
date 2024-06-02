@@ -1249,8 +1249,8 @@ void SpectrumAnalyzer::createDefaultTracesAndGraphs(int ports)
 {
     tiles->clear();
     auto traceXY = new TraceXYPlot(traceModel);
-    traceXY->setYAxis(0, YAxis::Type::Magnitude, false, false, -120,0,10);
-    traceXY->setYAxis(1, YAxis::Type::Disabled, false, true, 0,0,1);
+    traceXY->setYAxis(0, YAxis::Type::Magnitude, false, false, -120,0,12,false);
+    traceXY->setYAxis(1, YAxis::Type::Disabled, false, true, 0, 0, 10, false);
     traceXY->updateSpan(settings.freqStart, settings.freqStop);
 
     tiles->setPlot(traceXY);

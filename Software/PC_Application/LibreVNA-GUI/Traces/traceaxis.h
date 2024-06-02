@@ -17,7 +17,8 @@ public:
     bool getAutorange() const;
     double getRangeMin() const;
     double getRangeMax() const;
-    double getRangeDiv() const;
+    unsigned int getDivs() const;
+    bool getAutoDivs() const;
     const std::vector<double> &getTicks() const;
 
 protected:
@@ -26,7 +27,8 @@ protected:
     bool autorange;
     double rangeMin;
     double rangeMax;
-    double rangeDiv;
+    unsigned int divs;
+    bool autoDivs;
     std::vector<double> ticks;
 };
 
@@ -42,7 +44,7 @@ public:
     };
     XAxis();
     double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) override;
-    void set(Type type, bool log, bool autorange, double min, double max, double div);
+    void set(Type type, bool log, bool autorange, double min, double max, unsigned int divs, bool autoDivs);
     static QString TypeToName(Type type);
     static Type TypeFromName(QString name);
     static QString Unit(Type type);
@@ -88,7 +90,7 @@ public:
     YAxis();
     double sampleToCoordinate(Trace::Data data, Trace *t = nullptr, unsigned int sample = 0) override;
 
-    void set(Type type, bool log, bool autorange, double min, double max, double div);
+    void set(Type type, bool log, bool autorange, double min, double max, unsigned int divs, bool autoDivs);
     static QString TypeToName(Type type);
     static Type TypeFromName(QString name);
     static QString Unit(Type type, TraceModel::DataSource source = TraceModel::DataSource::VNA);

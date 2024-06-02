@@ -1572,6 +1572,48 @@ double Trace::getNoise(double frequency)
     return dbm;
 }
 
+double Trace::getGroupDelay(double frequency)
+{
+    if(!isVNAParameter(liveParam) || lastMath->getDataType() != DataType::Frequency) {
+        // data not suitable for group delay calculation
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
+    // get index that matches frequency best
+    unsigned int sample = index(frequency);
+
+    auto &p = Preferences::getInstance();
+    const unsigned int requiredSamples = p.Acquisition.groupDelaySamples;
+    if(size() < requiredSamples) {
+        // unable to calculate
+        return std::numeric_limits<double>::quiet_NaN();
+
+    }
+    // needs at least some samples before/after current sample for calculating the derivative.
+    // For samples too far at either end of the trace, return group delay of "inner" trace sample instead
+    if(sample < requiredSamples / 2) {
+        sample = requiredSamples / 2;
+    } else if(sample >= size() - requiredSamples / 2) {
+        sample = size() - requiredSamples / 2 - 1;
+    }
+
+    // got enough samples at either end to calculate derivative.
+    // acquire phases of the required samples
+    std::vector<double> phases;
+    phases.reserve(requiredSamples);
+    for(unsigned int index = sample - requiredSamples / 2;index <= sample + requiredSamples / 2;index++) {
+        phases.push_back(arg(this->sample(index).y));
+    }
+    // make sure there are no phase jumps
+    Util::unwrapPhase(phases);
+    // calculate linearRegression to get derivative
+    double B_0, B_1;
+    Util::linearRegression(phases, B_0, B_1);
+    // B_1 now contains the derived phase vs. the sample. Scale by frequency to get group delay
+    double freq_step = this->sample(sample).x - this->sample(sample - 1).x;
+    return -B_1 / (2.0*M_PI * freq_step);
+}
+
 int Trace::index(double x)
 {
     auto lower = lower_bound(lastMath->rData().begin(), lastMath->rData().end(), x, [](const Data &lhs, const double x) -> bool {

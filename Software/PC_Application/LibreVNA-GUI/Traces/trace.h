@@ -104,6 +104,7 @@ public:
     unsigned int getFileParameter() const;
     /* Returns the noise in dbm/Hz for spectrum analyzer measurements. May return NaN if calculation not possible */
     double getNoise(double frequency);
+    double getGroupDelay(double frequency);
     int index(double x);
     std::set<Marker *> getMarkers() const;
     void setCalibration();

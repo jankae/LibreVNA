@@ -49,85 +49,114 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     }
 
     // Setup GUI connections
-    connect(ui->Y1type, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       ui->Y1log->setEnabled(index != 0);
-       ui->Y1linear->setEnabled(index != 0);
-       ui->Y1auto->setEnabled(index != 0);
-       bool autoRange = ui->Y1auto->isChecked();
-       ui->Y1min->setEnabled(index != 0 && !autoRange);
-       ui->Y1max->setEnabled(index != 0 && !autoRange);
-       ui->Y1divs->setEnabled(index != 0 && !autoRange);
-       auto type = (YAxis::Type) index;
-       QString unit = YAxis::Unit(type);
-       QString prefixes = YAxis::Prefixes(type);
-       ui->Y1min->setUnit(unit);
-       ui->Y1min->setPrefixes(prefixes);
-       ui->Y1max->setUnit(unit);
-       ui->Y1max->setPrefixes(prefixes);
-       ui->Y1divs->setUnit(unit);
-       ui->Y1divs->setPrefixes(prefixes);
+    auto updateYenableState = [](QComboBox *type, QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs) {
+        if(type->currentIndex() == 0) {
+            // axis disabled
+            log->setEnabled(false);
+            linear->setEnabled(false);
+            CBauto->setEnabled(false);
+        } else {
+            // axis enabled
+            log->setEnabled(true);
+            linear->setEnabled(true);
+            CBauto->setEnabled(true);
+            if(CBauto->isChecked()) {
+                // autorange active, other settings disabled
+                min->setEnabled(false);
+                max->setEnabled(false);
+                divs->setEnabled(false);
+                autoDivs->setEnabled(false);
+            } else {
+                min->setEnabled(true);
+                max->setEnabled(true);
+                if(log->isChecked()) {
+                    divs->setEnabled(false);
+                    autoDivs->setEnabled(false);
+                } else {
+                    autoDivs->setEnabled(true);
+                    divs->setEnabled(!autoDivs->isChecked());
+                }
+            }
+        }
+        auto t = (YAxis::Type) type->currentIndex();
+        QString unit = YAxis::Unit(t);
+        QString prefixes = YAxis::Prefixes(t);
+        min->setUnit(unit);
+        min->setPrefixes(prefixes);
+        max->setUnit(unit);
+        max->setPrefixes(prefixes);
+    };
+
+    connect(ui->Y1type, qOverload<int>(&QComboBox::currentIndexChanged), [this, updateYenableState](int) {
+        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
     });
-    connect(ui->Y1auto, &QCheckBox::toggled, [this](bool checked) {
-       ui->Y1min->setEnabled(!checked);
-       ui->Y1max->setEnabled(!checked);
-       ui->Y1divs->setEnabled(!checked && !ui->Y1log->isChecked());
+    connect(ui->Y1auto, &QCheckBox::toggled, [this, updateYenableState](bool) {
+        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
     });
-    connect(ui->Y1log, &QCheckBox::toggled, [this](bool checked) {
-        ui->Y1divs->setEnabled(!checked && !ui->Y1auto->isChecked());
+    connect(ui->Y1log, &QCheckBox::toggled, [this, updateYenableState](bool) {
+        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
+    });
+    connect(ui->Y1autoDivs, &QCheckBox::toggled, [this, updateYenableState](bool) {
+        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
     });
 
-    connect(ui->Y2type, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index) {
-       ui->Y2log->setEnabled(index != 0);
-       ui->Y2linear->setEnabled(index != 0);
-       ui->Y2auto->setEnabled(index != 0);
-       bool autoRange = ui->Y2auto->isChecked();
-       ui->Y2min->setEnabled(index != 0 && !autoRange);
-       ui->Y2max->setEnabled(index != 0 && !autoRange);
-       ui->Y2divs->setEnabled(index != 0 && !autoRange);
-       auto type = (YAxis::Type) index;
-       QString unit = YAxis::Unit(type);
-       QString prefixes = YAxis::Prefixes(type);
-       ui->Y2min->setUnit(unit);
-       ui->Y2min->setPrefixes(prefixes);
-       ui->Y2max->setUnit(unit);
-       ui->Y2max->setPrefixes(prefixes);
-       ui->Y2divs->setUnit(unit);
-       ui->Y2divs->setPrefixes(prefixes);
+    connect(ui->Y2type, qOverload<int>(&QComboBox::currentIndexChanged), [this, updateYenableState](int) {
+        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
+    });
+    connect(ui->Y2auto, &QCheckBox::toggled, [this, updateYenableState](bool) {
+        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
+    });
+    connect(ui->Y2log, &QCheckBox::toggled, [this, updateYenableState](bool) {
+        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
+    });
+    connect(ui->Y2autoDivs, &QCheckBox::toggled, [this, updateYenableState](bool) {
+        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
     });
 
-    connect(ui->Y2auto, &QCheckBox::toggled, [this](bool checked) {
-       ui->Y2min->setEnabled(!checked);
-       ui->Y2max->setEnabled(!checked);
-       ui->Y2divs->setEnabled(!checked && !ui->Y1log->isChecked());
-    });
-    connect(ui->Y2log, &QCheckBox::toggled, [this](bool checked) {
-        ui->Y2divs->setEnabled(!checked && !ui->Y2auto->isChecked());
-    });
+    auto updateXenableState = [](QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs) {
+        log->setEnabled(true);
+        linear->setEnabled(true);
+        CBauto->setEnabled(true);
+        if(CBauto->isChecked()) {
+            // autorange active, other settings disabled
+            min->setEnabled(false);
+            max->setEnabled(false);
+            divs->setEnabled(false);
+            autoDivs->setEnabled(false);
+        } else {
+            min->setEnabled(true);
+            max->setEnabled(true);
+            if(log->isChecked()) {
+                divs->setEnabled(false);
+                autoDivs->setEnabled(false);
+            } else {
+                autoDivs->setEnabled(true);
+                divs->setEnabled(!autoDivs->isChecked());
+            }
+        }
+    };
 
-    connect(ui->Xauto, &QCheckBox::toggled, [this](bool checked) {
-       ui->Xmin->setEnabled(!checked);
-       ui->Xmax->setEnabled(!checked);
-       ui->Xdivs->setEnabled(!checked && ui->Xlinear->isChecked());
-       ui->Xautomode->setEnabled(checked);
+    connect(ui->Xauto, &QCheckBox::toggled, [this, updateXenableState](bool checked) {
+        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
+    });
+    connect(ui->XautoDivs, &QCheckBox::toggled, [this, updateXenableState](bool checked) {
+        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
     });
 
     ui->XType->setCurrentIndex((int) plot->xAxis.getType());
     ui->Xmin->setPrefixes("pnum kMG");
     ui->Xmax->setPrefixes("pnum kMG");
-    ui->Xdivs->setPrefixes("pnum kMG");
 
     ui->Y1min->setPrefixes("pnum kMG");
     ui->Y1max->setPrefixes("pnum kMG");
-    ui->Y1divs->setPrefixes("pnum kMG");
 
     ui->Y2min->setPrefixes("pnum kMG");
     ui->Y2max->setPrefixes("pnum kMG");
-    ui->Y2divs->setPrefixes("pnum kMG");
 
     XAxisTypeChanged((int) plot->xAxis.getType());
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
     connect(ui->Xlog, &QCheckBox::toggled, [=](bool checked){
-        ui->Xdivs->setEnabled(!checked && !ui->Xauto->isChecked());
+        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
     });
 
     // Fill initial values
@@ -140,7 +169,8 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y1auto->setChecked(plot->yAxis[0].getAutorange());
     ui->Y1min->setValueQuiet(plot->yAxis[0].getRangeMin());
     ui->Y1max->setValueQuiet(plot->yAxis[0].getRangeMax());
-    ui->Y1divs->setValueQuiet(plot->yAxis[0].getRangeDiv());
+    ui->Y1Divs->setValue(plot->yAxis[0].getDivs());
+    ui->Y1autoDivs->setChecked(plot->yAxis[0].getAutoDivs());
 
     ui->Y2type->setCurrentIndex((int) plot->yAxis[1].getType());
     if(plot->yAxis[1].getLog()) {
@@ -151,7 +181,8 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->Y2auto->setChecked(plot->yAxis[1].getAutorange());
     ui->Y2min->setValueQuiet(plot->yAxis[1].getRangeMin());
     ui->Y2max->setValueQuiet(plot->yAxis[1].getRangeMax());
-    ui->Y2divs->setValueQuiet(plot->yAxis[1].getRangeDiv());
+    ui->Y2Divs->setValue(plot->yAxis[1].getDivs());
+    ui->Y2autoDivs->setChecked(plot->yAxis[1].getAutoDivs());
 
     if(plot->xAxis.getLog()) {
         ui->Xlog->setChecked(true);
@@ -166,7 +197,8 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     }
     ui->Xmin->setValueQuiet(plot->xAxis.getRangeMin());
     ui->Xmax->setValueQuiet(plot->xAxis.getRangeMax());
-    ui->Xdivs->setValueQuiet(plot->xAxis.getRangeDiv());
+    ui->XDivs->setValue(plot->xAxis.getDivs());
+    ui->XautoDivs->setChecked(plot->xAxis.getAutoDivs());
 
     // Constant line list handling
     auto editLine = [&](XYPlotConstantLine *line) {
@@ -277,8 +309,8 @@ XYplotAxisDialog::~XYplotAxisDialog()
 void XYplotAxisDialog::on_buttonBox_accepted()
 {
     // set plot values to the ones selected in the dialog
-    plot->setYAxis(0, (YAxis::Type) ui->Y1type->currentIndex(), ui->Y1log->isChecked(), ui->Y1auto->isChecked(), ui->Y1min->value(), ui->Y1max->value(), ui->Y1divs->value());
-    plot->setYAxis(1, (YAxis::Type) ui->Y2type->currentIndex(), ui->Y2log->isChecked(), ui->Y2auto->isChecked(), ui->Y2min->value(), ui->Y2max->value(), ui->Y2divs->value());
+    plot->setYAxis(0, (YAxis::Type) ui->Y1type->currentIndex(), ui->Y1log->isChecked(), ui->Y1auto->isChecked(), ui->Y1min->value(), ui->Y1max->value(), ui->Y1Divs->value(), ui->Y1autoDivs->isChecked());
+    plot->setYAxis(1, (YAxis::Type) ui->Y2type->currentIndex(), ui->Y2log->isChecked(), ui->Y2auto->isChecked(), ui->Y2min->value(), ui->Y2max->value(), ui->Y2Divs->value(), ui->Y2autoDivs->isChecked());
     TraceXYPlot::XAxisMode mode;
     if(ui->Xauto->isChecked()) {
         if(ui->Xautomode->currentIndex() == 0) {
@@ -289,7 +321,7 @@ void XYplotAxisDialog::on_buttonBox_accepted()
     } else {
         mode = TraceXYPlot::XAxisMode::Manual;
     }
-    plot->setXAxis((XAxis::Type) ui->XType->currentIndex(), mode, ui->Xlog->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
+    plot->setXAxis((XAxis::Type) ui->XType->currentIndex(), mode, ui->Xlog->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->XDivs->value(), ui->XautoDivs->isChecked());
 }
 
 void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
@@ -330,7 +362,6 @@ void XYplotAxisDialog::XAxisTypeChanged(int XAxisIndex)
     QString unit = XAxis::Unit(type);
     ui->Xmin->setUnit(unit);
     ui->Xmax->setUnit(unit);
-    ui->Xdivs->setUnit(unit);
 }
 
 std::set<YAxis::Type> XYplotAxisDialog::supportedYAxis(XAxis::Type type)

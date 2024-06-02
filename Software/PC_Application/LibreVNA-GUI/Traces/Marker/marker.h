@@ -34,6 +34,7 @@ public:
         Capacitance,
         Inductance,
         QualityFactor,
+        GroupDelay,
         // Noise marker parameters
         Noise,
         PhaseNoise,

@@ -262,6 +262,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->AcquisitionFullSpanCalibrated->setChecked(p->Acquisition.fullSpanCalibratedRange);
     ui->AcquisitionLimitTDRCheckbox->setChecked(p->Acquisition.limitDFT);
     ui->AcquisitionDFTLimitValue->setValue(p->Acquisition.maxDFTrate);
+    ui->AcquisitionGroupDelaySamples->setValue(p->Acquisition.groupDelaySamples);
 
     ui->GraphsDefaultTransmission->setCurrentText(p->Graphs.defaultGraphs.transmission);
     ui->GraphsDefaultReflection->setCurrentText(p->Graphs.defaultGraphs.reflection);
@@ -299,6 +300,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->MarkerShowCapacitance->setChecked(p->Marker.defaultBehavior.showCapacitance);
     ui->MarkerShowInductance->setChecked(p->Marker.defaultBehavior.showInductance);
     ui->MarkerShowQualityFactor->setChecked(p->Marker.defaultBehavior.showQualityFactor);
+    ui->MarkerShowGroupDelay->setChecked(p->Marker.defaultBehavior.showGroupDelay);
     ui->MarkerShowNoise->setChecked(p->Marker.defaultBehavior.showNoise);
     ui->MarkerShowPhasenoise->setChecked(p->Marker.defaultBehavior.showPhasenoise);
     ui->MarkerShowCenterBandwidth->setChecked(p->Marker.defaultBehavior.showCenterBandwidth);
@@ -361,6 +363,7 @@ void PreferencesDialog::updateFromGUI()
     p->Acquisition.fullSpanCalibratedRange = ui->AcquisitionFullSpanCalibrated->isChecked();
     p->Acquisition.limitDFT = ui->AcquisitionLimitTDRCheckbox->isChecked();
     p->Acquisition.maxDFTrate = ui->AcquisitionDFTLimitValue->value();
+    p->Acquisition.groupDelaySamples = ui->AcquisitionGroupDelaySamples->value();
 
     p->Graphs.defaultGraphs.transmission = ui->GraphsDefaultTransmission->currentText();
     p->Graphs.defaultGraphs.reflection = ui->GraphsDefaultReflection->currentText();
@@ -397,6 +400,7 @@ void PreferencesDialog::updateFromGUI()
     p->Marker.defaultBehavior.showCapacitance = ui->MarkerShowCapacitance->isChecked();
     p->Marker.defaultBehavior.showInductance = ui->MarkerShowInductance->isChecked();
     p->Marker.defaultBehavior.showQualityFactor = ui->MarkerShowQualityFactor->isChecked();
+    p->Marker.defaultBehavior.showGroupDelay = ui->MarkerShowGroupDelay->isChecked();
     p->Marker.defaultBehavior.showNoise = ui->MarkerShowNoise->isChecked();
     p->Marker.defaultBehavior.showPhasenoise = ui->MarkerShowPhasenoise->isChecked();
     p->Marker.defaultBehavior.showCenterBandwidth = ui->MarkerShowCenterBandwidth->isChecked();

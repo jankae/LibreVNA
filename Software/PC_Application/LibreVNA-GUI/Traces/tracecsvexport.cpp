@@ -94,7 +94,7 @@ void TraceCSVExport::on_buttonBox_accepted()
     for(auto trace : traces) {
         for(auto ytype : getSelectedYAxisTypes()) {
             auto axis = YAxis();
-            axis.set(ytype, false, false, 0, 1, 1);
+            axis.set(ytype, false, false, 0, 1, 10, false);
             auto samples = trace->numSamples();
             vector<double> values;
             for(unsigned int i=0;i<samples;i++) {

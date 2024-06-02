@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>814</width>
-    <height>458</height>
+    <width>810</width>
+    <height>461</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,9 +21,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QLabel" name="label_2">
          <property name="font">
@@ -133,12 +133,27 @@
          <item row="3" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
-            <string>Divisions:</string>
+            <string># Divisions:</string>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="SIUnitEdit" name="Y1divs"/>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QSpinBox" name="Y1Divs">
+             <property name="minimum">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="Y1autoDivs">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -262,12 +277,27 @@
          <item row="3" column="0">
           <widget class="QLabel" name="label_12">
            <property name="text">
-            <string>Divisions:</string>
+            <string># Divisions:</string>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="SIUnitEdit" name="Y2divs"/>
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <widget class="QSpinBox" name="Y2Divs">
+             <property name="minimum">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="Y2autoDivs">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -281,7 +311,7 @@
       </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QLabel" name="label_13">
          <property name="sizePolicy">
@@ -418,12 +448,27 @@
          <item row="3" column="0">
           <widget class="QLabel" name="label_18">
            <property name="text">
-            <string>Divisions:</string>
+            <string># Divisions:</string>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="SIUnitEdit" name="Xdivs"/>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QSpinBox" name="XDivs">
+             <property name="minimum">
+              <number>2</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="XautoDivs">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -592,8 +637,8 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="Y1group"/>
   <buttongroup name="Xgroup"/>
   <buttongroup name="Y2group"/>
+  <buttongroup name="Y1group"/>
  </buttongroups>
 </ui>

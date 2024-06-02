@@ -32,7 +32,7 @@
             <property name="title">
              <string>X Axis</string>
             </property>
-            <layout class="QFormLayout" name="formLayout_3">
+            <layout class="QFormLayout" name="formLayout_4">
              <item row="0" column="0">
               <widget class="QLabel" name="label_19">
                <property name="text">
@@ -75,7 +75,18 @@
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="SIUnitEdit" name="Xdivs"/>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <widget class="QSpinBox" name="Xdivs"/>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="XautoDivs">
+                 <property name="text">
+                  <string>Auto</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>
@@ -85,7 +96,7 @@
             <property name="title">
              <string>Y Axis</string>
             </property>
-            <layout class="QFormLayout" name="formLayout_5">
+            <layout class="QFormLayout" name="formLayout_3">
              <item row="0" column="0">
               <widget class="QLabel" name="label_15">
                <property name="text">
@@ -128,7 +139,18 @@
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="SIUnitEdit" name="Ydivs"/>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QSpinBox" name="Ydivs"/>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="YautoDivs">
+                 <property name="text">
+                  <string>Auto</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>

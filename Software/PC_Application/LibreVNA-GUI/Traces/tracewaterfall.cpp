@@ -26,8 +26,8 @@ TraceWaterfall::TraceWaterfall(TraceModel &model, QWidget *parent)
     plotAreaWidth = 0;
     plotAreaBottom = 0;
 
-    xAxis.set(XAxis::Type::Frequency, false, true, 0, 6000000000, 500000000);
-    yAxis.set(YAxis::Type::Magnitude, false, true, -1, 1, 1);
+    xAxis.set(XAxis::Type::Frequency, false, true, 0, 6000000000, 10, false);
+    yAxis.set(YAxis::Type::Magnitude, false, true, -1, 1, 10, false);
     initializeTraceInfo();
 }
 
@@ -163,11 +163,11 @@ bool TraceWaterfall::configureForTrace(Trace *t)
 
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
-        xAxis.set(XAxis::Type::Frequency, false, true, 0, 1, 0.1);
+        xAxis.set(XAxis::Type::Frequency, false, true, 0, 1, 10, false);
         yDefault = YAxis::Type::Magnitude;
         break;
     case Trace::DataType::Power:
-        xAxis.set(XAxis::Type::Power, false, true, 0, 1, 0.1);
+        xAxis.set(XAxis::Type::Power, false, true, 0, 1, 10, false);
         yDefault = YAxis::Type::Magnitude;
         break;
     case Trace::DataType::Time:
@@ -177,7 +177,7 @@ bool TraceWaterfall::configureForTrace(Trace *t)
         return false;
     }
     if(!yAxis.isSupported(xAxis.getType(), getModel().getSource())) {
-        yAxis.set(yDefault, false, true, 0, 1, 1.0);
+        yAxis.set(yDefault, false, true, 0, 1, 10, false);
     }
     traceRemovalPending = true;
     return true;
@@ -556,7 +556,7 @@ void TraceWaterfall::traceDataChanged(unsigned int begin, unsigned int end)
         if(min_x != xAxis.getRangeMin() || max_x != xAxis.getRangeMax()) {
             resetWaterfall();
             // adjust axis
-            xAxis.set(xAxis.getType(), xAxis.getLog(), true, min_x, max_x, 0);
+            xAxis.set(xAxis.getType(), xAxis.getLog(), true, min_x, max_x, xAxis.getDivs(), xAxis.getAutoDivs());
         }
     }
     bool YAxisUpdateRequired = false;
@@ -593,7 +593,7 @@ void TraceWaterfall::traceDataChanged(unsigned int begin, unsigned int end)
     }
     if(yAxis.getAutorange() && !YAxisUpdateRequired && (min != yAxis.getRangeMin() || max != yAxis.getRangeMax())) {
         // axis scaling needs update due to new trace data
-        yAxis.set(yAxis.getType(), yAxis.getLog(), true, min, max, 0);
+        yAxis.set(yAxis.getType(), yAxis.getLog(), true, min, max, yAxis.getDivs(), yAxis.getAutoDivs());
     } else if(YAxisUpdateRequired) {
         updateYAxis();
     }
@@ -619,7 +619,7 @@ void TraceWaterfall::updateYAxis()
             }
         }
         if(max > min) {
-            yAxis.set(yAxis.getType(), yAxis.getLog(), true, min, max, 0);
+            yAxis.set(yAxis.getType(), yAxis.getLog(), true, min, max, yAxis.getDivs(), yAxis.getAutoDivs());
         }
     }
 }

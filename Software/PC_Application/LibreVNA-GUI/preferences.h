@@ -108,6 +108,7 @@ public:
         // Math settings
         bool limitDFT;
         double maxDFTrate;
+        int groupDelaySamples;
     } Acquisition;
     struct {
         bool showUnits;
@@ -150,7 +151,7 @@ public:
     struct {
         struct {
             bool showDataOnGraphs;
-            bool showdB, showdBm, showdBuV, showdBAngle, showRealImag, showImpedance, showVSWR, showResistance, showCapacitance, showInductance, showQualityFactor;
+            bool showdB, showdBm, showdBuV, showdBAngle, showRealImag, showImpedance, showVSWR, showResistance, showCapacitance, showInductance, showQualityFactor, showGroupDelay;
             bool showNoise, showPhasenoise, showCenterBandwidth, showCutoff, showInsertionLoss, showTOI, showAvgTone, showAvgModulation, showP1dB, showFlatness, showMaxDeltaNeg, showMaxDeltaPos;
         } defaultBehavior;
         bool interpolatePoints;
@@ -214,6 +215,7 @@ private:
         {&Acquisition.fullSpanCalibratedRange, "Acquisition.fullSpanCalibratedRange", false},
         {&Acquisition.limitDFT, "Acquisition.limitDFT", true},
         {&Acquisition.maxDFTrate, "Acquisition.maxDFTrate", 1.0},
+        {&Acquisition.groupDelaySamples, "Acquisition.groupDelaySamples", 5},
         {&Graphs.showUnits, "Graphs.showUnits", true},
         {&Graphs.Color.background, "Graphs.Color.background", QColor(Qt::black)},
         {&Graphs.Color.axis, "Graphs.Color.axis", QColor(Qt::white)},
@@ -248,6 +250,7 @@ private:
         {&Marker.defaultBehavior.showCapacitance, "Marker.defaultBehavior.showCapacitance", true},
         {&Marker.defaultBehavior.showInductance, "Marker.defaultBehavior.showInductance", true},
         {&Marker.defaultBehavior.showQualityFactor, "Marker.defaultBehavior.showQualityFactor", true},
+        {&Marker.defaultBehavior.showGroupDelay, "Marker.defaultBehavior.showGroupDelay", true},
         {&Marker.defaultBehavior.showNoise, "Marker.defaultBehavior.showNoise", true},
         {&Marker.defaultBehavior.showPhasenoise, "Marker.defaultBehavior.showPhasenoise", true},
         {&Marker.defaultBehavior.showCenterBandwidth, "Marker.defaultBehavior.showCenterBandwidth", true},

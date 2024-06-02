@@ -25,11 +25,11 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     xAxisMode = XAxisMode::UseSpan;
 
     // Setup default axis
-    setYAxis(0, YAxis::Type::Magnitude, false, false, -120, 20, 10);
-    setYAxis(1, YAxis::Type::Phase, false, false, -180, 180, 30);
+    setYAxis(0, YAxis::Type::Magnitude, false, false, -120, 20, 14, true);
+    setYAxis(1, YAxis::Type::Phase, false, false, -180, 180, 12, true);
     // enable autoscaling and set for full span (no information about actual span available yet)
     updateSpan(0, 6000000000);
-    setXAxis(XAxis::Type::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 600000000);
+    setXAxis(XAxis::Type::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 10, true);
     initializeTraceInfo();
 }
 TraceXYPlot::~TraceXYPlot()
@@ -39,7 +39,7 @@ TraceXYPlot::~TraceXYPlot()
     }
 }
 
-void TraceXYPlot::setYAxis(int axis, YAxis::Type type, bool log, bool autorange, double min, double max, double div)
+void TraceXYPlot::setYAxis(int axis, YAxis::Type type, bool log, bool autorange, double min, double max, unsigned int divs, bool autoDivs)
 {
     if(yAxis[axis].getType() != type) {
         // remove traces that are active but not supported with the new axis type
@@ -55,19 +55,19 @@ void TraceXYPlot::setYAxis(int axis, YAxis::Type type, bool log, bool autorange,
             }
         } while(erased);
     }
-    yAxis[axis].set(type, log, autorange, min, max, div);
+    yAxis[axis].set(type, log, autorange, min, max, divs, autoDivs);
     traceRemovalPending = true;
     updateContextMenu();
     replot();
 }
 
-void TraceXYPlot::setXAxis(XAxis::Type type, XAxisMode mode, bool log, double min, double max, double div)
+void TraceXYPlot::setXAxis(XAxis::Type type, XAxisMode mode, bool log, double min, double max, unsigned int divs, bool autoDivs)
 {
     bool autorange = false;
     if(mode == XAxisMode::FitTraces || mode == XAxisMode::UseSpan) {
         autorange = true;
     }
-    xAxis.set(type, log, autorange, min, max, div);
+    xAxis.set(type, log, autorange, min, max, divs, autoDivs);
     xAxisMode = mode;
     traceRemovalPending = true;
     updateContextMenu();
@@ -101,7 +101,7 @@ void TraceXYPlot::move(const QPoint &vect)
         // can only move axis in linear mode
         // calculate amount of movement
         double distance = xAxis.inverseTransform(vect.x(), 0, plotAreaWidth) - xAxis.getRangeMin();
-        xAxis.set(xAxis.getType(), false, false, xAxis.getRangeMin() - distance, xAxis.getRangeMax() - distance, xAxis.getRangeDiv());
+        xAxis.set(xAxis.getType(), false, false, xAxis.getRangeMin() - distance, xAxis.getRangeMax() - distance, xAxis.getDivs(), xAxis.getAutoDivs());
         xAxisMode = XAxisMode::Manual;
     }
     for(int i=0;i<2;i++) {
@@ -109,7 +109,7 @@ void TraceXYPlot::move(const QPoint &vect)
             // can only move axis in linear mode
             // calculate amount of movement
             double distance = yAxis[i].inverseTransform(vect.y(), 0, plotAreaTop - plotAreaBottom) - yAxis[i].getRangeMin();
-            yAxis[i].set(yAxis[i].getType(), false, false, yAxis[i].getRangeMin() - distance, yAxis[i].getRangeMax() - distance, yAxis[i].getRangeDiv());
+            yAxis[i].set(yAxis[i].getType(), false, false, yAxis[i].getRangeMin() - distance, yAxis[i].getRangeMax() - distance, yAxis[i].getDivs(), yAxis[i].getAutoDivs());
         }
     }
     replot();
@@ -123,7 +123,7 @@ void TraceXYPlot::zoom(const QPoint &center, double factor, bool horizontally, b
         double cp = xAxis.inverseTransform(center.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth);
         double min = ((xAxis.getRangeMin() - cp) * factor) + cp;
         double max = ((xAxis.getRangeMax() - cp) * factor) + cp;
-        xAxis.set(xAxis.getType(), false, false, min, max, xAxis.getRangeDiv() * factor);
+        xAxis.set(xAxis.getType(), false, false, min, max, xAxis.getDivs(), xAxis.getAutoDivs());
         xAxisMode = XAxisMode::Manual;
     }
     for(int i=0;i<2;i++) {
@@ -133,7 +133,7 @@ void TraceXYPlot::zoom(const QPoint &center, double factor, bool horizontally, b
             double cp = yAxis[i].inverseTransform(center.y(), plotAreaBottom, plotAreaTop);
             double min = ((yAxis[i].getRangeMin() - cp) * factor) + cp;
             double max = ((yAxis[i].getRangeMax() - cp) * factor) + cp;
-            yAxis[i].set(yAxis[i].getType(), false, false, min, max, yAxis[i].getRangeDiv() * factor);
+            yAxis[i].set(yAxis[i].getType(), false, false, min, max, yAxis[i].getDivs(), yAxis[i].getAutoDivs());
         }
     }
     replot();
@@ -143,11 +143,11 @@ void TraceXYPlot::setAuto(bool horizontally, bool vertically)
 {
     if(horizontally) {
         xAxisMode = XAxisMode::FitTraces;
-        xAxis.set(xAxis.getType(), xAxis.getLog(), true, xAxis.getRangeMin(), xAxis.getRangeMax(), xAxis.getRangeDiv());
+        xAxis.set(xAxis.getType(), xAxis.getLog(), true, xAxis.getRangeMin(), xAxis.getRangeMax(), xAxis.getDivs(), xAxis.getAutoDivs());
     }
     for(int i=0;i<2;i++) {
         if(vertically && yAxis[i].getType() != YAxis::Type::Disabled) {
-            yAxis[i].set(yAxis[i].getType(), yAxis[i].getLog(), true, yAxis[i].getRangeMin(), yAxis[i].getRangeMax(), yAxis[i].getRangeDiv());
+            yAxis[i].set(yAxis[i].getType(), yAxis[i].getLog(), true, yAxis[i].getRangeMin(), yAxis[i].getRangeMax(), yAxis[i].getDivs(), yAxis[i].getAutoDivs());
         }
     }
     replot();
@@ -162,7 +162,8 @@ nlohmann::json TraceXYPlot::toJSON()
     jX["log"] = xAxis.getLog();
     jX["min"] = xAxis.getRangeMin();
     jX["max"] = xAxis.getRangeMax();
-    jX["div"] = xAxis.getRangeDiv();
+    jX["divs"] = xAxis.getDivs();
+    jX["autoDivs"] = xAxis.getAutoDivs();
     j["XAxis"] = jX;
     for(unsigned int i=0;i<2;i++) {
         nlohmann::json jY;
@@ -171,7 +172,8 @@ nlohmann::json TraceXYPlot::toJSON()
         jY["autorange"] = yAxis[i].getAutorange();
         jY["min"] = yAxis[i].getRangeMin();
         jY["max"] = yAxis[i].getRangeMax();
-        jY["div"] = yAxis[i].getRangeDiv();
+        jY["divs"] = yAxis[i].getDivs();
+        jY["autoDivs"] = yAxis[i].getAutoDivs();
         nlohmann::json jtraces;
         for(auto t : tracesAxis[i]) {
             jtraces.push_back(t->toHash());
@@ -212,9 +214,14 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
 //    auto xlog = jX.value("log", false);
     auto xmin = jX.value("min", 0.0);
     auto xmax = jX.value("max", 6000000000.0);
-    auto xdiv = jX.value("div", 600000000.0);
+    auto xdivs = jX.value("divs", 10);
+    // older formats specified the spacing instead of the number of divisions
+    if(jX.contains("div")) {
+        xdivs = (xmax - xmin) / jX.value("div", 600000000.0);
+    }
+    auto xautodivs = jX.value("autoDivs", false);
     auto xlog = jX.value("log", false);
-    setXAxis(xtype, xmode, xlog, xmin, xmax, xdiv);
+    setXAxis(xtype, xmode, xlog, xmin, xmax, xdivs, xautodivs);
     nlohmann::json jY[2] = {j["YPrimary"], j["YSecondary"]};
     for(unsigned int i=0;i<2;i++) {
         YAxis::Type ytype;
@@ -227,8 +234,13 @@ void TraceXYPlot::fromJSON(nlohmann::json j)
         auto ylog = jY[i].value("log", false);
         auto ymin = jY[i].value("min", -120.0);
         auto ymax = jY[i].value("max", 20.0);
-        auto ydiv = jY[i].value("div", 10.0);
-        setYAxis(i, ytype, ylog, yauto, ymin, ymax, ydiv);
+        auto ydivs = jY[i].value("divs", 10);
+        // older formats specified the spacing instead of the number of divisions
+        if(jY[i].contains("div")) {
+            ydivs = (ymax - ymin) / jY[i].value("div", 10);
+        }
+        auto yautodivs = jY[i].value("autoDivs", false);
+        setYAxis(i, ytype, ylog, yauto, ymin, ymax, ydivs, yautodivs);
         for(unsigned int hash : jY[i]["traces"]) {
             // attempt to find the traces with this hash
             bool found = false;
@@ -292,21 +304,21 @@ bool TraceXYPlot::configureForTrace(Trace *t)
 
     switch(t->outputType()) {
     case Trace::DataType::Frequency:
-        setXAxis(XAxis::Type::Frequency, XAxisMode::FitTraces, false, 0, 1, 0.1);
+        setXAxis(XAxis::Type::Frequency, XAxisMode::FitTraces, false, 0, 1, 10, false);
         yLeftDefault = YAxis::Type::Magnitude;
         yRightDefault = YAxis::Type::Phase;
         break;
     case Trace::DataType::Time:
-        setXAxis(XAxis::Type::Time, XAxisMode::FitTraces, false, 0, 1, 0.1);
+        setXAxis(XAxis::Type::Time, XAxisMode::FitTraces, false, 0, 1, 10, false);
         yLeftDefault = YAxis::Type::ImpulseMag;
         break;
     case Trace::DataType::Power:
-        setXAxis(XAxis::Type::Power, XAxisMode::FitTraces, false, 0, 1, 0.1);
+        setXAxis(XAxis::Type::Power, XAxisMode::FitTraces, false, 0, 1, 10, false);
         yLeftDefault = YAxis::Type::Magnitude;
         yRightDefault = YAxis::Type::Phase;
         break;
     case Trace::DataType::TimeZeroSpan:
-        setXAxis(XAxis::Type::TimeZeroSpan, XAxisMode::FitTraces, false, 0, 1, 0.1);
+        setXAxis(XAxis::Type::TimeZeroSpan, XAxisMode::FitTraces, false, 0, 1, 10, false);
         yLeftDefault = YAxis::Type::Magnitude;
         yRightDefault = YAxis::Type::Phase;
         break;
@@ -315,10 +327,10 @@ bool TraceXYPlot::configureForTrace(Trace *t)
         return false;
     }
     if(!yAxis[0].isSupported(xAxis.getType(), getModel().getSource())) {
-        setYAxis(0, yLeftDefault, false, true, 0, 1, 1.0);
+        setYAxis(0, yLeftDefault, false, true, 0, 1, 10, false);
     }
     if(!yAxis[1].isSupported(xAxis.getType(), getModel().getSource())) {
-        setYAxis(1, yRightDefault, false, true, 0, 1, 1.0);
+        setYAxis(1, yRightDefault, false, true, 0, 1, 10, false);
     }
     traceRemovalPending = true;
     return true;
@@ -899,7 +911,7 @@ void TraceXYPlot::updateAxisTicks()
                 }
             }
         }
-        xAxis.set(xAxis.getType(), xAxis.getLog(), true, min, max, 0);
+        xAxis.set(xAxis.getType(), xAxis.getLog(), true, min, max, 0, xAxis.getAutoDivs());
     }
 
     for(int i=0;i<2;i++) {
@@ -981,7 +993,7 @@ void TraceXYPlot::updateAxisTicks()
                     min = 0.1;
                 }
             }
-            yAxis[i].set(yAxis[i].getType(), yAxis[i].getLog(), true, min, max, 0);
+            yAxis[i].set(yAxis[i].getType(), yAxis[i].getLog(), true, min, max, 0, xAxis.getAutoDivs());
         }
     }
 }

@@ -127,6 +127,7 @@ QString Marker::formatToString(Marker::Format f)
     case Format::Capacitance: return "Capacitance";
     case Format::Inductance: return "Inductance";
     case Format::QualityFactor: return "Quality Factor";
+    case Format::GroupDelay: return "Group Delay";
     case Format::TOI: return "Third order intercept";
     case Format::AvgTone: return "Average Tone Level";
     case Format::AvgModulationProduct: return "Average Modulation Product Level";
@@ -234,6 +235,7 @@ std::vector<Marker::Format> Marker::applicableFormats()
                 ret.push_back(Format::dB);
                 ret.push_back(Format::dBAngle);
                 ret.push_back(Format::RealImag);
+                ret.push_back(Format::GroupDelay);
             }
             if(parentTrace) {
                 if(parentTrace->isReflection()) {
@@ -345,6 +347,9 @@ std::vector<Marker::Format> Marker::defaultActiveFormats()
     }
     if(pref.Marker.defaultBehavior.showQualityFactor) {
         ret.push_back(Format::QualityFactor);
+    }
+    if(pref.Marker.defaultBehavior.showGroupDelay) {
+        ret.push_back(Format::GroupDelay);
     }
     if(pref.Marker.defaultBehavior.showNoise) {
         ret.push_back(Format::Noise);
@@ -477,6 +482,7 @@ QString Marker::readableData(Format f)
             case Format::Capacitance: return "Δ:"+Unit::ToString(Util::SparamToCapacitance(data, position, trace()->getReferenceImpedance()) - Util::SparamToCapacitance(delta->data, delta->position, trace()->getReferenceImpedance()), "F", "pnum ", 4);
             case Format::Inductance: return "Δ:"+Unit::ToString(Util::SparamToInductance(data, position, trace()->getReferenceImpedance()) - Util::SparamToInductance(delta->data, delta->position, trace()->getReferenceImpedance()), "H", "pnum ", 4);
             case Format::QualityFactor: return "ΔQ:" + Unit::ToString(Util::SparamToQualityFactor(data) - Util::SparamToQualityFactor(delta->data), "", " ", 3);
+            case Format::GroupDelay: return "Δτg:"+Unit::ToString(trace()->getGroupDelay(position) - delta->trace()->getGroupDelay(delta->position), "s", "pnum ", 4);
             case Format::Noise: return "Δ:"+Unit::ToString(parentTrace->getNoise(position) - delta->parentTrace->getNoise(delta->position), "dbm/Hz", " ", 3);
             default: return "Invalid";
             }
@@ -501,6 +507,7 @@ QString Marker::readableData(Format f)
             case Format::Capacitance: return Unit::ToString(Util::SparamToCapacitance(data, position, trace()->getReferenceImpedance()), "F", "pnum ", 4);
             case Format::Inductance: return Unit::ToString(Util::SparamToInductance(data, position, trace()->getReferenceImpedance()), "H", "pnum ", 4);
             case Format::QualityFactor: return "Q:" + Unit::ToString(Util::SparamToQualityFactor(data), "", " ", 3);
+            case Format::GroupDelay: return "τg:"+Unit::ToString(trace()->getGroupDelay(position), "s", "pnum ", 4);
             case Format::Noise: return Unit::ToString(parentTrace->getNoise(position), "dbm/Hz", " ", 3);
             case Format::TOI: {
                 auto avgFundamental = (helperMarkers[0]->toDecibel() + helperMarkers[1]->toDecibel()) / 2;

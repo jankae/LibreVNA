@@ -1029,7 +1029,7 @@ Different types are also available for the Y-axes. The Y-axis type determines ho
  \hline
         	 Inductance & Extracted inductance from a reflection measurement\\ 
 \hline
-        Quality Facotr	& Quality Factor of the impedance from a reflection measurement\\ 
+        Quality Factor	& Quality Factor of the impedance from a reflection measurement\\ 
 \hline
         Group Delay & Group Delay of a transmission measurement\\ 
 \hline
@@ -1137,6 +1137,11 @@ Both plots are still completely independent of each other. For the alignment to 
 The Polar Chart looks similar to the smithchart but doesn't perform the transformation from S-paramter to impedance. Furthermore, through measurements can be displayed as well. The available settings are identical to the smithchart but the Polar Chart does not support adding custom constant lines:
 \screenshot{0.6}{GraphPolarchartSetup.png}
 
+\subsection{Eye Diagram}
+\screenshot{1.0}{GraphEyeDiagram.png}
+The eye diagram graph shows how a simulated signal would look like after being passed through a transmission line. The transmission line is created from a through measurement (e.g. S21). The simulated signal is a PRBS sequence with additional noise, jitter and limited rise and fall times. All parameters can be edited in the setup dialog:
+\screenshot{1.0}{GraphEyeDiagramSetup.png}
+
 \section{Markers}
 Markers provide an easy read-out of trace data at specific points. Each marker is assigned to one trace and will show up on any graph that show the trace at the marker position.
 
@@ -1234,7 +1239,7 @@ This marker type is only available for through measurements on power sweeps. It 
 \subsection{Marker Data}
 The trace data at the marker position can be displayed in the marker dock and on the graphs in various formats. The available formats depend on the marker type as well as the domain of the trace data. Only one of the available formats can be displayed in the marker dock at a time. On graphs, any amount of formats can be displayed at once. The shown formats can be selected in the context menu of the marker.
 
-
+\begin{footnotesize}
 \begin{center}
 \begin{threeparttable}
 \begin{tabularx}{\textwidth}{L{3cm}|X|L{7cm}}
@@ -1304,6 +1309,8 @@ $Quality factor$\\
     \cline{3-3}
         	&  & Real/Imaginary \\ 
     \cline{3-3}
+        	&  & Group Delay \\ 
+    \cline{3-3}
 	& & \multirow{6}{*}{$\left.\begin{array}{l}
 $Impedance$\\
 $VSWR$\\
@@ -1355,6 +1362,7 @@ $Quality factor$\\
 \end{tabularx}
 \end{threeparttable}
 \end{center}
+\end{footnotesize}
 
 \subsection{Linking markers}
 \label{marker:linking}

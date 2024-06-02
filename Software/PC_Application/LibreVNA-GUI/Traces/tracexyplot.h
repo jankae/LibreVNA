@@ -68,8 +68,8 @@ public:
         Last,
     };
 
-    void setYAxis(int axis, YAxis::Type type, bool log, bool autorange, double min, double max, double div);
-    void setXAxis(XAxis::Type type, XAxisMode mode, bool log, double min, double max, double div);
+    void setYAxis(int axis, YAxis::Type type, bool log, bool autorange, double min, double max, unsigned int divs, bool autoDivs);
+    void setXAxis(XAxis::Type type, XAxisMode mode, bool log, double min, double max, unsigned int divs, bool autoDivs);
     void enableTrace(Trace *t, bool enabled) override;
     void updateSpan(double min, double max) override;
     void replot() override;

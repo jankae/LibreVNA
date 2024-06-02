@@ -45,8 +45,8 @@ EyeDiagramPlot::EyeDiagramPlot(TraceModel &model, QWidget *parent)
     calcData = &data[0];
     displayData = &data[1];
 
-    xAxis.set(XAxis::Type::Time, false, true, 0, 0.000001, 1);
-    yAxis.set(YAxis::Type::Real, false, true, -1, 1, 1);
+    xAxis.set(XAxis::Type::Time, false, true, 0, 0.000001, 10, true);
+    yAxis.set(YAxis::Type::Real, false, true, -1, 1, 10, true);
     initializeTraceInfo();
 
     destructing = false;
@@ -101,10 +101,10 @@ void EyeDiagramPlot::enableTrace(Trace *t, bool enabled)
 void EyeDiagramPlot::replot()
 {
     if(xAxis.getAutorange()) {
-        xAxis.set(xAxis.getType(), false, true, 0, calculatedTime(), 8);
+        xAxis.set(xAxis.getType(), false, true, 0, calculatedTime(), 10, false);
     }
     if(yAxis.getAutorange()) {
-        yAxis.set(yAxis.getType(), false, true, minDisplayVoltage(), maxDisplayVoltage(), 8);
+        yAxis.set(yAxis.getType(), false, true, minDisplayVoltage(), maxDisplayVoltage(), 10, false);
     }
     TracePlot::replot();
 }
@@ -115,13 +115,13 @@ void EyeDiagramPlot::move(const QPoint &vect)
         // can only move axis in linear mode
         // calculate amount of movement
         double distance = xAxis.inverseTransform(vect.x(), 0, plotAreaWidth) - xAxis.getRangeMin();
-        xAxis.set(xAxis.getType(), false, false, xAxis.getRangeMin() - distance, xAxis.getRangeMax() - distance, xAxis.getRangeDiv());
+        xAxis.set(xAxis.getType(), false, false, xAxis.getRangeMin() - distance, xAxis.getRangeMax() - distance, xAxis.getDivs(), xAxis.getAutoDivs());
     }
     if(!yAxis.getLog()) {
         // can only move axis in linear mode
         // calculate amount of movement
         double distance = yAxis.inverseTransform(vect.y(), 0, plotAreaTop - plotAreaBottom) - yAxis.getRangeMin();
-        yAxis.set(yAxis.getType(), false, false, yAxis.getRangeMin() - distance, yAxis.getRangeMax() - distance, yAxis.getRangeDiv());
+        yAxis.set(yAxis.getType(), false, false, yAxis.getRangeMin() - distance, yAxis.getRangeMax() - distance, yAxis.getDivs(), yAxis.getAutoDivs());
     }
     replot();
 }
@@ -134,7 +134,7 @@ void EyeDiagramPlot::zoom(const QPoint &center, double factor, bool horizontally
         double cp = xAxis.inverseTransform(center.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth);
         double min = ((xAxis.getRangeMin() - cp) * factor) + cp;
         double max = ((xAxis.getRangeMax() - cp) * factor) + cp;
-        xAxis.set(xAxis.getType(), false, false, min, max, xAxis.getRangeDiv() * factor);
+        xAxis.set(xAxis.getType(), false, false, min, max, xAxis.getDivs(), xAxis.getAutoDivs());
     }
     if(vertically) {
         // can only move axis in linear mode
@@ -142,7 +142,7 @@ void EyeDiagramPlot::zoom(const QPoint &center, double factor, bool horizontally
         double cp = yAxis.inverseTransform(center.y(), plotAreaBottom, plotAreaTop);
         double min = ((yAxis.getRangeMin() - cp) * factor) + cp;
         double max = ((yAxis.getRangeMax() - cp) * factor) + cp;
-        yAxis.set(yAxis.getType(), false, false, min, max, yAxis.getRangeDiv() * factor);
+        yAxis.set(yAxis.getType(), false, false, min, max, yAxis.getDivs(), yAxis.getAutoDivs());
     }
     replot();
 }
@@ -150,10 +150,10 @@ void EyeDiagramPlot::zoom(const QPoint &center, double factor, bool horizontally
 void EyeDiagramPlot::setAuto(bool horizontally, bool vertically)
 {
     if(horizontally) {
-        xAxis.set(xAxis.getType(), xAxis.getLog(), true, xAxis.getRangeMin(), xAxis.getRangeMax(), xAxis.getRangeDiv());
+        xAxis.set(xAxis.getType(), xAxis.getLog(), true, xAxis.getRangeMin(), xAxis.getRangeMax(), xAxis.getDivs(), xAxis.getAutoDivs());
     }
     if(vertically) {
-        yAxis.set(yAxis.getType(), yAxis.getLog(), true, yAxis.getRangeMin(), yAxis.getRangeMax(), yAxis.getRangeDiv());
+        yAxis.set(yAxis.getType(), yAxis.getLog(), true, yAxis.getRangeMin(), yAxis.getRangeMax(), yAxis.getDivs(), yAxis.getAutoDivs());
     }
     replot();
 }
@@ -164,15 +164,25 @@ void EyeDiagramPlot::fromJSON(nlohmann::json j)
     bool xAuto = jX.value("autorange", xAxis.getAutorange());
     double xMin = jX.value("min", xAxis.getRangeMin());
     double xMax = jX.value("max", xAxis.getRangeMax());
-    double xDivs = jX.value("div", xAxis.getRangeDiv());
-    xAxis.set(xAxis.getType(), false, xAuto, xMin, xMax, xDivs);
+    double xDivs = jX.value("divs", xAxis.getDivs());
+    // older formats specified the spacing instead of the number of divisions
+    if(jX.contains("div")) {
+        xDivs = (xMax - xMin) / jX.value("div", (xMax - xMin) / xDivs);
+    }
+    auto xautodivs = jX.value("autoDivs", false);
+    xAxis.set(xAxis.getType(), false, xAuto, xMin, xMax, xDivs, xautodivs);
 
     auto jY = j["YAxis"];
     bool yAuto = jY.value("autorange", yAxis.getAutorange());
     double yMin = jY.value("min", yAxis.getRangeMin());
     double yMax = jY.value("max", yAxis.getRangeMax());
-    double yDivs = jY.value("div", yAxis.getRangeDiv());
-    yAxis.set(yAxis.getType(), false, yAuto, yMin, yMax, yDivs);
+    double yDivs = jY.value("divs", yAxis.getDivs());
+    // older formats specified the spacing instead of the number of divisions
+    if(jY.contains("div")) {
+        yDivs = (yMax - yMin) / jY.value("div", (yMax - yMin) / yDivs);
+    }
+    auto yautodivs = jY.value("autoDivs", false);
+    yAxis.set(yAxis.getType(), false, yAuto, yMin, yMax, yDivs, yautodivs);
 
     datarate = j.value("datarate", datarate);
     risetime = j.value("risetime", risetime);
@@ -211,13 +221,15 @@ nlohmann::json EyeDiagramPlot::toJSON()
     jX["autorange"] = yAxis.getAutorange();
     jX["min"] = xAxis.getRangeMin();
     jX["max"] = xAxis.getRangeMax();
-    jX["div"] = xAxis.getRangeDiv();
+    jX["divs"] = xAxis.getDivs();
+    jX["autoDivs"] = xAxis.getAutoDivs();
     j["XAxis"] = jX;
     nlohmann::json jY;
     jY["autorange"] = yAxis.getAutorange();
     jY["min"] = yAxis.getRangeMin();
     jY["max"] = yAxis.getRangeMax();
-    jY["div"] = yAxis.getRangeDiv();
+    jY["divs"] = yAxis.getDivs();
+    jY["autoDivs"] = yAxis.getAutoDivs();
     j["YAxis"] = jY;
     nlohmann::json jtraces;
     for(auto t : traces) {
@@ -286,10 +298,6 @@ void EyeDiagramPlot::axisSetupDialog()
     ui->Xmax->setPrefixes("pnum ");
     ui->Xmax->setPrecision(5);
 
-    ui->Xdivs->setUnit("s");
-    ui->Xdivs->setPrefixes("pnum ");
-    ui->Xdivs->setPrecision(3);
-
     ui->Ymin->setUnit("V");
     ui->Ymin->setPrefixes("um ");
     ui->Ymin->setPrecision(4);
@@ -297,10 +305,6 @@ void EyeDiagramPlot::axisSetupDialog()
     ui->Ymax->setUnit("V");
     ui->Ymax->setPrefixes("um ");
     ui->Ymax->setPrecision(4);
-
-    ui->Ydivs->setUnit("V");
-    ui->Ydivs->setPrefixes("um ");
-    ui->Ydivs->setPrecision(3);
 
     // set initial values
     ui->datarate->setValue(datarate);
@@ -322,22 +326,30 @@ void EyeDiagramPlot::axisSetupDialog()
     connect(ui->Xauto, &QCheckBox::toggled, [=](bool checked) {
         ui->Xmin->setEnabled(!checked);
         ui->Xmax->setEnabled(!checked);
+        ui->Xdivs->setEnabled(!checked && !ui->XautoDivs->isChecked());
+        ui->XautoDivs->setEnabled(!checked);
+    });
+    connect(ui->XautoDivs, &QCheckBox::toggled, [=](bool checked) {
         ui->Xdivs->setEnabled(!checked);
     });
     ui->Xauto->setChecked(xAxis.getAutorange());
     ui->Xmin->setValue(xAxis.getRangeMin());
     ui->Xmax->setValue(xAxis.getRangeMax());
-    ui->Xdivs->setValue(xAxis.getRangeDiv());
+    ui->Xdivs->setValue(xAxis.getDivs());
 
     connect(ui->Yauto, &QCheckBox::toggled, [=](bool checked) {
         ui->Ymin->setEnabled(!checked);
         ui->Ymax->setEnabled(!checked);
+        ui->Ydivs->setEnabled(!checked && !ui->YautoDivs->isChecked());
+        ui->YautoDivs->setEnabled(!checked);
+    });
+    connect(ui->YautoDivs, &QCheckBox::toggled, [=](bool checked) {
         ui->Ydivs->setEnabled(!checked);
     });
     ui->Yauto->setChecked(yAxis.getAutorange());
     ui->Ymin->setValue(yAxis.getRangeMin());
     ui->Ymax->setValue(yAxis.getRangeMax());
-    ui->Ydivs->setValue(yAxis.getRangeDiv());
+    ui->Ydivs->setValue(yAxis.getDivs());
 
     auto updateValues = [=](){
         std::lock_guard<std::mutex> guard(calcMutex);
@@ -357,8 +369,8 @@ void EyeDiagramPlot::axisSetupDialog()
         xSamples = ui->pointsPerCycle->value();
         traceBlurring = ui->traceBlurring->value();
 
-        xAxis.set(xAxis.getType(), false, ui->Xauto->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value());
-        yAxis.set(yAxis.getType(), false, ui->Yauto->isChecked(), ui->Ymin->value(), ui->Ymax->value(), ui->Ydivs->value());
+        xAxis.set(xAxis.getType(), false, ui->Xauto->isChecked(), ui->Xmin->value(), ui->Xmax->value(), ui->Xdivs->value(), ui->XautoDivs->isChecked());
+        yAxis.set(yAxis.getType(), false, ui->Yauto->isChecked(), ui->Ymin->value(), ui->Ymax->value(), ui->Ydivs->value(), ui->YautoDivs->isChecked());
     };
 
     connect(ui->buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, [=](){

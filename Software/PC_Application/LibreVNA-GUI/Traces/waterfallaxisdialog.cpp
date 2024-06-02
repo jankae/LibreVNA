@@ -115,8 +115,8 @@ WaterfallAxisDialog::~WaterfallAxisDialog()
 void WaterfallAxisDialog::on_buttonBox_accepted()
 {
     // set plot values to the ones selected in the dialog
-    plot->xAxis.set(plot->xAxis.getType(), ui->Xlog->isChecked(), true, plot->xAxis.getRangeMin(), plot->xAxis.getRangeMax(), 0);
-    plot->yAxis.set((YAxis::Type) ui->Wtype->currentIndex(), ui->Wlog->isChecked(), ui->Wauto->isChecked(), ui->Wmin->value(), ui->Wmax->value(), 2);
+    plot->xAxis.set(plot->xAxis.getType(), ui->Xlog->isChecked(), true, plot->xAxis.getRangeMin(), plot->xAxis.getRangeMax(), 10, false);
+    plot->yAxis.set((YAxis::Type) ui->Wtype->currentIndex(), ui->Wlog->isChecked(), ui->Wauto->isChecked(), ui->Wmin->value(), ui->Wmax->value(), 2, false);
     if(ui->Wdir->currentIndex() == 0) {
         plot->dir = TraceWaterfall::Direction::TopToBottom;
     } else {

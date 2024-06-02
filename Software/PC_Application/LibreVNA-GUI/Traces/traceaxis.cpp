@@ -1,23 +1,24 @@
 #include "traceaxis.h"
 #include "Util/util.h"
+#include "preferences.h"
 
 #include <cmath>
 
 using namespace std;
 
-static void createEvenlySpacedTicks(vector<double>& ticks, double start, double stop, double step) {
+static void createEvenlySpacedTicks(vector<double>& ticks, double start, double stop, unsigned int divisions) {
     ticks.clear();
     if(start > stop) {
         swap(start, stop);
     }
-    step = abs(step);
+    auto step = (stop - start) / divisions;
     constexpr unsigned int maxTicks = 100;
     for(double tick = start; tick - stop < numeric_limits<double>::epsilon() && ticks.size() <= maxTicks;tick+= step) {
         ticks.push_back(tick);
     }
 }
 
-static double createAutomaticTicks(vector<double>& ticks, double start, double stop, int minDivisions) {
+static unsigned int createAutomaticTicks(vector<double>& ticks, double start, double stop, int minDivisions) {
     Q_ASSERT(stop > start);
     ticks.clear();
     double max_div_step = (stop - start) / minDivisions;
@@ -37,7 +38,7 @@ static double createAutomaticTicks(vector<double>& ticks, double start, double s
     for(double tick = start_div;tick <= stop;tick += div_step) {
         ticks.push_back(tick);
     }
-    return div_step;
+    return (stop - start) / div_step;
 }
 
 static void createLogarithmicTicks(vector<double>& ticks, double start, double stop, int minDivisions) {
@@ -132,37 +133,11 @@ double YAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
         return Util::SparamToInductance(data.y, data.x);
     case YAxis::Type::QualityFactor:
         return Util::SparamToQualityFactor(data.y);
-    case YAxis::Type::GroupDelay: {
-        constexpr int requiredSamples = 5;
-        if(!t || t->size() < requiredSamples) {
-            // unable to calculate
+    case YAxis::Type::GroupDelay:
+        if(!t) {
             return 0.0;
-
         }
-        // needs at least some samples before/after current sample for calculating the derivative.
-        // For samples too far at either end of the trace, return group delay of "inner" trace sample instead
-        if(sample < requiredSamples / 2) {
-            return sampleToCoordinate(data, t, requiredSamples / 2);
-        } else if(sample >= t->size() - requiredSamples / 2) {
-            return sampleToCoordinate(data, t, t->size() - requiredSamples / 2 - 1);
-        } else {
-            // got enough samples at either end to calculate derivative.
-            // acquire phases of the required samples
-            std::vector<double> phases;
-            phases.reserve(requiredSamples);
-            for(unsigned int index = sample - requiredSamples / 2;index <= sample + requiredSamples / 2;index++) {
-                phases.push_back(arg(t->sample(index).y));
-            }
-            // make sure there are no phase jumps
-            Util::unwrapPhase(phases);
-            // calculate linearRegression to get derivative
-            double B_0, B_1;
-            Util::linearRegression(phases, B_0, B_1);
-            // B_1 now contains the derived phase vs. the sample. Scale by frequency to get group delay
-            double freq_step = t->sample(sample).x - t->sample(sample - 1).x;
-            return -B_1 / (2.0*M_PI * freq_step);
-        }
-    }
+        return t->getGroupDelay(data.x);
     case YAxis::Type::ImpulseReal:
         return real(data.y);
     case YAxis::Type::ImpulseMag:
@@ -190,14 +165,15 @@ double YAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
     return 0.0;
 }
 
-void YAxis::set(Type type, bool log, bool autorange, double min, double max, double div)
+void YAxis::set(Type type, bool log, bool autorange, double min, double max, unsigned int divs, bool autoDivs)
 {
     this->type = type;
     this->log = log;
     this->autorange = autorange;
     this->rangeMin = min;
     this->rangeMax = max;
-    this->rangeDiv = div;
+    this->divs = divs;
+    this->autoDivs = autoDivs;
     if(type != Type::Disabled) {
         updateTicks();
     }
@@ -440,9 +416,13 @@ void Axis::updateTicks()
             rangeMin -= 1.0;
             rangeMax += 1.0;
         }
-        rangeDiv = createAutomaticTicks(ticks, rangeMin, rangeMax, 8);
+        divs = createAutomaticTicks(ticks, rangeMin, rangeMax, 8);
     } else {
-        createEvenlySpacedTicks(ticks, rangeMin, rangeMax, rangeDiv);
+        if(autoDivs) {
+            divs = createAutomaticTicks(ticks, rangeMin, rangeMax, 8);
+        } else {
+            createEvenlySpacedTicks(ticks, rangeMin, rangeMax, divs);
+        }
     }
 }
 
@@ -451,9 +431,14 @@ const std::vector<double> &Axis::getTicks() const
     return ticks;
 }
 
-double Axis::getRangeDiv() const
+unsigned int Axis::getDivs() const
 {
-    return rangeDiv;
+    return divs;
+}
+
+bool Axis::getAutoDivs() const
+{
+    return autoDivs;
 }
 
 double Axis::getRangeMax() const
@@ -495,7 +480,7 @@ double XAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
     }
 }
 
-void XAxis::set(Type type, bool log, bool autorange, double min, double max, double div)
+void XAxis::set(Type type, bool log, bool autorange, double min, double max, unsigned int divs, bool autoDivs)
 {
     if(max <= min) {
         auto info = DeviceDriver::getInfo(DeviceDriver::getActiveDriver());
@@ -529,7 +514,8 @@ void XAxis::set(Type type, bool log, bool autorange, double min, double max, dou
     this->autorange = autorange;
     this->rangeMin = min;
     this->rangeMax = max;
-    this->rangeDiv = div;
+    this->divs = divs;
+    this->autoDivs = autoDivs;
     updateTicks();
 }
 
@@ -589,7 +575,8 @@ Axis::Axis()
     autorange = true;
     rangeMin = -1.0;
     rangeMax = 1.0;
-    rangeDiv = 1.0;
+    divs = 10;
+    autoDivs = false;
     ticks.clear();
 }
 
