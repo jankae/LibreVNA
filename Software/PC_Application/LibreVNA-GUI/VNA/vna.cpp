@@ -958,7 +958,9 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
 
     cal.correctMeasurement(m_avg);
 
-    window->addStreamingData(m_avg, AppWindow::VNADataType::Calibrated);
+    if(cal.getCaltype().type != Calibration::Type::None) {
+        window->addStreamingData(m_avg, AppWindow::VNADataType::Calibrated);
+    }
 
     TraceMath::DataType type;
     if(settings.zerospan) {
@@ -986,10 +988,10 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     traceModel.addVNAData(m_avg, type, false);
     if(deembedding_active) {
         deembedding.Deembed(m_avg);
+        window->addStreamingData(m_avg, AppWindow::VNADataType::Deembedded);
         traceModel.addVNAData(m_avg, type, true);
     }
 
-    window->addStreamingData(m_avg, AppWindow::VNADataType::Deembedded);
 
     emit dataChanged();
     if(m_avg.pointNum == settings.npoints - 1) {

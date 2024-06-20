@@ -561,9 +561,9 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
             m.second /= normalize.portCorrection[m.first][m_avg.pointNum];
             m.second *= corr;
         }
+        window->addStreamingData(m_avg, AppWindow::SADataType::Normalized);
     }
 
-    window->addStreamingData(m_avg, AppWindow::SADataType::Normalized);
 
     traceModel.addSAData(m_avg, settings);
     emit dataChanged();

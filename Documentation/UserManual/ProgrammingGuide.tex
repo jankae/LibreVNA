@@ -851,4 +851,30 @@ Port1,Port2
 \event{Sets the storage type of a trace}{SA:TRACe:TYPE}{<trace>, either by name or by index\\<type>, options are OVERWRITE, MAXHOLD or MINHOLD}
 \query{Queries the storage type of a trace}{SA:TRACe:TYPE?}{<trace>, either by name or by index}{OVERWRITE, MAXHOLD or MINHOLD}
 
+\section{Streaming data}
+The SCPI server works well for configuring the device and also for reading trace data once an acquition is done. But it isn't very well suited for reading data while the device is capturing it. For some applications (e.g. when running continuous sweeps) it may be beneficial to process the data externally as it getting captured. For this purpose, the LibreVNA-GUI supports streaming the data over dedicated ports.
+
+These streaming servers have to be enbled first. This can be done in \menu[,]{Window,Preferences,Streaming Servers}.
+
+There are a total of 5 streaming servers available. They can all be enabled and used at the same time, although not all servers will output data all the time.
+
+\begin{itemize}
+\item \textbf{VNA raw data:} Outputs the raw S-parameters without any calibration applied. This output is always available, even when a calibration is enabled or de-embedding it active. Apart from averaging (if enabled) no processing is done on the data.
+\item \textbf{VNA calibrated data:} Outputs the calibrated S-parameters with the calibration applied. This output is only available when a calibration is enabled.
+\item \textbf{VNA de-embedded data:} Outputs the de-embedded S-parameters with the de-embbeding and calibration (if enabled) applied. This output is only available when de-embedding is active.
+\item \textbf{SA raw data:} Outputs the raw (not normalized) power levels from the spectrum analyzer. This output is always available, even when normalizing is active.
+\item \textbf{SA normalized data:} Outputs the normalized power levels from the spectrum analyzer. This output is only available when normalizing is active.
+\end{itemize}
+
+\vspace{0.5cm}
+
+All servers output a newline-terminated line of json formatted data for each measurement point in the sweep:
+
+\begin{example}
+{"Z0":50.0,"dBm":-20.0,"frequency":42993000.0,"measurements":{"S11_imag":-0.061379313997181856,"S11_real":0.023033630841401063,"S12_imag":0.3205479840477101,"S12_real":-0.5742283570681822,"S21_imag":-0.3746074656570865,"S21_real":0.6126114195570408,"S22_imag":0.06312766256272641,"S22_real":-0.018668561526968372},"pointNum":7}
+\end{example}
+\begin{example}
+{"frequency":2182396.0,"measurements":{"PORT1":7.343487141042715e-06,"PORT2":6.78117066854611e-06},"pointNum":445}
+\end{example}
+
 \end{document}
