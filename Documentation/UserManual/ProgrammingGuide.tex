@@ -272,6 +272,21 @@ Important points when saving/loading setup files through SCPI commands:
 206039903350,208939A23350
 \end{example}
 
+\subsubsection{DEVice:PREFerences}
+This command provides read/write access to the preferences. The recommended way is usually to change the preferences manually in the GUI. But if for some reason that is not an option, this is also possible through the SCPI server. There is no complete documentation for all available preferences, refer to the source code.
+
+\event{Set a preferences entry}{DEVice:PREFerences <name> <value>}{<name> Name of the preferences entry\\ <value> New value for the preferences entry}
+\begin{example}
+:DEV:PREF Startup.ConnectToFirstDevice false
+\end{example}
+Most settings take effect immediately but some (such as changing the port for the SCPI server) are only applied when the preferences are saved. Also see command~\ref{DEV:APPLYPREF}.
+
+\query{Returns a preferences entry}{DEVice:PREFerences? <name>}{<name> Name of the preferences entry}{Current value of the preferences entry}
+
+\subsubsection{DEVice:APPLYPREFerences}
+\label{DEV:APPLYPREF}
+\event{Permanently stores the preferences after a setting has been changed}{DEVice:APPLYPREFerences}{None}
+
 \subsubsection{DEVice:MODE}
 \event{Switches the device to the specified mode}{DEVice:MODE <mode>}{<mode>:\\ \hspace{1cm} VNA: set to vector analyzer\\ \hspace{1cm} GEN: set to signal generator\\ \hspace{1cm} SA: set to spectrum analyzer}
 \begin{example}

@@ -128,6 +128,7 @@ void Math::DFT::fromJSON(nlohmann::json j)
 
 void Math::DFT::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
+    Q_UNUSED(begin);
     Q_UNUSED(end);
     if(input->rData().size() < 2) {
         // not enough input data

@@ -4,6 +4,7 @@
 
 TCPServer::TCPServer(int port)
 {
+    this->port = port;
     qInfo() << "Listening on port" << port;
     socket = nullptr;
     server.listen(QHostAddress::Any, port);

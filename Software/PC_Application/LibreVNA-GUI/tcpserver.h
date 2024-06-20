@@ -11,12 +11,14 @@ class TCPServer : public QObject
 public:
     TCPServer(int port);
 
+    int getPort() {return port;}
 
 public slots:
     bool send(QString line);
 signals:
     void received(QString line);
 private:
+    int port;
     QTcpServer server;
     QTcpSocket *socket;
 };

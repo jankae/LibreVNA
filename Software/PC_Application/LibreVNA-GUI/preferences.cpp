@@ -531,6 +531,61 @@ nlohmann::json Preferences::toJSON()
     return j;
 }
 
+bool Preferences::set(QString name, QVariant value)
+{
+    QPointerVariant *ptr = nullptr;
+    for(auto s : descr) {
+        if(s.name == name) {
+            ptr = &s.var;
+            break;
+        }
+    }
+    if(!ptr) {
+        // check the driver settings
+        for(auto driver : DeviceDriver::getDrivers()) {
+            for(auto s : driver->driverSpecificSettings()) {
+                if(s.name == name) {
+                    ptr = &s.var;
+                    break;
+                }
+            }
+            if(ptr) {
+                break;
+            }
+        }
+    }
+    if(ptr) {
+        try {
+            ptr->setValue(value);
+            return true;
+        } catch (const std::runtime_error&) {
+            // failed to set variable, likely wrong format for the QVariant
+            return false;
+        }
+    } else {
+        // not found
+        return false;
+    }
+}
+
+QVariant Preferences::get(QString name)
+{
+    for(auto &s : descr) {
+        if(s.name == name) {
+            return s.var.value();
+        }
+    }
+    for(auto driver : DeviceDriver::getDrivers()) {
+        for(auto &s : driver->driverSpecificSettings()) {
+            if(s.name == name) {
+                return s.var.value();
+            }
+        }
+    }
+    // not found
+    return QVariant();
+}
+
 void Preferences::nonTrivialParsing()
 {
 

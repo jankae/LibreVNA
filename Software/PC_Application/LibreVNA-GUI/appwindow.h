@@ -91,6 +91,9 @@ private:
     void StartTCPServer(int port);
     void StopTCPServer();
 
+    // Call whenever the preferences have changed. It stores the updated preferences and applies the changes which do not take effect immediately
+    void preferencesChanged();
+
     QStackedWidget *central;
 
     struct {

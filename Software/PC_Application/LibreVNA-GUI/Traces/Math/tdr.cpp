@@ -202,6 +202,7 @@ void TDR::setMode(Mode m)
 
 void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
+    Q_UNUSED(begin);
     Q_UNUSED(end);
     if(input->rData().size() >= 2) {
         // trigger calculation in thread

@@ -136,10 +136,10 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         }
     };
 
-    connect(ui->Xauto, &QCheckBox::toggled, [this, updateXenableState](bool checked) {
+    connect(ui->Xauto, &QCheckBox::toggled, [this, updateXenableState](bool) {
         updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
     });
-    connect(ui->XautoDivs, &QCheckBox::toggled, [this, updateXenableState](bool checked) {
+    connect(ui->XautoDivs, &QCheckBox::toggled, [this, updateXenableState](bool) {
         updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
     });
 
@@ -155,7 +155,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
 
     XAxisTypeChanged((int) plot->xAxis.getType());
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
-    connect(ui->Xlog, &QCheckBox::toggled, [=](bool checked){
+    connect(ui->Xlog, &QCheckBox::toggled, [=](bool){
         updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
     });
 

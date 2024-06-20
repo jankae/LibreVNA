@@ -44,6 +44,7 @@ Q_DECLARE_METATYPE(MarkerSymbolStyle);
 
 
 class Preferences : public Savable {
+    friend class PreferencesDialog;
 public:
     static Preferences& getInstance() {
         return instance;
@@ -172,12 +173,16 @@ public:
     void fromJSON(nlohmann::json j) override;
     nlohmann::json toJSON() override;
 
-    void nonTrivialParsing();
-    void nonTrivialWriting();
+    bool set(QString name, QVariant value);
+    QVariant get(QString name);
 
 private:
     Preferences() :
      TCPoverride(false) {}
+
+    void nonTrivialParsing();
+    void nonTrivialWriting();
+
     static Preferences instance;
 
     // TODO remove settings that have been moved to LibreVNADriver

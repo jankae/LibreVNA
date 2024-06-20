@@ -18,7 +18,7 @@ public:
         QMetaType mt(destType);
         mt.construct(ptr, variant.constData());
     }
-    QVariant value() {
+    QVariant value() const {
         return QVariant(variant.metaType(), ptr);
     }
     void* getPtr(){return ptr;}

@@ -231,50 +231,8 @@ void AppWindow::SetupMenu()
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         // save previous SCPI settings in case they change
         auto &p = Preferences::getInstance();
-        auto SCPIenabled = p.SCPIServer.enabled;
-        auto SCPIport = p.SCPIServer.port;
         p.edit();
-        // store the updated settings
-        p.store();
-        if(SCPIenabled != p.SCPIServer.enabled || SCPIport != p.SCPIServer.port) {
-            StopTCPServer();
-            if(p.SCPIServer.enabled) {
-                StartTCPServer(p.SCPIServer.port);
-            }
-        }
-        // averaging mode may have changed, update for all relevant modes
-        for (auto m : modeHandler->getModes())
-        {
-            switch (m->getType())
-            {
-                case Mode::Type::VNA:
-                case Mode::Type::SA:
-                    if(p.Acquisition.useMedianAveraging) {
-                        m->setAveragingMode(Averaging::Mode::Median);
-                    }
-                    else {
-                        m->setAveragingMode(Averaging::Mode::Mean);
-                    }
-                    break;
-                case Mode::Type::SG:
-                case Mode::Type::Last:
-                default:
-                    break;
-            }
-        }
-
-        // acquisition frequencies may have changed, update
-//        UpdateAcquisitionFrequencies();
-
-        auto active = modeHandler->getActiveMode();
-        if (active)
-        {
-            active->updateGraphColors();
-            if(device) {
-                active->initializeDevice();
-            }
-        }
-
+        preferencesChanged();
     });
 
     connect(ui->actionAbout, &QAction::triggered, [=](){
@@ -564,6 +522,32 @@ void AppWindow::SetupSCPI()
         ret.chop(1);
         return ret;
     }));
+    scpi_dev->add(new SCPICommand("PREFerences", [=](QStringList params) -> QString {
+        if(params.size() != 2) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto &p = Preferences::getInstance();
+        if(p.set(params[0], QVariant(params[1]))) {
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    }, [=](QStringList params) -> QString {
+        if(params.size() != 1) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto value = Preferences::getInstance().get(params[0]).toString();
+        if(value.isEmpty()) {
+            // failed to get setting
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            return value;
+        }
+    }, false));
+    scpi_dev->add(new SCPICommand("APPLYPREFerences", [=](QStringList) -> QString {
+        preferencesChanged();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     auto scpi_setup = new SCPINode("SETUP");
     scpi_dev->add(scpi_setup);
     scpi_setup->add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
@@ -1020,6 +1004,50 @@ void AppWindow::StopTCPServer()
 {
     delete server;
     server = nullptr;
+}
+
+void AppWindow::preferencesChanged()
+{
+    auto &p = Preferences::getInstance();
+    p.store();
+    if(p.SCPIServer.enabled && !server) {
+        StartTCPServer(p.SCPIServer.port);
+    } else if(!p.SCPIServer.enabled && server) {
+        StopTCPServer();
+    } else if(server && server->getPort() != p.SCPIServer.port) {
+        // still enabled but the port changed -> needs to restart the SCPI server
+        StopTCPServer();
+        StartTCPServer(p.SCPIServer.port);
+    }
+    // averaging mode may have changed, update for all relevant modes
+    for (auto m : modeHandler->getModes())
+    {
+        switch (m->getType())
+        {
+            case Mode::Type::VNA:
+            case Mode::Type::SA:
+                if(p.Acquisition.useMedianAveraging) {
+                    m->setAveragingMode(Averaging::Mode::Median);
+                }
+                else {
+                    m->setAveragingMode(Averaging::Mode::Mean);
+                }
+                break;
+            case Mode::Type::SG:
+            case Mode::Type::Last:
+            default:
+                break;
+        }
+    }
+
+    auto active = modeHandler->getActiveMode();
+    if (active)
+    {
+        active->updateGraphColors();
+        if(device) {
+            active->initializeDevice();
+        }
+    }
 }
 
 SCPI* AppWindow::getSCPI()
