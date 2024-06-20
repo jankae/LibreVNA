@@ -147,6 +147,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/savable.cpp \
     ../LibreVNA-GUI/scpi.cpp \
     ../LibreVNA-GUI/tcpserver.cpp \
+    ../LibreVNA-GUI/streamingserver.cpp \
     ../LibreVNA-GUI/touchstone.cpp \
     ../LibreVNA-GUI/unit.cpp \
     main.cpp \
@@ -338,6 +339,7 @@ HEADERS += \
     ../LibreVNA-GUI/savable.h \
     ../LibreVNA-GUI/scpi.h \
     ../LibreVNA-GUI/tcpserver.h \
+    ../LibreVNA-GUI/streamingserver.h \
     ../LibreVNA-GUI/touchstone.h \
     ../LibreVNA-GUI/unit.h \
     parametertests.h \

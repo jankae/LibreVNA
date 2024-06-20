@@ -155,6 +155,7 @@ HEADERS += \
     preferences.h \
     savable.h \
     scpi.h \
+    streamingserver.h \
     tcpserver.h \
     touchstone.h \
     unit.h
@@ -301,6 +302,7 @@ SOURCES += \
     preferences.cpp \
     savable.cpp \
     scpi.cpp \
+    streamingserver.cpp \
     tcpserver.cpp \
     touchstone.cpp \
     unit.cpp

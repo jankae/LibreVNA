@@ -10,6 +10,7 @@
 #include "preferences.h"
 #include "scpi.h"
 #include "tcpserver.h"
+#include "streamingserver.h"
 #include "Device/devicedriver.h"
 
 #include <QWidget>
@@ -51,6 +52,21 @@ public:
     static bool showGUI();
 
     SCPI* getSCPI();
+
+    enum class VNADataType {
+        Raw = 0,
+        Calibrated = 1,
+        Deembedded = 2,
+    };
+
+    void addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type);
+
+    enum class SADataType {
+        Raw = 0,
+        Normalized = 1,
+    };
+
+    void addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type);
 
 public slots:
     void setModeStatus(QString msg);
@@ -143,6 +159,11 @@ private:
 
     SCPI scpi;
     TCPServer *server;
+    StreamingServer *streamVNARawData;
+    StreamingServer *streamVNACalibratedData;
+    StreamingServer *streamVNADeembeddedData;
+    StreamingServer *streamSARawData;
+    StreamingServer *streamSANormalizedData;
 
     QString appVersion;
     QString appGitHash;

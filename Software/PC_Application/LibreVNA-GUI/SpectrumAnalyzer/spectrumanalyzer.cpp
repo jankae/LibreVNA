@@ -530,6 +530,8 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
         }
     }
 
+    window->addStreamingData(m_avg, AppWindow::SADataType::Raw);
+
     if(normalize.measuring) {
         if(average.currentSweep() == averages) {
             // this is the last averaging sweep, use values for normalization
@@ -560,6 +562,8 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
             m.second *= corr;
         }
     }
+
+    window->addStreamingData(m_avg, AppWindow::SADataType::Normalized);
 
     traceModel.addSAData(m_avg, settings);
     emit dataChanged();

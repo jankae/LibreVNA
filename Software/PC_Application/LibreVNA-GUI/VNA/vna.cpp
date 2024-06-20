@@ -931,6 +931,9 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     }
 
     m_avg = average.process(m_avg);
+
+    window->addStreamingData(m_avg, AppWindow::VNADataType::Raw);
+
     if(average.settled()) {
         setOperationPending(false);
     }
@@ -954,6 +957,8 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     }
 
     cal.correctMeasurement(m_avg);
+
+    window->addStreamingData(m_avg, AppWindow::VNADataType::Calibrated);
 
     TraceMath::DataType type;
     if(settings.zerospan) {
@@ -983,6 +988,9 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
         deembedding.Deembed(m_avg);
         traceModel.addVNAData(m_avg, type, true);
     }
+
+    window->addStreamingData(m_avg, AppWindow::VNADataType::Deembedded);
+
     emit dataChanged();
     if(m_avg.pointNum == settings.npoints - 1) {
         UpdateAverageCount();

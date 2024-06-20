@@ -164,6 +164,28 @@ public:
         int port;
     } SCPIServer;
     struct {
+        struct {
+            bool enabled;
+            int port;
+        } VNARawData;
+        struct {
+            bool enabled;
+            int port;
+        } VNACalibratedData;
+        struct {
+            bool enabled;
+            int port;
+        } VNADeembeddedData;
+        struct {
+            bool enabled;
+            int port;
+        } SARawData;
+        struct {
+            bool enabled;
+            int port;
+        } SANormalizedData;
+    } StreamingServers;
+    struct {
         double USBlogSizeLimit;
         bool saveTraceData;
     } Debug;
@@ -273,6 +295,16 @@ private:
         {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::EmptyNumberAbove},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
+        {&StreamingServers.VNARawData.enabled, "StreamingServers.VNARawData.enabled", false},
+        {&StreamingServers.VNARawData.port, "StreamingServers.VNARawData.port", 19000},
+        {&StreamingServers.VNACalibratedData.enabled, "StreamingServers.VNACalibratedData.enabled", false},
+        {&StreamingServers.VNACalibratedData.port, "StreamingServers.VNACalibratedData.port", 19001},
+        {&StreamingServers.VNADeembeddedData.enabled, "StreamingServers.VNADeembeddedData.enabled", false},
+        {&StreamingServers.VNADeembeddedData.port, "StreamingServers.VNADeembeddedData.port", 19002},
+        {&StreamingServers.SARawData.enabled, "StreamingServers.sARawData.enabled", false},
+        {&StreamingServers.SARawData.port, "StreamingServers.sARawData.port", 19100},
+        {&StreamingServers.SANormalizedData.enabled, "StreamingServers.SANormalizedData.enabled", false},
+        {&StreamingServers.SANormalizedData.port, "StreamingServers.SANormalizedData.port", 19101},
         {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&Debug.saveTraceData, "Debug.saveTraceData", false},
     }};

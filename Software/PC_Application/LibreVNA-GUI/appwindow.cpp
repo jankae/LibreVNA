@@ -70,6 +70,11 @@ AppWindow::AppWindow(QWidget *parent)
     , deviceActionGroup(new QActionGroup(this))
     , ui(new Ui::MainWindow)
     , server(nullptr)
+    , streamVNARawData(nullptr)
+    , streamVNACalibratedData(nullptr)
+    , streamVNADeembeddedData(nullptr)
+    , streamSARawData(nullptr)
+    , streamSANormalizedData(nullptr)
     , appVersion(APP_VERSION)
     , appGitHash(APP_GIT_HASH)
 {
@@ -97,6 +102,8 @@ AppWindow::AppWindow(QWidget *parent)
         Preferences::getInstance().load();
     }
 
+    auto &p = Preferences::getInstance();
+
     device = nullptr;
 //    vdevice = nullptr;
     modeHandler = nullptr;
@@ -109,9 +116,25 @@ AppWindow::AppWindow(QWidget *parent)
             port = Preferences::getInstance().SCPIServer.port;
         }
         StartTCPServer(port);
-        Preferences::getInstance().manualTCPport();
-    } else if(Preferences::getInstance().SCPIServer.enabled) {
-        StartTCPServer(Preferences::getInstance().SCPIServer.port);
+        p.manualTCPport();
+    } else if(p.SCPIServer.enabled) {
+        StartTCPServer(p.SCPIServer.port);
+    }
+
+    if(p.StreamingServers.VNARawData.enabled) {
+        streamVNARawData = new StreamingServer(p.StreamingServers.VNARawData.port);
+    }
+    if(p.StreamingServers.VNACalibratedData.enabled) {
+        streamVNACalibratedData = new StreamingServer(p.StreamingServers.VNACalibratedData.port);
+    }
+    if(p.StreamingServers.VNADeembeddedData.enabled) {
+        streamVNADeembeddedData = new StreamingServer(p.StreamingServers.VNADeembeddedData.port);
+    }
+    if(p.StreamingServers.SARawData.enabled) {
+        streamSARawData = new StreamingServer(p.StreamingServers.SARawData.port);
+    }
+    if(p.StreamingServers.SANormalizedData.enabled) {
+        streamSANormalizedData = new StreamingServer(p.StreamingServers.SANormalizedData.port);
     }
 
     ui->setupUi(this);
@@ -1019,6 +1042,25 @@ void AppWindow::preferencesChanged()
         StopTCPServer();
         StartTCPServer(p.SCPIServer.port);
     }
+
+    auto updateStreamingServer = [](StreamingServer **server, bool enabled, int port) {
+        if(*server && !enabled) {
+            delete *server;
+            *server = nullptr;
+        } else if(!*server && enabled) {
+            *server = new StreamingServer(port);
+        } else if(*server && (*server)->getPort() != port) {
+            delete *server;
+            *server = new StreamingServer(port);
+        }
+    };
+
+    updateStreamingServer(&streamVNARawData, p.StreamingServers.VNARawData.enabled, p.StreamingServers.VNARawData.port);
+    updateStreamingServer(&streamVNACalibratedData, p.StreamingServers.VNACalibratedData.enabled, p.StreamingServers.VNACalibratedData.port);
+    updateStreamingServer(&streamVNADeembeddedData, p.StreamingServers.VNADeembeddedData.enabled, p.StreamingServers.VNADeembeddedData.port);
+    updateStreamingServer(&streamSARawData, p.StreamingServers.SARawData.enabled, p.StreamingServers.SARawData.port);
+    updateStreamingServer(&streamSANormalizedData, p.StreamingServers.SANormalizedData.enabled, p.StreamingServers.SANormalizedData.port);
+
     // averaging mode may have changed, update for all relevant modes
     for (auto m : modeHandler->getModes())
     {
@@ -1053,6 +1095,33 @@ void AppWindow::preferencesChanged()
 SCPI* AppWindow::getSCPI()
 {
     return &scpi;
+}
+
+void AppWindow::addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type)
+{
+    StreamingServer *server = nullptr;
+    switch(type) {
+    case VNADataType::Raw: server = streamVNARawData; break;
+    case VNADataType::Calibrated: server = streamVNACalibratedData; break;
+    case VNADataType::Deembedded: server = streamVNADeembeddedData; break;
+    }
+
+    if(server) {
+        server->addData(m);
+    }
+}
+
+void AppWindow::addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type)
+{
+    StreamingServer *server = nullptr;
+    switch(type) {
+    case SADataType::Raw: server = streamSARawData; break;
+    case SADataType::Normalized: server = streamSANormalizedData; break;
+    }
+
+    if(server) {
+        server->addData(m);
+    }
 }
 
 void AppWindow::setModeStatus(QString msg)

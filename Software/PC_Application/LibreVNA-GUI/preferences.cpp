@@ -320,6 +320,17 @@ void PreferencesDialog::setInitialGUIState()
     ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
     ui->SCPIServerPort->setValue(p->SCPIServer.port);
 
+    ui->streamingServerVNArawEnabled->setChecked(p->StreamingServers.VNARawData.enabled);
+    ui->streamingServerVNArawPort->setValue(p->StreamingServers.VNARawData.port);
+    ui->streamingServerVNAcalibratedEnabled->setChecked(p->StreamingServers.VNACalibratedData.enabled);
+    ui->streamingServerVNAcalibratedPort->setValue(p->StreamingServers.VNACalibratedData.port);
+    ui->streamingServerVNAdeembeddedEnabled->setChecked(p->StreamingServers.VNADeembeddedData.enabled);
+    ui->streamingServerVNAdeembeddedPort->setValue(p->StreamingServers.VNADeembeddedData.port);
+    ui->streamingServerSArawEnabled->setChecked(p->StreamingServers.SARawData.enabled);
+    ui->streamingServerSArawPort->setValue(p->StreamingServers.SARawData.port);
+    ui->streamingServerSAnormalizedEnabled->setChecked(p->StreamingServers.SANormalizedData.enabled);
+    ui->streamingServerSAnormalizedPort->setValue(p->StreamingServers.SANormalizedData.port);
+
     ui->DebugMaxUSBlogSize->setValue(p->Debug.USBlogSizeLimit);
     ui->DebugSaveTraceData->setChecked(p->Debug.saveTraceData);
 
@@ -419,6 +430,17 @@ void PreferencesDialog::updateFromGUI()
 
     p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
     p->SCPIServer.port = ui->SCPIServerPort->value();
+
+    p->StreamingServers.VNARawData.enabled = ui->streamingServerVNArawEnabled->isChecked();
+    p->StreamingServers.VNARawData.port = ui->streamingServerVNArawPort->value();
+    p->StreamingServers.VNACalibratedData.enabled = ui->streamingServerVNAcalibratedEnabled->isChecked();
+    p->StreamingServers.VNACalibratedData.port = ui->streamingServerVNAcalibratedPort->value();
+    p->StreamingServers.VNADeembeddedData.enabled = ui->streamingServerVNAdeembeddedEnabled->isChecked();
+    p->StreamingServers.VNADeembeddedData.port = ui->streamingServerVNAdeembeddedPort->value();
+    p->StreamingServers.SARawData.enabled = ui->streamingServerSArawEnabled->isChecked();
+    p->StreamingServers.SARawData.port = ui->streamingServerSArawPort->value();
+    p->StreamingServers.SANormalizedData.enabled = ui->streamingServerSAnormalizedEnabled->isChecked();
+    p->StreamingServers.SANormalizedData.port = ui->streamingServerSAnormalizedPort->value();
 
     p->Debug.USBlogSizeLimit = ui->DebugMaxUSBlogSize->value();
     p->Debug.saveTraceData = ui->DebugSaveTraceData->isChecked();
