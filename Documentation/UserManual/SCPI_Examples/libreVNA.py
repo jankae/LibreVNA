@@ -2,6 +2,8 @@ import re
 import socket
 from asyncio import IncompleteReadError  # only import the exception class
 import time
+import threading
+import json
 
 class SocketStreamReader:
     def __init__(self, sock: socket.socket, default_timeout=1):
@@ -72,6 +74,7 @@ class libreVNA:
     def __init__(self, host='localhost', port=19542,
                  check_cmds=True, timeout=1):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.host = host
         try:
             self.sock.connect((host, port))
         except:
@@ -79,6 +82,8 @@ class libreVNA:
         self.reader = SocketStreamReader(self.sock,
                                          default_timeout=timeout)
         self.default_check_cmds = check_cmds
+        self.live_threads = {}
+        self.live_callbacks = {}
 
     def __del__(self):
         self.sock.close()
@@ -117,6 +122,60 @@ class libreVNA:
         if status < 0 or status > 255:
             raise Exception(f"*ESR? returned invalid value {status}.")
         return status
+        
+    def add_live_callback(self, port, callback):
+        # check if we already have a thread handling this connection
+        if not port in self.live_threads:
+            # needs to create the connection and thread first
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                sock.connect((self.host, port))
+            except:
+                raise Exception("Unable to connect to streaming server at port {}. Make sure it is enabled.".format(port))
+
+            self.live_callbacks[port] = [callback]
+            self.live_threads[port] = threading.Thread(target=self.__live_thread, args=(sock, port))
+            self.live_threads[port].start()
+        else:
+            # thread already existed, simply add to list
+            self.live_callbacks[port].append(callback)
+
+    def remove_live_callback(self, port, callback):
+        if port in self.live_callbacks:
+            # remove all matching callbacks from the list
+            self.live_callbacks[port] = [cb for cb in self.live_callbacks[port] if cb != callback]
+            # if the list is now empty, the thread will exit
+            if len(self.live_callbacks) == 0:
+                self.live_threads[port].join()
+                del self.live_threads[port]
+
+    def __live_thread(self, sock, port):
+        reader = SocketStreamReader(sock, default_timeout=0.1)
+        while len(self.live_callbacks[port]) > 0:
+            try:
+                line = reader.readline().decode().rstrip()
+                # determine whether this is data from the VNA or spectrum analyzer
+                data = json.loads(line)
+                if "Z0" in data:
+                    # This is VNA data which has the imag/real parts of the S-parameters split into two float values.
+                    # This was necessary because json does not support complex number. But python does -> convert back
+                    # to complex
+                    measurements = {}
+                    for meas in data["measurements"].keys():
+                        if meas.endswith("_imag"):
+                            # ignore
+                            continue
+                        name = meas.removesuffix("_real")
+                        real = data["measurements"][meas]
+                        imag = data["measurements"][name+"_imag"]
+                        measurements[name] = complex(real, imag)
+                    data["measurements"] = measurements
+                for cb in self.live_callbacks[port]:
+                    cb(data)
+            except:
+                # ignore timeouts
+                pass
+    
     
     @staticmethod
     def parse_VNA_trace_data(data):
