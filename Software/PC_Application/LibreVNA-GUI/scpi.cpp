@@ -442,7 +442,8 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
     if(cmd.isEmpty()) {
         return "";
     }
-    auto splitPos = cmd.indexOf(':');
+    auto cmdName = cmd.split(" ").front();
+    auto splitPos = cmdName.indexOf(':');
     if(splitPos > 0) {
         // have not reached a leaf, find next subnode
         auto subnode = cmd.left(splitPos);

@@ -281,7 +281,7 @@ Calibration::Calibration()
             return SCPI::getResultName(SCPI::Result::Error);
         }
         return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
+    }, nullptr, false));
     add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
         if(params.size() != 1) {
             // no filename given or no calibration active
@@ -292,7 +292,7 @@ Calibration::Calibration()
             return SCPI::getResultName(SCPI::Result::False);
         }
         return SCPI::getResultName(SCPI::Result::True);
-    }));
+    }, false));
     add(&kit);
 }
 
