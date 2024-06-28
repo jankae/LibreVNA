@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.6.0
+
+This update contains API breaking changes to the SCPI server. This was necessary because the previous implementation did not follow the standard completely. If you were talking to the SCPI server directly yourself, you will need to make the required changes. If you are using the provided libreVNA.py class, you just need to update that file.
+
+- New featues:
+  - New SCPI command: read/write preferences
+  - New API: option to stream live trace data
+
+- Bugfixes and improvements:
+  - Keep de-embedding active when changing settings
+  - Improvements to trace averaging
+  - adjust SCPI API to conform better with the standard:
+    - new required commands RST, CLS, ESE, ESR, OPC and WAI
+    - no responses to commands, errors are reported through status registers instead
+  - TDR updates happen during a sweep not just afterwards (with configurable update rate)
+  - Additional sanity checks when loading calibration files
+
 ## v1.5.1
 
 Mostly bugfixes with only minor new features
