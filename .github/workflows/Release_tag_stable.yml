@@ -97,7 +97,7 @@ jobs:
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.bump_release.outputs.upload_url }}
+          upload_url: ${{ steps.PC_Application_Ubuntu.outputs.upload_url }}
           asset_path: ./Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
           asset_name: LibreVNA-GUI-RPi5-${{env.LIBREVNA_VERSION}}.zip
           asset_content_type: application/tar+gzip
