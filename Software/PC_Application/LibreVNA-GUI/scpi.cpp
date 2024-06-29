@@ -296,7 +296,7 @@ bool SCPINode::remove(SCPINode *node)
 bool SCPINode::add(SCPICommand *cmd)
 {
     if(nameCollision(cmd->name())) {
-        qWarning() << "Unable to add SCPI node, name collision: " << cmd->name();
+        qWarning() << "Unable to add SCPI command, name collision: " << cmd->name();
         return false;
     }
     commands.push_back(cmd);

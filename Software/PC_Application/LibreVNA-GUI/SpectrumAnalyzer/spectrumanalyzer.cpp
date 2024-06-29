@@ -1084,16 +1084,6 @@ void SpectrumAnalyzer::SetupSCPI()
     }, [=](QStringList) -> QString {
         return singleSweep ? SCPI::getResultName(SCPI::Result::True): SCPI::getResultName(SCPI::Result::False);
     }));
-    scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
-        Run();
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, [=](QStringList) -> QString {
-        return running ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
-    }));
-    scpi_acq->add(new SCPICommand("STOP", [=](QStringList) -> QString {
-        Stop();
-        return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
     auto scpi_tg = new SCPINode("TRACKing");
     SCPINode::add(scpi_tg);
     scpi_tg->add(new SCPICommand("ENable", [=](QStringList params) -> QString {
