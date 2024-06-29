@@ -22,7 +22,7 @@ public:
     const std::vector<double> &getTicks() const;
 
 protected:
-    void updateTicks();
+    virtual void updateTicks();
     bool log;
     bool autorange;
     double rangeMin;
@@ -99,14 +99,22 @@ public:
     QString Unit(TraceModel::DataSource source = TraceModel::DataSource::VNA);
     QString Prefixes(TraceModel::DataSource source = TraceModel::DataSource::VNA);
 
+    void setTickMaster(YAxis &master) {
+        tickMaster = &master;
+    }
+
     Type getType() const;
 
     bool isSupported(XAxis::Type type, TraceModel::DataSource source);
     static std::set<YAxis::Type> getSupported(XAxis::Type type, TraceModel::DataSource source);
     static std::complex<double> reconstructValueFromYAxisType(std::map<Type, double> yaxistypes);
 
+protected:
+    virtual void updateTicks() override;
+
 private:
     Type type;
+    YAxis *tickMaster; // if set, the tick positions will be set to match if this option is enabled in the preferences and ticks are set to auto
 };
 
 #endif // TRACEAXIS_H

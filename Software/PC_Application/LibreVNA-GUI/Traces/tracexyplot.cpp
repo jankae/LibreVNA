@@ -24,6 +24,8 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
 {
     xAxisMode = XAxisMode::UseSpan;
 
+    yAxis[1].setTickMaster(yAxis[0]);
+
     // Setup default axis
     setYAxis(0, YAxis::Type::Magnitude, false, false, -120, 20, 14, true);
     setYAxis(1, YAxis::Type::Phase, false, false, -180, 180, 12, true);

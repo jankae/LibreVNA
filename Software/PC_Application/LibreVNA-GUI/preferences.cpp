@@ -286,6 +286,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsSweepLine->setChecked(p->Graphs.SweepIndicator.line);
     ui->GraphsSweepHide->setChecked(p->Graphs.SweepIndicator.hide);
     ui->GraphsSweepHidePercent->setValue(p->Graphs.SweepIndicator.hidePercent);
+    ui->graphsEnableMasterTicksForYAxis->setChecked(p->Graphs.enableMasterTicksForYAxis);
 
     ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
 
@@ -398,6 +399,7 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.SweepIndicator.line = ui->GraphsSweepLine->isChecked();
     p->Graphs.SweepIndicator.hide = ui->GraphsSweepHide->isChecked();
     p->Graphs.SweepIndicator.hidePercent = ui->GraphsSweepHidePercent->value();
+    p->Graphs.enableMasterTicksForYAxis = ui->graphsEnableMasterTicksForYAxis->isChecked();
 
     p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
     p->Marker.defaultBehavior.showdB = ui->MarkerShowdB->isChecked();

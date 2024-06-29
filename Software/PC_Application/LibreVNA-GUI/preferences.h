@@ -136,6 +136,8 @@ public:
         bool enablePanAndZoom;
         double zoomFactor;
 
+        bool enableMasterTicksForYAxis;
+
         struct {
             bool triangle;
             int triangleSize;
@@ -258,6 +260,7 @@ private:
         {&Graphs.fontSizeTraceNames, "Graphs.fontSizeTraceNames", 12},
         {&Graphs.enablePanAndZoom, "Graphs.enablePanAndZoom", true},
         {&Graphs.zoomFactor, "Graphs.zoomFactor", 0.9},
+        {&Graphs.enableMasterTicksForYAxis, "Graphs.enableMasterTicksForYAxis", false},
         {&Graphs.SweepIndicator.triangle, "Graphs.SweepIndicator.triangle", true},
         {&Graphs.SweepIndicator.triangleSize, "Graphs.SweepIndicator.triangleSize", 5},
         {&Graphs.SweepIndicator.line, "Graphs.SweepIndicator.line", false},

@@ -98,7 +98,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -112,8 +112,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>522</width>
-             <height>914</height>
+             <width>424</width>
+             <height>852</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -703,8 +703,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>565</width>
-             <height>477</height>
+             <width>450</width>
+             <height>416</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -944,8 +944,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>553</width>
-             <height>1075</height>
+             <width>679</width>
+             <height>964</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1026,6 +1026,13 @@
                <widget class="QCheckBox" name="GraphsShowUnit">
                 <property name="text">
                  <string>Show unit on graph axes</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="graphsEnableMasterTicksForYAxis">
+                <property name="text">
+                 <string>Use left Y-axis ticks for right Y-axis ticks in auto mode</string>
                 </property>
                </widget>
               </item>
@@ -1438,8 +1445,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>683</width>
-             <height>605</height>
+             <width>696</width>
+             <height>564</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1784,8 +1791,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>697</width>
-             <height>563</height>
+             <width>696</width>
+             <height>564</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -2067,8 +2074,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>697</width>
-             <height>563</height>
+             <width>194</width>
+             <height>146</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_19">

@@ -97,6 +97,7 @@ static void createLogarithmicTicks(vector<double>& ticks, double start, double s
 YAxis::YAxis()
 {
     type = Type::Magnitude;
+    tickMaster = nullptr;
 }
 
 double YAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample)
@@ -389,6 +390,17 @@ std::complex<double> YAxis::reconstructValueFromYAxisType(std::map<YAxis::Type, 
         ret = polar<double>(maglin, phase / 180.0 * M_PI);
     }
     return ret;
+}
+
+void YAxis::updateTicks()
+{
+    Axis::updateTicks();
+    if((autorange || autoDivs) && tickMaster && Preferences::getInstance().Graphs.enableMasterTicksForYAxis) {
+        ticks.clear();
+        for(auto masterTick : tickMaster->getTicks()) {
+            ticks.push_back(Util::Scale(masterTick, tickMaster->rangeMin, tickMaster->rangeMax, rangeMin, rangeMax));
+        }
+    }
 }
 
 bool XAxis::isSupported(XAxis::Type type, TraceModel::DataSource source)
