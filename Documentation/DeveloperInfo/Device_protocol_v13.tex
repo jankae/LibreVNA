@@ -774,8 +774,8 @@ The packet contains the following fields:
 6 & 1 & CHAR & HW\_revision & Revision of the hardware, currently only `B' is used \\
 7 & 8 & UINT64 & MinFreq & Minimum supported frequency in Hz \\
 15 & 8 & UINT64 & MaxFreq & Maximum supported frequency in Hz \\
-23 & 4 & UINT64 & MinIFBW & Minimum supported IF bandwidth in Hz \\
-27 & 4 & UINT64 & MaxIFBW & Maximum supported IF bandwidth in Hz \\
+23 & 4 & UINT32 & MinIFBW & Minimum supported IF bandwidth in Hz \\
+27 & 4 & UINT32 & MaxIFBW & Maximum supported IF bandwidth in Hz \\
 31 & 2 & UINT16 & MaxPoints & Maximum number of points per sweep \\
 33 & 2 & INT16 & MincdBm & Minimum stimulus power in $\frac{1}{100}$dBm \\
 35 & 2 & INT16 & MaxcdBm & Maximum stimulus power in $\frac{1}{100}$dBm \\
