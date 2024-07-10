@@ -29,7 +29,7 @@
 
           nativeBuildInputs = [ qt6.wrapQtAppsHook ];
 
-          buildInputs = [ qt6.qtbase pkgs.libusb1 pkgs.git ];
+          buildInputs = [ qt6.qtbase pkgs.libusb1 pkgs.git pkgs.udev ];
 
           preConfigure = ''
             export LOCALE_ARCHIVE="${glibcLocales}/lib/locale/locale-archive"
@@ -48,8 +48,9 @@
 
           installPhase = ''
             runHook preInstall
-            mkdir -p $out/bin
-            cp LibreVNA-GUI $out/bin
+            mkdir -p $out/{bin,lib/udev/rules.d}
+            cp LibreVNA-GUI $out/bin/
+            cp ../51-vna.rules $out/lib/udev/rules.d/
             runHook postInstall
           '';
 
