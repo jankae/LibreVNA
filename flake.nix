@@ -15,10 +15,13 @@
     {
       packages = forAllSystems (system: {
         default = with nixpkgsFor.${system}; stdenv.mkDerivation rec {
+
           pname = "LibreVNA-GUI";
           version = "1.6.0";
           locale = "UTF-8";
           allLocales = "UTF-8";
+
+          outputs = [ "out" "udev" ];
 
           src = fetchFromGitHub {
             owner = "jankae";
@@ -48,9 +51,10 @@
 
           installPhase = ''
             runHook preInstall
-            mkdir -p $out/{bin,lib/udev/rules.d}
+            mkdir -p $out/bin
             cp LibreVNA-GUI $out/bin/
-            cp ../51-vna.rules $out/lib/udev/rules.d/
+            mkdir -p $udev/lib/udev/rules.d
+            cp ../51-vna.rules $udev/lib/udev/rules.d/
             runHook postInstall
           '';
 
