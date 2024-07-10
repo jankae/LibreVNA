@@ -323,15 +323,16 @@ void TDRThread::run()
         tdr.window.apply(frequencyDomain);
         Fft::shift(frequencyDomain, true);
 
-        auto fft_bins = frequencyDomain.size();
+        int fft_bins = frequencyDomain.size();
         const double fs = 1.0 / (stepSize * fft_bins);
 
         Fft::transform(frequencyDomain, true);
+        Fft::shift(frequencyDomain, false);
 
         tdr.data.resize(fft_bins, TraceMath::Data());
 
-        for(unsigned int i = 0;i<fft_bins;i++) {
-            tdr.data[i].x = fs * i;
+        for(int i = 0;i<fft_bins;i++) {
+            tdr.data[i].x = fs * (i - fft_bins / 2);
             tdr.data[i].y = frequencyDomain[i] / (double) fft_bins;
         }
         if(tdr.stepResponse && tdr.mode == TDR::Mode::Lowpass) {
