@@ -417,6 +417,10 @@ These commands change or query VNA settings. Although most of them are available
 \event{Sets the stop power of the power sweep}{VNA:POWer:STOP}{<stop power>, in dBm}
 \query{Queries the currently selected stop power}{VNA:POWer:STOP?}{None}{stop power in dBm}
 
+\subsubsection{VNA:SWEEPTYPE}
+\event{Selects between linear and logarithmic sweeps}{VNA:SWEEPTYPE}{<type>, either ``LIN'' or ``LOG''}
+\query{Queries the currently selected sweep type}{VNA:SWEEPTYPE?}{None}{``LIN'' or ``LOG''}
+
 \subsubsection{VNA:ACQuisition:RUN}
 \event{Puts the VNA into run mode (sweep active)}{VNA:ACQuisition:RUN}{None}
 \query{Queries whether the VNA is in run mode}{VNA:ACQuisition:RUN?}{None}{TRUE or FALSE}

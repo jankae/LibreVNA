@@ -1456,6 +1456,21 @@ void VNA::SetupSCPI()
     }, [=](QStringList) -> QString {
         return QString::number(settings.Power.stop);
     }));
+    SCPINode::add(new SCPICommand("SWEEPTYPE", [=](QStringList params) -> QString {
+        if(params.size() >= 1) {
+            if(params[0] == "LIN") {
+                SetLogSweep(false);
+                return SCPI::getResultName(SCPI::Result::Empty);
+            } else if(params[0] == "LOG") {
+                SetLogSweep(true);
+                return SCPI::getResultName(SCPI::Result::Empty);
+            }
+        }
+        // either no parameter or invalid
+        return SCPI::getResultName(SCPI::Result::Error);
+    }, [=](QStringList) -> QString {
+        return settings.Freq.logSweep ? "LOG" : "LIN";
+    }));
     auto scpi_acq = new SCPINode("ACQuisition");
     SCPINode::add(scpi_acq);
     scpi_acq->add(new SCPICommand("RUN", [=](QStringList) -> QString {
