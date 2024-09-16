@@ -7,7 +7,7 @@ class TraceWidgetSA : public TraceWidget
 {
 public:
     TraceWidgetSA(TraceModel &model, QWidget *parent = nullptr);
-protected slots:
+public slots:
     virtual void exportDialog() override;
     virtual void importDialog() override;
 

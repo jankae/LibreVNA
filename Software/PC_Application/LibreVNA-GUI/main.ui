@@ -27,9 +27,23 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuImport">
+     <property name="title">
+      <string>Import</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuExport">
+     <property name="title">
+      <string>Export</string>
+     </property>
+    </widget>
     <addaction name="actionSave_setup"/>
     <addaction name="actionLoad_setup"/>
     <addaction name="actionSave_image"/>
+    <addaction name="separator"/>
+    <addaction name="menuImport"/>
+    <addaction name="menuExport"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuDevice">
@@ -230,6 +244,16 @@
   <action name="actionCreate_Debug_Data">
    <property name="text">
     <string>Create Debug Data</string>
+   </property>
+  </action>
+  <action name="actiondummy">
+   <property name="text">
+    <string>dummy</string>
+   </property>
+  </action>
+  <action name="actionDummy_4">
+   <property name="text">
+    <string>Dummy</string>
    </property>
   </action>
  </widget>

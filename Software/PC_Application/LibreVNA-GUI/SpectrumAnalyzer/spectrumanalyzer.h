@@ -5,7 +5,7 @@
 #include "mode.h"
 #include "CustomWidgets/tilewidget.h"
 #include "scpi.h"
-#include "Traces/tracewidget.h"
+#include "tracewidgetsa.h"
 
 #include <QObject>
 #include <QWidget>
@@ -35,6 +35,9 @@ public:
     void setAveragingMode(Averaging::Mode mode) override;
 
     void preset() override;
+
+    QList<QAction*> getImportOptions() override { return importActions;}
+    QList<QAction*> getExportOptions() override { return exportActions;}
 
     virtual void deviceInfoUpdated() override;
 
@@ -98,7 +101,7 @@ private:
 
     double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
     TraceModel traceModel;
-    TraceWidget *traceWidget;
+    TraceWidgetSA *traceWidget;
     MarkerModel *markerModel;
     Averaging average;
 
@@ -124,6 +127,10 @@ private:
         QPushButton *measure;
         QCheckBox *enable;
     } normalize;
+
+    // import/export actions
+    QList<QAction*> importActions;
+    QList<QAction*> exportActions;
 
 signals:
     void dataChanged();

@@ -6,7 +6,7 @@
 #include "CustomWidgets/tilewidget.h"
 #include "Deembedding/deembedding.h"
 #include "scpi.h"
-#include "Traces/tracewidget.h"
+#include "tracewidgetvna.h"
 #include "Calibration/calibration.h"
 
 #include <QObject>
@@ -37,6 +37,9 @@ public:
     void setAveragingMode(Averaging::Mode mode) override;
 
     void preset() override;
+
+    QList<QAction*> getImportOptions() override { return importActions;}
+    QList<QAction*> getExportOptions() override { return exportActions;}
 
     enum class SweepType {
         Frequency = 0,
@@ -140,7 +143,7 @@ private:
     Settings settings;
     unsigned int averages;
     TraceModel traceModel;
-    TraceWidget *traceWidget;
+    TraceWidgetVNA *traceWidget;
     MarkerModel *markerModel;
     Averaging average;
     bool singleSweep;
@@ -178,6 +181,10 @@ private:
 
     TileWidget *tiles;
     QScrollArea *central;
+
+    // import/export actions
+    QList<QAction*> importActions;
+    QList<QAction*> exportActions;
 
 signals:
     void deviceInitialized();

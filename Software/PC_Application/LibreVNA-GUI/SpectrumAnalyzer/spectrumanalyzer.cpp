@@ -289,6 +289,13 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 
+    auto importAction = new QAction("CSV");
+    connect(importAction, &QAction::triggered, traceWidget, &TraceWidgetSA::importDialog);
+    importActions.push_back(importAction);
+
+    auto exportAction = new QAction("CSV");
+    connect(exportAction, &QAction::triggered, traceWidget, &TraceWidgetSA::exportDialog);
+    exportActions.push_back(exportAction);
 
     auto markerWidget = new MarkerWidget(*markerModel);
 

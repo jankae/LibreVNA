@@ -171,6 +171,7 @@ AppWindow::AppWindow(QWidget *parent)
     };
 
     connect(modeHandler, &ModeHandler::StatusBarMessageChanged, setModeStatusbar);
+    connect(modeHandler, &ModeHandler::CurrentModeChanged, this, &AppWindow::UpdateImportExportMenus);
 
     SetupMenu();
 
@@ -1382,6 +1383,27 @@ bool AppWindow::LoadSetup(QString filename)
     QFileInfo fi(filename);
     lSetupName.setText("Setup: "+fi.fileName());
     return true;
+}
+
+void AppWindow::UpdateImportExportMenus()
+{
+    // clear menus of all actions first
+    ui->menuImport->clear();
+    ui->menuExport->clear();
+
+    // add action from currently active mode
+    auto active = modeHandler->getActiveMode();
+    if(active) {
+        for(auto a : active->getImportOptions()) {
+            ui->menuImport->addAction(a);
+        }
+        for(auto a : active->getExportOptions()) {
+            ui->menuExport->addAction(a);
+        }
+    }
+    // disable/enable menus
+    ui->menuImport->setEnabled(ui->menuImport->actions().size());
+    ui->menuExport->setEnabled(ui->menuExport->actions().size());
 }
 
 void AppWindow::LoadSetup(nlohmann::json j)

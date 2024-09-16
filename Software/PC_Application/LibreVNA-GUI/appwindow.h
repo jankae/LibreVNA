@@ -88,6 +88,7 @@ private slots:
     void DeviceInfoUpdated();
     void SaveSetup(QString filename);
     bool LoadSetup(QString filename);
+    void UpdateImportExportMenus();
 private:
     nlohmann::json SaveSetup();
     void LoadSetup(nlohmann::json j);

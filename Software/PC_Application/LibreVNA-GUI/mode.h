@@ -46,6 +46,8 @@ public:
     virtual void setAveragingMode(Averaging::Mode mode) = 0;
 
     virtual void preset() = 0;
+    virtual QList<QAction*> getImportOptions() { return {};}
+    virtual QList<QAction*> getExportOptions() { return {};}
 
 signals:
     void statusbarMessage(QString msg);

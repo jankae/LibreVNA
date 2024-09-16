@@ -9,7 +9,9 @@ class TraceWidgetVNA : public TraceWidget
 {
 public:
     TraceWidgetVNA(TraceModel &model, Calibration &cal, Deembedding &deembed, QWidget *parent = nullptr);
-protected slots:
+public slots:
+    void exportCSV();
+    void exportTouchstone();
     virtual void exportDialog() override {}
     virtual void importDialog() override;
 

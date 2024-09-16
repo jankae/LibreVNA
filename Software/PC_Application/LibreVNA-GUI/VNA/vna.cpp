@@ -581,6 +581,18 @@ VNA::VNA(AppWindow *window, QString name)
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);
 
+    auto importAction = new QAction("Touchstone/CSV");
+    connect(importAction, &QAction::triggered, traceWidget, &TraceWidgetVNA::importDialog);
+    importActions.push_back(importAction);
+
+    auto exportTouchstone = new QAction("Touchstone");
+    connect(exportTouchstone, &QAction::triggered, traceWidget, &TraceWidgetVNA::exportTouchstone);
+    exportActions.push_back(exportTouchstone);
+
+    auto exportCSV = new QAction("CSV");
+    connect(exportCSV, &QAction::triggered, traceWidget, &TraceWidgetVNA::exportCSV);
+    exportActions.push_back(exportCSV);
+
 
     auto markerWidget = new MarkerWidget(*markerModel);
 
