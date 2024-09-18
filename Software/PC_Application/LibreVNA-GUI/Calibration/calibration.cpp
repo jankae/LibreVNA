@@ -356,6 +356,7 @@ void Calibration::correctMeasurement(DeviceDriver::VNAMeasurement &d)
             auto name = "S"+QString::number(pRcv)+QString::number(pSrc);
             if(d.measurements.count(name) == 0) {
                 qWarning() << "Missing measurement for calibration:" << name;
+                S(j,i) = 0.0;
             } else {
                 // grab measurement and remove isolation here
                 S(j,i) = d.measurements[name];
