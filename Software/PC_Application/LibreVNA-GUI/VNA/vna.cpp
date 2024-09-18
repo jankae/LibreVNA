@@ -52,6 +52,7 @@
 #include <QScrollArea>
 #include <QStandardItemModel>
 #include <QDateTime>
+#include <QFileDialog>
 
 VNA::VNA(AppWindow *window, QString name)
     : Mode(window, name, "VNA"),
@@ -1747,6 +1748,60 @@ void VNA::preset()
     }
     // Create default traces
     createDefaultTracesAndGraphs(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports);
+}
+
+void VNA::saveView()
+{
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save VNA view data", "", "VNA view files (*.vnaview)", nullptr, QFileDialog::DontUseNativeDialog);
+    if(filename.isEmpty()) {
+        // aborted selection
+        return;
+    }
+    nlohmann::json j;
+    // only save data relevant to the view
+//    j["traces"] = traceModel.toJSON();
+    j["tiles"] = tiles->toJSON();
+    //    j["markers"] = markerModel->toJSON();
+
+    if(filename.toLower().endsWith(".vnaview")) {
+        filename.chop(8);
+    }
+    filename.append(".vnaview");
+    ofstream file;
+    file.open(filename.toStdString());
+    file << setw(1) << toJSON();
+}
+
+void VNA::loadView()
+{
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Load VNA view data", "", "VNA view files (*.vnaview)", nullptr, QFileDialog::DontUseNativeDialog);
+    if(filename.isEmpty()) {
+        // aborted selection
+        return;
+    }
+
+    ifstream file;
+
+    file.open(filename.toStdString());
+    if(!file.good()) {
+        QString msg = "Unable to open file: "+filename;
+        InformationBox::ShowError("Error", msg);
+        qWarning() << msg;
+        return;
+    }
+
+    try {
+        nlohmann::json j;
+        file >> j;
+        if(j.contains("tiles")) {
+            tiles->fromJSON(j["tiles"]);
+        }
+    } catch(exception &e) {
+        InformationBox::ShowError("File parsing error", e.what());
+        qWarning() << "View file parsing failed: " << e.what();
+        return;
+    }
+
 }
 
 QString VNA::SweepTypeToString(VNA::SweepType sw)

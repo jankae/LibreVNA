@@ -251,6 +251,14 @@ void AppWindow::SetupMenu()
         modeHandler->getActiveMode()->preset();
     });
 
+    connect(ui->actionSave, &QAction::triggered, [=](){
+        modeHandler->getActiveMode()->saveView();
+    });
+
+    connect(ui->actionLoad, &QAction::triggered, [=](){
+        modeHandler->getActiveMode()->loadView();
+    });
+
     connect(ui->actionPreferences, &QAction::triggered, [=](){
         // save previous SCPI settings in case they change
         auto &p = Preferences::getInstance();
@@ -392,7 +400,7 @@ bool AppWindow::ConnectToDevice(QString serial, DeviceDriver *driver)
 //            ui->actionReceiver_Calibration->setEnabled(true);
 //            ui->actionFrequency_Calibration->setEnabled(true);
 //        }
-        ui->actionPreset->setEnabled(true);
+//        ui->actionPreset->setEnabled(true);
 
         DeviceEntry e;
         e.serial = device->getSerial();
@@ -438,7 +446,7 @@ void AppWindow::DisconnectDevice()
     ui->actionSource_Calibration->setEnabled(false);
     ui->actionReceiver_Calibration->setEnabled(false);
     ui->actionFrequency_Calibration->setEnabled(false);
-    ui->actionPreset->setEnabled(false);
+//    ui->actionPreset->setEnabled(false);
     for(auto a : deviceActionGroup->actions()) {
         a->setChecked(false);
     }

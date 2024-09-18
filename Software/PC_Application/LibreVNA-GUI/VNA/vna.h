@@ -37,6 +37,8 @@ public:
     void setAveragingMode(Averaging::Mode mode) override;
 
     void preset() override;
+    void saveView() override;
+    void loadView() override;
 
     enum class SweepType {
         Frequency = 0,

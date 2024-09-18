@@ -46,6 +46,8 @@ public:
     virtual void setAveragingMode(Averaging::Mode mode) = 0;
 
     virtual void preset() = 0;
+    virtual void saveView() {};
+    virtual void loadView() {};
 
 signals:
     void statusbarMessage(QString msg);
