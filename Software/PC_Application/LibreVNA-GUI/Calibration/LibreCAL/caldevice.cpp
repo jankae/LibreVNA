@@ -1,7 +1,5 @@
 #include "caldevice.h"
 
-#include <thread>
-
 #include <QDebug>
 #include <QDateTime>
 using namespace std;
@@ -33,6 +31,8 @@ static QString getLocalDateTimeWithUtcOffset()
 CalDevice::CalDevice(QString serial) :
     usb(new USBDevice(serial))
 {
+    loadThread = nullptr;
+
     // Check device identification
     auto id = usb->Query("*IDN?");
     if(!id.startsWith("LibreCAL,")) {
@@ -169,10 +169,24 @@ QString CalDevice::getDateTimeUTC()
     }
 }
 
-void CalDevice::loadCoefficientSets(QStringList names)
+void CalDevice::loadCoefficientSets(QStringList names, bool fast)
 {
     coeffSets.clear();
-    new std::thread(&CalDevice::loadCoefficientSetsThread, this, names);
+    abortLoading = false;
+    if(fast) {
+        loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadFast, this, names);
+    } else {
+        loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadSlow, this, names);
+    }
+}
+
+void CalDevice::abortCoefficientLoading()
+{
+    if(loadThread) {
+        abortLoading = true;
+        loadThread->join();
+        loadThread = nullptr;
+    }
 }
 
 void CalDevice::saveCoefficientSets()
@@ -185,7 +199,7 @@ void CalDevice::saveCoefficientSets()
     }
 }
 
-void CalDevice::loadCoefficientSetsThread(QStringList names)
+void CalDevice::loadCoefficientSetsThreadSlow(QStringList names)
 {
     QStringList coeffList = getCoefficientSetNames();
     if(coeffList.empty()) {
@@ -208,6 +222,9 @@ void CalDevice::loadCoefficientSetsThread(QStringList names)
     unsigned long totalPoints = 0;
     for(auto name : coeffList) {
         for(int i=1;i<=numPorts;i++) {
+            if(abortLoading) {
+                return;
+            }
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_OPEN").toInt();
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_SHORT").toInt();
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_LOAD").toInt();
@@ -234,6 +251,9 @@ void CalDevice::loadCoefficientSetsThread(QStringList names)
                     c->t = Touchstone(1);
                 }
                 for(int i=0;i<points;i++) {
+                    if(abortLoading) {
+                        break;
+                    }
                     QString pString = usb->Query(":COEFF:GET? "+setName+" "+paramName+" "+QString::number(i));
                     QStringList values = pString.split(",");
                     Touchstone::Datapoint p;
@@ -265,6 +285,124 @@ void CalDevice::loadCoefficientSetsThread(QStringList names)
             for(int j=i+1;j<=numPorts;j++) {
                 set.throughs.push_back(createCoefficient(name, "P"+QString::number(i)+QString::number(j)+"_THROUGH"));
             }
+            if(abortLoading) {
+                return;
+            }
+        }
+        coeffSets.push_back(set);
+    }
+    emit updateCoefficientsDone(true);
+}
+
+void CalDevice::loadCoefficientSetsThreadFast(QStringList names)
+{
+    QStringList coeffList = getCoefficientSetNames();
+    if(coeffList.empty()) {
+        // something went wrong
+        emit updateCoefficientsDone(false);
+        return;
+    }
+    if(names.size() > 0) {
+        // check if all the requested names are actually available
+        for(auto n : names) {
+            if(!coeffList.contains(n)) {
+                // this coefficient does not exist
+                emit updateCoefficientsDone(false);
+                return;
+            }
+        }
+        coeffList = names;
+    }
+
+    QStringList coeffNames;
+    for(int i=1;i<=numPorts;i++) {
+        coeffNames.append("P"+QString::number(i)+"_OPEN");
+        coeffNames.append("P"+QString::number(i)+"_SHORT");
+        coeffNames.append("P"+QString::number(i)+"_LOAD");
+        for(int j=i+1;j<=numPorts;j++) {
+            coeffNames.append("P"+QString::number(i)+QString::number(j)+"_THROUGH");
+        }
+    }
+
+    int total_coeffs = coeffNames.size() * names.size();
+    int read_coeffs = 0;
+
+    for(auto name : coeffList) {
+        // create the coefficient set
+        CoefficientSet set;
+        set.name = name;
+        set.ports = numPorts;
+
+        auto createCoefficient = [&](QString setName, QString paramName) -> CoefficientSet::Coefficient* {
+            CoefficientSet::Coefficient *c = new CoefficientSet::Coefficient();
+            // ask for the whole set at once
+            usb->send(":COEFF:GET? "+setName+" "+paramName);
+            // handle incoming lines
+            if(paramName.endsWith("THROUGH")) {
+                c->t = Touchstone(2);
+            } else {
+                c->t = Touchstone(1);
+            }
+            c->t.setFilename("LibreCAL/"+paramName);
+            while(true) {
+                QString line;
+                if(!usb->receive(&line, 100)) {
+                    // failed to receive something, abort
+                    return c;
+                }
+                if(line.startsWith("ERROR")) {
+                    // something went wront
+                    return c;
+                }
+                // ignore start, comments and option line
+                if(line.startsWith("START") || line.startsWith("!") || line.startsWith("#")) {
+                    // ignore
+                    continue;
+                }
+                if(line.startsWith("END")) {
+                    // got all data
+                    return c;
+                }
+                // parse the values
+                try {
+                    QStringList values = line.split(" ");
+                    Touchstone::Datapoint p;
+                    p.frequency = values[0].toDouble() * 1e9;
+                    for(int j = 0;j<(values.size()-1)/2;j++) {
+                        double real = values[1+j*2].toDouble();
+                        double imag = values[2+j*2].toDouble();
+                        p.S.push_back(complex<double>(real, imag));
+                    }
+                    if(p.S.size() == 4) {
+                        // S21 and S12 are swapped in the touchstone file order (S21 goes first)
+                        // but Touchstone::AddDatapoint expects S11 S12 S21 S22 order. Swap to match that
+                        swap(p.S[1], p.S[2]);
+                    }
+                    c->t.AddDatapoint(p);
+                } catch (...) {
+                    return c;
+                }
+            }
+        };
+
+        for(auto coeff : coeffNames) {
+            auto c = createCoefficient(name, coeff);
+            if(abortLoading) {
+                return;
+            }
+            if(c) {
+                if(coeff.endsWith("_OPEN")) {
+                    set.opens.push_back(c);
+                } else if(coeff.endsWith("_SHORT")) {
+                    set.shorts.push_back(c);
+                } else if(coeff.endsWith("_LOAD")) {
+                    set.loads.push_back(c);
+                } else if(coeff.endsWith("_THROUGH")) {
+                    set.throughs.push_back(c);
+                }
+            }
+            read_coeffs++;
+            emit updateCoefficientsPercent(read_coeffs * 100 / total_coeffs);
         }
         coeffSets.push_back(set);
     }

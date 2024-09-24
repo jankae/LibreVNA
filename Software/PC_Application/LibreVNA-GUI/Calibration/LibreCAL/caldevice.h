@@ -6,6 +6,7 @@
 
 #include <QString>
 #include <QObject>
+#include <thread>
 
 class CalDevice : public QObject
 {
@@ -70,7 +71,9 @@ public:
     // Extracts the coefficients from the device. This is done with a dedicated thread.
     // Do not call any other functions until the update is finished. Process can be
     // monitored through the updateCoefficientsPercent and updateCoefficientsDone signals
-    void loadCoefficientSets(QStringList names = QStringList());
+    void loadCoefficientSets(QStringList names = QStringList(), bool fast=true);
+
+    void abortCoefficientLoading();
     // Writes coefficient sets to the device. This will only write modified files to save
     // time. This is done with a dedicated thread.
     // Do not call any other functions until the update is finished. Process can be
@@ -92,12 +95,15 @@ signals:
     void disconnected();
 
 private:
-    void loadCoefficientSetsThread(QStringList names = QStringList());
+    void loadCoefficientSetsThreadSlow(QStringList names = QStringList());
+    void loadCoefficientSetsThreadFast(QStringList names = QStringList());
     void saveCoefficientSetsThread();
 
     USBDevice *usb;
     QString firmware;
     int numPorts;
+    std::thread *loadThread;
+    bool abortLoading;
 
     float firmware_major_minor;
 

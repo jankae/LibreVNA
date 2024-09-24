@@ -21,6 +21,7 @@ static constexpr USBID IDs[] = {
 
 USBDevice::USBDevice(QString serial)
 {
+    rx_cnt = 0;
     m_handle = nullptr;
     libusb_init(&m_context);
 #if LIBUSB_API_VERSION >= 0x01000106
@@ -200,7 +201,7 @@ void USBDevice::SearchDevices(std::function<bool (libusb_device_handle *, QStrin
 
 bool USBDevice::send(const QString &s)
 {
-//    qDebug() << "Send:"<<s;
+    qDebug() << "Send:"<<s;
     unsigned char data[s.size()+2];
     memcpy(data, s.toLatin1().data(), s.size());
     memcpy(&data[s.size()], "\r\n", 2);
@@ -213,37 +214,69 @@ bool USBDevice::send(const QString &s)
     }
 }
 
-bool USBDevice::receive(QString *s)
+bool USBDevice::receive(QString *s, unsigned int timeout)
 {
-    char data[512];
-    memset(data, 0, sizeof(data));
-    int actual;
-    int rcvCnt = 0;
-    bool endOfLineFound = false;
-    int res;
-    do {
-        res = libusb_bulk_transfer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, (unsigned char*) &data[rcvCnt], sizeof(data) - rcvCnt, &actual, 2000);
-        for(int i=rcvCnt;i<rcvCnt+actual;i++) {
-            if(i == 0) {
-                continue;
-            }
-            if(data[i] == '\n' && data[i-1] == '\r') {
-                endOfLineFound = true;
-                data[i-1] = '\0';
-                break;
+    auto checkForCompleteLine = [this, s]() -> bool {
+        for(unsigned int i=1;i<rx_cnt;i++) {
+            if(rx_buf[i] == '\n' && rx_buf[i-1] == '\r') {
+                rx_buf[i-1] = '\0';
+                if(s) {
+                    *s = QString(rx_buf);
+//                      qDebug() << "Receive:"<<*s;
+                }
+                memmove(rx_buf, &rx_buf[i+1], sizeof(rx_buf) - (i+1));
+                rx_cnt -= i+1;
+                rx_buf[rx_cnt] = 0;
+//                qDebug() << "Remaining in buffer:" << QString(rx_buf);
+                return true;
             }
         }
-        rcvCnt += actual;
-    } while(res == 0 && !endOfLineFound);
-    if(res == 0) {
-        if(s) {
-            *s = QString(data);
-//            qDebug() << "Receive:"<<*s;
-        }
-        return true;
-    } else {
         return false;
+    };
+
+    int res = 0;
+    if(!checkForCompleteLine()) {
+        // needs to receive data
+        int actual;
+        do {
+            res = libusb_bulk_transfer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, (unsigned char*) &rx_buf[rx_cnt], 512, &actual, timeout);
+            rx_cnt += actual;
+//            qDebug() << "received" << actual << "bytes. Total in buffer:" << rx_cnt;
+            if(checkForCompleteLine()) {
+                return true;
+            }
+        } while(res == 0);
     }
+    return res == 0;
+//    char data[512];
+//    memset(data, 0, sizeof(data));
+//    int actual;
+//    int rcvCnt = 0;
+//    bool endOfLineFound = false;
+//    int res;
+//    do {
+//        res = libusb_bulk_transfer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, (unsigned char*) &data[rcvCnt], sizeof(data) - rcvCnt, &actual, 2000);
+//        for(int i=rcvCnt;i<rcvCnt+actual;i++) {
+//            if(i == 0) {
+//                continue;
+//            }
+//            if(data[i] == '\n' && data[i-1] == '\r') {
+//                endOfLineFound = true;
+//                data[i-1] = '\0';
+//                break;
+//            }
+//        }
+//        rcvCnt += actual;
+//    } while(res == 0 && !endOfLineFound);
+//    if(res == 0) {
+//        if(s) {
+//            *s = QString(data);
+////            qDebug() << "Receive:"<<*s;
+//        }
+//        return true;
+//    } else {
+//        return false;
+//    }
 }
 
 QString USBDevice::serial() const

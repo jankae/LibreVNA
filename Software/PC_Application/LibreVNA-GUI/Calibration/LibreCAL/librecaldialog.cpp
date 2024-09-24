@@ -19,6 +19,7 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
     busy(false)
 {
     ui->setupUi(this);
+    setAttribute(Qt::WA_DeleteOnClose);
 
     createPortAssignmentUI();
 
@@ -87,11 +88,6 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
         ui->cbDevice->addItem(device);
     }
 
-    connect(this, &QDialog::finished, [=](){
-        delete device;
-        device = nullptr;
-    });
-
     connect(ui->start, &QPushButton::clicked, this, &LibreCALDialog::startCalibration);
 
     updateCalibrationStartStatus();
@@ -102,6 +98,9 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
 
 LibreCALDialog::~LibreCALDialog()
 {
+    if(device) {
+        device->abortCoefficientLoading();
+    }
     delete device;
     delete ui;
 }

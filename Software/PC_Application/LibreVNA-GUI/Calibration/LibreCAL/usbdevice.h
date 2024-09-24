@@ -23,17 +23,20 @@ public:
     // Returns serial numbers of all connected devices
     static std::set<QString> GetDevices();
 
+    bool send(const QString &s);
+    bool receive(QString *s, unsigned int timeout = 2000);
 signals:
     void communicationFailure();
 
 private:
     static void SearchDevices(std::function<bool (libusb_device_handle *, QString)> foundCallback, libusb_context *context, bool ignoreOpenError);
-    bool send(const QString &s);
-    bool receive(QString *s);
     libusb_device_handle *m_handle;
     libusb_context *m_context;
 
     QString m_serial;
+
+    char rx_buf[1024];
+    unsigned int rx_cnt;
 };
 
 #endif // DEVICE_H
