@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>346</width>
-    <height>395</height>
+    <width>399</width>
+    <height>405</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,20 +58,6 @@
         </item>
        </layout>
       </item>
-      <item>
-       <widget class="QLabel" name="lCoefficientStatus">
-        <property name="text">
-         <string>COEFFICIENT_STATUS_PLACEHOLDER</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QProgressBar" name="progressCoeff">
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -116,21 +102,51 @@
          <string>Start</string>
         </property>
         <property name="icon">
-         <iconset theme="media-playback-start"/>
+         <iconset theme="media-playback-start">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Coefficients:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressCoeff">
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Calibration:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressCal">
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QLabel" name="lCalibrationStatus">
         <property name="text">
          <string>CALIBRATION_STATUS_PLACEHOLDER</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QProgressBar" name="progressCal">
-        <property name="value">
-         <number>0</number>
         </property>
        </widget>
       </item>

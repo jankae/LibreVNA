@@ -80,6 +80,10 @@ public:
         double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
     };
 
+
+signals:
+    void newRawDatapoint(DeviceDriver::VNAMeasurement m);
+
 public slots:
     void Run();
     void Stop();

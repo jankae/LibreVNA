@@ -132,6 +132,7 @@ HEADERS += \
     Traces/tracepolarchart.h \
     Util/prbs.h \
     Util/qpointervariant.h \
+    Util/usbinbuffer.h \
     Util/util.h \
     Util/app_common.h \
     VNA/Deembedding/deembedding.h \
@@ -280,6 +281,7 @@ SOURCES += \
     Traces/waterfallaxisdialog.cpp \
     Traces/xyplotaxisdialog.cpp \
     Util/prbs.cpp \
+    Util/usbinbuffer.cpp \
     Util/util.cpp \
     VNA/Deembedding/deembedding.cpp \
     VNA/Deembedding/deembeddingdialog.cpp \

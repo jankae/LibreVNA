@@ -336,6 +336,7 @@ void CalDevice::loadCoefficientSetsThreadFast(QStringList names)
         auto createCoefficient = [&](QString setName, QString paramName) -> CoefficientSet::Coefficient* {
             CoefficientSet::Coefficient *c = new CoefficientSet::Coefficient();
             // ask for the whole set at once
+            usb->flushReceived();
             usb->send(":COEFF:GET? "+setName+" "+paramName);
             // handle incoming lines
             if(paramName.endsWith("THROUGH")) {
@@ -346,7 +347,7 @@ void CalDevice::loadCoefficientSetsThreadFast(QStringList names)
             c->t.setFilename("LibreCAL/"+paramName);
             while(true) {
                 QString line;
-                if(!usb->receive(&line, 100)) {
+                if(!usb->receive(&line)) {
                     // failed to receive something, abort
                     return c;
                 }

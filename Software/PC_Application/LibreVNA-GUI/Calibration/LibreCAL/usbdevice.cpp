@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QString>
 #include <QMessageBox>
+#include <QDateTime>
 #include <mutex>
 
 using namespace std;
@@ -21,7 +22,6 @@ static constexpr USBID IDs[] = {
 
 USBDevice::USBDevice(QString serial)
 {
-    rx_cnt = 0;
     m_handle = nullptr;
     libusb_init(&m_context);
 #if LIBUSB_API_VERSION >= 0x01000106
@@ -67,18 +67,28 @@ USBDevice::USBDevice(QString serial)
         throw std::runtime_error(message.toStdString());
     }
     qInfo() << "USB connection established" << Qt::flush;
+
+    connected = true;
+    m_receiveThread = new std::thread(&USBDevice::USBHandleThread, this);
+    usbBuffer = new USBInBuffer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, 65536);
+    connect(usbBuffer, &USBInBuffer::DataReceived, this, &USBDevice::ReceivedData, Qt::DirectConnection);
 }
 
 USBDevice::~USBDevice()
 {
+    delete usbBuffer;
+    connected = false;
     libusb_release_interface(m_handle, 2);
     libusb_close(m_handle);
+    m_receiveThread->join();
     libusb_exit(m_context);
+    delete m_receiveThread;
 }
 
 bool USBDevice::Cmd(QString cmd)
 {
     QString rcv;
+    flushReceived();
     bool success = send(cmd) && receive(&rcv);
     if(success && rcv == "") {
         // empty response expected by commad
@@ -92,6 +102,7 @@ bool USBDevice::Cmd(QString cmd)
 
 QString USBDevice::Query(QString query)
 {
+    flushReceived();
     if(send(query)) {
         QString rcv;
         if(receive(&rcv)) {
@@ -201,7 +212,7 @@ void USBDevice::SearchDevices(std::function<bool (libusb_device_handle *, QStrin
 
 bool USBDevice::send(const QString &s)
 {
-    qDebug() << "Send:"<<s;
+//    qDebug() << "Send:"<<s;
     unsigned char data[s.size()+2];
     memcpy(data, s.toLatin1().data(), s.size());
     memcpy(&data[s.size()], "\r\n", 2);
@@ -216,67 +227,58 @@ bool USBDevice::send(const QString &s)
 
 bool USBDevice::receive(QString *s, unsigned int timeout)
 {
-    auto checkForCompleteLine = [this, s]() -> bool {
-        for(unsigned int i=1;i<rx_cnt;i++) {
-            if(rx_buf[i] == '\n' && rx_buf[i-1] == '\r') {
-                rx_buf[i-1] = '\0';
-                if(s) {
-                    *s = QString(rx_buf);
-//                      qDebug() << "Receive:"<<*s;
-                }
-                memmove(rx_buf, &rx_buf[i+1], sizeof(rx_buf) - (i+1));
-                rx_cnt -= i+1;
-                rx_buf[rx_cnt] = 0;
-//                qDebug() << "Remaining in buffer:" << QString(rx_buf);
-                return true;
-            }
+    // check if we already have a line queued
+    unique_lock<mutex> lck(mtx);
+    while(lineBuffer.size() == 0) {
+        // needs to wait for an incoming line
+        using namespace std::chrono_literals;
+        if(cv.wait_for(lck, std::chrono::milliseconds(timeout)) == cv_status::timeout) {
+            qWarning() << "Timed out while waiting for received line";
+            return false;
         }
-        return false;
-    };
-
-    int res = 0;
-    if(!checkForCompleteLine()) {
-        // needs to receive data
-        int actual;
-        do {
-            res = libusb_bulk_transfer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, (unsigned char*) &rx_buf[rx_cnt], 512, &actual, timeout);
-            rx_cnt += actual;
-//            qDebug() << "received" << actual << "bytes. Total in buffer:" << rx_cnt;
-            if(checkForCompleteLine()) {
-                return true;
-            }
-        } while(res == 0);
     }
-    return res == 0;
-//    char data[512];
-//    memset(data, 0, sizeof(data));
-//    int actual;
-//    int rcvCnt = 0;
-//    bool endOfLineFound = false;
-//    int res;
-//    do {
-//        res = libusb_bulk_transfer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, (unsigned char*) &data[rcvCnt], sizeof(data) - rcvCnt, &actual, 2000);
-//        for(int i=rcvCnt;i<rcvCnt+actual;i++) {
-//            if(i == 0) {
-//                continue;
-//            }
-//            if(data[i] == '\n' && data[i-1] == '\r') {
-//                endOfLineFound = true;
-//                data[i-1] = '\0';
-//                break;
-//            }
-//        }
-//        rcvCnt += actual;
-//    } while(res == 0 && !endOfLineFound);
-//    if(res == 0) {
-//        if(s) {
-//            *s = QString(data);
-////            qDebug() << "Receive:"<<*s;
-//        }
-//        return true;
-//    } else {
-//        return false;
-//    }
+    *s = lineBuffer.takeFirst();
+    return true;
+}
+
+void USBDevice::ReceivedData()
+{
+    uint16_t handled_len;
+//    qDebug() << "received new data";
+    unique_lock<mutex> lck(mtx);
+    do {
+        handled_len = 0;
+        auto firstLinebreak = (uint8_t*) memchr(usbBuffer->getBuffer(), '\n', usbBuffer->getReceived());
+        if(firstLinebreak) {
+            handled_len = firstLinebreak - usbBuffer->getBuffer();
+            auto line = QString::fromLatin1((const char*) usbBuffer->getBuffer(), handled_len - 1);
+
+            // add received line to buffer
+            lineBuffer.append(line);
+//            qDebug() << "append" << line << "size" << lineBuffer.size();
+
+            usbBuffer->removeBytes(handled_len + 1);
+        }
+    } while(handled_len > 0);
+    if(lineBuffer.size() > 0) {
+        cv.notify_one();
+    }
+//    qDebug() << "notify done";
+}
+
+void USBDevice::flushReceived()
+{
+    unique_lock<mutex> lck(mtx);
+    lineBuffer.clear();
+}
+
+void USBDevice::USBHandleThread()
+{
+    qDebug() << "Receive thread started";
+    while (connected) {
+        libusb_handle_events(m_context);
+    }
+    qDebug() << "Disconnected, receive thread exiting";
 }
 
 QString USBDevice::serial() const

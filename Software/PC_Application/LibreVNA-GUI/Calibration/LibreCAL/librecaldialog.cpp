@@ -41,15 +41,21 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
             connect(device, &CalDevice::updateCoefficientsPercent, ui->progressCoeff, &QProgressBar::setValue);
             connect(device, &CalDevice::updateCoefficientsDone, this, [=](bool success){
                 busy = false;
+                updateCalibrationStartStatus();
                 if(success) {
                     ui->progressCoeff->setValue(100);
-                    ui->lCoefficientStatus->setText("Coefficients loaded.");
+                    ui->lCalibrationStatus->setText("Coefficients loaded.");
                     coeffSet = device->getCoefficientSets()[0];
+
+                    if(validateCoefficients()) {
+                        startCalibration();
+                    } else {
+                        enableUI();
+                    }
                 } else {
                     ui->progressCal->setValue(0);
-                    ui->lCoefficientStatus->setText("Failed to load coefficients");
+                    ui->lCalibrationStatus->setText("Failed to load coefficients");
                 }
-                updateCalibrationStartStatus();
             }, Qt::QueuedConnection);
 
             ui->cbCoefficients->clear();
@@ -58,6 +64,10 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
                 ui->cbCoefficients->addItem(c);
             }
             ui->cbCoefficients->setEnabled(true);
+            // select first available coefficient set
+            if(ui->cbCoefficients->count() > 1) {
+                ui->cbCoefficients->setCurrentIndex(1);
+            }
         } else {
             ui->cbCoefficients->clear();
             ui->cbCoefficients->setEnabled(false);
@@ -68,19 +78,9 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
     connect(ui->cbCoefficients, &QComboBox::currentTextChanged, [=](){
         // no coefficient set selected
         ui->progressCoeff->setValue(0);
-        ui->lCoefficientStatus->setText("No coefficients loaded");
         coeffSet = CalDevice::CoefficientSet();
+        ui->lCalibrationStatus->setText("No coefficients loaded");
         updateCalibrationStartStatus();
-
-        if(ui->cbCoefficients->currentIndex() > 0) {
-            if(!device) {
-                qWarning() << "Coefficients selected without connected device";
-                return;
-            }
-            busy = true;
-            ui->lCoefficientStatus->setText("Loading coefficients...");
-            device->loadCoefficientSets({ui->cbCoefficients->currentText()});
-        }
     });
 
     auto deviceList = USBDevice::GetDevices();
@@ -88,7 +88,8 @@ LibreCALDialog::LibreCALDialog(Calibration *cal) :
         ui->cbDevice->addItem(device);
     }
 
-    connect(ui->start, &QPushButton::clicked, this, &LibreCALDialog::startCalibration);
+    connect(ui->start, &QPushButton::clicked, this, &LibreCALDialog::determineAutoPorts);
+    connect(this, &LibreCALDialog::autoPortComplete, this, &LibreCALDialog::loadCoefficients);
 
     updateCalibrationStartStatus();
     updateDeviceStatus();
@@ -105,29 +106,28 @@ LibreCALDialog::~LibreCALDialog()
     delete ui;
 }
 
-void LibreCALDialog::updateCalibrationStartStatus()
+bool LibreCALDialog::validatePortSelection(bool autoAllowed)
 {
-    bool canStart = true;
-    QString status = "Ready to start";
-    if(!device) {
-        status = "Not connected to a LibreCAL device.";
-        canStart = false;
-    }
     set<int> usedCalPorts;
-    if(canStart) {
-        // Check port mapping for duplicate entries (and at least one used port)
-        for(auto port : portAssignment) {
-            if(port < 1) {
-                // skip unused ports
-                continue;
-            }
-            if(usedCalPorts.count(port)) {
-                status = "LibreCAL port "+QString::number(port)+" is assigned to multiple VNA ports.";
-                canStart = false;
-                break;
-            } else {
-                usedCalPorts.insert(port);
-            }
+    QString status;
+    bool canStart = true;
+    // Check port mapping for duplicate entries (and at least one used port)
+    for(auto port : portAssignment) {
+        if(autoAllowed && port == -1) {
+            // auto port, to be determined later
+            usedCalPorts.insert(port);
+            // skip duplicate selection
+            continue;
+        } else if(port < 1) {
+            // skip unused ports
+            continue;
+        }
+        if(usedCalPorts.count(port)) {
+            status = "LibreCAL port "+QString::number(port)+" is assigned to multiple VNA ports.";
+            canStart = false;
+            break;
+        } else {
+            usedCalPorts.insert(port);
         }
     }
     if(canStart) {
@@ -137,68 +137,104 @@ void LibreCALDialog::updateCalibrationStartStatus()
             canStart = false;
         }
     }
-    if(canStart) {
-        // check if coefficients have been loaded
-        if(coeffSet.opens.size() != device->getNumPorts()) {
-            status = "Coefficients not loaded";
+    if(!canStart) {
+        ui->lCalibrationStatus->setText(status);
+        ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
+    }
+    return canStart;
+}
+
+bool LibreCALDialog::validateCoefficients()
+{
+    bool canStart = true;
+    QString status;
+
+    double coeffMinFreq = numeric_limits<double>::max();
+    double coeffMaxFreq = numeric_limits<double>::lowest();
+
+    auto checkCoefficient = [&](CalDevice::CoefficientSet::Coefficient *c) -> bool {
+        if(c->t.points() == 0) {
+            return false;
+        } else {
+            if(c->t.minFreq() < coeffMinFreq) {
+                coeffMinFreq = c->t.minFreq();
+            }
+            if(c->t.maxFreq() > coeffMaxFreq) {
+                coeffMaxFreq = c->t.maxFreq();
+            }
+            return true;
+        }
+    };
+
+    set<int> usedCalPorts;
+    // Check port mapping for duplicate entries (and at least one used port)
+    for(auto port : portAssignment) {
+        if(port > 0) {
+            usedCalPorts.insert(port);
+        }
+    }
+
+    // check if coefficients for all ports are available
+    for(auto i : usedCalPorts) {
+        // Check if OSL coefficients are there
+        if(!checkCoefficient(coeffSet.opens[i-1])) {
+            status = "Open coefficient for LibreCAL port "+QString::number(i)+" is missing.";
             canStart = false;
+            break;
+        }
+        if(!checkCoefficient(coeffSet.shorts[i-1])) {
+            status = "Short coefficient for LibreCAL port "+QString::number(i)+" is missing.";
+            canStart = false;
+            break;
+        }
+        if(!checkCoefficient(coeffSet.loads[i-1])) {
+            status = "Load coefficient for LibreCAL port "+QString::number(i)+" is missing.";
+            canStart = false;
+            break;
+        }
+        for(auto j : usedCalPorts) {
+            if(j <= i) {
+                continue;
+            }
+            if(!checkCoefficient(coeffSet.getThrough(i,j))) {
+                status = "Through coefficient for LibreCAL port "+QString::number(i)+" to "+QString::number(j)+" is missing.";
+                canStart = false;
+                break;
+            }
         }
     }
+    if(!canStart) {
+        ui->lCalibrationStatus->setText(status);
+        ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
+    }
+    return canStart;
+}
+
+void LibreCALDialog::updateCalibrationStartStatus()
+{
+    bool canStart = true;
+    if(!device) {
+        canStart = false;
+        ui->lCalibrationStatus->setText("Not connected to a LibreCAL device");
+        ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
+    }
+
     if(canStart) {
-        double coeffMinFreq = numeric_limits<double>::max();
-        double coeffMaxFreq = numeric_limits<double>::lowest();
-
-        auto checkCoefficient = [&](CalDevice::CoefficientSet::Coefficient *c) -> bool {
-            if(c->t.points() == 0) {
-                return false;
-            } else {
-                if(c->t.minFreq() < coeffMinFreq) {
-                    coeffMinFreq = c->t.minFreq();
-                }
-                if(c->t.maxFreq() > coeffMaxFreq) {
-                    coeffMaxFreq = c->t.maxFreq();
-                }
-                return true;
-            }
-        };
-
-        // check if coefficients for all ports are available
-        for(auto i : usedCalPorts) {
-            // Check if OSL coefficients are there
-            if(!checkCoefficient(coeffSet.opens[i-1])) {
-                status = "Open coefficient for LibreCAL port "+QString::number(i)+" is missing.";
-                canStart = false;
-                break;
-            }
-            if(!checkCoefficient(coeffSet.shorts[i-1])) {
-                status = "Short coefficient for LibreCAL port "+QString::number(i)+" is missing.";
-                canStart = false;
-                break;
-            }
-            if(!checkCoefficient(coeffSet.loads[i-1])) {
-                status = "Load coefficient for LibreCAL port "+QString::number(i)+" is missing.";
-                canStart = false;
-                break;
-            }
-            for(auto j : usedCalPorts) {
-                if(j <= i) {
-                    continue;
-                }
-                if(!checkCoefficient(coeffSet.getThrough(i,j))) {
-                    status = "Through coefficient for LibreCAL port "+QString::number(i)+" to "+QString::number(j)+" is missing.";
-                    canStart = false;
-                    break;
-                }
-            }
+        if(ui->cbCoefficients->currentIndex() == 0) {
+            canStart = false;
+            ui->lCalibrationStatus->setText("No coefficient set selected");
+            ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
         }
     }
 
-    ui->lCalibrationStatus->setText(status);
+    if(canStart) {
+        canStart = validatePortSelection(true);
+    }
+
     ui->start->setEnabled(canStart);
     if(canStart) {
+        ui->lCalibrationStatus->setText("Ready to start");
         ui->lCalibrationStatus->setStyleSheet("QLabel { color : black; }");
-    } else {
-        ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
     }
 }
 
@@ -220,6 +256,153 @@ void LibreCALDialog::updateDeviceStatus()
         ui->lDeviceStatus->setText("Heating up, please wait with calibration");
         ui->lDeviceStatus->setStyleSheet("QLabel { color : orange; }");
     }
+}
+
+void LibreCALDialog::determineAutoPorts()
+{
+    ui->progressCal->setValue(0);
+    ui->lCalibrationStatus->setText("Autodetecting port connections...");
+    ui->lCalibrationStatus->setStyleSheet("QLabel { color : green; }");
+
+    // check if any ports are set to auto
+    bool usesAuto = false;
+    for(auto port : portAssignment) {
+        if(port == -1) {
+            usesAuto = true;
+            break;
+        }
+    }
+    if(usesAuto) {
+        driver = DeviceDriver::getActiveDriver();
+        emit driver->acquireControl();
+        // Determine ports by setting all ports to open and then switching them to short one at a time while observing the change in the VNA measurement
+        for(unsigned int i=1;i<=device->getNumPorts();i++) {
+            device->setStandard(i, CalDevice::Standard::Type::Open);
+        }
+        autoPortMeasurements.clear();
+        startSweep();
+    } else {
+        // no auto ports
+        emit autoPortComplete();
+    }
+}
+
+void LibreCALDialog::loadCoefficients()
+{
+    // validate ports again, at this point no "auto" selection is allowed anymore
+    if(!validatePortSelection(false)) {
+        enableUI();
+        updateCalibrationStartStatus();
+    } else {
+        // can continue with loading coefficients
+        // they might already be loaded from a previous calibration run, check first
+//        if(!validateCoefficients()) {
+            // TODO only load required coefficients
+            ui->progressCal->setValue(0);
+            ui->lCalibrationStatus->setText("Loading coefficients...");
+            ui->lCalibrationStatus->setStyleSheet("QLabel { color : green; }");
+
+            busy = true;
+            device->loadCoefficientSets({ui->cbCoefficients->currentText()});
+//        } else {
+//            // can proceed with calibration directly
+//            startCalibration();
+//        }
+    }
+}
+
+void LibreCALDialog::handleIncomingMeasurement(DeviceDriver::VNAMeasurement m)
+{
+    stopSweep();
+    autoPortMeasurements.push_back(m);
+    auto nextPort = autoPortMeasurements.size();
+    // switch LibreCAL to next port
+    if(nextPort <= device->getNumPorts()) {
+        device->setStandard(nextPort, CalDevice::Standard::Type::Short);
+    }
+    if(nextPort > 1) {
+        device->setStandard(nextPort-1, CalDevice::Standard::Type::Open);
+    }
+    if(nextPort > device->getNumPorts()) {
+        // auto port measurements complete
+
+        // reset LibreCAL ports
+        for(unsigned int i=1;i<=device->getNumPorts();i++) {
+            device->setStandard(i, CalDevice::Standard::Type::None);
+        }
+        // evaluate results
+        for(unsigned int p=0;p<portAssignment.size();p++) {
+            auto port = portAssignment[p];
+            if(port != -1) {
+                // not set to auto, ignore
+                continue;
+            }
+            auto param = "S"+QString::number(p+1)+QString::number(p+1);
+            std::vector<std::complex<double>> measurements;
+            for(auto m : autoPortMeasurements) {
+                if(m.measurements.count(param)) {
+                    measurements.push_back(m.measurements[param]);
+                }
+            }
+            if(measurements.size() != device->getNumPorts()+1) {
+                // not all measurements available (maybe the port has no stimulus?), set to unused
+                portAssignmentComboBoxes[p]->setCurrentIndex(0);
+                continue;
+            }
+            // got all required measurements, determine which one deviates the most from the baseline
+            double maxDeviation = 0.0;
+            int maxDevIndex = 0;
+            for(unsigned int i=1;i<=device->getNumPorts();i++) {
+                auto diff = abs(measurements[i] - measurements[0]);
+                if (diff > maxDeviation) {
+                    maxDeviation = diff;
+                    maxDevIndex = i;
+                }
+            }
+            constexpr double minRequiredDeviation = 0.25;
+            if(maxDeviation > minRequiredDeviation) {
+                portAssignmentComboBoxes[p]->setCurrentIndex(maxDevIndex+1);
+            } else {
+                // not enough deviation, probably unused
+                portAssignmentComboBoxes[p]->setCurrentIndex(0);
+            }
+        }
+        emit driver->releaseControl();
+        emit autoPortComplete();
+    } else {
+        // trigger the next measurement
+        startSweep();
+    }
+}
+
+void LibreCALDialog::startSweep()
+{
+    // set up a sweep with a single measurement point at the start frequency
+    auto info = driver->getInfo();
+    DeviceDriver::VNASettings s = {};
+    s.dBmStart = info.Limits.VNA.maxdBm;
+    s.dBmStop = info.Limits.VNA.maxdBm;
+
+    auto freq = info.Limits.VNA.minFreq == 0 ? 100000 : info.Limits.VNA.minFreq;
+
+    s.freqStart = freq;
+    s.freqStop = freq;
+    s.IFBW = 100;
+    s.logSweep = false;
+    s.points = 1;
+
+    for(unsigned int i=1;i<=info.Limits.VNA.ports;i++) {
+        s.excitedPorts.push_back(i);
+    }
+    driver->setVNA(s, [=](bool){
+        connect(driver, &DeviceDriver::VNAmeasurementReceived, this, &LibreCALDialog::handleIncomingMeasurement, Qt::DirectConnection);
+    });
+}
+
+void LibreCALDialog::stopSweep()
+{
+    disconnect(driver, &DeviceDriver::VNAmeasurementReceived, this, &LibreCALDialog::handleIncomingMeasurement);
+    driver->setIdle();
 }
 
 void LibreCALDialog::startCalibration()
@@ -441,7 +624,7 @@ void LibreCALDialog::createPortAssignmentUI()
     if(device) {
         calPorts = device->getNumPorts();
     }
-    QStringList choices = {"Unused"};
+    QStringList choices = {"Unused", "Auto"};
     for(int i=1;i<=calPorts;i++) {
         choices.push_back("Port "+QString::number(i));
     }
@@ -450,16 +633,16 @@ void LibreCALDialog::createPortAssignmentUI()
         auto comboBox = new QComboBox();
         comboBox->addItems(choices);
         connect(comboBox, qOverload<int>(&QComboBox::currentIndexChanged), [=](){
-            portAssignment[p-1] = comboBox->currentIndex();
+            if(comboBox->currentText().startsWith("Unused")) {
+                portAssignment[p-1] = 0;
+            } else if(comboBox->currentText().startsWith("Auto")) {
+                portAssignment[p-1] = -1;
+            } else if(comboBox->currentText().startsWith("Port")) {
+                portAssignment[p-1] = comboBox->currentText().back().digitValue();
+            }
             emit portAssignmentChanged();
         });
-        // try to set the default
-        if(comboBox->count() > (int) p) {
-            comboBox->setCurrentIndex(p);
-        } else {
-            // port not available, set to unused
-            comboBox->setCurrentIndex(0);
-        }
+        comboBox->setCurrentIndex(1);
         layout->addRow(label, comboBox);
         portAssignmentComboBoxes.push_back(comboBox);
     }

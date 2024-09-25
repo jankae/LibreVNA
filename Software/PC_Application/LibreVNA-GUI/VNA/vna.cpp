@@ -917,6 +917,8 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
         qDebug() << "Sweep took"<<sweepTime<<"milliseconds";
     }
 
+    emit newRawDatapoint(m);
+
     if(singleSweep && average.getLevel() == averages) {
         Stop();
         return;

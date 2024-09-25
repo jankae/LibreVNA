@@ -126,6 +126,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Traces/xyplotaxisdialog.cpp \
     ../LibreVNA-GUI/Util/prbs.cpp \
     ../LibreVNA-GUI/Util/util.cpp \
+    ../LibreVNA-GUI/Util/usbinbuffer.cpp \
     ../LibreVNA-GUI/VNA/Deembedding/deembedding.cpp \
     ../LibreVNA-GUI/VNA/Deembedding/deembeddingdialog.cpp \
     ../LibreVNA-GUI/VNA/Deembedding/deembeddingoption.cpp \
@@ -317,6 +318,7 @@ HEADERS += \
     ../LibreVNA-GUI/Traces/xyplotaxisdialog.h \
     ../LibreVNA-GUI/Util/prbs.h \
     ../LibreVNA-GUI/Util/util.h \
+    ../LibreVNA-GUI/Util/usbinbuffer.h \
     ../LibreVNA-GUI/VNA/Deembedding/deembedding.h \
     ../LibreVNA-GUI/VNA/Deembedding/deembeddingdialog.h \
     ../LibreVNA-GUI/VNA/Deembedding/deembeddingoption.h \

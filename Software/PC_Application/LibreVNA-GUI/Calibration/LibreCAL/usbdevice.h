@@ -1,10 +1,14 @@
 #ifndef USBDEVICE_H
 #define USBDEVICE_H
 
+#include "Util/usbinbuffer.h"
+
 #include <libusb-1.0/libusb.h>
 #include <QString>
 #include <set>
 #include <functional>
+#include <mutex>
+#include <thread>
 
 #include <QObject>
 
@@ -25,18 +29,27 @@ public:
 
     bool send(const QString &s);
     bool receive(QString *s, unsigned int timeout = 2000);
+    void flushReceived();
 signals:
     void communicationFailure();
 
+private slots:
+    void ReceivedData();
 private:
+    void USBHandleThread();
+    bool connected;
+    std::thread *m_receiveThread;
+
     static void SearchDevices(std::function<bool (libusb_device_handle *, QString)> foundCallback, libusb_context *context, bool ignoreOpenError);
     libusb_device_handle *m_handle;
     libusb_context *m_context;
 
-    QString m_serial;
+    USBInBuffer *usbBuffer;
+    std::mutex mtx;
+    std::condition_variable cv;
+    QStringList lineBuffer;
 
-    char rx_buf[1024];
-    unsigned int rx_cnt;
+    QString m_serial;
 };
 
 #endif // DEVICE_H
