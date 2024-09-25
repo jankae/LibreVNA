@@ -212,7 +212,6 @@ void USBDevice::SearchDevices(std::function<bool (libusb_device_handle *, QStrin
 
 bool USBDevice::send(const QString &s)
 {
-//    qDebug() << "Send:"<<s;
     unsigned char data[s.size()+2];
     memcpy(data, s.toLatin1().data(), s.size());
     memcpy(&data[s.size()], "\r\n", 2);
@@ -244,7 +243,6 @@ bool USBDevice::receive(QString *s, unsigned int timeout)
 void USBDevice::ReceivedData()
 {
     uint16_t handled_len;
-//    qDebug() << "received new data";
     unique_lock<mutex> lck(mtx);
     do {
         handled_len = 0;
@@ -255,7 +253,6 @@ void USBDevice::ReceivedData()
 
             // add received line to buffer
             lineBuffer.append(line);
-//            qDebug() << "append" << line << "size" << lineBuffer.size();
 
             usbBuffer->removeBytes(handled_len + 1);
         }
@@ -263,7 +260,6 @@ void USBDevice::ReceivedData()
     if(lineBuffer.size() > 0) {
         cv.notify_one();
     }
-//    qDebug() << "notify done";
 }
 
 void USBDevice::flushReceived()

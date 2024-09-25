@@ -1,7 +1,10 @@
 #include "caldevice.h"
 
+#include "Util/util.h"
+
 #include <QDebug>
 #include <QDateTime>
+
 using namespace std;
 
 static QString getLocalDateTimeWithUtcOffset()
@@ -173,7 +176,7 @@ void CalDevice::loadCoefficientSets(QStringList names, bool fast)
 {
     coeffSets.clear();
     abortLoading = false;
-    if(fast) {
+    if(fast && Util::firmwareEqualOrHigher(firmware, "0.2.1")) {
         loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadFast, this, names);
     } else {
         loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadSlow, this, names);

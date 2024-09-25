@@ -166,6 +166,8 @@ namespace Util {
 
     // intensity color scale, input value from 0.0 to 1.0
     QColor getIntensityGradeColor(double intensity);
+
+    bool firmwareEqualOrHigher(QString firmware, QString compare);
 }
 
 #endif // UTILH_H

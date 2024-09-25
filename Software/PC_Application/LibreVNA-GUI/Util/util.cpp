@@ -201,3 +201,27 @@ QColor Util::getIntensityGradeColor(double intensity)
         return Qt::black;
     }
 }
+
+bool Util::firmwareEqualOrHigher(QString firmware, QString compare)
+{
+    QStringList f = firmware.split(".");
+    QStringList c = compare.split(".");
+    if(f.size() != 3 || c.size() != 3) {
+        return false;
+    }
+    if(f[0].toInt() < c[0].toInt()) {
+        return false;
+    } else if(f[0].toInt() > c[0].toInt()) {
+        return true;
+    }
+    if(f[1].toInt() < c[1].toInt()) {
+        return false;
+    } else if(f[1].toInt() > c[1].toInt()) {
+        return true;
+    }
+    if(f[2].toInt() < c[2].toInt()) {
+        return false;
+    } else {
+        return true;
+    }
+}

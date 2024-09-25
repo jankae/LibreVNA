@@ -63,3 +63,18 @@ void UtilTests::NoisyCircleApproximation()
     QVERIFY(abs(center.real() - circCenter.real()) <= maxDelta);
     QVERIFY(abs(center.imag() - circCenter.imag()) <= maxDelta);
 }
+
+void UtilTests::FirmwareComparison()
+{
+    QVERIFY(Util::firmwareEqualOrHigher("3.1.2", "2.1.2") == true);
+    QVERIFY(Util::firmwareEqualOrHigher("2.1.2", "2.0.2") == true);
+    QVERIFY(Util::firmwareEqualOrHigher("2.1.2", "2.1.1") == true);
+    QVERIFY(Util::firmwareEqualOrHigher("2.1.2", "2.1.2") == true);
+    QVERIFY(Util::firmwareEqualOrHigher("2.1.1", "2.1.2") == false);
+
+    QVERIFY(Util::firmwareEqualOrHigher("2.2.2", "2.3.1") == false);
+    QVERIFY(Util::firmwareEqualOrHigher("2.2.2", "2.1.3") == true);
+
+    QVERIFY(Util::firmwareEqualOrHigher("2.2.2", "2.3") == false);
+    QVERIFY(Util::firmwareEqualOrHigher("2.2", "2.3.1") == false);
+}

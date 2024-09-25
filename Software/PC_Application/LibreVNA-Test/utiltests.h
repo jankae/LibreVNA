@@ -13,6 +13,7 @@ private slots:
     void IdealCircleApproximation();
     void IdealArcApproximation();
     void NoisyCircleApproximation();
+    void FirmwareComparison();
 };
 
 #endif // UTILTESTS_H
