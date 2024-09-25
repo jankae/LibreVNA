@@ -153,6 +153,9 @@ bool LibreCALDialog::validateCoefficients()
     double coeffMaxFreq = numeric_limits<double>::lowest();
 
     auto checkCoefficient = [&](CalDevice::CoefficientSet::Coefficient *c) -> bool {
+        if(!c) {
+            return false;
+        }
         if(c->t.points() == 0) {
             return false;
         } else {
@@ -177,17 +180,17 @@ bool LibreCALDialog::validateCoefficients()
     // check if coefficients for all ports are available
     for(auto i : usedCalPorts) {
         // Check if OSL coefficients are there
-        if(!checkCoefficient(coeffSet.opens[i-1])) {
+        if(!checkCoefficient(coeffSet.getOpen(i))) {
             status = "Open coefficient for LibreCAL port "+QString::number(i)+" is missing.";
             canStart = false;
             break;
         }
-        if(!checkCoefficient(coeffSet.shorts[i-1])) {
+        if(!checkCoefficient(coeffSet.getShort(i))) {
             status = "Short coefficient for LibreCAL port "+QString::number(i)+" is missing.";
             canStart = false;
             break;
         }
-        if(!checkCoefficient(coeffSet.loads[i-1])) {
+        if(!checkCoefficient(coeffSet.getLoad(i))) {
             status = "Load coefficient for LibreCAL port "+QString::number(i)+" is missing.";
             canStart = false;
             break;
@@ -296,18 +299,26 @@ void LibreCALDialog::loadCoefficients()
     } else {
         // can continue with loading coefficients
         // they might already be loaded from a previous calibration run, check first
-//        if(!validateCoefficients()) {
-            // TODO only load required coefficients
+        if(!validateCoefficients()) {
+            // only load required coefficients
             ui->progressCal->setValue(0);
             ui->lCalibrationStatus->setText("Loading coefficients...");
             ui->lCalibrationStatus->setStyleSheet("QLabel { color : green; }");
 
-            busy = true;
-            device->loadCoefficientSets({ui->cbCoefficients->currentText()});
-//        } else {
-//            // can proceed with calibration directly
-//            startCalibration();
-//        }
+            // determine the used ports of the LibreCAL
+            QList<int> usedPorts;
+            for(auto port : portAssignment) {
+                if(port > 0) {
+                    usedPorts.append(port);
+                }
+            }
+
+            busy = true;            
+            device->loadCoefficientSets({ui->cbCoefficients->currentText()}, usedPorts);
+        } else {
+            // can proceed with calibration directly
+            startCalibration();
+        }
     }
 }
 
@@ -417,33 +428,45 @@ void LibreCALDialog::startCalibration()
     kit.manufacturer = "LibreCAL ("+coeffSet.name+")";
     kit.serialnumber = device->serial();
     kit.description = "Automatically created from LibreCAL module";
-    std::vector<CalStandard::Virtual*> openStandards;
-    std::vector<CalStandard::Virtual*> shortStandards;
-    std::vector<CalStandard::Virtual*> loadStandards;
-    std::vector<CalStandard::Virtual*> throughStandards;
-    for(unsigned int i=1;i<=device->getNumPorts();i++) {
-        if(coeffSet.opens[i-1]->t.points() > 0) {
+
+    // determine the used ports of the LibreCAL
+    QList<int> usedPorts;
+    for(auto port : portAssignment) {
+        if(port > 0) {
+            usedPorts.append(port);
+        }
+    }
+    std::sort(usedPorts.begin(), usedPorts.end());
+
+    std::map<int, CalStandard::Virtual*> openStandards;
+    std::map<int, CalStandard::Virtual*> shortStandards;
+    std::map<int, CalStandard::Virtual*> loadStandards;
+    std::map<int, CalStandard::Virtual*> throughStandards;
+    for(unsigned int idx=0;idx<usedPorts.size();idx++) {
+        int i=usedPorts[idx];
+        if(coeffSet.getOpen(i)->t.points() > 0) {
             auto o = new CalStandard::Open();
             o->setName("Port "+QString::number(i));
-            o->setMeasurement(coeffSet.opens[i-1]->t);
-            openStandards.push_back(o);
+            o->setMeasurement(coeffSet.getOpen(i)->t);
+            openStandards[i] = o;
             kit.addStandard(o);
         }
-        if(coeffSet.shorts[i-1]->t.points() > 0) {
+        if(coeffSet.getShort(i)->t.points() > 0) {
             auto o = new CalStandard::Short();
             o->setName("Port "+QString::number(i));
-            o->setMeasurement(coeffSet.shorts[i-1]->t);
-            shortStandards.push_back(o);
+            o->setMeasurement(coeffSet.getShort(i)->t);
+            shortStandards[i] = o;
             kit.addStandard(o);
         }
-        if(coeffSet.loads[i-1]->t.points() > 0) {
+        if(coeffSet.getLoad(i)->t.points() > 0) {
             auto o = new CalStandard::Load();
             o->setName("Port "+QString::number(i));
-            o->setMeasurement(coeffSet.loads[i-1]->t);
-            loadStandards.push_back(o);
+            o->setMeasurement(coeffSet.getLoad(i)->t);
+            loadStandards[i] = o;
             kit.addStandard(o);
         }
-        for(unsigned int j=i+1;j<=device->getNumPorts();j++) {
+        for(unsigned int jdx=idx+1;jdx<usedPorts.size();jdx++) {
+            int j=usedPorts[jdx];
             auto c = coeffSet.getThrough(i,j);
             if(!c) {
                 continue;
@@ -452,7 +475,7 @@ void LibreCALDialog::startCalibration()
                 auto o = new CalStandard::Through();
                 o->setName("Port "+QString::number(i)+" to "+QString::number(j));
                 o->setMeasurement(c->t);
-                throughStandards.push_back(o);
+                throughStandards[coeffSet.portsToThroughIndex(i, j)] = o;
                 kit.addStandard(o);
             }
         }
@@ -471,19 +494,19 @@ void LibreCALDialog::startCalibration()
         // Create SOL measurements with correct port of calkit
         auto open = new CalibrationMeasurement::Open(cal);
         open->setPort(p+1);
-        open->setStandard(openStandards[portAssignment[p]-1]);
+        open->setStandard(openStandards[portAssignment[p]]);
         openMeasurements.insert(open);
         cal->measurements.push_back(open);
 
         auto _short = new CalibrationMeasurement::Short(cal);
         _short->setPort(p+1);
-        _short->setStandard(shortStandards[portAssignment[p]-1]);
+        _short->setStandard(shortStandards[portAssignment[p]]);
         shortMeasurements.insert(_short);
         cal->measurements.push_back(_short);
 
         auto load = new CalibrationMeasurement::Load(cal);
         load->setPort(p+1);
-        load->setStandard(loadStandards[portAssignment[p]-1]);
+        load->setStandard(loadStandards[portAssignment[p]]);
         loadMeasurements.insert(load);
         cal->measurements.push_back(load);
         for(unsigned int p2=p+1;p2<vnaPorts;p2++) {
@@ -499,11 +522,11 @@ void LibreCALDialog::startCalibration()
             QString forwardName = "Port "+QString::number(libreCALp1)+" to "+QString::number(libreCALp2);
             QString reverseName = "Port "+QString::number(libreCALp2)+" to "+QString::number(libreCALp1);
             for(auto ts : throughStandards) {
-                if(ts->getName() == forwardName) {
-                    through->setStandard(ts);
+                if(ts.second->getName() == forwardName) {
+                    through->setStandard(ts.second);
                     through->setReverseStandard(false);
-                } else if(ts->getName() == reverseName) {
-                    through->setStandard(ts);
+                } else if(ts.second->getName() == reverseName) {
+                    through->setStandard(ts.second);
                     through->setReverseStandard(true);
                 }
             }
@@ -581,7 +604,7 @@ void LibreCALDialog::startCalibration()
     };
 
     disconnect(cal, &Calibration::measurementsUpdated, this, nullptr);
-    connect(cal, &Calibration::measurementsUpdated, this, startNextCalibrationStep);
+    connect(cal, &Calibration::measurementsUpdated, this, startNextCalibrationStep, Qt::QueuedConnection);
     connect(cal, &Calibration::measurementsAborted, this, [=](){
         enableUI();
     });

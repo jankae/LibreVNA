@@ -172,14 +172,24 @@ QString CalDevice::getDateTimeUTC()
     }
 }
 
-void CalDevice::loadCoefficientSets(QStringList names, bool fast)
+void CalDevice::loadCoefficientSets(QStringList names, QList<int> ports, bool fast)
 {
     coeffSets.clear();
+
+    if(ports.isEmpty()) {
+        for(int i=1;i<=ports.size();i++) {
+            ports.append(i);
+        }
+    } else {
+        // make sure we are sorted, otherwise the through coefficient naming is wrong
+        std::sort(ports.begin(), ports.end());
+    }
+
     abortLoading = false;
     if(fast && Util::firmwareEqualOrHigher(firmware, "0.2.1")) {
-        loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadFast, this, names);
+        loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadFast, this, names, ports);
     } else {
-        loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadSlow, this, names);
+        loadThread = new std::thread(&CalDevice::loadCoefficientSetsThreadSlow, this, names, ports);
     }
 }
 
@@ -202,7 +212,7 @@ void CalDevice::saveCoefficientSets()
     }
 }
 
-void CalDevice::loadCoefficientSetsThreadSlow(QStringList names)
+void CalDevice::loadCoefficientSetsThreadSlow(QStringList names, QList<int> ports)
 {
     QStringList coeffList = getCoefficientSetNames();
     if(coeffList.empty()) {
@@ -224,14 +234,16 @@ void CalDevice::loadCoefficientSetsThreadSlow(QStringList names)
     // get total number of coefficient points for accurate percentage calculation
     unsigned long totalPoints = 0;
     for(auto name : coeffList) {
-        for(int i=1;i<=numPorts;i++) {
+        for(int idx=0;idx<ports.size();idx++) {
+            int i = ports[idx];
             if(abortLoading) {
                 return;
             }
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_OPEN").toInt();
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_SHORT").toInt();
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_LOAD").toInt();
-            for(int j=i+1;j<=numPorts;j++) {
+            for(int jdx=idx+1;jdx<numPorts;jdx++) {
+                int j = ports[j];
                 totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+QString::number(j)+"_THROUGH").toInt();
             }
         }
@@ -244,7 +256,8 @@ void CalDevice::loadCoefficientSetsThreadSlow(QStringList names)
         set.name = name;
         set.ports = numPorts;
         // Read this coefficient set
-        for(int i=1;i<=numPorts;i++) {
+        for(int idx=0;idx<ports.size();idx++) {
+            int i = ports[idx];
             auto createCoefficient = [&](QString setName, QString paramName) -> CoefficientSet::Coefficient* {
                 int points = usb->Query(":COEFF:NUM? "+setName+" "+paramName).toInt();
                 CoefficientSet::Coefficient *c = new CoefficientSet::Coefficient();
@@ -282,11 +295,12 @@ void CalDevice::loadCoefficientSetsThreadSlow(QStringList names)
                 c->t.setFilename("LibreCAL/"+paramName);
                 return c;
             };
-            set.opens.push_back(createCoefficient(name, "P"+QString::number(i)+"_OPEN"));
-            set.shorts.push_back(createCoefficient(name, "P"+QString::number(i)+"_SHORT"));
-            set.loads.push_back(createCoefficient(name, "P"+QString::number(i)+"_LOAD"));
-            for(int j=i+1;j<=numPorts;j++) {
-                set.throughs.push_back(createCoefficient(name, "P"+QString::number(i)+QString::number(j)+"_THROUGH"));
+            set.opens[i] = (createCoefficient(name, "P"+QString::number(i)+"_OPEN"));
+            set.shorts[i] = (createCoefficient(name, "P"+QString::number(i)+"_SHORT"));
+            set.loads[i] = (createCoefficient(name, "P"+QString::number(i)+"_LOAD"));
+            for(int jdx=idx+1;jdx<ports.size();jdx++) {
+                int j = ports[jdx];
+                set.throughs[set.portsToThroughIndex(i, j)] = createCoefficient(name, "P"+QString::number(i)+QString::number(j)+"_THROUGH");
             }
             if(abortLoading) {
                 return;
@@ -297,7 +311,7 @@ void CalDevice::loadCoefficientSetsThreadSlow(QStringList names)
     emit updateCoefficientsDone(true);
 }
 
-void CalDevice::loadCoefficientSetsThreadFast(QStringList names)
+void CalDevice::loadCoefficientSetsThreadFast(QStringList names, QList<int> ports)
 {
     QStringList coeffList = getCoefficientSetNames();
     if(coeffList.empty()) {
@@ -317,17 +331,7 @@ void CalDevice::loadCoefficientSetsThreadFast(QStringList names)
         coeffList = names;
     }
 
-    QStringList coeffNames;
-    for(int i=1;i<=numPorts;i++) {
-        coeffNames.append("P"+QString::number(i)+"_OPEN");
-        coeffNames.append("P"+QString::number(i)+"_SHORT");
-        coeffNames.append("P"+QString::number(i)+"_LOAD");
-        for(int j=i+1;j<=numPorts;j++) {
-            coeffNames.append("P"+QString::number(i)+QString::number(j)+"_THROUGH");
-        }
-    }
-
-    int total_coeffs = coeffNames.size() * names.size();
+    int total_coeffs = (ports.size() * 3 + ports.size() * (ports.size() - 1) / 2) * names.size();
     int read_coeffs = 0;
 
     for(auto name : coeffList) {
@@ -389,25 +393,54 @@ void CalDevice::loadCoefficientSetsThreadFast(QStringList names)
             }
         };
 
-        for(auto coeff : coeffNames) {
-            auto c = createCoefficient(name, coeff);
+        for(int idx=0;idx<ports.size();idx++) {
+            int i = ports[idx];
+
+            auto c = createCoefficient(name, "P"+QString::number(i)+"_OPEN");
             if(abortLoading) {
                 return;
             }
             if(c) {
-                if(coeff.endsWith("_OPEN")) {
-                    set.opens.push_back(c);
-                } else if(coeff.endsWith("_SHORT")) {
-                    set.shorts.push_back(c);
-                } else if(coeff.endsWith("_LOAD")) {
-                    set.loads.push_back(c);
-                } else if(coeff.endsWith("_THROUGH")) {
-                    set.throughs.push_back(c);
-                }
+                set.opens[i] = c;
             }
             read_coeffs++;
             emit updateCoefficientsPercent(read_coeffs * 100 / total_coeffs);
+
+            c = createCoefficient(name, "P"+QString::number(i)+"_SHORT");
+            if(abortLoading) {
+                return;
+            }
+            if(c) {
+                set.shorts[i] = c;
+            }
+            read_coeffs++;
+            emit updateCoefficientsPercent(read_coeffs * 100 / total_coeffs);
+
+            c = createCoefficient(name, "P"+QString::number(i)+"_LOAD");
+            if(abortLoading) {
+                return;
+            }
+            if(c) {
+                set.loads[i] = c;
+            }
+            read_coeffs++;
+            emit updateCoefficientsPercent(read_coeffs * 100 / total_coeffs);
+
+            for(int jdx=idx+1;jdx<ports.size();jdx++) {
+                int j = ports[jdx];
+
+                c = createCoefficient(name, "P"+QString::number(i)+QString::number(j)+"_THROUGH");
+                if(abortLoading) {
+                    return;
+                }
+                if(c) {
+                    set.throughs[set.portsToThroughIndex(i, j)] = c;
+                }
+                read_coeffs++;
+                emit updateCoefficientsPercent(read_coeffs * 100 / total_coeffs);
+            }
         }
+
         coeffSets.push_back(set);
     }
     emit updateCoefficientsDone(true);
@@ -419,23 +452,23 @@ void CalDevice::saveCoefficientSetsThread()
     unsigned long totalPoints = 0;
     for(auto set : coeffSets) {
         for(auto c : set.opens) {
-            if(c->modified) {
-                totalPoints += c->t.points();
+            if(c.second->modified) {
+                totalPoints += c.second->t.points();
             }
         }
         for(auto c : set.shorts) {
-            if(c->modified) {
-                totalPoints += c->t.points();
+            if(c.second->modified) {
+                totalPoints += c.second->t.points();
             }
         }
         for(auto c : set.loads) {
-            if(c->modified) {
-                totalPoints += c->t.points();
+            if(c.second->modified) {
+                totalPoints += c.second->t.points();
             }
         }
         for(auto c : set.throughs) {
-            if(c->modified) {
-                totalPoints += c->t.points();
+            if(c.second->modified) {
+                totalPoints += c.second->t.points();
             }
         }
     }
@@ -488,11 +521,20 @@ void CalDevice::saveCoefficientSetsThread()
             return true;
         };
         for(int i=1;i<=numPorts;i++) {
-            success &= createCoefficient(set.name, "P"+QString::number(i)+"_OPEN", set.opens[i-1]->t, set.opens[i-1]->modified);
-            success &= createCoefficient(set.name, "P"+QString::number(i)+"_SHORT", set.shorts[i-1]->t, set.shorts[i-1]->modified);
-            success &= createCoefficient(set.name, "P"+QString::number(i)+"_LOAD", set.loads[i-1]->t, set.loads[i-1]->modified);
+            if(set.opens.count(i)) {
+                success &= createCoefficient(set.name, "P"+QString::number(i)+"_OPEN", set.opens[i]->t, set.opens[i]->modified);
+            }
+            if(set.shorts.count(i)) {
+                success &= createCoefficient(set.name, "P"+QString::number(i)+"_SHORT", set.shorts[i]->t, set.shorts[i]->modified);
+            }
+            if(set.loads.count(i)) {
+                success &= createCoefficient(set.name, "P"+QString::number(i)+"_LOAD", set.loads[i]->t, set.loads[i]->modified);
+            }
             for(int j=i+1;j<=numPorts;j++) {
-                success &= createCoefficient(set.name, "P"+QString::number(i)+QString::number(j)+"_THROUGH", set.getThrough(i,j)->t, set.getThrough(i,j)->modified);
+                auto c = set.getThrough(i,j);
+                if(c) {
+                    success &= createCoefficient(set.name, "P"+QString::number(i)+QString::number(j)+"_THROUGH", c->t, c->modified);
+                }
             }
         }
     }
@@ -509,10 +551,10 @@ void CalDevice::addCoefficientSet(QString name)
     CoefficientSet set;
     set.name = name;
     set.ports = numPorts;
-    set.loads.resize(numPorts, new CoefficientSet::Coefficient());
-    set.shorts.resize(numPorts, new CoefficientSet::Coefficient());
-    set.opens.resize(numPorts, new CoefficientSet::Coefficient());
-    set.throughs.resize(numPorts*(numPorts-1)/2, new CoefficientSet::Coefficient());
+    set.loads.clear();
+    set.shorts.clear();
+    set.opens.clear();
+    set.throughs.clear();
     coeffSets.push_back(set);
 }
 
@@ -529,22 +571,22 @@ bool CalDevice::hasModifiedCoefficients()
 {
     for(auto set : coeffSets) {
         for(auto c : set.opens) {
-            if(c->modified) {
+            if(c.second->modified) {
                 return true;
             }
         }
         for(auto c : set.shorts) {
-            if(c->modified) {
+            if(c.second->modified) {
                 return true;
             }
         }
         for(auto c : set.loads) {
-            if(c->modified) {
+            if(c.second->modified) {
                 return true;
             }
         }
         for(auto c : set.throughs) {
-            if(c->modified) {
+            if(c.second->modified) {
                 return true;
             }
         }
@@ -552,15 +594,59 @@ bool CalDevice::hasModifiedCoefficients()
     return false;
 }
 
-CalDevice::CoefficientSet::Coefficient *CalDevice::CoefficientSet::getThrough(int port1, int port2) const
+CalDevice::CoefficientSet::Coefficient *CalDevice::CoefficientSet::getOpen(int port)
 {
-    if(port1 > ports || port2 > ports || port1 >= port2) {
+    if(opens.count(port)) {
+        return opens[port];
+    } else {
         return nullptr;
     }
-    int index = port2 - port1 - 1;
-    while(port1 > 1) {
-        index += ports - port1 + 1;
-        port1--;
+}
+
+CalDevice::CoefficientSet::Coefficient *CalDevice::CoefficientSet::getShort(int port)
+{
+    if(shorts.count(port)) {
+        return shorts[port];
+    } else {
+        return nullptr;
     }
-    return throughs[index];
+}
+
+CalDevice::CoefficientSet::Coefficient *CalDevice::CoefficientSet::getLoad(int port)
+{
+    if(loads.count(port)) {
+        return loads[port];
+    } else {
+        return nullptr;
+    }
+}
+
+CalDevice::CoefficientSet::Coefficient *CalDevice::CoefficientSet::getThrough(int port1, int port2)
+{
+    auto index = portsToThroughIndex(port1, port2);
+    if(throughs.count(index)) {
+        return throughs[index];
+    } else {
+        return nullptr;
+    }
+}
+
+int CalDevice::CoefficientSet::portsToThroughIndex(int port1, int port2)
+{
+    if(port1 > ports || port2 > ports || port1 >= port2) {
+        return -1;
+    }
+    return port1 * ports + port2;
+}
+
+void CalDevice::CoefficientSet::portsFromThroughIndex(int &port1, int &port2, int index)
+{
+    port1 = index / ports;
+    port2 = index - port1 * ports;
+    if(port1 < 1 || port1 > ports) {
+        port1 = -1;
+    }
+    if(port2 < 1 || port2 > ports) {
+        port2 = -1;
+    }
 }
