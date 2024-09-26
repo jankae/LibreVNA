@@ -177,7 +177,7 @@ void CalDevice::loadCoefficientSets(QStringList names, QList<int> ports, bool fa
     coeffSets.clear();
 
     if(ports.isEmpty()) {
-        for(int i=1;i<=ports.size();i++) {
+        for(unsigned int i=1;i<=getNumPorts();i++) {
             ports.append(i);
         }
     } else {
@@ -331,7 +331,7 @@ void CalDevice::loadCoefficientSetsThreadFast(QStringList names, QList<int> port
         coeffList = names;
     }
 
-    int total_coeffs = (ports.size() * 3 + ports.size() * (ports.size() - 1) / 2) * names.size();
+    int total_coeffs = (ports.size() * 3 + ports.size() * (ports.size() - 1) / 2) * coeffList.size();
     int read_coeffs = 0;
 
     for(auto name : coeffList) {
@@ -538,6 +538,15 @@ void CalDevice::saveCoefficientSetsThread()
             }
         }
     }
+    // prune empty coefficient sets
+    auto i = coeffSets.begin();
+    while(i != coeffSets.end()) {
+        if(i->isEmpty()) {
+            i = coeffSets.erase(i);
+        } else {
+            i++;
+        }
+    }
     emit updateCoefficientsDone(success);
 }
 
@@ -551,10 +560,7 @@ void CalDevice::addCoefficientSet(QString name)
     CoefficientSet set;
     set.name = name;
     set.ports = numPorts;
-    set.loads.clear();
-    set.shorts.clear();
-    set.opens.clear();
-    set.throughs.clear();
+    set.createEmptyCoefficients();
     coeffSets.push_back(set);
 }
 
@@ -649,4 +655,46 @@ void CalDevice::CoefficientSet::portsFromThroughIndex(int &port1, int &port2, in
     if(port2 < 1 || port2 > ports) {
         port2 = -1;
     }
+}
+
+void CalDevice::CoefficientSet::createEmptyCoefficients()
+{
+    loads.clear();
+    shorts.clear();
+    opens.clear();
+    throughs.clear();
+    for(int i=1;i<=ports;i++) {
+       opens[i] = new Coefficient();
+       shorts[i] = new Coefficient();
+       loads[i] = new Coefficient();
+       for(int j=i+1;j<=ports;j++) {
+           throughs[portsToThroughIndex(i,j)] = new Coefficient();
+       }
+    }
+}
+
+bool CalDevice::CoefficientSet::isEmpty()
+{
+    for(auto o : opens) {
+        if(o.second->t.points() > 0) {
+            return false;
+        }
+    }
+    for(auto s : shorts) {
+        if(s.second->t.points() > 0) {
+            return false;
+        }
+    }
+    for(auto l : loads) {
+        if(l.second->t.points() > 0) {
+            return false;
+        }
+    }
+    for(auto t : throughs) {
+        if(t.second->t.points() > 0) {
+            return false;
+        }
+    }
+    // no coefficients or all coefficients empty
+    return true;
 }

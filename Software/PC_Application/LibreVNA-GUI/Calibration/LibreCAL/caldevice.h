@@ -72,6 +72,9 @@ public:
 
         int portsToThroughIndex(int port1, int port2);
         void portsFromThroughIndex(int &port1, int &port2, int index);
+
+        void createEmptyCoefficients();
+        bool isEmpty();
     };
 
     // Extracts the coefficients from the device. This is done with a dedicated thread.
