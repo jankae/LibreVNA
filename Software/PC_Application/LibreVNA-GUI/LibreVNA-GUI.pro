@@ -315,6 +315,12 @@ win32:LIBS += -L"$$_PRO_FILE_PWD_" # Github actions placed libusb here
 osx:INCPATH += /usr/local/include
 osx:LIBS += -L/usr/local/lib $(shell pkg-config --libs libusb-1.0)
 
+mac{
+        QT_CONFIG -= no-pkg-config
+        CONFIG += link_pkgconfig
+        PKGCONFIG += libusb-1.0
+}
+
 QT += widgets network
 
 FORMS += \

@@ -1,7 +1,11 @@
 #ifndef USBINBUFFER_H
 #define USBINBUFFER_H
 
+#ifdef Q_OS_MACOS
+#include <libusb.h>
+#else
 #include <libusb-1.0/libusb.h>
+#endif
 #include <condition_variable>
 
 #include <QObject>

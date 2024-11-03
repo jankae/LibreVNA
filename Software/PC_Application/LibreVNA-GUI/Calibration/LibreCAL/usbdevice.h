@@ -3,7 +3,11 @@
 
 #include "Util/usbinbuffer.h"
 
+#ifdef Q_OS_MACOS
+#include <libusb.h>
+#else
 #include <libusb-1.0/libusb.h>
+#endif
 #include <QString>
 #include <set>
 #include <functional>
