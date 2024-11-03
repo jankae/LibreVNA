@@ -571,6 +571,19 @@ void TraceXYPlot::draw(QPainter &p)
                 auto last = traceToCoordinate(t, j-1, yAxis[i]);
                 auto now = traceToCoordinate(t, j, yAxis[i]);
 
+                // checking limits
+                for(auto limit : constantLines) {
+                    if(i == 0 && limit->getAxis() != XYPlotConstantLine::Axis::Primary) {
+                        continue;
+                    }
+                    if(i == 1 && limit->getAxis() != XYPlotConstantLine::Axis::Secondary) {
+                        continue;
+                    }
+                    if(!limit->pass(now)) {
+                        limitPassing = false;
+                    }
+                }
+
                 if(isnan(last.y()) || isnan(now.y()) || isinf(last.y()) || isinf(now.y())) {
                     continue;
                 }
@@ -595,19 +608,6 @@ void TraceXYPlot::draw(QPainter &p)
                 }
                 // draw line
                 p.drawLine(p1, p2);
-
-                // checking limits
-                for(auto limit : constantLines) {
-                    if(i == 0 && limit->getAxis() != XYPlotConstantLine::Axis::Primary) {
-                        continue;
-                    }
-                    if(i == 1 && limit->getAxis() != XYPlotConstantLine::Axis::Secondary) {
-                        continue;
-                    }
-                    if(!limit->pass(now)) {
-                        limitPassing = false;
-                    }
-                }
             }
             if(i == 0 && nPoints > 0) {
                 // only draw markers on primary YAxis and if the trace has at least one point
@@ -1352,6 +1352,13 @@ bool XYPlotConstantLine::pass(QPointF testPoint)
         // out of range, always passes
         return true;
     }
+
+    // check for inf/nan on Y value
+    if(isnan(testPoint.y()) || isinf(testPoint.y())) {
+        // can not actually evaluate the limits, use pass/fail from preferences for this case
+        return Preferences::getInstance().Graphs.limitNaNpasses;
+    }
+
     auto p = lower_bound(points.begin(), points.end(), testPoint.x(), [](QPointF p, double x) -> bool {
         return p.x() < x;
     });

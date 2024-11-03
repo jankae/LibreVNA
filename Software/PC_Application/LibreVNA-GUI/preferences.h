@@ -129,6 +129,7 @@ public:
         } Color;
         GraphDomainChangeBehavior domainChangeBehavior;
         GraphLimitIndication limitIndication;
+        bool limitNaNpasses;
 
         double lineWidth;
         int fontSizeAxis;
@@ -257,6 +258,7 @@ private:
         {&Graphs.Color.Ticks.divisions, "Graphs.Color.Ticks.divisions", QColor(Qt::gray)},
         {&Graphs.domainChangeBehavior, "Graphs.domainChangeBehavior", GraphDomainChangeBehavior::AdjustGraphs},
         {&Graphs.limitIndication, "Graphs.limitIndication", GraphLimitIndication::PassFailText},
+        {&Graphs.limitNaNpasses, "Graphs.limitNaNpasses", false},
         {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
         {&Graphs.fontSizeAxis, "Graphs.fontSizeAxis", 10},
         {&Graphs.fontSizeCursorOverlay, "Graphs.fontSizeCursorOverlay", 12},

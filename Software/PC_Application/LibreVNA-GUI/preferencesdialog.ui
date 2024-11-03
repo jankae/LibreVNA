@@ -98,7 +98,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -111,7 +111,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-206</y>
              <width>679</width>
              <height>836</height>
             </rect>
@@ -945,7 +945,7 @@
              <x>0</x>
              <y>-400</y>
              <width>679</width>
-             <height>964</height>
+             <height>992</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1378,7 +1378,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QGroupBox" name="groupBox_17">
+               <widget class="QGroupBox" name="GraphsLimitGroup">
                 <property name="title">
                  <string>Limit checking</string>
                 </property>
@@ -1405,6 +1405,27 @@
                    <item>
                     <property name="text">
                      <string>Overlay over whole graph on FAIL</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_62">
+                   <property name="text">
+                    <string>NaN/Inf values:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QComboBox" name="GraphsLimitNaNpasses">
+                   <item>
+                    <property name="text">
+                     <string>Fail</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Pass</string>
                     </property>
                    </item>
                   </widget>
@@ -1445,8 +1466,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>696</width>
-             <height>564</height>
+             <width>402</width>
+             <height>540</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1791,8 +1812,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>696</width>
-             <height>564</height>
+             <width>138</width>
+             <height>112</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
