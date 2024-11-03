@@ -12,7 +12,7 @@ jobs:
   PC_Application_Ubuntu:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LibreVNA-GUI-Ubuntu-${{env.LIBREVNA_VERSION}}
           path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI
@@ -52,7 +52,7 @@ jobs:
   PC_Application_RPi5:
     runs-on: RPi-HIL
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -82,7 +82,7 @@ jobs:
       - name: Upload artifact
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LibreVNA-GUI-RPi5-${{env.LIBREVNA_VERSION}}
           path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI          
@@ -90,7 +90,7 @@ jobs:
   PC_Application_Windows:
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
 
       - name: Install Qt
@@ -141,7 +141,7 @@ jobs:
         shell: cmd
         
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
         with:
@@ -149,13 +149,13 @@ jobs:
           path: Software/PC_Application/LibreVNA-GUI/release
 
   PC_Application_OSX:
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          brew install qt@6 libusb pcre
+          brew install qt@6 pcre
           
       - name: Set Environment
         run: |
@@ -189,7 +189,7 @@ jobs:
       - name: Upload artifact
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: LibreVNA-GUI-OSX-${{env.LIBREVNA_VERSION}}
           path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
@@ -197,7 +197,7 @@ jobs:
   Embedded_Firmware:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install toolchain
         run: |
@@ -230,7 +230,7 @@ jobs:
         shell: bash
 
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         env: 
           LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
         with:

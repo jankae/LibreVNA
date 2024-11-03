@@ -126,7 +126,7 @@ void CompoundDeviceEditDialog::checkIfOkay()
     // Check port mapping
     // Looking for duplicate and missing ports
     bool highestPortFound = false;
-    unsigned int highestPort;
+    unsigned int highestPort = 0;
     for(unsigned int port=0;port<2*ldev.deviceSerials.size();port++) {
         int num = 0;
         for(unsigned int i=0;i<deviceFrames.size();i++) {

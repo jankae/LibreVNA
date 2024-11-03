@@ -12,7 +12,7 @@ jobs:
     outputs:
       upload_url: ${{ steps.bump_release.outputs.upload_url }} 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -67,7 +67,7 @@ jobs:
     needs: PC_Application_Ubuntu
     runs-on: RPi-HIL
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -106,7 +106,7 @@ jobs:
     needs: PC_Application_Ubuntu
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
 
       - name: Install Qt
@@ -171,13 +171,13 @@ jobs:
           
   PC_Application_OSX:
     needs: PC_Application_Ubuntu
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          brew install qt@6 libusb pcre
+          brew install qt@6 pcre
           
       - name: Set Environment
         run: |
@@ -219,7 +219,7 @@ jobs:
     needs: PC_Application_Ubuntu
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Install toolchain
         run: |
