@@ -5,6 +5,7 @@
 #include "unit.h"
 #include "Util/util.h"
 #include "LibreCAL/librecaldialog.h"
+#include "preferences.h"
 
 #include "Eigen/Dense"
 
@@ -1489,7 +1490,7 @@ bool Calibration::toFile(QString filename)
 {
     if(filename.isEmpty()) {
         QString fn = descriptiveCalName();
-        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", fn, "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
+        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", fn, "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return false;
@@ -1513,7 +1514,7 @@ bool Calibration::toFile(QString filename)
 bool Calibration::fromFile(QString filename)
 {
     if(filename.isEmpty()) {
-        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", "", "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
+        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", "", "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return false;

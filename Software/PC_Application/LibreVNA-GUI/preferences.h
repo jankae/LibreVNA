@@ -7,6 +7,7 @@
 #include "Device/LibreVNA/Compound/compounddevice.h"
 
 #include <QDialog>
+#include <QFileDialog>
 #include <QVariant>
 #include <exception>
 
@@ -60,6 +61,8 @@ public:
     void setDefault(std::vector<Savable::SettingDescription> descr);
 
     void manualTCPport() { TCPoverride = true; }
+
+    static QFileDialog::Options QFileDialogOptions(QFileDialog::Options option = (QFileDialog::Options) 0x00000000);
 
     struct {
         bool ConnectToFirstDevice;
@@ -190,6 +193,7 @@ public:
     struct {
         double USBlogSizeLimit;
         bool saveTraceData;
+        bool useNativeDialogs;
     } Debug;
 
     bool TCPoverride; // in case of manual port specification via command line
@@ -310,6 +314,7 @@ private:
         {&StreamingServers.SANormalizedData.port, "StreamingServers.SANormalizedData.port", 19101},
         {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&Debug.saveTraceData, "Debug.saveTraceData", false},
+        {&Debug.useNativeDialogs, "Debug.useNativeDialogs", true},
     }};
 };
 

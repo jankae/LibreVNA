@@ -1,6 +1,7 @@
 #include "devicelog.h"
 
 #include "ui_devicelog.h"
+#include "preferences.h"
 
 #include <QScrollBar>
 #include <QFileDialog>
@@ -65,7 +66,7 @@ void DeviceLog::clear()
 
 void DeviceLog::on_bToFile_clicked()
 {
-    auto filename = QFileDialog::getSaveFileName(this, "Select file for device log", "", "", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getSaveFileName(this, "Select file for device log", "", "", nullptr, Preferences::QFileDialogOptions());
     if(filename.length() > 0) {
         // create file
         ofstream file;

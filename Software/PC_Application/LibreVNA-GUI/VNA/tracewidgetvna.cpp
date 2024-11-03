@@ -56,7 +56,7 @@ void TraceWidgetVNA::exportTouchstone()
 
 void TraceWidgetVNA::importDialog()
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p);;CSV files (*.csv)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p);;CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
     if (!filename.isEmpty()) {
         try {
             std::vector<Trace*> traces;

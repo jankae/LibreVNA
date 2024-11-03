@@ -2,6 +2,7 @@
 
 #include "ui_calkitdialog.h"
 #include "CustomWidgets/informationbox.h"
+#include "preferences.h"
 
 #include <QPushButton>
 #include <QDebug>
@@ -88,7 +89,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
         accept();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getOpenFileName(this, "Open calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, QFileDialog::DontUseNativeDialog);
+        auto filename = QFileDialog::getOpenFileName(this, "Open calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
             try {
                 kit = Calkit::fromFile(filename);
@@ -102,7 +103,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     });
 
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getSaveFileName(this, "Save calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, QFileDialog::DontUseNativeDialog);
+        auto filename = QFileDialog::getSaveFileName(this, "Save calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
             parseEntries();
             kit.toFile(filename);

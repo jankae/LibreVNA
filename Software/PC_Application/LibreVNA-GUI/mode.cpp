@@ -141,7 +141,7 @@ Mode::Type Mode::TypeFromName(QString s)
 
 void Mode::saveSreenshot()
 {
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return;

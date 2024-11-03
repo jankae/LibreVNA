@@ -2,6 +2,7 @@
 
 #include "ui_xyplotaxisdialog.h"
 #include "traceaxis.h"
+#include "preferences.h"
 
 #include <QFileDialog>
 #include <QStandardItemModel>
@@ -239,7 +240,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         removeLine(index);
     });
     connect(ui->exportLines, &QPushButton::clicked, this, [=](){
-        QString filename = QFileDialog::getSaveFileName(nullptr, "Save limit lines", "", "Limit files (*.limits)", nullptr, QFileDialog::DontUseNativeDialog);
+        QString filename = QFileDialog::getSaveFileName(nullptr, "Save limit lines", "", "Limit files (*.limits)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
@@ -262,7 +263,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
 
     });
     connect(ui->importLines, &QPushButton::clicked, [=](){
-        QString filename = QFileDialog::getOpenFileName(nullptr, "Load limit lines", "", "Limit files (*.limits)", nullptr, QFileDialog::DontUseNativeDialog);
+        QString filename = QFileDialog::getOpenFileName(nullptr, "Load limit lines", "", "Limit files (*.limits)", nullptr, Preferences::QFileDialogOptions());
         ifstream file;
         file.open(filename.toStdString());
         if(!file.is_open()) {

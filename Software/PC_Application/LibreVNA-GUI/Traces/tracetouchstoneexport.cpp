@@ -2,6 +2,7 @@
 
 #include "ui_tracetouchstoneexport.h"
 #include "touchstone.h"
+#include "preferences.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -41,7 +42,7 @@ bool TraceTouchstoneExport::setPortNum(int ports)
 
 void TraceTouchstoneExport::on_buttonBox_accepted()
 {
-    auto filename = QFileDialog::getSaveFileName(this, "Select file for exporting traces", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getSaveFileName(this, "Select file for exporting traces", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, Preferences::QFileDialogOptions());
     if(filename.length() > 0) {
         auto ports = ui->sbPorts->value();
         auto t = Touchstone(ports);

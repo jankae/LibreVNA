@@ -229,7 +229,7 @@ void AppWindow::SetupMenu()
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
     connect(ui->actionQuit, &QAction::triggered, this, &AppWindow::close);
     connect(ui->actionSave_setup, &QAction::triggered, [=](){
-        auto filename = QFileDialog::getSaveFileName(nullptr, "Save setup data", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog);
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save setup data", "", "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
@@ -237,7 +237,7 @@ void AppWindow::SetupMenu()
         SaveSetup(filename);
     });
     connect(ui->actionLoad_setup, &QAction::triggered, [=](){
-        auto filename = QFileDialog::getOpenFileName(nullptr, "Load setup data", "", "Setup files (*.setup)", nullptr, QFileDialog::DontUseNativeDialog);
+        auto filename = QFileDialog::getOpenFileName(nullptr, "Load setup data", "", "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;

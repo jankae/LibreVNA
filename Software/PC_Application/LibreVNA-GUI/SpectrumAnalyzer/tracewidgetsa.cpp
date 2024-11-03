@@ -23,7 +23,7 @@ void TraceWidgetSA::exportDialog()
 
 void TraceWidgetSA::importDialog()
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "CSV files (*.csv)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
     if (!filename.isEmpty()) {
         try {
             std::vector<Trace*> traces;

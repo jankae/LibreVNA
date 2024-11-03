@@ -2,7 +2,7 @@
 
 #include "ui_tracecsvexport.h"
 #include "csv.h"
-
+#include "preferences.h"
 #include "traceaxis.h"
 
 #include <QDialogButtonBox>
@@ -72,7 +72,7 @@ void TraceCSVExport::on_buttonBox_accepted()
         return;
     }
 
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", "CSV files (*.csv)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return;

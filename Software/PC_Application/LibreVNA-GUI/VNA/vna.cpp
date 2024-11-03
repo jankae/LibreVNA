@@ -228,7 +228,7 @@ VNA::VNA(AppWindow *window, QString name)
        if(window->getDevice()) {
            auto key = "DefaultCalibration"+window->getDevice()->getSerial();
            QSettings settings;
-           auto filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", settings.value(key).toString(), "Calibration files (*.cal)", nullptr, QFileDialog::DontUseNativeDialog);
+           auto filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", settings.value(key).toString(), "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
            if(!filename.isEmpty()) {
                settings.setValue(key, filename);
                removeDefaultCal->setEnabled(true);

@@ -1,6 +1,7 @@
 #include "csvimport.h"
 #include "ui_csvimport.h"
 #include "Traces/trace.h"
+#include "preferences.h"
 
 #include <QFileDialog>
 #include <QDebug>
@@ -63,7 +64,7 @@ void CSVImport::selectTrace(unsigned int index)
 
 void CSVImport::on_browse_clicked()
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "CSV files (*.csv)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
     if (filename.length() > 0) {
         ui->file->setText(filename);
         evaluateFile();

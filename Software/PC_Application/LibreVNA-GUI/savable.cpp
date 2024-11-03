@@ -1,5 +1,6 @@
 #include "savable.h"
 #include "CustomWidgets/informationbox.h"
+#include "preferences.h"
 
 #include <QFileDialog>
 #include <fstream>
@@ -9,7 +10,7 @@ using namespace std;
 
 bool Savable::openFromFileDialog(QString title, QString filetype)
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, title, "", filetype, nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getOpenFileName(nullptr, title, "", filetype, nullptr, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return false;
@@ -36,7 +37,7 @@ bool Savable::openFromFileDialog(QString title, QString filetype)
 
 bool Savable::saveToFileDialog(QString title, QString filetype, QString ending)
 {
-    auto filename = QFileDialog::getSaveFileName(nullptr, title, "", filetype, nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getSaveFileName(nullptr, title, "", filetype, nullptr, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return false;

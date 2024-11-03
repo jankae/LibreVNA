@@ -98,7 +98,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -112,8 +112,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>424</width>
-             <height>852</height>
+             <width>679</width>
+             <height>836</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -703,8 +703,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>450</width>
-             <height>416</height>
+             <width>696</width>
+             <height>564</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -943,7 +943,7 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-400</y>
              <width>679</width>
              <height>964</height>
             </rect>
@@ -2074,8 +2074,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>194</width>
-             <height>146</height>
+             <width>696</width>
+             <height>564</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_19">
@@ -2110,6 +2110,22 @@
                   <widget class="QCheckBox" name="DebugSaveTraceData">
                    <property name="text">
                     <string>Include datapoints</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_25">
+                <property name="title">
+                 <string>Load/save dialogs</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_24">
+                 <item>
+                  <widget class="QCheckBox" name="DebugUseNativeDialogs">
+                   <property name="text">
+                    <string>Use native dialogs from OS</string>
                    </property>
                   </widget>
                  </item>

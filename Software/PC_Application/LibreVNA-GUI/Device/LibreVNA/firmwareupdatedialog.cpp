@@ -3,6 +3,7 @@
 #include "ui_firmwareupdatedialog.h"
 #include "../../VNA_embedded/Application/Communication/PacketConstants.h"
 #include "CustomWidgets/informationbox.h"
+#include "preferences.h"
 
 #include <QFileDialog>
 #include <QStyle>
@@ -51,7 +52,7 @@ bool FirmwareUpdateDialog::FirmwareUpdate(LibreVNADriver *dev, QString file)
 void FirmwareUpdateDialog::on_bFile_clicked()
 {
     ui->bStart->setEnabled(false);
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open firmware file", "", "Firmware file (*.vnafw)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open firmware file", "", "Firmware file (*.vnafw)", nullptr, Preferences::QFileDialogOptions());
     if (filename.length() > 0) {
         ui->lFile->setText(filename);
         reloadFile();

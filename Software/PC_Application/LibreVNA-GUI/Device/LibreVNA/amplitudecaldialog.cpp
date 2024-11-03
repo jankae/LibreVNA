@@ -44,7 +44,7 @@ AmplitudeCalDialog::AmplitudeCalDialog(LibreVNADriver *dev, QWidget *parent) :
     connect(ui->saveFile, &QPushButton::clicked, [=](){
         auto fileEnding = pointType() == Protocol::PacketType::SourceCalPoint ? ".srccal" : ".recvcal";
         auto fileFilter = QString("Amplitude calibration files (*")+fileEnding+")";
-        auto filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", fileFilter, nullptr, QFileDialog::DontUseNativeDialog);
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", fileFilter, nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
@@ -70,7 +70,7 @@ AmplitudeCalDialog::AmplitudeCalDialog(LibreVNADriver *dev, QWidget *parent) :
     connect(ui->loadFile, &QPushButton::clicked, [=](){
         auto fileEnding = pointType() == Protocol::PacketType::SourceCalPoint ? ".srccal" : ".recvcal";
         auto fileFilter = QString("Amplitude calibration files (*")+fileEnding+")";
-        auto filename = QFileDialog::getOpenFileName(nullptr, "Save calibration data", "", fileFilter, nullptr, QFileDialog::DontUseNativeDialog);
+        auto filename = QFileDialog::getOpenFileName(nullptr, "Save calibration data", "", fileFilter, nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;

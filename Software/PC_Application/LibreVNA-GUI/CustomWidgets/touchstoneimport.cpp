@@ -1,6 +1,7 @@
 #include "touchstoneimport.h"
 
 #include "ui_touchstoneimport.h"
+#include "preferences.h"
 
 #include <QFileDialog>
 #include <QDebug>
@@ -111,7 +112,7 @@ void TouchstoneImport::setFile(QString filename)
 
 void TouchstoneImport::on_browse_clicked()
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, QFileDialog::DontUseNativeDialog);
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, Preferences::QFileDialogOptions());
     if (filename.length() > 0) {
         ui->file->setText(filename);
     }
