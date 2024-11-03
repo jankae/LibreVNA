@@ -198,9 +198,6 @@ jobs:
           qmake LibreVNA-GUI.pro
           make -j9
           macdeployqt LibreVNA-GUI.app
-          # Unfortunately, we have to do some hackery to fix the loading path errors
-          # and missing dylibs from macdeployqt.
-          ./fixMacDylibs.sh
           zip -ry LibreVNA-GUI.zip LibreVNA-GUI.app
         shell: bash
 
