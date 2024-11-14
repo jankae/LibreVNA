@@ -19,7 +19,7 @@ This is the improved version of my [first attempt](https://www.github.com/jankae
 * Download the latest [Release](https://github.com/jankae/LibreVNA/releases) and unpack the zip file
 * Install the required libraries:
 ```console
-sudo apt install libqt6widgets6 libqt6svg6
+sudo apt install qt6-base-dev libqt6svg6
 ```
 * Install the udev rule (otherwise you don't have the permissions to access the USB device):
 ```console
