@@ -9,7 +9,7 @@ public:
     TraceWidgetSA(TraceModel &model, QWidget *parent = nullptr);
 public slots:
     virtual void exportDialog() override;
-    virtual void importDialog() override;
+    virtual QStringList supportsImportFileFormats() override {return {"csv"};}
 
 protected:
     virtual QString defaultParameter() override {return "PORT1";}

@@ -626,7 +626,6 @@ void TracePlot::dragMoveEvent(QDragMoveEvent *event)
         // transform to relative coordinates from 0 to 1
         auto x = (double) pos.x() / (width() - marginLeft - marginRight);
         auto y = (double) pos.y() / (height() - marginTop - marginBottom);
-        qDebug() << "x:" << x << "y:" << y;
         if(y < 0.5) {
             if(x < y) {
                 dropSection = DropSection::ToTheLeft;

@@ -596,7 +596,7 @@ VNA::VNA(AppWindow *window, QString name)
     markerModel = new MarkerModel(traceModel, this);
 
     auto tracesDock = new QDockWidget("Traces");
-    traceWidget = new TraceWidgetVNA(traceModel, cal, deembedding);
+    traceWidget = new TraceWidgetVNA(traceModel, &cal, &deembedding);
     tracesDock->setWidget(traceWidget);
     window->addDockWidget(Qt::LeftDockWidgetArea, tracesDock);
     docks.insert(tracesDock);

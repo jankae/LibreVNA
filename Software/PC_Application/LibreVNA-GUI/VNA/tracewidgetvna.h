@@ -8,18 +8,15 @@
 class TraceWidgetVNA : public TraceWidget
 {
 public:
-    TraceWidgetVNA(TraceModel &model, Calibration &cal, Deembedding &deembed, QWidget *parent = nullptr);
+    TraceWidgetVNA(TraceModel &model, Calibration *cal, Deembedding *deembed, QWidget *parent = nullptr);
 public slots:
     void exportCSV();
     void exportTouchstone();
     virtual void exportDialog() override {}
-    virtual void importDialog() override;
+    virtual QStringList supportsImportFileFormats() override {return {"csv", "s1p", "s2p", "s3p", "s4p"};}
 
 protected:
     virtual QString defaultParameter() override {return "S11";}
-    // These can optionally be applied when importing an s2p file
-    Calibration &cal;
-    Deembedding &deembed;
 };
 
 #endif // TRACEWIDGETVNA_H

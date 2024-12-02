@@ -352,6 +352,7 @@ std::set<YAxis::Type> YAxis::getSupported(XAxis::Type type, TraceModel::DataSour
     } else if(source == TraceModel::DataSource::SA) {
         switch(type) {
         case XAxis::Type::Frequency:
+        case XAxis::Type::TimeZeroSpan:
             ret.insert(YAxis::Type::Magnitude);
             ret.insert(YAxis::Type::MagnitudedBuV);
             break;

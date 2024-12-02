@@ -3,6 +3,8 @@
 #include "ui_tracewidget.h"
 #include "traceeditdialog.h"
 #include "traceimportdialog.h"
+#include "ui_s2pImportOptions.h"
+#include "CustomWidgets/informationbox.h"
 #include "tracetouchstoneexport.h"
 #include "trace.h"
 #include "unit.h"
@@ -16,14 +18,17 @@
 #include <QDebug>
 #include <QMenu>
 #include <QTableView>
+#include <QDebug>
 
-
-TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
+TraceWidget::TraceWidget(TraceModel &model, Calibration *cal, Deembedding *deembed, QWidget *parent) :
     QWidget(parent),
     SCPINode("TRACe"),
     dragTrace(nullptr),
     ui(new Ui::TraceWidget),
-    model(model)
+    model(model),
+    dropFilename(""),
+    cal(cal),
+    deembed(deembed)
 {
     ui->setupUi(this);
     ui->view->setModel(&model);
@@ -37,6 +42,7 @@ TraceWidget::TraceWidget(TraceModel &model, QWidget *parent) :
         ui->remove->setEnabled(current.isValid());
     });
     installEventFilter(this);
+    setAcceptDrops(true);
     createCount = 0;
     SetupSCPI();
 }
@@ -119,6 +125,41 @@ bool TraceWidget::eventFilter(QObject *, QEvent *event)
     return false;
 }
 
+void TraceWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+    if(event->mimeData()->hasFormat("text/plain")) {
+        // might be a file drop
+        auto data = QString(event->mimeData()->data("text/plain"));
+        if (data.startsWith("file://")) {
+            // extract file path/name and type
+            data = data.trimmed();
+            data.remove(0, 7);
+            if(data.contains(".")) {
+                auto type = data.split(".").last();
+                if (supportsImportFileFormats().contains(type)) {
+                    dropFilename = data;
+                    qDebug() << "prepared to drop file " << dropFilename;
+                    event->accept();
+                    return;
+                }
+            }
+        }
+    }
+    event->ignore();
+    dropFilename = "";
+ }
+
+void TraceWidget::dropEvent(QDropEvent *event)
+{
+    Q_UNUSED(event);
+    if(dropFilename.size() > 0) {
+        if(importFile(dropFilename)) {
+            event->accept();
+        }
+    }
+    dropFilename = "";
+}
+
 void TraceWidget::on_edit_clicked()
 {
     if(ui->view->currentIndex().isValid()) {
@@ -156,6 +197,111 @@ void TraceWidget::on_view_clicked(const QModelIndex &index)
         break;
     default:
         break;
+    }
+}
+
+void TraceWidget::importDialog()
+{
+    QString supported = "Supported files (";
+    for(auto f : supportsImportFileFormats()) {
+        supported += "*."+f+" ";
+    }
+    supported.chop(1);
+    supported += ")";
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", supported, nullptr, Preferences::QFileDialogOptions());
+    if (!filename.isEmpty()) {
+        importFile(filename);
+    }
+}
+
+bool TraceWidget::importFile(QString filename)
+{
+    if(!filename.contains(".")) {
+        // no ending, not supported
+        return false;
+    }
+    auto format = filename.split(".").last();
+    if(!supportsImportFileFormats().contains(format)) {
+        // unsupported format
+        return false;
+    }
+    // try to import the file
+    try {
+        std::vector<Trace*> traces;
+        int touchstonePorts = 0;
+        QString prefix = QString();
+        if(filename.endsWith(".csv")) {
+            auto csv = CSV::fromFile(filename);
+            traces = Trace::createFromCSV(csv);
+        } else {
+            // must be a touchstone file
+            auto t = Touchstone::fromFile(filename.toStdString());
+            traces = Trace::createFromTouchstone(t);
+            touchstonePorts = t.ports();
+        }
+        // contruct prefix from filename
+        prefix = filename;
+        // remove any directory names (keep only the filename itself)
+        int lastSlash = qMax(prefix.lastIndexOf('/'), prefix.lastIndexOf('\\'));
+        if(lastSlash != -1) {
+            prefix.remove(0, lastSlash + 1);
+        }
+        // remove file type
+        prefix.truncate(prefix.indexOf('.'));
+        prefix.append("_");
+        auto i = new TraceImportDialog(model, traces, prefix);
+        if(AppWindow::showGUI()) {
+            i->show();
+        }
+        // potential candidate to process via calibration/de-embedding
+        connect(i, &TraceImportDialog::importFinsished, [=](const std::vector<Trace*> &traces) {
+            if(traces.size() == touchstonePorts*touchstonePorts) {
+                // all traces imported, can calculate calibration/de-embedding
+                bool calAvailable = cal && cal->getNumPoints() > 0;
+                bool deembedAvailable = deembed && deembed->getOptions().size() > 0;
+                if(calAvailable || deembedAvailable) {
+                    // check if user wants to apply either one to the imported traces
+                    auto dialog = new QDialog();
+                    auto ui = new Ui::s2pImportOptions;
+                    ui->setupUi(dialog);
+                    connect(dialog, &QDialog::finished, [=](){
+                        delete ui;
+                    });
+                    ui->applyCal->setEnabled(calAvailable);
+                    ui->deembed->setEnabled(deembedAvailable);
+                    bool applyCal = false;
+                    bool applyDeembed = false;
+                    connect(ui->applyCal, &QCheckBox::toggled, [&](bool checked) {
+                        applyCal = checked;
+                    });
+                    connect(ui->deembed, &QCheckBox::toggled, [&](bool checked) {
+                        applyDeembed = checked;
+                    });
+                    if(AppWindow::showGUI()) {
+                        dialog->exec();
+                    }
+                    // assemble trace set
+                    std::map<QString, Trace*> set;
+                    for(int i=1;i<=touchstonePorts;i++) {
+                        for(int j=1;j<=touchstonePorts;j++) {
+                            QString name = "S"+QString::number(i)+QString::number(j);
+                            int index = (i-1)*touchstonePorts+(j-1);
+                            set[name] = traces[index];
+                        }
+                    }
+                    if(applyCal) {
+                        cal->correctTraces(set);
+                    }
+                    if(applyDeembed) {
+                        deembed->Deembed(set);
+                    }
+                }
+            }
+        });
+        return true;
+    } catch(const std::exception& e) {
+        InformationBox::ShowError("Failed to import file", QString("Attempt to import file ended with error: \"") + e.what()+"\"");
+        return false;
     }
 }
 
