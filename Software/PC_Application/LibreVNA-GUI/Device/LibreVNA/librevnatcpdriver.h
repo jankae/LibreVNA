@@ -53,6 +53,7 @@ public:
     }
 
 private slots:
+    void SSDRequest();
     void SSDPreceived(QUdpSocket *sock);
     void ReceivedData();
     void ReceivedLog();
@@ -101,6 +102,7 @@ private:
     QQueue<Transmission> transmissionQueue;
     bool startNextTransmission();
     QTimer transmissionTimer;
+    QTimer ssdpTimer;
     bool transmissionActive;
 
     std::thread *m_receiveThread;

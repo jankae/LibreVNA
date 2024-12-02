@@ -3,7 +3,9 @@
 #include <QDebug>
 
 SCPI::SCPI() :
-    SCPINode("")
+    SCPINode(""),
+    semQueue(QSemaphore(1)),
+    semProcessing(QSemaphore(1))
 {
     WAIexecuting = false;
     OPCsetBitScheduled = false;
@@ -178,21 +180,30 @@ QString SCPI::getResultName(SCPI::Result r)
 
 void SCPI::input(QString line)
 {
+    semQueue.acquire();
     cmdQueue.append(line);
-    if(!processing) {
+    semQueue.release();
+    if(semProcessing.available()) {
         process();
     }
 }
 
 void SCPI::process()
 {
-    processing = true;
-    while(!WAIexecuting && !cmdQueue.isEmpty()) {
+    semProcessing.acquire();
+    semQueue.acquire();
+    auto queueBuf = cmdQueue;
+    semQueue.release();
+    while(!WAIexecuting && !queueBuf.isEmpty()) {
+        semQueue.acquire();
         auto cmd = cmdQueue.front();
         cmdQueue.pop_front();
+        queueBuf = cmdQueue;
+        semQueue.release();
         auto cmds = cmd.split(";");
         SCPINode *lastNode = this;
         for(auto cmd : cmds) {
+            qDebug() << "Handling cmd " << cmd;
             if(cmd.size() > 0) {
                 if(cmd[0] == ':' || cmd[0] == '*') {
                     // reset to root node
@@ -216,9 +227,10 @@ void SCPI::process()
                     emit output(response);
                 }
             }
+            qDebug() << "handling done";
         }
     }
-    processing = false;
+    semProcessing.release();
 }
 
 void SCPI::someOperationCompleted()

@@ -11,42 +11,6 @@
 #include <QEventLoop>
 #include <QTimer>
 
-class SynSleep: public QObject {
-    Q_OBJECT
-public:
-    SynSleep(){
-        needRunning=1;
-    }
-
-public slots:
-    void sleep(){
-        if (needRunning==1)
-            loop.exec();
-    }
-
-    void reset(){
-        needRunning=1;
-    }
-
-    virtual void finish(){
-        needRunning=0;
-        loop.exit();
-    }
-
-    static void sleep(int ms) {
-        QTimer tim;
-        tim.setSingleShot(true);
-        auto ss = SynSleep();
-        connect(&tim, &QTimer::timeout, &ss, &SynSleep::finish);
-        tim.start(ms);
-        ss.sleep();
-    }
-
-private:
-    QEventLoop loop;
-    int needRunning;
-};
-
 namespace Util {
     template<typename T> T Scale(T value, T from_low, T from_high, T to_low, T to_high, bool log_from = false, bool log_to = false) {
         T normalized;

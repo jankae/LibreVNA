@@ -44,6 +44,9 @@ LibreVNATCPDriver::LibreVNATCPDriver()
         ssdpSockets.push_back(socket);
     }
 
+    connect(&ssdpTimer, &QTimer::timeout,this, &LibreVNATCPDriver::SSDRequest);
+    ssdpTimer.start(1000);
+
     specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "LibreVNATCPDriver.captureRawReceiverValues", false));
     specificSettings.push_back(Savable::SettingDescription(&harmonicMixing, "LibreVNATCPDriver.harmonicMixing", false));
     specificSettings.push_back(Savable::SettingDescription(&SASignalID, "LibreVNATCPDriver.signalID", true));
@@ -60,26 +63,6 @@ QString LibreVNATCPDriver::getDriverName()
 
 std::set<QString> LibreVNATCPDriver::GetAvailableDevices()
 {
-    QByteArray data;
-    data.append("M-SEARCH * HTTP/1.1\r\n"
-                "HOST: 239.255.255.250:1900\r\n"
-                "MAN: \"ssdp:discover\"\r\n"
-                "MX: 1\r\n"
-                "ST: ");
-    data.append(service_name.toUtf8());
-    data.append("\r\n"
-                "\r\n");
-
-    // just delete everything instead of keeping old entries (they will answer again if they are still available)
-    detectedDevices.clear();
-//    pruneDetectedDevices();
-    for(auto s : ssdpSockets) {
-        s->writeDatagram(data.data(), SSDPaddress, SSDPport);
-    }
-
-    // need delay here while still processing events
-    SynSleep::sleep(100);
-
     std::set<QString> serials;
     for(auto d : detectedDevices) {
         serials.insert(d.serial);
@@ -171,6 +154,25 @@ void LibreVNATCPDriver::registerTypes()
     qDebug() << "Registering meta type: " << qRegisterMetaType<TransmissionResult>();
 }
 
+void LibreVNATCPDriver::SSDRequest()
+{
+    QByteArray data;
+    data.append("M-SEARCH * HTTP/1.1\r\n"
+                "HOST: 239.255.255.250:1900\r\n"
+                "MAN: \"ssdp:discover\"\r\n"
+                "MX: 1\r\n"
+                "ST: ");
+    data.append(service_name.toUtf8());
+    data.append("\r\n"
+                "\r\n");
+
+    pruneDetectedDevices();
+
+    for(auto s : ssdpSockets) {
+        s->writeDatagram(data.data(), SSDPaddress, SSDPport);
+    }
+}
+
 void LibreVNATCPDriver::SSDPreceived(QUdpSocket *sock)
 {
     while(sock->hasPendingDatagrams()) {
@@ -183,7 +185,7 @@ void LibreVNATCPDriver::SSDPreceived(QUdpSocket *sock)
         QString ssdp_string = QString(buf);
         auto lines = ssdp_string.split("\r\n");
 
-        QString location, st, serial, max_age;
+        QString location, st, serial, max_age = "2";
 
         if(lines[0] != "HTTP/1.1 200 OK") {
             continue;
