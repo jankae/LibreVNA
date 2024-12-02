@@ -203,7 +203,6 @@ void SCPI::process()
         auto cmds = cmd.split(";");
         SCPINode *lastNode = this;
         for(auto cmd : cmds) {
-            qDebug() << "Handling cmd " << cmd;
             if(cmd.size() > 0) {
                 if(cmd[0] == ':' || cmd[0] == '*') {
                     // reset to root node
@@ -227,7 +226,6 @@ void SCPI::process()
                     emit output(response);
                 }
             }
-            qDebug() << "handling done";
         }
     }
     semProcessing.release();
