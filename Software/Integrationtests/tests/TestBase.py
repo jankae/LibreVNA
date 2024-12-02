@@ -32,8 +32,6 @@ class TestBase(unittest.TestCase):
         if self.vna.query(":DEV:CONN?") == "Not connected":
             self.tearDown()
             raise AssertionError("Not connected")
-        # Tests occasionally fail without this timeout - give GUI a little bit more time to properly start
-        time.sleep(1)
                
     def tearDown(self):
         self.gui.send_signal(SIGINT)

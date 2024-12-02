@@ -738,6 +738,7 @@ void VNA::deactivate()
 {
     setOperationPending(false);
     StoreSweepSettings();
+    configurationTimer.stop();
     Mode::deactivate();
 }
 
@@ -1839,6 +1840,7 @@ void VNA::Stop()
 
 void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
 {
+    configurationTimer.stop();
     if(running) {
         if (resetTraces) {
             ResetLiveTraces();

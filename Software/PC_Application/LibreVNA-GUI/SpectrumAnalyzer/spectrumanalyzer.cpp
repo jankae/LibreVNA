@@ -342,6 +342,7 @@ void SpectrumAnalyzer::deactivate()
 {
     setOperationPending(false);
     StoreSweepSettings();
+    configurationTimer.stop();
     Mode::deactivate();
 }
 
@@ -874,6 +875,7 @@ void SpectrumAnalyzer::Stop()
 
 void SpectrumAnalyzer::ConfigureDevice()
 {
+    configurationTimer.stop();
     if(running) {
         changingSettings = true;
 

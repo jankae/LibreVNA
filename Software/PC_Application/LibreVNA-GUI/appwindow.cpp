@@ -1020,7 +1020,7 @@ void AppWindow::SetupSCPI()
 void AppWindow::StartTCPServer(int port)
 {
     server = new TCPServer(port);
-    connect(server, &TCPServer::received, &scpi, &SCPI::input);
+    connect(server, &TCPServer::received, &scpi, &SCPI::input, Qt::QueuedConnection);
     connect(&scpi, &SCPI::output, server, &TCPServer::send);
 }
 
