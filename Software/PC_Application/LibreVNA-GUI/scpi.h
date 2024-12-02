@@ -121,6 +121,7 @@ private:
     bool WAIexecuting;
 
     QList<QString> cmdQueue;
+    bool processing;
 };
 
 #endif // SCPI_H

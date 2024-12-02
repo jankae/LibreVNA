@@ -11,6 +11,7 @@ SCPI::SCPI() :
     OCAS = false;
     SESR = 0x00;
     ESE = 0xFF;
+    processing = false;
 
     add(new SCPICommand("*CLS", [=](QStringList) {
         SESR = 0x00;
@@ -178,11 +179,14 @@ QString SCPI::getResultName(SCPI::Result r)
 void SCPI::input(QString line)
 {
     cmdQueue.append(line);
-    process();
+    if(!processing) {
+        process();
+    }
 }
 
 void SCPI::process()
 {
+    processing = true;
     while(!WAIexecuting && !cmdQueue.isEmpty()) {
         auto cmd = cmdQueue.front();
         cmdQueue.pop_front();
@@ -214,6 +218,7 @@ void SCPI::process()
             }
         }
     }
+    processing = false;
 }
 
 void SCPI::someOperationCompleted()

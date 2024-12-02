@@ -537,10 +537,9 @@ void AppWindow::SetupSCPI()
     }, nullptr, false));
     scpi_dev->add(new SCPICommand("LIST", nullptr, [=](QStringList) -> QString {
         QString ret;
-        for(auto driver : DeviceDriver::getDrivers()) {
-            for(auto d : driver->GetAvailableDevices()) {
-                ret += d + ",";
-            }
+        UpdateDeviceList();
+        for(auto entry : deviceList) {
+            ret += entry.serial + ",";
         }
         // remove last comma
         ret.chop(1);

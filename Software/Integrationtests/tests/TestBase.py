@@ -23,7 +23,7 @@ class TestBase(unittest.TestCase):
        
         time.sleep(1)
         
-        self.vna = libreVNA('localhost', 19544)
+        self.vna = libreVNA('localhost', 19544, timeout=4)
         try:
             self.vna.cmd("*CLS;:DEV:CONN")
         except Exception as e:
