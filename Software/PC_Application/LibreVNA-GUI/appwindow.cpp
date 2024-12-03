@@ -1418,8 +1418,7 @@ void AppWindow::LoadSetup(nlohmann::json j)
     QString serial = QString();
     if(device) {
         serial = device->getSerial();
-        device->disconnectDevice();
-        device = nullptr;
+        DisconnectDevice();
     }
 
     modeHandler->closeModes();
