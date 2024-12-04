@@ -127,21 +127,35 @@ bool TraceWidget::eventFilter(QObject *, QEvent *event)
 
 void TraceWidget::dragEnterEvent(QDragEnterEvent *event)
 {
+    QString data = "";
     if(event->mimeData()->hasFormat("text/plain")) {
-        // might be a file drop
-        auto data = QString(event->mimeData()->data("text/plain"));
+        data = QString(event->mimeData()->data("text/plain"));
         if (data.startsWith("file://")) {
-            // extract file path/name and type
             data = data.trimmed();
             data.remove(0, 7);
-            if(data.contains(".")) {
-                auto type = data.split(".").last();
-                if (supportsImportFileFormats().contains(type)) {
-                    dropFilename = data;
-                    qDebug() << "prepared to drop file " << dropFilename;
-                    event->accept();
-                    return;
-                }
+        } else {
+            // something else
+            data = "";
+        }
+    } else if(event->mimeData()->hasFormat("text/uri-list")) {
+        data = QString(event->mimeData()->data("text/uri-list"));
+        if (data.startsWith("file:///")) {
+            data = data.trimmed();
+            data.remove(0, 8);
+        } else {
+            // something else
+            data = "";
+        }
+    }
+    if(!data.isEmpty()) {
+        // extract file path/name and type
+        if(data.contains(".")) {
+            auto type = data.split(".").last();
+            if (supportsImportFileFormats().contains(type)) {
+                dropFilename = data;
+                qDebug() << "prepared to drop file " << dropFilename;
+                event->accept();
+                return;
             }
         }
     }
