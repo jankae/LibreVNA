@@ -512,6 +512,14 @@ void TraceWidget::SetupSCPI()
         model.addTrace(t);
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
+    add(new SCPICommand("DELete", [=](QStringList params) -> QString {
+        auto t = findTrace(params);
+        if(!t) {
+           return SCPI::getResultName(SCPI::Result::Error);
+        }
+        model.removeTrace(t);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     add(new SCPICommand("RENAME", [=](QStringList params) -> QString {
         auto t = findTrace(params);
         if(!t) {

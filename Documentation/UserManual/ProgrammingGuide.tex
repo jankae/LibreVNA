@@ -502,7 +502,7 @@ Depending on the sweep and possible confiigured math operations, x may be either
 [5.33344e+9,0.13223,-0.00780554],
 [6e+9,-0.0314859,-0.246024]
 \end{example}
-\vspace{-0.6cm}
+\vspace{-0.3cm}
 \begin{center}
 \footnotesize{Note: actual response will not include newlines between data points, only at the end}
 \end{center}
@@ -556,6 +556,9 @@ $$ S_{11}...S_{1n},S_{21}...S_{2n},...,S_{n1}...S_{nn} $$
 
 \subsubsection{VNA:TRACe:NEW}
 \event{Creates a new trace}{VNA:TRACe:NEW}{<trace name>}
+
+\subsubsection{VNA:TRACe:DELete}
+\event{Deletes a trace}{VNA:TRACe:DELete}{<trace>, either by name or by index}
 
 \subsubsection{VNA:TRACe:RENAME}
 \event{Changes the name of a trace}{VNA:TRACe:RENAME}{<trace>, either by name or by index\\<new name>}
@@ -834,6 +837,9 @@ Port1,Port2
 
 \subsubsection{SA:TRACe:NEW}
 \event{Creates a new trace}{SA:TRACe:NEW}{<trace name>}
+
+\subsubsection{SA:TRACe:DELete}
+\event{Deletes a trace}{VNA:TRACe:DELete}{<trace>, either by name or by index}
 
 \subsubsection{SA:TRACe:RENAME}
 \event{Changes the name of a trace}{SA:TRACe:RENAME}{<trace>, either by name or by index\\<new name>}
