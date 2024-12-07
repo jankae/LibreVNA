@@ -44,7 +44,7 @@
 									<listOptionValue builtIn="false" value="_SNK"/>
 									<listOptionValue builtIn="false" value="FW_MAJOR=1"/>
 									<listOptionValue builtIn="false" value="FW_MINOR=6"/>
-									<listOptionValue builtIn="false" value="FW_PATCH=0"/>
+									<listOptionValue builtIn="false" value="FW_PATCH=1"/>
 									<listOptionValue builtIn="false" value="HW_REVISION='B'"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
@@ -91,7 +91,7 @@
 									<listOptionValue builtIn="false" value="DEBUG"/>
 									<listOptionValue builtIn="false" value="FW_MAJOR=1"/>
 									<listOptionValue builtIn="false" value="FW_MINOR=6"/>
-									<listOptionValue builtIn="false" value="FW_PATCH=0"/>
+									<listOptionValue builtIn="false" value="FW_PATCH=1"/>
 									<listOptionValue builtIn="false" value="HW_REVISION='B'"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>

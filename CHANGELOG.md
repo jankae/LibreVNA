@@ -1,5 +1,27 @@
 # Changelog
 
+## v1.6.1
+
+Mostly bugfixes with only minor new features
+
+- New features:
+  - New SCPI commands:
+    - switch between linear/log sweeps in VNA mode
+    - delete traces
+  - Option to align axis ticks for left and right Y-axes
+  - Import/export options in file menu
+  - User-selectable handling of NaN values for limit checking
+  - drop files on trace list to import them
+
+- Bugfixes:
+  - center TDR output values at zero (fixes impedance calculations in cases where there is a reflection from before the calibration plane)
+  - fix calibration calculation when non-required S parameters are not available
+  - improve LibreCAL coefficient extraction
+  - use native OS dialogs for opening/saving files
+  - future Qt version fix: prevent crash after taking calibration measurement
+  - SCPI command handling improved
+  - fix menus after loading setup files in certain scenarios
+
 ## v1.6.0
 
 This update contains API breaking changes to the SCPI server. This was necessary because the previous implementation did not follow the standard completely. If you were talking to the SCPI server directly yourself, you will need to make the required changes. If you are using the provided libreVNA.py class, you just need to update that file.
