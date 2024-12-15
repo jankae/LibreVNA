@@ -5,6 +5,7 @@ testmodules = [
     'tests.TestConnect',
     'tests.TestStatusRegisters',
     'tests.TestMode',
+    'tests.TestTemperature',
     'tests.TestSync',
     'tests.TestVNASweep',
     'tests.TestCalibration',
