@@ -285,39 +285,6 @@ SCPINode::~SCPINode()
     }
 }
 
-bool SCPINode::add(SCPINode *node)
-{
-    if(nameCollision(node->name)) {
-        qWarning() << "Unable to add SCPI node, name collision: " << node->name;
-        return false;
-    }
-    subnodes.push_back(node);
-    node->parent = this;
-    return true;
-}
-
-bool SCPINode::remove(SCPINode *node)
-{
-    auto it = std::find(subnodes.begin(), subnodes.end(), node);
-    if(it != subnodes.end()) {
-        subnodes.erase(it);
-        node->parent = nullptr;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool SCPINode::add(SCPICommand *cmd)
-{
-    if(nameCollision(cmd->name())) {
-        qWarning() << "Unable to add SCPI command, name collision: " << cmd->name();
-        return false;
-    }
-    commands.push_back(cmd);
-    return true;
-}
-
 bool SCPINode::addDoubleParameter(QString name, double &param, bool gettable, bool settable, std::function<void(void)> setCallback)
 {
     auto cmd = settable ? [&param, setCallback](QStringList params) -> QString {
@@ -441,14 +408,118 @@ void SCPINode::createCommandList(QString prefix, QString &list)
 {
     for(auto c : commands) {
         if(c->queryable()) {
-            list += prefix + c->name() + "?\n";
+            list += prefix + c->leafName() + "?\n";
         }
         if(c->executable()) {
-            list += prefix + c->name() + '\n';
+            list += prefix + c->leafName() + '\n';
         }
     }
     for(auto n : subnodes) {
-        n->createCommandList(prefix + n->name + ":", list);
+        n->createCommandList(prefix + n->leafName() + ":", list);
+    }
+}
+
+SCPINode *SCPINode::findSubnode(QString name)
+{
+    for(auto n : subnodes) {
+        if(n->name == name) {
+            return n;
+        }
+    }
+    return nullptr;
+}
+
+bool SCPINode::addInternal(SCPINode *node, int depth)
+{
+    QStringList parts = node->name.split(":");
+    if(depth == parts.size()-1) {
+        // add to this node
+        if(nameCollision(parts[depth])) {
+            qWarning() << "Unable to add SCPI node, name collision: " << node->name;
+            return false;
+        }
+        subnodes.push_back(node);
+        node->parent = this;
+        return true;
+    } else {
+        // add to subnode
+        auto subNode = findSubnode(parts[depth]);
+        if(!subNode) {
+            // does not exist, create first
+            subNode = new SCPINode(parts[depth]);
+            add(subNode);
+        }
+        return subNode->addInternal(node, depth+1);
+    }
+}
+
+bool SCPINode::removeInternal(SCPINode *node, int depth)
+{
+    QStringList parts = node->name.split(":");
+    if(depth == parts.size()-1) {
+        // remove from this node
+        auto it = std::find(subnodes.begin(), subnodes.end(), node);
+        if(it != subnodes.end()) {
+            subnodes.erase(it);
+            node->parent = nullptr;
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        // remove from subnode
+        auto subNode = findSubnode(parts[depth]);
+        if(!subNode) {
+            // does not exist
+            return false;
+        }
+        return subNode->removeInternal(node, depth+1);
+    }
+}
+
+bool SCPINode::addInternal(SCPICommand *cmd, int depth)
+{
+    QStringList parts = cmd->name().split(":");
+    if(depth == parts.size()-1) {
+        // add to this node
+        if(nameCollision(parts[depth])) {
+            qWarning() << "Unable to add SCPI command, name collision: " << cmd->name();
+            return false;
+        }
+        commands.push_back(cmd);
+        return true;
+    } else {
+        // add to subnode
+        auto subNode = findSubnode(parts[depth]);
+        if(!subNode) {
+            // does not exist, create first
+            subNode = new SCPINode(parts[depth]);
+            add(subNode);
+        }
+        return subNode->addInternal(cmd, depth+1);
+    }
+}
+
+bool SCPINode::removeInternal(SCPICommand *cmd, int depth)
+{
+    QStringList parts = cmd->name().split(":");
+    if(depth == parts.size()-1) {
+        // remove from this node
+        auto it = std::find(commands.begin(), commands.end(), cmd);
+        if(it != commands.end()) {
+            commands.erase(it);
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        // remove from subnode
+        auto subNode = findSubnode(parts[depth]);
+        if(!subNode) {
+            // does not exist
+            return false;
+        }
+        return subNode->removeInternal(cmd, depth+1);
     }
 }
 
@@ -463,7 +534,7 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
         // have not reached a leaf, find next subnode
         auto subnode = cmd.left(splitPos);
         for(auto n : subnodes) {
-            if(SCPI::match(n->name, subnode.toUpper())) {
+            if(SCPI::match(n->leafName(), subnode.toUpper())) {
                 // pass on to next level
                 return n->parse(cmd.right(cmd.size() - splitPos - 1), lastNode);
             }
@@ -481,7 +552,7 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
             cmd.chop(1);
         }
         for(auto c : commands) {
-            if(SCPI::match(c->name(), cmd.toUpper())) {
+            if(SCPI::match(c->leafName(), cmd.toUpper())) {
                 // save current node in case of non-root for the next command
                 lastNode = this;
                 if(c->convertToUppercase()) {

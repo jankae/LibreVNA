@@ -222,6 +222,8 @@ protected:
     double SARBWLimitForDFT;
     bool VNASuppressInvalidPeaks;
     bool VNAAdjustPowerLevel;
+
+    QDialog *manualControlDialog;
 };
 
 Q_DECLARE_METATYPE(Protocol::PacketInfo)

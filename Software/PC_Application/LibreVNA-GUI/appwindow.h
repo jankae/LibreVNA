@@ -159,6 +159,8 @@ private:
     QCommandLineParser parser;
 
     SCPI scpi;
+    std::vector<SCPICommand*> temporaryDeviceCommands;
+    std::vector<SCPINode*> temporaryDeviceNodes;
     TCPServer *server;
     StreamingServer *streamVNARawData;
     StreamingServer *streamVNACalibratedData;

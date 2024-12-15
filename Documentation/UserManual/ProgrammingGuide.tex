@@ -153,7 +153,8 @@
 \begin{document}
 \maketitle
 
-\setcounter{tocdepth}{3}
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
 \tableofcontents
 
 \clearpage
@@ -257,14 +258,6 @@ This section contains general device commands, available regardless of the curre
 206039903350
 \end{example}
 
-\subsubsection{DEVice:UPDATE}
-\event{Updates the firmware of the connected device}{DEVice:UPDATE <fw\_file>}{<fw\_file> Path to the firmware file}
-Important points when saving/loading setup files through SCPI commands:
-\begin{itemize}
-\item The path must be either absolute or relative to the location of the GUI application.
-\item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the firmware file must be stored on the machine that runs the GUI.
-\end{itemize}
-
 \subsubsection{DEVice:LIST}
 \query{Lists all available devices by their serial numbers}{DEVice:LIST?}{None}{List of serialnumbers}
 \begin{example}
@@ -342,12 +335,6 @@ Important points when saving/loading setup files through SCPI commands:
 \begin{example}
 :DEV:INF:HWREV?
 B
-\end{example}
-\subsubsection{DEVice:INFo:TEMPeratures}
-\query{Queries the temperatures of certain chips}{DEVice:INFo:TEMPeratures?}{None}{<source>/<1.LO>/<CPU>}
-\begin{example}
-:DEV:INF:TEMP?
-45/51/31
 \end{example}
 
 \subsubsection{DEVice:INFo:LIMits:MINFrequency}
@@ -646,6 +633,17 @@ Important points when saving/loading calibration files through SCPI commands:
 \subsubsection{VNA:CALibration:LOAD}
 \query{Loads a calibration file}{VNA:CALibration:LOAD?}{<filename>}{TRUE or FALSE}
 
+\subsubsection{VNA:CALibration:KIT:SAVE}
+\event{Saves the active calibration kit to a file}{VNA:CALibration:KIT:SAVE}{<filename>}
+Important points when saving/loading calibration kit files through SCPI commands:
+\begin{itemize}
+\item Filenames must be either absolute or relative to the location of the GUI application.
+\item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the calibration kit files will be saved/loaded from the machine that runs the GUI.
+\end{itemize}
+
+\subsubsection{VNA:CALibration:KIT:LOAD}
+\query{Loads a calibration kit file}{VNA:CALibration:KIT:LOAD?}{<filename>}{TRUE or FALSE}
+
 \subsection{Signal Generator Commands}
 These commands change or query signal generator settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the generator mode is active.
 
@@ -860,6 +858,261 @@ Port1,Port2
 \subsubsection{SA:TRACe:TYPE}
 \event{Sets the storage type of a trace}{SA:TRACe:TYPE}{<trace>, either by name or by index\\<type>, options are OVERWRITE, MAXHOLD or MINHOLD}
 \query{Queries the storage type of a trace}{SA:TRACe:TYPE?}{<trace>, either by name or by index}{OVERWRITE, MAXHOLD or MINHOLD}
+
+\section{Custom Driver Commands}
+The \gui{} is mainly intended to be used with the \vna{}. However, the interface between the \gui{} and the actual VNA is abstracting certain hardware features to allow the \gui{} to interact with other devices as well. This is mainly intended for future extensions and only very few other devices are supported for testing and demonstration purposes.
+
+Each device driver may implement additional SCPI commands that are too specific to be useful with every device. These commands are only available when the \gui{} is connected to the device.
+
+\subsection{LibreVNA Version 1}
+The following commands are available when connected to a LibreVNA (hardware version 1):
+
+\subsubsection{DEVice:UPDATE}
+\event{Updates the firmware of the connected device}{DEVice:UPDATE <fw\_file>}{<fw\_file> Path to the firmware file}
+Important points when saving/loading setup files through SCPI commands:
+\begin{itemize}
+\item The path must be either absolute or relative to the location of the GUI application.
+\item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the firmware file must be stored on the machine that runs the GUI.
+\end{itemize}
+
+\subsubsection{DEVice:INFo:TEMPeratures}
+\query{Queries the temperatures of certain chips}{DEVice:INFo:TEMPeratures?}{None}{<source>/<1.LO>/<CPU>}
+\begin{example}
+:DEV:INF:TEMP?
+45/51/31
+\end{example}
+
+\subsubsection{MANual:STArt}
+\event{Starts the manual device control dialog}{MANual:STArt}{None}
+
+The manual device control dialog allows the user to directly access all the hardware components. This can be considered as a forth mode (in addition to VNA, signal generator and spectrum analyzer). As long as it is active, it takes priority over any other mode. After starting the manual control dialog, all hardware components are disabled by default. While the manual control dialog is active, additional SCPI commands are available to configure the hardware and retrieve ADC readings.
+
+\subsubsection{MANual:STOp}
+\event{Stops the manual device control dialog}{MANual:STOp}{None}
+
+\subsubsection{MANual:HSRC\_CE}
+Only available when the manual control dialog is active.
+
+\event{Controls the chip enable for the highband source}{MANual:HSRC\_CE}{TRUE or FALSE}
+\query{Queries the status of the chip enable for the highband source}{MANual:HSRC\_CE?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:HSRC\_RFEN}
+Only available when the manual control dialog is active.
+
+\event{Controls the RF enable for the highband source}{MANual:HSRC\_RFEN}{TRUE or FALSE}
+\query{Queries the status of the RF enable for the highband source}{MANual:HSRC\_RFEN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:HSRC\_LOCKed}
+Only available when the manual control dialog is active.
+
+\query{Queries the lock status of the highband source}{MANual:HSRC\_LOCKed?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:HSRC\_PWR}
+Only available when the manual control dialog is active.
+
+\event{Sets the output power of the highband source}{MANual:HSRC\_PWR}{<power>, output power in dBm, allowed values are -4, -1, 2 and 5}
+\query{Queries the output power of the highband source}{MANual:HSRC\_PWR?}{None}{<power>, output power in dBm}
+
+\subsubsection{MANual:HSRC\_FREQ}
+Only available when the manual control dialog is active.
+
+\event{Sets the target frequency of the highband source}{MANual:HSRC\_FREQ}{<freq>, frequency in Hz}
+\query{Queries the target frequency of the highband source}{MANual:HSRC\_FREQ?}{None}{<freq>, frequency in Hz}
+
+\subsubsection{MANual:HSRC\_LPF}
+Only available when the manual control dialog is active.
+
+\event{Sets the lowpass filter of the highband source}{MANual:HSRC\_LPF}{<cutoff>, Cutoff frequency in MHz, allowed values are 947, 1880, 3500 and\\0 (no filter)}
+\query{Queries the lowpass filter setting of the highband source}{MANual:HSRC\_LPF?}{None}{<cutoff>, Cutoff frequency in MHz}
+
+\subsubsection{MANual:LSRC\_EN}
+Only available when the manual control dialog is active.
+
+\event{Controls the enable signal for the lowband source}{MANual:LSRC\_EN}{TRUE or FALSE}
+\query{Queries the status of the enable signal for the lowband source}{MANual:LSRC\_EN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:LSRC\_PWR}
+Only available when the manual control dialog is active.
+
+\event{Sets the output power of the lowband source}{MANual:LSRC\_PWR}{<power>, output power in mA, allowed values are 2, 4, 6 and 8}
+\query{Queries the output power of the lowband source}{MANual:LSRC\_PWR?}{None}{<power>, output power in mA}
+
+\subsubsection{MANual:LSRC\_FREQ}
+Only available when the manual control dialog is active.
+
+\event{Sets the target frequency of the lowband source}{MANual:LSRC\_FREQ}{<freq>, frequency in Hz}
+\query{Queries the target frequency of the lowband source}{MANual:LSRC\_FREQ?}{None}{<freq>, frequency in Hz}
+
+\subsubsection{MANual:BAND\_SW}
+Only available when the manual control dialog is active.
+
+\event{Controls the band selector switch}{MANual:BAND\_SW}{TRUE for highband, FALSE for lowband}
+\query{Queries the status of the band selector switch}{MANual:BAND\_SW?}{None}{TRUE for highband, FALSE for lowband}
+
+\subsubsection{MANual:ATTenuator}
+Only available when the manual control dialog is active.
+
+\event{Sets the attenuator value}{MANual:ATTenuator}{<att>, Attenuation in dB, values between -31.75 and 0}
+\query{Queries the attenuator value}{MANual:ATTenuator?}{None}{<att>, Attenuation in dB}
+
+\subsubsection{MANual:AMP\_EN}
+Only available when the manual control dialog is active.
+
+\event{Controls the enable signal for the amplifier}{MANual:AMP\_EN}{TRUE or FALSE}
+\query{Queries the status of the enable signal for the amplifier}{MANual:AMP\_EN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:PORT\_SW}
+Only available when the manual control dialog is active.
+
+\event{Controls the port selector switch}{MANual:PORT\_SW}{<port>, either 1 or 2}
+\query{Queries the status of the port selector switch}{MANual:PORT\_SW?}{None}{<port>}
+
+\subsubsection{MANual:LO1\_CE}
+Only available when the manual control dialog is active.
+
+\event{Controls the chip enable for the LO1 PLL}{MANual:LO1\_CE}{TRUE or FALSE}
+\query{Queries the status of the chip enable for the LO1 PLL}{MANual:LO1\_CE?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:LO1\_RFEN}
+Only available when the manual control dialog is active.
+
+\event{Controls the RF enable for the LO1 PLL}{MANual:LO1\_RFEN}{TRUE or FALSE}
+\query{Queries the status of the RF enable for the LO1 PLL}{MANual:LO1\_RFEN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:LO1\_LOCKed}
+Only available when the manual control dialog is active.
+
+\query{Queries the lock status of the LO1 PLL}{MANual:LO1\_LOCKed?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:LO1\_FREQ}
+Only available when the manual control dialog is active.
+
+\event{Sets the target frequency of the LO1 PLL}{MANual:LO1\_FREQ}{<freq>, frequency in Hz}
+\query{Queries the target frequency of the LO1 PLL}{MANual:LO1\_FREQ?}{None}{<freq>, frequency in Hz}
+
+\subsubsection{MANual:IF1\_FREQ}
+Only available when the manual control dialog is active.
+
+\event{Sets the IF1 frequency}{MANual:IF1\_FREQ}{<freq>, frequency in Hz}
+\query{Queries the IF1 frequency}{MANual:IF1\_FREQ?}{None}{<freq>, frequency in Hz}
+
+\subsubsection{MANual:LO2\_EN}
+Only available when the manual control dialog is active.
+
+\event{Controls the enable signal for the LO2 PLL}{MANual:LO2\_EN}{TRUE or FALSE}
+\query{Queries the status of the enable signal for the LO2 PLL}{MANual:LO2\_EN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:LO2\_FREQ}
+Only available when the manual control dialog is active.
+
+\event{Sets the target frequency of the LO2 PLL}{MANual:LO2\_FREQ}{<freq>, frequency in Hz}
+\query{Queries the target frequency of the LO2 PLL}{MANual:LO2\_FREQ?}{None}{<freq>, frequency in Hz}
+
+\subsubsection{MANual:IF2\_FREQ}
+Only available when the manual control dialog is active.
+
+\event{Sets the IF2 frequency}{MANual:IF2\_FREQ}{<freq>, frequency in Hz}
+\query{Queries the IF2 frequency}{MANual:IF2\_FREQ?}{None}{<freq>, frequency in Hz}
+
+\subsubsection{MANual:PORT1\_EN}
+Only available when the manual control dialog is active.
+
+\event{Controls the enable signal for the port 1 receiver}{MANual:PORT1\_EN}{TRUE or FALSE}
+\query{Queries the status of the enable signal for the port 1 receiver}{MANual:PORT1\_EN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:PORT2\_EN}
+Only available when the manual control dialog is active.
+
+\event{Controls the enable signal for the port 2 receiver}{MANual:PORT2\_EN}{TRUE or FALSE}
+\query{Queries the status of the enable signal for the port 2 receiver}{MANual:PORT2\_EN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:REF\_EN}
+Only available when the manual control dialog is active.
+
+\event{Controls the enable signal for the reference receiver}{MANual:REF\_EN}{TRUE or FALSE}
+\query{Queries the status of the enable signal for the reference receiver}{MANual:REF\_EN?}{None}{TRUE or FALSE}
+
+\subsubsection{MANual:SAMPLES}
+Only available when the manual control dialog is active.
+
+\event{Sets the number of ADC samples per reading}{MANual:SAMPLES}{<samples>, value between 16 and 131072 in increments of 16}
+\query{Queries the number of ADC samples per reading}{MANual:SAMPLES?}{None}{<samples>}
+
+\subsubsection{MANual:WINdow}
+Only available when the manual control dialog is active.
+
+\event{Sets the window for the DFT calculation}{MANual:WINdow}{<window>, either NONE, KAISER, HANN or FLATTOP}
+\query{Queries the window for the DFT calculatio}{MANual:WINdow?}{None}{NONE, KAISER, HANN or FLATTOP}
+
+\subsubsection{MANual:PORT1\_MIN}
+Only available when the manual control dialog is active.
+
+\query{Queries the minimum observed port 1 ADC value in the last sampling period}{MANual:PORT1\_MIN?}{None}{minimum ADC value}
+
+\subsubsection{MANual:PORT1\_MAX}
+Only available when the manual control dialog is active.
+
+\query{Queries the maximum observed port 1 ADC value in the last sampling period}{MANual:PORT1\_MAX?}{None}{maximum ADC value}
+
+\subsubsection{MANual:PORT1\_MAG}
+Only available when the manual control dialog is active.
+
+\query{Queries the observerd magnitude at port 1 in the last sampling period}{MANual:PORT1\_MAG?}{None}{port 1 magnitude (linear unit, arbitrary scale)}
+
+\subsubsection{MANual:PORT1\_PHAse}
+Only available when the manual control dialog is active.
+
+\query{Queries the observed phase at port 1 in the last sampling period}{MANual:PORT1\_PHAse?}{None}{phase in degree (random value because it is relativ to an internal sampling clock)}
+
+\subsubsection{MANual:PORT1\_REFerenced}
+Only available when the manual control dialog is active.
+
+\query{Queries the observed signal at port 1 relative to the reference in the last sampling period}{MANual:PORT1\_REFerenced?}{None}{<real>, <imag>}
+
+\subsubsection{MANual:PORT2\_MIN}
+Only available when the manual control dialog is active.
+
+\query{Queries the minimum observed port 2 ADC value in the last sampling period}{MANual:PORT2\_MIN?}{None}{minimum ADC value}
+
+\subsubsection{MANual:PORT2\_MAX}
+Only available when the manual control dialog is active.
+
+\query{Queries the maximum observed port 2 ADC value in the last sampling period}{MANual:PORT2\_MAX?}{None}{maximum ADC value}
+
+\subsubsection{MANual:PORT2\_MAG}
+Only available when the manual control dialog is active.
+
+\query{Queries the observerd magnitude at port 2 in the last sampling period}{MANual:PORT2\_MAG?}{None}{port 1 magnitude (linear unit, arbitrary scale)}
+
+\subsubsection{MANual:PORT2\_PHAse}
+Only available when the manual control dialog is active.
+
+\query{Queries the observed phase at port 2 in the last sampling period}{MANual:PORT2\_PHAse?}{None}{phase in degree (random value because it is relativ to an internal sampling clock)}
+
+\subsubsection{MANual:PORT2\_REFerenced}
+Only available when the manual control dialog is active.
+
+\query{Queries the observed signal at port 2 relative to the reference in the last sampling period}{MANual:PORT2\_REFerenced?}{None}{<real>, <imag>}
+
+\subsubsection{MANual:REF\_MIN}
+Only available when the manual control dialog is active.
+
+\query{Queries the minimum observed reference ADC value in the last sampling period}{MANual:REF\_MIN?}{None}{minimum ADC value}
+
+\subsubsection{MANual:REF\_MAX}
+Only available when the manual control dialog is active.
+
+\query{Queries the maximum observed reference ADC value in the last sampling period}{MANual:REF\_MAX?}{None}{maximum ADC value}
+
+\subsubsection{MANual:REF\_MAG}
+Only available when the manual control dialog is active.
+
+\query{Queries the observerd magnitude at the reference receiver in the last sampling period}{MANual:REF\_MAG?}{None}{port 1 magnitude (linear unit, arbitrary scale)}
+
+\subsubsection{MANual:REF\_PHAse}
+Only available when the manual control dialog is active.
+
+\query{Queries the observed phase at the reference receiver in the last sampling period}{MANual:REF\_PHAse?}{None}{phase in degree (random value because it is relativ to an internal sampling clock)}
 
 \section{Streaming data}
 The SCPI server works well for configuring the device and also for reading trace data once an acquition is done. But it isn't very well suited for reading data while the device is capturing it. For some applications (e.g. when running continuous sweeps) it may be beneficial to process the data externally as it getting captured. For this purpose, the LibreVNA-GUI supports streaming the data over dedicated ports.

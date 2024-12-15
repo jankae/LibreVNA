@@ -21,6 +21,7 @@ public:
     bool queryable() { return fn_query != nullptr;}
     bool executable() { return fn_cmd != nullptr;}
     bool convertToUppercase() { return argAlwaysUppercase;}
+    QString leafName() {return _name.split(":").back();}
 private:
     const QString _name;
     std::function<QString(QStringList)> fn_cmd;
@@ -35,15 +36,17 @@ public:
         name(name), parent(nullptr), operationPending(false){}
     virtual ~SCPINode();
 
-    bool add(SCPINode *node);
-    bool remove(SCPINode *node);
-    bool add(SCPICommand *cmd);
+    bool add(SCPINode *node) {return addInternal(node, 0);}
+    bool remove(SCPINode *node) {return removeInternal(node, 0);}
+    bool add(SCPICommand *cmd) {return addInternal(cmd, 0);}
+    bool remove(SCPICommand *cmd) {return removeInternal(cmd, 0);}
 
     bool addDoubleParameter(QString name, double &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
     bool addUnsignedIntParameter(QString name, unsigned int &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
     bool addBoolParameter(QString name, bool &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
 
     bool changeName(QString newname);
+    QString leafName() {return name.split(":").back();}
 
     void setOperationPending(bool pending);
 
@@ -54,6 +57,11 @@ private:
     QString parse(QString cmd, SCPINode* &lastNode);
     bool nameCollision(QString name);
     void createCommandList(QString prefix, QString &list);
+    SCPINode *findSubnode(QString name);
+    bool addInternal(SCPINode *node, int depth);
+    bool removeInternal(SCPINode *node, int depth);
+    bool addInternal(SCPICommand *cmd, int depth);
+    bool removeInternal(SCPICommand *cmd, int depth);
     QString name;
     std::vector<SCPINode*> subnodes;
     std::vector<SCPICommand*> commands;

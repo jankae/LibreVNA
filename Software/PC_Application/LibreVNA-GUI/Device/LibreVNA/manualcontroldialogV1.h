@@ -111,6 +111,8 @@ private:
     LibreVNADriver &dev;
     std::complex<double> port1referenced;
     std::complex<double> port2referenced;
+
+    std::vector<SCPICommand*> commands;
 };
 
 #endif // MANUALCONTROLDIALOGV1_H

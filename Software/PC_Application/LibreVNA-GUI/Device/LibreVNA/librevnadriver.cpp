@@ -116,25 +116,33 @@ LibreVNADriver::LibreVNADriver()
     hardwareVersion = 0;
     protocolVersion = 0;
     setSynchronization(Synchronization::Disabled, false);
+    manualControlDialog = nullptr;
 
-    auto manual = new QAction("Manual Control");
-    connect(manual, &QAction::triggered, this, [=](){
-        QDialog *d = nullptr;
+    // Add driver specific actions
+
+    auto startManualControl = [=](){
+        manualControlDialog = nullptr;
         switch(hardwareVersion) {
         case 1:
-            d = new ManualControlDialogV1(*this);
+            manualControlDialog = new ManualControlDialogV1(*this);
             break;
         case 0xFE:
-            d = new ManualControlDialogVFE(*this);
+            manualControlDialog = new ManualControlDialogVFE(*this);
             break;
         case 0xFF:
-            d = new ManualControlDialogVFF(*this);
+            manualControlDialog = new ManualControlDialogVFF(*this);
             break;
         }
-        if(d) {
-            d->show();
+        if(manualControlDialog) {
+            manualControlDialog->show();
+            connect(manualControlDialog, &QDialog::finished, this, [=](){
+                manualControlDialog = nullptr;
+            });
         }
-    });
+    };
+
+    auto manual = new QAction("Manual Control");
+    connect(manual, &QAction::triggered, this, startManualControl);
     specificActions.push_back(manual);
 
     auto config = new QAction("Configuration");
@@ -199,6 +207,50 @@ LibreVNADriver::LibreVNADriver()
        d->show();
     });
     specificActions.push_back(log);
+
+    // Create driver specific commands
+    specificSCPIcommands.push_back(new SCPICommand("DEVice:INFo:TEMPeratures", nullptr, [=](QStringList) -> QString {
+        if(!connected) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return QString::number(lastStatus.V1.temp_source)+"/"+QString::number(lastStatus.V1.temp_LO1)+"/"+QString::number(lastStatus.V1.temp_MCU);
+    }));
+
+    specificSCPIcommands.push_back(new SCPICommand("DEVice:UPDATE", [=](QStringList params) -> QString {
+        if(!connected) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(params.size() != 1) {
+            // no file given
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto ret = updateFirmware(params[0]);
+        if(!ret) {
+            // update failed
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            // update succeeded
+            return SCPI::getResultName(SCPI::Result::Empty);
+        }
+    }, nullptr, false));
+
+    specificSCPIcommands.push_back(new SCPICommand("MANual:STArt", [=](QStringList) -> QString {
+        if(!manualControlDialog) {
+            startManualControl();
+            if(!manualControlDialog) {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+
+    specificSCPIcommands.push_back(new SCPICommand("MANual:STOp", [=](QStringList) -> QString {
+        if(manualControlDialog) {
+            delete manualControlDialog;
+            manualControlDialog = nullptr;
+        }
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
 }
 
 std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()

@@ -13,6 +13,7 @@
 
 #include "Tools/parameters.h"
 #include "savable.h"
+#include "scpi.h"
 
 #include <set>
 #include <complex>
@@ -230,6 +231,24 @@ public:
      * @return List of actions
      */
     std::vector<QAction*> driverSpecificActions() {return specificActions;}
+
+    /**
+     * @brief Return driver specific SCPI commands
+     *
+     * The returned commands will be added to the :DEV SCPI node
+     *
+     * @return List of SCPI commands
+     */
+    std::vector<SCPICommand*> driverSpecificSCPICommands() {return specificSCPIcommands;}
+
+    /**
+     * @brief Return driver specific SCPI nodes
+     *
+     * The returned nodes (which may contain further nodes/commands) will be added to the :DEV SCPI node
+     *
+     * @return List of SCPI nodes
+     */
+    std::vector<SCPINode*> driverSpecificSCPINodes() {return specificSCPInodes;}
 
     class VNASettings {
     public:
@@ -486,6 +505,41 @@ signals:
      */
     void releaseControl();
 
+    /**
+     * @brief Emit this to temporarily add a new SCPI command to the root node.
+     *
+     * Before deleting the command, removeSCPICommand must be emitted.
+     * When the device is disconnected, all added commands will be automatically removed.
+     *
+     * @param cmd Command to add
+     */
+    void addSCPICommand(SCPICommand *cmd);
+
+    /**
+     * @brief Emit this to remove a temporarily added SCPI command.
+     *
+     * @param cmd Command to remove
+     */
+    void removeSCPICommand(SCPICommand *cmd);
+
+    /**
+     * @brief Emit this to temporarily add a new SCPI node to the root node.
+     *
+     * Before deleting the node, removeSCPINode must be emitted.
+     * When the device is disconnected, all added nodes will be automatically removed.
+     *
+     * @param node Node to add
+     */
+    void addSCPINode(SCPINode *node);
+
+    /**
+     * @brief Emit this to remove a temporarily added SCPI node.
+     *
+     * @param node Node to remove
+     */
+    void removeSCPINode(SCPINode *node);
+
+
 public:
     bool connectDevice(QString serial, bool isIndepedentDriver = false);
     void disconnectDevice();
@@ -494,8 +548,28 @@ public:
     static unsigned int SApoints();
 
 protected:
+    // Each driver implementation may add specific actionsm, settings or commands. All of these must
+    // be created in the constructor and added to the following vectors:
+
+    // A list of actions specific to the driver. They will show up in the device menu
     std::vector<QAction*> specificActions;
+
+    // A list of settings specific to the driver. They will be stored/recalled as part of the preferences.
+    // If a setting should be user-changeable in the preferences, createSettingsWidget() must include some
+    // widget to modify that setting
     std::vector<Savable::SettingDescription> specificSettings;
+
+    // A list of SCPI commands. They will be available at the root node whenever the device driver is in use.
+    // Avoid name collisions with commands/nodes already implemented in appwindow.cpp.
+    // Use this for commands that will be available whenever the device is connected. For commands that are
+    // not always available, use the addSCPICommand and removeSCPICommand signals.
+    std::vector<SCPICommand*> specificSCPIcommands;
+
+    // A list of SCPI nodes. They will be available at the root node whenever the device driver is in use.
+    // Avoid name collisions with commands/nodes already implemented in appwindow.cpp
+    // Use this for nodes that will be available whenever the device is connected. For nodes that are
+    // not always available, use the addSCPINode and removeSCPINode signals.
+    std::vector<SCPINode*> specificSCPInodes;
 
 private:
     static DeviceDriver *activeDriver;
