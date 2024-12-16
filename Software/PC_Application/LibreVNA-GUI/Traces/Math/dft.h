@@ -48,6 +48,8 @@ private:
     bool automaticDC;
     double DCfreq;
     WindowFunction window;
+    bool removePaddingFromTDR;
+    bool revertWindowFromTDR;
     DFTThread *thread;
     bool destructing;
     QSemaphore semphr;

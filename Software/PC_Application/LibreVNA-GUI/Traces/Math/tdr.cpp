@@ -22,6 +22,7 @@ TDR::TDR()
     manualDC = 1.0;
     stepResponse = true;
     mode = Mode::Lowpass;
+    padding = 0;
 
     destructing = false;
     thread = new TDRThread(*this);
@@ -86,19 +87,23 @@ void TDR::edit()
         ui->manualMag->setEnabled(enable);
     };
 
-    connect(ui->mode, qOverload<int>(&QComboBox::currentIndexChanged), [=](int index){
+    connect(ui->mode, qOverload<int>(&QComboBox::currentIndexChanged), this, [=](int index){
         mode = (Mode) index;
         updateEnabledWidgets();
         updateTDR();
     });
 
-    connect(ui->computeStepResponse, &QCheckBox::toggled, [=](bool computeStep) {
+    connect(ui->padding, &QSpinBox::valueChanged, this, [=](int value) {
+        padding = value;
+    });
+
+    connect(ui->computeStepResponse, &QCheckBox::toggled, this, [=](bool computeStep) {
        stepResponse = computeStep;
         updateEnabledWidgets();
        updateTDR();
     });
 
-    connect(ui->DCmanual, &QRadioButton::toggled, [=](bool manual) {
+    connect(ui->DCmanual, &QRadioButton::toggled, this, [=](bool manual) {
         automaticDC = !manual;
         updateEnabledWidgets();
         updateTDR();
@@ -114,6 +119,8 @@ void TDR::edit()
         ui->mode->setCurrentIndex(1);
     }
 
+    ui->padding->setValue(padding);
+
     ui->manualMag->setUnit("dBm");
     ui->manualMag->setPrecision(3);
     ui->manualMag->setValue(Util::SparamTodB(manualDC));
@@ -121,11 +128,11 @@ void TDR::edit()
     ui->manualPhase->setPrecision(4);
     ui->manualPhase->setValue(180.0/M_PI * arg(manualDC));
 
-    connect(ui->manualMag, &SIUnitEdit::valueChanged, [=](double newval){
+    connect(ui->manualMag, &SIUnitEdit::valueChanged, this, [=](double newval){
         manualDC = polar(pow(10, newval / 20.0), arg(manualDC));
         updateTDR();
     });
-    connect(ui->manualPhase, &SIUnitEdit::valueChanged, [=](double newval){
+    connect(ui->manualPhase, &SIUnitEdit::valueChanged, this, [=](double newval){
         manualDC = polar(abs(manualDC), newval * M_PI / 180.0);
         updateTDR();
     });
@@ -152,6 +159,7 @@ nlohmann::json TDR::toJSON()
     nlohmann::json j;
     j["bandpass_mode"] = mode == Mode::Bandpass;
     j["window"] = window.toJSON();
+    j["padding"] = padding;
     if(mode == Mode::Lowpass) {
         j["step_response"] = stepResponse;
         if(stepResponse) {
@@ -170,6 +178,7 @@ void TDR::fromJSON(nlohmann::json j)
     if(j.contains("window")) {
         window.fromJSON(j["window"]);
     }
+    padding = j.value("padding", 0);
     if(j.value("bandpass_mode", true)) {
         mode = Mode::Bandpass;
     } else {
@@ -224,6 +233,11 @@ void TDR::updateTDR()
     }
 }
 
+unsigned int TDR::getUnpaddedInputSize() const
+{
+    return unpaddedInputSize;
+}
+
 const WindowFunction& TDR::getWindow() const
 {
     return window;
@@ -254,14 +268,12 @@ void TDRThread::run()
             qDebug() << "TDR thread exiting";
             return;
         }
-        // limit update rate if configured in preferences
-        auto &p = Preferences::getInstance();
-        if(p.Acquisition.limitDFT) {
-            std::this_thread::sleep_until(lastCalc + duration<double>(1.0 / p.Acquisition.maxDFTrate));
-            lastCalc = system_clock::now();
-        }
 //        qDebug() << "TDR thread calculating";
         // perform calculation
+        if(!tdr.input) {
+            // not connected, skip calculation
+            continue;
+        }
         vector<complex<double>> frequencyDomain;
         auto stepSize = (tdr.input->rData().back().x - tdr.input->rData().front().x) / (tdr.input->rData().size() - 1);
         if(tdr.mode == TDR::Mode::Lowpass) {
@@ -321,6 +333,12 @@ void TDRThread::run()
         }
 
         tdr.window.apply(frequencyDomain);
+        tdr.unpaddedInputSize = frequencyDomain.size();
+        if(frequencyDomain.size() < tdr.padding) {
+            auto missing = tdr.padding - frequencyDomain.size();
+            frequencyDomain.insert(frequencyDomain.begin(), missing/2, 0);
+            frequencyDomain.insert(frequencyDomain.end(), missing/2, 0);
+        }
         Fft::shift(frequencyDomain, true);
 
         int fft_bins = frequencyDomain.size();
@@ -341,5 +359,12 @@ void TDRThread::run()
             tdr.updateStepResponse(false);
         }
         emit tdr.outputSamplesChanged(0, tdr.data.size());
+
+        // limit update rate if configured in preferences
+        auto &p = Preferences::getInstance();
+        if(p.Acquisition.limitDFT) {
+            std::this_thread::sleep_until(lastCalc + duration<double>(1.0 / p.Acquisition.maxDFTrate));
+            lastCalc = system_clock::now();
+        }
     }
 }

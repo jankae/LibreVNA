@@ -17,6 +17,8 @@ using namespace std;
 Math::DFT::DFT()
 {
     automaticDC = true;
+    removePaddingFromTDR = true;
+    revertWindowFromTDR = true;
     DCfreq = 1000000000.0;
 
     destructing = false;
@@ -67,11 +69,22 @@ void Math::DFT::edit()
     ui->windowBox->setLayout(new QVBoxLayout);
     ui->windowBox->layout()->addWidget(window.createEditor());
 
-    connect(ui->DCautomatic, &QRadioButton::toggled, [=](bool automatic){
+    connect(ui->removePadding, &QCheckBox::toggled, this, [=](bool remove){
+        removePaddingFromTDR = remove;
+    });
+
+    connect(ui->revertWindow, &QCheckBox::toggled, this, [=](bool revert){
+        revertWindowFromTDR = revert;
+    });
+
+    connect(ui->DCautomatic, &QRadioButton::toggled, this, [=](bool automatic){
         automaticDC = automatic;
         ui->freq->setEnabled(!automatic);
         updateDFT();
     });
+
+    ui->removePadding->setChecked(removePaddingFromTDR);
+    ui->revertWindow->setChecked(revertWindowFromTDR);
 
     if(automaticDC) {
         ui->DCautomatic->setChecked(true);
@@ -84,7 +97,7 @@ void Math::DFT::edit()
     ui->freq->setPrefixes(" kMG");
     ui->freq->setValue(DCfreq);
 
-    connect(ui->freq, &SIUnitEdit::valueChanged, [=](double newval){
+    connect(ui->freq, &SIUnitEdit::valueChanged, this, [=](double newval){
         DCfreq = newval;
         updateDFT();
     });
@@ -111,6 +124,8 @@ nlohmann::json Math::DFT::toJSON()
     nlohmann::json j;
     j["automatic_DC"] = automaticDC;
     j["window"] = window.toJSON();
+    j["removePadding"] = removePaddingFromTDR;
+    j["revertWindow"] = revertWindowFromTDR;
     if(!automaticDC) {
         j["DC"] = DCfreq;
     }
@@ -124,6 +139,8 @@ void Math::DFT::fromJSON(nlohmann::json j)
     if(j.contains("window")) {
         window.fromJSON(j["window"]);
     }
+    removePaddingFromTDR = j.value("removePadding", true);
+    revertWindowFromTDR = j.value("revertWindow", true);
 }
 
 void Math::DFT::inputSamplesChanged(unsigned int begin, unsigned int end)
@@ -169,36 +186,31 @@ void Math::DFTThread::run()
             qDebug() << "DFT thread exiting";
             return;
         }
-        // limit update rate if configured in preferences
-        auto &p = Preferences::getInstance();
-        if(p.Acquisition.limitDFT) {
-            std::this_thread::sleep_until(lastCalc + duration<double>(1.0 / p.Acquisition.maxDFTrate));
-            lastCalc = system_clock::now();
-        }
 //        qDebug() << "DFT thread calculating";
+        if(!dft.input) {
+            // not connected, skip calculation
+            continue;
+        }
         double DC = dft.DCfreq;
         TDR *tdr = nullptr;
-        if(dft.automaticDC) {
-            // find the last operation that transformed from the frequency domain to the time domain
-            auto in = dft.input;
-            while(in->getInput()->getDataType() != DFT::DataType::Frequency) {
-                in = dft.input->getInput();
-            }
-            switch(in->getType()) {
-            case DFT::Type::TDR: {
-                tdr = static_cast<TDR*>(in);
-                if(tdr->getMode() == TDR::Mode::Lowpass) {
-                    DC = 0;
-                } else {
-                    // bandpass mode, assume DC is in the middle of the frequency data
-                    DC = tdr->getInput()->getSample(tdr->getInput()->numSamples()/2).x;
-                }
-            }
+        // find the last TDR operation
+        auto in = dft.input;
+        while(in->getType() != DFT::Type::TDR) {
+            in = dft.input->getInput();
+            if(!in) {
                 break;
-            default:
-                // unknown, assume DC is in the middle of the frequency data
-                DC = in->getInput()->getSample(in->getInput()->numSamples()/2).x;
-                break;
+            }
+        }
+        if(in) {
+            tdr = static_cast<TDR*>(in);
+        }
+
+        if(tdr && dft.automaticDC) {
+            if(tdr->getMode() == TDR::Mode::Lowpass) {
+                DC = 0;
+            } else {
+                // bandpass mode, assume DC is in the middle of the frequency data
+                DC = tdr->getInput()->getSample(tdr->getInput()->numSamples()/2).x;
             }
         }
         auto samples = dft.input->rData().size();
@@ -208,14 +220,34 @@ void Math::DFTThread::run()
             timeDomain.at(i) = dft.input->rData()[i].y;
         }
 
-        Fft::shift(timeDomain, false);
         dft.window.apply(timeDomain);
-        Fft::shift(timeDomain, true);
         Fft::transform(timeDomain, false);
         // shift DC bin into the middle
         Fft::shift(timeDomain, false);
 
         double binSpacing = 1.0 / (timeSpacing * timeDomain.size());
+
+        if(tdr) {
+            // split in padding and actual data sections
+            unsigned int padding = timeDomain.size() - tdr->getUnpaddedInputSize();
+            std::vector<std::complex<double>> pad_front(timeDomain.begin(), timeDomain.begin()+padding/2);
+            std::vector<std::complex<double>> data(timeDomain.begin()+padding/2, timeDomain.end()-padding/2);
+            std::vector<std::complex<double>> pad_back(timeDomain.end()-padding/2, timeDomain.end());
+
+            if(dft.revertWindowFromTDR) {
+                tdr->getWindow().reverse(data);
+            }
+
+            if(dft.removePaddingFromTDR) {
+                timeDomain = data;
+            } else {
+                // include padding
+                timeDomain = pad_front;
+                copy(data.begin(), data.end(), back_inserter(timeDomain));
+                copy(pad_back.begin(), pad_back.end(), back_inserter(timeDomain));
+            }
+        }
+
         dft.data.clear();
         int DCbin = timeDomain.size() / 2, startBin = 0;
         if(DC > 0) {
@@ -225,16 +257,18 @@ void Math::DFTThread::run()
             dft.data.resize(timeDomain.size()/2, TraceMath::Data());
         }
 
-        // reverse effect of frequency domain window function from TDR (if available)
-        if(tdr) {
-            tdr->getWindow().reverse(timeDomain);
-        }
-
         for(int i = startBin;(unsigned int) i<timeDomain.size();i++) {
             auto freq = (i - DCbin) * binSpacing + DC;
             dft.data[i - startBin].x = round(freq);
             dft.data[i - startBin].y = timeDomain.at(i);
         }
         emit dft.outputSamplesChanged(0, dft.data.size());
+
+        // limit update rate if configured in preferences
+        auto &p = Preferences::getInstance();
+        if(p.Acquisition.limitDFT) {
+            std::this_thread::sleep_until(lastCalc + duration<double>(1.0 / p.Acquisition.maxDFTrate));
+            lastCalc = system_clock::now();
+        }
     }
 }
