@@ -14,15 +14,16 @@ class TestBase(unittest.TestCase):
         timeout = time.time() + 3;
         poll_obj = select.poll()
         poll_obj.register(self.gui.stdout, select.POLLIN)
-        while time.time() < timeout:
+        while True:
             poll_result = poll_obj.poll(0)
             if poll_result:
                 line = self.gui.stdout.readline().decode().strip()
                 if "Listening on port 19544" in line:
                     break
-       
-        time.sleep(1)
-        
+            if time.time() >= timeout:
+                self.tearDown()
+                raise AssertionError("Timed out waiting for SCPI server")
+
         self.vna = libreVNA('localhost', 19544, timeout=4)
         try:
             self.vna.cmd("*CLS;:DEV:CONN")
@@ -34,6 +35,8 @@ class TestBase(unittest.TestCase):
             raise AssertionError("Not connected")
                
     def tearDown(self):
+        # make sure the GUI did not crash during the test
+        self.assertEqual(self.gui.poll(), None)
         self.gui.send_signal(SIGINT)
         try:
             self.gui.wait(timeout = 3)

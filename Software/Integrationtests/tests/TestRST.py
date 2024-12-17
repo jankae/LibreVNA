@@ -236,15 +236,9 @@ class TestRST(TestBase):
         self.vna.cmd(f"VNA:STIM:FREQ {f_1_3}")
         self.vna.cmd(f"VNA:STIM:LVL {pwr_min}")
         self.vna.cmd("VNA:SWEEP POWER")
-        
-        # We just configured a lot of settings, give some time to empty the output queue from the GUI to the device
-        time.sleep(2)
 
         # Reset and verify all settings revert.
         self.vna.cmd("*RST")
-        
-        # ... and wait a little bit here again to let the changes from the RST propagate from the device and back to the GUI (otherwise we might still read wrong external reference settings for example)
-        time.sleep(2)
         
         settings2 = self.query_settings()
         for key, value in settings1.items():
