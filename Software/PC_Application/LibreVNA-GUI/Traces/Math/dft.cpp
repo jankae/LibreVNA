@@ -147,10 +147,9 @@ void Math::DFT::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
     Q_UNUSED(begin);
     Q_UNUSED(end);
-    if(input->rData().size() < 2) {
+    if(input->getData().size() < 2) {
         // not enough input data
-        data.clear();
-        emit outputSamplesChanged(0, 0);
+        clearOutput();
         warning("Not enough input samples");
         return;
     }
@@ -162,8 +161,16 @@ void Math::DFT::inputSamplesChanged(unsigned int begin, unsigned int end)
 void Math::DFT::updateDFT()
 {
     if(dataType != DataType::Invalid) {
-        inputSamplesChanged(0, input->rData().size());
+        inputSamplesChanged(0, input->getData().size());
     }
+}
+
+void Math::DFT::clearOutput()
+{
+    dataMutex.lock();
+    data.clear();
+    dataMutex.unlock();
+    emit outputSamplesChanged(0, 0);
 }
 
 Math::DFTThread::DFTThread(Math::DFT &dft)
@@ -186,11 +193,18 @@ void Math::DFTThread::run()
             qDebug() << "DFT thread exiting";
             return;
         }
-//        qDebug() << "DFT thread calculating";
+        // qDebug() << "DFT thread calculating";
         if(!dft.input) {
             // not connected, skip calculation
             continue;
         }
+        auto inputData = dft.input->getData();
+        if(!inputData.size()) {
+            dft.clearOutput();
+            dft.warning("Not enough input samples");
+            continue;
+        }
+
         double DC = dft.DCfreq;
         TDR *tdr = nullptr;
         // find the last TDR operation
@@ -213,14 +227,15 @@ void Math::DFTThread::run()
                 DC = tdr->getInput()->getSample(tdr->getInput()->numSamples()/2).x;
             }
         }
-        auto samples = dft.input->rData().size();
-        auto timeSpacing = dft.input->rData()[1].x - dft.input->rData()[0].x;
+        auto samples = inputData.size();
+        auto timeSpacing = inputData[1].x - inputData[0].x;
         vector<complex<double>> timeDomain(samples);
         for(unsigned int i=0;i<samples;i++) {
-            timeDomain.at(i) = dft.input->rData()[i].y;
+            timeDomain.at(i) = inputData[i].y;
         }
 
         dft.window.apply(timeDomain);
+        Fft::shift(timeDomain, true);
         Fft::transform(timeDomain, false);
         // shift DC bin into the middle
         Fft::shift(timeDomain, false);
@@ -229,7 +244,10 @@ void Math::DFTThread::run()
 
         if(tdr) {
             // split in padding and actual data sections
-            unsigned int padding = timeDomain.size() - tdr->getUnpaddedInputSize();
+            unsigned int padding = 0;
+            if(timeDomain.size() > tdr->getUnpaddedInputSize()) {
+                padding = timeDomain.size() - tdr->getUnpaddedInputSize();
+            }
             std::vector<std::complex<double>> pad_front(timeDomain.begin(), timeDomain.begin()+padding/2);
             std::vector<std::complex<double>> data(timeDomain.begin()+padding/2, timeDomain.end()-padding/2);
             std::vector<std::complex<double>> pad_back(timeDomain.end()-padding/2, timeDomain.end());
@@ -248,8 +266,8 @@ void Math::DFTThread::run()
             }
         }
 
-        dft.data.clear();
         int DCbin = timeDomain.size() / 2, startBin = 0;
+        dft.dataMutex.lock();
         if(DC > 0) {
             dft.data.resize(timeDomain.size(), TraceMath::Data());
         } else {
@@ -262,7 +280,9 @@ void Math::DFTThread::run()
             dft.data[i - startBin].x = round(freq);
             dft.data[i - startBin].y = timeDomain.at(i);
         }
-        emit dft.outputSamplesChanged(0, dft.data.size());
+        auto size = dft.data.size();
+        dft.dataMutex.unlock();
+        emit dft.outputSamplesChanged(0, size);
 
         // limit update rate if configured in preferences
         auto &p = Preferences::getInstance();

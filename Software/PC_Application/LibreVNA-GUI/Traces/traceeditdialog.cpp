@@ -283,13 +283,14 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             } else {
                 // composite operation added, check which one and edit the correct suboperation
                 switch(type) {
-                case TraceMath::Type::TimeDomainGating:
+                case TraceMath::Type::TimeDomainGating: {
+                    auto inputData = newMath[0]->getInput()->getData();
                     // Automatically select bandpass/lowpass TDR, depending on selected span
-                    if(newMath[0]->getInput()->rData().size() > 0) {
+                    if(inputData.size() > 0) {
                         // Automatically select bandpass/lowpass TDR, depending on selected span
                         auto tdr = (Math::TDR*) newMath[0];
-                        auto fstart = tdr->getInput()->rData().front().x;
-                        auto fstop = tdr->getInput()->rData().back().x;
+                        auto fstart = inputData.front().x;
+                        auto fstop = inputData.back().x;
 
                         if(fstart < fstop / 100.0) {
                             tdr->setMode(Math::TDR::Mode::Lowpass);
@@ -301,6 +302,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 
                     // TDR/DFT can be left at default, edit the actual gate
                     newMath[1]->edit();
+                }
                    break;
                 default:
                    break;

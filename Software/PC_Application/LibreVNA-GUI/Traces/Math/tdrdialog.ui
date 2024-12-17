@@ -53,7 +53,7 @@
      <item row="1" column="1">
       <widget class="QSpinBox" name="padding">
        <property name="maximum">
-        <number>100000</number>
+        <number>10000000</number>
        </property>
        <property name="singleStep">
         <number>100</number>

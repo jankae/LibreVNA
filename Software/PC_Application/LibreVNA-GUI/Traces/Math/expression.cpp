@@ -85,7 +85,11 @@ void Math::Expression::fromJSON(nlohmann::json j)
 
 void Math::Expression::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
-    auto in = input->rData();
+    std::vector<Data> in;
+    if(input) {
+        in = input->getData();
+    }
+    dataMutex.lock();
     data.resize(in.size());
     try {
         for(unsigned int i=begin;i<end;i++) {
@@ -100,10 +104,11 @@ void Math::Expression::inputSamplesChanged(unsigned int begin, unsigned int end)
             data[i].y = res.GetComplex();
         }
         success();
-        emit outputSamplesChanged(begin, end);
     } catch (const ParserError &e) {
         error(QString::fromStdString(e.GetMsg()));
     }
+    dataMutex.unlock();
+    emit outputSamplesChanged(begin, end);
 }
 
 void Math::Expression::expressionChanged()
@@ -137,6 +142,6 @@ void Math::Expression::expressionChanged()
         break;
     }
     if(input) {
-        inputSamplesChanged(0, input->rData().size());
+        inputSamplesChanged(0, input->getData().size());
     }
 }

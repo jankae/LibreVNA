@@ -79,8 +79,14 @@ void MedianFilter::fromJSON(nlohmann::json j)
 }
 
 void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
-    if(data.size() != input->rData().size()) {
-        data.resize(input->rData().size());
+    std::vector<Data> inputData;
+    if(input) {
+        inputData = input->getData();
+    }
+    if(data.size() != inputData.size()) {
+        dataMutex.lock();
+        data.resize(inputData.size());
+        dataMutex.unlock();
     }
     if(data.size() > 0) {
         auto kernelOffset = (kernelSize-1)/2;
@@ -89,8 +95,8 @@ void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
         if(start < 0) {
             start = 0;
         }
-        if(stop > input->rData().size()) {
-            stop = input->rData().size();
+        if(stop > inputData.size()) {
+            stop = inputData.size();
         }
 
         auto comp = [=](const complex<double>&a, const complex<double>&b){
@@ -104,6 +110,7 @@ void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
         };
 
         vector<complex<double>> kernel(kernelSize);
+        dataMutex.lock();
         for(unsigned int out=start;out<stop;out++) {
             if(out == (unsigned int) start) {
                 // this is the first sample to update, fill initial kernel
@@ -111,12 +118,12 @@ void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
                     unsigned int inputSample;
                     if(kernelOffset > in + out) {
                         inputSample = 0;
-                    } else if(in + out >= input->rData().size() + kernelOffset) {
-                        inputSample = input->rData().size() - 1;
+                    } else if(in + out >= inputData.size() + kernelOffset) {
+                        inputSample = inputData.size() - 1;
                     } else {
                         inputSample = in + out - kernelOffset;
                     }
-                    auto sample = input->rData().at(inputSample).y;
+                    auto sample = inputData.at(inputSample).y;
                     kernel[in] = sample;
                 }
                 // sort initial kernel
@@ -129,20 +136,21 @@ void MedianFilter::inputSamplesChanged(unsigned int begin, unsigned int end) {
                 if(toRemove < 0) {
                     toRemove = 0;
                 }
-                if(toAdd >= input->rData().size()) {
-                    toAdd = input->rData().size() - 1;
+                if(toAdd >= inputData.size()) {
+                    toAdd = inputData.size() - 1;
                 }
-                auto sampleToRemove = input->rData().at(toRemove).y;
+                auto sampleToRemove = inputData.at(toRemove).y;
                 auto remove_iterator = lower_bound(kernel.begin(), kernel.end(), sampleToRemove, comp);
                 kernel.erase(remove_iterator);
 
-                auto sampleToAdd = input->rData().at(toAdd).y;
+                auto sampleToAdd = inputData.at(toAdd).y;
                 // insert sample at correct position in vector
                 kernel.insert(upper_bound(kernel.begin(), kernel.end(), sampleToAdd, comp), sampleToAdd);
             }
             data.at(out).y = kernel[kernelOffset];
-            data.at(out).x = input->rData().at(out).x;
+            data.at(out).x = inputData.at(out).x;
         }
+        dataMutex.unlock();
         emit outputSamplesChanged(start, stop);
         success();
     } else {

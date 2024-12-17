@@ -4,6 +4,7 @@
 #include "savable.h"
 
 #include <QObject>
+#include <QMutex>
 #include <vector>
 #include <complex>
 /*
@@ -110,7 +111,7 @@ public:
     void assignInput(TraceMath *input);
 
     DataType getDataType() const;
-    virtual std::vector<Data>& rData() { return data;}
+    virtual std::vector<Data> getData();
     Status getStatus() const;
     QString getStatusDescription() const;
     virtual Type getType() = 0;
@@ -119,6 +120,8 @@ public:
     Trace* root();
 
     TraceMath *getInput() const;
+
+    QMutex& mutex();
 
 public slots:
     // some values of the input data have changed, begin/end determine which sample(s) has changed
@@ -137,6 +140,7 @@ protected:
     void warning(QString warn);
     void error(QString err);
     void success();
+    QMutex dataMutex;
     std::vector<Data> data;
     // buffer for time domain step response data. This makes it possible to access an arbitrary sample of the step response without having to
     // integrate the impulse response every time. Call updateStepResponse in your derived class, if step response data is valid after updating

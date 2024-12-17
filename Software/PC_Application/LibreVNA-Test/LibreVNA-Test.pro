@@ -151,6 +151,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/streamingserver.cpp \
     ../LibreVNA-GUI/touchstone.cpp \
     ../LibreVNA-GUI/unit.cpp \
+    ffttests.cpp \
     main.cpp \
     parametertests.cpp \
     portextensiontests.cpp \
@@ -344,6 +345,7 @@ HEADERS += \
     ../LibreVNA-GUI/streamingserver.h \
     ../LibreVNA-GUI/touchstone.h \
     ../LibreVNA-GUI/unit.h \
+    ffttests.h \
     parametertests.h \
     portextensiontests.h \
     utiltests.h

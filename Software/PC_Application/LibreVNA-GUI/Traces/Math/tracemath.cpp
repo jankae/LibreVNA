@@ -8,6 +8,8 @@
 #include "Traces/trace.h"
 #include "ui_timedomaingatingexplanationwidget.h"
 
+#include <QMutexLocker>
+
 TraceMath::TraceMath()
 {
     input = nullptr;
@@ -87,14 +89,13 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
 
 TraceMath::Data TraceMath::getSample(unsigned int index)
 {
+    TraceMath::Data d;
+    dataMutex.lock();
     if(index < data.size()) {
-        return data[index];
-    } else {
-        TraceMath::Data d;
-        d.x = 0;
-        d.y = 0;
-        return d;
+        d = data[index];
     }
+    dataMutex.unlock();
+    return d;
 }
 
 double TraceMath::getStepResponse(unsigned int index)
@@ -108,6 +109,7 @@ double TraceMath::getStepResponse(unsigned int index)
 
 double TraceMath::getInterpolatedStepResponse(double x)
 {
+    QMutexLocker locker(&dataMutex);
     if(stepResponse.size() != data.size()) {
         // make sure all the step response data is available
         return std::numeric_limits<double>::quiet_NaN();
@@ -140,7 +142,7 @@ double TraceMath::getInterpolatedStepResponse(double x)
 TraceMath::Data TraceMath::getInterpolatedSample(double x)
 {
     Data ret;
-
+    QMutexLocker locker(&dataMutex);
     if(data.size() == 0 || x < data.front().x || x > data.back().x) {
         ret.y = std::numeric_limits<std::complex<double>>::quiet_NaN();
         ret.x = std::numeric_limits<double>::quiet_NaN();
@@ -165,7 +167,10 @@ TraceMath::Data TraceMath::getInterpolatedSample(double x)
 
 unsigned int TraceMath::numSamples()
 {
-    return data.size();
+    dataMutex.lock();
+    auto size = data.size();
+    dataMutex.unlock();
+    return size;
 }
 
 QString TraceMath::dataTypeToString(TraceMath::DataType type)
@@ -201,7 +206,9 @@ void TraceMath::removeInput()
         // disconnect everything from the input
         disconnect(input, nullptr, this, nullptr);
         input = nullptr;
+        dataMutex.lock();
         data.clear();
+        dataMutex.unlock();
         dataType = DataType::Invalid;
         emit outputTypeChanged(dataType);
     }
@@ -222,14 +229,19 @@ void TraceMath::inputTypeChanged(TraceMath::DataType type)
 {
     auto newType = outputType(type);
     dataType = newType;
+    dataMutex.lock();
     data.clear();
+    dataMutex.unlock();
     if(dataType == DataType::Invalid) {
         error("Invalid input data");
         disconnect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged);
         updateStepResponse(false);
     } else {
         connect(input, &TraceMath::outputSamplesChanged, this, &TraceMath::inputSamplesChanged, Qt::UniqueConnection);
-        inputSamplesChanged(0, input->data.size());
+        input->dataMutex.lock();
+        auto inputSize = input->data.size();
+        input->dataMutex.unlock();
+        inputSamplesChanged(0, inputSize);
     }
     emit outputTypeChanged(dataType);
 }
@@ -256,8 +268,14 @@ void TraceMath::success()
     }
 }
 
+QMutex& TraceMath::mutex()
+{
+    return dataMutex;
+}
+
 void TraceMath::updateStepResponse(bool valid)
 {
+    QMutexLocker locker(&dataMutex);
     if(valid) {
         stepResponse.resize(data.size());
         double accumulate = 0.0;
@@ -297,4 +315,12 @@ TraceMath::Status TraceMath::getStatus() const
 TraceMath::DataType TraceMath::getDataType() const
 {
     return dataType;
+}
+
+std::vector<TraceMath::Data> TraceMath::getData()
+{
+    dataMutex.lock();
+    auto ret = data;
+    dataMutex.unlock();
+    return ret;
 }

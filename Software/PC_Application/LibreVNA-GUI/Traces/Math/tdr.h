@@ -55,6 +55,7 @@ public slots:
 
 private:
     void updateTDR();
+    void clearOutput();
     Mode mode;
     WindowFunction window;
     unsigned int padding;

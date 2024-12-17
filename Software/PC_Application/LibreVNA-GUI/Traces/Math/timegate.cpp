@@ -148,8 +148,12 @@ void Math::TimeGate::fromJSON(nlohmann::json j)
 
 void Math::TimeGate::setStart(double start)
 {
-    if(input && input->rData().size() > 0 && start < input->rData().front().x) {
-        start = input->rData().back().x;
+    if(!input) {
+        return;
+    }
+    auto inputData = input->getData();
+    if(inputData.size() > 0 && start < inputData.front().x) {
+        start = inputData.back().x;
     }
 
     double stop = center + span / 2;
@@ -165,8 +169,12 @@ void Math::TimeGate::setStart(double start)
 
 void Math::TimeGate::setStop(double stop)
 {
-    if(input && input->rData().size() > 0 && stop > input->rData().back().x) {
-        stop = input->rData().back().x;
+    if(!input) {
+        return;
+    }
+    auto inputData = input->getData();
+    if(inputData.size() > 0 && stop > inputData.back().x) {
+        stop = inputData.back().x;
     }
 
     double start = center - span / 2;
@@ -210,16 +218,24 @@ double Math::TimeGate::getStop()
 
 void Math::TimeGate::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
-    if(data.size() != input->rData().size()) {
-        data.resize(input->rData().size());
+    std::vector<Data> inputData;
+    if(input) {
+        inputData = input->getData();
+    }
+    if(data.size() != inputData.size()) {
+        dataMutex.lock();
+        data.resize(inputData.size());
+        dataMutex.unlock();
         updateFilter();
     }
+    dataMutex.lock();
     for(auto i = begin;i<end;i++) {
-        data[i] = input->rData()[i];
+        data[i] = inputData[i];
         data[i].y *= filter[i];
     }
+    dataMutex.unlock();
     emit outputSamplesChanged(begin, end);
-    if(input->rData().size() > 0) {
+    if(inputData.size() > 0) {
         success();
     } else {
         warning("No input data");
@@ -231,14 +247,15 @@ void Math::TimeGate::updateFilter()
     if(!input) {
         return;
     }
+    auto inputData = input->getData();
     std::vector<std::complex<double>> buf;
     filter.clear();
-    buf.resize(input->rData().size() * 2);
+    buf.resize(inputData.size() * 2);
     if(!buf.size()) {
         return;
     }
-    auto maxX = input->rData().back().x;
-    auto minX = input->rData().front().x;
+    auto maxX = inputData.back().x;
+    auto minX = inputData.front().x;
 
     auto wc1 = Util::Scale<double>(center - span / 2, minX, maxX, 0, 1);
     auto wc2 = Util::Scale<double>(center + span / 2, minX, maxX, 0, 1);
@@ -271,7 +288,7 @@ void Math::TimeGate::updateFilter()
     emit filterUpdated();
 
     // needs to update output samples, pretend that input samples have changed
-    inputSamplesChanged(0, input->rData().size());
+    inputSamplesChanged(0, inputData.size());
 }
 
 Math::TimeGateGraph::TimeGateGraph(QWidget *parent)
@@ -285,13 +302,18 @@ Math::TimeGateGraph::TimeGateGraph(QWidget *parent)
 
 QPoint Math::TimeGateGraph::plotValueToPixel(double x, double y)
 {
-    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+    if(!gate->getInput()) {
         return QPoint(0, 0);
     }
 
-    auto input = gate->getInput()->rData();
-    auto minX = input.front().x;
-    auto maxX = input.back().x;
+    auto inputData = gate->getInput()->getData();
+
+    if(!inputData.size()) {
+        return QPoint(0, 0);
+    }
+
+    auto minX = inputData.front().x;
+    auto maxX = inputData.back().x;
 
     int plotLeft = 0;
     int plotRight = size().width();
@@ -306,13 +328,18 @@ QPoint Math::TimeGateGraph::plotValueToPixel(double x, double y)
 
 QPointF Math::TimeGateGraph::pixelToPlotValue(QPoint p)
 {
-    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+    if(!gate->getInput()) {
         return QPointF(0.0, 0.0);
     }
 
-    auto input = gate->getInput()->rData();
-    auto minX = input.front().x;
-    auto maxX = input.back().x;
+    auto inputData = gate->getInput()->getData();
+
+    if(!inputData.size()) {
+        return QPointF(0.0, 0.0);
+    }
+
+    auto minX = inputData.front().x;
+    auto maxX = inputData.back().x;
 
     int plotLeft = 0;
     int plotRight = size().width();
@@ -327,11 +354,11 @@ QPointF Math::TimeGateGraph::pixelToPlotValue(QPoint p)
 
 void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
 {
-    if(!gate) {
+    if(!gate || !gate->getInput()) {
         return;
     }
     // grab input data
-    auto input = gate->getInput()->rData();
+    auto inputData = gate->getInput()->getData();
 
     Q_UNUSED(event)
     auto& pref = Preferences::getInstance();
@@ -340,7 +367,7 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     p.setBackground(QBrush(pref.Graphs.Color.background));
     p.fillRect(0, 0, width(), height(), QBrush(pref.Graphs.Color.background));
 
-    if(!gate->getInput() || !gate->getInput()->rData().size()) {
+    if(!inputData.size()) {
         // no data yet, nothing to plot
         return;
     }
@@ -351,8 +378,8 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     pen.setStyle(Qt::SolidLine);
     p.setPen(pen);
 
-    auto minX = input.front().x;
-    auto maxX = input.back().x;
+    auto minX = inputData.front().x;
+    auto maxX = inputData.back().x;
 
     int plotLeft = 0;
     int plotRight = size().width();
@@ -362,14 +389,14 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     QPoint p1, p2;
 
     // limit amount of displayed points to keep GUI snappy
-    auto increment = input.size() / 500;
+    auto increment = inputData.size() / 500;
     if(!increment) {
         increment = 1;
     }
 
-    for(unsigned int i=increment;i<input.size();i+=increment) {
-        auto last = input[i-increment];
-        auto now = input[i];
+    for(unsigned int i=increment;i<inputData.size();i+=increment) {
+        auto last = inputData[i-increment];
+        auto now = inputData[i];
 
         auto y_last = Util::SparamTodB(last.y);
         auto y_now = Util::SparamTodB(now.y);
@@ -390,9 +417,9 @@ void Math::TimeGateGraph::paintEvent(QPaintEvent *event)
     auto filter = gate->rFilter();
     pen = QPen(Qt::red, 1);
     p.setPen(pen);
-    for(unsigned int i=increment;i<filter.size() && i<input.size();i+=increment) {
-        auto x_last = input[i-increment].x;
-        auto x_now = input[i].x;
+    for(unsigned int i=increment;i<filter.size() && i<inputData.size();i+=increment) {
+        auto x_last = inputData[i-increment].x;
+        auto x_now = inputData[i].x;
 
         auto f_last = Util::SparamTodB(filter[i-increment]);
         auto f_now = Util::SparamTodB(filter[i]);

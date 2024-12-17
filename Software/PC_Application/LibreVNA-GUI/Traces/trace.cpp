@@ -1355,7 +1355,7 @@ void Trace::clearDeembedding()
 double Trace::minX()
 {
     if(lastMath->numSamples() > 0) {
-        return lastMath->rData().front().x;
+        return lastMath->getData().front().x;
     } else {
         return numeric_limits<double>::max();
     }
@@ -1364,7 +1364,7 @@ double Trace::minX()
 double Trace::maxX()
 {
     if(lastMath->numSamples() > 0) {
-        return lastMath->rData().back().x;
+        return lastMath->getData().back().x;
     } else {
         return numeric_limits<double>::lowest();
     }
@@ -1374,7 +1374,7 @@ double Trace::findExtremum(bool max, double xmin, double xmax)
 {
     double compare = max ? numeric_limits<double>::min() : numeric_limits<double>::max();
     double freq = 0.0;
-    for(auto sample : lastMath->rData()) {
+    for(auto sample : lastMath->getData()) {
         if(sample.x < xmin || sample.x > xmax) {
             continue;
         }
@@ -1405,7 +1405,7 @@ std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double min
     double frequency = 0.0;
     double max_dbm = -200.0;
     double min_dbm = 200.0;
-    for(auto d : lastMath->rData()) {
+    for(auto d : lastMath->getData()) {
         if(d.x < xmin || d.x > xmax) {
             continue;
         }
@@ -1517,12 +1517,12 @@ unsigned int Trace::numSamples()
     }
 }
 
-std::vector<Trace::Data> &Trace::rData()
+std::vector<Trace::Data> Trace::getData()
 {
     if(deembeddingActive && deembeddingAvailable()) {
         return deembeddingData;
     } else {
-        return TraceMath::rData();
+        return TraceMath::getData();
     }
 }
 
@@ -1620,12 +1620,12 @@ double Trace::getGroupDelay(double frequency)
 
 int Trace::index(double x)
 {
-    auto lower = lower_bound(lastMath->rData().begin(), lastMath->rData().end(), x, [](const Data &lhs, const double x) -> bool {
+    auto lower = lower_bound(lastMath->getData().begin(), lastMath->getData().end(), x, [](const Data &lhs, const double x) -> bool {
         return lhs.x < x;
     });
-    if(lower == lastMath->rData().end()) {
+    if(lower == lastMath->getData().end()) {
         // actually beyond the last sample, return the index of the last anyway to avoid access past data
-        return lastMath->rData().size() - 1;
+        return lastMath->getData().size() - 1;
     }
-    return lower - lastMath->rData().begin();
+    return lower - lastMath->getData().begin();
 }

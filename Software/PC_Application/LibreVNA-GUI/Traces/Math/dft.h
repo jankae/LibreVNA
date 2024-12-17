@@ -45,6 +45,7 @@ public slots:
 
 private:
     void updateDFT();
+    void clearOutput();
     bool automaticDC;
     double DCfreq;
     WindowFunction window;
