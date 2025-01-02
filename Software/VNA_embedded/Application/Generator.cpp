@@ -9,6 +9,11 @@
 using namespace HWHAL;
 
 void Generator::Setup(Protocol::GeneratorSettings g) {
+	// Disable 2.LO
+	Si5351.Disable(SiChannel::Port1LO2);
+	Si5351.Disable(SiChannel::Port2LO2);
+	Si5351.Disable(SiChannel::RefLO2);
+
 	HW::SetMode(HW::Mode::Generator);
 	if(g.activePort == 0) {
 		// both ports disabled, no need to configure PLLs

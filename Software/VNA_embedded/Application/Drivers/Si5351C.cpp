@@ -70,7 +70,7 @@ bool Si5351C::SetPLL(PLL pll, uint32_t frequency, PLLSource src) {
 	FindOptimalDivider(frequency, srcFreq, c.P1, c.P2, c.P3);
 
 	FreqPLL[(int) pll] = frequency;
-	LOG_INFO("Setting PLL %c to %luHz", pll==PLL::A ? 'A' : 'B', frequency);
+	LOG_DEBUG("Setting PLL %c to %luHz", pll==PLL::A ? 'A' : 'B', frequency);
 	return WritePLLConfig(c, pll);
 }
 

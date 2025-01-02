@@ -51,6 +51,7 @@ entity SPICommands is
            SWEEP_POINTS : out  STD_LOGIC_VECTOR (12 downto 0);
            NSAMPLES : out  STD_LOGIC_VECTOR (12 downto 0);
 			  STAGES : out STD_LOGIC_VECTOR (2 downto 0);
+			  SETTLING_TIME : out STD_LOGIC_VECTOR (19 downto 0);
 			  SYNC_ENABLED : out STD_LOGIC;
 			  SYNC_MASTER : out STD_LOGIC;
 			  PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
@@ -270,6 +271,8 @@ begin
 							when 15 => MAX2871_DEF_4(31 downto 16) <= spi_buf_out;
 							when 18 => DFT_BIN1_PHASEINC <= spi_buf_out;
 							when 19 => DFT_DIFFBIN_PHASEINC <= spi_buf_out;
+							when 20 => SETTLING_TIME(15 downto 0) <= spi_buf_out;
+							when 21 => SETTLING_TIME(19 downto 16) <= spi_buf_out(3 downto 0);
 							when others => 
 						end case;
 						selected_register <= selected_register + 1;

@@ -428,6 +428,13 @@ bool LibreVNADriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
     p.settings.cdbm_excitation_start = s.dBmStart * 100;
     p.settings.cdbm_excitation_stop = s.dBmStop * 100;
     p.settings.stages = s.excitedPorts.size() - 1;
+    auto dwell_us = s.dwellTime * 1e6;
+    if(dwell_us < 0) {
+        dwell_us = 0;
+    } else if(dwell_us > UINT16_MAX) {
+        dwell_us = UINT16_MAX;
+    }
+    p.settings.dwell_time = dwell_us;
     p.settings.suppressPeaks = VNASuppressInvalidPeaks ? 1 : 0;
     p.settings.fixedPowerSetting = VNAAdjustPowerLevel || s.dBmStart != s.dBmStop ? 0 : 1;
     p.settings.logSweep = s.logSweep ? 1 : 0;
@@ -664,7 +671,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         info.firmware_version = QString::number(packet.info.FW_major)+"."+QString::number(packet.info.FW_minor)+"."+QString::number(packet.info.FW_patch);
         info.hardware_version = hardwareVersionToString(packet.info.hardware_version)+" Rev."+QString(packet.info.HW_Revision);
         info.supportedFeatures = {
-            Feature::VNA, Feature::VNAFrequencySweep, Feature::VNALogSweep, Feature::VNAPowerSweep, Feature::VNAZeroSpan,
+            Feature::VNA, Feature::VNAFrequencySweep, Feature::VNALogSweep, Feature::VNAPowerSweep, Feature::VNAZeroSpan, Feature::VNADwellTime,
             Feature::Generator,
             Feature::SA, Feature::SATrackingGenerator, Feature::SATrackingOffset,
             Feature::ExtRefIn, Feature::ExtRefOut,
@@ -677,6 +684,8 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         info.Limits.VNA.maxIFBW = packet.info.limits_maxIFBW;
         info.Limits.VNA.mindBm = (double) packet.info.limits_cdbm_min / 100;
         info.Limits.VNA.maxdBm = (double) packet.info.limits_cdbm_max / 100;
+        info.Limits.VNA.minDwellTime = (double) packet.info.limits_minDwellTime * 1e-6;
+        info.Limits.VNA.maxDwellTime = (double) packet.info.limits_maxDwellTime * 1e-6;
 
         info.Limits.Generator.ports = packet.info.num_ports;
         info.Limits.Generator.minFreq = packet.info.limits_minFreq;

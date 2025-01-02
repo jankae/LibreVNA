@@ -13,6 +13,7 @@
 {geometry}
 \usepackage{tikz}
 \usepackage{siunitx} 
+\usepackage{minibox}
 \DeclareSIUnit{\belmilliwatt}{Bm}
 \DeclareSIUnit{\dBm}{\deci\belmilliwatt}
 
@@ -534,6 +535,26 @@ $$ f_{firstBin} =  \frac{SR_{ADC} * DFT\_FIRST\_BIN}{2^{16}}$$
 $$ \Delta f =  \frac{SR_{ADC} * DFT\_FREQ\_SPACING}{2^{24}}$$
 \end{itemize}
 
+\subsection{SETTLING\_TIME: 0x14}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\rwbits{0}{16}{SETTLING\_TIME[15:0]}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+\item \textbf{SETTLING\_TIME[19:0]:} This value determines the time delay between applying the stimulus signal and the beginning of the ADC sampling.
+$$ t_{delay} =  \frac{1}{\SI{102.4}{\mega\hertz}} SETTLING\_TIME $$
+\end{itemize}
+\subsection{SETTLING\_TIME: 0x15}
+\begin{center}
+\begin{tikzpicture}
+\bitrect{16}{16-\bit}
+\robits{0}{12}{reserved}
+\rwbits{12}{4}{SETTLING\_TIME[19:16]}
+\end{tikzpicture}
+\end{center}
+
 \section{SweepConfig}
 \label{sweepconfig}
 The SweepConfig contains data for the source and LO1 PLL as well as the attenuator and source filter. Each point in the sweep, needs a valid SweepConfig before the sweep is started.
@@ -542,7 +563,9 @@ The SweepConfig contains data for the source and LO1 PLL as well as the attenuat
 \begin{tikzpicture}
 \bitrect{16}{96-\bit}
 \rwbits{0}{1}{HS}
-\rwbits{1}{2}{SettlingTime}
+%\rwbits{1}{2}{SettlingTime}
+\rwbits{1}{1}{\tiny LO N[6]}
+\rwbits{2}{1}{\minibox{\tiny Source\\N[6]}}
 \rwbits{3}{3}{Samples}
 \rwbits{6}{2}{SourceFilter}
 \rwbits{8}{8}{LO M[11:4]}
@@ -580,17 +603,17 @@ The SweepConfig contains data for the source and LO1 PLL as well as the attenuat
 \end{center}
 \begin{itemize}
 \item \textbf{HS: Halt sweep.} If set, settling and sampling of this sweep point will be postponed until the sweep resume command is issued.
-\item \textbf{SettlingTime:} Amount of time between locking of PLLs and beginning of ADC sampling
-\begin{center}
-\begin{tabular}{ c|c }
-Setting & Time\\
- \hline
-00 & \SI{20}{\micro\second}\\
-01 & \SI{60}{\micro\second}\\
-10 & \SI{180}{\micro\second}\\
-11 & \SI{540}{\micro\second}\\
-\end{tabular}
-\end{center}
+%\item \textbf{SettlingTime:} Amount of time between locking of PLLs and beginning of ADC sampling
+%\begin{center}
+%\begin{tabular}{ c|c }
+%Setting & Time\\
+ %\hline
+%00 & \SI{20}{\micro\second}\\
+%01 & \SI{60}{\micro\second}\\
+%10 & \SI{180}{\micro\second}\\
+%11 & \SI{540}{\micro\second}\\
+%\end{tabular}
+%\end{center}
 \item \textbf{Samples:} Number of ADC samples to take
 \begin{center}
 \begin{tabular}{ c|c|c }

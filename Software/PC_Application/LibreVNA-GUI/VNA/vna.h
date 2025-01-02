@@ -38,6 +38,8 @@ public:
 
     void preset() override;
 
+    virtual void deviceInfoUpdated() override;
+
     QList<QAction*> getImportOptions() override { return importActions;}
     QList<QAction*> getExportOptions() override { return exportActions;}
 
@@ -72,6 +74,7 @@ public:
         } Power;
         unsigned int npoints;
         double bandwidth;
+        double dwellTime;
         std::vector<int> excitedPorts;
         // if the number of points is higher than supported by the hardware, the sweep has to be segmented into multiple parts
         int segments;
@@ -109,6 +112,7 @@ private slots:
     void SetLogSweep(bool log);
     // Acquisition control
     void SetSourceLevel(double level);
+    void SetDwellTime(double time);
     // Power sweep settings
     void SetStartPower(double level);
     void SetStopPower(double level);
@@ -135,6 +139,7 @@ private:
     void LoadSweepSettings();
     void StoreSweepSettings();
     void UpdateCalWidget();
+    void ConstrainAllSettings();
 
     void createDefaultTracesAndGraphs(int ports);
 private slots:
@@ -154,6 +159,9 @@ private:
     bool running;
     QTimer configurationTimer;
     bool configurationTimerResetTraces;
+
+    // Toolbar elements
+    SIUnitEdit *acquisitionDwellTime;
 
     // Calibration
     Calibration cal;
@@ -205,6 +213,7 @@ signals:
     void pointsChanged(unsigned int points);
     void IFBandwidthChanged(double bandwidth);
     void averagingChanged(unsigned int averages);
+    void dwellTimeChanged(double time);
 
     void startPowerChanged(double level);
     void stopPowerChanged(double level);

@@ -72,6 +72,14 @@ namespace Util {
         return brightness > 0.6 ? Qt::black : Qt::white;
     }
 
+    template<typename T> void constrain(T &value, const T &min, const T &max) {
+        if(value > max) {
+            value = max;
+        } else if(value < min) {
+            value = min;
+        }
+    }
+
     /*
      * Performs interpolation of a list of sorted values.
      * T: type of the elements in the list. Must contain a value by which these elements are sorted in the list.

@@ -132,6 +132,17 @@ void FPGA::SetSamplesPerPoint(uint32_t nsamples) {
 	WriteRegister(Reg::SamplesPerPoint, nsamples);
 }
 
+void FPGA::SetSettlingTime(uint16_t us) {
+	// register is in multiples of 1/102.4 MHz
+	uint32_t value = (uint32_t) us * 512 / 5;
+	constexpr uint32_t maxval = 0xFFFFF;
+	if(value > maxval) {
+		value = maxval;
+	}
+	WriteRegister(Reg::SettlingTimeLow, value & 0xFFFF);
+	WriteRegister(Reg::SettlingTimeHigh, value >> 16);
+}
+
 void FPGA::SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool synchronize, bool syncMaster) {
 	uint16_t value = 0x0000;
 	value |= (uint16_t) (stages & 0x07) << 13;
@@ -199,7 +210,7 @@ void FPGA::WriteMAX2871Default(uint32_t *DefaultRegs) {
 }
 
 void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt, LowpassFilter filter) {
+		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt, LowpassFilter filter) {
 	uint16_t send[7];
 	// select which point this sweep config is for
 	send[0] = pointnum & 0x1FFF;
@@ -222,7 +233,12 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 	if (halt) {
 		send[1] |= 0x8000;
 	}
-	send[1] |= (int) settling << 13;
+	if(LO_N & 0x40) {
+		send[1] |= 0x4000;
+	}
+	if(Source_N & 0x40) {
+		send[1] |= 0x2000;
+	}
 	send[1] |= (int) samples << 10;
 	if(filter == LowpassFilter::Auto) {
 		// Select source LP filter
@@ -239,13 +255,13 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 		send[1] |= (int) filter << 8;
 	}
 	send[2] = (LO_M & 0x000F) << 12 | LO_FRAC;
-	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | LO_N << 1;
+	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | (LO_N & 0x3F) << 1;
 	if (lowband) {
 		send[3] |= 0x0001;
 	}
 	send[4] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
 	send[5] = (Source_M & 0x001F) << 11 | Source_FRAC >> 1;
-	send[6] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | Source_N;
+	send[6] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | (Source_N & 0x3F);
 	SwitchBytes(send[0]);
 	SwitchBytes(send[1]);
 	SwitchBytes(send[2]);

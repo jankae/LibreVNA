@@ -32,12 +32,11 @@ void Manual::Setup(Protocol::ManualControl m) {
 	// Configure LO2
 	if(m.V1.LO2EN) {
 		// Generate second LO with Si5351
-		Si5351.SetCLK(SiChannel::Port1LO2, m.V1.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		Si5351.Enable(SiChannel::Port1LO2);
-		Si5351.SetCLK(SiChannel::Port2LO2, m.V1.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		Si5351.Enable(SiChannel::Port2LO2);
-		Si5351.SetCLK(SiChannel::RefLO2, m.V1.LO2Frequency, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		Si5351.Enable(SiChannel::RefLO2);
+
+		Si5351.SetPLL(Si5351C::PLL::B, m.V1.LO2Frequency*HW::LO2Multiplier, HW::Ref::getSource());
 
 		// PLL reset appears to realign phases of clock signals
 		Si5351.ResetPLL(Si5351C::PLL::B);
@@ -54,8 +53,7 @@ void Manual::Setup(Protocol::ManualControl m) {
 
 	// Configure single sweep point
 	FPGA::WriteSweepConfig(0, !m.V1.SourceHighband, Source.GetRegisters(),
-			LO1.GetRegisters(), m.V1.attenuator, 0, FPGA::SettlingTime::us60,
-			FPGA::Samples::SPPRegister, 0,
+			LO1.GetRegisters(), m.V1.attenuator, 0, FPGA::Samples::SPPRegister, 0,
 			(FPGA::LowpassFilter) m.V1.SourceHighLowpass);
 
 	FPGA::SetWindow((FPGA::Window) m.V1.WindowType);

@@ -132,6 +132,8 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
+	FPGA::SetSettlingTime(s.dwell_time);
+
 	// reset unlevel flag if it was set from a previous sweep/mode
 	HW::SetOutputUnlevel(false);
 	// Start with average level
@@ -161,9 +163,10 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::WriteMAX2871Default(Source.GetRegisters());
 
 	last_LO2 = HW::getIF1() - HW::getIF2();
-	Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-	Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-	Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.Enable(SiChannel::Port1LO2);
+	Si5351.Enable(SiChannel::Port2LO2);
+	Si5351.Enable(SiChannel::RefLO2);
+	Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
 	Si5351.ResetPLL(Si5351C::PLL::B);
 	Si5351.WaitForLock(Si5351C::PLL::B, 10);
 
@@ -193,9 +196,14 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		// SetFrequency only manipulates the register content in RAM, no SPI communication is done.
 		// No mode-switch of FPGA necessary here.
 		setPLLFrequencies(freq);
-		if(s.suppressPeaks) {
-			if(needs2LOshift(freq, last_LO2, actualBandwidth, &last_LO2)) {
+		uint32_t new_LO2;
+		auto needs_shift = needs2LOshift(freq, last_LO2, actualBandwidth, &new_LO2);
+		if(needs_shift) {
+			if(s.suppressPeaks) {
 				needs_halt = true;
+				last_LO2 = new_LO2;
+			} else {
+				LOG_WARN("Point at f=%lu%06lu needs an LO shift but the feature is disabled. This will cause a peak.", (uint32_t) (freq/1000000), (uint32_t) (freq%1000000));
 			}
 		}
 		if (last_lowband && !lowband) {
@@ -232,7 +240,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		}
 
 		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
-				LO1.GetRegisters(), attenuator, freq, FPGA::SettlingTime::us60,
+				LO1.GetRegisters(), attenuator, freq,
 				FPGA::Samples::SPPRegister, needs_halt);
 		last_lowband = lowband;
 	}
@@ -428,9 +436,7 @@ void VNA::SweepHalted() {
 			// is required to determine the need for a 2.LO shift
 			setPLLFrequencies(frequency);
 			if(needs2LOshift(frequency, last_LO2, actualBandwidth, &last_LO2)) {
-				Si5351.SetCLK(SiChannel::Port1LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-				Si5351.SetCLK(SiChannel::Port2LO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-				Si5351.SetCLK(SiChannel::RefLO2, last_LO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+				Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
 				Si5351.ResetPLL(Si5351C::PLL::B);
 				Si5351.WaitForLock(Si5351C::PLL::B, 10);
 				// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point

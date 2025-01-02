@@ -53,6 +53,8 @@ architecture Behavioral of MCP33131 is
 	signal adc_data : std_logic_vector(15 downto 0);
 	type States is (Idle, Conversion, WAIT_tEN, Transmission, Done);
 	signal state : States;
+	signal ready_int : std_logic;
+	signal ready_delay : integer range 0 to 30;
 	signal min_int, max_int, data_int : signed(15 downto 0);
 begin
 
@@ -61,7 +63,7 @@ begin
 	DATA <= std_logic_vector(data_int);
 	SCLK <= sclk_phase;
 
-	process(SCLK)
+	process(SCLK, START)
 	begin
 		if(falling_edge(SCLK)) then
 			adc_data <= adc_data(14 downto 0) & SDO;
@@ -74,6 +76,7 @@ begin
 			if(RESET = '1') then
 				state <= Idle;
 				READY <= '0';
+				ready_int <= '0';
 				CONVSTART <= '0';
 				sclk_phase <= '0';
 				CONVSTART <= '0';
@@ -94,16 +97,30 @@ begin
 						max_int <= data_int;
 					end if;
 				end if;
+				
+				READY <= '0';
+				if ready_int = '1' then
+					ready_delay <= 3;
+				else
+					if ready_delay > 0 then
+						ready_delay <= ready_delay - 1;
+					end if;
+					if ready_delay = 1 then
+						READY <= '1';
+						data_int <= signed(adc_data);
+					end if;
+				end if;
+				
 				case state is
 					when Idle =>
-						READY <= '0';
-						bit_cnt <= 0;
+						ready_int <= '0';
 						if START = '1' then
 							state <= Conversion;
 							conv_cnt <= 0;
 							CONVSTART <= '1';
 						end if;
 					when Conversion =>
+						ready_int <= '0';
 						if(conv_cnt < CONVCYCLES-1) then
 							conv_cnt <= conv_cnt + 1;
 						else
@@ -112,8 +129,10 @@ begin
 							state <= WAIT_tEN;
 						end if;
 					when WAIT_tEN =>
+						ready_int <= '0';
 						state <= Transmission;
 					when Transmission =>
+						ready_int <= '0';
 						if(div_cnt < (CLK_DIV/2)-1) then
 							div_cnt <= div_cnt + 1;
 						else
@@ -123,6 +142,7 @@ begin
 								sclk_phase <= '0';
 								if bit_cnt = 15 then
 									state <= Done;
+									bit_cnt <= 0;
 								else
 									bit_cnt <= bit_cnt + 1;
 								end if;
@@ -130,8 +150,7 @@ begin
 							div_cnt <= 0;
 						end if;
 					when Done =>
-						data_int <= signed(adc_data);
-						READY <= '1';
+						ready_int <= '1';
 						state <= Idle;
 				end case;
 			end if;

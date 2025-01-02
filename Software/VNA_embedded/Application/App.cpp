@@ -268,9 +268,7 @@ inline void App_Process() {
 					{
 						Protocol::PacketInfo send;
 						send.type = Protocol::PacketType::DeviceConfiguration;
-						send.deviceConfig.V1.IF1 = HW::getIF1();
-						send.deviceConfig.V1.ADCprescaler = HW::getADCPrescaler();
-						send.deviceConfig.V1.DFTphaseInc = HW::getDFTPhaseInc();
+						send.deviceConfig = HW::getDeviceConfig();
 						Communication::Send(send);
 					}
 					break;
@@ -334,7 +332,50 @@ inline void App_Process() {
 	}
 }
 
+#include "HW_HAL.hpp"
+
 void App_Start() {
 	App_Init();
+
+//	uint32_t LO2_1 = 61750000;
+//	uint32_t LO2_2 = 61752000;
+//
+//	HWHAL::Si5351.Enable(HWHAL::SiChannel::Port1LO2);
+//	HWHAL::Si5351.Enable(HWHAL::SiChannel::Port2LO2);
+//	HWHAL::Si5351.Enable(HWHAL::SiChannel::RefLO2);
+//
+////	HWHAL::Si5351.Disable(HWHAL::SiChannel::Port1LO2);
+////	HWHAL::Si5351.Disable(HWHAL::SiChannel::Port2LO2);
+////	HWHAL::Si5351.Disable(HWHAL::SiChannel::RefLO2);
+//
+////	FPGA::Enable(FPGA::Periphery::Port1Mixer);
+////	FPGA::Enable(FPGA::Periphery::Port2Mixer);
+////	FPGA::Enable(FPGA::Periphery::RefMixer);
+//
+//	uint32_t i=64000000;
+//	HWHAL::Si5351.SetCLK(HWHAL::SiChannel::Port1LO2, i, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+//	HWHAL::Si5351.SetCLK(HWHAL::SiChannel::Port2LO2, i, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+//	HWHAL::Si5351.SetCLK(HWHAL::SiChannel::RefLO2, i, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+//	HWHAL::Si5351.ResetPLL(Si5351C::PLL::B);
+//	while(1) {
+//		for(i=61000000;i<62000000;i++) {
+//			LOG_INFO("Setting LO2=%lu", i);
+//			HWHAL::Si5351.SetPLL(Si5351C::PLL::B, i*13, Si5351C::PLLSource::XTAL);
+////			HWHAL::Si5351.Disable(HWHAL::SiChannel::Port1LO2);
+////			HWHAL::Si5351.Disable(HWHAL::SiChannel::Port2LO2);
+////			HWHAL::Si5351.Disable(HWHAL::SiChannel::RefLO2);
+////			HWHAL::Si5351.SetCLK(HWHAL::SiChannel::Port1LO2, i, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+////			HWHAL::Si5351.SetCLK(HWHAL::SiChannel::Port2LO2, i, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+////			HWHAL::Si5351.SetCLK(HWHAL::SiChannel::RefLO2, i, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+//
+////			HWHAL::Si5351.Enable(HWHAL::SiChannel::Port1LO2);
+////			HWHAL::Si5351.Enable(HWHAL::SiChannel::Port2LO2);
+////			HWHAL::Si5351.Enable(HWHAL::SiChannel::RefLO2);
+////			HWHAL::Si5351.ResetPLL(Si5351C::PLL::B);
+////			HWHAL::Si5351.WaitForLock(Si5351C::PLL::B, 10);
+//			vTaskDelay(1);
+//		}
+//	}
+
 	App_Process();
 }

@@ -454,6 +454,14 @@ VNA::VNA(AppWindow *window, QString name)
     tb_acq->addWidget(new QLabel("IF BW:"));
     tb_acq->addWidget(eBandwidth);
 
+    tb_acq->addWidget(new QLabel("Dwell time:"));
+    acquisitionDwellTime = new SIUnitEdit("s", "um ", 3);
+    width = QFontMetrics(dbm->font()).horizontalAdvance("100ms") + 20;
+    acquisitionDwellTime->setFixedWidth(width);
+    connect(acquisitionDwellTime, &SIUnitEdit::valueChanged, this, &VNA::SetDwellTime);
+    connect(this, &VNA::dwellTimeChanged, acquisitionDwellTime, &SIUnitEdit::setValueQuiet);
+    tb_acq->addWidget(acquisitionDwellTime);
+
     tb_acq->addWidget(new QLabel("Averaging:"));
     lAverages = new QLabel("0/");
     tb_acq->addWidget(lAverages);
@@ -1235,6 +1243,17 @@ void VNA::SetSourceLevel(double level)
     SettingsChanged();
 }
 
+void VNA::SetDwellTime(double time) {
+    if(time > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxDwellTime) {
+        time = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxDwellTime;
+    } else if(time < DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minDwellTime) {
+        time = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minDwellTime;
+    }
+    emit dwellTimeChanged(time);
+    settings.dwellTime = time;
+    SettingsChanged();
+}
+
 void VNA::SetStartPower(double level)
 {
     settings.Power.start = level;
@@ -1652,6 +1671,37 @@ void VNA::UpdateCalWidget()
     calLabel->setToolTip(getCalToolTip());
 }
 
+void VNA::ConstrainAllSettings()
+{
+    auto maxFreq = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
+    auto minFreq = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minFreq;
+    auto maxPower = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxdBm;
+    auto minPower = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.mindBm;
+    auto maxIFBW = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxIFBW;
+    auto minIFBW = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minIFBW;
+    auto maxDwell = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxDwellTime;
+    auto minDwell = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minDwellTime;
+    auto maxPoints = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxPoints;
+    Util::constrain(settings.Freq.start, minFreq, maxFreq);
+    Util::constrain(settings.Freq.stop, minFreq, maxFreq);
+    Util::constrain(settings.Freq.excitation_power, minPower, maxPower);
+    Util::constrain(settings.bandwidth, minIFBW, maxIFBW);
+    Util::constrain(settings.dwellTime, minDwell, maxDwell);
+    Util::constrain(settings.npoints, (unsigned int) 0, maxPoints);
+    Util::constrain(settings.Power.frequency, minFreq, maxFreq);
+    Util::constrain(settings.Power.start, minPower, maxPower);
+    Util::constrain(settings.Power.stop, minPower, maxPower);
+    emit startFreqChanged(settings.Freq.start);
+    emit stopFreqChanged(settings.Freq.stop);
+    emit sourceLevelChanged(settings.Freq.excitation_power);
+    emit IFBandwidthChanged(settings.bandwidth);
+    emit dwellTimeChanged(settings.dwellTime);
+    emit pointsChanged(settings.npoints);
+    emit powerSweepFrequencyChanged(settings.Power.frequency);
+    emit startPowerChanged(settings.Power.start);
+    emit stopPowerChanged(settings.Power.stop);
+}
+
 void VNA::createDefaultTracesAndGraphs(int ports)
 {
     auto getDefaultColor = [](int ports, int i, int j)->QColor {
@@ -1780,6 +1830,16 @@ void VNA::preset()
     createDefaultTracesAndGraphs(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports);
 }
 
+void VNA::deviceInfoUpdated()
+{
+    if(DeviceDriver::getInfo(window->getDevice()).supportedFeatures.count(DeviceDriver::Feature::VNADwellTime)) {
+        acquisitionDwellTime->setEnabled(true);
+    } else {
+        acquisitionDwellTime->setEnabled(false);
+    }
+    ConstrainAllSettings();
+}
+
 QString VNA::SweepTypeToString(VNA::SweepType sw)
 {
     switch(sw) {
@@ -1904,6 +1964,7 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
             s.dBmStop = stop;
             s.logSweep = false;
         }
+        s.dwellTime = settings.dwellTime;
         if(window->getDevice() && isActive) {
             window->getDevice()->setVNA(s, [=](bool res){
                 // device received command, reset traces now

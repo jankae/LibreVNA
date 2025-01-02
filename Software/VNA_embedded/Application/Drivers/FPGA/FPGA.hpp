@@ -29,6 +29,8 @@ enum class Reg {
 	MAX2871Def4MSB = 0x0F,
 	DFTFirstBin = 0x12,
 	DFTFreqSpacing = 0x13,
+	SettlingTimeLow = 0x14,
+	SettlingTimeHigh = 0x15,
 };
 
 using SamplingResult = struct _samplingresult {
@@ -82,13 +84,6 @@ enum class LowpassFilter {
 	Auto = 0xFF,
 };
 
-enum class SettlingTime {
-	us20 = 0x00,
-	us60 = 0x01,
-	us180 = 0x02,
-	us540 = 0x03,
-};
-
 enum class Samples {
 	SPPRegister = 0x00,
     S96 = 0x01,
@@ -114,6 +109,7 @@ bool Init(HaltedCallback cb = nullptr);
 void WriteRegister(FPGA::Reg reg, uint16_t value);
 void SetNumberOfPoints(uint16_t npoints);
 void SetSamplesPerPoint(uint32_t nsamples);
+void SetSettlingTime(uint16_t us);
 void SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool synchronize = false, bool syncMaster = false);
 void Enable(Periphery p, bool enable = true);
 void Disable(Periphery p);
@@ -124,7 +120,7 @@ void DisableInterrupt(Interrupt i);
 void DisableAllInterrupts();
 void WriteMAX2871Default(uint32_t *DefaultRegs);
 void WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, SettlingTime settling, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
+		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
 using ReadCallback = void(*)(const SamplingResult &result);
 bool InitiateSampleRead(ReadCallback cb);
 void SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing);

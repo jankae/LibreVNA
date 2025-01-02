@@ -67,8 +67,8 @@ ARCHITECTURE behavior OF Test_SPI IS
    signal COMPLETE : std_logic;
 
    -- Clock period definitions
-   constant CLK_period : time := 10 ns;
-   constant SPI_CLK_period : time := 100 ns;
+   constant CLK_period : time := 9.765625 ns;
+   constant SPI_CLK_period : time := 25 ns;
  
  	signal data_signal : std_logic_vector(15 downto 0);
 

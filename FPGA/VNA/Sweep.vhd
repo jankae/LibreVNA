@@ -37,6 +37,7 @@ entity Sweep is
            CONFIG_DATA : in  STD_LOGIC_VECTOR (95 downto 0);
 			  USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
 			  NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
+			  SETTLING_TIME : in STD_LOGIC_VECTOR (19 downto 0);
            SAMPLING_BUSY : in STD_LOGIC;
 			  SAMPLING_DONE : in  STD_LOGIC;
 			  START_SAMPLING : out STD_LOGIC;
@@ -92,8 +93,7 @@ architecture Behavioral of Sweep is
 	signal point_cnt : unsigned(12 downto 0);
 	type Point_states is (WaitInitialLow, TriggerSetup, SettingUp, Settling, WaitTriggerHigh, Exciting, WaitTriggerLow, SamplingDone, NextPoint, Done);
 	signal state : Point_states;
-	signal settling_cnt : unsigned(15 downto 0);
-	signal settling_time : unsigned(15 downto 0);
+	signal settling_cnt : unsigned(19 downto 0);
 	signal stage_cnt : unsigned (2 downto 0);
 	signal config_reg : std_logic_vector(95 downto 0);
 	signal source_active : std_logic;
@@ -103,7 +103,7 @@ begin
 	
 	-- assemble registers
 	-- source register 0: N divider and fractional division value
-	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "0000000000" & config_reg(5 downto 0) & config_reg(26 downto 15) & "000";
+	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(93) & config_reg(5 downto 0) & config_reg(26 downto 15) & "000";
 	-- source register 1: Modulus value
 	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(38 downto 27) & "001";
 	-- source register 3: VCO selection
@@ -112,7 +112,7 @@ begin
 	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(14 downto 12) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5) & config_reg(47 downto 46) & "100";
 	
 	-- LO register 0: N divider and fractional division value
-	LO_REG_0 <= MAX2871_DEF_0(31) & "0000000000" & config_reg(54 downto 49) & config_reg(75 downto 64) & "000";
+	LO_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(94) & config_reg(54 downto 49) & config_reg(75 downto 64) & "000";
 	-- LO register 1: Modulus value
 	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(87 downto 76) & "001";
 	-- LO register 3: VCO selection
@@ -184,13 +184,7 @@ begin
 						-- highest bit in config_reg determines whether the sweep should be halted prior to sampling
 						SWEEP_HALTED <= config_reg(95);
 						RELOAD_PLL_REGS <= '0';
-						case config_reg(94 downto 93) is 
-							when "00" => settling_time <= to_unsigned(2048, 16); -- 20us
-							when "01" => settling_time <= to_unsigned(6144, 16); -- 60us
-							when "10" => settling_time <= to_unsigned(18432, 16); -- 180us
-							when others => settling_time <= to_unsigned(55296, 16); -- 540us
-						end case;
-						settling_cnt <= settling_time;
+						settling_cnt <= unsigned(SETTLING_TIME);
 						if PLL_RELOAD_DONE = '1' and PLL_LOCKED = '1' then
 							-- check if halted sweep is resumed
 							if config_reg(95) = '0' or SWEEP_RESUME = '1' then
@@ -257,7 +251,7 @@ begin
 						else
 							state <= NextPoint;
 						end if;
-						settling_cnt <= settling_time;
+						settling_cnt <= unsigned(SETTLING_TIME);
 					when NextPoint =>
 						NEW_DATA <= '0';
 						if point_cnt < unsigned(NPOINTS) then

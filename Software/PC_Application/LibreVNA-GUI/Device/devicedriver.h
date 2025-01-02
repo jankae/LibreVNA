@@ -72,6 +72,7 @@ public:
         VNAPowerSweep,
         VNAZeroSpan,
         VNALogSweep,
+        VNADwellTime,
         // Generator features
         Generator,
         // Spectrum analyzer features
@@ -101,6 +102,8 @@ public:
                 unsigned int maxPoints;
                 // Stimulus level limits in dBm
                 double mindBm, maxdBm;
+                // dwell time limts
+                double minDwellTime, maxDwellTime;
             } VNA;
             struct {
                 // Number of ports
@@ -264,6 +267,8 @@ public:
         bool logSweep;
         // List of ports that should be excited during the sweep (port count starts at 1)
         std::vector<int> excitedPorts;
+        // amount of time the source stays at each point before taking measurements. Ignore if not supported
+        double dwellTime;
     };
 
     class VNAMeasurement {

@@ -116,6 +116,7 @@ architecture Behavioral of top is
 		CONFIG_DATA : IN std_logic_vector(95 downto 0);
 		USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
 		NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
+		SETTLING_TIME : in STD_LOGIC_VECTOR (19 downto 0);
 		SAMPLING_BUSY : in STD_LOGIC;
 		SAMPLING_DONE : IN std_logic;
 		MAX2871_DEF_4 : IN std_logic_vector(31 downto 0);
@@ -255,6 +256,7 @@ architecture Behavioral of top is
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
 		NSAMPLES : OUT std_logic_vector(12 downto 0);
 	   STAGES : out STD_LOGIC_VECTOR (2 downto 0);
+		SETTLING_TIME : out STD_LOGIC_VECTOR (19 downto 0);
 	   SYNC_ENABLED : out STD_LOGIC;
 		SYNC_MASTER : out STD_LOGIC;
 	   PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
@@ -406,7 +408,7 @@ architecture Behavioral of top is
 	signal sweep_trigger_out : std_logic;
 	
 	-- Configuration signals
-	signal settling_time : std_logic_vector(15 downto 0);
+	signal settling_time : std_logic_vector(19 downto 0);
 	signal def_reg_4 : std_logic_vector(31 downto 0);
 	signal def_reg_3 : std_logic_vector(31 downto 0);
 	signal def_reg_1 : std_logic_vector(31 downto 0);
@@ -692,6 +694,7 @@ begin
 		CONFIG_DATA => sweep_config_data,
 		USER_NSAMPLES => sampling_user_samples,
 		NSAMPLES => sampling_samples,
+		SETTLING_TIME => settling_time,
 		SAMPLING_BUSY => sampling_busy,
 		SAMPLING_DONE => sampling_done,
 		START_SAMPLING => sampling_start,
@@ -801,6 +804,7 @@ begin
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
 		STAGES => sweep_stages,
+		SETTLING_TIME => settling_time,
 		SYNC_ENABLED => sweep_sync_enabled,
 		SYNC_MASTER => sweep_sync_master,
 		PORT1_STAGE => sweep_port1_stage,

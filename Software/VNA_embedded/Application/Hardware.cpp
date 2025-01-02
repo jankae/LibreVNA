@@ -115,21 +115,25 @@ bool HW::Init() {
 
 	// Both MAX2871 get a 100MHz reference
 //	Si5351.SetBypass(SiChannel::Source, Si5351C::PLLSource::XTAL);
-	Si5351.SetCLK(SiChannel::Source, HW::PLLRef, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::Source, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
 	Si5351.Enable(SiChannel::Source);
 //	Si5351.SetBypass(SiChannel::LO1, Si5351C::PLLSource::XTAL);
-	Si5351.SetCLK(SiChannel::LO1, HW::PLLRef, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::LO1, HW::PLLRef, Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
 	Si5351.Enable(SiChannel::LO1);
 	// 16MHz FPGA clock
-	Si5351.SetCLK(SiChannel::FPGA, HW::FPGAClkInFrequency, Si5351C::PLL::A, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::FPGA, HW::FPGAClkInFrequency, Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
 	Si5351.Enable(SiChannel::FPGA);
 
 	// Generate second LO with Si5351
-	Si5351.SetCLK(SiChannel::Port1LO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	// The 2.LO frequency is only set up here once. The frequencies chosen for DefaultLO2 and PLL B must
+	// have an integer divisor. When changing the 2.LO frequency after this point, the PLL B frequency is
+	// changed instead of modifying the clock output dividers. Otherwise, phase reversal may happen
+	// intermittently at one or multiple 2.LO outputs. See also https://github.com/jankae/LibreVNA/issues/280
+	Si5351.SetCLK(SiChannel::Port1LO2, DefaultLO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::Port1LO2);
-	Si5351.SetCLK(SiChannel::Port2LO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::Port2LO2, DefaultLO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::Port2LO2);
-	Si5351.SetCLK(SiChannel::RefLO2, IF1 - IF2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+	Si5351.SetCLK(SiChannel::RefLO2, DefaultLO2, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.Enable(SiChannel::RefLO2);
 
 	// PLL reset appears to realign phases of clock signals
@@ -151,6 +155,9 @@ bool HW::Init() {
 	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, ADCprescaler);
 	// Set phase increment according to
 	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, DFTphaseInc);
+
+	// Set default settling time
+	FPGA::SetSettlingTime(HW::DefaultDwellTime);
 
 	Exti::SetCallback(FPGA_INTR_GPIO_Port, FPGA_INTR_Pin, Exti::EdgeType::Rising, Exti::Pull::Down, FPGA_Interrupt);
 
@@ -413,6 +420,14 @@ void HW::Ref::update() {
 	}
 }
 
+Si5351C::PLLSource HW::Ref::getSource() {
+	if(extRefInUse) {
+		return Si5351C::PLLSource::CLKIN;
+	} else {
+		return Si5351C::PLLSource::XTAL;
+	}
+}
+
 void HW::setAcquisitionFrequencies(Protocol::DeviceConfig s) {
 	IF1 = s.V1.IF1;
 	ADCprescaler = s.V1.ADCprescaler;
@@ -420,6 +435,14 @@ void HW::setAcquisitionFrequencies(Protocol::DeviceConfig s) {
 	float ADCrate = (float) FPGA::Clockrate / ADCprescaler;
 	IF2 = ADCrate * DFTphaseInc / 4096;
 	ADCsamplerate = ADCrate;
+}
+
+Protocol::DeviceConfig HW::getDeviceConfig() {
+	Protocol::DeviceConfig s;
+	s.V1.ADCprescaler = ADCprescaler;
+	s.V1.DFTphaseInc = DFTphaseInc;
+	s.V1.IF1 = IF1;
+	return s;
 }
 
 uint32_t HW::getIF1() {
