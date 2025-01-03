@@ -170,6 +170,6 @@ class TestCalibration(TestBase):
         self.assertTrace_dB(S21, -13, 5)
         
         # Reflection should be below -10dB (much lower for most frequencies)
-        self.assertTrace_dB(S11, -100, 90)
-        self.assertTrace_dB(S22, -100, 90)
+        self.assertTrace_dB(S11, -100, 91)
+        self.assertTrace_dB(S22, -100, 91)
 

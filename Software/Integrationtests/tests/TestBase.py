@@ -8,7 +8,7 @@ from signal import SIGINT
 
 class TestBase(unittest.TestCase):
     def setUp(self):
-        self.gui = subprocess.Popen([defs.GUI_PATH, '-p', '19544', '--reset-preferences', '-platform', 'offscreen'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.gui = subprocess.Popen([defs.GUI_PATH, '-p', '19544', '--reset-preferences', '--no-gui', '-platform', 'offscreen'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         
         # wait for the SCPI server to become available
         timeout = time.time() + 3;

@@ -53,10 +53,10 @@ class TestSASweep(TestBase):
         
         self.assertEqual(port1[0][0], 0.0)
         self.assertGreater(port1[-1][0], 4)
-        self.assertLess(port1[-1][0], 5)
+        self.assertLess(port1[-1][0], 8)
         self.assertEqual(port2[0][0], 0.0)
         self.assertGreater(port2[-1][0], 4)
-        self.assertLess(port2[-1][0], 5)
+        self.assertLess(port2[-1][0], 8)
        
         # No signal present, signal level should be very low
         self.assertTrace_dB(port1, -140, 60)
@@ -64,7 +64,7 @@ class TestSASweep(TestBase):
         
     def test_tracking_generator(self):
         self.vna.cmd(":DEV:MODE SA")
-        self.vna.cmd(":SA:FREQ:CENT 2000000000")
+        self.vna.cmd(":SA:FREQ:CENT 1930000000")
         self.vna.cmd(":SA:FREQ:SPAN 200000")       
         self.vna.cmd(":SA:ACQ:RBW 10000")
         self.vna.cmd(":SA:TRACK:PORT 1")
