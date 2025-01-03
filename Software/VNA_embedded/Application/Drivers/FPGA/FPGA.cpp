@@ -353,7 +353,7 @@ void FPGA::SetMode(Mode mode) {
 		Low(AUX2);
 		Delay::us(1);
 		High(CS);
-		// Configure SPI to use faster speed of 32MHz
+		// Configure SPI to use faster speed of 42.5MHz
 		FPGA_SPI.Instance->CR1 = (FPGA_SPI.Instance->CR1 & ~SPI_CR1_BR_Msk) | SPI_BAUDRATEPRESCALER_4;
 		break;
 	case Mode::SourcePLL:
@@ -361,15 +361,15 @@ void FPGA::SetMode(Mode mode) {
 		Low(AUX2);
 		Delay::us(1);
 		High(AUX1);
-		// Configure SPI to use slower speed of 16MHz (MAX2871 is limited to 20MHz)
-		FPGA_SPI.Instance->CR1 = (FPGA_SPI.Instance->CR1 & ~SPI_CR1_BR_Msk) | SPI_BAUDRATEPRESCALER_8;
+		// Configure SPI to use slower speed of 10.625MHz (MAX2871 is limited to 20MHz)
+		FPGA_SPI.Instance->CR1 = (FPGA_SPI.Instance->CR1 & ~SPI_CR1_BR_Msk) | SPI_BAUDRATEPRESCALER_16;
 		break;
 	case Mode::LOPLL:
 		Low(CS);
 		Low(AUX1);
 		Delay::us(1);
 		High(AUX2);
-		// Configure SPI to use slower speed of 16MHz (MAX2871 is limited to 20MHz)
+		// Configure SPI to use slower speed of 10.625MHz (MAX2871 is limited to 20MHz)
 		FPGA_SPI.Instance->CR1 = (FPGA_SPI.Instance->CR1 & ~SPI_CR1_BR_Msk) | SPI_BAUDRATEPRESCALER_8;
 		break;
 	}

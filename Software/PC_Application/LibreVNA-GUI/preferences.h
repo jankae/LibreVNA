@@ -84,6 +84,7 @@ public:
             int points;
             double bandwidth;
             int averaging;
+            double dwellTime;
         } DefaultSweep;
         struct {
             double frequency;
@@ -232,6 +233,7 @@ private:
         {&Startup.DefaultSweep.points, "Startup.DefaultSweep.points", 501},
         {&Startup.DefaultSweep.bandwidth, "Startup.DefaultSweep.bandwidth", 1000.0},
         {&Startup.DefaultSweep.averaging, "Startup.DefaultSweep.averaging", 1},
+        {&Startup.DefaultSweep.dwellTime, "Startup.DefaultSweep.dwellTime", 60e-6},
         {&Startup.Generator.frequency, "Startup.Generator.frequency", 1000000000.0},
         {&Startup.Generator.level, "Startup.Generator.level", -10.00},
         {&Startup.SA.start, "Startup.SA.start", 950000000.0},

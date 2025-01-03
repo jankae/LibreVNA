@@ -147,7 +147,7 @@ void Math::DFT::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
     Q_UNUSED(begin);
     Q_UNUSED(end);
-    if(input->getData().size() < 2) {
+    if(input->numSamples() < 2) {
         // not enough input data
         clearOutput();
         warning("Not enough input samples");
@@ -161,7 +161,7 @@ void Math::DFT::inputSamplesChanged(unsigned int begin, unsigned int end)
 void Math::DFT::updateDFT()
 {
     if(dataType != DataType::Invalid) {
-        inputSamplesChanged(0, input->getData().size());
+        inputSamplesChanged(0, input->numSamples());
     }
 }
 

@@ -216,7 +216,6 @@ using DeviceInfo = struct _deviceInfo {
     uint8_t limits_maxAmplitudePoints;
     uint64_t limits_maxFreqHarmonic;
     uint8_t num_ports;
-    uint16_t limits_minDwellTime;
     uint16_t limits_maxDwellTime;
 };
 
@@ -440,6 +439,7 @@ using DeviceConfig = struct _deviceconfig {
 			uint32_t IF1;
 			uint8_t ADCprescaler;
 			uint16_t DFTphaseInc;
+			uint8_t PLLSettlingDelay;
 		} V1;
 		struct {
 			uint32_t ip;

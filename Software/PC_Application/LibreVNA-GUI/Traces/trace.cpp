@@ -1354,19 +1354,19 @@ void Trace::clearDeembedding()
 
 double Trace::minX()
 {
-    if(lastMath->numSamples() > 0) {
-        return lastMath->getData().front().x;
+    if(lastMath == this) {
+        return TraceMath::minX();
     } else {
-        return numeric_limits<double>::max();
+        return lastMath->minX();
     }
 }
 
 double Trace::maxX()
 {
-    if(lastMath->numSamples() > 0) {
-        return lastMath->getData().back().x;
+    if(lastMath == this) {
+        return TraceMath::maxX();
     } else {
-        return numeric_limits<double>::lowest();
+        return lastMath->maxX();
     }
 }
 
@@ -1620,12 +1620,16 @@ double Trace::getGroupDelay(double frequency)
 
 int Trace::index(double x)
 {
-    auto lower = lower_bound(lastMath->getData().begin(), lastMath->getData().end(), x, [](const Data &lhs, const double x) -> bool {
+    int ret;
+    lastMath->dataMutex.lock();
+    auto lower = lower_bound(lastMath->data.begin(), lastMath->data.end(), x, [](const Data &lhs, const double x) -> bool {
         return lhs.x < x;
     });
-    if(lower == lastMath->getData().end()) {
+    if(lower == lastMath->data.end()) {
         // actually beyond the last sample, return the index of the last anyway to avoid access past data
-        return lastMath->getData().size() - 1;
+        ret = lastMath->data.size() - 1;
     }
-    return lower - lastMath->getData().begin();
+    ret = lower - lastMath->data.begin();
+    lastMath->dataMutex.unlock();
+    return ret;
 }

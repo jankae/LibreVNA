@@ -74,8 +74,8 @@ public:
     void setDeembeddingActive(bool active);
     void clearDeembedding();
 
-    double minX();
-    double maxX();
+    double minX() override;
+    double maxX() override;
     double findExtremum(bool max, double xmin = std::numeric_limits<double>::lowest(), double xmax = std::numeric_limits<double>::max());
     /* Searches for peaks in the trace data and returns the peak frequencies in ascending order.
      * Up to maxPeaks will be returned, with higher level peaks taking priority over lower level peaks.

@@ -26,6 +26,8 @@ LibreVNAUSBDriver::LibreVNAUSBDriver()
     dataBuffer = nullptr;
     logBuffer = nullptr;
     m_receiveThread = nullptr;
+    lastTimestamp = QDateTime::currentDateTime();
+    byteCnt = 0;
 
     specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "LibreVNAUSBDriver.captureRawReceiverValues", false));
     specificSettings.push_back(Savable::SettingDescription(&harmonicMixing, "LibreVNAUSBDriver.harmonicMixing", false));
@@ -183,11 +185,19 @@ void LibreVNAUSBDriver::ReceivedData()
         case Protocol::PacketType::Nack:
             emit receivedAnswer(TransmissionResult::Nack);
             break;
-       default:
+        default:
             // pass on to LibreVNADriver class
             emit receivedPacket(packet);
             break;
         }
+        // byteCnt += handled_len;
+        // auto now = QDateTime::currentDateTime();
+        // if(lastTimestamp.time().msecsTo(now.time()) > 1000) {
+        //     lastTimestamp = now;
+        //     constexpr unsigned int maxThroughput = 12000000 / 8;
+        //     qDebug() << "USB throughput: " << byteCnt << "(" << (double) byteCnt * 100.0 / maxThroughput << "%)";
+        //     byteCnt = 0;
+        // }
     } while (handled_len > 0);
 }
 

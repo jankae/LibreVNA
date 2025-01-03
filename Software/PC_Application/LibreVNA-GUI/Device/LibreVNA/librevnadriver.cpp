@@ -684,7 +684,6 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         info.Limits.VNA.maxIFBW = packet.info.limits_maxIFBW;
         info.Limits.VNA.mindBm = (double) packet.info.limits_cdbm_min / 100;
         info.Limits.VNA.maxdBm = (double) packet.info.limits_cdbm_max / 100;
-        info.Limits.VNA.minDwellTime = (double) packet.info.limits_minDwellTime * 1e-6;
         info.Limits.VNA.maxDwellTime = (double) packet.info.limits_maxDwellTime * 1e-6;
 
         info.Limits.Generator.ports = packet.info.num_ports;

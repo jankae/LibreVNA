@@ -26,11 +26,17 @@ static bool StatusUpdateFlag = true;
 static Protocol::ReferenceSettings ref;
 static volatile uint64_t lastISR;
 
-static uint32_t IF1 = HW::DefaultIF1;
-static uint32_t IF2 = HW::DefaultIF2;
-static uint32_t ADCsamplerate = HW::DefaultADCSamplerate;
-static uint8_t ADCprescaler = HW::DefaultADCprescaler;
-static uint16_t DFTphaseInc = HW::DefaultDFTphaseInc;
+// increment when device config struct format changed. If a wrong version is found in flash, it will revert to default values
+static constexpr uint16_t deviceConfigVersion = 0x001;
+
+using DeviceConfig = struct _devicConfig {
+	uint16_t version;
+	Protocol::DeviceConfig config;
+	uint32_t IF2;
+	uint32_t ADCsamplerate;
+};
+
+static DeviceConfig deviceConfig;
 
 using namespace HWHAL;
 
@@ -100,6 +106,8 @@ bool HW::Init() {
 
 	activeMode = Mode::Idle;
 
+	LoadDeviceConfig();
+
 	Si5351.Init();
 
 	// Use Si5351 to generate reference frequencies for other PLLs and ADC
@@ -152,12 +160,12 @@ bool HW::Init() {
 	FPGA::DisableHardwareOverwrite();
 
 	// Set default ADC samplerate
-	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, ADCprescaler);
+	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, deviceConfig.config.V1.ADCprescaler);
 	// Set phase increment according to
-	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, DFTphaseInc);
+	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, deviceConfig.config.V1.DFTphaseInc);
 
 	// Set default settling time
-	FPGA::SetSettlingTime(HW::DefaultDwellTime);
+	FPGA::SetSettlingTime(deviceConfig.config.V1.PLLSettlingDelay);
 
 	Exti::SetCallback(FPGA_INTR_GPIO_Port, FPGA_INTR_Pin, Exti::EdgeType::Rising, Exti::Pull::Down, FPGA_Interrupt);
 
@@ -190,7 +198,7 @@ bool HW::Init() {
 	} else {
 		LOG_INFO("LO1 VCO map complete");
 	}
-	LO1.SetFrequency(1000000000 + IF1);
+	LO1.SetFrequency(1000000000 + deviceConfig.config.V1.IF1);
 	LO1.UpdateFrequency();
 	LOG_DEBUG("LO temp: %u", LO1.GetTemp());
 
@@ -428,37 +436,39 @@ Si5351C::PLLSource HW::Ref::getSource() {
 	}
 }
 
-void HW::setAcquisitionFrequencies(Protocol::DeviceConfig s) {
-	IF1 = s.V1.IF1;
-	ADCprescaler = s.V1.ADCprescaler;
-	DFTphaseInc = s.V1.DFTphaseInc;
-	float ADCrate = (float) FPGA::Clockrate / ADCprescaler;
-	IF2 = ADCrate * DFTphaseInc / 4096;
-	ADCsamplerate = ADCrate;
+static void updateOtherParametersFromProtocolDeviceConfig() {
+	float ADCrate = (float) FPGA::Clockrate / deviceConfig.config.V1.ADCprescaler;
+	deviceConfig.IF2 = ADCrate * deviceConfig.config.V1.DFTphaseInc / 4096;
+	deviceConfig.ADCsamplerate = ADCrate;
+}
+
+void HW::setDeviceConfig(Protocol::DeviceConfig s) {
+	deviceConfig.config = s;
+	if(deviceConfig.config.V1.PLLSettlingDelay < HW::MinPLLSettlingDelay) {
+		deviceConfig.config.V1.PLLSettlingDelay = HW::MinPLLSettlingDelay;
+	}
+	updateOtherParametersFromProtocolDeviceConfig();
+	SaveDeviceConfig();
 }
 
 Protocol::DeviceConfig HW::getDeviceConfig() {
-	Protocol::DeviceConfig s;
-	s.V1.ADCprescaler = ADCprescaler;
-	s.V1.DFTphaseInc = DFTphaseInc;
-	s.V1.IF1 = IF1;
-	return s;
+	return deviceConfig.config;
 }
 
 uint32_t HW::getIF1() {
-	return IF1;
+	return deviceConfig.config.V1.IF1;
 }
 
 uint32_t HW::getIF2() {
-	return IF2;
+	return deviceConfig.IF2;
 }
 
 uint32_t HW::getADCRate() {
-	return ADCsamplerate;
+	return deviceConfig.ADCsamplerate;
 }
 
 uint8_t HW::getADCPrescaler() {
-	return ADCprescaler;
+	return deviceConfig.config.V1.ADCprescaler;
 }
 
 uint64_t HW::getLastISRTimestamp() {
@@ -496,6 +506,44 @@ void HW::updateDeviceStatus() {
 }
 
 uint16_t HW::getDFTPhaseInc() {
-	return DFTphaseInc;
+	return deviceConfig.config.V1.DFTphaseInc;
 }
 
+uint8_t HW::getPLLSettlingDelay() {
+	return deviceConfig.config.V1.PLLSettlingDelay;
+}
+
+bool HW::LoadDeviceConfig() {
+	HWHAL::flash.read(flash_address, sizeof(deviceConfig), &deviceConfig);
+	if(deviceConfig.version != deviceConfigVersion) {
+		LOG_WARN("Invalid version in flash, expected %u, got %u", deviceConfigVersion, deviceConfig.version);
+		SetDefaultDeviceConfig();
+		return false;
+	} else {
+		LOG_INFO("Device config loaded from flash");
+		return true;
+	}
+}
+
+bool HW::SaveDeviceConfig() {
+	if(!HWHAL::flash.eraseRange(flash_address, flash_size)) {
+		return false;
+	}
+	uint32_t write_size = sizeof(deviceConfig);
+	if(write_size % Flash::PageSize != 0) {
+		// round up to next page
+		write_size += Flash::PageSize - write_size % Flash::PageSize;
+	}
+	return HWHAL::flash.write(flash_address, write_size, &deviceConfig);
+}
+
+void HW::SetDefaultDeviceConfig() {
+	memset(&deviceConfig, 0, sizeof(deviceConfig));
+	deviceConfig.version = deviceConfigVersion;
+	deviceConfig.config.V1.IF1 = HW::DefaultIF1;
+	deviceConfig.config.V1.ADCprescaler = HW::DefaultADCprescaler;
+	deviceConfig.config.V1.DFTphaseInc = HW::DefaultDFTphaseInc;
+	deviceConfig.config.V1.PLLSettlingDelay = HW::DefaultPLLSettlingDelay;
+	updateOtherParametersFromProtocolDeviceConfig();
+	LOG_INFO("Device config set to default");
+}

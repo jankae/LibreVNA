@@ -142,6 +142,6 @@ void Math::Expression::expressionChanged()
         break;
     }
     if(input) {
-        inputSamplesChanged(0, input->getData().size());
+        inputSamplesChanged(0, input->numSamples());
     }
 }

@@ -6,14 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
-    <height>356</height>
+    <width>454</width>
+    <height>464</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Device Configuration</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>This dialog contains advanced system settings. It is recommended to leave them at default values unless you know what you are doing.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QGroupBox" name="groupBox_15">
      <property name="title">
@@ -23,25 +33,12 @@
       <item>
        <widget class="QLabel" name="label_34">
         <property name="text">
-         <string>This section contains advanced system settings. It is recommended to leave them at default values unless you know what you are doing. Slight changes of the IF frequencies can be used to shift possible spikes to less problematic frequencies. Large changes of these frequencies may severely impact device performance.</string>
+         <string>Slight changes of the IF frequencies can be used to shift possible spikes to less problematic frequencies. Large changes of these frequencies may severely impact device performance.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
         </property>
        </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
       </item>
       <item>
        <layout class="QFormLayout" name="formLayout">
@@ -134,6 +131,32 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Other settings</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>PLL settling delay [us]:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="PLLSettlingDelay">
+        <property name="minimum">
+         <number>10</number>
+        </property>
+        <property name="maximum">
+         <number>255</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

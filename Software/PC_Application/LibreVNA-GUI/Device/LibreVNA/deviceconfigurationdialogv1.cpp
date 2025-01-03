@@ -71,6 +71,7 @@ void DeviceConfigurationDialogV1::updateGUI(const Protocol::DeviceConfig &c)
     ui->IF1->setEnabled(true);
     ui->ADCpresc->setValue(c.V1.ADCprescaler);
     ui->ADCphaseInc->setValue(c.V1.DFTphaseInc);
+    ui->PLLSettlingDelay->setValue(c.V1.PLLSettlingDelay);
 }
 
 void DeviceConfigurationDialogV1::updateDevice()
@@ -80,5 +81,6 @@ void DeviceConfigurationDialogV1::updateDevice()
     p.deviceConfig.V1.IF1 = ui->IF1->value();
     p.deviceConfig.V1.ADCprescaler = ui->ADCpresc->value();
     p.deviceConfig.V1.DFTphaseInc = ui->ADCphaseInc->value();
+    p.deviceConfig.V1.PLLSettlingDelay = ui->PLLSettlingDelay->value();
     dev.SendPacket(p);
 }

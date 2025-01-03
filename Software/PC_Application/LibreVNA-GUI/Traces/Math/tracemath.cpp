@@ -324,3 +324,29 @@ std::vector<TraceMath::Data> TraceMath::getData()
     dataMutex.unlock();
     return ret;
 }
+
+double TraceMath::minX()
+{
+    double ret;
+    dataMutex.lock();
+    if(data.size() > 0) {
+        ret = data.front().x;
+    } else {
+        ret = std::numeric_limits<double>::max();
+    }
+    dataMutex.unlock();
+    return ret;
+}
+
+double TraceMath::maxX()
+{
+    double ret;
+    dataMutex.lock();
+    if(data.size() > 0) {
+        ret = data.back().x;
+    } else {
+        ret = std::numeric_limits<double>::min();
+    }
+    dataMutex.unlock();
+    return ret;
+}

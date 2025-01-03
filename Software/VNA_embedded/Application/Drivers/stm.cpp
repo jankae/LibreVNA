@@ -1,5 +1,9 @@
 #include "stm.hpp"
 
+#define LOG_LEVEL	LOG_LEVEL_INFO
+#define LOG_MODULE	"STM"
+#include "Log.h"
+
 using Callback = void(*)(void);
 static constexpr uint8_t numCallbacks = 10;
 static Callback callbacks[numCallbacks];
@@ -34,6 +38,7 @@ bool STM::DispatchToInterrupt(void (*cb)(void)) {
 		return true;
 	} else {
 		// already at limit
+		LOG_ERR("Interrupt dispatch queue full");
 		return false;
 	}
 }

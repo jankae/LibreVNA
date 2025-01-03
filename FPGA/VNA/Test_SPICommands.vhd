@@ -293,8 +293,27 @@ BEGIN
       wait for 100 ns;	
 		RESET <= '0';
       wait for CLK_period*10;
+		-- read static test register
 		NSS <= '0';
 		SPI("0100000000000000");
+		SPI("0000000000000000");
+		NSS <= '1';
+		
+		wait for CLK_period*50;
+		-- write register 3 = 0xFFFF (enable all periphery)
+		NSS <= '0';
+		SPI("1000000000000011");
+		SPI("1111111111111111");
+		NSS <= '1';
+		
+		wait for CLK_period*50;
+		-- set sampling result and read first 4 words
+		SAMPLING_RESULT(63 downto 0) <= "1111000011110000101010101010101001010101010101010000111100001111";
+		NSS <= '0';
+		SPI("1100000000000000");
+		SPI("0000000000000000");
+		SPI("0000000000000000");
+		SPI("0000000000000000");
 		SPI("0000000000000000");
 		NSS <= '1';
 		

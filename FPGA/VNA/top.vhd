@@ -562,7 +562,7 @@ begin
 	
 
 	Source: MAX2871
-	GENERIC MAP(CLK_DIV => 10)
+	GENERIC MAP(CLK_DIV => 6)
 	PORT MAP(
 		CLK => clk_pll,
 		RESET => int_reset,
@@ -577,7 +577,7 @@ begin
 		DONE => source_reloaded
 	);
 	LO1: MAX2871
-	GENERIC MAP(CLK_DIV => 10)
+	GENERIC MAP(CLK_DIV => 6)
 	PORT MAP(
 		CLK => clk_pll,
 		RESET => int_reset,

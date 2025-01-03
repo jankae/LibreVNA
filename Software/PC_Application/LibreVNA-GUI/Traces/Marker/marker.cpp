@@ -788,8 +788,10 @@ void Marker::parentTraceDeleted(Trace *t)
     }
 }
 
-void Marker::traceDataChanged()
+void Marker::traceDataChanged(unsigned int begin, unsigned int end)
 {
+    Q_UNUSED(begin)
+    Q_UNUSED(end)
     complex<double> newdata;
     if(!parentTrace || parentTrace->numSamples() == 0) {
         // no data, invalidate
@@ -1088,7 +1090,7 @@ void Marker::constrainPosition()
                 position = parentTrace->sample(parentTrace->index(position)).x;
             }
         }
-        traceDataChanged();
+        traceDataChanged(0, parentTrace->size());
     }
 }
 

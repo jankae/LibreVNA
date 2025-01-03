@@ -205,7 +205,7 @@ void TDR::setMode(Mode m)
     }
     mode = m;
     if(input) {
-        inputSamplesChanged(0, input->getData().size());
+        inputSamplesChanged(0, input->numSamples());
     }
 }
 
@@ -213,7 +213,7 @@ void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
 {
     Q_UNUSED(begin);
     Q_UNUSED(end);
-    if(input->getData().size() >= 2) {
+    if(input->numSamples() >= 2) {
         // trigger calculation in thread
         semphr.release();
         success();
@@ -227,7 +227,7 @@ void TDR::inputSamplesChanged(unsigned int begin, unsigned int end)
 void TDR::updateTDR()
 {
     if(dataType != DataType::Invalid) {
-        inputSamplesChanged(0, input->getData().size());
+        inputSamplesChanged(0, input->numSamples());
     }
 }
 

@@ -118,7 +118,6 @@ DeviceDriver::Info::Info()
     Limits.VNA.minIFBW = 1;
     Limits.VNA.maxIFBW = 100000000;
     Limits.VNA.maxPoints = 65535;
-    Limits.VNA.minDwellTime = 0;
     Limits.VNA.maxDwellTime = 1;
 
     Limits.Generator.ports = 2;

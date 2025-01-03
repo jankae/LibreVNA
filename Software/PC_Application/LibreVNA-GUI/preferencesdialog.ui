@@ -17,7 +17,7 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="QTreeWidget" name="treeWidget">
       <property name="sizePolicy">
@@ -98,7 +98,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -111,9 +111,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-206</y>
-             <width>679</width>
-             <height>836</height>
+             <y>0</y>
+             <width>683</width>
+             <height>928</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -167,7 +167,7 @@
                      <item>
                       <spacer name="horizontalSpacer">
                        <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
+                        <enum>Qt::Orientation::Horizontal</enum>
                        </property>
                        <property name="sizeHint" stdset="0">
                         <size>
@@ -201,7 +201,7 @@
                      <item>
                       <spacer name="verticalSpacer_7">
                        <property name="orientation">
-                        <enum>Qt::Vertical</enum>
+                        <enum>Qt::Orientation::Vertical</enum>
                        </property>
                        <property name="sizeHint" stdset="0">
                         <size>
@@ -268,7 +268,7 @@
                      <item>
                       <spacer name="verticalSpacer_6">
                        <property name="orientation">
-                        <enum>Qt::Vertical</enum>
+                        <enum>Qt::Orientation::Vertical</enum>
                        </property>
                        <property name="sizeHint" stdset="0">
                         <size>
@@ -493,6 +493,16 @@
                             </property>
                            </widget>
                           </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="label_63">
+                            <property name="text">
+                             <string>Dwell Time:</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="1">
+                           <widget class="SIUnitEdit" name="StartupSweepDwellTime"/>
+                          </item>
                          </layout>
                         </item>
                        </layout>
@@ -673,7 +683,7 @@
               <item>
                <spacer name="verticalSpacer">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Orientation::Vertical</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
@@ -703,8 +713,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>696</width>
-             <height>564</height>
+             <width>564</width>
+             <height>477</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -867,7 +877,7 @@
                  <item>
                   <spacer name="horizontalSpacer_8">
                    <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
+                    <enum>Qt::Orientation::Horizontal</enum>
                    </property>
                    <property name="sizeHint" stdset="0">
                     <size>
@@ -898,7 +908,7 @@
                  <item>
                   <spacer name="horizontalSpacer_9">
                    <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
+                    <enum>Qt::Orientation::Horizontal</enum>
                    </property>
                    <property name="sizeHint" stdset="0">
                     <size>
@@ -916,7 +926,7 @@
             <item>
              <spacer name="verticalSpacer_2">
               <property name="orientation">
-               <enum>Qt::Vertical</enum>
+               <enum>Qt::Orientation::Vertical</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -943,9 +953,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-400</y>
-             <width>679</width>
-             <height>992</height>
+             <y>0</y>
+             <width>683</width>
+             <height>1118</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1233,7 +1243,7 @@
                    <item>
                     <spacer name="horizontalSpacer_2">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -1257,7 +1267,7 @@
                    <item>
                     <spacer name="horizontalSpacer_3">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -1291,7 +1301,7 @@
                    <item>
                     <spacer name="horizontalSpacer_5">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -1436,7 +1446,7 @@
               <item>
                <spacer name="verticalSpacer_3">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Orientation::Vertical</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
@@ -1466,8 +1476,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>402</width>
-             <height>540</height>
+             <width>683</width>
+             <height>605</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1684,7 +1694,7 @@
                    <item>
                     <spacer name="horizontalSpacer_6">
                      <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                      <enum>Qt::Orientation::Horizontal</enum>
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
@@ -1711,7 +1721,7 @@
                 <item row="0" column="1">
                  <widget class="QComboBox" name="MarkerInterpolate">
                   <property name="sizeAdjustPolicy">
-                   <enum>QComboBox::AdjustToContents</enum>
+                   <enum>QComboBox::SizeAdjustPolicy::AdjustToContents</enum>
                   </property>
                   <item>
                    <property name="text">
@@ -1782,7 +1792,7 @@
               <item>
                <spacer name="verticalSpacer_5">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Orientation::Vertical</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
@@ -1812,8 +1822,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>138</width>
-             <height>112</height>
+             <width>697</width>
+             <height>563</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -1859,7 +1869,7 @@
               <item>
                <spacer name="verticalSpacer_4">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Orientation::Vertical</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
@@ -1874,7 +1884,7 @@
             <item>
              <spacer name="horizontalSpacer_4">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -2056,7 +2066,7 @@
           <item>
            <spacer name="verticalSpacer_8">
             <property name="orientation">
-             <enum>Qt::Vertical</enum>
+             <enum>Qt::Orientation::Vertical</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -2071,7 +2081,7 @@
         <item>
          <spacer name="horizontalSpacer_10">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -2095,8 +2105,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>696</width>
-             <height>564</height>
+             <width>697</width>
+             <height>563</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_19">
@@ -2156,7 +2166,7 @@
               <item>
                <spacer name="verticalSpacer_9">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Orientation::Vertical</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
@@ -2171,7 +2181,7 @@
             <item>
              <spacer name="horizontalSpacer_7">
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
@@ -2193,10 +2203,10 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Ok|QDialogButtonBox::Open|QDialogButtonBox::RestoreDefaults|QDialogButtonBox::Save</set>
+      <set>QDialogButtonBox::StandardButton::Apply|QDialogButtonBox::StandardButton::Ok|QDialogButtonBox::StandardButton::Open|QDialogButtonBox::StandardButton::RestoreDefaults|QDialogButtonBox::StandardButton::Save</set>
      </property>
      <property name="centerButtons">
       <bool>false</bool>

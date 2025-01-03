@@ -653,6 +653,7 @@ VNA::VNA(AppWindow *window, QString name)
         SetPowerSweepFrequency(pref.Startup.DefaultSweep.dbm_freq);
         SetIFBandwidth(pref.Startup.DefaultSweep.bandwidth);
         SetAveraging(pref.Startup.DefaultSweep.averaging);
+        SetDwellTime(pref.Startup.DefaultSweep.dwellTime);
         SetPoints(pref.Startup.DefaultSweep.points);
         if(pref.Startup.DefaultSweep.type == "Power Sweep") {
             SetSweepType(SweepType::Power);
@@ -836,6 +837,7 @@ void VNA::resetSettings()
     SetStopPower(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxdBm);
     SetPowerSweepFrequency(DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq);
     SetIFBandwidth(1000);
+    SetDwellTime(0);
     SetAveraging(1);
     SetPoints(501);
     SetSweepType(SweepType::Frequency);
@@ -1246,8 +1248,6 @@ void VNA::SetSourceLevel(double level)
 void VNA::SetDwellTime(double time) {
     if(time > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxDwellTime) {
         time = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxDwellTime;
-    } else if(time < DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minDwellTime) {
-        time = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minDwellTime;
     }
     emit dwellTimeChanged(time);
     settings.dwellTime = time;
@@ -1640,6 +1640,7 @@ void VNA::LoadSweepSettings()
     SetPoints(s.value("SweepPoints", pref.Startup.DefaultSweep.points).toInt());
     SetIFBandwidth(s.value("SweepBandwidth", pref.Startup.DefaultSweep.bandwidth).toUInt());
     SetAveraging(s.value("SweepAveraging", pref.Startup.DefaultSweep.averaging).toInt());
+    SetDwellTime(s.value("SweepDwellTime", pref.Startup.DefaultSweep.dwellTime).toDouble());
     ConstrainAndUpdateFrequencies();
     auto typeString = s.value("SweepType", pref.Startup.DefaultSweep.type).toString();
     if(typeString == "Power") {
@@ -1663,6 +1664,7 @@ void VNA::StoreSweepSettings()
     s.setValue("SweepBandwidth", settings.bandwidth);
     s.setValue("SweepPoints", settings.npoints);
     s.setValue("SweepAveraging", averages);
+    s.setValue("SweepDwellTime", settings.dwellTime);
 }
 
 void VNA::UpdateCalWidget()
@@ -1680,13 +1682,12 @@ void VNA::ConstrainAllSettings()
     auto maxIFBW = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxIFBW;
     auto minIFBW = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minIFBW;
     auto maxDwell = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxDwellTime;
-    auto minDwell = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.minDwellTime;
     auto maxPoints = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxPoints;
     Util::constrain(settings.Freq.start, minFreq, maxFreq);
     Util::constrain(settings.Freq.stop, minFreq, maxFreq);
     Util::constrain(settings.Freq.excitation_power, minPower, maxPower);
     Util::constrain(settings.bandwidth, minIFBW, maxIFBW);
-    Util::constrain(settings.dwellTime, minDwell, maxDwell);
+    Util::constrain(settings.dwellTime, 0.0, maxDwell);
     Util::constrain(settings.npoints, (unsigned int) 0, maxPoints);
     Util::constrain(settings.Power.frequency, minFreq, maxFreq);
     Util::constrain(settings.Power.start, minPower, maxPower);
@@ -1832,7 +1833,7 @@ void VNA::preset()
 
 void VNA::deviceInfoUpdated()
 {
-    if(DeviceDriver::getInfo(window->getDevice()).supportedFeatures.count(DeviceDriver::Feature::VNADwellTime)) {
+    if(window->getDevice()->supports(DeviceDriver::Feature::VNADwellTime)) {
         acquisitionDwellTime->setEnabled(true);
     } else {
         acquisitionDwellTime->setEnabled(false);

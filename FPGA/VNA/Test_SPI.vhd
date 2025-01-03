@@ -40,7 +40,8 @@ ARCHITECTURE behavior OF Test_SPI IS
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT spi_slave
-	 GENERIC(W : integer);
+	 GENERIC(W : integer;
+				PREWIDTH : integer);
     PORT(
          SPI_CLK : IN  std_logic;
          MISO : OUT  std_logic;
@@ -49,7 +50,9 @@ ARCHITECTURE behavior OF Test_SPI IS
          BUF_OUT : OUT  std_logic_vector(W-1 downto 0);
          BUF_IN : IN  std_logic_vector(W-1 downto 0);
          CLK : IN  std_logic;
-         COMPLETE : OUT  std_logic
+         COMPLETE : OUT  std_logic;
+		   PRE_COMPLETE : out STD_LOGIC;
+			PRE_BUF_OUT : out STD_LOGIC_VECTOR (PREWIDTH-1 downto 0)
         );
     END COMPONENT;
     
@@ -65,6 +68,8 @@ ARCHITECTURE behavior OF Test_SPI IS
    signal MISO : std_logic;
    signal BUF_OUT : std_logic_vector(15 downto 0);
    signal COMPLETE : std_logic;
+	signal PRE_COMPLETE : std_logic;
+	signal PRE_BUF_OUT : std_logic_vector(2 downto 0);
 
    -- Clock period definitions
    constant CLK_period : time := 9.765625 ns;
@@ -76,7 +81,7 @@ BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: spi_slave
-	GENERIC MAP(W => 16)
+	GENERIC MAP(W => 16, PREWIDTH => 3)
 	PORT MAP (
           SPI_CLK => SPI_CLK,
           MISO => MISO,
@@ -85,7 +90,9 @@ BEGIN
           BUF_OUT => BUF_OUT,
           BUF_IN => BUF_IN,
           CLK => CLK,
-          COMPLETE => COMPLETE
+          COMPLETE => COMPLETE,
+			 PRE_COMPLETE => PRE_COMPLETE,
+			 PRE_BUF_OUT => PRE_BUF_OUT
         );
 
    -- Clock process definitions

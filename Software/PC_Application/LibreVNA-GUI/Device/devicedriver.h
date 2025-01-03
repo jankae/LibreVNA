@@ -102,8 +102,8 @@ public:
                 unsigned int maxPoints;
                 // Stimulus level limits in dBm
                 double mindBm, maxdBm;
-                // dwell time limts
-                double minDwellTime, maxDwellTime;
+                // dwell time limit
+                double maxDwellTime;
             } VNA;
             struct {
                 // Number of ports

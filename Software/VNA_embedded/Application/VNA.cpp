@@ -47,7 +47,8 @@ static_assert(alternativePhaseInc * alternativeSamplerate == 4096 * HW::DefaultI
 
 // Constants for USB buffer overflow prevention
 static constexpr uint16_t maxPointsBetweenHalts = 40;
-static constexpr uint32_t reservedUSBbuffer = maxPointsBetweenHalts * (sizeof(Protocol::Datapoint) + 8 /*USB packet overhead*/);
+static constexpr uint16_t full2portDatapointSize = 66;// See Protocol::VNADatapoint::
+static constexpr uint32_t reservedUSBbuffer = (maxPointsBetweenHalts + 2 /*additional buffer*/) * (full2portDatapointSize + 8 /*USB packet overhead*/);
 
 using namespace HWHAL;
 
@@ -118,6 +119,9 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	if(settings.points > FPGA::MaxPoints) {
 		settings.points = FPGA::MaxPoints;
 	}
+	if(settings.dwell_time > HW::Info.limits_maxDwellTime) {
+		settings.dwell_time = HW::Info.limits_maxDwellTime;
+	}
 	settings = s;
 	// calculate factor between adjacent points for log sweep for faster calculation when sweeping
 	logMultiplier = pow((double) settings.f_stop / settings.f_start, 1.0 / (settings.points-1));
@@ -132,7 +136,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
-	FPGA::SetSettlingTime(s.dwell_time);
+	FPGA::SetSettlingTime(s.dwell_time + HW::getPLLSettlingDelay());
 
 	// reset unlevel flag if it was set from a previous sweep/mode
 	HW::SetOutputUnlevel(false);
@@ -216,6 +220,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			pointsWithoutHalt++;
 			if(pointsWithoutHalt > maxPointsBetweenHalts) {
 				needs_halt = true;
+				pointsWithoutHalt = 0;
 			}
 		} else {
 			pointsWithoutHalt = 0;
@@ -304,7 +309,9 @@ static void PassOnData() {
 	Protocol::PacketInfo info;
 	info.type = Protocol::PacketType::VNADatapoint;
 	info.VNAdatapoint = &data;
-	Communication::Send(info);
+	if(!Communication::Send(info)) {
+		LOG_ERR("Failed to transmit VNADatapoint");
+	}
 	data.clear();
 }
 

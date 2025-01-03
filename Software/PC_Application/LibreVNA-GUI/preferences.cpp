@@ -78,6 +78,9 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->StartupSweepPowerFrequency->setPrefixes(" kMG");
     ui->StartupSweepBandwidth->setUnit("Hz");
     ui->StartupSweepBandwidth->setPrefixes(" k");
+    ui->StartupSweepDwellTime->setUnit("s");
+    ui->StartupSweepDwellTime->setPrefixes("um ");
+    ui->StartupSweepDwellTime->setPrecision(3);
     ui->StartupGeneratorFrequency->setUnit("Hz");
     ui->StartupGeneratorFrequency->setPrefixes(" kMG");
     ui->StartupSAStart->setUnit("Hz");
@@ -246,6 +249,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->StartupGeneratorFrequency->setValue(p->Startup.Generator.frequency);
     ui->StartupGeneratorLevel->setValue(p->Startup.Generator.level);
     ui->StartupSweepAveraging->setValue(p->Startup.DefaultSweep.averaging);
+    ui->StartupSweepDwellTime->setValue(p->Startup.DefaultSweep.dwellTime);
     ui->StartupSAStart->setValue(p->Startup.SA.start);
     ui->StartupSAStop->setValue(p->Startup.SA.stop);
     ui->StartupSARBW->setValue(p->Startup.SA.RBW);
@@ -360,6 +364,7 @@ void PreferencesDialog::updateFromGUI()
     p->Startup.DefaultSweep.bandwidth = ui->StartupSweepBandwidth->value();
     p->Startup.DefaultSweep.points = ui->StartupSweepPoints->value();
     p->Startup.DefaultSweep.averaging = ui->StartupSweepAveraging->value();
+    p->Startup.DefaultSweep.dwellTime = ui->StartupSweepDwellTime->value();
     p->Startup.Generator.frequency = ui->StartupGeneratorFrequency->value();
     p->Startup.Generator.level = ui->StartupGeneratorLevel->value();
     p->Startup.SA.start = ui->StartupSAStart->value();

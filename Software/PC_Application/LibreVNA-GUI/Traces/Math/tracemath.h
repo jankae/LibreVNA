@@ -48,6 +48,7 @@
 class Trace;
 
 class TraceMath : public QObject, public Savable {
+    friend class Trace;
     Q_OBJECT
 public:
     TraceMath();
@@ -112,6 +113,8 @@ public:
 
     DataType getDataType() const;
     virtual std::vector<Data> getData();
+    virtual double minX();
+    virtual double maxX();
     Status getStatus() const;
     QString getStatusDescription() const;
     virtual Type getType() = 0;

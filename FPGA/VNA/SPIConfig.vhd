@@ -91,7 +91,8 @@ end SPICommands;
 
 architecture Behavioral of SPICommands is
 	COMPONENT spi_slave
-	Generic(W : integer);
+	Generic(W : integer;
+			  PREWIDTH : integer);
 	PORT(
 		SPI_CLK : in  STD_LOGIC;
 		MISO : out  STD_LOGIC;
@@ -100,7 +101,9 @@ architecture Behavioral of SPICommands is
 		BUF_OUT : out STD_LOGIC_VECTOR (W-1 downto 0) := (others => '0');
 		BUF_IN : in STD_LOGIC_VECTOR (W-1 downto 0);
 		CLK : in  STD_LOGIC;
-		COMPLETE : out STD_LOGIC
+		COMPLETE : out STD_LOGIC;
+		PRE_COMPLETE : out STD_LOGIC;
+		PRE_BUF_OUT : out STD_LOGIC_VECTOR (PREWIDTH-1 downto 0)
 	);
 	END COMPONENT;
 	
@@ -108,6 +111,8 @@ architecture Behavioral of SPICommands is
 	signal spi_buf_out : std_logic_vector(15 downto 0);
 	signal spi_buf_in : std_logic_vector(15 downto 0);
 	signal spi_complete : std_logic;
+	signal spi_pre_complete : std_logic;
+	signal spi_pre_buf_out : std_logic_vector(2 downto 0);
 	signal word_cnt : integer range 0 to 19;
 	type SPI_states is (FirstWord, WriteSweepConfig, ReadResult, WriteRegister);
 	signal state : SPI_states;
@@ -128,7 +133,8 @@ architecture Behavioral of SPICommands is
 	signal sweepconfig_buffer : std_logic_vector(79 downto 0);
 begin
 	SPI: spi_slave
-	GENERIC MAP(w => 16)
+	GENERIC MAP(W => 16,
+					PREWIDTH => 3)
 	PORT MAP(
 		SPI_CLK => SCLK,
 		MISO => MISO,
@@ -137,7 +143,9 @@ begin
 		BUF_OUT => spi_buf_out,
 		BUF_IN => spi_buf_in,
 		CLK => CLK,
-		COMPLETE =>spi_complete 
+		COMPLETE => spi_complete,
+		PRE_COMPLETE => spi_pre_complete,
+		PRE_BUF_OUT => spi_pre_buf_out
 	);
 	
 	SWEEP_WRITE(0) <= sweep_config_write;
@@ -205,91 +213,113 @@ begin
 					word_cnt <= 0;
 					spi_buf_in <= interrupt_status;
 					state <= FirstWord;
-				elsif spi_complete = '1' then
-					word_cnt <= word_cnt + 1;
+				else
+					-- handle read operations when the first PREWIDTH bits are complete
+					if spi_pre_complete = '1' then
 					case state is
 					when FirstWord =>
-						-- initial word determines action
-						case spi_buf_out(15 downto 13) is
-							when "000" => state <= WriteSweepConfig;
-											-- also extract the point number
-											SWEEP_ADDRESS <= spi_buf_out(12 downto 0);
-							when "001" => state <= FirstWord;
-											SWEEP_RESUME <= '1';
-							when "010" => state <= FirstWord;
-											spi_buf_in <= "1111000010100101";
-							when "011" => state <= FirstWord;
-											RESET_MINMAX <= '1';
-							when "100" => state <= WriteRegister;
-											selected_register <= to_integer(unsigned(spi_buf_out(4 downto 0)));
-							when "101" => state <= ReadResult;-- can use same state as read result, but the latched data will contain the DFT values
-											latched_result(175 downto 0) <= DFT_OUTPUT(191 downto 16);
-											spi_buf_in <= DFT_OUTPUT(15 downto 0);
-											dft_next <= '1';
-							when "110" => state <= ReadResult;
-											latched_result <= SAMPLING_RESULT(303 downto 16);
-											spi_buf_in <= SAMPLING_RESULT(15 downto 0);
-											unread_sampling_data <= '0';
-							when "111" => state <= ReadResult; -- can use same state as read result, but the latched data will contain the min/max ADC values
-											latched_result(79 downto 0) <= ADC_MINMAX(95 downto 16);
-											spi_buf_in <= ADC_MINMAX(15 downto 0);
-							when others => state <= FirstWord;
+						-- initial word determines the action
+						case spi_pre_buf_out is
+								when "010" => state <= FirstWord;
+												spi_buf_in <= "1111000010100101";							
+								when "101" => state <= ReadResult;-- can use same state as read result, but the latched data will contain the DFT values
+												latched_result(175 downto 0) <= DFT_OUTPUT(191 downto 16);
+												spi_buf_in <= DFT_OUTPUT(15 downto 0);
+												dft_next <= '1';
+								when "110" => state <= ReadResult;
+												latched_result <= SAMPLING_RESULT(303 downto 16);
+												spi_buf_in <= SAMPLING_RESULT(15 downto 0);
+												unread_sampling_data <= '0';
+								when "111" => state <= ReadResult; -- can use same state as read result, but the latched data will contain the min/max ADC values
+												latched_result(79 downto 0) <= ADC_MINMAX(95 downto 16);
+												spi_buf_in <= ADC_MINMAX(15 downto 0);
+								--ignore other options
+								when others =>
 						end case;
-					when WriteRegister =>
-						-- write received data into previously selected register
-						case selected_register is
-							when 0 => interrupt_mask <= spi_buf_out;
-							when 1 => SWEEP_POINTS <= spi_buf_out(12 downto 0);
-							when 2 => NSAMPLES <= spi_buf_out(12 downto 0);
-							when 3 => PORTSWITCH_EN <= spi_buf_out(0);
-										PORT1_EN <= spi_buf_out(15);
-										PORT2_EN <= spi_buf_out(14);
-										REF_EN <= spi_buf_out(13);
-										AMP_SHDN <= not spi_buf_out(12);
-										SOURCE_RF_EN <= spi_buf_out(11);
-										LO_RF_EN <= spi_buf_out(10);
-										LEDS <= not spi_buf_out(9 downto 7);
-										WINDOW_SETTING <= spi_buf_out(6 downto 5);
-										SOURCE_CE_EN <= spi_buf_out(4);
-										LO_CE_EN <= spi_buf_out(3);
-										SYNC_MASTER <= spi_buf_out(1);
-							when 4 => ADC_PRESCALER <= spi_buf_out(7 downto 0);
-							when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
-							when 6 => STAGES <= spi_buf_out(15 downto 13);
-										SYNC_ENABLED <= spi_buf_out(12);
-										PORT1_STAGE <= spi_buf_out(5 downto 3);
-										PORT2_STAGE <= spi_buf_out(2 downto 0);
-							when 7 => SPI_OVERWRITE_ENABLED <= spi_buf_out(15);
-										SPI_OVERWRITE_DATA <= spi_buf_out(14 downto 0);
-							when 8 => MAX2871_DEF_0(15 downto 0) <= spi_buf_out;
-							when 9 => MAX2871_DEF_0(31 downto 16) <= spi_buf_out;
-							when 10 => MAX2871_DEF_1(15 downto 0) <= spi_buf_out;
-							when 11 => MAX2871_DEF_1(31 downto 16) <= spi_buf_out;
-							when 12 => MAX2871_DEF_3(15 downto 0) <= spi_buf_out;
-							when 13 => MAX2871_DEF_3(31 downto 16) <= spi_buf_out;
-							when 14 => MAX2871_DEF_4(15 downto 0) <= spi_buf_out;
-							when 15 => MAX2871_DEF_4(31 downto 16) <= spi_buf_out;
-							when 18 => DFT_BIN1_PHASEINC <= spi_buf_out;
-							when 19 => DFT_DIFFBIN_PHASEINC <= spi_buf_out;
-							when 20 => SETTLING_TIME(15 downto 0) <= spi_buf_out;
-							when 21 => SETTLING_TIME(19 downto 16) <= spi_buf_out(3 downto 0);
-							when others => 
-						end case;
-						selected_register <= selected_register + 1;
-					when WriteSweepConfig =>
-						if word_cnt = 6 then
-							-- Sweep config data is complete pass on
-							SWEEP_DATA <= sweepconfig_buffer & spi_buf_out;
-							sweep_config_write <= '1';
-						else
-							-- shift next word into buffer
-							sweepconfig_buffer <= sweepconfig_buffer(63 downto 0) & spi_buf_out;
-						end if;
-					when ReadResult =>
-						-- pass on next word of latched result
-						spi_buf_in <= latched_result(15 downto 0);
-						latched_result <= "0000000000000000" & latched_result(287 downto 16);
+						when ReadResult =>
+							-- pass on next word of latched result
+							spi_buf_in <= latched_result(15 downto 0);
+							latched_result <= "0000000000000000" & latched_result(287 downto 16);
+						when others =>
 					end case;
+					end if;
+					-- handle write operations when the whole word is complete
+					if spi_complete = '1' then
+						word_cnt <= word_cnt + 1;
+						case state is
+						when FirstWord =>
+							-- initial word determines action
+							case spi_buf_out(15 downto 13) is
+								when "000" => state <= WriteSweepConfig;
+												-- also extract the point number
+												SWEEP_ADDRESS <= spi_buf_out(12 downto 0);
+								when "001" => state <= FirstWord;
+												SWEEP_RESUME <= '1';
+								when "011" => state <= FirstWord;
+												RESET_MINMAX <= '1';
+								when "100" => state <= WriteRegister;
+												selected_register <= to_integer(unsigned(spi_buf_out(4 downto 0)));
+								-- ignore read options (already handled in other state machine)
+								when "010" =>
+								when "101" =>
+								when "110" =>
+								when "111" =>
+								when others => state <= FirstWord;
+							end case;
+						when WriteRegister =>
+							-- write received data into previously selected register
+							case selected_register is
+								when 0 => interrupt_mask <= spi_buf_out;
+								when 1 => SWEEP_POINTS <= spi_buf_out(12 downto 0);
+								when 2 => NSAMPLES <= spi_buf_out(12 downto 0);
+								when 3 => PORTSWITCH_EN <= spi_buf_out(0);
+											PORT1_EN <= spi_buf_out(15);
+											PORT2_EN <= spi_buf_out(14);
+											REF_EN <= spi_buf_out(13);
+											AMP_SHDN <= not spi_buf_out(12);
+											SOURCE_RF_EN <= spi_buf_out(11);
+											LO_RF_EN <= spi_buf_out(10);
+											LEDS <= not spi_buf_out(9 downto 7);
+											WINDOW_SETTING <= spi_buf_out(6 downto 5);
+											SOURCE_CE_EN <= spi_buf_out(4);
+											LO_CE_EN <= spi_buf_out(3);
+											SYNC_MASTER <= spi_buf_out(1);
+								when 4 => ADC_PRESCALER <= spi_buf_out(7 downto 0);
+								when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
+								when 6 => STAGES <= spi_buf_out(15 downto 13);
+											SYNC_ENABLED <= spi_buf_out(12);
+											PORT1_STAGE <= spi_buf_out(5 downto 3);
+											PORT2_STAGE <= spi_buf_out(2 downto 0);
+								when 7 => SPI_OVERWRITE_ENABLED <= spi_buf_out(15);
+											SPI_OVERWRITE_DATA <= spi_buf_out(14 downto 0);
+								when 8 => MAX2871_DEF_0(15 downto 0) <= spi_buf_out;
+								when 9 => MAX2871_DEF_0(31 downto 16) <= spi_buf_out;
+								when 10 => MAX2871_DEF_1(15 downto 0) <= spi_buf_out;
+								when 11 => MAX2871_DEF_1(31 downto 16) <= spi_buf_out;
+								when 12 => MAX2871_DEF_3(15 downto 0) <= spi_buf_out;
+								when 13 => MAX2871_DEF_3(31 downto 16) <= spi_buf_out;
+								when 14 => MAX2871_DEF_4(15 downto 0) <= spi_buf_out;
+								when 15 => MAX2871_DEF_4(31 downto 16) <= spi_buf_out;
+								when 18 => DFT_BIN1_PHASEINC <= spi_buf_out;
+								when 19 => DFT_DIFFBIN_PHASEINC <= spi_buf_out;
+								when 20 => SETTLING_TIME(15 downto 0) <= spi_buf_out;
+								when 21 => SETTLING_TIME(19 downto 16) <= spi_buf_out(3 downto 0);
+								when others => 
+							end case;
+							selected_register <= selected_register + 1;
+						when WriteSweepConfig =>
+							if word_cnt = 6 then
+								-- Sweep config data is complete pass on
+								SWEEP_DATA <= sweepconfig_buffer & spi_buf_out;
+								sweep_config_write <= '1';
+							else
+								-- shift next word into buffer
+								sweepconfig_buffer <= sweepconfig_buffer(63 downto 0) & spi_buf_out;
+							end if;
+						-- read already handled in pre_complete, ignore
+						when ReadResult =>
+						end case;
+					end if;
 				end if;
 			end if;
 		end if;

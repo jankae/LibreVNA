@@ -8,6 +8,7 @@
 
 #include <QQueue>
 #include <QTimer>
+#include <QDateTime>
 
 class LibreVNAUSBDriver : public LibreVNADriver
 {
@@ -76,6 +77,11 @@ private:
     std::thread *m_receiveThread;
 
     std::mutex accessMutex;
+
+    // USB throughput indicator
+    QDateTime lastTimestamp;
+    unsigned long byteCnt;
+
 };
 
 #endif // LIBREVNAUSBDRIVER_H

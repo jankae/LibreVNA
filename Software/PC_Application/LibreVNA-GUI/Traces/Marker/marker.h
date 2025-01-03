@@ -161,7 +161,7 @@ signals:
 
 private slots:
     void parentTraceDeleted(Trace *t);
-    void traceDataChanged();
+    void traceDataChanged(unsigned int begin, unsigned int end);
     void updateSymbol();
     void checkDeltaMarker();
     void deltaDeleted();

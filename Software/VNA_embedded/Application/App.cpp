@@ -273,7 +273,7 @@ inline void App_Process() {
 					}
 					break;
 				case Protocol::PacketType::DeviceConfiguration:
-					HW::setAcquisitionFrequencies(recv_packet.deviceConfig);
+					HW::setDeviceConfig(recv_packet.deviceConfig);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
 				case Protocol::PacketType::SetTrigger:
