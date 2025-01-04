@@ -44,6 +44,17 @@ static uint64_t firstPointTime;
 static bool firstPoint; // indicates the first point to be transmitted to the GUI, sets the firstPointTime
 static bool zerospan;
 
+static uint32_t PLLRefFreqs[] = {HW::PLLRef, HW::PLLRef - 1000000};
+static constexpr uint8_t PLLRefFreqsNum = sizeof(PLLRefFreqs)/sizeof(PLLRefFreqs[0]);
+static uint8_t PLLRefIndex;
+
+static void setPLLReference() {
+	Si5351.SetCLK(SiChannel::Source, PLLRefFreqs[PLLRefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
+	Si5351.SetCLK(SiChannel::LO1, PLLRefFreqs[PLLRefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
+	Source.SetReference(PLLRefFreqs[PLLRefIndex], false, 1, false);
+	LO1.SetReference(PLLRefFreqs[PLLRefIndex], false, 1, false);
+}
+
 static void StartNextSample() {
 	uint64_t freq = s.f_start + (s.f_stop - s.f_start) * pointCnt / (points - 1);
 	freq = Cal::FrequencyCorrectionToDevice(freq);
@@ -65,33 +76,61 @@ static void StartNextSample() {
 		negativeDFT = true;
 
 		// set tracking generator to default values
-		trackingFreq = 0;
 		trackingLowband = false;
 		attenuator = 0;
 		// this is the first step in each point, update tracking generator if enabled
 		if (s.trackingGenerator) {
+			auto oldTrackingFreq = trackingFreq;
 			trackingFreq = freq + s.trackingGeneratorOffset;
-			if(trackingFreq > 0 && trackingFreq <= (int64_t) HW::Info.limits_maxFreq) {
-				// tracking frequency is valid, calculate required settings and select band
-				auto amplitude = HW::GetAmplitudeSettings(s.trackingPower, trackingFreq, s.applySourceCorrection, s.trackingGeneratorPort);
-				// only set the flag here, it is reset at the beginning of each sweep (this makes sure it is set if any of the points are not reached by the TG)
-				if(amplitude.unlevel) {
-					HW::SetOutputUnlevel(true);
-				}
-				attenuator = amplitude.attenuator;
-				if(trackingFreq < HW::BandSwitchFrequency) {
-					Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::B, amplitude.lowBandPower);
-					FPGA::Disable(FPGA::Periphery::SourceChip);
-					FPGA::Disable(FPGA::Periphery::SourceRF);
-					trackingLowband = true;
-				} else {
-					Source.SetFrequency(trackingFreq);
-					Source.SetPowerOutA(amplitude.highBandPower, true);
-					FPGA::Enable(FPGA::Periphery::SourceChip);
-					FPGA::Enable(FPGA::Periphery::SourceRF);
-					trackingLowband = false;
-					// selected power potentially changed, update default registers
-					FPGA::WriteMAX2871Default(Source.GetRegisters());
+			if(trackingFreq != oldTrackingFreq) {
+				// need to change the source frequency
+				oldTrackingFreq = trackingFreq;
+				if(trackingFreq > 0 && trackingFreq <= (int64_t) HW::Info.limits_maxFreq) {
+					// tracking frequency is valid, calculate required settings and select band
+					auto amplitude = HW::GetAmplitudeSettings(s.trackingPower, trackingFreq, s.applySourceCorrection, s.trackingGeneratorPort);
+					// only set the flag here, it is reset at the beginning of each sweep (this makes sure it is set if any of the points are not reached by the TG)
+					if(amplitude.unlevel) {
+						HW::SetOutputUnlevel(true);
+					}
+					attenuator = amplitude.attenuator;
+					if(trackingFreq < HW::BandSwitchFrequency) {
+						Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::B, amplitude.lowBandPower);
+						FPGA::Disable(FPGA::Periphery::SourceChip);
+						FPGA::Disable(FPGA::Periphery::SourceRF);
+						trackingLowband = true;
+					} else {
+						// Source PLL can not hit all frequencies with high enough accuracy with a single reference frequency.
+						// Check available reference frequencies for best match
+						uint8_t bestIndex = 0;
+						uint32_t smallestDeviation = UINT32_MAX;
+						for(uint8_t i=0;i<PLLRefFreqsNum;i++) {
+							Source.SetReference(PLLRefFreqs[i], false, 1, false);
+							Source.SetFrequency(trackingFreq);
+							auto actualSource = Source.GetActualFrequency();
+							uint32_t deviation = (uint32_t) abs(actualSource - trackingFreq);
+							if(deviation < smallestDeviation) {
+								smallestDeviation = deviation;
+								bestIndex = i;
+								if(deviation < actualRBW / 20) {
+									// good enough, no need to check any further
+									break;
+								}
+							}
+						}
+						if(bestIndex != PLLRefIndex) {
+							LOG_INFO("Switching ref index (current %d, requested f=%lu%06lu)", PLLRefIndex
+									,(uint32_t) (trackingFreq / 1000000), (uint32_t)(trackingFreq%1000000));
+							PLLRefIndex = bestIndex;
+							setPLLReference();
+						}
+						Source.SetFrequency(trackingFreq);
+						Source.SetPowerOutA(amplitude.highBandPower, true);
+						FPGA::Enable(FPGA::Periphery::SourceChip);
+						FPGA::Enable(FPGA::Periphery::SourceRF);
+						trackingLowband = false;
+						// selected power potentially changed, update default registers
+						FPGA::WriteMAX2871Default(Source.GetRegisters());
+					}
 				}
 			}
 		}
@@ -158,7 +197,9 @@ static void StartNextSample() {
 
 	// only adjust LO2 PLL if necessary (if the deviation is significantly less than the RBW it does not matter)
 	if((uint32_t) abs(LO2freq - lastLO2) > actualRBW / 100) {
-		Si5351.SetPLL(Si5351C::PLL::B, LO2freq*HW::LO2Multiplier, HW::Ref::getSource());
+//		Si5351.SetPLL(Si5351C::PLL::B, LO2freq*HW::LO2Multiplier, HW::Ref::getSource());
+		Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 		lastLO2 = LO2freq;
 	}
 	if (s.UseDFT) {
@@ -228,6 +269,10 @@ void SA::Setup(Protocol::SpectrumAnalyzerSettings settings) {
 	// set initial state
 	pointCnt = 0;
 	signalIDstep = 0;
+	trackingFreq = 0;
+	PLLRefIndex = 0;
+	setPLLReference();
+
 	// enable the required hardware resources
 	Si5351.Enable(SiChannel::Port1LO2);
 	Si5351.Enable(SiChannel::Port2LO2);

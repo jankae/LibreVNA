@@ -501,32 +501,6 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     p.spectrumSettings.syncMode = (int) sync;
     p.spectrumSettings.syncMaster = syncMaster ? 1 : 0;
 
-    if(p.spectrumSettings.trackingGenerator && p.spectrumSettings.f_stop >= 25000000) {
-        // Check point spacing.
-        // The highband PLL used as the tracking generator is not able to reach every frequency exactly. This
-        // could lead to sharp drops in the spectrum at certain frequencies. If the span is wide enough with
-        // respect to the point number, it is ensured that every displayed point has at least one sample with
-        // a reachable PLL frequency in it. Display a warning message if this is not the case with the current
-        // settings.
-        auto pointSpacing = (p.spectrumSettings.f_stop - p.spectrumSettings.f_start) / (p.spectrumSettings.pointNum - 1);
-        // The frequency resolution of the PLL is frequency dependent (due to PLL divider).
-        // This code assumes some knowledge of the actual hardware and probably should be moved
-        // onto the device at some point
-        double minSpacing = 25000;
-        auto stop = p.spectrumSettings.f_stop;
-        while(stop <= 3000000000) {
-            minSpacing /= 2;
-            stop *= 2;
-        }
-        if(pointSpacing < minSpacing) {
-            auto requiredMinSpan = minSpacing * (p.spectrumSettings.pointNum - 1);
-            auto message = QString() + "Due to PLL limitations, the tracking generator can not reach every frequency exactly. "
-                            "With your current span, this could result in the signal not being detected at some bands. A minimum"
-                            " span of " + Unit::ToString(requiredMinSpan, "Hz", " kMG") + " is recommended at this stop frequency.";
-            InformationBox::ShowMessage("Warning", message, "TrackingGeneratorSpanTooSmallWarning");
-        }
-    }
-
     return SendPacket(p, [=](TransmissionResult r){
         if(cb) {
             cb(r == TransmissionResult::Ack);

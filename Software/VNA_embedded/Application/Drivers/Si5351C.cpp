@@ -219,17 +219,6 @@ bool Si5351C::WritePLLConfig(PLLConfig config, PLL pll) {
 	} else {
 		success &=SetBits(Reg::PLLInputSource, mask);
 	}
-
-	// Reset the PLL
-	mask = pll == PLL::A ? 0x20 : 0x80;
-	//success &=SetBits(Reg::PLLReset, mask);
-	reg = pll == PLL::A ? Reg::MSNA_CONFIG : Reg::MSNB_CONFIG;
-	for(uint8_t i=0;i<8;i++) {
-		uint8_t readback;
-		ReadRegister((Reg)((int)reg + i), &readback);
-		LOG_DEBUG("PLL readback %d: 0x%02x", i, readback);
-	}
-
 	return success;
 }
 
