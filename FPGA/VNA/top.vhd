@@ -459,8 +459,8 @@ begin
 	LEDS(0) <= user_leds(2);
 	-- Lock status of PLLs
 	LEDS(1) <= clk_locked;
-	LEDS(2) <= SOURCE_LD;
-	LEDS(3) <= LO1_LD;
+	LEDS(2) <= LO1_LD;
+	LEDS(3) <= SOURCE_LD;
 	-- Sweep and active port
 	PORT_SELECT2 <= (sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(3);
 	PORT2_SELECT <= (sweep_excite_port2 and portswitch_en) when HW_overwrite_enabled = '0' else HW_overwrite_data(3);
