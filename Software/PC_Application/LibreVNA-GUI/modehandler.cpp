@@ -31,10 +31,6 @@ int ModeHandler::addMode(Mode *mode)
     modes.push_back(mode);
     currentModeIndex = int(modes.size()) - 1;
     connect(mode, &Mode::statusbarMessage, this, &ModeHandler::setStatusBarMessageChanged);
-
-    auto m = getMode(currentModeIndex);
-    activate(m);
-
     emit ModeCreated(currentModeIndex);
     return (currentModeIndex);
 }
@@ -166,7 +162,12 @@ void ModeHandler::closeMode(int index)
 void ModeHandler::closeModes()
 {
     while(modes.size() > 0) {
-        closeMode(0);
+        // skip active mode unless it is the last remaining mode
+        if(activeMode == modes[0] && modes.size() > 1) {
+            closeMode(1);
+        } else {
+            closeMode(0);
+        }
     }
 }
 

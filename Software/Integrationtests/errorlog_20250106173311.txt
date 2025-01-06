@@ -1,0 +1,22 @@
+     0.027: [debug] Application start
+     0.045: [info] Listening on port 19544
+     0.060: [debug] Activating mode "Vector Network Analyzer"
+     0.068: [debug] Updated device list, found 1
+     0.068: [debug] Trying to connect to "208A367A4B42"
+     0.068: [debug] Attempting to connect to device...
+     0.075: [info] USB connection established
+     0.075: [debug] Receive thread started
+     0.075: [debug] Transmission started (packet type 15 ), queue at  1
+     0.078: [info] Connected to "208A367A4B42"
+     0.079: [debug] Transmission started (packet type 26 ), queue at  1
+     0.082: [debug] No default calibration file set for this device
+     0.082: [debug] Transmission started (packet type 11 ), queue at  1
+     0.187: [debug] Transmission started (packet type 2 ), queue at  1
+     0.533: [debug] Attempting to open calibration from file "LIBRECAL.cal"
+     0.533: [debug] Associated calibration kit expected in "LIBRECAL.calkit"
+     0.533: [debug] Opening calkit to file "LIBRECAL.calkit"
+     0.533: [debug] Parsing of calibration kit failed while opening calibration file:  Unable to open file  (ignore for calibration format >= 3)
+     0.899: [debug] Transmission started (packet type 2 ), queue at  1
+     1.007: [debug] Deactivated mode "Vector Network Analyzer"
+     1.007: [debug] Transmission started (packet type 20 ), queue at  1
+     1.050: [debug] Disconnected, receive thread exiting

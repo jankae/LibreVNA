@@ -1,4 +1,5 @@
 import unittest
+import glob, os
 
 testmodules = [
     'tests.TestUpdate',     # Must go first because it updates the connected VNA to the firwmare which should be tested
@@ -15,6 +16,12 @@ testmodules = [
     ]
 
 suite = unittest.TestSuite()
+
+# Clean up potential error logs from previous test runs
+for f in glob.glob("errorlog_*"):
+    os.remove(f)
+for f in glob.glob("packetlog_*"):
+    os.remove(f)
 
 for t in testmodules:
     try:

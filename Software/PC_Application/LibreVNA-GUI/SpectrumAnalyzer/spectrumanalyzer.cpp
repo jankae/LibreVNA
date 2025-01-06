@@ -340,10 +340,10 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
 
 void SpectrumAnalyzer::deactivate()
 {
-    setOperationPending(false);
     StoreSweepSettings();
     configurationTimer.stop();
     Mode::deactivate();
+    setOperationPending(false);
 }
 
 void SpectrumAnalyzer::initializeDevice()
@@ -588,7 +588,11 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
 
 void SpectrumAnalyzer::SettingsChanged()
 {
-    if(window->getDevice()) {
+    if(!running) {
+        // not running, no need for any communication
+        return;
+    }
+    if(isActive && window->getDevice()) {
         setOperationPending(true);
     }
     configurationTimer.start(100);
@@ -695,10 +699,15 @@ void SpectrumAnalyzer::SetSingleSweep(bool single)
 {
     if(singleSweep != single) {
         singleSweep = single;
+        if(single) {
+            Run();
+        }
         emit singleSweepChanged(single);
-    }
-    if(single) {
-        Run();
+    } else {
+        // if already set to single, a second single command triggers a new sweep
+        if(single && !running) {
+            Run();
+        }
     }
 }
 
@@ -734,7 +743,9 @@ void SpectrumAnalyzer::SetAveraging(unsigned int averages)
     average.setAverages(averages);
     emit averagingChanged(averages);
     UpdateAverageCount();
-    setOperationPending(!average.settled());
+    if(isActive && window->getDevice()) {
+        setOperationPending(!average.settled());
+    }
 }
 
 void SpectrumAnalyzer::SetTGEnabled(bool enabled)
@@ -871,6 +882,7 @@ void SpectrumAnalyzer::Stop()
 {
     running = false;
     ConfigureDevice();
+    setOperationPending(false);
 }
 
 void SpectrumAnalyzer::ConfigureDevice()
@@ -920,9 +932,6 @@ void SpectrumAnalyzer::ConfigureDevice()
 
 void SpectrumAnalyzer::ResetLiveTraces()
 {
-    if(window->getDevice()) {
-        setOperationPending(true);
-    }
     average.reset(DeviceDriver::SApoints());
     traceModel.clearLiveData();
     UpdateAverageCount();

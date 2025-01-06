@@ -251,6 +251,11 @@ LibreVNADriver::LibreVNADriver()
         }
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
+
+    specificSCPIcommands.push_back(new SCPICommand("DEVice:PACKETLOG", nullptr, [=](QStringList) -> QString {
+        auto &log = DevicePacketLog::getInstance();
+        return QString::fromStdString(log.toJSON().dump());
+    }));
 }
 
 std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
@@ -407,6 +412,7 @@ QStringList LibreVNADriver::availableVNAMeasurements()
 bool LibreVNADriver::setVNA(const DeviceDriver::VNASettings &s, std::function<void (bool)> cb)
 {
     if(!supports(Feature::VNA)) {
+        qDebug() << "VNA does not support features \"VNA\" (has the DeviceInfo been received?)";
         return false;
     }
     if(s.excitedPorts.size() == 0) {

@@ -369,8 +369,13 @@ void SCPINode::setOperationPending(bool pending)
             while(root->parent) {
                 root = root->parent;
             }
-            auto scpi = static_cast<SCPI*>(root);
-            scpi->someOperationCompleted();
+            auto scpi = dynamic_cast<SCPI*>(root);
+            if(!scpi) {
+                // dynamic cast failed, this is not actually a root node. The SCPI node likely
+                // has no valid parent configured
+            } else {
+                scpi->someOperationCompleted();
+            }
         }
     }
 }

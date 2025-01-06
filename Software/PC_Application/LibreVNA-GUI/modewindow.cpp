@@ -70,7 +70,8 @@ void ModeWindow::SetupUi()
                 InformationBox::ShowError("Name collision", "Unable to create tab, " \
                                           "no duplicate names allowed");
             } else {
-                handler->createMode(text, type);
+                auto index = handler->createMode(text, type);
+                handler->setCurrentIndex(index);
             }
         }
     };
@@ -157,7 +158,6 @@ void ModeWindow::ModeCreated(int modeIndex)
         tabBar->insertTab(modeIndex, name);
         tabBar->blockSignals(false);
         tabBar->setMovable(true);
-        tabBar->setCurrentIndex(modeIndex);
     }
 }
 

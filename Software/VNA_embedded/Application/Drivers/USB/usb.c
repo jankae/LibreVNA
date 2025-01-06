@@ -269,6 +269,7 @@ bool usb_transmit(const uint8_t *data, uint16_t length) {
 	}
 	bool ret = true;
 	if(!data_transmission_active) {
+		last_transmission = HAL_GetTick();
 		ret = trigger_next_fifo_transmission();
 	}
 	__enable_irq();

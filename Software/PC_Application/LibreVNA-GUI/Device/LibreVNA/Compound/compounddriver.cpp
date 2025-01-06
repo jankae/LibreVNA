@@ -29,7 +29,7 @@ CompoundDriver::CompoundDriver()
         p.load(d->driverSpecificSettings());
     }
 
-    specificSettings.push_back(Savable::SettingDescription(&compoundJSONString, "compoundDriver.compoundDeviceJSON", ""));
+    specificSettings.push_back(Savable::SettingDescription(&compoundJSONString, "compoundDriver.compoundDeviceJSON", "{}"));
     specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "compoundDriver.captureRawReceiverValues", false));
     specificSettings.push_back(Savable::SettingDescription(&preservePhase, "compoundDriver.preservePhase", false));
 }
@@ -488,6 +488,10 @@ void CompoundDriver::parseCompoundJSON()
 {
     try {
         configuredDevices.clear();
+        if(compoundJSONString.isEmpty()) {
+            // empty string will fail JSON parsing. Abort now instead of running into the exception
+            return;
+        }
         nlohmann::json jc = nlohmann::json::parse(compoundJSONString.toStdString());
         for(auto j : jc) {
             auto cd = new CompoundDevice();

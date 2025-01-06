@@ -198,6 +198,10 @@ private:
     QList<QAction*> importActions;
     QList<QAction*> exportActions;
 
+    // Statistics for detecting missing points and sweep time
+    QDateTime lastStart;
+    int lastPoint;
+
 signals:
     void deviceInitialized();
     void dataChanged();

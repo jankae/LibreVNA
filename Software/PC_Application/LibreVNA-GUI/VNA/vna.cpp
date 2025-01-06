@@ -745,10 +745,10 @@ QString VNA::getCalToolTip()
 
 void VNA::deactivate()
 {
-    setOperationPending(false);
     StoreSweepSettings();
     configurationTimer.stop();
     Mode::deactivate();
+    setOperationPending(false);
 }
 
 static void SetComboBoxItemEnabled(QComboBox * comboBox, int index, bool enabled)
@@ -939,9 +939,8 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     }
 
     // Calculate sweep time
-    if(m.pointNum == 0) {
+    if(m.pointNum == 0 && lastPoint > 0) {
         // new sweep started
-        static auto lastStart = QDateTime::currentDateTimeUtc();
         auto now = QDateTime::currentDateTimeUtc();
         auto sweepTime = lastStart.msecsTo(now);
         lastStart = now;
@@ -1042,7 +1041,6 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
         markerModel->updateMarkers();
     }
 
-    static unsigned int lastPoint = 0;
     if(m_avg.pointNum > 0 && m_avg.pointNum != lastPoint + 1) {
         qWarning() << "Got point" << m_avg.pointNum << "but last received point was" << lastPoint << "("<<(m_avg.pointNum-lastPoint-1)<<"missed points)";
     }
@@ -1065,7 +1063,11 @@ void VNA::UpdateAverageCount()
 
 void VNA::SettingsChanged(bool resetTraces, int delay)
 {
-    if(window->getDevice()) {
+    if(!running) {
+        // not running, no need for any communication
+        return;
+    }
+    if(isActive && window->getDevice()) {
         setOperationPending(true);
     }
     configurationTimer.start(delay);
@@ -1317,7 +1319,9 @@ void VNA::SetAveraging(unsigned int averages)
     average.setAverages(averages);
     emit averagingChanged(averages);
     UpdateAverageCount();
-    setOperationPending(!average.settled());
+    if(isActive && window->getDevice()) {
+        setOperationPending(!average.settled());
+    }
 }
 
 void VNA::ExcitationRequired()
@@ -1880,10 +1884,15 @@ void VNA::SetSingleSweep(bool single)
 {
     if(singleSweep != single) {
         singleSweep = single;
+        if(single) {
+            Run();
+        }
         emit singleSweepChanged(single);
-    }
-    if(single) {
-        Run();
+    } else {
+        // if already set to single, a second single command triggers a new sweep
+        if(single && !running) {
+            Run();
+        }
     }
 }
 
@@ -1897,6 +1906,7 @@ void VNA::Stop()
 {
     running = false;
     ConfigureDevice(false);
+    setOperationPending(false);
 }
 
 void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
@@ -1976,6 +1986,8 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
                     cb(res);
                 }
                 changingSettings = false;
+                lastStart = QDateTime::currentDateTimeUtc();
+                lastPoint = -1;
             });
             emit sweepStarted();
         } else {
@@ -2004,7 +2016,7 @@ void VNA::ResetLiveTraces()
     traceModel.clearLiveData();
     UpdateAverageCount();
     UpdateCalWidget();
-    if(window->getDevice()) {
+    if(isActive && window->getDevice()) {
         setOperationPending(true);
     }
 }
