@@ -1041,7 +1041,7 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
         markerModel->updateMarkers();
     }
 
-    if(m_avg.pointNum > 0 && m_avg.pointNum != lastPoint + 1) {
+    if(m_avg.pointNum > 0 && m_avg.pointNum != (unsigned int) (lastPoint + 1)) {
         qWarning() << "Got point" << m_avg.pointNum << "but last received point was" << lastPoint << "("<<(m_avg.pointNum-lastPoint-1)<<"missed points)";
     }
     lastPoint = m_avg.pointNum;

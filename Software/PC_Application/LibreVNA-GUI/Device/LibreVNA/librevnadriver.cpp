@@ -112,6 +112,7 @@ LibreVNADriver::LibreVNADriver()
 {
     connected = false;
     skipOwnPacketHandling = false;
+    isIdle = true;
     SApoints = 0;
     hardwareVersion = 0;
     protocolVersion = 0;
@@ -453,6 +454,9 @@ bool LibreVNADriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
     p.settings.syncMode = (int) sync;
     p.settings.syncMaster = syncMaster ? 1 : 0;
 
+    isIdle = false;
+    lastNonIdlePacket = p;
+
     return SendPacket(p, [=](TransmissionResult r){
         if(cb) {
             cb(r == TransmissionResult::Ack);
@@ -507,6 +511,9 @@ bool LibreVNADriver::setSA(const DeviceDriver::SASettings &s, std::function<void
     p.spectrumSettings.syncMode = (int) sync;
     p.spectrumSettings.syncMaster = syncMaster ? 1 : 0;
 
+    isIdle = false;
+    lastNonIdlePacket = p;
+
     return SendPacket(p, [=](TransmissionResult r){
         if(cb) {
             cb(r == TransmissionResult::Ack);
@@ -531,11 +538,14 @@ bool LibreVNADriver::setSG(const DeviceDriver::SGSettings &s)
     p.generator.cdbm_level = s.dBm * 100;
     p.generator.activePort = s.port;
     p.generator.applyAmplitudeCorrection = true;
+    isIdle = false;
+    lastNonIdlePacket = p;
     return SendPacket(p);
 }
 
 bool LibreVNADriver::setIdle(std::function<void (bool)> cb)
 {
+    isIdle = true;
     Protocol::PacketInfo p;
     p.type = Protocol::PacketType::SetIdle;
     return SendPacket(p, [=](TransmissionResult res) {
@@ -608,7 +618,21 @@ bool LibreVNADriver::setExtRef(QString option_in, QString option_out)
     case Reference::OutFreq::MHZ100: p.reference.ExtRefOuputFreq = 100000000; break;
     }
 
-    return SendPacket(p);
+    bool ret;
+    if(isIdle) {
+        // can switch reference directly
+        ret = SendPacket(p);
+    } else {
+        // switching the reference while a sweep (or any frequency generation is active)
+        // can result in wrong frequencies when a frequency calibration is applied to
+        // the internal reference. Stop any activity before switching the reference and
+        // start it again afterwards
+        ret = sendWithoutPayload(Protocol::PacketType::SetIdle);
+        ret &= SendPacket(p);
+        ret &= SendPacket(lastNonIdlePacket);
+    }
+
+    return ret;
 }
 
 void LibreVNADriver::registerTypes()

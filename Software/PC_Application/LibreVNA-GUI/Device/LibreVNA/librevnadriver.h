@@ -212,6 +212,9 @@ protected:
     Synchronization sync;
     bool syncMaster;
 
+    bool isIdle;
+    Protocol::PacketInfo lastNonIdlePacket;
+
     std::map<int, int> portStageMapping; // maps from excitedPort (count starts at one) to stage (count starts at zero)
 
     // Driver specific settings
