@@ -510,8 +510,8 @@ void TraceXYPlot::draw(QPainter &p)
                     QString unit = "";
                     QString prefix = " ";
                     if(pref.Graphs.showUnits) {
-                        unit = yAxis[i].Unit();
-                        prefix = yAxis[i].Prefixes();
+                        unit = yAxis[i].Unit(getModel().getSource());
+                        prefix = yAxis[i].Prefixes(getModel().getSource());
                     }
                     auto tickValue = Unit::ToString(yAxis[i].getTicks()[j], unit, prefix, significantDigits);
                     QRect bounding;
@@ -1270,7 +1270,7 @@ QString TraceXYPlot::mouseText(QPoint pos)
                 auto max = qMax(abs(yAxis[i].getRangeMax()), abs(yAxis[i].getRangeMin()));
                 auto step = abs(yAxis[i].getRangeMax() - yAxis[i].getRangeMin()) / 1000.0;
                 significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
-                ret += Unit::ToString(coords[i].y(), yAxis[i].Unit(), yAxis[i].Prefixes(), significantDigits) + "\n";
+                ret += Unit::ToString(coords[i].y(), yAxis[i].Unit(getModel().getSource()), yAxis[i].Prefixes(getModel().getSource()), significantDigits) + "\n";
             }
         }
     }

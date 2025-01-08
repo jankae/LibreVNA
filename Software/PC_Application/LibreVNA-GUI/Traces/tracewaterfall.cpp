@@ -284,10 +284,10 @@ void TraceWaterfall::draw(QPainter &p)
     }
     QString unit = "";
     if(pref.Graphs.showUnits) {
-        unit = yAxis.Unit();
+        unit = yAxis.Unit(getModel().getSource());
     }
-    QString labelMin = Unit::ToString(yAxis.getRangeMin(), unit, yAxis.Prefixes(), 4);
-    QString labelMax = Unit::ToString(yAxis.getRangeMax(), unit, yAxis.Prefixes(), 4);
+    QString labelMin = Unit::ToString(yAxis.getRangeMin(), unit, yAxis.Prefixes(getModel().getSource()), 4);
+    QString labelMax = Unit::ToString(yAxis.getRangeMax(), unit, yAxis.Prefixes(getModel().getSource()), 4);
     p.setPen(QPen(pref.Graphs.Color.axis, 1));
     p.save();
     p.translate(legendRect.x(), w.height());

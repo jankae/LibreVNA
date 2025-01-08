@@ -50,7 +50,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     }
 
     // Setup GUI connections
-    auto updateYenableState = [](QComboBox *type, QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs) {
+    auto updateYenableState = [plot](QComboBox *type, QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs) {
         if(type->currentIndex() == 0) {
             // axis disabled
             log->setEnabled(false);
@@ -80,7 +80,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
             }
         }
         auto t = (YAxis::Type) type->currentIndex();
-        QString unit = YAxis::Unit(t);
+        QString unit = YAxis::Unit(t, plot->getModel().getSource());
         QString prefixes = YAxis::Prefixes(t);
         min->setUnit(unit);
         min->setPrefixes(prefixes);
@@ -202,10 +202,10 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     ui->XautoDivs->setChecked(plot->xAxis.getAutoDivs());
 
     // Constant line list handling
-    auto editLine = [&](XYPlotConstantLine *line) {
+    auto editLine = [plot, this](XYPlotConstantLine *line) {
         line->editDialog(XAxis::Unit((XAxis::Type) ui->XType->currentIndex()),
-                        YAxis::Unit((YAxis::Type) ui->Y1type->currentIndex()),
-                        YAxis::Unit((YAxis::Type) ui->Y2type->currentIndex()));
+                        YAxis::Unit((YAxis::Type) ui->Y1type->currentIndex(), plot->getModel().getSource()),
+                        YAxis::Unit((YAxis::Type) ui->Y2type->currentIndex(), plot->getModel().getSource()));
     };
 
     for(auto l : plot->constantLines) {

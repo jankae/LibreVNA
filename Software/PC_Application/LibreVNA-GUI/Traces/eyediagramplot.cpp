@@ -715,7 +715,7 @@ QString EyeDiagramPlot::mouseText(QPoint pos)
         auto max = qMax(abs(yAxis.getRangeMax()), abs(yAxis.getRangeMin()));
         auto step = abs(yAxis.getRangeMax() - yAxis.getRangeMin()) / 1000.0;
         significantDigits = floor(log10(max)) - floor(log10(step)) + 1;
-        ret += Unit::ToString(coords.y(), "V", yAxis.Prefixes(), significantDigits) + "\n";
+        ret += Unit::ToString(coords.y(), "V", yAxis.Prefixes(getModel().getSource()), significantDigits) + "\n";
     }
     return ret;
 }
