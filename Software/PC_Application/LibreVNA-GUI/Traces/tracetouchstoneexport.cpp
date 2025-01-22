@@ -42,9 +42,10 @@ bool TraceTouchstoneExport::setPortNum(int ports)
 
 void TraceTouchstoneExport::on_buttonBox_accepted()
 {
-    auto filename = QFileDialog::getSaveFileName(this, "Select file for exporting traces", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, Preferences::QFileDialogOptions());
+    auto ports = ui->sbPorts->value();
+    QString extension = ".s"+QString::number(ports)+"p";
+    auto filename = QFileDialog::getSaveFileName(this, "Select file for exporting traces", "", "Touchstone files (*"+extension+")", nullptr, Preferences::QFileDialogOptions());
     if(filename.length() > 0) {
-        auto ports = ui->sbPorts->value();
         auto t = Touchstone(ports);
         t.setReferenceImpedance(ui->selector->getReferenceImpedance());
         // add trace points to touchstone
