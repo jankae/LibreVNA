@@ -14,6 +14,7 @@ private slots:
     void IdealArcApproximation();
     void NoisyCircleApproximation();
     void FirmwareComparison();
+    void ImpedanceSparameterCalculation();
 };
 
 #endif // UTILTESTS_H

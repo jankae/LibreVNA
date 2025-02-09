@@ -52,6 +52,7 @@ namespace Util {
         return SparamToVSWR(abs(d));
     }
     std::complex<double> SparamToImpedance(std::complex<double> d, std::complex<double> Z0 = 50.0);
+    std::complex<double> ImpedanceToSparam(std::complex<double> Z, std::complex<double> Z0 = 50.0);
     // all these conversions assume series connection of real and imag part
     static inline double SparamToResistance(std::complex<double> d, std::complex<double> Z0 = 50.0) {
         return SparamToImpedance(d, Z0).real();

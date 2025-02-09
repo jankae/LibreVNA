@@ -78,3 +78,31 @@ void UtilTests::FirmwareComparison()
     QVERIFY(Util::firmwareEqualOrHigher("2.2.2", "2.3") == false);
     QVERIFY(Util::firmwareEqualOrHigher("2.2", "2.3.1") == false);
 }
+
+void UtilTests::ImpedanceSparameterCalculation()
+{
+    // Check impedance to S parameter conversion and back for different values
+    auto Z = std::complex<double>(50.0);
+    auto S = Util::ImpedanceToSparam(Z);
+    QVERIFY(S == 0.0);
+    QVERIFY(Util::SparamToImpedance(S) == Z);
+
+    Z = std::complex<double>(0.0);
+    S = Util::ImpedanceToSparam(Z);
+    QVERIFY(S == -1.0);
+    QVERIFY(Util::SparamToImpedance(S) == Z);
+
+    Z = std::complex<double>(100.0);
+    S = Util::ImpedanceToSparam(Z);
+    QVERIFY(qFuzzyCompare(S.real(), 1.0/3));
+    QVERIFY(S.imag() == 0.0);
+    QVERIFY(qFuzzyCompare(Util::SparamToImpedance(S).real(), Z.real()));
+    QVERIFY(qFuzzyCompare(Util::SparamToImpedance(S).imag(), Z.imag()));
+
+    // Edge case: convert S parameter to impedance at 1.0 (which will give a +inf impedance)
+    S = 1.0;
+    Z = Util::SparamToImpedance(S);
+    // convert back, we must land back at 1.0
+    auto S_from_Z = Util::ImpedanceToSparam(Z);
+    QVERIFY(S_from_Z == S);
+}

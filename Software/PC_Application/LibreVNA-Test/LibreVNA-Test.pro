@@ -152,6 +152,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/touchstone.cpp \
     ../LibreVNA-GUI/unit.cpp \
     ffttests.cpp \
+    impedancerenormalizationtests.cpp \
     main.cpp \
     parametertests.cpp \
     portextensiontests.cpp \
@@ -346,6 +347,7 @@ HEADERS += \
     ../LibreVNA-GUI/touchstone.h \
     ../LibreVNA-GUI/unit.h \
     ffttests.h \
+    impedancerenormalizationtests.h \
     parametertests.h \
     portextensiontests.h \
     utiltests.h

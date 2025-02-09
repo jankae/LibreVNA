@@ -62,7 +62,19 @@ double Util::distanceToLine(QPointF point, QPointF l1, QPointF l2, QPointF *clos
 }
 
 std::complex<double> Util::SparamToImpedance(std::complex<double> d, std::complex<double> Z0) {
-    return Z0 * (1.0 + d) / (1.0 - d);
+    if (d != 1.0) {
+        return Z0 * (1.0 + d) / (1.0 - d);
+    } else {
+        return std::complex<double>(std::numeric_limits<double>::infinity(), 0.0);
+    }
+}
+
+std::complex<double> Util::ImpedanceToSparam(std::complex<double> Z, std::complex<double> Z0) {
+    if(std::isinf(Z.real())) {
+        return 1.0;
+    } else {
+        return (Z-Z0)/(Z+Z0);
+    }
 }
 
 double Util::dBmTodBuV(double dBm)
