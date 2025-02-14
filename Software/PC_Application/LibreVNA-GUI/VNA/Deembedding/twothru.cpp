@@ -205,22 +205,22 @@ nlohmann::json TwoThru::toJSON()
     for(auto p : points) {
         nlohmann::json jp;
         jp["frequency"] = p.freq;
-        jp["p1_11_r"] = p.inverseP1.m11.real();
-        jp["p1_11_i"] = p.inverseP1.m11.imag();
-        jp["p1_12_r"] = p.inverseP1.m12.real();
-        jp["p1_12_i"] = p.inverseP1.m12.imag();
-        jp["p1_21_r"] = p.inverseP1.m21.real();
-        jp["p1_21_i"] = p.inverseP1.m21.imag();
-        jp["p1_22_r"] = p.inverseP1.m22.real();
-        jp["p1_22_i"] = p.inverseP1.m22.imag();
-        jp["p2_11_r"] = p.inverseP2.m11.real();
-        jp["p2_11_i"] = p.inverseP2.m11.imag();
-        jp["p2_12_r"] = p.inverseP2.m12.real();
-        jp["p2_12_i"] = p.inverseP2.m12.imag();
-        jp["p2_21_r"] = p.inverseP2.m21.real();
-        jp["p2_21_i"] = p.inverseP2.m21.imag();
-        jp["p2_22_r"] = p.inverseP2.m22.real();
-        jp["p2_22_i"] = p.inverseP2.m22.imag();
+        jp["p1_11_r"] = p.inverseP1.get(1,1).real();
+        jp["p1_11_i"] = p.inverseP1.get(1,1).imag();
+        jp["p1_12_r"] = p.inverseP1.get(1,2).real();
+        jp["p1_12_i"] = p.inverseP1.get(1,2).imag();
+        jp["p1_21_r"] = p.inverseP1.get(2,1).real();
+        jp["p1_21_i"] = p.inverseP1.get(2,1).imag();
+        jp["p1_22_r"] = p.inverseP1.get(2,2).real();
+        jp["p1_22_i"] = p.inverseP1.get(2,2).imag();
+        jp["p2_11_r"] = p.inverseP2.get(1,1).real();
+        jp["p2_11_i"] = p.inverseP2.get(1,1).imag();
+        jp["p2_12_r"] = p.inverseP2.get(1,2).real();
+        jp["p2_12_i"] = p.inverseP2.get(1,2).imag();
+        jp["p2_21_r"] = p.inverseP2.get(2,1).real();
+        jp["p2_21_i"] = p.inverseP2.get(2,1).imag();
+        jp["p2_22_r"] = p.inverseP2.get(2,2).real();
+        jp["p2_22_i"] = p.inverseP2.get(2,2).imag();
         jpoints.push_back(jp);
     }
     j["points"] = jpoints;
@@ -249,14 +249,14 @@ void TwoThru::fromJSON(nlohmann::json j)
     for(auto jp : jpoints) {
         Point p;
         p.freq = jp.value("frequency", 0.0);
-        p.inverseP1.m11 = complex<double>(jp.value("p1_11_r", 0.0), jp.value("p1_11_i", 0.0));
-        p.inverseP1.m12 = complex<double>(jp.value("p1_12_r", 0.0), jp.value("p1_12_i", 0.0));
-        p.inverseP1.m21 = complex<double>(jp.value("p1_21_r", 0.0), jp.value("p1_21_i", 0.0));
-        p.inverseP1.m22 = complex<double>(jp.value("p1_22_r", 0.0), jp.value("p1_22_i", 0.0));
-        p.inverseP2.m11 = complex<double>(jp.value("p2_11_r", 0.0), jp.value("p2_11_i", 0.0));
-        p.inverseP2.m12 = complex<double>(jp.value("p2_12_r", 0.0), jp.value("p2_12_i", 0.0));
-        p.inverseP2.m21 = complex<double>(jp.value("p2_21_r", 0.0), jp.value("p2_21_i", 0.0));
-        p.inverseP2.m22 = complex<double>(jp.value("p2_22_r", 0.0), jp.value("p2_22_i", 0.0));
+        p.inverseP1.set(1,1, complex<double>(jp.value("p1_11_r", 0.0), jp.value("p1_11_i", 0.0)));
+        p.inverseP1.set(1,2, complex<double>(jp.value("p1_12_r", 0.0), jp.value("p1_12_i", 0.0)));
+        p.inverseP1.set(2,1, complex<double>(jp.value("p1_21_r", 0.0), jp.value("p1_21_i", 0.0)));
+        p.inverseP1.set(2,2, complex<double>(jp.value("p1_22_r", 0.0), jp.value("p1_22_i", 0.0)));
+        p.inverseP2.set(1,1, complex<double>(jp.value("p2_11_r", 0.0), jp.value("p2_11_i", 0.0)));
+        p.inverseP2.set(1,2, complex<double>(jp.value("p2_12_r", 0.0), jp.value("p2_12_i", 0.0)));
+        p.inverseP2.set(2,1, complex<double>(jp.value("p2_21_r", 0.0), jp.value("p2_21_i", 0.0)));
+        p.inverseP2.set(2,2, complex<double>(jp.value("p2_22_r", 0.0), jp.value("p2_22_i", 0.0)));
         points.push_back(p);
     }
 }
@@ -281,10 +281,10 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
             continue;
         }
         auto S = m.toSparam(port1, port2);
-        S11.push_back(S.m11);
-        S12.push_back(S.m12);
-        S21.push_back(S.m21);
-        S22.push_back(S.m22);
+        S11.push_back(S.get(1,1));
+        S12.push_back(S.get(1,2));
+        S21.push_back(S.get(2,1));
+        S22.push_back(S.get(2,2));
         f.push_back(m.frequency);
     }
     auto n = f.size();
@@ -425,8 +425,8 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
 
         // create S parameter errorbox
         for(unsigned int i=1;i<=n;i++) {
-            data_side2.push_back(Sparam(data_side1[i-1].m22, p211x[i], p211x[i], p111x[i]));
-            data_side1[i-1].m22 = p221x[i];
+            data_side2.push_back(Sparam(data_side1[i-1].get(2,2), p211x[i], p211x[i], p111x[i]));
+            data_side1[i-1].set(2,2, p221x[i]);
         }
     }
 
@@ -478,7 +478,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
     // grabbing S21
     vector<complex<double>> s212x;
     for(auto s : p) {
-        s212x.push_back(s.m21);
+        s212x.push_back(s.get(2,1));
     }
 
     // get the attenuation and phase constant per length
@@ -584,14 +584,14 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
         // grab s11 and s22 of errorbox model
         vector<complex<double>> s111x, s221x;
         for(auto s : errorbox) {
-            s111x.push_back(s.m11);
-            s221x.push_back(s.m22);
+            s111x.push_back(s.get(1,1));
+            s221x.push_back(s.get(2,2));
         }
 
         // grab s21 of the 2x thru measurement
         vector<complex<double>> s212x;
         for(auto s : data_2xthru) {
-            s212x.push_back(s.m21);
+            s212x.push_back(s.get(2,1));
         }
         auto f = freq_2xthru;
 
@@ -623,7 +623,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
         // add the DC point
         s212x.push_back(1.0);
         for(auto p : data_2xthru) {
-            s212x.push_back(p.m21);
+            s212x.push_back(p.get(2,1));
         }
         // extract the mid point from the 2x thru
         auto t212x = makeSymmetric(s212x);
@@ -648,7 +648,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
             // define the fixture-dut-fixture S-parameters
             vector<complex<double>> s_dut;
             for(auto s : data_dut) {
-                s_dut.push_back(s.m11);
+                s_dut.push_back(s.get(1,1));
             }
 
             // define the point for extraction
@@ -692,11 +692,13 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
     // reverse the port order of fixture-dut-fixture and 2x thru
     vector<Sparam> data_fix_dut_fix_reversed;
     for(auto s : data_fix_dut_fix_Sparam) {
-        data_fix_dut_fix_reversed.push_back(Sparam(s.m22, s.m21, s.m12, s.m11));
+        s.swapPorts(1,2);
+        data_fix_dut_fix_reversed.push_back(s);
     }
     vector<Sparam> data_2xthru_reversed;
     for(auto s : data_2xthru_Sparam) {
-        data_2xthru_reversed.push_back(Sparam(s.m22, s.m21, s.m12, s.m11));
+        s.swapPorts(1,2);
+        data_2xthru_reversed.push_back(s);
     }
 
     // make the second error box
@@ -708,7 +710,8 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
         p.freq = f[i];
         p.inverseP1 = Tparam(data_side1[i]).inverse();
         // correct port order of error box 2
-        auto side2 = Sparam(data_side2[i].m22, data_side2[i].m21, data_side2[i].m12, data_side2[i].m11);
+        auto side2 = data_side2[i];
+        side2.swapPorts(1,2);
         p.inverseP2 = Tparam(side2).inverse();
         ret.push_back(p);
     }

@@ -7,7 +7,7 @@
 #include "LibreCAL/librecaldialog.h"
 #include "preferences.h"
 
-#include "Eigen/Dense"
+#include "Tools/Eigen/Dense"
 
 #include <fstream>
 #include <iomanip>
@@ -777,25 +777,24 @@ Calibration::Point Calibration::computeSOLT(double f)
             complex<double> S11, S21;
             Sparam Sideal;
             if(throughForward) {
-                S11 = throughForward->getMeasured(f).m11;
-                S21 = throughForward->getMeasured(f).m21;
+                S11 = throughForward->getMeasured(f).get(1,1);
+                S21 = throughForward->getMeasured(f).get(2,1);
                 Sideal = throughForward->getActual(f);
             } else if(throughReverse) {
-                S11 = throughReverse->getMeasured(f).m22;
-                S21 = throughReverse->getMeasured(f).m12;
+                S11 = throughReverse->getMeasured(f).get(2,2);
+                S21 = throughReverse->getMeasured(f).get(1,2);
                 Sideal = throughReverse->getActual(f);
-                swap(Sideal.m11, Sideal.m22);
-                swap(Sideal.m12, Sideal.m21);
+                Sideal.swapPorts(1,2);
             }
             auto isoMeas = static_cast<CalibrationMeasurement::Isolation*>(findMeasurement(CalibrationMeasurement::Base::Type::Isolation));
             auto isolation = complex<double>(0.0,0.0);
             if(isoMeas) {
                 isolation = isoMeas->getMeasured(f, p2, p1);
             }
-            auto deltaS = Sideal.m11*Sideal.m22 - Sideal.m21 * Sideal.m12;
-            point.L[i][j] = ((S11 - point.D[i])*(1.0 - point.S[i] * Sideal.m11)-Sideal.m11*point.R[i])
-                    / ((S11 - point.D[i])*(Sideal.m22-point.S[i]*deltaS)-deltaS*point.R[i]);
-            point.T[i][j] = (S21 - isolation)*(1.0 - point.S[i]*Sideal.m11 - point.L[i][j]*Sideal.m22 + point.S[i]*point.L[i][j]*deltaS) / Sideal.m21;
+            auto deltaS = Sideal.get(1,1)*Sideal.get(2,2) - Sideal.get(2,1) * Sideal.get(1,2);
+            point.L[i][j] = ((S11 - point.D[i])*(1.0 - point.S[i] * Sideal.get(1,1))-Sideal.get(1,1)*point.R[i])
+                    / ((S11 - point.D[i])*(Sideal.get(2,2)-point.S[i]*deltaS)-deltaS*point.R[i]);
+            point.T[i][j] = (S21 - isolation)*(1.0 - point.S[i]*Sideal.get(1,1) - point.L[i][j]*Sideal.get(2,2) + point.S[i]*point.L[i][j]*deltaS) / Sideal.get(2,1);
             point.I[i][j] = isolation;
         }
     }
@@ -828,15 +827,15 @@ Calibration::Point Calibration::computeThroughNormalization(double f)
             complex<double> S21 = 0.0;
             Sparam Sideal;
             if(throughForward) {
-                S21 = throughForward->getMeasured(f).m21;
+                S21 = throughForward->getMeasured(f).get(2,1);
                 Sideal = throughForward->getActual(f);
             } else if(throughReverse) {
-                S21 = throughReverse->getMeasured(f).m12;
+                S21 = throughReverse->getMeasured(f).get(1,2);
                 Sideal = throughReverse->getActual(f);
-                swap(Sideal.m12, Sideal.m21);
+                Sideal.swapPorts(1,2);
             }
             point.L[i][j] = 0.0;
-            point.T[i][j] = S21 / Sideal.m21;
+            point.T[i][j] = S21 / Sideal.get(2,1);
             point.I[i][j] = 0.0;
         }
     }
@@ -904,8 +903,7 @@ Calibration::Point Calibration::computeTRL(double freq)
                 Sthrough = throughForward->getMeasured(freq);
             } else if(throughReverse) {
                 Sthrough = throughReverse->getMeasured(freq);
-                swap(Sthrough.m11, Sthrough.m22);
-                swap(Sthrough.m12, Sthrough.m21);
+                Sthrough.swapPorts(1,2);
             }
             // grab line measurement
             auto forwardLines = findMeasurements(CalibrationMeasurement::Base::Type::Line, p1, p2);
@@ -942,8 +940,7 @@ Calibration::Point Calibration::computeTRL(double freq)
 
             Sparam Sline = closestLine->getMeasured(freq);
             if(closestLineIsReversed) {
-                swap(Sline.m11, Sline.m22);
-                swap(Sline.m12, Sline.m21);
+                Sline.swapPorts(1,2);
             }
 
             // got all required measurements
@@ -955,17 +952,17 @@ Calibration::Point Calibration::computeTRL(double freq)
             auto T = R_D*R_T.inverse();
             complex<double> a_over_c, b;
             // page 21-22
-            Util::solveQuadratic(T.m21, T.m22 - T.m11, -T.m12, b, a_over_c);
+            Util::solveQuadratic(T.get(2,1), T.get(2,2) - T.get(1,1), -T.get(1,2), b, a_over_c);
             // ensure correct root selection
             // page 23
             if(abs(b) >= abs(a_over_c)) {
                 swap(b, a_over_c);
             }
             // page 24
-            auto g = R_T.m22;
-            auto d = R_T.m11 / g;
-            auto e = R_T.m12 / g;
-            auto f = R_T.m21 / g;
+            auto g = R_T.get(2,2);
+            auto d = R_T.get(1,1) / g;
+            auto e = R_T.get(1,2) / g;
+            auto f = R_T.get(2,1) / g;
 
             // page 25
             auto r22_rho22 = g * (1.0 - e / a_over_c) / (1.0 - b / a_over_c);
@@ -994,12 +991,12 @@ Calibration::Point Calibration::computeTRL(double freq)
             auto Box_A = Tparam(r22 * a, r22 * b, r22 * c, r22);
             auto Box_B = Tparam(rho22 * alpha, rho22 * beta, rho22 * gamma, rho22);
             auto S_A = Sparam(Box_A);
-            point.D[i] = S_A.m11;
-            point.R[i] = S_A.m12;
-            point.S[i] = S_A.m22;
+            point.D[i] = S_A.get(1,1);
+            point.R[i] = S_A.get(1,2);
+            point.S[i] = S_A.get(2,2);
             auto S_B = Sparam(Box_B);
-            point.L[i][j] = S_B.m11;
-            point.T[i][j] = S_B.m21;
+            point.L[i][j] = S_B.get(1,1);
+            point.T[i][j] = S_B.get(2,1);
             // no isolation measurement available
             point.I[i][j] = 0.0;
 
@@ -1153,13 +1150,13 @@ std::vector<Trace *> Calibration::getMeasurementTraces()
             for(auto d : twoPort->getPoints()) {
                 Trace::Data td;
                 td.x = d.frequency;
-                td.y = d.S.m11;
+                td.y = d.S.get(1,1);
                 ts11->addData(td, Trace::DataType::Frequency);
-                td.y = d.S.m12;
+                td.y = d.S.get(1,2);
                 ts12->addData(td, Trace::DataType::Frequency);
-                td.y = d.S.m21;
+                td.y = d.S.get(2,1);
                 ts21->addData(td, Trace::DataType::Frequency);
-                td.y = d.S.m22;
+                td.y = d.S.get(2,2);
                 ts22->addData(td, Trace::DataType::Frequency);
             }
             ret.push_back(ts11);

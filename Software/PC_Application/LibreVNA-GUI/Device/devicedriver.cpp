@@ -64,10 +64,10 @@ unsigned int DeviceDriver::SApoints() {
 Sparam DeviceDriver::VNAMeasurement::toSparam(int port1, int port2) const
 {
     Sparam S;
-    S.m11 = measurements.at("S"+QString::number(port1)+QString::number(port1));
-    S.m12 = measurements.at("S"+QString::number(port1)+QString::number(port2));
-    S.m21 = measurements.at("S"+QString::number(port2)+QString::number(port1));
-    S.m22 = measurements.at("S"+QString::number(port2)+QString::number(port2));
+    S.set(1,1, measurements.at("S"+QString::number(port1)+QString::number(port1)));
+    S.set(1,2, measurements.at("S"+QString::number(port1)+QString::number(port2)));
+    S.set(2,1, measurements.at("S"+QString::number(port2)+QString::number(port1)));
+    S.set(2,2, measurements.at("S"+QString::number(port2)+QString::number(port2)));
     return S;
 }
 
@@ -78,16 +78,16 @@ void DeviceDriver::VNAMeasurement::fromSparam(Sparam S, int port1, int port2)
     QString s21 = "S"+QString::number(port2)+QString::number(port1);
     QString s22 = "S"+QString::number(port2)+QString::number(port2);
     if(measurements.count(s11)) {
-        measurements[s11] = S.m11;
+        measurements[s11] = S.get(1,1);
     }
     if(measurements.count(s12)) {
-        measurements[s12] = S.m12;
+        measurements[s12] = S.get(1,2);
     }
     if(measurements.count(s21)) {
-        measurements[s21] = S.m21;
+        measurements[s21] = S.get(2,1);
     }
     if(measurements.count(s22)) {
-        measurements[s22] = S.m22;
+        measurements[s22] = S.get(2,2);
     }
 }
 

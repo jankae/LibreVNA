@@ -734,10 +734,10 @@ Sparam Line::toSparam(double freq)
 {
     Q_UNUSED(freq)
     Sparam ret;
-    ret.m11 = numeric_limits<complex<double>>::quiet_NaN();
-    ret.m12 = numeric_limits<complex<double>>::quiet_NaN();
-    ret.m21 = numeric_limits<complex<double>>::quiet_NaN();
-    ret.m22 = numeric_limits<complex<double>>::quiet_NaN();
+    ret.set(1,1,numeric_limits<complex<double>>::quiet_NaN());
+    ret.set(1,2,numeric_limits<complex<double>>::quiet_NaN());
+    ret.set(2,1,numeric_limits<complex<double>>::quiet_NaN());
+    ret.set(2,2,numeric_limits<complex<double>>::quiet_NaN());
     return ret;
 }
 

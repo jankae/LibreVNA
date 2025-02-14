@@ -51,19 +51,19 @@ void ImpedanceRenormalization::transformDatapoint(DeviceDriver::VNAMeasurement &
         transformed[S11name] = Util::ImpedanceToSparam(Util::SparamToImpedance(S11, p.Z0), impedance);
         // handle transmission parameters
         for(auto j=i+1;j<=ports;j++) {
-                auto S12name = "S"+QString::number(i)+QString::number(j);
-                auto S21name = "S"+QString::number(j)+QString::number(i);
-                auto S22name = "S"+QString::number(j)+QString::number(j);
-                if(!p.measurements.count(S12name) || !p.measurements.count(S21name) || !p.measurements.count(S22name)) {
-                    // not all measurements available, skip this
-                    continue;
-                }
-                auto S12 = p.measurements[S12name];
-                auto S21 = p.measurements[S21name];
-                auto S22 = p.measurements[S22name];
+            auto S12name = "S"+QString::number(i)+QString::number(j);
+            auto S21name = "S"+QString::number(j)+QString::number(i);
+            auto S22name = "S"+QString::number(j)+QString::number(j);
+            if(!p.measurements.count(S12name) || !p.measurements.count(S21name) || !p.measurements.count(S22name)) {
+                // not all measurements available, skip this
+                continue;
+            }
+            auto S12 = p.measurements[S12name];
+            auto S21 = p.measurements[S21name];
+            auto S22 = p.measurements[S22name];
             auto S_t = Sparam(ABCDparam(Sparam(S11, S12, S21, S22), p.Z0), impedance);
-            transformed[S12name] = S_t.m12;
-            transformed[S21name] = S_t.m21;
+            transformed[S12name] = S_t.get(1,2);
+            transformed[S21name] = S_t.get(2,1);
         }
     }
     p.measurements = transformed;

@@ -108,7 +108,7 @@ void MatchingNetwork::transformDatapoint(DeviceDriver::VNAMeasurement &p)
     }
     // calculate internal reflection at the matching port
     auto portReflectionS = uncorrected.measurements[portReflectionName];
-    auto matchingReflectionS = Sparam(m.forward, p.Z0).m22;
+    auto matchingReflectionS = Sparam(m.forward, p.Z0).get(2,2);
     auto internalPortReflectionS = matchingReflectionS / (1.0 - matchingReflectionS * portReflectionS);
 
     // handle the measurements
@@ -122,7 +122,7 @@ void MatchingNetwork::transformDatapoint(DeviceDriver::VNAMeasurement &p)
                 // the port of the matching network itself
                 auto S = Sparam(uncorrected.measurements[name], 1.0, 1.0, 0.0);
                 auto corrected = Sparam(m.forward * ABCDparam(S, p.Z0), p.Z0);
-                p.measurements[name] = corrected.m11;
+                p.measurements[name] = corrected.get(1,1);
             } else {
                 // another reflection measurement
                 try {
@@ -685,7 +685,7 @@ ABCDparam MatchingComponent::parameters(double freq)
         } else {
             auto d = touchstone->interpolate(freq);
             auto Y = Yparam(Sparam(d.S[0], d.S[1], d.S[2], d.S[3]), touchstone->getReferenceImpedance());
-            return ABCDparam(1.0, 0.0, Y.m11, 1.0);
+            return ABCDparam(1.0, 0.0, Y.get(1,1), 1.0);
         }
     default:
         return ABCDparam(1.0, 0.0, 0.0, 1.0);

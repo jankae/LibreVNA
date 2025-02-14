@@ -564,8 +564,7 @@ Sparam CalibrationMeasurement::TwoPort::getActual(double frequency)
 {
     auto param = static_cast<CalStandard::TwoPort*>(standard)->toSparam(frequency);
     if(reverseStandard) {
-        swap(param.m11, param.m22);
-        swap(param.m12, param.m21);
+        param.swapPorts(1, 2);
     }
     return param;
 }
