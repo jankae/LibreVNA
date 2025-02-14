@@ -443,7 +443,7 @@ void TraceWidget::SetupSCPI()
             for(int j=0;j<ports;j++) {
                 bool need_reflection = i==j;
                 auto t = traces[j+i*ports];
-                if(t->getDataType() != Trace::DataType::Frequency) {
+                if(t->outputType() != Trace::DataType::Frequency) {
                     // invalid domain
                     return SCPI::getResultName(SCPI::Result::Error);
                 }
@@ -649,6 +649,10 @@ void TraceWidget::contextMenuEvent(QContextMenuEvent *event)
         // force update of hash
         duplicate->toHash(true);
         model.addTrace(duplicate);
+        // resolve math sources
+        if(!duplicate->resolveMathSourceHashes()) {
+            qWarning() << "Failed to resolve all math source hashes for"<<duplicate;
+        }
     });
     ctxmenu->addAction(action_duplicate);
     ctxmenu->exec(event->globalPos());

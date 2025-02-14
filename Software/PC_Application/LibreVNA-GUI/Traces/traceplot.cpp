@@ -490,6 +490,7 @@ void TracePlot::mouseMoveEvent(QMouseEvent *event)
         } else {
             cursorLabel->hide();
         }
+        triggerReplot();
     }
     event->accept();
 }

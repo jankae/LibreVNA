@@ -1390,7 +1390,7 @@ double Trace::findExtremum(bool max, double xmin, double xmax)
 
 std::vector<double> Trace::findPeakFrequencies(unsigned int maxPeaks, double minLevel, double minValley, double xmin, double xmax, bool negativePeaks)
 {
-    if(lastMath->getDataType() != DataType::Frequency) {
+    if(outputType() != DataType::Frequency) {
         // not in frequency domain
         return vector<double>();
     }
@@ -1565,7 +1565,7 @@ unsigned int Trace::getFileParameter() const
 
 double Trace::getNoise(double frequency)
 {
-    if(source != Trace::Source::Live || !settings.valid || !liveParam.startsWith("PORT") || lastMath->getDataType() != DataType::Frequency) {
+    if(source != Trace::Source::Live || !settings.valid || !liveParam.startsWith("PORT") || outputType() != DataType::Frequency) {
         // data not suitable for noise calculation
         return std::numeric_limits<double>::quiet_NaN();
     }

@@ -144,7 +144,7 @@ void TracePolarChart::draw(QPainter &p) {
         for(int i=1;i<nPoints;i++) {
             auto last = trace->sample(i-1);
             auto now = trace->sample(i);
-            if ((trace->getDataType() == Trace::DataType::Frequency) && (last.x < minimumVisibleFrequency() || now.x > maximumVisibleFrequency())) {
+            if ((trace->outputType() == Trace::DataType::Frequency) && (last.x < minimumVisibleFrequency() || now.x > maximumVisibleFrequency())) {
                 continue;
             }
             if(isnan(now.y.real())) {

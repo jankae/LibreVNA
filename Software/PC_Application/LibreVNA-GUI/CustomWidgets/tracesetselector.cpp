@@ -69,7 +69,7 @@ void TraceSetSelector::setPorts(unsigned int newPorts)
             // create possible trace selections
             c->addItem("None");
             for(auto t : availableTraces) {
-                if(t->getDataType() != Trace::DataType::Frequency) {
+                if(t->outputType() != Trace::DataType::Frequency) {
                     // can only add frequency traces
                     continue;
                 }
