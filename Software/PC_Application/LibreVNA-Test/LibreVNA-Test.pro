@@ -371,6 +371,7 @@ FORMS += \
     ../LibreVNA-GUI/Calibration/CalStandardReflectEditDialog.ui \
     ../LibreVNA-GUI/Calibration/CalStandardShortEditDialog.ui \
     ../LibreVNA-GUI/Calibration/CalStandardThroughEditDialog.ui \
+    ../LibreVNA-GUI/Calibration/LibreCAL/factoryUpdateDialog.ui \
     ../LibreVNA-GUI/Calibration/LibreCAL/librecaldialog.ui \
     ../LibreVNA-GUI/Calibration/calibrationdialogui.ui \
     ../LibreVNA-GUI/Calibration/calkitdialog.ui \
