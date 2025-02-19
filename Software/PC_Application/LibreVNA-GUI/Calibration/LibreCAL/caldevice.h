@@ -96,6 +96,11 @@ public:
 
     bool hasModifiedCoefficients();
 
+    bool coefficientTransferActive() { return transferActive; }
+
+public slots:
+    void factoryUpdateDialog();
+
 signals:
     void updateCoefficientsPercent(int percent);
     // emitted when all coefficients have been received and it is safe to call all functions again
@@ -113,6 +118,7 @@ private:
     int numPorts;
     std::thread *loadThread;
     bool abortLoading;
+    bool transferActive;
 
     float firmware_major_minor;
 

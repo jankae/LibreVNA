@@ -130,6 +130,9 @@ HEADERS += \
     Traces/waterfallaxisdialog.h \
     Traces/xyplotaxisdialog.h \
     Traces/tracepolarchart.h \
+    Util/QMicroz/miniz.h \
+    Util/QMicroz/qmicroz.h \
+    Util/QMicroz/tools.h \
     Util/prbs.h \
     Util/qpointervariant.h \
     Util/usbinbuffer.h \
@@ -280,6 +283,9 @@ SOURCES += \
     Traces/tracepolar.cpp \
     Traces/waterfallaxisdialog.cpp \
     Traces/xyplotaxisdialog.cpp \
+    Util/QMicroz/miniz.c \
+    Util/QMicroz/qmicroz.cpp \
+    Util/QMicroz/tools.cpp \
     Util/prbs.cpp \
     Util/usbinbuffer.cpp \
     Util/util.cpp \
@@ -312,6 +318,7 @@ SOURCES += \
 LIBS += -lusb-1.0
 unix:LIBS += -L/usr/lib/
 win32:LIBS += -L"$$_PRO_FILE_PWD_" # Github actions placed libusb here
+win32:DEFINES += QMICROZ_LIBRARY
 osx:INCPATH += /usr/local/include
 osx:LIBS += -L/usr/local/lib $(shell pkg-config --libs libusb-1.0)
 
@@ -330,6 +337,7 @@ FORMS += \
     Calibration/CalStandardReflectEditDialog.ui \
     Calibration/CalStandardShortEditDialog.ui \
     Calibration/CalStandardThroughEditDialog.ui \
+    Calibration/LibreCAL/factoryUpdateDialog.ui \
     Calibration/LibreCAL/librecaldialog.ui \
     Calibration/calibrationdialogui.ui \
     Calibration/calkitdialog.ui \

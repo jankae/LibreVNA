@@ -124,6 +124,9 @@ SOURCES +=  \
     ../LibreVNA-GUI/Traces/tracexyplot.cpp \
     ../LibreVNA-GUI/Traces/waterfallaxisdialog.cpp \
     ../LibreVNA-GUI/Traces/xyplotaxisdialog.cpp \
+    ../LibreVNA-GUI/Util/QMicroz/miniz.c \
+    ../LibreVNA-GUI/Util/QMicroz/qmicroz.cpp \
+    ../LibreVNA-GUI/Util/QMicroz/tools.cpp \
     ../LibreVNA-GUI/Util/prbs.cpp \
     ../LibreVNA-GUI/Util/util.cpp \
     ../LibreVNA-GUI/Util/usbinbuffer.cpp \
@@ -318,6 +321,9 @@ HEADERS += \
     ../LibreVNA-GUI/Traces/tracexyplot.h \
     ../LibreVNA-GUI/Traces/waterfallaxisdialog.h \
     ../LibreVNA-GUI/Traces/xyplotaxisdialog.h \
+    ../LibreVNA-GUI/Util/QMicroz/miniz.h \
+    ../LibreVNA-GUI/Util/QMicroz/qmicroz.h \
+    ../LibreVNA-GUI/Util/QMicroz/tools.h \
     ../LibreVNA-GUI/Util/prbs.h \
     ../LibreVNA-GUI/Util/util.h \
     ../LibreVNA-GUI/Util/usbinbuffer.h \
@@ -436,5 +442,6 @@ unix:LIBS += -L/usr/lib/
 
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
-DEFINES += FW_MAJOR=1 FW_MINOR=5 FW_PATCH=0 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
+DEFINES += FW_MAJOR=1 FW_MINOR=6 FW_PATCH=1 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
 DEFINES -= _UNICODE UNICODE
+win32:DEFINES += QMICROZ_LIBRARY

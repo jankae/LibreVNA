@@ -72,6 +72,10 @@ USBDevice::USBDevice(QString serial)
     m_receiveThread = new std::thread(&USBDevice::USBHandleThread, this);
     usbBuffer = new USBInBuffer(m_handle, LIBUSB_ENDPOINT_IN | 0x03, 65536);
     connect(usbBuffer, &USBInBuffer::DataReceived, this, &USBDevice::ReceivedData, Qt::DirectConnection);
+
+    // clear any possible queued data in USB device
+    QString dummy;
+    while(receive(&dummy, 10));
 }
 
 USBDevice::~USBDevice()
@@ -85,11 +89,11 @@ USBDevice::~USBDevice()
     delete m_receiveThread;
 }
 
-bool USBDevice::Cmd(QString cmd)
+bool USBDevice::Cmd(QString cmd, unsigned int timeout)
 {
     QString rcv;
     flushReceived();
-    bool success = send(cmd) && receive(&rcv);
+    bool success = send(cmd) && receive(&rcv, timeout);
     if(success && rcv == "") {
         // empty response expected by commad
         return true;
@@ -100,12 +104,12 @@ bool USBDevice::Cmd(QString cmd)
     }
 }
 
-QString USBDevice::Query(QString query)
+QString USBDevice::Query(QString query, unsigned int timeout)
 {
     flushReceived();
     if(send(query)) {
         QString rcv;
-        if(receive(&rcv)) {
+        if(receive(&rcv, timeout)) {
             return rcv;
         } else {
             emit communicationFailure();
@@ -212,6 +216,8 @@ void USBDevice::SearchDevices(std::function<bool (libusb_device_handle *, QStrin
 
 bool USBDevice::send(const QString &s)
 {
+    lineBuffer.clear();
+    qDebug() << "USB send:" << s;
     unsigned char data[s.size()+2];
     memcpy(data, s.toLatin1().data(), s.size());
     memcpy(&data[s.size()], "\r\n", 2);
@@ -237,6 +243,7 @@ bool USBDevice::receive(QString *s, unsigned int timeout)
         }
     }
     *s = lineBuffer.takeFirst();
+    qDebug() << "USB recv:" << *s;
     return true;
 }
 
