@@ -29,7 +29,7 @@ void TwoThru::transformDatapoint(DeviceDriver::VNAMeasurement &p)
 {
     // correct measurement
     if(points.size() > 0) {
-        Tparam meas(p.toSparam(port1,port2));
+        Tparam meas(p.toSparam().reduceTo({port1, port2}));
 
         Tparam inv1, inv2;
         if(p.frequency < points.front().freq) {
@@ -59,7 +59,7 @@ void TwoThru::transformDatapoint(DeviceDriver::VNAMeasurement &p)
         // perform correction
         Tparam corrected = inv1*meas*inv2;
         // transform back into S parameters
-        p.fromSparam(Sparam(corrected), port1, port2);
+        p.fromSparam(Sparam(corrected), {port1, port2});
     }
 }
 
@@ -280,7 +280,7 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
             // ignore possible DC point
             continue;
         }
-        auto S = m.toSparam(port1, port2);
+        auto S = m.toSparam().reduceTo({port1, port2});
         S11.push_back(S.get(1,1));
         S12.push_back(S.get(1,2));
         S21.push_back(S.get(2,1));
@@ -466,13 +466,13 @@ std::vector<TwoThru::Point> TwoThru::calculateErrorBoxes(std::vector<DeviceDrive
     vector<Sparam> p;
     vector<double> f;
     for(auto d : data_2xthru) {
-        p.push_back(d.toSparam(1, 2));
+        p.push_back(d.toSparam().reduceTo({port1, port2}));
         f.push_back(d.frequency);
     }
     auto data_2xthru_Sparam = p;
     vector<Sparam> data_fix_dut_fix_Sparam;
     for(auto d : data_fix_dut_fix) {
-        data_fix_dut_fix_Sparam.push_back(d.toSparam(1, 2));
+        data_fix_dut_fix_Sparam.push_back(d.toSparam().reduceTo({port1, port2}));
     }
 
     // grabbing S21

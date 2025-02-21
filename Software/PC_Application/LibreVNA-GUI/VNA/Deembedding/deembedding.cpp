@@ -25,7 +25,8 @@ void Deembedding::measurementCompleted()
         measuringOption = nullptr;
     }
 
-    delete measurementDialog;
+    measurementDialog->close();
+    measurementDialog->deleteLater();
     measurementDialog = nullptr;
     measurementUI = nullptr;
 }
@@ -37,7 +38,7 @@ void Deembedding::startMeasurementDialog(DeembeddingOption *option)
     auto ui = new Ui_DeembeddingMeasurementDialog;
     measurementUI = ui;
     ui->setupUi(measurementDialog);
-    connect(measurementDialog, &QDialog::finished, [=](){
+    connect(measurementDialog, &QDialog::finished, this, [=](){
         if(measuring) {
             measuring = false;
             emit finishedMeasurement();
@@ -53,7 +54,7 @@ void Deembedding::startMeasurementDialog(DeembeddingOption *option)
 
     connect(traceChooser, &SparamTraceSelector::selectionValid, ui->buttonBox, &QDialogButtonBox::setEnabled);
 
-    connect(ui->bMeasure, &QPushButton::clicked, [=](){
+    connect(ui->bMeasure, &QPushButton::clicked, this, [=](){
         ui->bMeasure->setEnabled(false);
         traceChooser->setEnabled(false);
         ui->buttonBox->setEnabled(false);
@@ -61,7 +62,7 @@ void Deembedding::startMeasurementDialog(DeembeddingOption *option)
         emit triggerMeasurement();
     });
 
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, [=](){
         // create datapoints from individual traces
         measurements.clear();
         auto points = Trace::assembleDatapoints(traceChooser->getTraces());

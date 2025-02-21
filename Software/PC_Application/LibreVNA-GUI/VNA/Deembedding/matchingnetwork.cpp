@@ -114,6 +114,9 @@ void MatchingNetwork::transformDatapoint(DeviceDriver::VNAMeasurement &p)
     // handle the measurements
     for(auto &meas : p.measurements) {
         QString name = meas.first;
+        if(!name.startsWith("S")) {
+            continue;
+        }
         unsigned int i = name.mid(1,1).toUInt();
         unsigned int j = name.mid(2,1).toUInt();
         if(i == j) {
@@ -126,9 +129,9 @@ void MatchingNetwork::transformDatapoint(DeviceDriver::VNAMeasurement &p)
             } else {
                 // another reflection measurement
                 try {
-                    auto S = uncorrected.toSparam(i, port);
+                    auto S = uncorrected.toSparam().reduceTo({i, port});
                     auto corrected = Sparam(ABCDparam(S, p.Z0) * m.reverse, p.Z0);
-                    p.fromSparam(corrected, i, port);
+                    p.fromSparam(corrected, {i, port});
                 } catch (...) {
                     // missing measurements, nothing can be done
                 }

@@ -11,6 +11,7 @@ using Type = std::complex<double>;
 
 class Parameters : public Savable {
 public:
+    Parameters(Type m11);
     Parameters(Type m11, Type m12, Type m21, Type m22);
     Parameters(int num_ports);
     Parameters() : Parameters(2){}
@@ -29,6 +30,7 @@ public:
 
 // forward declaration of parameter classes
 class Sparam;
+class Zparam;
 class Tparam;
 class ABCDparam;
 
@@ -38,6 +40,8 @@ public:
     Sparam(const Tparam &t);
     Sparam(const ABCDparam &a, Type Z01, Type Z02);
     Sparam(const ABCDparam &a, Type Z0);
+    Sparam(const Zparam &Z, std::vector<Type> Z0n);
+    Sparam(const Zparam &Z, Type Z0);
     Sparam operator+(const Sparam &r) const {
         Sparam p(ports());
         p.data = data+r.data;
@@ -49,6 +53,19 @@ public:
         return p;
     }
     void swapPorts(unsigned int p1, unsigned int p2);
+    // reduces the S parameter matrix to specified ports.
+    // Example: 4 port S parameters as an input but we want the 2 port data from the original ports 1 and 3
+    // Call: S.reduceTo(1, 3)
+    // Result: 2 port S parameters (S11, S12, S21, S22) which are set to the original (S11, S13, S31, S33)
+    Sparam reduceTo(std::vector<unsigned int> ports) const;
+};
+
+class Zparam : public Parameters {
+public:
+    using Parameters::Parameters;
+    Zparam(int num_ports) : Parameters(num_ports){}
+    Zparam(const Sparam &S, std::vector<Type> Z0n);
+    Zparam(const Sparam &S, Type Z0);
 };
 
 class ABCDparam : public Parameters {
@@ -66,7 +83,7 @@ public:
     ABCDparam inverse() {
         ABCDparam i;
         // by hand, this is faster because the Eigen matrix is using dynamic size
-        Type det = data(0,0)*data(1,1) - data(0,1)*data(2,1);
+        Type det = data(0,0)*data(1,1) - data(0,1)*data(1,0);
         i.data(0,0) = data(1,1) / det;
         i.data(0,1) = -data(0,1) / det;
         i.data(1,0) = -data(1,0) / det;
@@ -87,7 +104,7 @@ public:
         ABCDparam r = *this;
         r.data(0,0) += s;
         r.data(1,1) += s;
-        r = r * (1.0/t);
+        r.data = r.data * (1.0/t);
         return r;
     }
 };
@@ -109,7 +126,7 @@ public:
     }
     Tparam inverse() {
         Tparam i;
-        Type det = data(0,0)*data(1,1) - data(0,1)*data(2,1);
+        Type det = data(0,0)*data(1,1) - data(0,1)*data(1,0);
         i.data(0,0) = data(1,1) / det;
         i.data(0,1) = -data(0,1) / det;
         i.data(1,0) = -data(1,0) / det;

@@ -24,18 +24,52 @@ Sparam::Sparam(const ABCDparam &a, Type Z0)
 {
 }
 
+Sparam::Sparam(const Zparam &Z, std::vector<Type> Z0n)
+{
+    if(Z.ports() != Z0n.size()) {
+        throw std::runtime_error("number of supplied characteristic impedances does not match number of ports");
+    }
+    /* general formula for converting S parameters to Z parameters:
+     * S = (sqrt(y)*Z*sqrt(y)-1)*(sqrt(y)*Z*sqrt(y)+1)^-1
+     * with:
+     * Z = Z parameter matrix
+     * 1 = identity matrix
+     * sqrt(y) = diagonal matrix with the root of characteristic admittances as it non-zero elements
+     */
+    // create identity matrix
+    auto ident = Eigen::MatrixXcd::Identity(Z.ports(), Z.ports());
+    // create sqrt(y) matrix
+    Eigen::MatrixXcd sqrty = Eigen::MatrixXcd::Zero(Z.ports(), Z.ports());
+    // fill with characteristic admittance
+    for(unsigned int i=0;i<Z.ports();i++) {
+        sqrty(i, i) = 1.0/(sqrt(Z0n[i]));
+    }
+    // apply formula
+    auto yZy = sqrty*Z.data*sqrty;
+    data = (yZy-ident)*(yZy+ident).inverse();
+}
+
+Sparam::Sparam(const Zparam &Z, Type Z0)
+    : Sparam(Z, std::vector<Type>(Z.ports(), Z0))
+{
+
+}
+
 void Sparam::swapPorts(unsigned int p1, unsigned int p2)
 {
-    // swap columns
     data.col(p1-1).swap(data.col(p2-1));
     data.row(p1-1).swap(data.row(p2-1));
-    // auto cbuf = data.col(p1-1);
-    // data.col(p1-1) = data.col(p2-1);
-    // data.col(p2-1) = cbuf;
-    // // swap rows
-    // auto rbuf = data.row(p1-1);
-    // data.row(p1-1) = data.row(p2-1);
-    // data.row(p2-1) = rbuf;
+}
+
+Sparam Sparam::reduceTo(std::vector<unsigned int> ports) const
+{
+    auto ret = Sparam(ports.size());
+    for(unsigned int from=0;from<ports.size();from++) {
+        for(unsigned int to=0;to<ports.size();to++) {
+            ret.data(to, from) = get(ports[to], ports[from]);
+        }
+    }
+    return ret;
 }
 
 ABCDparam::ABCDparam(const Sparam &s, Type Z01, Type Z02)
@@ -66,6 +100,12 @@ Tparam::Tparam(const Sparam &s)
 ABCDparam::ABCDparam(const Sparam &s, Type Z0)
     : ABCDparam(s, Z0, Z0)
 {
+}
+
+Parameters::Parameters(Type m11)
+    : Parameters(1)
+{
+    data(0, 0) = m11;
 }
 
 Parameters::Parameters(Type m11, Type m12, Type m21, Type m22)
@@ -130,7 +170,7 @@ Yparam::Yparam(const Sparam &s, Type Z01, Type Z02)
 {
     // TODO can this be done for any number of ports
     if(s.ports() != 2) {
-        throw std::runtime_error("Can only create ABCD parameter from 2 port S parameters");
+        throw std::runtime_error("Can only create Y parameter from 2 port S parameters");
     }
     data = Eigen::MatrixXcd(2,2);
     // from https://www.rfcafe.com/references/electrical/s-h-y-z.htm
@@ -144,4 +184,34 @@ Yparam::Yparam(const Sparam &s, Type Z01, Type Z02)
 Yparam::Yparam(const Sparam &s, Type Z0)
     : Yparam(s, Z0, Z0)
 {
+}
+
+Zparam::Zparam(const Sparam &S, std::vector<Type> Z0n)
+{
+    if(S.ports() != Z0n.size()) {
+        throw std::runtime_error("number of supplied characteristic impedances does not match number of ports");
+    }
+    /* general formula for converting S parameters to Z parameters:
+     * Z = sqrt(z)*(1+S)*(1-S)^-1*sqrt(z)
+     * with:
+     * S = S parameter matrix
+     * 1 = identity matrix
+     * sqrt(z) = diagonal matrix with the root of characteristic impedances as it non-zero elements
+     */
+    // create identity matrix
+    auto ident = Eigen::MatrixXcd::Identity(S.ports(), S.ports());
+    // create sqrt(z) matrix
+    Eigen::MatrixXcd sqrtz = Eigen::MatrixXcd::Zero(S.ports(), S.ports());
+    // fill with characteristic impedance
+    for(unsigned int i=0;i<S.ports();i++) {
+        sqrtz(i, i) = sqrt(Z0n[i]);
+    }
+    // apply formula
+    data = sqrtz*(ident+S.data)*(ident-S.data).inverse()*sqrtz;
+}
+
+Zparam::Zparam(const Sparam &S, Type Z0)
+    : Zparam(S, std::vector<Type>(S.ports(), Z0))
+{
+
 }

@@ -429,7 +429,7 @@ void CalibrationMeasurement::TwoPort::addPoint(const DeviceDriver::VNAMeasuremen
 {
     Point p;
     p.frequency = m.frequency;
-    p.S = m.toSparam(port1, port2);
+    p.S = m.toSparam().reduceTo({port1, port2});
     points.push_back(p);
     timestamp = QDateTime::currentDateTimeUtc();
 }

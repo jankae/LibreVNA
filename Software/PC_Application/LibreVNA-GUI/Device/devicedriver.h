@@ -296,8 +296,20 @@ public:
         // Value: complex measurement in real/imag (linear, not in dB)
         std::map<QString, std::complex<double>> measurements;
 
-        Sparam toSparam(int port1, int port2) const;
-        void fromSparam(Sparam S, int port1, int port2);
+        Sparam toSparam(int ports = 0) const;
+        /* Sets the measurement values in the VNAmeasurement (if existent) to the values from the S parameter matrix.
+         * The portMapping parameter can be used to specify which values to set from which S parameter:
+         * Example: S parameter contains 4 port S parameters, but the VNAmeasurement is 2 port only with this mapping:
+         *      VNAMeasurement port | S parameter port
+         *      --------------------|-----------------
+         *      1                   | 2
+         *      2                   | 4
+         * This means that we want S22 (from the 4 port S parameter) stored as S11 (in the VNAMeasurement).
+         * Function call for this example: fromSparam(S, {2,4})
+         *
+         * If no portMapping is specified, the port order (and mapping) from the S paramters are kept.
+         */
+        void fromSparam(Sparam S, std::vector<unsigned int> portMapping = {});
         VNAMeasurement interpolateTo(const VNAMeasurement &to, double a);
     };
 

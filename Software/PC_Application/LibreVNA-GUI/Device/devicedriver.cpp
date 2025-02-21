@@ -61,33 +61,55 @@ unsigned int DeviceDriver::SApoints() {
     }
 }
 
-Sparam DeviceDriver::VNAMeasurement::toSparam(int port1, int port2) const
+Sparam DeviceDriver::VNAMeasurement::toSparam(int ports) const
 {
-    Sparam S;
-    S.set(1,1, measurements.at("S"+QString::number(port1)+QString::number(port1)));
-    S.set(1,2, measurements.at("S"+QString::number(port1)+QString::number(port2)));
-    S.set(2,1, measurements.at("S"+QString::number(port2)+QString::number(port1)));
-    S.set(2,2, measurements.at("S"+QString::number(port2)+QString::number(port2)));
+    if(ports == 0) {
+        // determine number of ports by highest available S parameter
+        for(const auto &m : measurements) {
+            if(!m.first.startsWith("S")) {
+                // something else we can not handle
+                continue;
+            }
+            int to = m.first.mid(1,1).toUInt();
+            int from = m.first.mid(2,1).toUInt();
+            if(to > ports) {
+                ports = to;
+            }
+            if(from > ports) {
+                ports = from;
+            }
+        }
+    }
+    // create S paramters
+    auto S = Sparam(ports);
+    // fill data
+    for(const auto &m : measurements) {
+        if(!m.first.startsWith("S")) {
+            // something else we can not handle
+            continue;
+        }
+        int to = m.first.mid(1,1).toUInt();
+        int from = m.first.mid(2,1).toUInt();
+        S.set(to, from, m.second);
+    }
     return S;
 }
 
-void DeviceDriver::VNAMeasurement::fromSparam(Sparam S, int port1, int port2)
+void DeviceDriver::VNAMeasurement::fromSparam(Sparam S, std::vector<unsigned int> portMapping)
 {
-    QString s11 = "S"+QString::number(port1)+QString::number(port1);
-    QString s12 = "S"+QString::number(port1)+QString::number(port2);
-    QString s21 = "S"+QString::number(port2)+QString::number(port1);
-    QString s22 = "S"+QString::number(port2)+QString::number(port2);
-    if(measurements.count(s11)) {
-        measurements[s11] = S.get(1,1);
+    if(portMapping.size() == 0) {
+        // set up default port mapping
+        for(unsigned int i=1;i<=S.ports();i++) {
+            portMapping.push_back(i);
+        }
     }
-    if(measurements.count(s12)) {
-        measurements[s12] = S.get(1,2);
-    }
-    if(measurements.count(s21)) {
-        measurements[s21] = S.get(2,1);
-    }
-    if(measurements.count(s22)) {
-        measurements[s22] = S.get(2,2);
+    for(unsigned int i=0;i<portMapping.size();i++) {
+        for(unsigned int j=0;j<portMapping.size();j++) {
+            QString name = "S"+QString::number(i+1)+QString::number(j+1);
+            if(measurements.count(name)) {
+                measurements[name] = S.get(portMapping[i], portMapping[j]);
+            }
+        }
     }
 }
 
