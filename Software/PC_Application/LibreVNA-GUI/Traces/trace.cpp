@@ -335,7 +335,7 @@ void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::v
                 if(!deembedded) {
                     traceSet[measurement]->addData(td, DataType::Frequency);
                 } else {
-                    traceSet[measurement]->addDeembeddingData(td);
+                    traceSet[measurement]->addDeembeddingData(td, d.Z0);
                 }
             }
         }
