@@ -110,7 +110,7 @@ jobs:
       - uses: msys2/setup-msys2@v2
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: '6.2.0'
           arch: 'win64_mingw81'
