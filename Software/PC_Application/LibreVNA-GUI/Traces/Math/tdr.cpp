@@ -330,10 +330,9 @@ void TDRThread::run()
 
         tdr.window.apply(frequencyDomain);
         tdr.unpaddedInputSize = frequencyDomain.size();
-        if(frequencyDomain.size() < tdr.padding) {
-            auto missing = tdr.padding - frequencyDomain.size();
-            frequencyDomain.insert(frequencyDomain.begin(), missing/2, 0);
-            frequencyDomain.insert(frequencyDomain.end(), missing/2, 0);
+        if(tdr.padding > 0) {
+            frequencyDomain.insert(frequencyDomain.begin(), tdr.padding/2, 0);
+            frequencyDomain.insert(frequencyDomain.end(), tdr.padding/2, 0);
         }
         Fft::shift(frequencyDomain, true);
 
