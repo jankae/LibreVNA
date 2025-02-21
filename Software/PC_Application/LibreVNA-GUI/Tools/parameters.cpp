@@ -166,24 +166,21 @@ void Parameters::fromJSON(nlohmann::json j)
     }
 }
 
-Yparam::Yparam(const Sparam &s, Type Z01, Type Z02)
+Yparam::Yparam(const Sparam &S, std::vector<Type> Z0n)
+    : Yparam(Zparam(S, Z0n))
 {
-    // TODO can this be done for any number of ports
-    if(s.ports() != 2) {
-        throw std::runtime_error("Can only create Y parameter from 2 port S parameters");
-    }
-    data = Eigen::MatrixXcd(2,2);
-    // from https://www.rfcafe.com/references/electrical/s-h-y-z.htm
-    auto denom = (conj(Z01)+s.get(1,1)*Z01)*(conj(Z02)+s.get(2,2)*Z02)-s.get(1,2)*s.get(2,1)*Z01*Z02;
-    set(1,1, ((1.0-s.get(1,1))*(conj(Z02)+s.get(2,2)*Z02)+s.get(1,2)*s.get(2,1)*Z02) / denom);
-    set(1,2, -2.0*s.get(1,2)*sqrt(real(Z01)*real(Z02)));
-    set(2,1, -2.0*s.get(2,1)*sqrt(real(Z01)*real(Z02)));
-    set(2,2, ((conj(Z01)+s.get(1,1)*Z01)*(1.0-s.get(2,2))+s.get(1,2)*s.get(2,1)*Z01) / denom);
+
 }
 
-Yparam::Yparam(const Sparam &s, Type Z0)
-    : Yparam(s, Z0, Z0)
+Yparam::Yparam(const Sparam &S, Type Z0)
+    : Yparam(S, std::vector<Type>(S.ports(), Z0))
 {
+
+}
+
+Yparam::Yparam(const Zparam &Z)
+{
+    data = Z.data.inverse();
 }
 
 Zparam::Zparam(const Sparam &S, std::vector<Type> Z0n)
@@ -214,4 +211,9 @@ Zparam::Zparam(const Sparam &S, Type Z0)
     : Zparam(S, std::vector<Type>(S.ports(), Z0))
 {
 
+}
+
+Zparam::Zparam(const Yparam &Y)
+{
+    data = Y.data.inverse();
 }

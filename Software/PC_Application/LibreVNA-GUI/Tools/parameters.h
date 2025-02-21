@@ -31,6 +31,7 @@ public:
 // forward declaration of parameter classes
 class Sparam;
 class Zparam;
+class Yparam;
 class Tparam;
 class ABCDparam;
 
@@ -66,6 +67,7 @@ public:
     Zparam(int num_ports) : Parameters(num_ports){}
     Zparam(const Sparam &S, std::vector<Type> Z0n);
     Zparam(const Sparam &S, Type Z0);
+    Zparam(const Yparam &Y);
 };
 
 class ABCDparam : public Parameters {
@@ -160,8 +162,10 @@ public:
 class Yparam : public Parameters {
 public:
     using Parameters::Parameters;
-    Yparam(const Sparam &s, Type Z01, Type Z02);
-    Yparam(const Sparam &s, Type Z0);
+    Yparam(int num_ports) : Parameters(num_ports){}
+    Yparam(const Sparam &S, std::vector<Type> Z0n);
+    Yparam(const Sparam &S, Type Z0);
+    Yparam(const Zparam &Z);
 };
 
 #endif // TPARAM_H
