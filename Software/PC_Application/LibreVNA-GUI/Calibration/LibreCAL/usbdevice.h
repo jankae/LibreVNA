@@ -3,6 +3,13 @@
 
 #include "Util/usbinbuffer.h"
 
+#include <QtGlobal>
+#ifdef Q_OS_MACOS
+#include <libusb.h>
+#else
+#include <libusb-1.0/libusb.h>
+#endif
+
 #include <QString>
 #include <set>
 #include <functional>
@@ -19,8 +26,8 @@ public:
     USBDevice(QString serial = QString());
     ~USBDevice();
 
-    bool Cmd(QString cmd);
-    QString Query(QString query);
+    bool Cmd(QString cmd, unsigned int timeout = 2000);
+    QString Query(QString query, unsigned int timeout = 2000);
     QString serial() const;
 
     // Returns serial numbers of all connected devices
