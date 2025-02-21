@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.6.2
+
+Mostly bugfixes with only minor new features
+
+- New features:
+  - New SCPI commands:
+    - Temperatures readout
+    - Complete control over manual control via SCPI
+  - Padding option for TDR/DFT to increase resolution
+  - Support for dwell time (adjustable delay before each point in the sweep)
+- Bugfixes:
+  - Fix crash when deleting traces with TDR/DFT math
+  - Spectrum analyzer: Improve tracking generator frequency accuracy
+  - Fix swapped LO and Source unlock LEDs
+  - Reduce amount of mode switches when starting and loading setups (faster loading time)
+  - Use correct units on spectrum analyzer graphs (dBm instead of dB)
+  - Fix Touchstone export file ending
+  - Update eye diagram when changing settings while the trace data does not change
+  - Keep eye diagram trace visible when other trace is deleted
+  - Resolve math references when duplicating "from math" traces
+  - Update LibreCAL API, detect LibreCALs with bad factory coefficients
+  - Fix impedance renormalization (general formulas for parameter conversions)
+  - Fix rare and random phase reversals of S parameter measurements
+
 ## v1.6.1
 
 Mostly bugfixes with only minor new features

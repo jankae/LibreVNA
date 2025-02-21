@@ -443,6 +443,6 @@ unix:LIBS += -L/usr/lib/
 
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
-DEFINES += FW_MAJOR=1 FW_MINOR=6 FW_PATCH=1 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
+DEFINES += FW_MAJOR=1 FW_MINOR=6 FW_PATCH=2 FW_SUFFIX=""#\\"\"-alpha.2\\"\"
 DEFINES -= _UNICODE UNICODE
 win32:DEFINES += QMICROZ_LIBRARY
