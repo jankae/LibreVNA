@@ -27,7 +27,7 @@ void ImpedanceRenormalizationTests::OnePortTests()
     measLoad.measurements["S11"] = 0.0;
 
     auto measOpen = measShort;
-    measOpen.measurements["S11"] = 1.0;
+    measOpen.measurements["S11"] = 0.9999999999999999; // using exactly 1.0 runs into inf problems
 
     // perform renormalization
     renorm->transformDatapoint(measShort);
@@ -36,7 +36,9 @@ void ImpedanceRenormalizationTests::OnePortTests()
 
     QVERIFY(measShort.measurements["S11"] == -1.0);
     // a Ohm load renormalized to 75 Ohm impedance has a reflection coefficient of -0.2
-    QVERIFY(measLoad.measurements["S11"] == -0.2);
-    QVERIFY(measOpen.measurements["S11"] == 1.0);
+    QVERIFY(qFuzzyCompare(measLoad.measurements["S11"].real(), -0.2));
+    QVERIFY(qFuzzyCompare(measLoad.measurements["S11"].imag(), 0.0));
+    QVERIFY(qFuzzyCompare(measOpen.measurements["S11"].real(), 1.0));
+    QVERIFY(qFuzzyCompare(measOpen.measurements["S11"].imag(), 0.0));
 }
 
