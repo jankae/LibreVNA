@@ -455,6 +455,10 @@ bool Trace::resolveMathSourceHashes()
 
 void Trace::updateMathTracePoints()
 {
+    if(paused) {
+        // do not update when paused
+        return;
+    }
     if(!mathSourceTraces.size()) {
         return;
     }
