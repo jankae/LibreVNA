@@ -77,6 +77,7 @@ Application
 /LibreVNA-Test/LibreVNA-Test
 /LibreVNA-GUI/users*appdatalocaltemp*
 /LibreVNA/build
+LibreVNA-GUI/build
 
 # qmake.stash
 LibreVNA-GUI/.qmake.stash
