@@ -166,7 +166,7 @@ public:
 
     const QString &getMathFormula() const;
     void setMathFormula(const QString &newMathFormula);
-    bool mathFormularValid() const;
+    QString getMathFormulaError() const;
 
     // When loading setups, some traces may be used as a math source before they are loaded.
     // If that happens, their hashes are added to a list. Call this function for every new trace

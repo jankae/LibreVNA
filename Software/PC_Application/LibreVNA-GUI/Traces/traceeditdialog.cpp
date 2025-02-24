@@ -56,7 +56,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     connect(ui->bMath, &QPushButton::clicked, [&](bool math){
        if(math) {
            ui->stack->setCurrentIndex(3);
-           ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+           ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(updateMathFormulaStatus());
            ui->impedance->setEnabled(true);
        }
     });
@@ -146,10 +146,11 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     connect(ui->csvImport, &CSVImport::filenameChanged, updateCSVFileStatus);
 
     // Math source configuration
+    ui->lMathFormula->setText(t.getMathFormula());
     if(t.getModel()) {
         connect(ui->lMathFormula, &QLineEdit::textChanged, [&](){
             t.setMathFormula(ui->lMathFormula->text());
-            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(updateMathFormulaStatus());
         });
 
         ui->mathTraceTable->setColumnCount(2);
@@ -212,7 +213,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
                 t.addMathSource(trace, item->text());
             }
             ui->mathTraceTable->blockSignals(false);
-            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(updateMathFormulaStatus());
         });
     }
 
@@ -379,6 +380,21 @@ void TraceEditDialog::okClicked()
         }
     }
     delete this;
+}
+
+bool TraceEditDialog::updateMathFormulaStatus()
+{
+    auto error = trace.getMathFormulaError();
+    if(error.isEmpty()) {
+        // all good
+        ui->lMathFormulaStatus->setText("Math formula valid");
+        ui->lMathFormulaStatus->setStyleSheet("");
+        return true;
+    } else {
+        ui->lMathFormulaStatus->setText(error);
+        ui->lMathFormulaStatus->setStyleSheet("QLabel { color : red; }");
+        return false;
+    }
 }
 
 MathModel::MathModel(Trace &t, QObject *parent)

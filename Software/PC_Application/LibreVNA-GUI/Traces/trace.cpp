@@ -408,10 +408,10 @@ void Trace::setMathFormula(const QString &newMathFormula)
     scheduleMathCalculation(0, data.size());
 }
 
-bool Trace::mathFormularValid() const
+QString Trace::getMathFormulaError() const
 {
     if(mathFormula.isEmpty()) {
-        return false;
+        return "Math formula must not be empty";
     }
     try {
         ParserX parser(pckCOMMON | pckUNIT | pckCOMPLEX);
@@ -428,15 +428,15 @@ bool Trace::mathFormularValid() const
                 }
             }
             if(!found) {
-                return false;
+                return "Unknown variable: "+varName;
             }
         }
     } catch (const ParserError &e) {
         // parser error occurred
-        return false;
+        return "Parsing failed: " + QString::fromStdString(e.GetMsg());
     }
     // all variables used in the expression are set as math sources
-    return true;
+    return "";
 }
 
 bool Trace::resolveMathSourceHashes()
