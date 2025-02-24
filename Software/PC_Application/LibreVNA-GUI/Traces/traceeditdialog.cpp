@@ -147,6 +147,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 
     // Math source configuration
     if(t.getModel()) {
+        ui->lMathFormula->setText(t.getMathFormula());
         connect(ui->lMathFormula, &QLineEdit::textChanged, [&](){
             t.setMathFormula(ui->lMathFormula->text());
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(TraceEditDialog::validate());
