@@ -47,6 +47,7 @@ public:
 
 private slots:
     void okClicked();
+    bool validate();
 
 private:
     Ui::TraceEditDialog *ui;

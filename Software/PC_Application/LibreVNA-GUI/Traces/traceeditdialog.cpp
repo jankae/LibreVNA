@@ -149,7 +149,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     if(t.getModel()) {
         connect(ui->lMathFormula, &QLineEdit::textChanged, [&](){
             t.setMathFormula(ui->lMathFormula->text());
-            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(TraceEditDialog::validate());
         });
 
         ui->mathTraceTable->setColumnCount(2);
@@ -212,7 +212,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
                 t.addMathSource(trace, item->text());
             }
             ui->mathTraceTable->blockSignals(false);
-            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(t.mathFormularValid());
+            ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(TraceEditDialog::validate());
         });
     }
 
@@ -334,6 +334,14 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
 TraceEditDialog::~TraceEditDialog()
 {
     delete ui;
+}
+
+bool TraceEditDialog::validate()
+{
+    auto valid = trace.mathFormularValid();
+    auto color = valid ? "background-color:lightgreen" : "background-color:lightcoral";
+    ui->lMathFormula->setStyleSheet(color);
+    return valid;
 }
 
 void TraceEditDialog::okClicked()
