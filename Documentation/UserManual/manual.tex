@@ -848,12 +848,12 @@ The \vna{} is a \SI{50}{\ohm} system. S parameter measurements are reported with
 \section{Signal Generator}
 In the signal generator mode, measurements are stopped and the \vna{} only outputs a CW signal.
 \screenshot{0.8}{Signalgenerator.png}
-The hardware is not optimized for signal generation which means that the output level is not very accurate, especially at higher frequencies (also see section~\ref{amplitude:calibration}). Also, the signal will contain higher levels of harmonics than one would normally expect from a signal generator.
+The hardware is not optimized for signal generation which means that the output level is not very accurate, especially at higher frequencies (see also section~\ref{amplitude:calibration}). Also, the signal will contain higher levels of harmonics than one would normally expect from a signal generator.
 \section{Spectrum Analyzer}
 Although the \vna{} hardware is not designed to be used as a spectrum analyzer, the general hardware architecture of a spectrum analyzer is similar enough to that of a VNA to implement basic two-channel spectrum measurements. This is in no way on the same performance level as a dedicated spectrum analyzer but for simple measurements it might suffice if no other equipment is available. The main differences to a real spectrum analyzer are:
 \begin{itemize}
 \item \textbf{No input attenuator or pre-amplifier:} This means that the measurement range is essentially fixed to approximately \SI{-110}{\dBm} to \SI{-10}{\dBm}.
-\item \textbf{No amplitude calibration:} The displayed signal level is not very accurate, especially at higher frequencies (also see section~\ref{amplitude:calibration}).
+\item \textbf{No amplitude calibration:} The displayed signal level is not very accurate, especially at higher frequencies (see also section~\ref{amplitude:calibration}).
 \item \textbf{No image rejection filters:} This is probably the most severe limitation, because it means that for every real signal several other signals will show up in the spectrum that are not actually present at the input. Most of the images can be filtered out by signal identification but some will remain (at lower amplitude) in the reported data.
 \item \textbf{Highest resolution bandwidth is quite low:} The sweep speed is too slow to cover the complete frequency range of \SI{1}{\mega\hertz} to \SI{6}{\giga\hertz} in an acceptable time.
 \end{itemize}
