@@ -1115,8 +1115,20 @@ For every axis, the displayed range can either be determined automatically or ma
 \subsubsection{Limit lines}
 The XY-plot also supports custom limit lines:
 \screenshot{1.0}{GraphXYplotLimit.png}
-Limit lines can be added and removed in the bottom part of the Axis Setup Dialog. Each line is a list of manually defined points, a selectable color and can be configured either as a high limit, low limit or just as a constant line without any limit checking:
+Limit lines can be added, removed, imported and exported in the bottom part of the Axis Setup Dialog. Creating a new Limit line by pressing the + button or doubleclicking on an existing one will open up the Edit line window.
 \screenshot{1.0}{GraphXYplotLine.png}
+On the left side, you will find limit line parameters and on the right side, you need to plot your limit line by adding points
+\begin{itemize}
+\item \textbf{Name:} The name of the limit
+\item \textbf{Color:} The color of the limit as it will appear on the graph
+\item \textbf{Axis:} The X-Axis you want to apply the limit to: Primary or Secondary
+\item \textbf{Pass/Fail:} The limit behavior:
+\begin{itemize}
+\item \textbf{Dont Care:} Visual line only
+\item \textbf{High Limit:} Fails when plot goes above the line
+\item \textbf{Low Limit:} Fails when the plot goes below the line
+\end{itemize}
+\end{itemize}
 
 \subsection{Waterfall}
 \screenshot{1.0}{GraphWaterfall.png}
