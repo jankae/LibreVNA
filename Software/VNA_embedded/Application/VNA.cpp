@@ -452,6 +452,10 @@ void VNA::SweepHalted() {
 		}
 
 		if (pointCnt == 0) {
+			last_LO2 = HW::getIF1() - HW::getIF2();
+			Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
+			Si5351.ResetPLL(Si5351C::PLL::B);
+			Si5351.WaitForLock(Si5351C::PLL::B, 10);
 			HAL_Delay(2);
 		}
 
