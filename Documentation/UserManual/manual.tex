@@ -402,7 +402,16 @@ Every trace can receive its data from one of three source:
 
 \paragraph{Live Capture}
 \screenshot{0.5}{LiveCapture.png}
-The trace is constantly updated by the data received from a connected and sweeping LibreVNA. Available settings are the S parameter from which the data is updated and a simple Max Hold and Min Hold function (based on signal magnitude).
+The trace is constantly updated by the data received from a connected and sweeping LibreVNA. The available Live Capture parameters are:
+\begin{itemize}
+\item \textbf{Type:} Live Captures can be 3 different types:
+\begin{itemize}
+\item \textbf{Overwrite:} The trace data is overwritten each sweep
+\item \textbf{Max hold:} The trace data with the highest signal magnitude is persisted
+\item \textbf{Min hold:} The trace data with the lowest signal magnitude is persisted
+\end{itemize}
+\item \textbf{Parameter:} The S-Parameter you want traced
+\end{itemize}
 
 \paragraph{From File}
 \screenshot{0.5}{FromFile.png}
