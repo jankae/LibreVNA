@@ -1971,35 +1971,35 @@ Calibration::Point Calibration::Point::interpolate(const Calibration::Point &to,
     ret.frequency = frequency * (1.0-alpha) + to.frequency * alpha;
     ret.D.resize(D.size(), 0.0);
     for(unsigned int i=0;i<D.size();i++) {
-        ret.D[i] = D[i] * (1.0-alpha) + to.D[i] * alpha;
+        ret.D[i] = Util::interpolateMagPhase(D[i], to.D[i], alpha);
     }
     ret.R.resize(R.size(), 0.0);
     for(unsigned int i=0;i<R.size();i++) {
-        ret.R[i] = R[i] * (1.0-alpha) + to.R[i] * alpha;
+        ret.R[i] = Util::interpolateMagPhase(R[i], to.R[i], alpha);
     }
     ret.S.resize(S.size(), 0.0);
     for(unsigned int i=0;i<S.size();i++) {
-        ret.S[i] = S[i] * (1.0-alpha) + to.S[i] * alpha;
+        ret.S[i] = Util::interpolateMagPhase(S[i], to.S[i], alpha);
     }
     ret.T.resize(T.size());
     for(unsigned int i=0;i<T.size();i++) {
         ret.T[i].resize(T[i].size(), 0.0);
         for(unsigned int j=0;j<T[i].size();j++) {
-            ret.T[i][j] = T[i][j] * (1.0 - alpha) + to.T[i][j] * alpha;
+            ret.T[i][j] = Util::interpolateMagPhase(T[i][j], to.T[i][j], alpha);
         }
     }
     ret.L.resize(L.size());
     for(unsigned int i=0;i<L.size();i++) {
         ret.L[i].resize(L[i].size(), 0.0);
         for(unsigned int j=0;j<L[i].size();j++) {
-            ret.L[i][j] = L[i][j] * (1.0 - alpha) + to.L[i][j] * alpha;
+            ret.L[i][j] = Util::interpolateMagPhase(L[i][j], to.L[i][j], alpha);
         }
     }
     ret.I.resize(I.size());
     for(unsigned int i=0;i<I.size();i++) {
         ret.I[i].resize(I[i].size(), 0.0);
         for(unsigned int j=0;j<I[i].size();j++) {
-            ret.I[i][j] = I[i][j] * (1.0 - alpha) + to.I[i][j] * alpha;
+            ret.I[i][j] = Util::interpolateMagPhase(I[i][j], to.I[i][j], alpha);
         }
     }
     return ret;

@@ -117,6 +117,9 @@ namespace Util {
         }
         return ret;
     }
+
+    std::complex<double> interpolateMagPhase(const std::complex<double> &from, const std::complex<double> &to, double alpha);
+
     void unwrapPhase(std::vector<double> &phase, unsigned int start_index = 0);
 
     // input values are Y coordinates, assumes evenly spaced linear X values from 0 to input.size() - 1

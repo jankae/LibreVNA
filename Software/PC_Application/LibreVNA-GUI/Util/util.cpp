@@ -237,3 +237,21 @@ bool Util::firmwareEqualOrHigher(QString firmware, QString compare)
         return true;
     }
 }
+
+std::complex<double> Util::interpolateMagPhase(const std::complex<double> &from, const std::complex<double> &to, double alpha)
+{
+    auto magFrom = abs(from);
+    auto magTo = abs(to);
+    auto phaseFrom = arg(from);
+    auto phaseTo = arg(to);
+    // unwrap phase
+    if(phaseTo - phaseFrom > M_PI) {
+        phaseTo -= 2*M_PI;
+    } else if(phaseTo - phaseFrom < -M_PI) {
+        phaseTo += 2*M_PI;
+    }
+    auto magInterp = magFrom * (1.0 - alpha) + magTo * alpha;
+    auto phaseInterp = phaseFrom * (1.0 - alpha) + phaseTo * alpha;
+
+    return std::polar<double>(magInterp, phaseInterp);
+}
