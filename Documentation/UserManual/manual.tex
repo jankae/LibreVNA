@@ -1465,7 +1465,7 @@ If you've already done a Receiver Calibration, it's possible to infer the Source
 Select \menu[,]{Device,Receiver Calibration}. The Receiver Calibration works almost identically to the Source Calibration. The only difference is in step 3:
 \begin{enumerate}
 \setcounter{enumi}{2}
-\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table and apply a signal with known level at the selected frequency and port. The signal level should be in the range of \SI{-40}{\dBm} to \SI{-10}{\dBm}. Higher signal levels might already compress in the receiver while lower levels unnecessarily increase calibration errors due to noise. The \vna{} tunes its receiver to the selected frequency and measures the amplitude. Apply the signal for at least \SI{2}{\second} and enter its actual amplitude into the selected cell while the signal is still active.
+\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table and apply a signal with known level at the selected frequency and port. The signal level should be in the range of \SI{-40}{\dBm} to \SI{-10}{\dBm}. Higher signal levels might already compress in the receiver while lower levels unnecessarily increase calibration errors due to noise. The \vna{} tunes its receiver to the selected frequency and measures the applied signal's amplitude. Enter the actual amplitude into the selected cell while the signal is still being applied. The signal should be applied for a minimum of \SI{2}{\second} to ensure an accurate measurement.
 \end{enumerate}
 \section{Troubleshooting}
 \label{troubleshooting}
