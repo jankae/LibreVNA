@@ -417,8 +417,11 @@ void TracePlot::finishContextMenu()
     contextmenu->addAction(removeTile);
     connect(removeTile, &QAction::triggered, [=]() {
         markedForDeletion = true;
-        QTimer::singleShot(0, [=](){
-            parentTile->closeTile();
+        // 'this' object will be deleted when returning function but the following lambda
+        // might be executed after that and we still need to know which tile to close.
+        // Capture parentTile explicitly by value
+        QTimer::singleShot(0, [p=this->parentTile](){
+            p->closeTile();
         });
     });
 
