@@ -1222,6 +1222,7 @@ bool VNA::SpanMatchCal()
     SetStartFreq(cal.getMinFreq());
     SetStopFreq(cal.getMaxFreq());
     SetPoints(cal.getNumPoints());
+    UpdateCalWidget();
     return true;
 }
 
