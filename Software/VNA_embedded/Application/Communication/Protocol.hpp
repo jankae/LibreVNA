@@ -320,6 +320,38 @@ using ManualControl = struct _manualControl {
 		    uint32_t Samples;
 		    uint8_t WindowType :2;
 		} V1;
+        struct {
+            uint64_t SourceFrequency;
+
+            uint8_t SourceCE :1;
+            uint8_t SourceRFEN :1;
+            uint8_t SourceModEn :1;
+            uint8_t SourceAmp1En :1;
+            uint8_t SourceAmp2En :1;
+            uint8_t SourceBandSel :2;
+            uint8_t DACEn :1;
+
+            uint16_t SourceFilter :4;
+            uint16_t SourceVariableAttenuator :10;
+            uint16_t SourcePortSel :2;
+
+            uint8_t SourceStepAttenuator :5;
+
+            uint8_t LOCE :1;
+            uint8_t LORFEN :1;
+            uint8_t LOAmplifierEN :1;
+
+            uint8_t LOMode :2;
+            uint8_t padding1 :6;
+
+            uint64_t LOFrequency;
+
+            // DAC
+            uint32_t DACFreqA;
+            uint32_t DACFreqB;
+            uint16_t DACAmpA;
+            uint16_t DACAmpB;
+        } VFD;
 		struct {
 		    // Source
 		    uint8_t SourceCE :1;

@@ -3,6 +3,7 @@
 #include "manualcontroldialogV1.h"
 #include "manualcontroldialogvff.h"
 #include "manualcontroldialogvfe.h"
+#include "manualcontroldialogvfd.h"
 #include "deviceconfigurationdialogv1.h"
 #include "deviceconfigurationdialogvff.h"
 #include "deviceconfigurationdialogvfe.h"
@@ -108,6 +109,13 @@ public:
     }
 };
 
+static_assert(offsetof(Protocol::ManualControl, VFD.SourceFrequency) == 0, "Error");
+static_assert(offsetof(Protocol::ManualControl, VFD.LOFrequency) == 13, "Error");
+static_assert(offsetof(Protocol::ManualControl, VFD.DACFreqA) == 21, "Error");
+static_assert(offsetof(Protocol::ManualControl, VFD.DACFreqB) == 25, "Error");
+static_assert(offsetof(Protocol::ManualControl, VFD.DACAmpA) == 29, "Error");
+static_assert(offsetof(Protocol::ManualControl, VFD.DACAmpB) == 31, "Error");
+
 LibreVNADriver::LibreVNADriver()
 {
     connected = false;
@@ -126,6 +134,9 @@ LibreVNADriver::LibreVNADriver()
         switch(hardwareVersion) {
         case 1:
             manualControlDialog = new ManualControlDialogV1(*this);
+            break;
+        case 0xFD:
+            manualControlDialog = new ManualControlDialogVFD(*this);
             break;
         case 0xFE:
             manualControlDialog = new ManualControlDialogVFE(*this);
