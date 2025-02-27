@@ -607,6 +607,7 @@ void LibreCALDialog::startCalibration()
     connect(cal, &Calibration::measurementsUpdated, this, startNextCalibrationStep, Qt::QueuedConnection);
     connect(cal, &Calibration::measurementsAborted, this, [=](){
         enableUI();
+        ui->lCalibrationStatus->setText("Ready to start");
     });
 
     startNextCalibrationStep();
