@@ -191,9 +191,9 @@ The implemented USB device is limited to USB 2.0 Fullspeed and data transmission
 \subsection{External Power}
 Input jack for external DC power (\SI{5}{\volt}, \SI{1.5}{\ampere}, positive center pin). If a power source is connected, no current is drawn from the USB port anymore.
 \subsection{RF ports}
-RF connector to connect the DUT. Both ports are identical and the device architecture support full S-Parameter measurements (S11, S21, S12 and S22).
+RF connector to connect the DUT. Both ports are identical and the device architecture supports full S-Parameter measurements (S11, S21, S12 and S22).
 \begin{important}
-The RF ports have no input protection, do not apply a signal with more than +\SI{10}{\dBm} of power.
+The RF ports have no input protection, so do not apply a signal with more than +\SI{10}{\dBm} of power.
 \end{important}
 \subsection{LEDs}
 Ten LEDs indicate the status:
@@ -219,7 +219,7 @@ Due to the high impedance input, the external input may detect a valid signal wh
 
 \section{Getting started}
 \begin{enumerate}
-\item Connect the \vna{} to a computer using the USB port. After a couple of seconds, only the "Power" and "Ready" LEDs should stay on. If the "Ready" LED does not turn on or the "Booting" LED indicates an error code, there is a problem und the device will not function properly. See section~\ref{troubleshooting} for possible solutions.
+\item Connect the \vna{} to a computer using the USB port. After a couple of seconds, only the "Power" and "Ready" LEDs should stay on. If the "Ready" LED does not turn on or the "Booting" LED indicates an error code, there is a problem and the device will not function properly. See section~\ref{troubleshooting} for possible solutions.
 \item Start the PC application to connect to the \vna{}. The window should look similar to this:
 \makebox[\textwidth][c]{
 \includegraphics[width=\textwidth]{Screenshots/ApplicationOverview.png}
@@ -402,7 +402,16 @@ Every trace can receive its data from one of three source:
 
 \paragraph{Live Capture}
 \screenshot{0.5}{LiveCapture.png}
-The trace is constantly updated by the data received from a connected and sweeping LibreVNA. Available settings are the S parameter from which the data is updated and a simple Max Hold and Min Hold function (based on signal magnitude).
+The trace is constantly updated by the data received from a connected and sweeping LibreVNA. The available Live Capture parameters are:
+\begin{itemize}
+\item \textbf{Type:} Live Captures can be 3 different types:
+\begin{itemize}
+\item \textbf{Overwrite:} The trace data is overwritten each sweep
+\item \textbf{Max hold:} The trace data with the highest signal magnitude is persisted
+\item \textbf{Min hold:} The trace data with the lowest signal magnitude is persisted
+\end{itemize}
+\item \textbf{Parameter:} The S-Parameter you want traced
+\end{itemize}
 
 \paragraph{From File}
 \screenshot{0.5}{FromFile.png}
@@ -477,7 +486,7 @@ Adjustable settings:
 \item \textbf{Bandpass:} Input samples may use any frequency and span. Only an impulse response can be calculated as the DC point is unknown.
 \end{itemize}
 \item \textbf{Compute Step Response:} Enable calculation of step response as well (only available in lowpass mode)
-\item \textbf{DC point:} Chose between extrapolating the DC point from frequency data or specifying it manually (only available in lowpass mode)
+\item \textbf{DC point:} Choose between extrapolating the DC point from frequency data or specifying it manually (only available in lowpass mode)
 \item \textbf{Window:} A window is applied before performing the transformation. Available windows are:
 \begin{itemize}
 \item Rectangular
@@ -750,7 +759,7 @@ Performing a calibration, especially when multiple ports are used, can require a
 
 To start the electronic calibration, select \menu[,]{Calibration,Electronic Calibration} or \menu[,]{Calibration,Calibration Measurements,Electronic Calibration}. There is no need to create a calibration kit first, as the electronic calibration will use the calibration coefficients stored in the LibreCAL.
 \begin{important}
-The electronic calibration will delete and replace any currently active calibration and also the calibration kit standards. Please store any unsaved calibration data before starting the electronic calibration.
+The electronic calibration will delete and replace any currently active calibration and calibration kit. Please store any unsaved calibration data before starting the electronic calibration.
 \end{important}
 
 \screenshot{0.6}{eCal.png}
@@ -762,8 +771,8 @@ Steps required to perform the electronic calibration:
 \item Start the electronic calibration dialog
 \item Select the correct LibreCAL device and the coefficients:
 \begin{itemize}
-\item \textbf{Device:} Serialnumber of the LibreCAL. Usually, only one should be connected and the serialnumber will be automatically selected when the dialog is first opened
-\item \textbf{Coefficients:} Select the coefficient set to be used. The LibreCAL can store multiple sets of coefficients. Please the manual\footnote{\url{https://github.com/jankae/LibreCAL/blob/main/Documentation/manual.pdf}} of the LibreCAL for detailed information on coefficient sets.
+\item \textbf{Device:} The serial number of the LibreCAL. Usually, only one should be connected and the serial number will be automatically selected when the dialog is first opened
+\item \textbf{Coefficients:} Select the coefficient set to be used. The LibreCAL can store multiple sets of coefficients. Refer to the LibreCAL manual\footnote{\url{https://github.com/jankae/LibreCAL/blob/main/Documentation/manual.pdf}} for detailed information on coefficient sets.
 \end{itemize}
 \item Check and adjust the port assignments. Ports between the \vna{} and LibreCAL can be connected in any order. Match the ports in the dialog to your physical setup.
 \item Press the "Start" button. This will perform the following steps:
@@ -771,7 +780,7 @@ Steps required to perform the electronic calibration:
 \item Fill the calibration kit based on the coefficients extracted from the LibreCAL
 \item Take an open, short and load measurement for every port of the \vna{}
 \item Take a through measurement for any combination of ports
-\item Apply the SOLT calibration. For the FACTORY coefficient set, the reference plane will be at the ports of the LibreCAL´
+\item Apply the SOLT calibration. For the FACTORY coefficient set, the reference plane will be at the ports of the LibreCAL
 \end{itemize}
 \end{enumerate}
 
@@ -835,7 +844,7 @@ Any combination of these components can be dragged into the signal path between 
 
 Further settings:
 \begin{itemize}
-\item \textbf{Operation:} Chose between embedding and de-embedding
+\item \textbf{Operation:} Choose between embedding and de-embedding
 \item \textbf{Port:} Port of the \vna{}
 \end{itemize}
 If a matching network is required at multiple ports, add this option once for each port.
@@ -848,17 +857,17 @@ The \vna{} is a \SI{50}{\ohm} system. S parameter measurements are reported with
 \section{Signal Generator}
 In the signal generator mode, measurements are stopped and the \vna{} only outputs a CW signal.
 \screenshot{0.8}{Signalgenerator.png}
-The hardware is not optimized for signal generation which means that the output level is not very accurate, especially at higher frequencies (also see section~\ref{amplitude:calibration}). Also, the signal will contain higher levels of harmonics than one would normally expect from a signal generator.
+The hardware is not optimized for signal generation which means that the output level is not very accurate, especially at higher frequencies (see also section~\ref{amplitude:calibration}). Also, the signal will contain higher levels of harmonics than one would normally expect from a signal generator.
 \section{Spectrum Analyzer}
 Although the \vna{} hardware is not designed to be used as a spectrum analyzer, the general hardware architecture of a spectrum analyzer is similar enough to that of a VNA to implement basic two-channel spectrum measurements. This is in no way on the same performance level as a dedicated spectrum analyzer but for simple measurements it might suffice if no other equipment is available. The main differences to a real spectrum analyzer are:
 \begin{itemize}
 \item \textbf{No input attenuator or pre-amplifier:} This means that the measurement range is essentially fixed to approximately \SI{-110}{\dBm} to \SI{-10}{\dBm}.
-\item \textbf{No amplitude calibration:} The displayed signal level is not very accurate, especially at higher frequencies (also see section~\ref{amplitude:calibration}).
+\item \textbf{No amplitude calibration:} The displayed signal level is not very accurate, especially at higher frequencies (see also section~\ref{amplitude:calibration}).
 \item \textbf{No image rejection filters:} This is probably the most severe limitation, because it means that for every real signal several other signals will show up in the spectrum that are not actually present at the input. Most of the images can be filtered out by signal identification but some will remain (at lower amplitude) in the reported data.
 \item \textbf{Highest resolution bandwidth is quite low:} The sweep speed is too slow to cover the complete frequency range of \SI{1}{\mega\hertz} to \SI{6}{\giga\hertz} in an acceptable time.
 \end{itemize}
 
-Most control elements (Frequencies, Span, Traces, Marker, ...) are indentical to the vector network analyzer mode.
+Most control elements (Frequencies, Span, Traces, Marker, ...) are identical to the vector network analyzer mode.
 \subsection{Acquisition Toolbar}
 \screenshot{0.7}{ToolbarSAAcquisition.png}
 \begin{itemize}
@@ -902,7 +911,7 @@ A tracking generator at either port is available in the spectum analyzer. If the
 DFT acquisition is not available when the tracking generator is active. Also, due to hardware limitations, the tracking generator is unable to reach every frequency exactly. For narrow spans this could result in "drops" in the spectrum where the signal of the tracking generator is outside of the RBW filters passband. The frequency resolution is frequency dependent. A warning message appears if this could be a problem with the selected span and stop frequency.
 
 \section{Graphs}
-In VNA and spectrum analyzer mode, the trace data in displayed on graphs. Several different graph types are available and most can be customized as well.
+In VNA and spectrum analyzer mode, the trace data is displayed on graphs. Several different graph types are available and most can be customized as well.
 \subsection{General graph settings}
 Common settings for the behavior and appearance of all graphs can be found in \menu[,]{Window,Preferences,Graphs}:
 \screenshot{1.0}{GraphSettings.png}
@@ -920,20 +929,20 @@ Graphs use an underlying tile system. Each tile can either:
 \end{itemize}
 For split tiles, the position of the split can be adjusted manually by using the cursor.
 
-To create new graphs, an empty tile must be available. If all tiles are showing graphs (the default when starting the GUI), an empty one must be created first. This can be done by right-clicking a graph and either selecting \menu{close} to remove it from its tile or selecting \menu{Add tile...} and chosing in which direction the new tile should be added.
+To create new graphs, an empty tile must be available. If all tiles are showing graphs (the default when starting the GUI), an empty one must be created first. This can be done by right-clicking a graph and either selecting \menu{close} to remove it from its tile or selecting \menu{Add tile...} and choosing in which direction the new tile should be added.
 
 From the empty tile, all graph types are available:
 \screenshot{0.5}{GraphEmptyTile.png}
 
 \begin{information}
-For a quick enlarged view of a graph, double-click it. The graph will take up the whole tile area. Another double-click returns the graph to its original size.
+For a quick enlarged view of a graph, double-click it. The graph will take up the whole trace display area. Another double-click returns the graph to its original size.
 \end{information}
 
 \subsection{Adding and removing traces}
 When a new graph is created, it is empty by default and traces must be added to show up. There are two ways to add traces:
 \begin{itemize}
 \item Drag-and-drop traces from the trace list onto the graph
-\item Right-click a graph and select the trace to add. Traces can also be removed be deselecting them in the context menu
+\item Right-click on the graph and select the trace to add. Traces can also be removed be deselecting them in the context menu
 \end{itemize}
 
 \subsection{Smithchart}
@@ -944,21 +953,22 @@ There are a few smithchart specific settings in the setup dialog:
 \screenshot{1.0}{GraphSmithchartSetup.png}
 The left side of the dialog contains settings on how data is displayed:
 \begin{itemize}
-\item \textbf{Display mode (Frequency)} There are three options on how much of a trace is visible in the frequency range:
+\item \textbf{Display mode (Frequency):} There are three options on how much of a trace is visible in the frequency range:
 \begin{itemize}
-\item \textbf{Limit to current span} Shows all traces only in the frequency range of the currently selected span, even when the trace contains data outside of the span
-\item \textbf{Show complete traces} Always shows the complete trace, regardless of the selected span
-\item \textbf{Manual frequency range} Allows selection of an abitrary frequency range to display
+\item \textbf{Limit to current span:} Shows all traces only in the frequency range of the currently selected span, even when the trace contains data outside of the span
+\item \textbf{Show complete traces:} Always shows the complete trace, regardless of the selected span
+\item \textbf{Manual frequency range:} Allows selection of an abitrary frequency range to display
 \end{itemize}
-\item \textbf{Display mode (Impedance)} There are two options on how much of a trace impedance is visible:
+\item \textbf{Display mode (Impedance):} There are two options on how much of a trace impedance is visible:
 \begin{itemize}
-\item \textbf{Limit to visible are} Clips the trace data at the edge of the smithchart circle
-\item \textbf{Show complete traces} Always shows the complete trace, even when the trace data falls outside of the smithchart circle
+\item \textbf{Limit to visible are:} Clips the trace data at the edge of the smithchart circle
+\item \textbf{Show complete traces:} Always shows the complete trace, even when the trace data falls outside of the smithchart circle
 \end{itemize}
-\item \textbf{Zoom} Allows to change the center position and zoom factor of the smithchart. Zooming is also possible by using the mousewheel on the graph
+\item \textbf{Zoom:} Allows to change the center position and zoom factor of the smithchart. Zooming is also possible by using the mousewheel on the graph
 \end{itemize}
 
-The right side of the dialog allows the user to add lines of constant values to the smithchart for a quick visual comparisation of trace data to these values. Four types of lines are available:
+The right side of the dialog allows the user to add lines of constant values to the smithchart for a quick visual comparison of trace data to these values. 
+\textbf{Constant Lines:} Available types are:
 \begin{itemize}
 \item Constant VSWR
 \item Constant resistance
@@ -971,9 +981,9 @@ For each line, the color and constant value must be manually selected.
 \screenshot{1.0}{GraphXYplot.png}
 The XY-plot is the most versatile graph. It can display every trace type if configured correctly. The XY-plot consists of up to three axes:
 \begin{itemize}
-\item \textbf{X-axis} Always present
-\item \textbf{Primary Y-axis} Optional, on the left side of the graph
-\item \textbf{Secondary Y-axis} Optional, on the right side of the graph
+\item \textbf{X-axis:} Always present
+\item \textbf{Primary Y-axis:} Optional, on the left side of the graph
+\item \textbf{Secondary Y-axis:} Optional, on the right side of the graph
 \end{itemize}
 Different types can be used for the X-axis and the selected type must match the output domain of all displayed traces. Available types are:
 \begin{center}
@@ -1114,12 +1124,24 @@ For every axis, the displayed range can either be determined automatically or ma
 \subsubsection{Limit lines}
 The XY-plot also supports custom limit lines:
 \screenshot{1.0}{GraphXYplotLimit.png}
-Limit lines can be added and removed in the bottom part of the Axis Setup Dialog. Each line is a list of manually defined points, a selectable color and can be configured either as a high limit, low limit or just as a constant line without any limit checking:
+Limit lines can be added, removed, imported and exported in the bottom part of the Axis Setup Dialog. Creating a new Limit line by pressing the + button or doubleclicking on an existing one will open up the Edit line window.
 \screenshot{1.0}{GraphXYplotLine.png}
+On the left side, you will find limit line parameters and on the right side, you need to plot your limit line by adding points
+\begin{itemize}
+\item \textbf{Name:} The name of the limit
+\item \textbf{Color:} The color of the limit as it will appear on the graph
+\item \textbf{Axis:} The X-Axis you want to apply the limit to: Primary or Secondary
+\item \textbf{Pass/Fail:} The limit behavior:
+\begin{itemize}
+\item \textbf{Dont Care:} Visual line only
+\item \textbf{High Limit:} Fails when plot goes above the line
+\item \textbf{Low Limit:} Fails when the plot goes below the line
+\end{itemize}
+\end{itemize}
 
 \subsection{Waterfall}
 \screenshot{1.0}{GraphWaterfall.png}
-The waterfall graph can display the amplitude trend of a single trace over multiple sweeps. Its specific settings are mostly a subset of the XY-plot, the Y-axis configuration is almost identical.
+The waterfall graph can display the amplitude trend of a single trace over multiple sweeps. Its specific settings are mostly a subset of the XY-plot and the Y-axis configuration is almost identical.
 \screenshot{0.8}{GraphWaterfallSetup.png}
 Other settings include:
 \begin{itemize}
@@ -1127,14 +1149,14 @@ Other settings include:
 \item \textbf{Pixels per line:} Provides a simple vertical zoom feature
 \item \textbf{Mode:} Determines whether sweep data that doesn't fit onto the graph anymore is kept or deleted (a resize of the graph would reveal kept data)
 \item \textbf{Number of sweeps:} The maximum number of sweeps kept if mode is set to "Keep offscreen data"
-\item \textbf{Alignment:} The waterfall can be aligned to a XY-plot of equal size and peaks in the trace data of both plots will line up.
+\item \textbf{Alignment:} The waterfall can be aligned to an XY-plot of equal size, so that trace peaks of both plots line up
 \begin{important}
 Both plots are still completely independent of each other. For the alignment to work, they must have the same width and one must be placed exactly below the other.
 \end{important}
 \end{itemize}
 \subsection{Polar Chart}
 \screenshot{0.6}{GraphPolarplot.png}
-The Polar Chart looks similar to the smithchart but doesn't perform the transformation from S-paramter to impedance. Furthermore, through measurements can be displayed as well. The available settings are identical to the smithchart but the Polar Chart does not support adding custom constant lines:
+The Polar Chart looks similar to the smithchart but doesn't perform the transformation from S-parameter to impedance. Furthermore, through measurements can be displayed as well. The available settings are identical to the smithchart but the Polar Chart does not support adding custom constant lines:
 \screenshot{0.6}{GraphPolarchartSetup.png}
 
 \subsection{Eye Diagram}
@@ -1143,14 +1165,14 @@ The eye diagram graph shows how a simulated signal would look like after being p
 \screenshot{1.0}{GraphEyeDiagramSetup.png}
 
 \section{Markers}
-Markers provide an easy read-out of trace data at specific points. Each marker is assigned to one trace and will show up on any graph that show the trace at the marker position.
+Markers provide an easy read-out of trace data at specific points. Each marker is assigned to a single trace and will show up on all graphs that have that trace selected.
 
 Some general marker settings are available in the preferences:
 \screenshot{1.0}{MarkerPreferences.png}
 \begin{itemize}
 \item \textbf{Show data on graphs:} Marker data (X-coordinate, trace value) will be shown by default to the right of any graph the marker is visible on
 \item \textbf{Show data in all available formats:} All available formats for the marker data will be shown by default
-\item \textbf{Positioning:} When moving markers by hand, the can either snap to the individual trace points or be interpolated along the plotted trace
+\item \textbf{Positioning:} When moving markers by hand, they can either be snapped to the individual trace points or be interpolated along the plotted trace
 \item \textbf{Sort order on graphs:} Defines the order of marker data to the right of a graph
 \item \textbf{Symbol style:} Various symbol styles for drawing markers on the graphs are available
 \end{itemize}
@@ -1164,11 +1186,11 @@ The marker dock provides a quick overview of all markers:
 \item \textbf{Marker \#:} The marker number as shown on the graphs
 \item \includesvg[height=8pt]{Screenshots/visible}/\includesvg[height=10pt]{Screenshots/invisible}: Enable/disable global visibility: Shows/hides the marker an all graphs
 \item \includegraphics[height=8pt]{Screenshots/chainlink.png}: Indicates linked markers. Markers with the same number are linked and all of them move when one changes its position
-\item \textbf{Trace:} The trace name the markers is assigned to
+\item \textbf{Trace:} The trace name the marker is assigned to
 \item \textbf{Type:} Various marker types are available, see section~\ref{marker:types}
-\item \textbf{Settings:} Depends on the marker type, allows configuration of the marker
+\item \textbf{Settings:} Allows for configuration of the marker based on marker type
 \item \textbf{Restrict:} Forces the marker to a specific frequency range (or power/time range if the trace uses another domain)
-\item \textbf{Data:} The trace data at the marker position. Can be displayed in different formats
+\item \textbf{Data:} The trace data at the marker position which can be displayed in different formats
 \end{itemize}
 
 Various other settings are also available in the \textbf{context menu}. The context menu can be reached by right-clicking the marker, either in the marker dock or on the marker symbol in any graph.
@@ -1225,7 +1247,7 @@ This marker type is only available for through measurements.
 \subsubsection{TOI/IP3}
 \screenshot{1.0}{MarkerTOIGraph.png}
 \screenshot{1.0}{MarkerTOITable.png}
-This marker type calculated the third-order intercept point. It is only available in spectrum analyzer mode. Initially a peak search is executed to find the two highest peaks. The frequencies of the intermodulation products are calculated from these peak frequencies and helper markers placed on each of these frequencies. Finally, the third-order intercept point as well as the tone and distortion signal amplitudes are calculated.
+This marker type calculates the third-order intercept point. It is only available in spectrum analyzer mode. Initially a peak search is executed to find the two highest peaks. Helper markers suffixed with "p", that show these peaks, are added to the parent marker. These helper markers show up on the graph and in the marker dock by clicking the expand/collapse arrow to the left of the marker \#. The frequencies of the intermodulation products are calculated from the two peak helper markers and a new helper marker is placed at each of these frequencies. One suffixed "l" to the left of the first peak and one suffixed "r" to the right of the second peak. Finally, the third-order intercept point as well as the tone and distortion signal amplitudes are calculated.
 \subsubsection{Phase noise}
 \screenshot{1.0}{MarkerPhasenoiseGraph.png}
 \screenshot{1.0}{MarkerPhasenoiseTable.png}
@@ -1366,22 +1388,22 @@ $Quality factor$\\
 
 \subsection{Linking markers}
 \label{marker:linking}
-Normally, markers can be moved individually and are only connected to one trace. This creates a problem when reading out trace data from multiple traces at the same position. If the position is changed, all markers need to be moved manually to the new position. Linked markers provide a solution to this problem: All markers within a linked group always use the same position. If one marker is moved, the others move as well. The linked group of each marker is indicated in the marker dock (empty if the marker does not belong to any linked group.
+Normally, markers can be moved individually and are only connected to one trace. This creates a problem when reading out trace data from multiple traces at the same position. If the position is changed, all markers need to be moved manually to the new position. Linked markers provide a solution to this problem: All markers within a linked group always use the same position. If one marker is moved, the others move as well. The linked group of each marker is indicated in the marker dock (empty if the marker does not belong to any linked group).
 
-Only markers that are movable can be added to linked groups. If a marker type performs automatic positioning of the marker (e.g. the maximum marker type), it can not be added.
+Only markers that are movable can be added to linked groups. Markers that perform automatic positioning (e.g. a marker with the type maximum) cannot be added to a linked group.
 
 \subsubsection{Creating a new linked group}
 Select multiple markers in the marker dock, right-click and select "link selected".
 \subsubsection{Adding a marker to an existing linked group}
-Open the markers context menu, chose "Add to linked group" and select the linked group the marker should be added to.
+Open the marker's context menu, choose "Add to linked group" and select the linked group the marker should be added to.
 \subsubsection{Removing a marker from a linked group}
 \begin{itemize}
-\item Open the markers context menu, chose "Remove from linked group"
+\item Open the marker's context menu, choose "Remove from linked group"
 \item Select multiple linked markers in the marker dock, right-click and select "Break links" to remove all selected markers from their linked groups.
 \end{itemize}
 
 \section{Compound Device}
-The LibreVNA supports combining multiple hardware units to a "Compound Device". When used, the configured physical LibreVNAs are combined into a virtual device with more ports. When connected to such a device, additional measurement paramaters are available (e.g. measuring S23 in VNA mode or port 3 in spectrumanalyzer mode).
+The LibreVNA supports combining multiple hardware units into a "Compound Device". When used, the configured physical LibreVNAs are combined into a virtual device with more ports. When connected to such a device, additional measurement paramaters are available (e.g. measuring S23 in VNA mode or port 3 in spectrum analyzer mode).
 
 \begin{important}
 When connected to a compound device and in VNA mode, there is no phase information for through measurements between different physical devices. This is a hardware limitation and the phase is set to zero in the software. Through measurements within a physical device and all reflection measurements retain their phase information.
@@ -1401,7 +1423,7 @@ Required steps when creating a compound device:
 \item At least two physical devices must be used
 \item At most four physical devices can be combined with a maximum of eight virtual ports
 \end{itemize}
-\item Assign the serialnumbers for each physical device. Serialnumbers for all currently connected devices are available as suggestions but it is also possible to enter a different serialnumber manually
+\item Assign serial numbers to each physical device. Serial numbers for all currently connected devices are available in the dropdown but it is also possible to enter a different serial number manually
 \item Assign the virtual ports of the compound device:
 \begin{itemize}
 \item Each port number must appear only once
@@ -1412,7 +1434,7 @@ Required steps when creating a compound device:
 \end{enumerate}
 
 \subsection{Connecting to a compound device}
-Configured compound devices appear in the device list with their name when all required physical devices are connected. Once connected, new measurements or ports are available depending on the number of configured ports in the compound device.
+Configured compound devices appear in the device list when all required physical devices are connected. Once connected, new measurements or ports are available depending on the number of configured ports in the compound device.
 
 \begin{information}
 Through measurements between physical devices depend on precise matching of the stimulus frequency. Depending on the accuracy of the internal frequency source and the selected IF bandwidth, the stimulus signal from the generating device may fall outside of the IF bandwidth of the receiving device, resulting in a reported lower amplitude than actually present. Either align both internal oscillators precisely with the frequency calibration or (recommended) switch to using the external reference input when using a compound device.
@@ -1433,26 +1455,26 @@ Certain features are not available when connected to a compound device. To use t
 \label{amplitude:calibration}
 This section is about calibrating the source output level and spectrum analyzer level. It does not affect VNA measurements at all. For the VNA calibration, see section~\ref{vna:calibration}.
 
-Both the internal signal source and the receiver paths used in the generator or spectrum analyzer mode have no means of ensuring accurate amplitudes (as imperfections are removed by the VNA calibration, the hardware is not optimized for absolute amplitude accuracy). In order to improve the accuracy of both the generator and the spectrum analyzer (especially with enabled tracking generator), frequency dependent amplitude calibrations are available. They are permanently stored in the device and are only required to be performed once. The \textbf{Source Calibration} corrects the ouput of the (tracking) generator, while the \textbf{Receiver Calibration} corrects the measurement of the spectrum analyzer.
+Both the internal signal source and the receiver paths used in the signal generator or spectrum analyzer modes have no means of ensuring accurate amplitudes (as imperfections are removed by the VNA calibration, the hardware is not optimized for absolute amplitude accuracy). Frequency dependent amplitude calibrations are available in order to improve the accuracy of both the signal generator and the spectrum analyzer (especially when the tracking generator option is enabled in the spectrum analyzer). These calibrations are permanently stored in the device and are only required to be performed once. The \textbf{Source Calibration} corrects the output of the signal generator and the spectrum analyzer's tracking generator, while the \textbf{Receiver Calibration} corrects the measurement of the spectrum analyzer.
 
-For both calibrations, other test equipment is required, ideally covering the whole range of \SI{1}{\mega\hertz} to \SI{6}{\giga\hertz} (a calibration of only the partial frequeny range is also possible but signals/measurements outside the calibrated range will be inaccurate). The Soure Calibration requires a way to measure the output of the \vna{} (e.g. a spectrum analyzer or power meter), the Receiver Calibration requires a signal source (e.g. a signal generator). Once either calibration has been completed, the \vna{} can also infer the other one with reasonable accuracy.
+For both calibrations, other test equipment is required, ideally covering the whole range of \SI{1}{\mega\hertz} to \SI{6}{\giga\hertz} (a calibration of only the partial frequency range is also possible but signals/measurements outside the calibrated range will be inaccurate). The Source Calibration requires a way to measure the output of the \vna{} (e.g. a spectrum analyzer or power meter), the Receiver Calibration requires a signal source (e.g. a signal generator). Once either calibration has been completed, the \vna{} can also infer the other one with reasonable accuracy.
 
 \subsection{Source Calibration}
 Select \menu[,]{Device,Source Calibration}. A window showing the current source calibration opens:
 \screenshot{1.0}{SourceCalibration.png}
 These are the necessary steps:
 \begin{enumerate}
-\item \textbf{Set up the calibration frequencies:} Add or remove points according to your needs. Ideally, they should be evenly spaced across the range to calibrate, maybe with a slight emphasis on higher frequencies (signal levels generally vary more at higher frequencies). Additionally, it is advisable to set one point at \SI{25}{\mega\hertz} and one just below (at \SI{25}{\mega\hertz} a band is switched, resulting in an amplitude discontinuity). Up to 64 points can be used.
+\item \textbf{Set up the calibration frequencies:} Add or remove points according to your needs. Ideally, they should be evenly spaced across the calibration range, maybe with a slight emphasis on higher frequencies (signal levels generally vary more at higher frequencies). Additionally, it is advisable to set one point at \SI{25}{\mega\hertz} and another point just below it (at \SI{25}{\mega\hertz} a band is switched, resulting in an amplitude discontinuity). Up to 64 points can be used.
 \item \textbf{Select the calibration mode:} Either calibrate both ports separately (best accuracy but more work) or assume that they are identical and use the measurement at one port for both.
-\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table. The \vna{} will generate a signal at the selected frequency and port with (what it thinks are) \SI{-20}{\dBm}. Use external equipment to determine the actual output level and enter the measured value into the selected cell.
+\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table. The \vna{} will generate a signal at the selected frequency, on the selected port, at (what it thinks is) \SI{-20}{\dBm}. Use your external equipment to determine the actual output level and enter it into the selected cell.
 \item \textbf{Save the calibration:} Once all measurements have been taken, the "Save to Device" button becomes available. There is no way to save intermediate results, you have to calibrate all frequencies you have chosen in step 1.
 \end{enumerate}
-If the Receiver Calibration is already done, it is also possible to infer the Source Calibration from that. Press \keys{Automatic measurement} and connect both ports of the \vna{} directly to each other. This connection should be as ideal as possible (short, low loss cable) as every imperfection directly translates into calibration errors. During the automatic calibration, the \vna{} uses the already established frequency points from the Receiver Calibration and measures the output amplitude by itself to determine the coefficients of the Source Calibration.
+If you've already done a Receiver Calibration, it's possible to infer the Source Calibration from it. Press \keys{Automatic measurement}, connect both ports of the \vna{} directly to each other and press \keys{Start Measurement}. This connection should be as ideal as possible (short, low loss cable) as every imperfection directly translates into calibration errors. During the automatic calibration, the \vna{} uses the already established frequency points from the Receiver Calibration and measures the output amplitude by itself to determine the coefficients of the Source Calibration.
 \subsection{Receiver Calibration}
 Select \menu[,]{Device,Receiver Calibration}. The Receiver Calibration works almost identically to the Source Calibration. The only difference is in step 3:
 \begin{enumerate}
 \setcounter{enumi}{2}
-\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table and apply a signal with known level at the selected frequency and port. The signal level should be in the range of \SI{-40}{\dBm} to \SI{-10}{\dBm}. Higher signal levels might already compress in the receiver while lower levels unnecessarily increase calibration errors due to noise. The \vna{} tunes its receiver to the selected frequency and measures the amplitude. Apply the signal for at least \SI{2}{\second} and enter its actual amplitude into the selected cell while the signal is still active.
+\item \textbf{Perform the calibration:} For each frequency and port, select the corresponding cell in the table and apply a signal with known level at the selected frequency and port. The signal level should be in the range of \SI{-40}{\dBm} to \SI{-10}{\dBm}. Higher signal levels might already compress in the receiver while lower levels unnecessarily increase calibration errors due to noise. The \vna{} tunes its receiver to the selected frequency and measures the applied signal's amplitude. Enter the actual amplitude into the selected cell while the signal is still being applied. The signal should be applied for a minimum of \SI{2}{\second} to ensure an accurate measurement.
 \end{enumerate}
 \section{Troubleshooting}
 \label{troubleshooting}
