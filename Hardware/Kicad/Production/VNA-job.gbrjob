@@ -3,9 +3,9 @@
     "GenerationSoftware": {
       "Vendor": "KiCad",
       "Application": "Pcbnew",
-      "Version": "8.0.1"
+      "Version": "9.0.0"
     },
-    "CreationDate": "2024-03-24T21:42:04-04:00"
+    "CreationDate": "2025-02-25T23:04:32-05:00"
   },
   "GeneralSpecs": {
     "ProjectId": {
@@ -50,22 +50,22 @@
     },
     {
       "Path": "VNA-In1_Cu.gbr",
-      "FileFunction": "Copper,L2,Inr",
+      "FileFunction": "Copper,L5,Inr",
       "FilePolarity": "Positive"
     },
     {
       "Path": "VNA-In2_Cu.gbr",
-      "FileFunction": "Copper,L3,Inr",
+      "FileFunction": "Copper,L7,Inr",
       "FilePolarity": "Positive"
     },
     {
       "Path": "VNA-In3_Cu.gbr",
-      "FileFunction": "Copper,L4,Inr",
+      "FileFunction": "Copper,L9,Inr",
       "FilePolarity": "Positive"
     },
     {
       "Path": "VNA-In4_Cu.gbr",
-      "FileFunction": "Copper,L5,Inr",
+      "FileFunction": "Copper,L11,Inr",
       "FilePolarity": "Positive"
     },
     {

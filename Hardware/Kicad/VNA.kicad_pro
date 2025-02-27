@@ -37,9 +37,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 0.0,
-          "height": 0.2,
-          "width": 0.688
+          "drill": 2.0,
+          "height": 1.308,
+          "width": 2.616
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -59,31 +59,106 @@
         }
       ],
       "drc_exclusions": [
-        "connection_width|137345220|91954490|35facea9-fb50-40ee-bb03-b954cad4e79e|58490212-5471-4d23-b539-0ea1a0e4398a",
-        "connection_width|137345265|91154462|c15c1eaa-c176-4766-bff7-4dacb1aacd6c|cd9644d7-8a15-4349-9fd4-b3e77dfd3efb",
-        "copper_edge_clearance|102677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|0c260be4-6962-42fc-83d0-f2839082e315",
-        "copper_edge_clearance|102677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|3f9a6a22-2c07-464a-a822-75fb8ccdae25",
-        "copper_edge_clearance|180240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|1700e507-0c10-4941-ae38-80a3b3671d8b",
-        "copper_edge_clearance|180240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|acd75667-5d15-4c11-83ec-1430569ad07f",
-        "copper_edge_clearance|187229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|10985a25-0626-429b-8b44-e4d737e1d4ac",
-        "copper_edge_clearance|187229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|237ddb1c-1b6b-431f-b425-00fc54d2be81",
-        "copper_edge_clearance|191838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|e0a53ce3-a6c2-4387-8596-e48fe303f3c9",
-        "copper_edge_clearance|191838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|f822aea9-f2ca-4621-8fa8-8734970d3365",
-        "copper_edge_clearance|196240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|0ccc9589-172c-4231-8cad-7bcdbc04ad56",
-        "copper_edge_clearance|196240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|1f72819d-2883-43c8-9a61-c9e8dce4e3d1",
-        "copper_edge_clearance|197101100|140503600|51fc9094-c026-4c11-adb5-dfb373d034cd|438a8836-2aeb-4cfb-a8e3-2fda1a6f451c",
-        "copper_edge_clearance|200677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|1bf4cd6b-a68c-4644-ad71-ee534937b856",
-        "copper_edge_clearance|200677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|dd456608-c26b-4b5a-96b0-fb1014ea3774",
-        "copper_edge_clearance|203229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|8337303c-af4f-4977-a75f-7f57e5714abe",
-        "copper_edge_clearance|203229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|ad04ed5d-a190-4230-8645-407765c157ac",
-        "copper_edge_clearance|93838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|338276aa-881c-4f7a-b2d1-2966e9306c03",
-        "copper_edge_clearance|93838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|de4c029b-badb-47ca-be5a-d665a6665f11",
-        "copper_edge_clearance|99101100|140503600|51fc9094-c026-4c11-adb5-dfb373d034cd|626a4cdf-c767-46ed-baa0-b66501890456",
-        "hole_clearance|148350000|49505000|a213cab3-a517-4524-a39e-bfc502320689|59ded1e2-13a3-4b15-9348-f648a9e6541b",
-        "hole_clearance|148350000|49505000|a213cab3-a517-4524-a39e-bfc502320689|91b1ecf2-22d2-46e3-9842-370854006270",
-        "hole_clearance|154450000|49505000|b42565bd-a7e5-46a5-9a35-2c92382ae249|735d209a-b29b-4bbf-b1b5-a1c65e2e1776",
-        "hole_clearance|154450000|49505000|b42565bd-a7e5-46a5-9a35-2c92382ae249|ff04c100-d3ce-4119-b82b-498695d1146a",
-        "lib_footprint_mismatch|120125000|44375000|11c9591f-ee6d-42ab-afcd-f085f5cca3ed|00000000-0000-0000-0000-000000000000"
+        [
+          "connection_width|137345220|91954490|35facea9-fb50-40ee-bb03-b954cad4e79e|58490212-5471-4d23-b539-0ea1a0e4398a",
+          ""
+        ],
+        [
+          "connection_width|137345265|91154462|c15c1eaa-c176-4766-bff7-4dacb1aacd6c|cd9644d7-8a15-4349-9fd4-b3e77dfd3efb",
+          ""
+        ],
+        [
+          "copper_edge_clearance|102677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|0c260be4-6962-42fc-83d0-f2839082e315",
+          ""
+        ],
+        [
+          "copper_edge_clearance|102677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|3f9a6a22-2c07-464a-a822-75fb8ccdae25",
+          ""
+        ],
+        [
+          "copper_edge_clearance|180240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|1700e507-0c10-4941-ae38-80a3b3671d8b",
+          ""
+        ],
+        [
+          "copper_edge_clearance|180240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|acd75667-5d15-4c11-83ec-1430569ad07f",
+          ""
+        ],
+        [
+          "copper_edge_clearance|187229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|10985a25-0626-429b-8b44-e4d737e1d4ac",
+          ""
+        ],
+        [
+          "copper_edge_clearance|187229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|237ddb1c-1b6b-431f-b425-00fc54d2be81",
+          ""
+        ],
+        [
+          "copper_edge_clearance|191838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|e0a53ce3-a6c2-4387-8596-e48fe303f3c9",
+          ""
+        ],
+        [
+          "copper_edge_clearance|191838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|f822aea9-f2ca-4621-8fa8-8734970d3365",
+          ""
+        ],
+        [
+          "copper_edge_clearance|196240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|0ccc9589-172c-4231-8cad-7bcdbc04ad56",
+          ""
+        ],
+        [
+          "copper_edge_clearance|196240000|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|1f72819d-2883-43c8-9a61-c9e8dce4e3d1",
+          ""
+        ],
+        [
+          "copper_edge_clearance|197101100|140503600|51fc9094-c026-4c11-adb5-dfb373d034cd|438a8836-2aeb-4cfb-a8e3-2fda1a6f451c",
+          ""
+        ],
+        [
+          "copper_edge_clearance|200677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|1bf4cd6b-a68c-4644-ad71-ee534937b856",
+          ""
+        ],
+        [
+          "copper_edge_clearance|200677700|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|dd456608-c26b-4b5a-96b0-fb1014ea3774",
+          ""
+        ],
+        [
+          "copper_edge_clearance|203229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|8337303c-af4f-4977-a75f-7f57e5714abe",
+          ""
+        ],
+        [
+          "copper_edge_clearance|203229200|42673500|14096581-359e-4cbf-920f-ec8c7fdfa681|ad04ed5d-a190-4230-8645-407765c157ac",
+          ""
+        ],
+        [
+          "copper_edge_clearance|93838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|338276aa-881c-4f7a-b2d1-2966e9306c03",
+          ""
+        ],
+        [
+          "copper_edge_clearance|93838500|140428200|51fc9094-c026-4c11-adb5-dfb373d034cd|de4c029b-badb-47ca-be5a-d665a6665f11",
+          ""
+        ],
+        [
+          "copper_edge_clearance|99101100|140503600|51fc9094-c026-4c11-adb5-dfb373d034cd|626a4cdf-c767-46ed-baa0-b66501890456",
+          ""
+        ],
+        [
+          "hole_clearance|148350000|49505000|a213cab3-a517-4524-a39e-bfc502320689|59ded1e2-13a3-4b15-9348-f648a9e6541b",
+          ""
+        ],
+        [
+          "hole_clearance|148350000|49505000|a213cab3-a517-4524-a39e-bfc502320689|91b1ecf2-22d2-46e3-9842-370854006270",
+          ""
+        ],
+        [
+          "hole_clearance|154450000|49505000|b42565bd-a7e5-46a5-9a35-2c92382ae249|735d209a-b29b-4bbf-b1b5-a1c65e2e1776",
+          ""
+        ],
+        [
+          "hole_clearance|154450000|49505000|b42565bd-a7e5-46a5-9a35-2c92382ae249|ff04c100-d3ce-4119-b82b-498695d1146a",
+          ""
+        ],
+        [
+          "lib_footprint_mismatch|120125000|44375000|11c9591f-ee6d-42ab-afcd-f085f5cca3ed|00000000-0000-0000-0000-000000000000",
+          ""
+        ]
       ],
       "meta": {
         "filename": "board_design_settings.json",
@@ -96,16 +171,20 @@
         "copper_edge_clearance": "error",
         "copper_sliver": "warning",
         "courtyards_overlap": "ignore",
+        "creepage": "error",
         "diff_pair_gap_out_of_range": "error",
         "diff_pair_uncoupled_length_too_long": "error",
         "drill_out_of_range": "error",
         "duplicate_footprints": "warning",
         "extra_footprint": "warning",
         "footprint": "error",
+        "footprint_filters_mismatch": "ignore",
         "footprint_symbol_mismatch": "warning",
         "footprint_type_mismatch": "ignore",
         "hole_clearance": "error",
         "hole_near_hole": "error",
+        "hole_to_hole": "error",
+        "holes_co_located": "warning",
         "invalid_outline": "error",
         "isolated_copper": "warning",
         "item_on_disabled_layer": "error",
@@ -115,9 +194,11 @@
         "lib_footprint_mismatch": "warning",
         "malformed_courtyard": "ignore",
         "microvia_drill_out_of_range": "error",
+        "mirrored_text_on_front_layer": "warning",
         "missing_courtyard": "ignore",
         "missing_footprint": "warning",
         "net_conflict": "warning",
+        "nonmirrored_text_on_back_layer": "warning",
         "npth_inside_courtyard": "ignore",
         "padstack": "warning",
         "pth_inside_courtyard": "ignore",
@@ -132,7 +213,9 @@
         "text_thickness": "ignore",
         "through_hole_pad_without_hole": "error",
         "too_many_vias": "error",
+        "track_angle": "error",
         "track_dangling": "warning",
+        "track_segment_length": "error",
         "track_width": "error",
         "tracks_crossing": "error",
         "unconnected_items": "error",
@@ -145,6 +228,7 @@
         "min_clearance": 0.09,
         "min_connection": 0.09,
         "min_copper_edge_clearance": 0.2,
+        "min_groove_width": 0.0,
         "min_hole_clearance": 0.254,
         "min_hole_to_hole": 0.254,
         "min_microvia_diameter": 0.0,
@@ -162,10 +246,11 @@
       },
       "teardrop_options": [
         {
-          "td_onpadsmd": true,
+          "td_onpthpad": true,
           "td_onroundshapesonly": false,
+          "td_onsmdpad": true,
           "td_ontrackend": false,
-          "td_onviapad": true
+          "td_onvia": true
         }
       ],
       "teardrop_parameters": [
@@ -266,6 +351,7 @@
       "mfg": "",
       "mpn": ""
     },
+    "layer_pairs": [],
     "layer_presets": [],
     "viewports": []
   },
@@ -274,16 +360,7 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [
-      "lib_symbol_issues|1955800|1041400|325ca8dc-cdf7-4fa7-8df8-dc17ce9f7a8b|00000000-0000-0000-0000-000000000000|||",
-      "pin_to_pin|1892300|2260600|50df0fe1-e2e0-44f4-b30c-293e59803186|966297d8-0b79-43bb-a753-4e397d2461f7|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/5d6d43e6-b4b8-4453-a605-266bbc2eda13",
-      "pin_to_pin|1892300|2260600|50df0fe1-e2e0-44f4-b30c-293e59803186|c8644333-9393-4662-8223-2612bf927d5f|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/5d6d43e6-b4b8-4453-a605-266bbc2eda13",
-      "pin_to_pin|1892300|2260600|50df0fe1-e2e0-44f4-b30c-293e59803186|d9c5bd2f-4df4-480d-98be-3128a3bb8f2e|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/798b71c1-ee2e-4e21-b7d2-78d3e660f322",
-      "pin_to_pin|3949700|304800|402f6f49-b2e1-432c-aad1-db86a1be096e|0512a04a-275c-4d91-af88-5dfbf5ca7220|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/5d6d43e6-b4b8-4453-a605-266bbc2eda13",
-      "pin_to_pin|3949700|304800|402f6f49-b2e1-432c-aad1-db86a1be096e|12a71f68-b172-4a0a-ba46-08b47329ac56|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/798b71c1-ee2e-4e21-b7d2-78d3e660f322",
-      "pin_to_pin|3949700|304800|402f6f49-b2e1-432c-aad1-db86a1be096e|49bbfab8-cc1a-40a8-9ca5-da69680af9ec|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/bbfdd9a2-6278-40c0-9063-6c5cccb1e98b",
-      "pin_to_pin|3949700|304800|402f6f49-b2e1-432c-aad1-db86a1be096e|5045f065-7dab-447f-bd38-0f8e28022449|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/8e1b52f8-5f59-4342-bcf6-c3db62777e07|/7469840a-34dd-443e-8d3c-7bb0beac8ed2/c6bc16e9-7b59-42d9-9211-036022b8d9ca"
-    ],
+    "erc_exclusions": [],
     "meta": {
       "version": 0
     },
@@ -499,7 +576,7 @@
   },
   "meta": {
     "filename": "VNA.kicad_pro",
-    "version": 1
+    "version": 3
   },
   "net_settings": {
     "classes": [
@@ -514,6 +591,7 @@
         "microvia_drill": 0.1,
         "name": "Default",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2147483647,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.2,
         "via_diameter": 0.6,
@@ -531,6 +609,7 @@
         "microvia_drill": 0.1,
         "name": "3V3",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.2,
         "via_diameter": 0.6,
@@ -548,6 +627,7 @@
         "microvia_drill": 0.1,
         "name": "5V",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.2,
         "via_diameter": 0.6,
@@ -565,6 +645,7 @@
         "microvia_drill": 0.1,
         "name": "RF",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.35,
         "via_diameter": 0.6,
@@ -582,6 +663,7 @@
         "microvia_drill": 0.1,
         "name": "VCCINT",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 3,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.2,
         "via_diameter": 0.6,
@@ -590,122 +672,346 @@
       }
     ],
     "meta": {
-      "version": 3
+      "version": 4
     },
     "net_colors": null,
     "netclass_assignments": {
-      "/2.LO + Ref Clock/CLKIN": "RF",
-      "/2.LO + Ref Clock/CLKOUT": "RF",
-      "/2.LO + Ref Clock/CLK_CLKIN": "RF",
-      "/2.LO + Ref Clock/CLK_CLKOUT": "RF",
-      "/2.LO + Ref Clock/CLK_PORT1LO2": "RF",
-      "/2.LO + Ref Clock/CLK_PORT2_LO2": "RF",
-      "/2.LO + Ref Clock/CLK_REFLO2": "RF",
-      "/2.LO + Ref Clock/CLK_SOURCE_LB": "RF",
-      "/HF Source/SRC_FILT_IN_ANT": "RF",
-      "/HF Source/SRC_FILT_IN_RF1": "RF",
-      "/HF Source/SRC_FILT_IN_RF3": "RF",
-      "/HF Source/SRC_FILT_IN_RF4": "RF",
-      "/HF Source/SRC_FILT_OUT_ANT": "RF",
-      "/HF Source/SRC_FILT_OUT_RF1": "RF",
-      "/HF Source/SRC_FILT_OUT_RF2": "RF",
-      "/HF Source/SRC_FILT_OUT_RF4": "RF",
-      "/HF Source/SRC_FILT_THRU": "RF",
-      "/HF Source/SRC_REF_IN": "RF",
-      "/HF Source/SRC_RFOUTA_N": "RF",
-      "/HF Source/SRC_RFOUTA_P": "RF",
-      "FPGA_CLK": "RF",
-      "LO1_REF": "RF",
-      "Net-(C112-Pad2)": "RF",
-      "Net-(C113-Pad1)": "RF",
-      "Net-(C120-Pad2)": "RF",
-      "Net-(C121-Pad1)": "RF",
-      "Net-(C121-Pad2)": "RF",
-      "Net-(C123-Pad2)": "RF",
-      "Net-(C128-Pad1)": "RF",
-      "Net-(C128-Pad2)": "RF",
-      "Net-(C130-Pad1)": "RF",
-      "Net-(C130-Pad2)": "RF",
-      "Net-(C133-Pad2)": "RF",
-      "Net-(C136-Pad1)": "RF",
-      "Net-(C149-Pad2)": "RF",
-      "Net-(C150-Pad1)": "RF",
-      "Net-(C157-Pad2)": "RF",
-      "Net-(C158-Pad1)": "RF",
-      "Net-(C158-Pad2)": "RF",
-      "Net-(C160-Pad2)": "RF",
-      "Net-(C165-Pad1)": "RF",
-      "Net-(C165-Pad2)": "RF",
-      "Net-(C167-Pad1)": "RF",
-      "Net-(C167-Pad2)": "RF",
-      "Net-(C173-Pad2)": "RF",
-      "Net-(C174-Pad1)": "RF",
-      "Net-(C183-Pad1)": "RF",
-      "Net-(C184-Pad1)": "RF",
-      "Net-(C184-Pad2)": "RF",
-      "Net-(C191-Pad2)": "RF",
-      "Net-(C192-Pad2)": "RF",
-      "Net-(C196-Pad1)": "RF",
-      "Net-(C196-Pad2)": "RF",
-      "Net-(C270-Pad2)": "RF",
-      "Net-(C96-Pad2)": "RF",
-      "Net-(C99-Pad1)": "RF",
-      "Net-(IC22-IN+)": "RF",
-      "Net-(IC22-IN-)": "RF",
-      "Net-(IC22-OUT+)": "RF",
-      "Net-(IC22-OUT-)": "RF",
-      "Net-(IC23-+)": "RF",
-      "Net-(IC23--)": "RF",
-      "Net-(IC24-IN+)": "RF",
-      "Net-(IC24-IN-)": "RF",
-      "Net-(IC24-OUT+)": "RF",
-      "Net-(IC24-OUT-)": "RF",
-      "Net-(IC26-AIN+)": "RF",
-      "Net-(IC26-AIN-)": "RF",
-      "Net-(IC27-IN+)": "RF",
-      "Net-(IC27-IN-)": "RF",
-      "Net-(IC27-OUT+)": "RF",
-      "Net-(IC27-OUT-)": "RF",
-      "Net-(IC28-+)": "RF",
-      "Net-(IC28--)": "RF",
-      "Net-(IC29-IN+)": "RF",
-      "Net-(IC29-IN-)": "RF",
-      "Net-(IC29-LO+)": "RF",
-      "Net-(IC29-OUT+)": "RF",
-      "Net-(IC29-OUT-)": "RF",
-      "Net-(IC31-AIN+)": "RF",
-      "Net-(IC31-AIN-)": "RF",
-      "Net-(IC32-+)": "RF",
-      "Net-(IC32--)": "RF",
-      "Net-(IC33-IN+)": "RF",
-      "Net-(IC33-IN-)": "RF",
-      "Net-(IC33-LO+)": "RF",
-      "Net-(IC33-OUT+)": "RF",
-      "Net-(IC33-OUT-)": "RF",
-      "Net-(IC35-AIN+)": "RF",
-      "Net-(IC35-AIN-)": "RF",
-      "Net-(IC36-IN+)": "RF",
-      "Net-(IC36-IN-)": "RF",
-      "Net-(IC36-OUT+)": "RF",
-      "Net-(IC36-OUT-)": "RF",
-      "Net-(R40-Pad1)": "RF",
-      "Net-(R45-Pad2)": "RF",
-      "Net-(T1-IN+)": "RF",
-      "Net-(T1-IN-)": "RF",
-      "Net-(T1-OUT+)": "RF",
-      "Net-(T1-OUT-)": "RF",
-      "Net-(T2-IN+)": "RF",
-      "Net-(T2-IN-)": "RF",
-      "Net-(T2-OUT+)": "RF",
-      "Net-(T2-OUT-)": "RF",
-      "Net-(T3-IN+)": "RF",
-      "Net-(T3-IN-)": "RF",
-      "Net-(T3-OUT-)": "RF",
-      "PORT1SRC": "RF",
-      "PORT2SRC": "RF",
-      "REFSRC": "RF",
-      "SOURCE_HIGHBAND": "RF",
-      "SOURCE_REF": "RF"
+      "/2.LO + Ref Clock/CLKIN": [
+        "RF"
+      ],
+      "/2.LO + Ref Clock/CLKOUT": [
+        "RF"
+      ],
+      "/2.LO + Ref Clock/CLK_CLKIN": [
+        "RF"
+      ],
+      "/2.LO + Ref Clock/CLK_CLKOUT": [
+        "RF"
+      ],
+      "/2.LO + Ref Clock/CLK_PORT1LO2": [
+        "RF"
+      ],
+      "/2.LO + Ref Clock/CLK_PORT2_LO2": [
+        "RF"
+      ],
+      "/2.LO + Ref Clock/CLK_REFLO2": [
+        "RF"
+      ],
+      "/2.LO + Ref Clock/CLK_SOURCE_LB": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_IN_ANT": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_IN_RF1": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_IN_RF3": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_IN_RF4": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_OUT_ANT": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_OUT_RF1": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_OUT_RF2": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_OUT_RF4": [
+        "RF"
+      ],
+      "/HF Source/SRC_FILT_THRU": [
+        "RF"
+      ],
+      "/HF Source/SRC_REF_IN": [
+        "RF"
+      ],
+      "/HF Source/SRC_RFOUTA_N": [
+        "RF"
+      ],
+      "/HF Source/SRC_RFOUTA_P": [
+        "RF"
+      ],
+      "FPGA_CLK": [
+        "RF"
+      ],
+      "LO1_REF": [
+        "RF"
+      ],
+      "Net-(C112-Pad2)": [
+        "RF"
+      ],
+      "Net-(C113-Pad1)": [
+        "RF"
+      ],
+      "Net-(C120-Pad2)": [
+        "RF"
+      ],
+      "Net-(C121-Pad1)": [
+        "RF"
+      ],
+      "Net-(C121-Pad2)": [
+        "RF"
+      ],
+      "Net-(C123-Pad2)": [
+        "RF"
+      ],
+      "Net-(C128-Pad1)": [
+        "RF"
+      ],
+      "Net-(C128-Pad2)": [
+        "RF"
+      ],
+      "Net-(C130-Pad1)": [
+        "RF"
+      ],
+      "Net-(C130-Pad2)": [
+        "RF"
+      ],
+      "Net-(C133-Pad2)": [
+        "RF"
+      ],
+      "Net-(C136-Pad1)": [
+        "RF"
+      ],
+      "Net-(C149-Pad2)": [
+        "RF"
+      ],
+      "Net-(C150-Pad1)": [
+        "RF"
+      ],
+      "Net-(C157-Pad2)": [
+        "RF"
+      ],
+      "Net-(C158-Pad1)": [
+        "RF"
+      ],
+      "Net-(C158-Pad2)": [
+        "RF"
+      ],
+      "Net-(C160-Pad2)": [
+        "RF"
+      ],
+      "Net-(C165-Pad1)": [
+        "RF"
+      ],
+      "Net-(C165-Pad2)": [
+        "RF"
+      ],
+      "Net-(C167-Pad1)": [
+        "RF"
+      ],
+      "Net-(C167-Pad2)": [
+        "RF"
+      ],
+      "Net-(C173-Pad2)": [
+        "RF"
+      ],
+      "Net-(C174-Pad1)": [
+        "RF"
+      ],
+      "Net-(C183-Pad1)": [
+        "RF"
+      ],
+      "Net-(C184-Pad1)": [
+        "RF"
+      ],
+      "Net-(C184-Pad2)": [
+        "RF"
+      ],
+      "Net-(C191-Pad2)": [
+        "RF"
+      ],
+      "Net-(C192-Pad2)": [
+        "RF"
+      ],
+      "Net-(C196-Pad1)": [
+        "RF"
+      ],
+      "Net-(C196-Pad2)": [
+        "RF"
+      ],
+      "Net-(C270-Pad2)": [
+        "RF"
+      ],
+      "Net-(C96-Pad2)": [
+        "RF"
+      ],
+      "Net-(C99-Pad1)": [
+        "RF"
+      ],
+      "Net-(IC22-IN+)": [
+        "RF"
+      ],
+      "Net-(IC22-IN-)": [
+        "RF"
+      ],
+      "Net-(IC22-OUT+)": [
+        "RF"
+      ],
+      "Net-(IC22-OUT-)": [
+        "RF"
+      ],
+      "Net-(IC23-+)": [
+        "RF"
+      ],
+      "Net-(IC23--)": [
+        "RF"
+      ],
+      "Net-(IC24-IN+)": [
+        "RF"
+      ],
+      "Net-(IC24-IN-)": [
+        "RF"
+      ],
+      "Net-(IC24-OUT+)": [
+        "RF"
+      ],
+      "Net-(IC24-OUT-)": [
+        "RF"
+      ],
+      "Net-(IC26-AIN+)": [
+        "RF"
+      ],
+      "Net-(IC26-AIN-)": [
+        "RF"
+      ],
+      "Net-(IC27-IN+)": [
+        "RF"
+      ],
+      "Net-(IC27-IN-)": [
+        "RF"
+      ],
+      "Net-(IC27-OUT+)": [
+        "RF"
+      ],
+      "Net-(IC27-OUT-)": [
+        "RF"
+      ],
+      "Net-(IC28-+)": [
+        "RF"
+      ],
+      "Net-(IC28--)": [
+        "RF"
+      ],
+      "Net-(IC29-IN+)": [
+        "RF"
+      ],
+      "Net-(IC29-IN-)": [
+        "RF"
+      ],
+      "Net-(IC29-LO+)": [
+        "RF"
+      ],
+      "Net-(IC29-OUT+)": [
+        "RF"
+      ],
+      "Net-(IC29-OUT-)": [
+        "RF"
+      ],
+      "Net-(IC31-AIN+)": [
+        "RF"
+      ],
+      "Net-(IC31-AIN-)": [
+        "RF"
+      ],
+      "Net-(IC32-+)": [
+        "RF"
+      ],
+      "Net-(IC32--)": [
+        "RF"
+      ],
+      "Net-(IC33-IN+)": [
+        "RF"
+      ],
+      "Net-(IC33-IN-)": [
+        "RF"
+      ],
+      "Net-(IC33-LO+)": [
+        "RF"
+      ],
+      "Net-(IC33-OUT+)": [
+        "RF"
+      ],
+      "Net-(IC33-OUT-)": [
+        "RF"
+      ],
+      "Net-(IC35-AIN+)": [
+        "RF"
+      ],
+      "Net-(IC35-AIN-)": [
+        "RF"
+      ],
+      "Net-(IC36-IN+)": [
+        "RF"
+      ],
+      "Net-(IC36-IN-)": [
+        "RF"
+      ],
+      "Net-(IC36-OUT+)": [
+        "RF"
+      ],
+      "Net-(IC36-OUT-)": [
+        "RF"
+      ],
+      "Net-(R40-Pad1)": [
+        "RF"
+      ],
+      "Net-(R45-Pad2)": [
+        "RF"
+      ],
+      "Net-(T1-IN+)": [
+        "RF"
+      ],
+      "Net-(T1-IN-)": [
+        "RF"
+      ],
+      "Net-(T1-OUT+)": [
+        "RF"
+      ],
+      "Net-(T1-OUT-)": [
+        "RF"
+      ],
+      "Net-(T2-IN+)": [
+        "RF"
+      ],
+      "Net-(T2-IN-)": [
+        "RF"
+      ],
+      "Net-(T2-OUT+)": [
+        "RF"
+      ],
+      "Net-(T2-OUT-)": [
+        "RF"
+      ],
+      "Net-(T3-IN+)": [
+        "RF"
+      ],
+      "Net-(T3-IN-)": [
+        "RF"
+      ],
+      "Net-(T3-OUT-)": [
+        "RF"
+      ],
+      "PORT1SRC": [
+        "RF"
+      ],
+      "PORT2SRC": [
+        "RF"
+      ],
+      "REFSRC": [
+        "RF"
+      ],
+      "SOURCE_HIGHBAND": [
+        "RF"
+      ],
+      "SOURCE_REF": [
+        "RF"
+      ]
     },
     "netclass_patterns": [
       {
@@ -774,6 +1080,7 @@
   },
   "schematic": {
     "annotate_start_num": 0,
+    "bom_export_filename": "",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ",",
