@@ -37,6 +37,14 @@ cd $UNPACKED_ZIP_FOLDER$
 ./LibreVNA-GUI
 ```
 
+### MacOS
+* Download the latest [Release](https://github.com/jankae/LibreVNA/releases)
+  * If you are using MacOS 14+ use the release with `latest` in the name.
+  * If you are using MacOS >13.7 use the release with  `13.7` in the name.
+* Unpack the zip file and move LibreVNA-GUI.app to your `/Applications` folder.
+* Start LibreVNA-GUI.app and add a security exception to allow the Mac to run the app with an "untrusted" signing key.
+* Launch app again.
+
 ## Quick Start
 * You can find released versions of the GUI application and the device firmware [here](https://github.com/jankae/LibreVNA/releases).
 * If you would like to try out the newest features, the compiled versions of each commit can be found [here](https://github.com/jankae/LibreVNA/actions) (but keep in mind that some features might be unstable or incomplete). If you are having trouble downloading them, please refer to this [guide](Documentation/DeveloperInfo/DownloadActionBuilds.md).
