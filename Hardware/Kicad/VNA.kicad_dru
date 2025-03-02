@@ -23,10 +23,14 @@
 (version 1)
 
 (rule "RF Clearance"
-   (constraint clearance (min 0.36mm))
+   (constraint clearance (min 0.18mm))
    (condition "(A.NetClass == 'RF') && (B.Type == 'Zone')")
 )
 
+(rule "RF Track Width"
+   (condition "A.NetClass == 'RF' && A.Type == 'track'" )
+   (constraint track_width (min 0.35mm))
+)
 
 (rule "Track width, outer layer (1oz copper)"
 	(layer outer)
