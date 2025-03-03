@@ -168,7 +168,11 @@ VNA::VNA(AppWindow *window, QString name)
 
     // A modal QProgressDialog calls processEvents() in setValue(). Needs to use a queued connection to update the progress
     // value from within the NewDatapoint slot to prevent possible re-entrancy.
-    connect(this, &VNA::calibrationMeasurementPercentage, calDialog, &QProgressDialog::setValue, Qt::QueuedConnection);
+    connect(this, &VNA::calibrationMeasurementPercentage, calDialog, [=](int percent) {
+        if(calMeasuring || percent == 100) {
+            calDialog->setValue(percent);
+        }
+    }, Qt::QueuedConnection);
 
     connect(calDialog, &QProgressDialog::canceled, this, [=]() {
         // the user aborted the calibration measurement
@@ -1222,6 +1226,7 @@ bool VNA::SpanMatchCal()
     SetStartFreq(cal.getMinFreq());
     SetStopFreq(cal.getMaxFreq());
     SetPoints(cal.getNumPoints());
+    UpdateCalWidget();
     return true;
 }
 
