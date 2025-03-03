@@ -50,6 +50,10 @@ static constexpr uint16_t maxPointsBetweenHalts = 40;
 static constexpr uint16_t full2portDatapointSize = 66;// See Protocol::VNADatapoint::
 static constexpr uint32_t reservedUSBbuffer = (maxPointsBetweenHalts + 2 /*additional buffer*/) * (full2portDatapointSize + 8 /*USB packet overhead*/);
 
+static uint32_t PLLRefFreqs[] = {HW::PLLRef, HW::PLLRef - 1000000};
+static constexpr uint8_t PLLRefFreqsNum = sizeof(PLLRefFreqs)/sizeof(PLLRefFreqs[0]);
+static uint8_t sourceRefIndex, LO1RefIndex;
+
 using namespace HWHAL;
 
 static uint64_t getPointFrequency(uint16_t pointNum) {
@@ -71,16 +75,43 @@ static uint64_t getPointFrequency(uint16_t pointNum) {
 	}
 }
 
-static void setPLLFrequencies(uint64_t f) {
+static bool setPLLFrequencies(uint64_t f) {
+	uint64_t sourceFreq = 0;
+	uint64_t LOFreq = 0;
 	if(f > HW::Info.limits_maxFreq) {
-		Source.SetFrequency(f / sourceHarmonic);
-		LO1.SetFrequency((f + HW::getIF1()) / LOHarmonic);
+		sourceFreq = f / sourceHarmonic;
+		LOFreq = (f + HW::getIF1()) / LOHarmonic;
 	} else {
 		if(f >= HW::BandSwitchFrequency) {
-			Source.SetFrequency(f);
+			sourceFreq = f;
 		}
-		LO1.SetFrequency(f + HW::getIF1());
+		LOFreq = f + HW::getIF1();
 	}
+	if(sourceFreq > 0) {
+		Source.SetFrequency(sourceFreq);
+	}
+	LO1.SetFrequency(LOFreq);
+	bool needsRefSwitch = false;
+	if(settings.suppressPeaks) {
+		// Integer spurs can cause a small peak.
+		uint32_t sourceDist = Source.DistanceToIntegerSpur();
+		uint32_t LODist = LO1.DistanceToIntegerSpur();
+		if((sourceDist > 0) && (sourceDist < 3 * HW::getIF2())) {
+			LOG_INFO("Source spur at %lu: %lu", (uint32_t) f, sourceDist);
+			sourceRefIndex = !sourceRefIndex;
+			Source.SetReference(PLLRefFreqs[sourceRefIndex], false, 1, false);
+			Source.SetFrequency(sourceFreq);
+			needsRefSwitch = true;
+		}
+		if((LODist > 0) && (LODist  < 3 * HW::getIF2())) {
+			LOG_INFO("LO spur at %lu", (uint32_t) f);
+			LO1RefIndex = !LO1RefIndex;
+			LO1.SetReference(PLLRefFreqs[LO1RefIndex], false, 1, false);
+			LO1.SetFrequency(LOFreq);
+			needsRefSwitch = true;
+		}
+	}
+	return needsRefSwitch;
 }
 
 static bool needs2LOshift(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32_t *new2LO) {
@@ -108,11 +139,17 @@ static bool needs2LOshift(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32
 }
 
 bool VNA::Setup(Protocol::SweepSettings s) {
+	// Abort possible active sweep first
 	VNA::Stop();
 	vTaskDelay(5);
 	data.clear();
 	HW::SetMode(HW::Mode::VNA);
-	// Abort possible active sweep first
+
+	sourceRefIndex = 0;
+	LO1RefIndex = 0;
+	Source.SetReference(PLLRefFreqs[sourceRefIndex], false, 1, false);
+	LO1.SetReference(PLLRefFreqs[LO1RefIndex], false, 1, false);
+
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
 	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
@@ -199,7 +236,9 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 		}
 		// SetFrequency only manipulates the register content in RAM, no SPI communication is done.
 		// No mode-switch of FPGA necessary here.
-		setPLLFrequencies(freq);
+		if(setPLLFrequencies(freq)) {
+			needs_halt = true;
+		}
 		uint32_t new_LO2;
 		auto needs_shift = needs2LOshift(freq, last_LO2, actualBandwidth, &new_LO2);
 		if(needs_shift) {
@@ -249,6 +288,11 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 				FPGA::Samples::SPPRegister, needs_halt);
 		last_lowband = lowband;
 	}
+	// reset a possibly changed PLL reference index
+	sourceRefIndex = 0;
+	LO1RefIndex = 0;
+	Source.SetReference(PLLRefFreqs[sourceRefIndex], false, 1, false);
+	LO1.SetReference(PLLRefFreqs[LO1RefIndex], false, 1, false);
 	// revert clk configuration to previous value (might have been changed in sweep calculation)
 	Si5351.SetCLK(SiChannel::RefLO2, HW::getIF1() - HW::getIF2(), Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
 	Si5351.ResetPLL(Si5351C::PLL::B);
@@ -438,10 +482,30 @@ void VNA::SweepHalted() {
 			Si5351.Disable(SiChannel::LowbandSource);
 			FPGA::Enable(FPGA::Periphery::SourceRF);
 		}
+
+		if (pointCnt == 0 && settings.suppressPeaks) {
+			sourceRefIndex = 0;
+			LO1RefIndex = 0;
+			Source.SetReference(PLLRefFreqs[sourceRefIndex], false, 1, false);
+			LO1.SetReference(PLLRefFreqs[LO1RefIndex], false, 1, false);
+			// update PLL reference frequencies
+			Si5351.SetCLK(SiChannel::Source, PLLRefFreqs[sourceRefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
+			Si5351.SetCLK(SiChannel::LO1, PLLRefFreqs[LO1RefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
+			last_LO2 = HW::getIF1() - HW::getIF2();
+			Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
+			Si5351.ResetPLL(Si5351C::PLL::B);
+			Si5351.WaitForLock(Si5351C::PLL::B, 10);
+			HAL_Delay(2);
+		}
+
 		if(settings.suppressPeaks) {
 			// does not actually change PLL settings, just calculates the register values and
 			// is required to determine the need for a 2.LO shift
-			setPLLFrequencies(frequency);
+			if(setPLLFrequencies(frequency)) {
+				// update PLL reference frequencies
+				Si5351.SetCLK(SiChannel::Source, PLLRefFreqs[sourceRefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
+				Si5351.SetCLK(SiChannel::LO1, PLLRefFreqs[LO1RefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
+			}
 			if(needs2LOshift(frequency, last_LO2, actualBandwidth, &last_LO2)) {
 				Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
 				Si5351.ResetPLL(Si5351C::PLL::B);
@@ -449,14 +513,6 @@ void VNA::SweepHalted() {
 				// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point
 				Delay::us(1500);
 			}
-		}
-
-		if (pointCnt == 0) {
-			last_LO2 = HW::getIF1() - HW::getIF2();
-			Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
-			Si5351.ResetPLL(Si5351C::PLL::B);
-			Si5351.WaitForLock(Si5351C::PLL::B, 10);
-			HAL_Delay(2);
 		}
 
 		if(adcShiftRequired) {
