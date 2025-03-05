@@ -409,6 +409,7 @@ RESOURCES += \
     resources/librevna.qrc
 
 win32:RC_ICONS = resources/librevna.ico
+mac:ICON = resources/librevna.icns
 
 QMAKE_CXXFLAGS += -Wno-deprecated -Wno-deprecated-declarations -Wno-deprecated-copy
 
