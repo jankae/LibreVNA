@@ -87,24 +87,26 @@ static bool setPLLFrequencies(uint64_t f) {
 		}
 		LOFreq = f + HW::getIF1();
 	}
-	if(sourceFreq > 0) {
+	if(sourceFreq > HW::BandSwitchFrequency) {
 		Source.SetFrequency(sourceFreq);
 	}
 	LO1.SetFrequency(LOFreq);
 	bool needsRefSwitch = false;
 	if(settings.suppressPeaks) {
 		// Integer spurs can cause a small peak.
-		uint32_t sourceDist = Source.DistanceToIntegerSpur();
-		uint32_t LODist = LO1.DistanceToIntegerSpur();
-		if((sourceDist > 0) && (sourceDist < 3 * HW::getIF2())) {
-			LOG_INFO("Source spur at %lu: %lu", (uint32_t) f, sourceDist);
-			sourceRefIndex = !sourceRefIndex;
-			Source.SetReference(PLLRefFreqs[sourceRefIndex], false, 1, false);
-			Source.SetFrequency(sourceFreq);
-			needsRefSwitch = true;
+		if(sourceFreq > HW::BandSwitchFrequency) {
+			uint32_t sourceDist = Source.DistanceToIntegerSpur();
+			if((sourceDist > 0) && (sourceDist < 3 * HW::getIF2())) {
+				LOG_DEBUG("Source spur at %lu: %lu", (uint32_t) f, sourceDist);
+				sourceRefIndex = !sourceRefIndex;
+				Source.SetReference(PLLRefFreqs[sourceRefIndex], false, 1, false);
+				Source.SetFrequency(sourceFreq);
+				needsRefSwitch = true;
+			}
 		}
+		uint32_t LODist = LO1.DistanceToIntegerSpur();
 		if((LODist > 0) && (LODist  < 3 * HW::getIF2())) {
-			LOG_INFO("LO spur at %lu", (uint32_t) f);
+			LOG_DEBUG("LO spur at %lu", (uint32_t) f);
 			LO1RefIndex = !LO1RefIndex;
 			LO1.SetReference(PLLRefFreqs[LO1RefIndex], false, 1, false);
 			LO1.SetFrequency(LOFreq);
