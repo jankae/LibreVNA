@@ -1,0 +1,950 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "7469840a-34dd-443e-8d3c-7bb0beac8ed2")
+	(paper "A3")
+	(title_block
+		(title "Root")
+		(company "LibreVNA")
+	)
+	(lib_symbols
+		(symbol "Mechanical:Housing"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "N"
+				(at 3.81 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "Housing"
+				(at 3.81 -1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 1.27 1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 1.27 1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Housing"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "housing enclosure"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Enclosure* Housing*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Housing_0_1"
+				(rectangle
+					(start -5.08 -0.635)
+					(end -1.27 -1.905)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center -4.445 -3.175)
+					(radius 0.635)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center -1.905 -3.175)
+					(radius 0.635)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy -4.5212 -1.5748) (xy -4.4704 -1.3716)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -4.4196 -1.6764) (xy -4.064 -1.6764)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -4.4196 -1.2192) (xy -4.3688 -0.9652)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -4.318 -1.3208) (xy -4.0132 -1.3208)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -4.2164 -0.9144) (xy -3.9116 -0.9144)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.9116 -1.6256) (xy -3.8608 -1.3716)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.81 -1.2192) (xy -3.7592 -0.9652)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.6068 -1.5748) (xy -3.556 -1.3716)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.5052 -1.6764) (xy -3.1496 -1.6764)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.5052 -1.2192) (xy -3.4544 -0.9652)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.4036 -1.3208) (xy -3.0988 -1.3208)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -3.302 -0.9144) (xy -2.9972 -0.9144)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.9972 -1.6256) (xy -2.9464 -1.3716)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.8956 -1.2192) (xy -2.8448 -0.9652)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.6924 -1.5748) (xy -2.6416 -1.3716)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.5908 -1.6764) (xy -2.2352 -1.6764)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.5908 -1.2192) (xy -2.54 -0.9652)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.4892 -1.3208) (xy -2.1844 -1.3208)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.3876 -0.9144) (xy -2.0828 -0.9144)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.0828 -1.6256) (xy -2.032 -1.3716)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.9812 -1.2192) (xy -1.9304 -0.9652)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -0.635 0) (xy -0.635 -4.445)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -5.715 0) (xy -0.635 0) (xy 3.175 3.81)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -5.715 0) (xy -5.715 -4.445) (xy -0.635 -4.445) (xy 3.175 -0.635) (xy 3.175 3.81) (xy -1.905 3.81)
+						(xy -5.715 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:Housing")
+		(at 27.94 144.78 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a8a8b741-623f-470d-9536-2b5e32a3c305")
+		(property "Reference" "N1"
+			(at 31.75 143.8274 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Top Cover"
+			(at 31.75 146.3674 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "VNA:VNA_COVER_TOP"
+			(at 29.21 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 29.21 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Housing"
+			(at 27.94 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(reference "N1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:Housing")
+		(at 49.53 144.78 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c5b1b395-939e-4257-bcde-94f4c980dd96")
+		(property "Reference" "N2"
+			(at 53.34 143.8274 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Bottom Cover"
+			(at 53.34 146.3674 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "VNA:VNA_COVER_BOTTOM"
+			(at 50.8 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 50.8 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Housing"
+			(at 49.53 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(reference "N2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 102.87)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "5d6d43e6-b4b8-4453-a605-266bbc2eda13")
+		(property "Sheetname" "Microcontroller"
+			(at 20.955 102.1584 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "FPGAMicrocontroller.kicad_sch"
+			(at 20.955 107.2646 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "9")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 113.665)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "798b71c1-ee2e-4e21-b7d2-78d3e660f322")
+		(property "Sheetname" "FPGA"
+			(at 20.955 112.9534 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "FPGAConnections.kicad_sch"
+			(at 20.955 118.0596 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "10")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 92.075)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "7c933d5d-1e4f-4f1a-9202-38e3df2da17e")
+		(property "Sheetname" "Reference Signal"
+			(at 20.955 91.3634 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ReferenceSignal.kicad_sch"
+			(at 20.955 96.4696 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "8")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.32 19.05)
+		(size 13.97 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "8e1b52f8-5f59-4342-bcf6-c3db62777e07")
+		(property "Sheetname" "Power Supply"
+			(at 20.32 18.3384 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "PowerSupply.kicad_sch"
+			(at 20.32 23.4446 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "1")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 59.69)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "9ff36dc1-434c-4d57-a733-165f83ab55ce")
+		(property "Sheetname" "Attenuator Amp Switches"
+			(at 20.955 58.9784 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "AttenuatorSwitches.kicad_sch"
+			(at 20.955 64.0846 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 39.37)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "a2bdd878-cafd-4956-a54a-ce0e886c06b4")
+		(property "Sheetname" "2.LO + Ref Clock"
+			(at 20.955 38.6584 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "LocalOsc2_RefClock.kicad_sch"
+			(at 20.955 43.7646 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 19.685 29.21)
+		(size 12.7 3.81)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "bbfdd9a2-6278-40c0-9063-6c5cccb1e98b")
+		(property "Sheetname" "1.LO"
+			(at 19.939 28.702 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "LocalOsc1.kicad_sch"
+			(at 19.685 33.6046 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 69.85)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "be520179-012d-449b-b5ce-97a852bfda27")
+		(property "Sheetname" "Port 1"
+			(at 20.955 69.1384 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Port1.kicad_sch"
+			(at 20.955 74.2446 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 48.895)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "c6bc16e9-7b59-42d9-9211-036022b8d9ca")
+		(property "Sheetname" "HF Source"
+			(at 20.955 48.1834 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "HighFreqSource.kicad_sch"
+			(at 20.955 53.2896 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 20.955 81.28)
+		(size 12.7 3.81)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "d32edb1b-4948-4e52-bba9-a931ccb13365")
+		(property "Sheetname" "Port 2"
+			(at 20.955 80.5684 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(color 16 37 255 1)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Port2.kicad_sch"
+			(at 20.955 85.6746 0)
+			(show_name yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "VNA"
+				(path "/7469840a-34dd-443e-8d3c-7bb0beac8ed2"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "0")
+		)
+	)
+)
