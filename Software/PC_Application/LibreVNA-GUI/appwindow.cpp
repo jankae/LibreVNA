@@ -516,7 +516,14 @@ void AppWindow::CreateToolbars()
 void AppWindow::SetupSCPI()
 {
     scpi.add(new SCPICommand("*IDN", nullptr, [=](QStringList){
-        return "LibreVNA,LibreVNA-GUI,dummy_serial,"+appVersion;
+        QString ret = "LibreVNA,LibreVNA-GUI,";
+        if(device) {
+            ret += device->getSerial();
+        } else {
+            ret += "Not connected";
+        }
+        ret += ","+appVersion;
+        return ret;
     }));
     scpi.add(new SCPICommand("*RST", [=](QStringList){
         SetResetState();

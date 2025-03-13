@@ -212,7 +212,11 @@ VNA:FREQ:SPAN? # Read the current span
 \section{Commands}
 \subsection{General Commands}
 \subsubsection{*IDN}
-\query{Returns the identifications string}{*IDN?}{None}{LibreVNA,LibreVNA-GUI,dummy\_serial,<software version>}
+\query{Returns the identifications string}{*IDN?}{None}{LibreVNA,LibreVNA-GUI,<serial>,<software version>}
+\begin{itemize}
+\item The serial number is the serial number from the connected LibreVNA. If none is connected, it will be set to ``Not connected''
+\item The software version is the version of the \gui{}, not the firmware version of the connected \vna{}
+\end{itemize}
 \subsubsection{*RST}
 \event{Resets the GUI (and any connected device) to the default state}{*RST}{None}
 \subsubsection{*CLS}
