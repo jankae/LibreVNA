@@ -37,8 +37,10 @@ DeviceLog::~DeviceLog()
 
 void DeviceLog::addLine(QString line)
 {
-    // Set color depending on log level
-    QColor color = Qt::black;
+    // Set color depending on log level.
+    // Use theme dependent color for info messages
+    QColor color = QApplication::palette().text().color();
+    // Use fixed colors for other log levels
     if(line.contains(",CRT]")) {
         color = Qt::red;
     } else if(line.contains(",ERR]")) {
