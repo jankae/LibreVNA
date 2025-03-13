@@ -535,7 +535,7 @@ void VNA::SweepHalted() {
 			// USB buffer could potentially overflow before next halted point, wait until more space is available.
 			uint32_t start = HAL_GetTick();
 			while(usb_available_buffer() < reservedUSBbuffer) {
-				if(HAL_GetTick() - start > 100) {
+				if(HAL_GetTick() - start > 1000) {
 					// still no buffer space after some time, something more serious must have gone wrong
 					// -> abort sweep and return to idle
 					usb_clear_buffer();
