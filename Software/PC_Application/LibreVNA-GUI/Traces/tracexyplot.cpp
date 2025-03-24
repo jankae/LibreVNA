@@ -1089,11 +1089,6 @@ bool TraceXYPlot::supported(Trace *t, YAxis::Type type)
             return false;
         }
         break;
-    case YAxis::Type::GroupDelay:
-        if(t->isReflection()) {
-            return false;
-        }
-        break;
     default:
         break;
     }
