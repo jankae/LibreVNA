@@ -56,6 +56,10 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
             log->setEnabled(false);
             linear->setEnabled(false);
             CBauto->setEnabled(false);
+            min->setEnabled(false);
+            max->setEnabled(false);
+            divs->setEnabled(false);
+            autoDivs->setEnabled(false);
         } else {
             // axis enabled
             log->setEnabled(true);
