@@ -303,7 +303,7 @@ private:
         {&Marker.defaultBehavior.showMaxDeltaPos, "Marker.defaultBehavior.showMaxDeltaPos", true},
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
         {&Marker.sortOrder, "Marker.sortOrder", MarkerSortOrder::PrefMarkerSortXCoord},
-        {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::EmptyNumberAbove},
+        {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::FilledNumberAbove},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
         {&StreamingServers.VNARawData.enabled, "StreamingServers.VNARawData.enabled", false},
