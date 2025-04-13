@@ -46,6 +46,8 @@ Marker::Marker(MarkerModel *model, int number, Marker *parent, QString descr)
     connect(this, &Marker::traceChanged, this, &Marker::updateContextmenu);
     connect(this, &Marker::typeChanged, this, &Marker::updateContextmenu);
     updateContextmenu();
+
+    connect(&Preferences::getInstance(), &Preferences::updated, this, &Marker::updateSymbol);
 }
 
 Marker::~Marker()
@@ -815,7 +817,7 @@ void Marker::traceDataChanged(unsigned int begin, unsigned int end)
 
 void Marker::updateSymbol()
 {
-    if(isDisplayedMarker()) {
+    if(isDisplayedMarker() && parentTrace) {
         auto style = Preferences::getInstance().Marker.symbolStyle;
         switch(style) {
         case MarkerSymbolStyle::FilledNumberInside: {

@@ -44,7 +44,8 @@ enum MarkerSymbolStyle {
 Q_DECLARE_METATYPE(MarkerSymbolStyle);
 
 
-class Preferences : public Savable {
+class Preferences : public QObject, public Savable {
+    Q_OBJECT
     friend class PreferencesDialog;
 public:
     static Preferences& getInstance() {
@@ -206,6 +207,9 @@ public:
 
     bool set(QString name, QVariant value);
     QVariant get(QString name);
+
+signals:
+    void updated();
 
 private:
     Preferences() :

@@ -183,10 +183,12 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         // apply GUI state to settings
         updateFromGUI();
         accept();
+        emit p->updated();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, [=](){
         // apply GUI state to settings
         updateFromGUI();
+        emit p->updated();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
         auto filename = QFileDialog::getSaveFileName(this, "Save preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
@@ -211,6 +213,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
            file.close();
            p->fromJSON(j);
            setInitialGUIState();
+           emit p->updated();
         }
     });
     connect(ui->AcquisitionLimitTDRCheckbox, &QCheckBox::toggled, [=](bool enabled){
