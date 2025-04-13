@@ -638,13 +638,25 @@ void TraceXYPlot::draw(QPainter &p)
                         p.drawLine(p1, p2);
                     }
 
+                    if(pref.Marker.clipToYAxis) {
+                        // clip Y coordinate of markers to visible area (always show markers, even when out of range)
+                        if(point.y() < plotRect.top()) {
+                            point.ry() = plotRect.top();
+                        } else if(point.y() > plotRect.bottom()) {
+                            point.ry() = plotRect.bottom();
+                        }
+                    }
+
                     if(!plotRect.contains(point)) {
                         // out of screen
                         continue;
                     }
                     auto symbol = m->getSymbol();
                     point += QPoint(-symbol.width()/2, -symbol.height());
+                    // ignore clipRect for markers
+                    p.setClipping(false);
                     p.drawPixmap(point, symbol);
+                    p.setClipping(true);
                 }
             }
         }

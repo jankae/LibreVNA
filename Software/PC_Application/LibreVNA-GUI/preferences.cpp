@@ -322,6 +322,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->MarkerInterpolate->setCurrentIndex(p->Marker.interpolatePoints ? 1 : 0);
     ui->MarkerSortOrder->setCurrentIndex((int) p->Marker.sortOrder);
     ui->MarkerSymbolStyle->setCurrentIndex((int) p->Marker.symbolStyle);
+    ui->MarkerClipToYAxis->setChecked(p->Marker.clipToYAxis);
 
     ui->SCPIServerEnabled->setChecked(p->SCPIServer.enabled);
     ui->SCPIServerPort->setValue(p->SCPIServer.port);
@@ -437,6 +438,7 @@ void PreferencesDialog::updateFromGUI()
     p->Marker.interpolatePoints = ui->MarkerInterpolate->currentIndex() == 1;
     p->Marker.sortOrder = (MarkerSortOrder) ui->MarkerSortOrder->currentIndex();
     p->Marker.symbolStyle = (MarkerSymbolStyle) ui->MarkerSymbolStyle->currentIndex();
+    p->Marker.clipToYAxis = ui->MarkerClipToYAxis->isChecked();
 
     p->SCPIServer.enabled = ui->SCPIServerEnabled->isChecked();
     p->SCPIServer.port = ui->SCPIServerPort->value();

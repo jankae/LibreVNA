@@ -165,6 +165,7 @@ public:
         bool interpolatePoints;
         MarkerSortOrder sortOrder;
         MarkerSymbolStyle symbolStyle;
+        bool clipToYAxis;
     } Marker;
     struct {
         bool enabled;
@@ -304,6 +305,7 @@ private:
         {&Marker.interpolatePoints, "Marker.interpolatePoints", false},
         {&Marker.sortOrder, "Marker.sortOrder", MarkerSortOrder::PrefMarkerSortXCoord},
         {&Marker.symbolStyle, "Marker.symbolStyle", MarkerSymbolStyle::FilledNumberAbove},
+        {&Marker.clipToYAxis, "Marker.clipToYAxis", true},
         {&SCPIServer.enabled, "SCPIServer.enabled", true},
         {&SCPIServer.port, "SCPIServer.port", 19542},
         {&StreamingServers.VNARawData.enabled, "StreamingServers.VNARawData.enabled", false},
