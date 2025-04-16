@@ -538,7 +538,7 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
         }
     }
 
-    window->addStreamingData(m_avg, AppWindow::SADataType::Raw);
+    window->addStreamingData(m_avg, AppWindow::SADataType::Raw, settings.freqStart == settings.freqStop);
 
     if(normalize.measuring) {
         if(average.currentSweep() == averages) {
@@ -569,7 +569,7 @@ void SpectrumAnalyzer::NewDatapoint(DeviceDriver::SAMeasurement m)
             m.second /= normalize.portCorrection[m.first][m_avg.pointNum];
             m.second *= corr;
         }
-        window->addStreamingData(m_avg, AppWindow::SADataType::Normalized);
+        window->addStreamingData(m_avg, AppWindow::SADataType::Normalized, settings.freqStart == settings.freqStop);
     }
 
 

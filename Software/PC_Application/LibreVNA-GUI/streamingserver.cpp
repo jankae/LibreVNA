@@ -20,12 +20,16 @@ StreamingServer::StreamingServer(int port)
     });
 }
 
-void StreamingServer::addData(const DeviceDriver::VNAMeasurement &m)
+void StreamingServer::addData(const DeviceDriver::VNAMeasurement &m, bool is_zerospan)
 {
     nlohmann::json j;
     j["pointNum"] = m.pointNum;
-    j["frequency"] = m.frequency;
-    j["dBm"] = m.dBm;
+    if(is_zerospan) {
+        j["time"] = m.us * 0.000001;
+    } else {
+        j["frequency"] = m.frequency;
+        j["dBm"] = m.dBm;
+    }
     j["Z0"] = m.Z0;
     nlohmann::json jp;
     for(auto const &p : m.measurements) {
@@ -41,11 +45,15 @@ void StreamingServer::addData(const DeviceDriver::VNAMeasurement &m)
     }
 }
 
-void StreamingServer::addData(const DeviceDriver::SAMeasurement &m)
+void StreamingServer::addData(const DeviceDriver::SAMeasurement &m, bool is_zerospan)
 {
     nlohmann::json j;
     j["pointNum"] = m.pointNum;
-    j["frequency"] = m.frequency;
+    if(is_zerospan) {
+        j["time"] = m.us * 0.000001;
+    } else {
+        j["frequency"] = m.frequency;
+    }
     nlohmann::json jp;
     for(auto const &p : m.measurements) {
         jp[p.first.toStdString()] = p.second;

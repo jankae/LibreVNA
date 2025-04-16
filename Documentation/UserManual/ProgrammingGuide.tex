@@ -1135,13 +1135,27 @@ There are a total of 5 streaming servers available. They can all be enabled and 
 
 \vspace{0.5cm}
 
-All servers output a newline-terminated line of json formatted data for each measurement point in the sweep:
+All servers output a newline-terminated line of json formatted data for each measurement point in the sweep. The format of the output data changes depending on the configured sweep type.
 
+\begin{itemize}
+\item VNA frequency or power sweeps:
 \begin{example}
 {"Z0":50.0,"dBm":-20.0,"frequency":42993000.0,"measurements":{"S11_imag":-0.061379313997181856,"S11_real":0.023033630841401063,"S12_imag":0.3205479840477101,"S12_real":-0.5742283570681822,"S21_imag":-0.3746074656570865,"S21_real":0.6126114195570408,"S22_imag":0.06312766256272641,"S22_real":-0.018668561526968372},"pointNum":7}
 \end{example}
+\item VNA zero span sweeps:
+\begin{example}
+{"Z0":50.0,"measurements":{"S11_imag":0.0697879786634009,"S11_real":0.11959939538177566,"S12_imag":-0.2820494760489866,"S12_real":0.4134518710922877,"S21_imag":0.11201366122663228,"S21_real":-0.4258244924547545,"S22_imag":-0.004193267854043776,"S22_real":0.028964823536021114},"pointNum":7,"time":2.438674}
+\end{example}
+\item Spectrum analyzer non zero span sweeps:
 \begin{example}
 {"frequency":2182396.0,"measurements":{"PORT1":7.343487141042715e-06,"PORT2":6.78117066854611e-06},"pointNum":445}
 \end{example}
+\item Spectrum analyzer zero span sweeps:
+\begin{example}
+{"measurements":{"PORT1":2.595309979369631e-06,"PORT2":1.4385256008608849e-06},"pointNum":7,"time":0.344095}
+\end{example}
+\end{itemize}
+
+For zero span sweeps, the time in seconds since the beginning of the sweep is given instead of a frequency of power level. The time is always relative to point 0 of the current sweep and point 0 will have a time of 0.
 
 \end{document}

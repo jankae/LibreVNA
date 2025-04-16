@@ -866,7 +866,7 @@ SCPI* AppWindow::getSCPI()
     return &scpi;
 }
 
-void AppWindow::addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type)
+void AppWindow::addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type, bool is_zerospan)
 {
     StreamingServer *server = nullptr;
     switch(type) {
@@ -876,11 +876,11 @@ void AppWindow::addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataT
     }
 
     if(server) {
-        server->addData(m);
+        server->addData(m, is_zerospan);
     }
 }
 
-void AppWindow::addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type)
+void AppWindow::addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type, bool is_zerospan)
 {
     StreamingServer *server = nullptr;
     switch(type) {
@@ -889,7 +889,7 @@ void AppWindow::addStreamingData(const DeviceDriver::SAMeasurement &m, SADataTyp
     }
 
     if(server) {
-        server->addData(m);
+        server->addData(m, is_zerospan);
     }
 }
 

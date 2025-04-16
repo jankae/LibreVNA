@@ -981,7 +981,30 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
 
     m_avg = average.process(m_avg);
 
-    window->addStreamingData(m_avg, AppWindow::VNADataType::Raw);
+    TraceMath::DataType type = TraceMath::DataType::Frequency;
+    if(settings.zerospan) {
+        type = TraceMath::DataType::TimeZeroSpan;
+
+        // keep track of first point time
+        if(m_avg.pointNum == 0) {
+            settings.firstPointTime = m_avg.us;
+            m_avg.us = 0;
+        } else {
+            m_avg.us -= settings.firstPointTime;
+        }
+    } else {
+        switch(settings.sweepType) {
+        case SweepType::Last:
+        case SweepType::Frequency:
+            type = TraceMath::DataType::Frequency;
+            break;
+        case SweepType::Power:
+            type = TraceMath::DataType::Power;
+            break;
+        }
+    }
+
+    window->addStreamingData(m_avg, AppWindow::VNADataType::Raw, settings.zerospan);
 
     if(average.settled()) {
         setOperationPending(false);
@@ -1006,36 +1029,13 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
     cal.correctMeasurement(m_avg);
 
     if(cal.getCaltype().type != Calibration::Type::None) {
-        window->addStreamingData(m_avg, AppWindow::VNADataType::Calibrated);
-    }
-
-    TraceMath::DataType type = TraceMath::DataType::Frequency;
-    if(settings.zerospan) {
-        type = TraceMath::DataType::TimeZeroSpan;
-
-        // keep track of first point time
-        if(m_avg.pointNum == 0) {
-            settings.firstPointTime = m_avg.us;
-            m_avg.us = 0;
-        } else {
-            m_avg.us -= settings.firstPointTime;
-        }
-    } else {
-        switch(settings.sweepType) {
-        case SweepType::Last:
-        case SweepType::Frequency:
-            type = TraceMath::DataType::Frequency;
-            break;
-        case SweepType::Power:
-            type = TraceMath::DataType::Power;
-            break;
-        }
+        window->addStreamingData(m_avg, AppWindow::VNADataType::Calibrated, settings.zerospan);
     }
 
     traceModel.addVNAData(m_avg, type, false);
     if(deembedding_active) {
         deembedding.Deembed(m_avg);
-        window->addStreamingData(m_avg, AppWindow::VNADataType::Deembedded);
+        window->addStreamingData(m_avg, AppWindow::VNADataType::Deembedded, settings.zerospan);
         traceModel.addVNAData(m_avg, type, true);
     }
 

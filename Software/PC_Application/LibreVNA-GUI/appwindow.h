@@ -59,14 +59,14 @@ public:
         Deembedded = 2,
     };
 
-    void addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type);
+    void addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type, bool is_zerospan);
 
     enum class SADataType {
         Raw = 0,
         Normalized = 1,
     };
 
-    void addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type);
+    void addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type, bool is_zerospan);
 
 public slots:
     void setModeStatus(QString msg);
