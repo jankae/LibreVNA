@@ -110,6 +110,18 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
     ui->GraphsSweepHidePercent->setPrecision(3);
     ui->GraphsSweepHidePercent->setUnit("%");
 
+    auto layout = static_cast<QGridLayout*>(ui->GraphAxisLimitGroup->layout());
+    for(unsigned int i=(int) YAxis::Type::Disabled + 1;i<(int) YAxis::Type::Last;i++) {
+        auto type = (YAxis::Type) i;
+        layout->addWidget(new QLabel(YAxis::TypeToName(type)), i, 0);
+        auto minEntry = new SIUnitEdit(YAxis::Unit(type), YAxis::Prefixes(type), 5);
+        layout->addWidget(minEntry, i, 1);
+        graphAxisLimitsMinEntries[type] = minEntry;
+        auto maxEntry = new SIUnitEdit(YAxis::Unit(type), YAxis::Prefixes(type), 5);
+        layout->addWidget(maxEntry, i, 2);
+        graphAxisLimitsMaxEntries[type] = maxEntry;
+    }
+
     // General page
     if(p->TCPoverride) {
         ui->SCPIServerPort->setEnabled(false);
@@ -295,9 +307,13 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsSweepHide->setChecked(p->Graphs.SweepIndicator.hide);
     ui->GraphsSweepHidePercent->setValue(p->Graphs.SweepIndicator.hidePercent);
     ui->graphsEnableMasterTicksForYAxis->setChecked(p->Graphs.enableMasterTicksForYAxis);
+    for(unsigned int i=(int) YAxis::Type::Disabled + 1;i<(int) YAxis::Type::Last;i++) {
+        auto type = (YAxis::Type) i;
+        graphAxisLimitsMinEntries[type]->setValue(p->Graphs.defaultAxisLimits.min[i]);
+        graphAxisLimitsMaxEntries[type]->setValue(p->Graphs.defaultAxisLimits.max[i]);
+    }
 
     ui->MarkerShowMarkerData->setChecked(p->Marker.defaultBehavior.showDataOnGraphs);
-
     ui->MarkerShowdB->setChecked(p->Marker.defaultBehavior.showdB);
     ui->MarkerShowdBm->setChecked(p->Marker.defaultBehavior.showdBm);
     ui->MarkerShowdBUv->setChecked(p->Marker.defaultBehavior.showdBuV);
@@ -412,6 +428,11 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.SweepIndicator.hide = ui->GraphsSweepHide->isChecked();
     p->Graphs.SweepIndicator.hidePercent = ui->GraphsSweepHidePercent->value();
     p->Graphs.enableMasterTicksForYAxis = ui->graphsEnableMasterTicksForYAxis->isChecked();
+    for(unsigned int i=(int) YAxis::Type::Disabled + 1;i<(int) YAxis::Type::Last;i++) {
+        auto type = (YAxis::Type) i;
+        p->Graphs.defaultAxisLimits.min[i] = graphAxisLimitsMinEntries[type]->value();
+        p->Graphs.defaultAxisLimits.max[i] = graphAxisLimitsMaxEntries[type]->value();
+    }
 
     p->Marker.defaultBehavior.showDataOnGraphs = ui->MarkerShowMarkerData->isChecked();
     p->Marker.defaultBehavior.showdB = ui->MarkerShowdB->isChecked();

@@ -108,6 +108,10 @@ public:
     bool isSupported(XAxis::Type type, TraceModel::DataSource source);
     static std::set<YAxis::Type> getSupported(XAxis::Type type, TraceModel::DataSource source);
     static std::complex<double> reconstructValueFromYAxisType(std::map<Type, double> yaxistypes);
+    static double getDefaultLimitMax(YAxis::Type type);
+    static double getDefaultLimitMin(YAxis::Type type);
+    double getDefaultLimitMax();
+    double getDefaultLimitMin();
 
 protected:
     virtual void updateTicks() override;

@@ -27,8 +27,8 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     yAxis[1].setTickMaster(yAxis[0]);
 
     // Setup default axis
-    setYAxis(0, YAxis::Type::Magnitude, false, false, -120, 20, 14, true);
-    setYAxis(1, YAxis::Type::Phase, false, false, -180, 180, 12, true);
+    setYAxis(0, YAxis::Type::Magnitude, false, false, YAxis::getDefaultLimitMin(YAxis::Type::Magnitude), YAxis::getDefaultLimitMax(YAxis::Type::Magnitude), 14, true);
+    setYAxis(1, YAxis::Type::Phase, false, false, YAxis::getDefaultLimitMin(YAxis::Type::Phase), YAxis::getDefaultLimitMax(YAxis::Type::Phase), 12, true);
     // enable autoscaling and set for full span (no information about actual span available yet)
     updateSpan(0, 6000000000);
     setXAxis(XAxis::Type::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 10, true);
@@ -329,10 +329,10 @@ bool TraceXYPlot::configureForTrace(Trace *t)
         return false;
     }
     if(!yAxis[0].isSupported(xAxis.getType(), getModel().getSource())) {
-        setYAxis(0, yLeftDefault, false, true, 0, 1, 10, false);
+        setYAxis(0, yLeftDefault, false, false, YAxis::getDefaultLimitMin(yLeftDefault), YAxis::getDefaultLimitMax(yLeftDefault), 10, true);
     }
     if(!yAxis[1].isSupported(xAxis.getType(), getModel().getSource())) {
-        setYAxis(1, yRightDefault, false, true, 0, 1, 10, false);
+        setYAxis(1, yRightDefault, false, false, YAxis::getDefaultLimitMin(yRightDefault), YAxis::getDefaultLimitMax(yRightDefault), 10, true);
     }
     traceRemovalPending = true;
     return true;

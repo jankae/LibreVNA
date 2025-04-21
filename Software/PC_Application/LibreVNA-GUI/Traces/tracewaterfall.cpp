@@ -27,7 +27,7 @@ TraceWaterfall::TraceWaterfall(TraceModel &model, QWidget *parent)
     plotAreaBottom = 0;
 
     xAxis.set(XAxis::Type::Frequency, false, true, 0, 6000000000, 10, false);
-    yAxis.set(YAxis::Type::Magnitude, false, true, -1, 1, 10, false);
+    yAxis.set(YAxis::Type::Magnitude, false, true, YAxis::getDefaultLimitMin(YAxis::Type::Magnitude), YAxis::getDefaultLimitMax(YAxis::Type::Magnitude), 10, false);
     initializeTraceInfo();
 }
 

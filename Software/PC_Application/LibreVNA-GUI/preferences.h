@@ -3,6 +3,8 @@
 
 #include "Util/qpointervariant.h"
 #include "savable.h"
+#include "Traces/traceaxis.h"
+#include "CustomWidgets/siunitedit.h"
 
 #include "Device/LibreVNA/Compound/compounddevice.h"
 
@@ -156,6 +158,11 @@ public:
             QString transmission;
             QString reflection;
         } defaultGraphs;
+
+        struct {
+            double min[(int) YAxis::Type::Last];
+            double max[(int) YAxis::Type::Last];
+        } defaultAxisLimits;
     } Graphs;
     struct {
         struct {
@@ -281,6 +288,46 @@ private:
         {&Graphs.SweepIndicator.hidePercent, "Graphs.SweepIndicator.hidePercent", 3.0},
         {&Graphs.defaultGraphs.transmission, "Graphs.defaultGraphs.transmission", "XY Plot"},
         {&Graphs.defaultGraphs.reflection, "Graphs.defaultGraphs.reflection", "Smith Chart"},
+
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Magnitude], "Graphs.defaultAxisLimits.Magnitude.max", 20.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Magnitude], "Graphs.defaultAxisLimits.Magnitude.min", -120.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::MagnitudedBuV], "Graphs.defaultAxisLimits.MagnitudedBuV.max", 128.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::MagnitudedBuV], "Graphs.defaultAxisLimits.MagnitudedBuV.min", -13.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::MagnitudeLinear], "Graphs.defaultAxisLimits.MagnitudeLinear.max", 1.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::MagnitudeLinear], "Graphs.defaultAxisLimits.MagnitudeLinear.min", 0.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Phase], "Graphs.defaultAxisLimits.Phase.max",180.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Phase], "Graphs.defaultAxisLimits.Phase.min", -180.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::UnwrappedPhase], "Graphs.defaultAxisLimits.UnwrappedPhase.max", 0.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::UnwrappedPhase], "Graphs.defaultAxisLimits.UnwrappedPhase.min", -360.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::VSWR], "Graphs.defaultAxisLimits.VSWR.max", 10.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::VSWR], "Graphs.defaultAxisLimits.VSWR.min", 1.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Real], "Graphs.defaultAxisLimits.Real.max", 1.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Real], "Graphs.defaultAxisLimits.Real.min", -1.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Imaginary], "Graphs.defaultAxisLimits.Imaginary.max", 1.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Imaginary], "Graphs.defaultAxisLimits.Imaginary.min", -1.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::AbsImpedance], "Graphs.defaultAxisLimits.AbsImpedance.max", 100.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::AbsImpedance], "Graphs.defaultAxisLimits.AbsImpedance.min", 0.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::SeriesR], "Graphs.defaultAxisLimits.SeriesR.max", 100.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::SeriesR], "Graphs.defaultAxisLimits.SeriesR.min", 0.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Reactance], "Graphs.defaultAxisLimits.Reactance.max", 100.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Reactance], "Graphs.defaultAxisLimits.Reactance.min", 0.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Capacitance], "Graphs.defaultAxisLimits.Capacitance.max", 10e-6},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Capacitance], "Graphs.defaultAxisLimits.Capacitance.min", 0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Inductance], "Graphs.defaultAxisLimits.Inductance.max", 1e-3},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Inductance], "Graphs.defaultAxisLimits.Inductance.min", 0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::QualityFactor], "Graphs.defaultAxisLimits.QualityFactor.max", 100.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::QualityFactor], "Graphs.defaultAxisLimits.QualityFactor.min", 0.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::GroupDelay], "Graphs.defaultAxisLimits.GroupDelay.max", 1e-6},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::GroupDelay], "Graphs.defaultAxisLimits.GroupDelay.min", 0.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::ImpulseReal], "Graphs.defaultAxisLimits.ImpulseReal.max", 1.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::ImpulseReal], "Graphs.defaultAxisLimits.ImpulseReal.min", -1.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::ImpulseMag], "Graphs.defaultAxisLimits.ImpulseMag.max", 0.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::ImpulseMag], "Graphs.defaultAxisLimits.ImpulseMag.min", -100.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Step], "Graphs.defaultAxisLimits.Step.max", 1.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Step], "Graphs.defaultAxisLimits.Step.min", -1.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Impedance], "Graphs.defaultAxisLimits.Impedance.max", 100.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::Impedance], "Graphs.defaultAxisLimits.Impedance.min", 0.0},
+
         {&Marker.defaultBehavior.showDataOnGraphs, "Marker.defaultBehavior.ShowDataOnGraphs", true},
         {&Marker.defaultBehavior.showdB, "Marker.defaultBehavior.showdB", true},
         {&Marker.defaultBehavior.showdBm, "Marker.defaultBehavior.showdBm", true},
@@ -345,6 +392,8 @@ private:
     void updateFromGUI();
     Ui::PreferencesDialog *ui;
     Preferences *p;
+    std::map<YAxis::Type, SIUnitEdit*> graphAxisLimitsMaxEntries;
+    std::map<YAxis::Type, SIUnitEdit*> graphAxisLimitsMinEntries;
 };
 
 #endif // PREFERENCESDIALOG_H

@@ -92,31 +92,29 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         max->setPrefixes(prefixes);
     };
 
-    connect(ui->Y1type, qOverload<int>(&QComboBox::currentIndexChanged), [this, updateYenableState](int) {
-        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
-    });
-    connect(ui->Y1auto, &QCheckBox::toggled, [this, updateYenableState](bool) {
-        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
-    });
-    connect(ui->Y1log, &QCheckBox::toggled, [this, updateYenableState](bool) {
-        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
-    });
-    connect(ui->Y1autoDivs, &QCheckBox::toggled, [this, updateYenableState](bool) {
-        updateYenableState(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
-    });
+    auto setupYAxisConnetions = [this, updateYenableState](QComboBox *type, QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs) {
+        connect(type, qOverload<int>(&QComboBox::currentIndexChanged), this, [=](int) {
+            updateYenableState(type, linear, log, CBauto, min, max, divs, autoDivs);
+            // update min/max settings when axis has changed
+            if(type->currentIndex() != 0) {
+                auto axisType = (YAxis::Type) type->currentIndex();
+                min->setValue(YAxis::getDefaultLimitMin(axisType));
+                max->setValue(YAxis::getDefaultLimitMax(axisType));
+            }
+        });
+        connect(CBauto, &QCheckBox::toggled, this, [=](bool) {
+            updateYenableState(type, linear, log, CBauto, min, max, divs, autoDivs);
+        });
+        connect(log, &QCheckBox::toggled, this, [=](bool) {
+            updateYenableState(type, linear, log, CBauto, min, max, divs, autoDivs);
+        });
+        connect(autoDivs, &QCheckBox::toggled, this, [=](bool) {
+            updateYenableState(type, linear, log, CBauto, min, max, divs, autoDivs);
+        });
+    };
 
-    connect(ui->Y2type, qOverload<int>(&QComboBox::currentIndexChanged), [this, updateYenableState](int) {
-        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
-    });
-    connect(ui->Y2auto, &QCheckBox::toggled, [this, updateYenableState](bool) {
-        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
-    });
-    connect(ui->Y2log, &QCheckBox::toggled, [this, updateYenableState](bool) {
-        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
-    });
-    connect(ui->Y2autoDivs, &QCheckBox::toggled, [this, updateYenableState](bool) {
-        updateYenableState(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
-    });
+    setupYAxisConnetions(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
+    setupYAxisConnetions(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
 
     auto updateXenableState = [](QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs) {
         log->setEnabled(true);
