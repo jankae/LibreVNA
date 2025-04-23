@@ -19,11 +19,10 @@ public:
     explicit TraceTouchstoneExport(TraceModel &model, QWidget *parent = nullptr);
     ~TraceTouchstoneExport();
     bool setTrace(int portFrom, int portTo, Trace *t);
-    bool setPortNum(int ports);
+    bool setPortNum(unsigned int ports);
 
 private slots:
     void on_buttonBox_accepted();
-    void on_sbPorts_valueChanged(int ports);
     void selectionChanged();
 
 private:
