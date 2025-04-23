@@ -411,6 +411,10 @@ void VNA::Work() {
 	if(Trigger::GetMode() != Trigger::Mode::ExtRef) {
 		HW::Ref::update();
 	}
+	// Stop the sweep. The source may not have been active for the last phase but the PLL
+	// must be enabled for reading the temperature. Stopping the sweep implicitly enables
+	// the source PLL
+	FPGA::StopSweep();
 	// Compile info packet
 	Protocol::PacketInfo packet;
 	packet.type = Protocol::PacketType::DeviceStatus;
