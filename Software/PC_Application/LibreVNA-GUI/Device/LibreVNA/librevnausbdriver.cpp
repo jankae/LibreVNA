@@ -377,6 +377,6 @@ bool LibreVNAUSBDriver::startNextTransmission()
         return false;
     }
     transmissionTimer.start(t.timeout);
-    qDebug() << "Transmission started (packet type" << (int) t.packet.type << "), queue at " << transmissionQueue.size();
+    // qDebug() << "Transmission started (packet type" << (int) t.packet.type << "), queue at " << transmissionQueue.size();
     return true;
 }
