@@ -13,6 +13,7 @@
 CompoundDriver::CompoundDriver()
 {
     connected = false;
+    SApoints = 0;
 
     drivers.push_back(new LibreVNAUSBDriver);
     drivers.push_back(new LibreVNATCPDriver);
