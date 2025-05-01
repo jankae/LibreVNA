@@ -198,16 +198,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
                     variableItem->setText("");
                     variableItem->setFlags(variableItem->flags() & ~(Qt::ItemIsEnabled | Qt::ItemIsEditable));
                 }
-                // available trace selections may have changed, disable/enable other rows
-                for(unsigned int i=0;i<t.getModel()->getTraces().size();i++) {
-                    auto traceItem = ui->mathTraceTable->item(i, 0);
-                    auto flags = traceItem->flags();
-                    if(t.canAddAsMathSource(t.getModel()->trace(i))) {
-                        traceItem->setFlags(flags | Qt::ItemIsEnabled);
-                    } else {
-                        traceItem->setFlags(flags & ~Qt::ItemIsEnabled);
-                    }
-                }
+                updateMathFormulaSelectableRows();
             } else {
                 // changed the variable name text
                 t.addMathSource(trace, item->text());
@@ -216,6 +207,8 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(updateMathFormulaStatus());
         });
     }
+    updateMathFormulaSelectableRows();
+    updateMathFormulaStatus();
 
     switch(t.getSource()) {
     case Trace::Source::Live: ui->bLive->click(); break;
@@ -384,6 +377,21 @@ void TraceEditDialog::okClicked()
 
 bool TraceEditDialog::updateMathFormulaStatus()
 {
+    // check output domains first (there could be a problem if a trace changed its output domain
+    // after the math trace was created)
+    auto domain = TraceMath::DataType::Invalid;
+    for(auto t : trace.mathSourceTraces) {
+        if(domain == TraceMath::DataType::Invalid) {
+            domain = t.first->outputType();
+        } else {
+            if(domain != t.first->outputType()) {
+                // not all traces have the same domain
+                ui->lMathFormulaStatus->setText("Different output domains of selected source traces");
+                ui->lMathFormulaStatus->setStyleSheet("QLabel { color : red; }");
+                return false;
+            }
+        }
+    }
     auto error = trace.getMathFormulaError();
     if(error.isEmpty()) {
         // all good
@@ -394,6 +402,21 @@ bool TraceEditDialog::updateMathFormulaStatus()
         ui->lMathFormulaStatus->setText(error);
         ui->lMathFormulaStatus->setStyleSheet("QLabel { color : red; }");
         return false;
+    }
+}
+
+void TraceEditDialog::updateMathFormulaSelectableRows()
+{
+    // available trace selections may have changed, disable/enable other rows
+    for(unsigned int i=0;i<trace.getModel()->getTraces().size();i++) {
+        auto traceItem = ui->mathTraceTable->item(i, 0);
+        auto flags = traceItem->flags();
+        if(trace.canAddAsMathSource(trace.getModel()->trace(i)) || traceItem->checkState()) {
+            // Item can always be deselected but only selected if it is compatible
+            traceItem->setFlags(flags | Qt::ItemIsEnabled);
+        } else {
+            traceItem->setFlags(flags & ~Qt::ItemIsEnabled);
+        }
     }
 }
 

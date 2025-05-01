@@ -465,7 +465,21 @@ void Trace::updateMathTracePoints()
     double startX = std::numeric_limits<double>::lowest();
     double stopX = std::numeric_limits<double>::max();
     double stepSize = std::numeric_limits<double>::max();
+    auto domain = DataType::Invalid;
     for(auto t : mathSourceTraces) {
+        if(domain == DataType::Invalid) {
+            domain = t.first->outputType();
+        } else {
+            if(domain != t.first->outputType()) {
+                // not all traces have the same domain, clear output and do not calculate
+                data.resize(0);
+                mathUpdateBegin = 0;
+                mathUpdateEnd = 0;
+                dataType = DataType::Invalid;
+                emit outputTypeChanged(dataType);
+                return;
+            }
+        }
         if(t.first->minX() > startX) {
             startX = t.first->minX();
         }
@@ -480,7 +494,14 @@ void Trace::updateMathTracePoints()
             stepSize = traceStepSize;
         }
     }
-    unsigned int samples = round((stopX - startX) / stepSize + 1);
+    if(domain != this->domain) {
+        this->domain = domain;
+        emit typeChanged(this);
+    }
+    unsigned int samples = 0;
+    if(stopX > startX) {
+        samples = round((stopX - startX) / stepSize + 1);
+    }
 //    qDebug() << "Updated trace points, now"<<samples<<"points from"<<startX<<"to"<<stopX;
     if(samples != data.size()) {
         auto oldSize = data.size();

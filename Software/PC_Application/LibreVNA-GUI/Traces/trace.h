@@ -21,6 +21,7 @@ class TraceModel;
 class Trace : public TraceMath
 {
     Q_OBJECT
+    friend class TraceEditDialog;
 public:
 
     using Data = TraceMath::Data;
