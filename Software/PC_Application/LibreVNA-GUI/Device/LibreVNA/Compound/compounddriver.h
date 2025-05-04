@@ -207,11 +207,12 @@ private:
     std::vector<LibreVNADriver*> devices;
     bool zerospan;
     bool isIdle;
+    enum class Types{VNA, SA, SG};
     struct {
         VNASettings vna;
         SASettings sa;
         SGSettings sg;
-        enum class Types{VNA, SA, SG} type;
+        Types type;
     } lastNonIdleSettings;
     unsigned int VNApoints;
     unsigned int SApoints;

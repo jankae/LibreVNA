@@ -342,7 +342,7 @@ bool CompoundDriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
         });
     }
 
-    lastNonIdleSettings.type = lastNonIdleSettings.Types::VNA;
+    lastNonIdleSettings.type = Types::VNA;
     lastNonIdleSettings.vna = s;
     isIdle = false;
 
@@ -403,7 +403,7 @@ bool CompoundDriver::setSA(const DeviceDriver::SASettings &s, std::function<void
         }
     }
 
-    lastNonIdleSettings.type = lastNonIdleSettings.Types::SA;
+    lastNonIdleSettings.type = Types::SA;
     lastNonIdleSettings.sa = s;
     isIdle = false;
 
@@ -438,7 +438,7 @@ bool CompoundDriver::setSG(const DeviceDriver::SGSettings &s)
         success &= devices[i]->setSG(devSettings);
     }
 
-    lastNonIdleSettings.type = lastNonIdleSettings.Types::SG;
+    lastNonIdleSettings.type = Types::SG;
     lastNonIdleSettings.sg = s;
     isIdle = false;
 
@@ -514,13 +514,13 @@ bool CompoundDriver::setExtRef(QString option_in, QString option_out)
         }
         // restore last non idle state
         switch(lastNonIdleSettings.type) {
-        case lastNonIdleSettings.Types::VNA:
+        case Types::VNA:
             setVNA(lastNonIdleSettings.vna);
             break;
-        case lastNonIdleSettings.Types::SA:
+        case Types::SA:
             setSA(lastNonIdleSettings.sa);
             break;
-        case lastNonIdleSettings.Types::SG:
+        case Types::SG:
             setSG(lastNonIdleSettings.sg);
             break;
         }
