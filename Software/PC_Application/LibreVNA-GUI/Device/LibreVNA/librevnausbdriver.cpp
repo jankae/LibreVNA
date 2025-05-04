@@ -179,12 +179,24 @@ void LibreVNAUSBDriver::ReceivedData()
             }
         }
         dataBuffer->removeBytes(handled_len);
+        if(packet.type == Protocol::PacketType::SetTrigger) {
+            qDebug() << "Incoming set trigger from " << serial;
+        }
+        if(packet.type == Protocol::PacketType::ClearTrigger) {
+            qDebug() << "Incoming clear trigger from " << serial;
+        }
         switch(packet.type) {
         case Protocol::PacketType::Ack:
             emit receivedAnswer(TransmissionResult::Ack);
             break;
         case Protocol::PacketType::Nack:
             emit receivedAnswer(TransmissionResult::Nack);
+            break;
+        case Protocol::PacketType::SetTrigger:
+            emit receivedTrigger(this, true);
+            break;
+        case Protocol::PacketType::ClearTrigger:
+            emit receivedTrigger(this, false);
             break;
         case Protocol::PacketType::None:
             break;

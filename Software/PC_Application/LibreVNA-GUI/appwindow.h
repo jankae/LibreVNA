@@ -82,6 +82,7 @@ private slots:
 //    void StartManualControl();
     void ResetReference();
     void UpdateReferenceToolbar();
+    void ReferenceChanged();
     void UpdateReference();
     void DeviceStatusUpdated();
     void DeviceFlagsUpdated();
@@ -143,6 +144,9 @@ private:
     DeviceLog deviceLog;
     QString deviceSerial;
     QActionGroup *deviceActionGroup;
+
+    // Reference change timer
+    QTimer referenceTimer;
 
     // Status bar widgets
     QLabel lConnectionStatus;

@@ -507,10 +507,13 @@ void AppWindow::CreateToolbars()
     tb_reference->addWidget(new QLabel("Ref out:"));
     toolbars.reference.outFreq = new QComboBox();
     tb_reference->addWidget(toolbars.reference.outFreq);
-    connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
-    connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
+    connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::ReferenceChanged);
+    connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::ReferenceChanged);
     addToolBar(tb_reference);
     tb_reference->setObjectName("Reference Toolbar");
+
+    referenceTimer.setSingleShot(true);
+    connect(&referenceTimer, &QTimer::timeout, this, &AppWindow::UpdateReference);
 }
 
 void AppWindow::SetupSCPI()
@@ -952,7 +955,7 @@ void AppWindow::ResetReference()
     toolbars.reference.outFreq->setCurrentIndex(0);
     toolbars.reference.type->blockSignals(false);
     toolbars.reference.outFreq->blockSignals(false);
-    UpdateReference();
+    ReferenceChanged();
 }
 
 //void AppWindow::StartManualControl()
@@ -1008,7 +1011,16 @@ void AppWindow::UpdateReferenceToolbar()
     }
     toolbars.reference.type->blockSignals(false);
     toolbars.reference.outFreq->blockSignals(false);
-    UpdateReference();
+    ReferenceChanged();
+}
+
+void AppWindow::ReferenceChanged()
+{
+    if(!device) {
+        // can't update without a device connected
+        return;
+    }
+    referenceTimer.start(100);
 }
 
 void AppWindow::UpdateReference()

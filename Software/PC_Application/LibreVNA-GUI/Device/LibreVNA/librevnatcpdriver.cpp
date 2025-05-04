@@ -242,6 +242,12 @@ void LibreVNATCPDriver::ReceivedData()
         case Protocol::PacketType::Nack:
             emit receivedAnswer(TransmissionResult::Nack);
             break;
+        case Protocol::PacketType::SetTrigger:
+            emit receivedTrigger(this, true);
+            break;
+        case Protocol::PacketType::ClearTrigger:
+            emit receivedTrigger(this, false);
+            break;
        default:
             // pass on to LibreVNADriver class
             emit receivedPacket(packet);

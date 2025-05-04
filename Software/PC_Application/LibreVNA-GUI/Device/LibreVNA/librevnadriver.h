@@ -191,6 +191,8 @@ signals:
     void receivedAnswer(const LibreVNADriver::TransmissionResult &result);
     void receivedPacket(const Protocol::PacketInfo& packet);
 
+    void receivedTrigger(LibreVNADriver *driver, bool set);
+
 protected slots:
     void handleReceivedPacket(const Protocol::PacketInfo& packet);
 protected:

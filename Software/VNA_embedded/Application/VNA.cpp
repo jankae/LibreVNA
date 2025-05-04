@@ -146,6 +146,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	vTaskDelay(5);
 	data.clear();
 	HW::SetMode(HW::Mode::VNA);
+	Trigger::SetInput(false);
 
 	sourceRefIndex = 0;
 	LO1RefIndex = 0;
