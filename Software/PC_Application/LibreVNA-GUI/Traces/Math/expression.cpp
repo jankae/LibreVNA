@@ -91,6 +91,14 @@ void Math::Expression::inputSamplesChanged(unsigned int begin, unsigned int end)
     }
     dataMutex.lock();
     data.resize(in.size());
+    // sanity check input values
+    if(end > 0 && end > in.size()) {
+        end = in.size() - 1;
+    }
+    if(end <= begin) {
+        dataMutex.unlock();
+        return;
+    }
     try {
         for(unsigned int i=begin;i<end;i++) {
             t = in[i].x;
