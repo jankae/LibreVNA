@@ -551,6 +551,10 @@ void Trace::scheduleMathCalculation(unsigned int begin, unsigned int end)
 void Trace::calculateMath()
 {
     lastMathUpdate = QTime::currentTime();
+    if(mathUpdateEnd <= mathUpdateBegin) {
+        // nothing to do
+        return;
+    }
     if(mathUpdateBegin >= data.size() || mathUpdateEnd >= data.size() + 1) {
         qWarning() << "Not calculating math trace, out of limits. Requested from" << mathUpdateBegin << "to" << mathUpdateEnd <<" but data is of size" << data.size();
         return;
@@ -660,6 +664,11 @@ bool Trace::canAddAsMathSource(Trace *t)
 
 bool Trace::addMathSource(Trace *t, QString variableName)
 {
+    if(mathSourceTraces.count(t)) {
+        // this trace is already used as a math source
+        mathSourceTraces[t] = variableName;
+        return true;
+    }
 //    qDebug() << "Adding trace" << t << "as a math source to" << this << "as variable" << variableName;
     if(!canAddAsMathSource(t)) {
         return false;

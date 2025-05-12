@@ -172,6 +172,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
             if(t.mathDependsOn(ts, true)) {
                 traceItem->setCheckState(Qt::Checked);
                 variableItem->setFlags(variableItem->flags() | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+                ui->mathTraceTable->blockSignals(false);
             } else {
                 traceItem->setCheckState(Qt::Unchecked);
             }
@@ -181,7 +182,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
         connect(ui->mathTraceTable, &QTableWidget::itemChanged, [&](QTableWidgetItem *item){
             auto row = ui->mathTraceTable->row(item);
             auto column = ui->mathTraceTable->column(item);
-            qDebug() << "Item changed at row"<<row<<"column"<<column;
+//            qDebug() << "Item changed at row"<<row<<"column"<<column;
             ui->mathTraceTable->blockSignals(true);
             auto trace = t.getModel()->trace(row);
             if(column == 0) {
@@ -408,6 +409,9 @@ bool TraceEditDialog::updateMathFormulaStatus()
 void TraceEditDialog::updateMathFormulaSelectableRows()
 {
     // available trace selections may have changed, disable/enable other rows
+
+    // block signals, otherwise the trace names will be reset
+    ui->mathTraceTable->blockSignals(true);
     for(unsigned int i=0;i<trace.getModel()->getTraces().size();i++) {
         auto traceItem = ui->mathTraceTable->item(i, 0);
         auto flags = traceItem->flags();
@@ -418,6 +422,7 @@ void TraceEditDialog::updateMathFormulaSelectableRows()
             traceItem->setFlags(flags & ~Qt::ItemIsEnabled);
         }
     }
+    ui->mathTraceTable->blockSignals(false);
 }
 
 MathModel::MathModel(Trace &t, QObject *parent)
