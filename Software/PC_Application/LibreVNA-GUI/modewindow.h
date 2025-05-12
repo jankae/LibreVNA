@@ -29,6 +29,7 @@ private slots:
     void ModeCreated(int modeIndex);
     void ModeClosed(int modeIndex);
     void CurrentModeChanged(int modeIndex);
+    void renameMode(int modeIndex);
 };
 
 #endif // MODEWINDOW_H
