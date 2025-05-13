@@ -1,5 +1,27 @@
 # Changelog
 
+## v1.6.3
+Bugfixes and quality of life improvements
+
+- Windows and macOS: add icon to GUI application
+- From math traces:
+  - Validate formula immediately and show error messages
+  - Bugfix: do not reset variable names when opening trace edit dialog again
+  - Fix crash when combining with de-embedding
+- Calibration:
+  - Interpolate points using mag/phase instead of real/imag (minor improvements in accuracy)
+  - Update widget when changing span
+  - Fix race condition when aborting measurement
+  - Reset LibreCAL port settings when aborting measurement
+- Manual improvement: typos and wording
+- Increase USB buffer timeout during sweep (should prevent disconnect when CPU is very busy)
+- Include actual serial of connected device in SCPI \*IDN? response
+- Allow group delay plot for reflection traces
+- Configurable default Y axis limits per Y axis type
+- Fix streaming server output for zero span sweeps
+- Synchronization improvements for compound device
+- Allow name changes for existing modes
+
 ## v1.6.2
 
 Mostly bugfixes with only minor new features
