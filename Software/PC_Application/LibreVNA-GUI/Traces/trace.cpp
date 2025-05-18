@@ -427,6 +427,9 @@ QString Trace::getMathFormulaError() const
                     break;
                 }
             }
+            if(varName == "x") {
+                found = true;
+            }
             if(!found) {
                 return "Unknown variable: "+varName;
             }
