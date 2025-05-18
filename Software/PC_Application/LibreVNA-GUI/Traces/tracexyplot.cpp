@@ -1040,8 +1040,14 @@ void TraceXYPlot::enableTraceAxis(Trace *t, int axis, bool enabled)
         // unable to add trace to the requested axis
         return;
     }
-    if(axis == 0) {
-        TracePlot::enableTrace(t, enabled);
+    if(enabled) {
+        TracePlot::enableTrace(t, true);
+    } else {
+        // only disable trace on parent trace list if disabled for both axes
+        int otherAxis = axis ? 0 : 1;
+        if(tracesAxis[otherAxis].find(t) == tracesAxis[otherAxis].end()) {
+            TracePlot::enableTrace(t, false);
+        }
     }
     bool alreadyEnabled = tracesAxis[axis].find(t) != tracesAxis[axis].end();
     if(alreadyEnabled != enabled) {
