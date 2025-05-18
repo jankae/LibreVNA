@@ -95,6 +95,7 @@ void TraceWaterfall::replot()
 
 void TraceWaterfall::fromJSON(nlohmann::json j)
 {
+    parseBaseJSON(j);
     resetWaterfall();
     pixelsPerLine = j.value("pixelsPerLine", pixelsPerLine);
     maxDataSweeps = j.value("maxLines", maxDataSweeps);
@@ -127,7 +128,7 @@ void TraceWaterfall::fromJSON(nlohmann::json j)
 
 nlohmann::json TraceWaterfall::toJSON()
 {
-    nlohmann::json j;
+    nlohmann::json j = getBaseJSON();
     j["pixelsPerLine"] = pixelsPerLine;
     j["direction"] = dir == Direction::TopToBottom ? "TopToBottom" : "BottomToTop";
     j["keepDataBeyondPlot"] = keepDataBeyondPlotSize;

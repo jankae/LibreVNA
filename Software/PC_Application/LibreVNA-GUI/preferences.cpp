@@ -295,6 +295,7 @@ void PreferencesDialog::setInitialGUIState()
     ui->GraphsLimitIndication->setCurrentIndex((int) p->Graphs.limitIndication);
     ui->GraphsLimitNaNpasses->setCurrentIndex(p->Graphs.limitNaNpasses ? 1 : 0);
     ui->GraphsLineWidth->setValue(p->Graphs.lineWidth);
+    ui->GraphsFontSizeTitle->setValue(p->Graphs.fontSizeTitle);
     ui->GraphsFontSizeAxis->setValue(p->Graphs.fontSizeAxis);
     ui->GraphsFontSizeCursorOverlay->setValue(p->Graphs.fontSizeCursorOverlay);
     ui->GraphsFontSizeMarkerData->setValue(p->Graphs.fontSizeMarkerData);
@@ -416,6 +417,7 @@ void PreferencesDialog::updateFromGUI()
     p->Graphs.limitIndication = (GraphLimitIndication) ui->GraphsLimitIndication->currentIndex();
     p->Graphs.limitNaNpasses = ui->GraphsLimitNaNpasses->currentIndex() == 1;
     p->Graphs.lineWidth = ui->GraphsLineWidth->value();
+    p->Graphs.fontSizeTitle = ui->GraphsFontSizeTitle->value();
     p->Graphs.fontSizeAxis = ui->GraphsFontSizeAxis->value();
     p->Graphs.fontSizeCursorOverlay = ui->GraphsFontSizeCursorOverlay->value();
     p->Graphs.fontSizeMarkerData = ui->GraphsFontSizeMarkerData->value();

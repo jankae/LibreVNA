@@ -136,6 +136,7 @@ public:
         bool limitNaNpasses;
 
         double lineWidth;
+        int fontSizeTitle;
         int fontSizeAxis;
         int fontSizeMarkerData;
         int fontSizeTraceNames;
@@ -274,6 +275,7 @@ private:
         {&Graphs.limitIndication, "Graphs.limitIndication", GraphLimitIndication::PassFailText},
         {&Graphs.limitNaNpasses, "Graphs.limitNaNpasses", false},
         {&Graphs.lineWidth, "Graphs.lineWidth", 1.0},
+        {&Graphs.fontSizeTitle, "Graphs.fontSizeTitle", 18},
         {&Graphs.fontSizeAxis, "Graphs.fontSizeAxis", 10},
         {&Graphs.fontSizeCursorOverlay, "Graphs.fontSizeCursorOverlay", 12},
         {&Graphs.fontSizeMarkerData, "Graphs.fontSizeMarkerData", 12},

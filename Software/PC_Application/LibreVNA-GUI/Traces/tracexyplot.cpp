@@ -157,7 +157,7 @@ void TraceXYPlot::setAuto(bool horizontally, bool vertically)
 
 nlohmann::json TraceXYPlot::toJSON()
 {
-    nlohmann::json j;
+    nlohmann::json j = getBaseJSON();
     nlohmann::json jX;
     jX["type"] = xAxis.TypeToName().toStdString();
     jX["mode"] = AxisModeToName(xAxisMode).toStdString();
@@ -198,6 +198,7 @@ nlohmann::json TraceXYPlot::toJSON()
 
 void TraceXYPlot::fromJSON(nlohmann::json j)
 {
+    parseBaseJSON(j);
     auto jX = j["XAxis"];
     // old format used enum value for type and mode, new format uses string encoding (more robust when additional enum values are added).
     // Check which format is used and parse accordingly
