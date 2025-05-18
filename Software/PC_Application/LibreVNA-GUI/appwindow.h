@@ -59,14 +59,14 @@ public:
         Deembedded = 2,
     };
 
-    void addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type);
+    void addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type, bool is_zerospan);
 
     enum class SADataType {
         Raw = 0,
         Normalized = 1,
     };
 
-    void addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type);
+    void addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type, bool is_zerospan);
 
 public slots:
     void setModeStatus(QString msg);
@@ -82,6 +82,7 @@ private slots:
 //    void StartManualControl();
     void ResetReference();
     void UpdateReferenceToolbar();
+    void ReferenceChanged();
     void UpdateReference();
     void DeviceStatusUpdated();
     void DeviceFlagsUpdated();
@@ -143,6 +144,9 @@ private:
     DeviceLog deviceLog;
     QString deviceSerial;
     QActionGroup *deviceActionGroup;
+
+    // Reference change timer
+    QTimer referenceTimer;
 
     // Status bar widgets
     QLabel lConnectionStatus;

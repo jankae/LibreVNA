@@ -17,6 +17,7 @@
 #include <QMimeData>
 #include <QDebug>
 #include <QApplication>
+#include <QInputDialog>
 
 std::set<TracePlot*> TracePlot::plots;
 
@@ -233,13 +234,24 @@ void TracePlot::paintEvent(QPaintEvent *event)
     p.setBackground(QBrush(pref.Graphs.Color.background));
     p.fillRect(0, 0, width(), height(), QBrush(pref.Graphs.Color.background));
 
+    marginTop = 0;
+    // draw title
+    if(!title.isEmpty()) {
+        QFont font = p.font();
+        font.setPixelSize(pref.Graphs.fontSizeTitle);
+        p.setFont(font);
+        p.setPen(Util::getFontColorFromBackground(pref.Graphs.Color.background));
+        p.drawText(QRect(0, 0, width(), pref.Graphs.fontSizeTitle), Qt::AlignCenter, title);
+        marginTop += pref.Graphs.fontSizeTitle;
+    }
+
     // show names of active traces and marker data (if enabled)
     bool hasMarkerData = false;
     auto marginMarkerData = pref.Graphs.fontSizeMarkerData * 12.5;
-    marginTop = pref.Graphs.fontSizeTraceNames + 8;
+    auto traceNameTop = marginTop + 5;
+    marginTop += pref.Graphs.fontSizeTraceNames + 8;
     int x = 1; // xcoordinate for the next trace name
     int y = marginTop; // ycoordinate for the next marker data
-    auto areaTextTop = 5;
     auto labelMarginRight = 4;
     auto borderRadius = 5;
     for(auto t : traces) {
@@ -248,7 +260,7 @@ void TracePlot::paintEvent(QPaintEvent *event)
         }
 
         // Trace name
-        auto textArea = QRect(x, areaTextTop, width() - x, marginTop);
+        auto textArea = QRect(x, traceNameTop, width() - x, pref.Graphs.fontSizeTraceNames + 8);
         QFont font = p.font();
         font.setPixelSize(pref.Graphs.fontSizeTraceNames);
         p.setFont(font);
@@ -384,6 +396,13 @@ void TracePlot::paintEvent(QPaintEvent *event)
 void TracePlot::finishContextMenu()
 {
     contextmenu->addSeparator();
+    auto setTitle = new QAction("Set Title", contextmenu);
+    contextmenu->addAction(setTitle);
+    connect(setTitle, &QAction::triggered, [=](){
+        title = QInputDialog::getText(contextmenu, "Set new graph title", "Enter new title:", QLineEdit::Normal, title);
+    });
+    contextmenu->addSeparator();
+
     if(parentTile) {
         auto add = new QMenu("Add tile...", contextmenu);
         auto left = new QAction("to the left", contextmenu);
@@ -721,6 +740,18 @@ QRect TracePlot::getDropRect()
     auto w = width() - marginLeft - marginRight;
     auto h = height() - marginTop - marginBottom;
     return QRect(QPoint(w*dropBorders, h*dropBorders), QSize(w*(1.0-2*dropBorders), h*(1.0-2*dropBorders)));
+}
+
+nlohmann::json TracePlot::getBaseJSON()
+{
+    nlohmann::json j;
+    j["title"] = title.toStdString();
+    return j;
+}
+
+void TracePlot::parseBaseJSON(nlohmann::json j)
+{
+    title = QString::fromStdString(j.value("title", ""));
 }
 
 std::set<TracePlot *> TracePlot::getPlots()

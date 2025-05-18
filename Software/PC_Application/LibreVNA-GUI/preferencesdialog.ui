@@ -98,7 +98,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -112,8 +112,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>683</width>
-             <height>928</height>
+             <width>522</width>
+             <height>945</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -955,7 +955,7 @@
              <x>0</x>
              <y>0</y>
              <width>683</width>
-             <height>1118</height>
+             <height>1217</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1066,59 +1066,73 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
+                 <item row="2" column="0">
                   <widget class="QLabel" name="label_39">
                    <property name="text">
                     <string>Font (axes):</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
+                 <item row="2" column="1">
                   <widget class="QSpinBox" name="GraphsFontSizeAxis">
                    <property name="minimum">
                     <number>1</number>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="3" column="1">
                   <widget class="QSpinBox" name="GraphsFontSizeTraceNames">
                    <property name="minimum">
                     <number>1</number>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
+                 <item row="4" column="1">
                   <widget class="QSpinBox" name="GraphsFontSizeMarkerData">
                    <property name="minimum">
                     <number>1</number>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
+                 <item row="5" column="1">
                   <widget class="QSpinBox" name="GraphsFontSizeCursorOverlay">
                    <property name="minimum">
                     <number>1</number>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
+                 <item row="3" column="0">
                   <widget class="QLabel" name="label_40">
                    <property name="text">
                     <string>Font (trace names):</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="0">
+                 <item row="4" column="0">
                   <widget class="QLabel" name="label_41">
                    <property name="text">
                     <string>Font (marker data):</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="0">
+                 <item row="5" column="0">
                   <widget class="QLabel" name="label_42">
                    <property name="text">
                     <string>Font (cursor overlay):</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_68">
+                   <property name="text">
+                    <string>Font (title):</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QSpinBox" name="GraphsFontSizeTitle">
+                   <property name="minimum">
+                    <number>1</number>
                    </property>
                   </widget>
                  </item>
@@ -1444,6 +1458,36 @@
                </widget>
               </item>
               <item>
+               <widget class="QGroupBox" name="GraphAxisLimitGroup">
+                <property name="title">
+                 <string>Default Y Axis limits</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_3">
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_66">
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Default Maximum Limit&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_65">
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Axis Type&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLabel" name="label_67">
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Default Minimum Limit&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
                <spacer name="verticalSpacer_3">
                 <property name="orientation">
                  <enum>Qt::Orientation::Vertical</enum>
@@ -1476,8 +1520,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>683</width>
-             <height>605</height>
+             <width>602</width>
+             <height>628</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1787,6 +1831,20 @@
                   </item>
                  </widget>
                 </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_64">
+                  <property name="text">
+                   <string>Show out-of-range marker at top/bottom:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QCheckBox" name="MarkerClipToYAxis">
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
@@ -1822,8 +1880,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>697</width>
-             <height>563</height>
+             <width>168</width>
+             <height>127</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -2105,8 +2163,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>697</width>
-             <height>563</height>
+             <width>258</width>
+             <height>241</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_19">

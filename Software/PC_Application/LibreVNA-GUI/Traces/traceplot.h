@@ -103,6 +103,10 @@ protected:
     virtual QString mouseText(QPoint pos) {Q_UNUSED(pos) return QString();}
     QRect getDropRect();
 
+    // save/load base class members. Should be called by derived classes in the toJSON/fromJSON functions
+    nlohmann::json getBaseJSON();
+    void parseBaseJSON(nlohmann::json j);
+
 protected slots:
     void newTraceAvailable(Trace *t);
     void traceDeleted(Trace *t);
@@ -150,6 +154,9 @@ protected:
     unsigned int marginTop;
 
     bool limitPassing;
+
+private:
+    QString title;
 };
 
 #endif // TRACEPLOT_H

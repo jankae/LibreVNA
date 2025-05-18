@@ -27,8 +27,8 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     yAxis[1].setTickMaster(yAxis[0]);
 
     // Setup default axis
-    setYAxis(0, YAxis::Type::Magnitude, false, false, -120, 20, 14, true);
-    setYAxis(1, YAxis::Type::Phase, false, false, -180, 180, 12, true);
+    setYAxis(0, YAxis::Type::Magnitude, false, false, YAxis::getDefaultLimitMin(YAxis::Type::Magnitude), YAxis::getDefaultLimitMax(YAxis::Type::Magnitude), 14, true);
+    setYAxis(1, YAxis::Type::Phase, false, false, YAxis::getDefaultLimitMin(YAxis::Type::Phase), YAxis::getDefaultLimitMax(YAxis::Type::Phase), 12, true);
     // enable autoscaling and set for full span (no information about actual span available yet)
     updateSpan(0, 6000000000);
     setXAxis(XAxis::Type::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 10, true);
@@ -157,7 +157,7 @@ void TraceXYPlot::setAuto(bool horizontally, bool vertically)
 
 nlohmann::json TraceXYPlot::toJSON()
 {
-    nlohmann::json j;
+    nlohmann::json j = getBaseJSON();
     nlohmann::json jX;
     jX["type"] = xAxis.TypeToName().toStdString();
     jX["mode"] = AxisModeToName(xAxisMode).toStdString();
@@ -198,6 +198,7 @@ nlohmann::json TraceXYPlot::toJSON()
 
 void TraceXYPlot::fromJSON(nlohmann::json j)
 {
+    parseBaseJSON(j);
     auto jX = j["XAxis"];
     // old format used enum value for type and mode, new format uses string encoding (more robust when additional enum values are added).
     // Check which format is used and parse accordingly
@@ -329,10 +330,10 @@ bool TraceXYPlot::configureForTrace(Trace *t)
         return false;
     }
     if(!yAxis[0].isSupported(xAxis.getType(), getModel().getSource())) {
-        setYAxis(0, yLeftDefault, false, true, 0, 1, 10, false);
+        setYAxis(0, yLeftDefault, false, false, YAxis::getDefaultLimitMin(yLeftDefault), YAxis::getDefaultLimitMax(yLeftDefault), 10, true);
     }
     if(!yAxis[1].isSupported(xAxis.getType(), getModel().getSource())) {
-        setYAxis(1, yRightDefault, false, true, 0, 1, 10, false);
+        setYAxis(1, yRightDefault, false, false, YAxis::getDefaultLimitMin(yRightDefault), YAxis::getDefaultLimitMax(yRightDefault), 10, true);
     }
     traceRemovalPending = true;
     return true;
@@ -638,13 +639,25 @@ void TraceXYPlot::draw(QPainter &p)
                         p.drawLine(p1, p2);
                     }
 
+                    if(pref.Marker.clipToYAxis) {
+                        // clip Y coordinate of markers to visible area (always show markers, even when out of range)
+                        if(point.y() < plotRect.top()) {
+                            point.ry() = plotRect.top();
+                        } else if(point.y() > plotRect.bottom()) {
+                            point.ry() = plotRect.bottom();
+                        }
+                    }
+
                     if(!plotRect.contains(point)) {
                         // out of screen
                         continue;
                     }
                     auto symbol = m->getSymbol();
                     point += QPoint(-symbol.width()/2, -symbol.height());
+                    // ignore clipRect for markers
+                    p.setClipping(false);
                     p.drawPixmap(point, symbol);
+                    p.setClipping(true);
                 }
             }
         }
@@ -1027,8 +1040,14 @@ void TraceXYPlot::enableTraceAxis(Trace *t, int axis, bool enabled)
         // unable to add trace to the requested axis
         return;
     }
-    if(axis == 0) {
-        TracePlot::enableTrace(t, enabled);
+    if(enabled) {
+        TracePlot::enableTrace(t, true);
+    } else {
+        // only disable trace on parent trace list if disabled for both axes
+        int otherAxis = axis ? 0 : 1;
+        if(tracesAxis[otherAxis].find(t) == tracesAxis[otherAxis].end()) {
+            TracePlot::enableTrace(t, false);
+        }
     }
     bool alreadyEnabled = tracesAxis[axis].find(t) != tracesAxis[axis].end();
     if(alreadyEnabled != enabled) {
@@ -1086,11 +1105,6 @@ bool TraceXYPlot::supported(Trace *t, YAxis::Type type)
     case YAxis::Type::QualityFactor:
     case YAxis::Type::AbsImpedance:
         if(!t->isReflection()) {
-            return false;
-        }
-        break;
-    case YAxis::Type::GroupDelay:
-        if(t->isReflection()) {
             return false;
         }
         break;

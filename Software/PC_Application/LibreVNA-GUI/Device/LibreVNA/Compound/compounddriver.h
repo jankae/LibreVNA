@@ -4,6 +4,8 @@
 #include "../../devicedriver.h"
 #include "compounddevice.h"
 
+#include <QMutex>
+
 class CompoundDriver : public DeviceDriver
 {
 public:
@@ -169,6 +171,8 @@ public:
 
     static std::set<QString> getIndividualDeviceSerials();
 
+private slots:
+    void triggerReceived(LibreVNADriver *device, bool set);
 private:
     void parseCompoundJSON();
     void createCompoundJSON();
@@ -177,6 +181,8 @@ private:
     void updatedStatus(LibreVNADriver *device, const Protocol::DeviceStatus &status);
     void datapointReceivecd(LibreVNADriver *dev, Protocol::VNADatapoint<32> *data);
     void spectrumResultReceived(LibreVNADriver *dev, Protocol::SpectrumAnalyzerResult res);
+    void enableTriggerForwarding();
+    void disableTriggerForwarding();
 
     Info info;
     std::map<LibreVNADriver*, Info> deviceInfos;
@@ -196,8 +202,18 @@ private:
     // Configuration of the device we are connected to
     CompoundDevice activeDevice;
     bool connected;
+    bool triggerForwarding;
+    QMutex triggerMutex;
     std::vector<LibreVNADriver*> devices;
     bool zerospan;
+    bool isIdle;
+    enum class Types{VNA, SA, SG};
+    struct {
+        VNASettings vna;
+        SASettings sa;
+        SGSettings sg;
+        Types type;
+    } lastNonIdleSettings;
     unsigned int VNApoints;
     unsigned int SApoints;
 

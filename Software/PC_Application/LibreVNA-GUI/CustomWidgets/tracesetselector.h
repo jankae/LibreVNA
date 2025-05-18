@@ -35,6 +35,7 @@ public:
     double getLowerFreq() const;
     double getUpperFreq() const;
     double getReferenceImpedance() const;
+    TraceModel* getModel() const {return model;}
 
 signals:
     void selectionChanged();

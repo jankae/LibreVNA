@@ -134,7 +134,8 @@ void MAX2871::SetCPCurrent(uint8_t mA) {
 
 bool MAX2871::SetFrequency(uint64_t f) {
 	if (f < 23500000 || f > MaxFreq) {
-		LOG_ERR("Frequency must be between 23.5MHz and 6GHz");
+		LOG_ERR("Frequency must be between 23.5MHz and 6GHz, requested %lu%06luHz", (uint32_t ) (f / 1000000),
+				(uint32_t ) (f % 1000000));
 		return false;
 	}
 	LOG_DEBUG("Setting frequency to %lu%06luHz...", (uint32_t ) (f / 1000000),

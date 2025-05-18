@@ -393,6 +393,26 @@ std::complex<double> YAxis::reconstructValueFromYAxisType(std::map<YAxis::Type, 
     return ret;
 }
 
+double YAxis::getDefaultLimitMax(Type type)
+{
+    return Preferences::getInstance().Graphs.defaultAxisLimits.max[(int) type];
+}
+
+double YAxis::getDefaultLimitMin(Type type)
+{
+    return Preferences::getInstance().Graphs.defaultAxisLimits.min[(int) type];
+}
+
+double YAxis::getDefaultLimitMax()
+{
+    return getDefaultLimitMax(type);
+}
+
+double YAxis::getDefaultLimitMin()
+{
+    return getDefaultLimitMin(type);
+}
+
 void YAxis::updateTicks()
 {
     Axis::updateTicks();

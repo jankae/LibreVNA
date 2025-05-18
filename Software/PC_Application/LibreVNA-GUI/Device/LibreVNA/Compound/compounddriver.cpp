@@ -13,6 +13,9 @@
 CompoundDriver::CompoundDriver()
 {
     connected = false;
+    isIdle = true;
+    triggerForwarding = false;
+    SApoints = 0;
 
     drivers.push_back(new LibreVNAUSBDriver);
     drivers.push_back(new LibreVNATCPDriver);
@@ -295,6 +298,11 @@ bool CompoundDriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
         return setIdle(cb);
     }
 
+    setIdle([this](bool){
+        enableTriggerForwarding();
+        qDebug() << "Start trigger forwarding";
+    });
+
     // create port->stage mapping
     portStageMapping.clear();
     for(unsigned int i=0;i<s.excitedPorts.size();i++) {
@@ -333,6 +341,11 @@ bool CompoundDriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
             }
         });
     }
+
+    lastNonIdleSettings.type = Types::VNA;
+    lastNonIdleSettings.vna = s;
+    isIdle = false;
+
     return success;
 }
 
@@ -351,6 +364,11 @@ bool CompoundDriver::setSA(const DeviceDriver::SASettings &s, std::function<void
         return false;
     }
     zerospan = s.freqStart == s.freqStop;
+
+    setIdle([this](bool){
+        enableTriggerForwarding();
+        qDebug() << "Start trigger forwarding";
+    });
 
     // Configure the devices
     results.clear();
@@ -384,6 +402,11 @@ bool CompoundDriver::setSA(const DeviceDriver::SASettings &s, std::function<void
             break;
         }
     }
+
+    lastNonIdleSettings.type = Types::SA;
+    lastNonIdleSettings.sa = s;
+    isIdle = false;
+
     return success;
 }
 
@@ -414,14 +437,22 @@ bool CompoundDriver::setSG(const DeviceDriver::SGSettings &s)
         }
         success &= devices[i]->setSG(devSettings);
     }
+
+    lastNonIdleSettings.type = Types::SG;
+    lastNonIdleSettings.sg = s;
+    isIdle = false;
+
     return success;
 }
 
 bool CompoundDriver::setIdle(std::function<void (bool)> cb)
 {
+    disableTriggerForwarding();
+    qDebug() << "Stop trigger forwarding";
     auto success = true;
     results.clear();
     for(auto dev : devices) {
+        dev->sendWithoutPayload(Protocol::PacketType::ClearTrigger);
         success &= dev->setIdle([=](bool success){
             if(cb) {
                 results[dev] = success;
@@ -429,6 +460,9 @@ bool CompoundDriver::setIdle(std::function<void (bool)> cb)
             }
         });
     }
+
+    isIdle = true;
+
     return success;
 }
 
@@ -463,9 +497,36 @@ QStringList CompoundDriver::availableExtRefOutSettings()
 bool CompoundDriver::setExtRef(QString option_in, QString option_out)
 {
     auto success = true;
-    for(auto dev : devices) {
-        success &= dev->setExtRef(option_in, option_out);
+
+    qDebug() << "Ref change start";
+    if(isIdle) {
+        // can immediately switch reference settings
+        for(auto dev : devices) {
+            success &= dev->setExtRef(option_in, option_out);
+        }
+    } else {
+        // can not switch during a sweep
+        // set to idle first
+        setIdle();
+        // change reference
+        for(auto dev : devices) {
+            success &= dev->setExtRef(option_in, option_out);
+        }
+        // restore last non idle state
+        switch(lastNonIdleSettings.type) {
+        case Types::VNA:
+            setVNA(lastNonIdleSettings.vna);
+            break;
+        case Types::SA:
+            setSA(lastNonIdleSettings.sa);
+            break;
+        case Types::SG:
+            setSG(lastNonIdleSettings.sg);
+            break;
+        }
     }
+    qDebug() << "Ref change stop";
+
     return success;
 }
 
@@ -482,6 +543,27 @@ std::set<QString> CompoundDriver::getIndividualDeviceSerials()
         ret.merge(d->GetAvailableDevices());
     }
     return ret;
+}
+
+void CompoundDriver::triggerReceived(LibreVNADriver *device, bool set)
+{
+    triggerMutex.lock();
+    if(activeDevice.sync == LibreVNADriver::Synchronization::GUI && triggerForwarding) {
+        for(unsigned int i=0;i<devices.size();i++) {
+            if(devices[i] == device) {
+                // pass on to the next device
+                if(i < devices.size() - 1) {
+                    qDebug() << "Passing on trigger" << set << "from" << device->getSerial() << "to" << devices[i+1]->getSerial();
+                    devices[i+1]->sendWithoutPayload(set ? Protocol::PacketType::SetTrigger : Protocol::PacketType::ClearTrigger);
+                } else {
+                    qDebug() << "Passing on trigger" << set << "from" << device->getSerial() << "to" << devices[0]->getSerial();
+                    devices[0]->sendWithoutPayload(set ? Protocol::PacketType::SetTrigger : Protocol::PacketType::ClearTrigger);
+                }
+                break;
+            }
+        }
+    }
+    triggerMutex.unlock();
 }
 
 void CompoundDriver::parseCompoundJSON()
@@ -527,36 +609,6 @@ void CompoundDriver::incomingPacket(LibreVNADriver *device, const Protocol::Pack
         break;
     case Protocol::PacketType::SpectrumAnalyzerResult:
         spectrumResultReceived(device, p.spectrumResult);
-        break;
-    case Protocol::PacketType::SetTrigger:
-        if(activeDevice.sync == LibreVNADriver::Synchronization::GUI) {
-            for(unsigned int i=0;i<devices.size();i++) {
-                if(devices[i] == device) {
-                    // pass on to the next device
-                    if(i < devices.size() - 1) {
-                        devices[i+1]->sendWithoutPayload(Protocol::PacketType::SetTrigger);
-                    } else {
-                        devices[0]->sendWithoutPayload(Protocol::PacketType::SetTrigger);
-                    }
-                    break;
-                }
-            }
-        }
-        break;
-    case Protocol::PacketType::ClearTrigger:
-        if(activeDevice.sync == LibreVNADriver::Synchronization::GUI) {
-            for(unsigned int i=0;i<devices.size();i++) {
-                if(devices[i] == device) {
-                    // pass on to the next device
-                    if(i < devices.size() - 1) {
-                        devices[i+1]->sendWithoutPayload(Protocol::PacketType::ClearTrigger);
-                    } else {
-                        devices[0]->sendWithoutPayload(Protocol::PacketType::ClearTrigger);
-                    }
-                    break;
-                }
-            }
-        }
         break;
     default:
         // nothing to do for other packet types
@@ -649,6 +701,26 @@ void CompoundDriver::spectrumResultReceived(LibreVNADriver *dev, Protocol::Spect
             }
         }
     }
+}
+
+void CompoundDriver::enableTriggerForwarding()
+{
+    triggerMutex.lock();
+    for(auto d : devices) {
+        connect(d, &LibreVNADriver::receivedTrigger, this, &CompoundDriver::triggerReceived, Qt::UniqueConnection);
+    }
+    triggerForwarding = true;
+    triggerMutex.unlock();
+}
+
+void CompoundDriver::disableTriggerForwarding()
+{
+    triggerMutex.lock();
+    triggerForwarding = false;
+    for(auto d : devices) {
+        QObject::disconnect(d, &LibreVNADriver::receivedTrigger, this, &CompoundDriver::triggerReceived);
+    }
+    triggerMutex.unlock();
 }
 
 void CompoundDriver::datapointReceivecd(LibreVNADriver *dev, Protocol::VNADatapoint<32> *data)

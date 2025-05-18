@@ -135,6 +135,7 @@ uint16_t GetStatus();
 void OverwriteHardware(uint8_t attenuation, LowpassFilter filter, bool lowband, bool port1_enabled, bool port2_enabled);
 void DisableHardwareOverwrite();
 
+void StopSweep();
 void StartSweep();
 void AbortSweep();
 

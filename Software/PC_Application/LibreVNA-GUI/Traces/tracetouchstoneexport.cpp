@@ -17,7 +17,23 @@ TraceTouchstoneExport::TraceTouchstoneExport(TraceModel &model, QWidget *parent)
     ui->selector->setModel(&model);
     ui->selector->setPartialSelectionAllowed(true);
     connect(ui->selector, qOverload<>(&TraceSetSelector::selectionChanged), this, &TraceTouchstoneExport::selectionChanged);
-    on_sbPorts_valueChanged(ui->sbPorts->value());
+    connect(ui->sbPorts, &QSpinBox::valueChanged, this, &TraceTouchstoneExport::setPortNum);
+    // figure out how many ports the user most likely needs
+    unsigned int p;
+    for(p=4;p>=1;p--) {
+        // do we have a trace name which could indicate such a number of ports?
+        for(unsigned int i=1;i<=p;i++) {
+            auto n1 = "S"+QString::number(p)+QString::number(i);
+            auto n2 = "S"+QString::number(i)+QString::number(p);
+            for(auto t : model.getTraces()) {
+                if(t->name().contains(n1) || t->name().contains(n2)) {
+                    goto traceFound;
+                }
+            }
+        }
+    }
+traceFound:
+    setPortNum(p);
 }
 
 TraceTouchstoneExport::~TraceTouchstoneExport()
@@ -30,13 +46,32 @@ bool TraceTouchstoneExport::setTrace(int portFrom, int portTo, Trace *t)
     return ui->selector->setTrace(portTo, portFrom, t);
 }
 
-bool TraceTouchstoneExport::setPortNum(int ports)
+bool TraceTouchstoneExport::setPortNum(unsigned int ports)
 {
     if(ports < 1 || ports > 4) {
         return false;
     }
+    if((unsigned int) ui->sbPorts->value() == ports && ui->selector->getPorts() == ports) {
+        // already set correctly, nothing to do
+        return true;
+    }
     ui->sbPorts->setValue(ports);
     ui->selector->setPorts(ports);
+    // Attempt to set default traces (this will result in correctly populated
+    // 2 port export if the initial 4 traces have not been modified)
+    auto traces = ui->selector->getModel()->getTraces();
+    for(unsigned int i=1;i<=ports;i++) {
+        for(unsigned int j=1;j<=ports;j++) {
+            auto name = "S"+QString::number(i)+QString::number(j);
+            for(auto t : traces) {
+                if(t->name().contains(name)) {
+                    // this could be the correct trace
+                    setTrace(j, i, t);
+                    break;
+                }
+            }
+        }
+    }
     return true;
 }
 
@@ -84,11 +119,6 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
         t.toFile(filename, unit, format);
         delete this;
     }
-}
-
-void TraceTouchstoneExport::on_sbPorts_valueChanged(int ports)
-{
-    ui->selector->setPorts(ports);
 }
 
 void TraceTouchstoneExport::selectionChanged()

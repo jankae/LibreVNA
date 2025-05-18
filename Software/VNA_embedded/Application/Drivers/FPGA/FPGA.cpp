@@ -331,15 +331,19 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 }
 }
 
-void FPGA::StartSweep() {
+void FPGA::StopSweep() {
 	Low(AUX3);
+}
+
+void FPGA::StartSweep() {
+	StopSweep();
 	Delay::us(1);
 	High(AUX3);
 }
 
 void FPGA::AbortSweep() {
 	// abort any FPGA operation by pulling sweep pin low
-	Low(AUX3);
+	StopSweep();
 	// data transfer of a datapoint might still be active, abort
 	HAL_SPI_DMAStop(&FPGA_SPI);
 	busy_reading = false;

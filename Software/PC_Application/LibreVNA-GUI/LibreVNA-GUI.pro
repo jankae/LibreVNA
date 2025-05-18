@@ -412,11 +412,12 @@ RESOURCES += \
     resources/librevna.qrc
 
 win32:RC_ICONS = resources/librevna.ico
+mac:ICON = resources/librevna.icns
 
 QMAKE_CXXFLAGS += -Wno-deprecated -Wno-deprecated-declarations -Wno-deprecated-copy
 
 CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
-DEFINES += FW_MAJOR=1 FW_MINOR=6 FW_PATCH=2 FW_SUFFIX=""
+DEFINES += FW_MAJOR=1 FW_MINOR=6 FW_PATCH=3 FW_SUFFIX=""
 DEFINES -= _UNICODE UNICODE

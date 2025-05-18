@@ -507,16 +507,26 @@ void AppWindow::CreateToolbars()
     tb_reference->addWidget(new QLabel("Ref out:"));
     toolbars.reference.outFreq = new QComboBox();
     tb_reference->addWidget(toolbars.reference.outFreq);
-    connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
-    connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::UpdateReference);
+    connect(toolbars.reference.type, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::ReferenceChanged);
+    connect(toolbars.reference.outFreq, qOverload<int>(&QComboBox::currentIndexChanged), this, &AppWindow::ReferenceChanged);
     addToolBar(tb_reference);
     tb_reference->setObjectName("Reference Toolbar");
+
+    referenceTimer.setSingleShot(true);
+    connect(&referenceTimer, &QTimer::timeout, this, &AppWindow::UpdateReference);
 }
 
 void AppWindow::SetupSCPI()
 {
     scpi.add(new SCPICommand("*IDN", nullptr, [=](QStringList){
-        return "LibreVNA,LibreVNA-GUI,dummy_serial,"+appVersion;
+        QString ret = "LibreVNA,LibreVNA-GUI,";
+        if(device) {
+            ret += device->getSerial();
+        } else {
+            ret += "Not connected";
+        }
+        ret += ","+appVersion;
+        return ret;
     }));
     scpi.add(new SCPICommand("*RST", [=](QStringList){
         SetResetState();
@@ -859,7 +869,7 @@ SCPI* AppWindow::getSCPI()
     return &scpi;
 }
 
-void AppWindow::addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type)
+void AppWindow::addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataType type, bool is_zerospan)
 {
     StreamingServer *server = nullptr;
     switch(type) {
@@ -869,11 +879,11 @@ void AppWindow::addStreamingData(const DeviceDriver::VNAMeasurement &m, VNADataT
     }
 
     if(server) {
-        server->addData(m);
+        server->addData(m, is_zerospan);
     }
 }
 
-void AppWindow::addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type)
+void AppWindow::addStreamingData(const DeviceDriver::SAMeasurement &m, SADataType type, bool is_zerospan)
 {
     StreamingServer *server = nullptr;
     switch(type) {
@@ -882,7 +892,7 @@ void AppWindow::addStreamingData(const DeviceDriver::SAMeasurement &m, SADataTyp
     }
 
     if(server) {
-        server->addData(m);
+        server->addData(m, is_zerospan);
     }
 }
 
@@ -945,7 +955,7 @@ void AppWindow::ResetReference()
     toolbars.reference.outFreq->setCurrentIndex(0);
     toolbars.reference.type->blockSignals(false);
     toolbars.reference.outFreq->blockSignals(false);
-    UpdateReference();
+    ReferenceChanged();
 }
 
 //void AppWindow::StartManualControl()
@@ -1001,7 +1011,16 @@ void AppWindow::UpdateReferenceToolbar()
     }
     toolbars.reference.type->blockSignals(false);
     toolbars.reference.outFreq->blockSignals(false);
-    UpdateReference();
+    ReferenceChanged();
+}
+
+void AppWindow::ReferenceChanged()
+{
+    if(!device) {
+        // can't update without a device connected
+        return;
+    }
+    referenceTimer.start(100);
 }
 
 void AppWindow::UpdateReference()

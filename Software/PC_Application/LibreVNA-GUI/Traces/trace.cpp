@@ -427,6 +427,9 @@ QString Trace::getMathFormulaError() const
                     break;
                 }
             }
+            if(varName == "x") {
+                found = true;
+            }
             if(!found) {
                 return "Unknown variable: "+varName;
             }
@@ -465,7 +468,21 @@ void Trace::updateMathTracePoints()
     double startX = std::numeric_limits<double>::lowest();
     double stopX = std::numeric_limits<double>::max();
     double stepSize = std::numeric_limits<double>::max();
+    auto domain = DataType::Invalid;
     for(auto t : mathSourceTraces) {
+        if(domain == DataType::Invalid) {
+            domain = t.first->outputType();
+        } else {
+            if(domain != t.first->outputType()) {
+                // not all traces have the same domain, clear output and do not calculate
+                data.resize(0);
+                mathUpdateBegin = 0;
+                mathUpdateEnd = 0;
+                dataType = DataType::Invalid;
+                emit outputTypeChanged(dataType);
+                return;
+            }
+        }
         if(t.first->minX() > startX) {
             startX = t.first->minX();
         }
@@ -480,7 +497,14 @@ void Trace::updateMathTracePoints()
             stepSize = traceStepSize;
         }
     }
-    unsigned int samples = round((stopX - startX) / stepSize + 1);
+    if(domain != this->domain) {
+        this->domain = domain;
+        emit typeChanged(this);
+    }
+    unsigned int samples = 0;
+    if(stopX > startX) {
+        samples = round((stopX - startX) / stepSize + 1);
+    }
 //    qDebug() << "Updated trace points, now"<<samples<<"points from"<<startX<<"to"<<stopX;
     if(samples != data.size()) {
         auto oldSize = data.size();
@@ -530,6 +554,10 @@ void Trace::scheduleMathCalculation(unsigned int begin, unsigned int end)
 void Trace::calculateMath()
 {
     lastMathUpdate = QTime::currentTime();
+    if(mathUpdateEnd <= mathUpdateBegin) {
+        // nothing to do
+        return;
+    }
     if(mathUpdateBegin >= data.size() || mathUpdateEnd >= data.size() + 1) {
         qWarning() << "Not calculating math trace, out of limits. Requested from" << mathUpdateBegin << "to" << mathUpdateEnd <<" but data is of size" << data.size();
         return;
@@ -639,6 +667,11 @@ bool Trace::canAddAsMathSource(Trace *t)
 
 bool Trace::addMathSource(Trace *t, QString variableName)
 {
+    if(mathSourceTraces.count(t)) {
+        // this trace is already used as a math source
+        mathSourceTraces[t] = variableName;
+        return true;
+    }
 //    qDebug() << "Adding trace" << t << "as a math source to" << this << "as variable" << variableName;
     if(!canAddAsMathSource(t)) {
         return false;

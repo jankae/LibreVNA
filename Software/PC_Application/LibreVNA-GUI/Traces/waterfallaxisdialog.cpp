@@ -59,6 +59,8 @@ WaterfallAxisDialog::WaterfallAxisDialog(TraceWaterfall *plot) :
        ui->Wmin->setPrefixes(prefixes);
        ui->Wmax->setUnit(unit);
        ui->Wmax->setPrefixes(prefixes);
+       ui->Wmin->setValue(YAxis::getDefaultLimitMin(type));
+       ui->Wmax->setValue(YAxis::getDefaultLimitMax(type));
     });
     connect(ui->Wauto, &QCheckBox::toggled, [this](bool checked) {
        ui->Wmin->setEnabled(!checked);

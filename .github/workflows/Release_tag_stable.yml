@@ -209,12 +209,55 @@ jobs:
         with:
           upload_url: ${{ needs.PC_Application_Ubuntu.outputs.upload_url }}
           asset_path: ./Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
-          asset_name: LibreVNA-GUI-OSX-${{env.LIBREVNA_VERSION}}.zip
+          asset_name: LibreVNA-GUI-OSX-latest-${{env.LIBREVNA_VERSION}}.zip
+          asset_content_type: application/tar+gzip
+
+  PC_Application_OSX_13:
+    needs: PC_Application_Ubuntu
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew install qt@6 pcre
+          
+      - name: Set Environment
+        run: |
+          echo "/usr/local/opt/qt@6/bin" >> $GITHUB_PATH
+          
+      - name: Get app version
+        id: id_version
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          fw_major=`pcregrep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`pcregrep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`pcregrep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          echo "app_version=v$fw_major.$fw_minor.$fw_patch" >> $GITHUB_OUTPUT
+
+      - name: Build application
+        run: |
+          cd Software/PC_Application/LibreVNA-GUI
+          qmake LibreVNA-GUI.pro
+          make -j9
+          macdeployqt LibreVNA-GUI.app
+          zip -ry LibreVNA-GUI.zip LibreVNA-GUI.app
+        shell: bash
+
+      - name: 'Upload release asset'
+        uses: actions/upload-release-asset@v1
+        env:
+          LIBREVNA_VERSION: "${{steps.id_version.outputs.app_version}}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.PC_Application_Ubuntu.outputs.upload_url }}
+          asset_path: ./Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
+          asset_name: LibreVNA-GUI-OSX-13.7-${{env.LIBREVNA_VERSION}}.zip
           asset_content_type: application/tar+gzip
           
   Embedded_Firmware:
     needs: PC_Application_Ubuntu
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 

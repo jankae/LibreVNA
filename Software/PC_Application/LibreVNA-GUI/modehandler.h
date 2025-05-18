@@ -29,7 +29,7 @@ public:
     Mode* getMode(int index);
     std::vector<Mode*> getModes();
 
-    bool nameAllowed(const QString &name);
+    bool nameAllowed(const QString &name, unsigned int ignoreIndex=-1);
     int findIndex(Mode *targetMode);
     Mode* findFirstOfType(Mode::Type t);
 

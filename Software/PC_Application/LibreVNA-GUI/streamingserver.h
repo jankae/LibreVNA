@@ -13,8 +13,8 @@ class StreamingServer : public QObject
 public:
     StreamingServer(int port);
 
-    void addData(const DeviceDriver::VNAMeasurement &m);
-    void addData(const DeviceDriver::SAMeasurement &m);
+    void addData(const DeviceDriver::VNAMeasurement &m, bool is_zerospan);
+    void addData(const DeviceDriver::SAMeasurement &m, bool is_zerospan);
 
     int getPort() {return port;}
 

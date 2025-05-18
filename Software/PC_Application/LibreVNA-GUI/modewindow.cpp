@@ -45,6 +45,9 @@ void ModeWindow::SetupUi()
     tabBar->setStyleSheet("QTabBar::tab { height: " + QString::number(aw->menuBar()->height()) + "px;}");
     tabBar->setTabsClosable(true);
     cornerWidget->layout()->addWidget(tabBar);
+    connect(tabBar, &QTabBar::tabBarDoubleClicked, this, [=](int index) {
+        renameMode(index);
+    });
 
     auto bAdd = new QPushButton();
     QIcon icon;
@@ -94,6 +97,11 @@ void ModeWindow::SetupUi()
     menu->addSeparator();
     auto submenuAdd = new QMenu("Create new");
     menu->addMenu(submenuAdd);
+    auto rename = new QAction("Rename active mode");
+    connect(rename, &QAction::triggered, this, [=](){
+        renameMode(handler->getCurrentIndex());
+    });
+    menu->addAction(rename);
 
     auto mAdd = new QMenu();
     for(unsigned int i=0;i<(int) Mode::Type::Last;i++) {
@@ -179,4 +187,20 @@ void ModeWindow::CurrentModeChanged(int modeIndex)
         tabBar->setCurrentIndex(modeIndex);
     }
     menuActions[modeIndex]->setChecked(true);
+}
+
+void ModeWindow::renameMode(int modeIndex)
+{
+    auto mode = handler->getMode(modeIndex);
+    auto newName = QInputDialog::getText(this, "Rename", "Enter new name for mode \""+mode->getName()+"\":");
+    if(newName.isEmpty()) {
+        return;
+    }
+    if(handler->nameAllowed(newName, modeIndex)) {
+        mode->setName(newName);
+        tabBar->setTabText(modeIndex, newName);
+        menu->actions()[modeIndex]->setText(newName);
+    } else {
+        InformationBox::ShowError("Error", "Unable to set name. Mode names must be unique.");
+    }
 }
