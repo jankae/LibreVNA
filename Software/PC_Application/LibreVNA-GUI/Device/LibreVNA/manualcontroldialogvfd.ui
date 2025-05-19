@@ -9,20 +9,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>453</height>
+    <width>1270</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Manual Control</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_2">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
    <item>
     <widget class="QGroupBox" name="groupBox_10">
      <property name="title">
       <string>Signal Generation</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QGroupBox" name="groupBox_3">
         <property name="title">
@@ -265,162 +265,292 @@
        </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QGroupBox" name="groupBox_2">
-          <property name="title">
-           <string>LO PLL</string>
-          </property>
-          <layout class="QFormLayout" name="formLayout">
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Frequency:</string>
-             </property>
-            </widget>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>DAC</string>
+        </property>
+        <layout class="QFormLayout" name="formLayout_2">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Enabled:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="DACEnable">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Output A Frequency:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="SIUnitEdit" name="DACFrequencyA"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Output A Amplitude:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QSpinBox" name="DACAmplitudeA">
+           <property name="maximum">
+            <number>2047</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Output A Frequency:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="SIUnitEdit" name="DACFrequencyB"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>Output A Amplitude:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QSpinBox" name="DACAmplitudeB">
+           <property name="maximum">
+            <number>2047</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>LO PLL</string>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Frequency:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="SIUnitEdit" name="LOFrequency"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Mode:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QComboBox" name="LOMode">
+           <item>
+            <property name="text">
+             <string>Internal - HF</string>
+            </property>
            </item>
-           <item row="3" column="1">
-            <widget class="SIUnitEdit" name="LOFrequency"/>
+           <item>
+            <property name="text">
+             <string>Internal -LF</string>
+            </property>
            </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Mode:</string>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>External</string>
+            </property>
            </item>
-           <item row="4" column="1">
-            <widget class="QComboBox" name="LOMode">
-             <item>
-              <property name="text">
-               <string>Internal - HF</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Internal -LF</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>External</string>
-              </property>
-             </item>
-            </widget>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="LOLocked">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Locked</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="LORFEN">
+           <property name="text">
+            <string>RF Enable</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="LOCE">
+           <property name="text">
+            <string>Chip Enable</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>Amplifier:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QCheckBox" name="LOAmpEn">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="title">
+      <string>Data Acquisition</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QGroupBox" name="groupBox_6">
+        <property name="title">
+         <string>Spectrum View</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QChartView" name="spectrumA"/>
+         </item>
+         <item row="0" column="1">
+          <widget class="QChartView" name="spectrumB"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QChartView" name="spectrumC"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QChartView" name="spectrumD"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="title">
+         <string>Settings</string>
+        </property>
+        <layout class="QFormLayout" name="formLayout_3">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>ADC Enable:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="ADCEnable">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Samples:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="ADCSamples">
+           <property name="minimum">
+            <number>16</number>
+           </property>
+           <property name="maximum">
+            <number>131072</number>
+           </property>
+           <property name="singleStep">
+            <number>16</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Testpattern:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="ADCTestPattern">
+           <item>
+            <property name="text">
+             <string>Off</string>
+            </property>
            </item>
-           <item row="2" column="1">
-            <widget class="QCheckBox" name="LOLocked">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Locked</string>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>Zeros</string>
+            </property>
            </item>
-           <item row="1" column="1">
-            <widget class="QCheckBox" name="LORFEN">
-             <property name="text">
-              <string>RF Enable</string>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>Ones</string>
+            </property>
            </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="LOCE">
-             <property name="text">
-              <string>Chip Enable</string>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>Toggle</string>
+            </property>
            </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_15">
-             <property name="text">
-              <string>Amplifier:</string>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>Ramp</string>
+            </property>
            </item>
-           <item row="5" column="1">
-            <widget class="QCheckBox" name="LOAmpEn">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>Custom</string>
+            </property>
            </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox">
-          <property name="title">
-           <string>DAC</string>
-          </property>
-          <layout class="QFormLayout" name="formLayout_2">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Enabled:</string>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>Deskew</string>
+            </property>
            </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="DACEnable">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>Reserved</string>
+            </property>
            </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Output A Frequency:</string>
-             </property>
-            </widget>
+           <item>
+            <property name="text">
+             <string>PRBS</string>
+            </property>
            </item>
-           <item row="1" column="1">
-            <widget class="SIUnitEdit" name="DACFrequencyA"/>
+           <item>
+            <property name="text">
+             <string>Sine</string>
+            </property>
            </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Output A Amplitude:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QSpinBox" name="DACAmplitudeA">
-             <property name="maximum">
-              <number>2047</number>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>Output A Frequency:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="SIUnitEdit" name="DACFrequencyB"/>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_12">
-             <property name="text">
-              <string>Output A Amplitude:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QSpinBox" name="DACAmplitudeB">
-             <property name="maximum">
-              <number>2047</number>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -432,6 +562,11 @@
    <class>SIUnitEdit</class>
    <extends>QLineEdit</extends>
    <header>CustomWidgets/siunitedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header>QtCharts</header>
   </customwidget>
  </customwidgets>
  <resources/>

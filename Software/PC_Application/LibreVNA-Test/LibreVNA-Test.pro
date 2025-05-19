@@ -1,4 +1,4 @@
-QT += testlib widgets network
+QT += testlib widgets network charts
 
 CONFIG += qt console warn_on depend_includepath testcase
 CONFIG -= app_bundle

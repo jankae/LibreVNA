@@ -4,6 +4,8 @@
 #include "librevnadriver.h"
 
 #include <QDialog>
+#include <QChart>
+#include <QLineSeries>
 #include <complex>
 
 namespace Ui {
@@ -106,12 +108,24 @@ public:
     void setDACBAmplitude(int a);
     int getDACBAmplitude();
 
+    void setADCEnable(bool enable);
+    bool getADCEnable();
+
+    void setADCSamples(int samples);
+    int getADCSamples();
+
+    void setADCTestPattern(int tp);
+    int getADCTestPattern();
+
 private:
     void UpdateDevice();
     Ui::ManualControlDialogVFD *ui;
     LibreVNADriver &dev;
 
     std::vector<SCPICommand*> commands;
+
+    std::array<QChart*, 4> charts;
+    std::array<QLineSeries*, 4> spectrumSeries;
 };
 
 #endif // MANUALCONTROLDIALOGV1_H

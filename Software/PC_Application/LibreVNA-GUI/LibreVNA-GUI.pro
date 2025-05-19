@@ -330,7 +330,7 @@ mac{
         PKGCONFIG += libusb-1.0
 }
 
-QT += widgets network
+QT += widgets network charts
 
 FORMS += \
     Calibration/CalStandardLineEditDialog.ui \

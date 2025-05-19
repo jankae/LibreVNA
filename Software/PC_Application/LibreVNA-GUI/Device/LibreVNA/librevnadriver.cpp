@@ -146,7 +146,7 @@ LibreVNADriver::LibreVNADriver()
             break;
         }
         if(manualControlDialog) {
-            manualControlDialog->show();
+            manualControlDialog->showMaximized();
             connect(manualControlDialog, &QDialog::finished, this, [=](){
                 manualControlDialog = nullptr;
             });

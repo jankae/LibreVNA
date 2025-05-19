@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QDebug>
 #include <QButtonGroup>
+#include <QValueAxis>
 #include <complex>
 
 
@@ -18,6 +19,7 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 
     emit dev.acquireControl();
 
@@ -44,6 +46,8 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     ui->DACAmplitudeA->setValue(2047);
     ui->DACAmplitudeB->setValue(2047);
 
+    ui->ADCSamples->setValue(1024);
+
     auto updateVariableAtt = [=](unsigned int value){
         ui->SourceVariableAttSlider->setValue(value);
         ui->SourceVariableAttEntry->setValueQuiet(value);
@@ -64,11 +68,38 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     MakeReadOnly(ui->SourceLocked);
     MakeReadOnly(ui->LOLocked);
 
-//    connect(&dev, &LibreVNADriver::receivedPacket, this, [=](const Protocol::PacketInfo &p){
-//            if(p.type == Protocol::PacketType::ManualStatus) {
-//                NewStatus(p.manualStatus);
-//            }
-//    }, Qt::QueuedConnection);
+    // ADC spectrum charts
+    for(int i=0;i<4;i++) {
+        charts[i] = new QChart();
+        spectrumSeries[i] = new QLineSeries;
+
+        auto pen = spectrumSeries[i]->pen();
+        pen.setWidth(2);
+        pen.setBrush(QBrush("blue"));
+        spectrumSeries[i]->setPen(pen);
+
+        auto xAxis = new QValueAxis;
+        xAxis->setTitleText("Frequency [MHz]");
+        xAxis->setRange(0,12.5);
+        auto yAxis = new QValueAxis;
+        yAxis->setTitleText("Amplitude [dBFS]");
+        yAxis->setRange(-120, 0);
+
+        charts[i]->legend()->hide();
+        charts[i]->addSeries(spectrumSeries[i]);
+        charts[i]->addAxis(xAxis, Qt::AlignBottom);
+        charts[i]->addAxis(yAxis, Qt::AlignLeft);
+        spectrumSeries[i]->attachAxis(xAxis);
+        spectrumSeries[i]->attachAxis(yAxis);
+    }
+    ui->spectrumA->setChart(charts[0]);
+    charts[0]->setTitle("ADC A Spectrum");
+    ui->spectrumB->setChart(charts[1]);
+    charts[1]->setTitle("ADC B Spectrum");
+    ui->spectrumC->setChart(charts[2]);
+    charts[2]->setTitle("ADC C Spectrum");
+    ui->spectrumD->setChart(charts[3]);
+    charts[3]->setTitle("ADC D Spectrum");
 
     connect(ui->SourceCE, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->SourceRFEN, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
@@ -79,11 +110,13 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     connect(ui->SourceAmp2En, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->LOAmpEn, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->DACEnable, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
+    connect(ui->ADCEnable, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
 
     connect(ui->SourceFilter, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) { UpdateDevice(); });
     connect(ui->SourceBandsel, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) { UpdateDevice(); });
     connect(ui->SourcePortSel, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) { UpdateDevice(); });
     connect(ui->LOMode, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) { UpdateDevice(); });
+    connect(ui->ADCTestPattern, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) { UpdateDevice(); });
 
     connect(ui->SourceFrequency, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
     connect(ui->LOFrequency, &SIUnitEdit::valueChanged, [=](double) { UpdateDevice(); });
@@ -93,6 +126,7 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     connect(ui->SourceStepAtt, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
     connect(ui->DACAmplitudeA, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
     connect(ui->DACAmplitudeB, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
+    connect(ui->ADCSamples, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
 
     // Create the SCPI commands
 
@@ -332,6 +366,47 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     addIntegerManualSetting("MANual:DACA_AMPlitude", &ManualControlDialogVFD::setDACAAmplitude, &ManualControlDialogVFD::getDACAAmplitude);
     addDoubleManualSetting("MANual:DACB_FREQ", &ManualControlDialogVFD::setDACBFrequency, &ManualControlDialogVFD::getDACBFrequency);
     addIntegerManualSetting("MANual:DACB_AMPlitude", &ManualControlDialogVFD::setDACBAmplitude, &ManualControlDialogVFD::getDACBAmplitude);
+
+    addBooleanManualSetting("MANual:ADC_EN", &ManualControlDialogVFD::setADCEnable, &ManualControlDialogVFD::getADCEnable);
+    addIntegerManualSetting("MANual:ADC_SAMPLES", &ManualControlDialogVFD::setADCSamples, &ManualControlDialogVFD::getADCSamples);
+    addIntegerManualSetting("MANual:ADC_TESTPATTERN", &ManualControlDialogVFD::setADCTestPattern, &ManualControlDialogVFD::getADCTestPattern);
+
+    connect(&dev, &LibreVNADriver::receivedPacket, this, [=](const Protocol::PacketInfo &p){
+        if(p.type == Protocol::PacketType::ArrayData) {
+            // incoming spectrum data
+            const Protocol::ArrayData data = p.arrayData;
+            int index = 0;
+            auto series = spectrumSeries[data.id];
+            auto chart = charts[data.id];
+            chart->removeSeries(series);
+//            qDebug() << "Incoming spectrum data";
+            for(unsigned int i=0;i<data.values/2;i++) {
+                auto freq = data.xbegin + (data.xend - data.xbegin) * i / (data.values/2);
+                freq /= 1000000; // convert to MHz
+                auto d = std::complex<double>(data.data[i*2], data.data[i*2+1]);
+                auto dB = 20*log10(abs(d));
+                auto point = QPointF(freq, dB);
+                // get index at which this point should be inserted
+                while(index < series->count() && series->at(index).x() < freq) {
+                    index++;
+                }
+//                qDebug() << "point at" << freq <<": " << dB << "(index:" << index << ")";
+                if(index >= series->count()) {
+                    // append at the end
+                    series->append(point);
+                } else if(freq == series->at(index).x()) {
+                    // replace existing point
+                    series->replace(index, point);
+                } else {
+                    // insert at position
+                    series->insert(index, point);
+                }
+            }
+            chart->addSeries(series);
+            series->attachAxis(chart->axes(Qt::Horizontal)[0]);
+            series->attachAxis(chart->axes(Qt::Vertical)[0]);
+        }
+    }, Qt::QueuedConnection);
 
     for(auto c : commands) {
         emit dev.addSCPICommand(c);
@@ -627,6 +702,36 @@ int ManualControlDialogVFD::getDACBAmplitude()
     return ui->DACAmplitudeB->value();
 }
 
+void ManualControlDialogVFD::setADCEnable(bool enable)
+{
+    ui->ADCEnable->setChecked(enable);
+}
+
+bool ManualControlDialogVFD::getADCEnable()
+{
+    return ui->ADCEnable->isChecked();
+}
+
+void ManualControlDialogVFD::setADCSamples(int samples)
+{
+    ui->ADCSamples->setValue(samples);
+}
+
+int ManualControlDialogVFD::getADCSamples()
+{
+    return ui->ADCSamples->value();
+}
+
+void ManualControlDialogVFD::setADCTestPattern(int tp)
+{
+    ui->ADCTestPattern->setCurrentIndex(tp);
+}
+
+int ManualControlDialogVFD::getADCTestPattern()
+{
+    return ui->ADCTestPattern->currentIndex();
+}
+
 void ManualControlDialogVFD::UpdateDevice()
 {
     Protocol::PacketInfo p;
@@ -658,6 +763,11 @@ void ManualControlDialogVFD::UpdateDevice()
     m.DACAmpA = ui->DACAmplitudeA->value();
     m.DACAmpB = ui->DACAmplitudeB->value();
     m.DACEn = ui->DACEnable->isChecked();
+
+    // ADC
+    m.ADCEn = ui->ADCEnable->isChecked();
+    m.ADCSamples = ui->ADCSamples->value();
+    m.ADCTestPattern = ui->ADCTestPattern->currentIndex();
 
     qDebug() << "Updating manual control state";
 
