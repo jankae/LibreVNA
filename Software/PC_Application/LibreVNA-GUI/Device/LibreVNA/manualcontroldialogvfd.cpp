@@ -7,8 +7,10 @@
 #include <QDebug>
 #include <QButtonGroup>
 #include <QValueAxis>
+#include <QFileDialog>
 #include <complex>
-
+#include "preferences.h"
+#include "CustomWidgets/informationbox.h"
 
 using namespace std;
 
@@ -74,7 +76,7 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
         spectrumSeries[i] = new QLineSeries;
 
         auto pen = spectrumSeries[i]->pen();
-        pen.setWidth(2);
+        pen.setWidth(1);
         pen.setBrush(QBrush("blue"));
         spectrumSeries[i]->setPen(pen);
 
@@ -101,6 +103,39 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     ui->spectrumD->setChart(charts[3]);
     charts[3]->setTitle("ADC D Spectrum");
 
+    // ADC time charts
+    for(int i=4;i<8;i++) {
+        charts[i] = new QChart();
+        spectrumSeries[i] = new QLineSeries;
+
+        auto pen = spectrumSeries[i]->pen();
+        pen.setWidth(1);
+        pen.setBrush(QBrush("blue"));
+        spectrumSeries[i]->setPen(pen);
+
+        auto xAxis = new QValueAxis;
+        xAxis->setTitleText("Sample #");
+        xAxis->setRange(0,1024);
+        auto yAxis = new QValueAxis;
+        yAxis->setTitleText("ADC Value");
+        yAxis->setRange(0, 4096);
+
+        charts[i]->legend()->hide();
+        charts[i]->addSeries(spectrumSeries[i]);
+        charts[i]->addAxis(xAxis, Qt::AlignBottom);
+        charts[i]->addAxis(yAxis, Qt::AlignLeft);
+        spectrumSeries[i]->attachAxis(xAxis);
+        spectrumSeries[i]->attachAxis(yAxis);
+    }
+    ui->timeA->setChart(charts[4]);
+    charts[4]->setTitle("ADC A Samples");
+    ui->timeB->setChart(charts[5]);
+    charts[5]->setTitle("ADC B Samples");
+    ui->timeC->setChart(charts[6]);
+    charts[6]->setTitle("ADC C Samples");
+    ui->timeD->setChart(charts[7]);
+    charts[7]->setTitle("ADC D Samples");
+
     connect(ui->SourceCE, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->SourceRFEN, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->LOCE, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
@@ -111,6 +146,8 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     connect(ui->LOAmpEn, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->DACEnable, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
     connect(ui->ADCEnable, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
+    connect(ui->Port1RXEN, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
+    connect(ui->Port2RXEN, &QCheckBox::toggled, [=](bool) { UpdateDevice(); });
 
     connect(ui->SourceFilter, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) { UpdateDevice(); });
     connect(ui->SourceBandsel, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) { UpdateDevice(); });
@@ -127,6 +164,10 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     connect(ui->DACAmplitudeA, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
     connect(ui->DACAmplitudeB, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
     connect(ui->ADCSamples, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
+    connect(ui->P1VGAPort, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
+    connect(ui->P1VGARef, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
+    connect(ui->P2VGAPort, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
+    connect(ui->P2VGARef, qOverload<int>(&QSpinBox::valueChanged), [=](int) { UpdateDevice(); });
 
     // Create the SCPI commands
 
@@ -371,42 +412,85 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
     addIntegerManualSetting("MANual:ADC_SAMPLES", &ManualControlDialogVFD::setADCSamples, &ManualControlDialogVFD::getADCSamples);
     addIntegerManualSetting("MANual:ADC_TESTPATTERN", &ManualControlDialogVFD::setADCTestPattern, &ManualControlDialogVFD::getADCTestPattern);
 
+    addBooleanManualSetting("MANual:RX1_EN", &ManualControlDialogVFD::setRX1Enable, &ManualControlDialogVFD::getRX1Enable);
+    addBooleanManualSetting("MANual:RX2_EN", &ManualControlDialogVFD::setRX2Enable, &ManualControlDialogVFD::getRX2Enable);
+
     connect(&dev, &LibreVNADriver::receivedPacket, this, [=](const Protocol::PacketInfo &p){
         if(p.type == Protocol::PacketType::ArrayData) {
-            // incoming spectrum data
+            // incoming data
             const Protocol::ArrayData data = p.arrayData;
-            int index = 0;
-            auto series = spectrumSeries[data.id];
-            auto chart = charts[data.id];
-            chart->removeSeries(series);
-//            qDebug() << "Incoming spectrum data";
-            for(unsigned int i=0;i<data.values/2;i++) {
-                auto freq = data.xbegin + (data.xend - data.xbegin) * i / (data.values/2);
-                freq /= 1000000; // convert to MHz
-                auto d = std::complex<double>(data.data[i*2], data.data[i*2+1]);
-                auto dB = 20*log10(abs(d));
-                auto point = QPointF(freq, dB);
-                // get index at which this point should be inserted
-                while(index < series->count() && series->at(index).x() < freq) {
-                    index++;
+            if(!rxData.count(data.id)) {
+                // does not exist yet, create
+                rxData[data.id] = QList<QPointF>();
+            }
+
+            if(data.id < 4) {
+                // complex spectrum data, calculate magnitude
+                for(unsigned int i=0;i<data.values/2;i++) {
+                    auto freq = data.xbegin + (data.xend - data.xbegin) * i / (data.values/2);
+                    freq /= 1000000; // convert to MHz
+                    auto d = std::complex<double>(data.data[i*2], data.data[i*2+1]);
+                    auto dB = 20*log10(abs(d));
+                    auto point = QPointF(freq, dB);
+                    insertPoint(rxData[data.id], point);
                 }
-//                qDebug() << "point at" << freq <<": " << dB << "(index:" << index << ")";
-                if(index >= series->count()) {
-                    // append at the end
-                    series->append(point);
-                } else if(freq == series->at(index).x()) {
-                    // replace existing point
-                    series->replace(index, point);
-                } else {
-                    // insert at position
-                    series->insert(index, point);
+            } else {
+                // raw samples, add directly
+                for(unsigned int i=0;i<data.values;i++) {
+                    unsigned int sampleNum = round(data.xbegin + (data.xend - data.xbegin) * i / (data.values));
+                    auto point = QPointF(sampleNum, data.data[i]);
+                    insertPoint(rxData[data.id], point);
                 }
             }
-            chart->addSeries(series);
-            series->attachAxis(chart->axes(Qt::Horizontal)[0]);
-            series->attachAxis(chart->axes(Qt::Vertical)[0]);
         }
     }, Qt::QueuedConnection);
+
+    connect(&updateTimer, &QTimer::timeout, this, &ManualControlDialogVFD::updateCharts);
+    updateTimer.setSingleShot(true);
+    updateTimer.start(100);
+
+    connect(ui->clearData, &QPushButton::clicked, this, &ManualControlDialogVFD::clearData);
+    connect(ui->exportData, &QPushButton::clicked, this, [=](){
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save received data", "", "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
+        if(filename.isEmpty()) {
+            // aborted selection
+            return;
+        }
+        if(!filename.endsWith(".csv")) {
+            filename.append(".csv");
+        }
+        qDebug() << filename;
+        auto file = QFile(filename);
+        file.open(QIODevice::WriteOnly);
+        if(!file.isOpen()) {
+            InformationBox::ShowError("Error", "Failed to create file");
+            return;
+        }
+        QTextStream out(&file);
+        for(const auto &d : rxData) {
+            out << "Data" << QString::number(d.first) << ";";
+        }
+        out << "\n";
+        unsigned int i=0;
+        while(true) {
+            bool empty = true;
+            QString s;
+            for(const auto &d : rxData) {
+                if(d.second.size() > i) {
+                    s += QString::number(d.second[i].y());
+                    empty = false;
+                }
+                s += ";";
+            }
+            s += "\n";
+            if(empty) {
+                break;
+            }
+            out << s;
+            i++;
+        }
+        file.close();
+    });
 
     for(auto c : commands) {
         emit dev.addSCPICommand(c);
@@ -417,6 +501,7 @@ ManualControlDialogVFD::ManualControlDialogVFD(LibreVNADriver &dev, QWidget *par
 
 ManualControlDialogVFD::~ManualControlDialogVFD()
 {
+    updateTimer.stop();
     for(auto c : commands) {
         emit dev.removeSCPICommand(c);
     }
@@ -732,6 +817,26 @@ int ManualControlDialogVFD::getADCTestPattern()
     return ui->ADCTestPattern->currentIndex();
 }
 
+void ManualControlDialogVFD::setRX1Enable(bool enable)
+{
+    ui->Port1RXEN->setChecked(enable);
+}
+
+bool ManualControlDialogVFD::getRX1Enable()
+{
+    return ui->Port1RXEN->isChecked();
+}
+
+void ManualControlDialogVFD::setRX2Enable(bool enable)
+{
+    ui->Port2RXEN->setChecked(enable);
+}
+
+bool ManualControlDialogVFD::getRX2Enable()
+{
+    return ui->Port2RXEN->isChecked();
+}
+
 void ManualControlDialogVFD::UpdateDevice()
 {
     Protocol::PacketInfo p;
@@ -769,7 +874,52 @@ void ManualControlDialogVFD::UpdateDevice()
     m.ADCSamples = ui->ADCSamples->value();
     m.ADCTestPattern = ui->ADCTestPattern->currentIndex();
 
+    // Receivers
+    m.RX1EN = ui->Port1RXEN->isChecked();
+    m.RX2EN = ui->Port2RXEN->isChecked();
+    m.P1VGAPort = ui->P1VGAPort->value();
+    m.P1VGARef = ui->P1VGARef->value();
+    m.P2VGAPort = ui->P2VGAPort->value();
+    m.P2VGARef = ui->P2VGARef->value();
+
     qDebug() << "Updating manual control state";
 
     dev.SendPacket(p);
+}
+
+void ManualControlDialogVFD::insertPoint(QList<QPointF> &list, const QPointF &p)
+{
+    auto lower = std::lower_bound(list.begin(), list.end(), p.x(), [](const QPointF &lhs, double rhs) -> bool {
+        return lhs.x() < rhs;
+    });
+    if(lower == list.end()) {
+        // append
+        list.append(p);
+    } else {
+        if(lower->x() == p.x()) {
+            // replace
+            *lower = p;
+        } else {
+            // insert
+            list.insert(lower, p);
+        }
+    }
+}
+
+void ManualControlDialogVFD::clearData()
+{
+    rxData.clear();
+}
+
+void ManualControlDialogVFD::updateCharts()
+{
+    for(unsigned int i=0;i<spectrumSeries.size();i++) {
+        if(rxData.count(i)) {
+            spectrumSeries[i]->replace(rxData[i]);
+            charts[i]->axes(Qt::Horizontal)[0]->setRange(rxData[i].front().x(), rxData[i].back().x());
+        } else {
+            spectrumSeries[i]->clear();
+        }
+    }
+    updateTimer.start(100);
 }

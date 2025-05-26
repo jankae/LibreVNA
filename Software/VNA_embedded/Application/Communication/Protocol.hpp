@@ -356,6 +356,14 @@ using ManualControl = struct _manualControl {
             uint8_t ADCTestPattern :4;
             uint8_t ADCEn :1;
             uint32_t ADCSamples;
+
+            // Receivers
+            uint8_t RX1EN :1;
+            uint8_t RX2EN :1;
+            uint8_t P1VGAPort;
+            uint8_t P1VGARef;
+            uint8_t P2VGAPort;
+            uint8_t P2VGARef;
         } VFD;
         struct {
             // Source

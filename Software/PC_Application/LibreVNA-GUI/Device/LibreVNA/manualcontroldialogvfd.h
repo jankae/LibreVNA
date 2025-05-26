@@ -6,6 +6,7 @@
 #include <QDialog>
 #include <QChart>
 #include <QLineSeries>
+#include <QTimer>
 #include <complex>
 
 namespace Ui {
@@ -117,6 +118,12 @@ public:
     void setADCTestPattern(int tp);
     int getADCTestPattern();
 
+    void setRX1Enable(bool enable);
+    bool getRX1Enable();
+
+    void setRX2Enable(bool enable);
+    bool getRX2Enable();
+
 private:
     void UpdateDevice();
     Ui::ManualControlDialogVFD *ui;
@@ -124,8 +131,15 @@ private:
 
     std::vector<SCPICommand*> commands;
 
-    std::array<QChart*, 4> charts;
-    std::array<QLineSeries*, 4> spectrumSeries;
+    std::array<QChart*, 8> charts;
+    std::array<QLineSeries*, 8> spectrumSeries;
+
+    std::map<unsigned int, QList<QPointF>> rxData;
+    void insertPoint(QList<QPointF> &list, const QPointF &p);
+    void clearData();
+    void updateCharts();
+
+    QTimer updateTimer;
 };
 
 #endif // MANUALCONTROLDIALOGV1_H

@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1270</width>
+    <width>1281</width>
     <height>827</height>
    </rect>
   </property>
@@ -426,131 +426,288 @@
      <property name="title">
       <string>Data Acquisition</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
       <item>
-       <widget class="QGroupBox" name="groupBox_6">
-        <property name="title">
-         <string>Spectrum View</string>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>0</number>
         </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QChartView" name="spectrumA"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QChartView" name="spectrumB"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QChartView" name="spectrumC"/>
-         </item>
-         <item row="1" column="1">
-          <widget class="QChartView" name="spectrumD"/>
-         </item>
-        </layout>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Frequency Domain</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QChartView" name="spectrumA"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QChartView" name="spectrumB"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QChartView" name="spectrumC"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QChartView" name="spectrumD"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <attribute name="title">
+          <string>Time Domain</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QChartView" name="timeA"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QChartView" name="timeB"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QChartView" name="timeC"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QChartView" name="timeD"/>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_5">
-        <property name="title">
-         <string>Settings</string>
-        </property>
-        <layout class="QFormLayout" name="formLayout_3">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_18">
-           <property name="text">
-            <string>ADC Enable:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QCheckBox" name="ADCEnable">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_19">
-           <property name="text">
-            <string>Samples:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QSpinBox" name="ADCSamples">
-           <property name="minimum">
-            <number>16</number>
-           </property>
-           <property name="maximum">
-            <number>131072</number>
-           </property>
-           <property name="singleStep">
-            <number>16</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_20">
-           <property name="text">
-            <string>Testpattern:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="ADCTestPattern">
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,1">
+        <item>
+         <widget class="QGroupBox" name="groupBox_6">
+          <property name="title">
+           <string>Receivers</string>
+          </property>
+          <layout class="QFormLayout" name="formLayout_5">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_21">
+             <property name="text">
+              <string>Port 1:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_22">
+             <property name="text">
+              <string>Port 2:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="Port1RXEN">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QCheckBox" name="Port2RXEN">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_23">
+             <property name="text">
+              <string>Gain P1 Port:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_24">
+             <property name="text">
+              <string>Gain P1 Ref:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_25">
+             <property name="text">
+              <string>Gain P2 Port:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_26">
+             <property name="text">
+              <string>Gain P2 Ref:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QSpinBox" name="P1VGAPort">
+             <property name="maximum">
+              <number>63</number>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QSpinBox" name="P1VGARef">
+             <property name="maximum">
+              <number>63</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="P2VGAPort">
+             <property name="maximum">
+              <number>63</number>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QSpinBox" name="P2VGARef">
+             <property name="maximum">
+              <number>63</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="title">
+           <string>ADC Configuration</string>
+          </property>
+          <layout class="QFormLayout" name="formLayout_3">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_18">
+             <property name="text">
+              <string>ADC Enable:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="ADCEnable">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_19">
+             <property name="text">
+              <string>Samples:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QSpinBox" name="ADCSamples">
+             <property name="minimum">
+              <number>16</number>
+             </property>
+             <property name="maximum">
+              <number>131072</number>
+             </property>
+             <property name="singleStep">
+              <number>16</number>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_20">
+             <property name="text">
+              <string>Testpattern:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="ADCTestPattern">
+             <item>
+              <property name="text">
+               <string>Off</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Zeros</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ones</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Toggle</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ramp</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Custom</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Deskew</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Reserved</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>PRBS</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Sine</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_7">
+          <property name="title">
+           <string>Control</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
-            <property name="text">
-             <string>Off</string>
-            </property>
+            <widget class="QPushButton" name="clearData">
+             <property name="text">
+              <string>Clear Data</string>
+             </property>
+            </widget>
            </item>
            <item>
-            <property name="text">
-             <string>Zeros</string>
-            </property>
+            <widget class="QPushButton" name="exportData">
+             <property name="text">
+              <string>Export Data</string>
+             </property>
+            </widget>
            </item>
-           <item>
-            <property name="text">
-             <string>Ones</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Toggle</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Ramp</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Custom</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Deskew</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Reserved</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>PRBS</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Sine</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
