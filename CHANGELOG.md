@@ -1,6 +1,21 @@
 # Changelog
 
+## v1.6.4
+
+Critical bugfix for the embedded firmware:
+
+- Fix SPI flash timing, see #315
+
+Minor improvement for the GUI:
+
+- Option to add titles to graphs
+- Show trace names even when only enabled on secondary Y axis
+- Add x axis variable to the available variables for formulas in "from math" traces
+
+
+
 ## v1.6.3
+
 Bugfixes and quality of life improvements
 
 - Windows and macOS: add icon to GUI application
