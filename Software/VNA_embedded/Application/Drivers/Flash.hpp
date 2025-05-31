@@ -9,6 +9,7 @@
 #define DRIVERS_FLASH_HPP_
 
 #include "stm.hpp"
+#include "delay.hpp"
 
 class Flash {
 public:
@@ -37,6 +38,7 @@ private:
 	void CS(bool high) {
 		if(high) {
 			CS_gpio->BSRR = CS_pin;
+			Delay::us(1);
 		} else {
 			CS_gpio->BSRR = CS_pin << 16;
 		}
