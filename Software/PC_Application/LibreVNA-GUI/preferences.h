@@ -214,6 +214,18 @@ public:
             unsigned int unitIndex;
             QString exportedTraceNames;
         } TouchstoneExport;
+        struct {
+            QString setup;
+            QString cal;
+            QString calkit;
+            QString data;
+            QString image;
+            QString vnacaldata;
+            QString packetlog;
+            QString limitLines;
+            QString pref;
+            QString firmware;
+        } Paths;
     } UISettings;
 
     bool TCPoverride; // in case of manual port specification via command line
@@ -387,6 +399,16 @@ private:
         {&UISettings.TouchstoneExport.formatIndex, "UISettings.TouchstoneExport.formatIndex", 2},
         {&UISettings.TouchstoneExport.unitIndex, "UISettings.TouchstoneExport.unitIndex", 3},
         {&UISettings.TouchstoneExport.exportedTraceNames, "UISettings.TouchstoneExport.exportedTraceNames", ""},
+        {&UISettings.Paths.setup, "UISettings.Paths.setup", ""},
+        {&UISettings.Paths.cal, "UISettings.Paths.cal", ""},
+        {&UISettings.Paths.calkit, "UISettings.Paths.calkit", ""},
+        {&UISettings.Paths.data, "UISettings.Paths.data", ""},
+        {&UISettings.Paths.image, "UISettings.Paths.image", ""},
+        {&UISettings.Paths.vnacaldata, "UISettings.Paths.vnacaldata", ""},
+        {&UISettings.Paths.packetlog, "UISettings.Paths.packetlog", ""},
+        {&UISettings.Paths.limitLines, "UISettings.Paths.limitLines", ""},
+        {&UISettings.Paths.pref, "UISettings.Paths.pref", ""},
+        {&UISettings.Paths.firmware, "UISettings.Paths.firmware", ""},
     }};
 };
 

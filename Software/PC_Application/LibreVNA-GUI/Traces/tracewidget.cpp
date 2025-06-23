@@ -222,8 +222,9 @@ void TraceWidget::importDialog()
     }
     supported.chop(1);
     supported += ")";
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", supported, nullptr, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", Preferences::getInstance().UISettings.Paths.data, supported, nullptr, Preferences::QFileDialogOptions());
     if (!filename.isEmpty()) {
+        Preferences::getInstance().UISettings.Paths.data = QFileInfo(filename).path();
         importFile(filename);
     }
 }

@@ -1487,11 +1487,12 @@ bool Calibration::toFile(QString filename)
 {
     if(filename.isEmpty()) {
         QString fn = descriptiveCalName();
-        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", fn, "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
+        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", Preferences::getInstance().UISettings.Paths.cal + "/" + fn, "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return false;
         }
+        Preferences::getInstance().UISettings.Paths.cal = QFileInfo(filename).path();
     }
 
     if(filename.toLower().endsWith(".cal")) {
@@ -1511,11 +1512,12 @@ bool Calibration::toFile(QString filename)
 bool Calibration::fromFile(QString filename)
 {
     if(filename.isEmpty()) {
-        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", "", "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
+        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", Preferences::getInstance().UISettings.Paths.cal, "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return false;
         }
+        Preferences::getInstance().UISettings.Paths.cal = QFileInfo(filename).path();
     }
 
     // force correct file ending

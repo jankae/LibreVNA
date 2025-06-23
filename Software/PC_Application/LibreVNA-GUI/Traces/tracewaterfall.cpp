@@ -213,11 +213,12 @@ void TraceWaterfall::updateContextMenu()
     auto image = new QAction("Save image...", contextmenu);
     contextmenu->addAction(image);
     connect(image, &QAction::triggered, [=]() {
-        auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", "", "PNG image files (*.png)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save plot image", Preferences::getInstance().UISettings.Paths.image, "PNG image files (*.png)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
         }
+        Preferences::getInstance().UISettings.Paths.image = QFileInfo(filename).path();
         if(filename.endsWith(".png")) {
             filename.chop(4);
         }

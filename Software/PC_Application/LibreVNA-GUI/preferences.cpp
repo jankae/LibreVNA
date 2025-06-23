@@ -68,7 +68,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
        ui->StartupStack->setCurrentWidget(ui->StartupPageSetupFile);
     });
     connect(ui->StartupBrowse, &QPushButton::clicked, [=](){
-       ui->StartupSetupFile->setText(QFileDialog::getOpenFileName(nullptr, "Select startup setup file", "", "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions()));
+       ui->StartupSetupFile->setText(QFileDialog::getOpenFileName(nullptr, "Select startup setup file", Preferences::getInstance().UISettings.Paths.setup, "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions()));
     });
     ui->StartupSweepStart->setUnit("Hz");
     ui->StartupSweepStart->setPrefixes(" kMG");
@@ -203,29 +203,31 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         emit p->updated();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getSaveFileName(this, "Save preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getSaveFileName(this, "Save preferences", Preferences::getInstance().UISettings.Paths.pref, "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
-           if(!filename.toLower().endsWith(".vnapref")) {
+            Preferences::getInstance().UISettings.Paths.pref = QFileInfo(filename).path();
+            if(!filename.toLower().endsWith(".vnapref")) {
                filename.append(".vnapref");
-           }
-           ofstream file;
-           file.open(filename.toStdString());
-           updateFromGUI();
-           file << setw(1) << p->toJSON();
-           file.close();
+            }
+            ofstream file;
+            file.open(filename.toStdString());
+            updateFromGUI();
+            file << setw(1) << p->toJSON();
+            file.close();
         }
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getOpenFileName(this, "Load preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getOpenFileName(this, "Load preferences", Preferences::getInstance().UISettings.Paths.pref, "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
-           ifstream file;
-           file.open(filename.toStdString());
-           nlohmann::json j;
-           file >> j;
-           file.close();
-           p->fromJSON(j);
-           setInitialGUIState();
-           emit p->updated();
+            Preferences::getInstance().UISettings.Paths.pref = QFileInfo(filename).path();
+            ifstream file;
+            file.open(filename.toStdString());
+            nlohmann::json j;
+            file >> j;
+            file.close();
+            p->fromJSON(j);
+            setInitialGUIState();
+            emit p->updated();
         }
     });
     connect(ui->AcquisitionLimitTDRCheckbox, &QCheckBox::toggled, [=](bool enabled){

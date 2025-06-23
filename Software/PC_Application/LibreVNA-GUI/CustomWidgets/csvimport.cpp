@@ -64,8 +64,9 @@ void CSVImport::selectTrace(unsigned int index)
 
 void CSVImport::on_browse_clicked()
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", Preferences::getInstance().UISettings.Paths.data, "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
     if (filename.length() > 0) {
+        Preferences::getInstance().UISettings.Paths.data = QFileInfo(filename).path();
         ui->file->setText(filename);
         evaluateFile();
     }

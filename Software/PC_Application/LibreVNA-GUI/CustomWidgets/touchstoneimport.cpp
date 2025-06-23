@@ -112,8 +112,9 @@ void TouchstoneImport::setFile(QString filename)
 
 void TouchstoneImport::on_browse_clicked()
 {
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", Preferences::getInstance().UISettings.Paths.data, "Touchstone files (*.s1p *.s2p *.s3p *.s4p)", nullptr, Preferences::QFileDialogOptions());
     if (filename.length() > 0) {
+        Preferences::getInstance().UISettings.Paths.data = QFileInfo(filename).path();
         ui->file->setText(filename);
     }
 }

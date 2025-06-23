@@ -72,11 +72,12 @@ void TraceCSVExport::on_buttonBox_accepted()
         return;
     }
 
-    auto filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", "", "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", Preferences::getInstance().UISettings.Paths.data, "CSV files (*.csv)", nullptr, Preferences::QFileDialogOptions());
     if(filename.isEmpty()) {
         // aborted selection
         return;
     }
+    Preferences::getInstance().UISettings.Paths.data = QFileInfo(filename).path();
     if(!filename.endsWith(".csv")) {
         filename.append(".csv");
     }
