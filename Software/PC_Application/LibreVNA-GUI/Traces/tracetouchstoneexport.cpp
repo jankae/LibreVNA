@@ -18,22 +18,42 @@ TraceTouchstoneExport::TraceTouchstoneExport(TraceModel &model, QWidget *parent)
     ui->selector->setPartialSelectionAllowed(true);
     connect(ui->selector, qOverload<>(&TraceSetSelector::selectionChanged), this, &TraceTouchstoneExport::selectionChanged);
     connect(ui->sbPorts, &QSpinBox::valueChanged, this, &TraceTouchstoneExport::setPortNum);
-    // figure out how many ports the user most likely needs
-    unsigned int p;
-    for(p=4;p>=1;p--) {
-        // do we have a trace name which could indicate such a number of ports?
-        for(unsigned int i=1;i<=p;i++) {
-            auto n1 = "S"+QString::number(p)+QString::number(i);
-            auto n2 = "S"+QString::number(i)+QString::number(p);
+    // restore the last used settings
+    auto& pref = Preferences::getInstance();
+    auto ports = pref.UISettings.TouchstoneExport.ports;
+    setPortNum(ports);
+    ui->cFormat->setCurrentIndex(pref.UISettings.TouchstoneExport.formatIndex);
+    ui->cUnit->setCurrentIndex(pref.UISettings.TouchstoneExport.unitIndex);
+
+    // attempt to set the traces that were exported last
+    QStringList traces = pref.UISettings.TouchstoneExport.exportedTraceNames.split(",");
+    if(traces.size() == ports * ports) {
+        // got the correct number of traces
+        for(unsigned int i=0;i<traces.size();i++) {
             for(auto t : model.getTraces()) {
-                if(t->name().contains(n1) || t->name().contains(n2)) {
-                    goto traceFound;
+                if(t->name() == traces[i]) {
+                    setTrace(i / ports + 1, i % ports + 1, t);
+                    break;
                 }
             }
         }
     }
-traceFound:
-    setPortNum(p);
+
+//     unsigned int p;
+//     for(p=4;p>=1;p--) {
+//         // do we have a trace name which could indicate such a number of ports?
+//         for(unsigned int i=1;i<=p;i++) {
+//             auto n1 = "S"+QString::number(p)+QString::number(i);
+//             auto n2 = "S"+QString::number(i)+QString::number(p);
+//             for(auto t : model.getTraces()) {
+//                 if(t->name().contains(n1) || t->name().contains(n2)) {
+//                     goto traceFound;
+//                 }
+//             }
+//         }
+//     }
+// traceFound:
+//     setPortNum(p);
 }
 
 TraceTouchstoneExport::~TraceTouchstoneExport()
@@ -41,7 +61,7 @@ TraceTouchstoneExport::~TraceTouchstoneExport()
     delete ui;
 }
 
-bool TraceTouchstoneExport::setTrace(int portFrom, int portTo, Trace *t)
+bool TraceTouchstoneExport::setTrace(int portTo, int portFrom, Trace *t)
 {
     return ui->selector->setTrace(portTo, portFrom, t);
 }
@@ -66,7 +86,7 @@ bool TraceTouchstoneExport::setPortNum(unsigned int ports)
             for(auto t : traces) {
                 if(t->name().contains(name)) {
                     // this could be the correct trace
-                    setTrace(j, i, t);
+                    setTrace(i, j, t);
                     break;
                 }
             }
@@ -77,7 +97,7 @@ bool TraceTouchstoneExport::setPortNum(unsigned int ports)
 
 void TraceTouchstoneExport::on_buttonBox_accepted()
 {
-    auto ports = ui->sbPorts->value();
+    unsigned int ports = ui->sbPorts->value();
     QString extension = ".s"+QString::number(ports)+"p";
     auto filename = QFileDialog::getSaveFileName(this, "Select file for exporting traces", "", "Touchstone files (*"+extension+")", nullptr, Preferences::QFileDialogOptions());
     if(filename.length() > 0) {
@@ -86,8 +106,8 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
         // add trace points to touchstone
         for(unsigned int s=0;s<ui->selector->getPoints();s++) {
             Touchstone::Datapoint tData;
-            for(int i=1;i<=ports;i++) {
-                for(int j=1;j<=ports;j++) {
+            for(unsigned int i=1;i<=ports;i++) {
+                for(unsigned int j=1;j<=ports;j++) {
                     auto t = ui->selector->getTrace(i, j);
                     if(!t) {
                         // missing trace, set to 0
@@ -117,6 +137,25 @@ void TraceTouchstoneExport::on_buttonBox_accepted()
         }
 
         t.toFile(filename, unit, format);
+
+        // update preferences for next call
+        auto& pref = Preferences::getInstance();
+        pref.UISettings.TouchstoneExport.ports = ui->sbPorts->value();
+        pref.UISettings.TouchstoneExport.formatIndex = ui->cFormat->currentIndex();
+        pref.UISettings.TouchstoneExport.unitIndex = ui->cUnit->currentIndex();
+        QString traceNames = "";
+        for(unsigned int i=0;i<ports*ports;i++) {
+            auto t = ui->selector->getTrace(i / ports + 1, i % ports + 1);
+            if(t) {
+                traceNames += t->name();
+            }
+            if(i != (ports*ports-1)) {
+                // add separator for all but the last trace name
+                traceNames += ",";
+            }
+        }
+        pref.UISettings.TouchstoneExport.exportedTraceNames = traceNames;
+
         delete this;
     }
 }

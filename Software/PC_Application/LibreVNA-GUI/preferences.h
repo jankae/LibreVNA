@@ -207,6 +207,14 @@ public:
         bool saveTraceData;
         bool useNativeDialogs;
     } Debug;
+    struct {
+        struct {
+            unsigned int ports;
+            unsigned int formatIndex;
+            unsigned int unitIndex;
+            QString exportedTraceNames;
+        } TouchstoneExport;
+    } UISettings;
 
     bool TCPoverride; // in case of manual port specification via command line
 
@@ -374,6 +382,11 @@ private:
         {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&Debug.saveTraceData, "Debug.saveTraceData", false},
         {&Debug.useNativeDialogs, "Debug.useNativeDialogs", true},
+
+        {&UISettings.TouchstoneExport.ports, "UISettings.TouchstoneExport.ports", 2},
+        {&UISettings.TouchstoneExport.formatIndex, "UISettings.TouchstoneExport.formatIndex", 2},
+        {&UISettings.TouchstoneExport.unitIndex, "UISettings.TouchstoneExport.unitIndex", 3},
+        {&UISettings.TouchstoneExport.exportedTraceNames, "UISettings.TouchstoneExport.exportedTraceNames", ""},
     }};
 };
 

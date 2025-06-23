@@ -18,7 +18,7 @@ class TraceTouchstoneExport : public QDialog
 public:
     explicit TraceTouchstoneExport(TraceModel &model, QWidget *parent = nullptr);
     ~TraceTouchstoneExport();
-    bool setTrace(int portFrom, int portTo, Trace *t);
+    bool setTrace(int portTo, int portFrom, Trace *t);
     bool setPortNum(unsigned int ports);
 
 private slots:
