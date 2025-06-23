@@ -505,6 +505,7 @@ ManualControlDialogVFD::~ManualControlDialogVFD()
     for(auto c : commands) {
         emit dev.removeSCPICommand(c);
     }
+    dev.setIdle();
     emit dev.releaseControl();
     delete ui;
 }
