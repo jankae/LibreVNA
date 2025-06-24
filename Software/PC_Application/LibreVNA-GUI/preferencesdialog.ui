@@ -98,7 +98,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="Startup">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -112,8 +112,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>522</width>
-             <height>945</height>
+             <width>683</width>
+             <height>902</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -713,8 +713,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>564</width>
-             <height>477</height>
+             <width>697</width>
+             <height>564</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -739,6 +739,22 @@
                  <property name="text">
                   <string>Allow segmented sweep (increases maximum number of points)</string>
                  </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_17">
+                 <property name="title">
+                  <string>Electronic Calibration</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_25">
+                  <item>
+                   <widget class="QCheckBox" name="AcquisitionAllowCalStartWithUnstableLibreCALTemperature">
+                    <property name="text">
+                     <string>Allow calibration to start before the LibreCAL temperature has stabilized</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </widget>
                </item>
               </layout>
@@ -955,7 +971,7 @@
              <x>0</x>
              <y>0</y>
              <width>683</width>
-             <height>1217</height>
+             <height>1182</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
@@ -1520,8 +1536,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>602</width>
-             <height>628</height>
+             <width>486</width>
+             <height>608</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1880,8 +1896,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>168</width>
-             <height>127</height>
+             <width>144</width>
+             <height>124</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
@@ -2163,8 +2179,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>258</width>
-             <height>241</height>
+             <width>697</width>
+             <height>564</height>
             </rect>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_19">

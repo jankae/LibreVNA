@@ -276,6 +276,7 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteAllPorts);
     ui->AcquisitionAllowSegmentedSweep->setChecked(p->Acquisition.allowSegmentedSweep);
+    ui->AcquisitionAllowCalStartWithUnstableLibreCALTemperature->setChecked(p->Acquisition.allowUseOfUnstableLibreCALTemp);
     ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
     ui->AcquisitionFullSpanBehavior->setCurrentIndex(p->Acquisition.fullSpanManual ? 1 : 0);
     ui->AcquisitionFullSpanStart->setValue(p->Acquisition.fullSpanStart);
@@ -398,6 +399,7 @@ void PreferencesDialog::updateFromGUI()
 
     p->Acquisition.alwaysExciteAllPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
     p->Acquisition.allowSegmentedSweep = ui->AcquisitionAllowSegmentedSweep->isChecked();
+    p->Acquisition.allowUseOfUnstableLibreCALTemp = ui->AcquisitionAllowCalStartWithUnstableLibreCALTemperature->isChecked();
     p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
     p->Acquisition.fullSpanManual = ui->AcquisitionFullSpanBehavior->currentIndex() == 1;
     p->Acquisition.fullSpanStart = ui->AcquisitionFullSpanStart->value();

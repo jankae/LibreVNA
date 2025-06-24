@@ -103,8 +103,11 @@ public:
         } SA;
     } Startup;
     struct {
+        // VNA settings
         bool alwaysExciteAllPorts;
         bool allowSegmentedSweep;
+        bool allowUseOfUnstableLibreCALTemp;
+
         bool useMedianAveraging;
 
         // Full span settings
@@ -277,6 +280,7 @@ private:
         {&Startup.SA.averaging, "Startup.SA.averaging", 1},
         {&Acquisition.alwaysExciteAllPorts, "Acquisition.alwaysExciteBothPorts", true},
         {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", true},
+        {&Acquisition.allowUseOfUnstableLibreCALTemp, "Acquisition.allowUseOfUnstableLibreCALTemp", true},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
         {&Acquisition.fullSpanManual, "Acquisition.fullSpanManual", false},
         {&Acquisition.fullSpanStart, "Acquisition.fullSpanStart", 0.0},

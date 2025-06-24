@@ -4,6 +4,7 @@
 #include "caldevice.h"
 #include "usbdevice.h"
 #include "CustomWidgets/informationbox.h"
+#include "preferences.h"
 
 #include <set>
 
@@ -234,6 +235,14 @@ void LibreCALDialog::updateCalibrationStartStatus()
         canStart = validatePortSelection(true);
     }
 
+    if(canStart) {
+        if(!Preferences::getInstance().Acquisition.allowUseOfUnstableLibreCALTemp && !device->stabilized()) {
+            canStart = false;
+            ui->lCalibrationStatus->setText("LibreCAL temperature unstable");
+            ui->lCalibrationStatus->setStyleSheet("QLabel { color : red; }");
+        }
+    }
+
     ui->start->setEnabled(canStart);
     if(canStart) {
         ui->lCalibrationStatus->setText("Ready to start");
@@ -259,6 +268,7 @@ void LibreCALDialog::updateDeviceStatus()
         ui->lDeviceStatus->setText("Heating up, please wait with calibration");
         ui->lDeviceStatus->setStyleSheet("QLabel { color : orange; }");
     }
+    updateCalibrationStartStatus();
 }
 
 void LibreCALDialog::determineAutoPorts()
@@ -420,6 +430,7 @@ void LibreCALDialog::stopSweep()
 void LibreCALDialog::startCalibration()
 {
     disableUI();
+    busy = true;
 
     ui->progressCal->setValue(0);
     ui->lCalibrationStatus->setText("Creating calibration kit from coefficients...");
@@ -592,6 +603,7 @@ void LibreCALDialog::startCalibration()
                 disconnect(cal, &Calibration::measurementsUpdated, this, nullptr);
                 setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::None));
                 enableUI();
+                busy = false;
                 break;
             }
             setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::None));
@@ -609,6 +621,7 @@ void LibreCALDialog::startCalibration()
     connect(cal, &Calibration::measurementsAborted, this, [=](){
         setTerminationOnAllUsedPorts(CalDevice::Standard(CalDevice::Standard::Type::None));
         enableUI();
+        busy = false;
         ui->lCalibrationStatus->setText("Ready to start");
     });
 
