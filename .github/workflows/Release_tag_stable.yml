@@ -104,7 +104,7 @@ jobs:
           
   PC_Application_Windows:
     needs: PC_Application_Ubuntu
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
