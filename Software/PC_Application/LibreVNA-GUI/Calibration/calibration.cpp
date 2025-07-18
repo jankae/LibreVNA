@@ -1606,7 +1606,7 @@ std::vector<Calibration::Type> Calibration::getTypes()
     return types;
 }
 
-bool Calibration::canCompute(Calibration::CalType type, double *startFreq, double *stopFreq, int *points)
+bool Calibration::canCompute(Calibration::CalType type, double *startFreq, double *stopFreq, int *points, bool *isLog)
 {
     using RequiredMeasurements = struct {
         CalibrationMeasurement::Base::Type type;
@@ -1676,7 +1676,7 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
                 foundMeasurements.push_back(meas);
             }
         }
-        return hasFrequencyOverlap(foundMeasurements, startFreq, stopFreq, points);
+        return hasFrequencyOverlap(foundMeasurements, startFreq, stopFreq, points, isLog);
     }
     return false;
 }
@@ -1690,14 +1690,20 @@ bool Calibration::compute(Calibration::CalType type)
     }
     double start, stop;
     int numPoints;
-    if(!canCompute(type, &start, &stop, &numPoints)) {
+    bool isLog;
+    if(!canCompute(type, &start, &stop, &numPoints, &isLog)) {
         return false;
     }
     caltype = type;
     try {
         points.clear();
         for(int i=0;i<numPoints;i++) {
-            double f = start + (stop - start) * i / (numPoints - 1);
+            double f;
+            if(!isLog) {
+                f = start + (stop - start) * i / (numPoints - 1);
+            } else {
+                f = start * pow(10.0, i * log10(stop / start) / (numPoints - 1));
+            }
             Point p;
             switch(type.type) {
             case Type::SOLT: p = computeSOLT(f); break;
@@ -1852,11 +1858,13 @@ void Calibration::deleteMeasurements()
     measurements.clear();
 }
 
-bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *> m, double *startFreq, double *stopFreq, int *points)
+bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *> m, double *startFreq, double *stopFreq, int *points, bool *isLog)
 {
     double minResolution = std::numeric_limits<double>::max();
     double minFreq = 0;
     double maxFreq = std::numeric_limits<double>::max();
+    unsigned int logCount = 0;
+    unsigned int linCount = 0;
     for(auto meas : m) {
         if(meas->numPoints() < 2) {
             return false;
@@ -1871,6 +1879,38 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
         if(resolution < minResolution) {
             minResolution = resolution;
         }
+        // check whether the frequency points are more linear or more logarithmic
+        double minDiff = std::numeric_limits<double>::max();
+        double maxDiff = 0;
+        double minRatio = std::numeric_limits<double>::max();
+        double maxRatio = 0;
+        for(unsigned int i=1;i<meas->numPoints();i++) {
+            double f_prev = meas->getPointFreq(i-1);
+            double f_next = meas->getPointFreq(i);
+            double diff = f_next - f_prev;
+            double ratio = f_next / f_prev;
+            if(diff < minDiff) {
+                minDiff = diff;
+            }
+            if(diff > maxDiff) {
+                maxDiff = diff;
+            }
+            if(ratio < minRatio) {
+                minRatio = ratio;
+            }
+            if(ratio > maxRatio) {
+                maxRatio = ratio;
+            }
+        }
+        double diffVariationNormalized = (maxDiff - minDiff) / maxDiff;
+        double ratioVariationNormalized = (maxRatio - minRatio) / maxRatio;
+        if(abs(diffVariationNormalized) < abs(ratioVariationNormalized)) {
+            // more linear
+            linCount++;
+        } else {
+            // more logarithmic
+            logCount++;
+        }
     }
     if(startFreq) {
         *startFreq = minFreq;
@@ -1880,6 +1920,9 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
     }
     if(points) {
         *points = (maxFreq - minFreq) / minResolution + 1;
+    }
+    if(isLog) {
+        *isLog = logCount > linCount;
     }
     if(maxFreq > minFreq) {
         return true;

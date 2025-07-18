@@ -41,6 +41,7 @@ public:
     virtual double maxUsableFreq() = 0;
     virtual double minFreq() = 0;
     virtual double maxFreq() = 0;
+    virtual double getPointFreq(unsigned int p) = 0;
     virtual unsigned int numPoints() = 0;
     virtual bool readyForMeasurement() {return false;}
     virtual bool readyForCalculation() {return false;}
@@ -88,6 +89,7 @@ public:
     virtual double maxUsableFreq() override;
     virtual double minFreq() override {return points.size() > 0 ? points.front().frequency : std::numeric_limits<double>::max();}
     virtual double maxFreq() override {return points.size() > 0 ? points.back().frequency : 0;}
+    virtual double getPointFreq(unsigned int p) override { return p < points.size() ? points[p].frequency : 0;}
     virtual unsigned int numPoints() override {return points.size();}
     virtual bool readyForMeasurement() override {return standard != nullptr;}
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
@@ -207,6 +209,7 @@ public:
     virtual double maxUsableFreq() override;
     virtual double minFreq() override {return points.size() > 0 ? points.front().frequency : std::numeric_limits<double>::max();}
     virtual double maxFreq() override {return points.size() > 0 ? points.back().frequency : 0;}
+    virtual double getPointFreq(unsigned int p) override { return p < points.size() ? points[p].frequency : 0;}
     virtual unsigned int numPoints() override {return points.size();}
     virtual bool readyForMeasurement() override {return standard != nullptr;}
     virtual bool readyForCalculation() override {return standard && points.size() > 0;}
@@ -281,6 +284,7 @@ public:
     virtual double maxUsableFreq() override {return maxFreq();}
     virtual double minFreq() override {return points.size() > 0 ? points.front().frequency : std::numeric_limits<double>::max();}
     virtual double maxFreq() override {return points.size() > 0 ? points.back().frequency : 0;}
+    virtual double getPointFreq(unsigned int p) override { return p < points.size() ? points[p].frequency : 0;}
     virtual unsigned int numPoints() override;
     virtual bool readyForMeasurement() override {return true;}
     virtual bool readyForCalculation() override {return points.size() > 0;}
