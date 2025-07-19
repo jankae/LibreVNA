@@ -154,6 +154,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/streamingserver.cpp \
     ../LibreVNA-GUI/touchstone.cpp \
     ../LibreVNA-GUI/unit.cpp \
+    calibrationtests.cpp \
     ffttests.cpp \
     impedancerenormalizationtests.cpp \
     main.cpp \
@@ -352,6 +353,7 @@ HEADERS += \
     ../LibreVNA-GUI/streamingserver.h \
     ../LibreVNA-GUI/touchstone.h \
     ../LibreVNA-GUI/unit.h \
+    calibrationtests.h \
     ffttests.h \
     impedancerenormalizationtests.h \
     parametertests.h \

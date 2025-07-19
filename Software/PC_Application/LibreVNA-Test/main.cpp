@@ -3,6 +3,7 @@
 #include "parametertests.h"
 #include "ffttests.h"
 #include "impedancerenormalizationtests.h"
+#include "calibrationtests.h"
 
 #include <QtTest>
 
@@ -16,6 +17,7 @@ int main(int argc, char *argv[])
     status |= QTest::qExec(new ParameterTests, argc, argv);
     status |= QTest::qExec(new fftTests, argc, argv);
     status |= QTest::qExec(new ImpedanceRenormalizationTests, argc, argv);
+    status |= QTest::qExec(new CalibrationTests, argc, argv);
 
     return status;
 }
