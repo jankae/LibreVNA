@@ -132,11 +132,11 @@ void MarkerModel::markerDataChanged(Marker *m)
         // only update the other columns, do not override editor data
         emit dataChanged(index(row, ColIndexData), index(row, ColIndexData));
     } else {
-        emit dataChanged(index(row, ColIndexNumber), index(row, ColIndexData));
+        emit dataChanged(index(row, ColIndexSettings), index(row, ColIndexData));
         // also update any potential helper markers
         for(unsigned int i=0;i<m->getHelperMarkers().size();i++) {
             auto modelIndex = createIndex(i, 0, m);
-            emit dataChanged(index(i, ColIndexNumber, modelIndex), index(i, ColIndexData, modelIndex));
+            emit dataChanged(index(i, ColIndexSettings, modelIndex), index(i, ColIndexData, modelIndex));
         }
     }
 }

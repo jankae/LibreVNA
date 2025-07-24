@@ -130,6 +130,7 @@ QString Marker::formatToString(Marker::Format f)
     case Format::Inductance: return "Inductance";
     case Format::QualityFactor: return "Quality Factor";
     case Format::GroupDelay: return "Group Delay";
+    case Format::NumberOfPeaks: return "Number of peaks";
     case Format::TOI: return "Third order intercept";
     case Format::AvgTone: return "Average Tone Level";
     case Format::AvgModulationProduct: return "Average Modulation Product Level";
@@ -194,8 +195,6 @@ std::vector<Marker::Format> Marker::applicableFormats()
         case Type::Delta:
         case Type::Maximum:
         case Type::Minimum:
-        case Type::PeakTable:
-        case Type::NegativePeakTable:
             if(Trace::isSAParameter(parentTrace->liveParameter())) {
                 ret.push_back(Format::dBm);
                 ret.push_back(Format::dBuV);
@@ -218,6 +217,10 @@ std::vector<Marker::Format> Marker::applicableFormats()
                 }
             }
             break;
+        case Type::PeakTable:
+        case Type::NegativePeakTable:
+            ret.push_back(Format::NumberOfPeaks);
+            break;
         default:
             break;
         }
@@ -228,8 +231,6 @@ std::vector<Marker::Format> Marker::applicableFormats()
         case Type::Delta:
         case Type::Maximum:
         case Type::Minimum:
-        case Type::PeakTable:
-        case Type::NegativePeakTable:
             if(Trace::isSAParameter(parentTrace->liveParameter())) {
                 ret.push_back(Format::dBm);
                 ret.push_back(Format::dBuV);
@@ -252,6 +253,10 @@ std::vector<Marker::Format> Marker::applicableFormats()
                     ret.push_back(Format::Noise);
                 }
             }
+            break;
+        case Type::PeakTable:
+        case Type::NegativePeakTable:
+            ret.push_back(Format::NumberOfPeaks);
             break;
         case Type::Bandpass:
             ret.push_back(Format::CenterBandwidth);
@@ -451,7 +456,11 @@ QString Marker::readableData(Format f)
         switch(type) {
         case Type::PeakTable:
         case Type::NegativePeakTable:
-            return "Found " + QString::number(helperMarkers.size()) + " peaks";
+            switch(f) {
+            case Format::NumberOfPeaks: return "Found " + QString::number(helperMarkers.size()) + " peak" + (helperMarkers.size() == 1 ? "" : "s");
+            default: return "Invalid";
+            }
+            break;
         case Type::Delta: {
             if(!delta) {
                 return "Invalid delta marker";
@@ -588,6 +597,7 @@ QString Marker::readableData(Format f)
             case Format::maxDeltaPos:
                 return "max. Δ+:"+Unit::ToString(maxDeltaPos, "dB", " ", 4);
                 break;
+            case Format::NumberOfPeaks:
             case Format::Last:
                 return "Invalid";
             }
@@ -892,10 +902,6 @@ void Marker::deltaDeleted()
 
 void Marker::updateContextmenu()
 {
-    if(parent) {
-        // do nothing, using contextmenu from parent anyway
-        return;
-    }
     // check if the contextmenu or one of its submenus is currently open
     auto *activeWidget = QApplication::activePopupWidget();
     while (activeWidget) {
@@ -910,19 +916,22 @@ void Marker::updateContextmenu()
     contextmenu.clear();
     contextmenu.addSection("Marker");
 
-    auto typemenu = contextmenu.addMenu("Type");
-    auto typegroup = new QActionGroup(&contextmenu);
-    for(auto t : getSupportedTypes()) {
-        auto setTypeAction = new QAction(typeToString(t), typemenu);
-        setTypeAction->setCheckable(true);
-        if(t == type) {
-            setTypeAction->setChecked(true);
+    if(!parent) {
+        // type can only be changed for top level markers
+        auto typemenu = contextmenu.addMenu("Type");
+        auto typegroup = new QActionGroup(&contextmenu);
+        for(auto t : getSupportedTypes()) {
+            auto setTypeAction = new QAction(typeToString(t), typemenu);
+            setTypeAction->setCheckable(true);
+            if(t == type) {
+                setTypeAction->setChecked(true);
+            }
+            connect(setTypeAction, &QAction::triggered, [=](){
+                setType(t);
+            });
+            typegroup->addAction(setTypeAction);
+            typemenu->addAction(setTypeAction);
         }
-        connect(setTypeAction, &QAction::triggered, [=](){
-            setType(t);
-        });
-        typegroup->addAction(setTypeAction);
-        typemenu->addAction(setTypeAction);
     }
 
     auto table = contextmenu.addMenu("Data Format in Table");
@@ -965,48 +974,51 @@ void Marker::updateContextmenu()
         }
     }
 
-    contextmenu.addSeparator();
-
-    bool needsSeparator = false;
-    if((applicableGroups.size() > 0 && group == nullptr) || applicableGroups.size() > 1) {
-        // there are other groups available than the one the marker might already be assigned to
-        auto addGroupMenu = new QMenu("Add to linked group");
-        auto groupGroup = new QActionGroup(addGroupMenu);
-        for(auto g : model->getGroups()) {
-            auto addGroupAction = new QAction(QString::number(g->getNumber()));
-            groupGroup->addAction(addGroupAction);
-            addGroupAction->setCheckable(true);
-            if(g == group) {
-                // already assigned to this group
-                addGroupAction->setChecked(true);
-            }
-            connect(addGroupAction, &QAction::triggered, [=](bool checked){
-                if(checked) {
-                    g->add(this);
-                }
-            });
-            addGroupMenu->addAction(addGroupAction);
-        }
-        contextmenu.addMenu(addGroupMenu);
-        needsSeparator = true;
-    }
-    if(group != nullptr) {
-        // "remove from group" available
-        auto removeGroup = new QAction("Remove from linked group", &contextmenu);
-        connect(removeGroup, &QAction::triggered, [=](){
-            group->remove(this);
-        });
-        contextmenu.addAction(removeGroup);
-        needsSeparator = true;
-    }
-    if(needsSeparator) {
+    if(!parent) {
+        // grouping and deleting is only possible for top level markers
         contextmenu.addSeparator();
+
+        bool needsSeparator = false;
+        if((applicableGroups.size() > 0 && group == nullptr) || applicableGroups.size() > 1) {
+            // there are other groups available than the one the marker might already be assigned to
+            auto addGroupMenu = new QMenu("Add to linked group");
+            auto groupGroup = new QActionGroup(addGroupMenu);
+            for(auto g : model->getGroups()) {
+                auto addGroupAction = new QAction(QString::number(g->getNumber()));
+                groupGroup->addAction(addGroupAction);
+                addGroupAction->setCheckable(true);
+                if(g == group) {
+                    // already assigned to this group
+                    addGroupAction->setChecked(true);
+                }
+                connect(addGroupAction, &QAction::triggered, [=](bool checked){
+                    if(checked) {
+                        g->add(this);
+                    }
+                });
+                addGroupMenu->addAction(addGroupAction);
+            }
+            contextmenu.addMenu(addGroupMenu);
+            needsSeparator = true;
+        }
+        if(group != nullptr) {
+            // "remove from group" available
+            auto removeGroup = new QAction("Remove from linked group", &contextmenu);
+            connect(removeGroup, &QAction::triggered, [=](){
+                group->remove(this);
+            });
+            contextmenu.addAction(removeGroup);
+            needsSeparator = true;
+        }
+        if(needsSeparator) {
+            contextmenu.addSeparator();
+        }
+
+
+        auto deleteAction = new QAction("Delete", &contextmenu);
+        connect(deleteAction, &QAction::triggered, this, &Marker::deleteLater);
+        contextmenu.addAction(deleteAction);
     }
-
-
-    auto deleteAction = new QAction("Delete", &contextmenu);
-    connect(deleteAction, &QAction::triggered, this, &Marker::deleteLater);
-    contextmenu.addAction(deleteAction);
 }
 
 void Marker::traceTypeChanged()
@@ -1231,6 +1243,7 @@ void Marker::setType(Marker::Type t)
         helper->suffix = h.suffix;
         helper->assignTrace(parentTrace);
         helper->setType(h.type);
+        helper->setVisible(visible);
         helperMarkers.push_back(helper);
     }
     if(type == Type::Flatness) {
@@ -1771,11 +1784,7 @@ void Marker::setVisible(bool visible)
 }
 
 QMenu *Marker::getContextMenu() {
-    if(parent) {
-        return parent->getContextMenu();
-    } else {
-        return &contextmenu;
-    }
+    return &contextmenu;
 }
 
 void Marker::update()
@@ -1800,19 +1809,28 @@ void Marker::update()
         break;
     case Type::PeakTable:
     case Type::NegativePeakTable: {
-        deleteHelperMarkers();
         auto peaks = parentTrace->findPeakFrequencies(100, peakThreshold, 3.0, xmin, xmax, type == Type::NegativePeakTable);
-        char suffix = 'a';
-        for(auto p : peaks) {
-            auto helper = new Marker(model, number, this);
-            helper->suffix = suffix;
-            helper->assignTrace(parentTrace);
-            helper->setPosition(p);
-            helper->formatTable = formatTable;
-            helper->formatGraph = formatGraph;
-            helper->updateContextmenu();
-            suffix++;
-            helperMarkers.push_back(helper);
+        for(unsigned int i=0;i<peaks.size();i++) {
+            if(helperMarkers.size() <= i) {
+                // needs to create a new helper marker
+                auto helper = new Marker(model, number, this);
+                helper->suffix = QChar('a' + i);
+                helper->assignTrace(parentTrace);
+                helper->updateContextmenu();
+                helper->setVisible(visible);
+                helperMarkers.push_back(helper);
+            }
+            // update the position of the helper marker
+            helperMarkers[i]->setPosition(peaks[i]);
+        }
+        if(helperMarkers.size() > peaks.size()) {
+            // need to remove some helper markers
+            emit beginRemoveHelperMarkers(this);
+            for(unsigned int i = peaks.size(); i< helperMarkers.size();i++) {
+                delete helperMarkers[i];
+            }
+            helperMarkers.resize(peaks.size());
+            emit endRemoveHelperMarkers(this);
         }
     }
         break;
