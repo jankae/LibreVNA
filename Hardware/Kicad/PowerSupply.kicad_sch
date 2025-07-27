@@ -13075,7 +13075,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "LM3370SD-4221"
+		(property "MPN" "LM3370SD-3021"
 			(at 101.6 190.5 0)
 			(effects
 				(font
@@ -13970,7 +13970,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "LM3370SD-4221"
+		(property "MPN" "LM3370SD-3021"
 			(at 101.6 231.14 0)
 			(effects
 				(font
@@ -16667,7 +16667,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "LM3370SD-4221"
+		(property "MPN" "LM3370SD-3021"
 			(at 208.28 180.34 0)
 			(effects
 				(font
