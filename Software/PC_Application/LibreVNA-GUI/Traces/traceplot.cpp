@@ -551,6 +551,10 @@ Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
         }
         auto markers = t.first->getMarkers();
         for(Marker* m : markers) {
+            if(!m->isVisible()) {
+                // can not interact with invisible markers, pretend that there is nothing here
+                continue;
+            }
             if(!m->isMovable() && onlyMovable) {
                 continue;
             }
@@ -563,14 +567,7 @@ Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
             unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
             if(distance < closestDistance) {
                 closestDistance = distance;
-                if(m->getParent()) {
-                    closestMarker = m->getParent();
-                    if(closestMarker->getType() == Marker::Type::Flatness) {
-                        closestMarker = m;
-                    }
-                } else {
-                    closestMarker = m;
-                }
+                closestMarker = m;
             }
         }
     }

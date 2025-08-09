@@ -35,6 +35,8 @@ public:
         Inductance,
         QualityFactor,
         GroupDelay,
+        // Peak table
+        NumberOfPeaks,
         // Noise marker parameters
         Noise,
         PhaseNoise,
