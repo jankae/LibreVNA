@@ -87,14 +87,14 @@ static bool setPLLFrequencies(uint64_t f) {
 		}
 		LOFreq = f + HW::getIF1();
 	}
-	if(sourceFreq > HW::BandSwitchFrequency) {
+	if(sourceFreq >= HW::BandSwitchFrequency) {
 		Source.SetFrequency(sourceFreq);
 	}
 	LO1.SetFrequency(LOFreq);
 	bool needsRefSwitch = false;
 	if(settings.suppressPeaks) {
 		// Integer spurs can cause a small peak.
-		if(sourceFreq > HW::BandSwitchFrequency) {
+		if(sourceFreq >= HW::BandSwitchFrequency) {
 			uint32_t sourceDist = Source.DistanceToIntegerSpur();
 			if((sourceDist > 0) && (sourceDist < 3 * HW::getIF2())) {
 				LOG_DEBUG("Source spur at %lu: %lu", (uint32_t) f, sourceDist);
