@@ -94,7 +94,7 @@ static void StartNextSample() {
 					}
 					attenuator = amplitude.attenuator;
 					if(trackingFreq < HW::BandSwitchFrequency) {
-						Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::B, amplitude.lowBandPower);
+						Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::A, amplitude.lowBandPower);
 						FPGA::Disable(FPGA::Periphery::SourceChip);
 						FPGA::Disable(FPGA::Periphery::SourceRF);
 						trackingLowband = true;

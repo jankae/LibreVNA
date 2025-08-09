@@ -16,7 +16,7 @@ void Manual::Setup(Protocol::ManualControl m) {
 	FPGA::AbortSweep();
 	// Configure lowband source
 	if (m.V1.SourceLowEN) {
-		Si5351.SetCLK(SiChannel::LowbandSource, m.V1.SourceLowFrequency, Si5351C::PLL::B,
+		Si5351.SetCLK(SiChannel::LowbandSource, m.V1.SourceLowFrequency, Si5351C::PLL::A,
 				(Si5351C::DriveStrength) m.V1.SourceLowPower);
 		Si5351.Enable(SiChannel::LowbandSource);
 	} else {

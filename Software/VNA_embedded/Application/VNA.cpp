@@ -458,7 +458,7 @@ void VNA::SweepHalted() {
 			}
 
 			// need the Si5351 as Source
-			bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::B, driveStrength);
+			bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::A, driveStrength);
 			static bool lowbandDisabled = false;
 			if (pointCnt == 0) {
 				// First point in sweep, switch to correct source
