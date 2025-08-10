@@ -1278,6 +1278,117 @@ bool Calibration::validForDevice(QString serial) const
     }
 }
 
+bool Calibration::hasDirectivity(unsigned int port)
+{
+    unsigned int index = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), port) - caltype.usedPorts.begin();
+    if(points.size() == 0 || index >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.D[index] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasReflectionTracking(unsigned int port)
+{
+    unsigned int index = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), port) - caltype.usedPorts.begin();
+    if(points.size() == 0 || index >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(1.0, 0.0);
+    for(const auto &p : points) {
+        if(p.R[index] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasSourceMatch(unsigned int port)
+{
+    unsigned int index = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), port) - caltype.usedPorts.begin();
+    if(points.size() == 0 || index >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.S[index] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasReceiverMatch(unsigned int sourcePort, unsigned int receivePort)
+{
+    unsigned int indexSrc = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), sourcePort) - caltype.usedPorts.begin();
+    unsigned int indexRcv = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), receivePort) - caltype.usedPorts.begin();
+    if(points.size() == 0 || indexSrc >= caltype.usedPorts.size() || indexRcv >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.L[indexSrc][indexRcv] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasTransmissionTracking(unsigned int sourcePort, unsigned int receivePort)
+{
+    unsigned int indexSrc = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), sourcePort) - caltype.usedPorts.begin();
+    unsigned int indexRcv = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), receivePort) - caltype.usedPorts.begin();
+    if(points.size() == 0 || indexSrc >= caltype.usedPorts.size() || indexRcv >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(1.0, 0.0);
+    for(const auto &p : points) {
+        if(p.T[indexSrc][indexRcv] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasIsolation(unsigned int sourcePort, unsigned int receivePort)
+{
+    unsigned int indexSrc = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), sourcePort) - caltype.usedPorts.begin();
+    unsigned int indexRcv = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), receivePort) - caltype.usedPorts.begin();
+    if(points.size() == 0 || indexSrc >= caltype.usedPorts.size() || indexRcv >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.I[indexSrc][indexRcv] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
 bool Calibration::hasUnsavedChanges() const
 {
     return unsavedChanges;

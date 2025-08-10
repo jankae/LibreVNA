@@ -99,6 +99,14 @@ public:
     QString getValidDevice() const;
     bool validForDevice(QString serial) const;
 
+    // query whether error terms coefficients are available. Port count starts at 1
+    bool hasDirectivity(unsigned int port);
+    bool hasReflectionTracking(unsigned int port);
+    bool hasSourceMatch(unsigned int port);
+    bool hasReceiverMatch(unsigned int sourcePort, unsigned int receivePort);
+    bool hasTransmissionTracking(unsigned int sourcePort, unsigned int receivePort);
+    bool hasIsolation(unsigned int sourcePort, unsigned int receivePort);
+
 public slots:
     // Call once all datapoints of the current span have been added
     void measurementsComplete();

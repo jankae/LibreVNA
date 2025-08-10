@@ -627,6 +627,10 @@ void CalibrationMeasurement::Isolation::addPoint(const DeviceDriver::VNAMeasurem
         QString name = meas.first;
         unsigned int rcv = name.mid(1, 1).toInt() - 1;
         unsigned int src = name.mid(2, 1).toInt() - 1;
+        if(rcv > 8 || src > 8) {
+            // skip
+            continue;
+        }
         if(rcv >= p.S.size()) {
             p.S.resize(rcv + 1);
         }

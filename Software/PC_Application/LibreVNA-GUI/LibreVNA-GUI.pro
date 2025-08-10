@@ -6,6 +6,7 @@ HEADERS += \
     Calibration/LibreCAL/usbdevice.h \
     Calibration/calibration.h \
     Calibration/calibrationmeasurement.h \
+    Calibration/calibrationviewdialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
     Calibration/calstandard.h \
@@ -171,6 +172,7 @@ SOURCES += \
     Calibration/LibreCAL/usbdevice.cpp \
     Calibration/calibration.cpp \
     Calibration/calibrationmeasurement.cpp \
+    Calibration/calibrationviewdialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
     Calibration/calstandard.cpp \
@@ -340,6 +342,7 @@ FORMS += \
     Calibration/LibreCAL/factoryUpdateDialog.ui \
     Calibration/LibreCAL/librecaldialog.ui \
     Calibration/calibrationdialogui.ui \
+    Calibration/calibrationviewdialog.ui \
     Calibration/calkitdialog.ui \
     Calibration/manualcalibrationdialog.ui \
     CustomWidgets/csvimport.ui \
