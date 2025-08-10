@@ -301,6 +301,7 @@ QString Calibration::TypeToString(Calibration::Type type)
 {
     switch(type) {
     case Type::None: return "None";
+    case Type::OSL: return "OSL";
     case Type::SOLT: return "SOLT";
     case Type::ThroughNormalization: return "ThroughNormalization";
     case Type::TRL: return "TRL";
@@ -708,19 +709,19 @@ Calibration::Point Calibration::createInitializedPoint(double f) {
     point.frequency = f;
     // resize vectors
     point.D.resize(caltype.usedPorts.size(), 0.0);
-    point.R.resize(caltype.usedPorts.size(), 0.0);
+    point.R.resize(caltype.usedPorts.size(), 1.0);
     point.S.resize(caltype.usedPorts.size(), 0.0);
 
     point.L.resize(caltype.usedPorts.size());
     point.T.resize(caltype.usedPorts.size());
     point.I.resize(caltype.usedPorts.size());
     fill(point.L.begin(), point.L.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
-    fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
+    fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size(), 1.0));
     fill(point.I.begin(), point.I.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
     return point;
 }
 
-Calibration::Point Calibration::computeSOLT(double f)
+Calibration::Point Calibration::computeOSL(double f)
 {
     Point point = createInitializedPoint(f);
 
@@ -762,6 +763,13 @@ Calibration::Point Calibration::computeSOLT(double f)
         auto delta = (l_c * l_m * (o_m - s_m) + o_c * o_m * (s_m - l_m) + s_c * s_m * (l_m - o_m)) / denom;
         point.R[i] = point.D[i] * point.S[i] - delta;
     }
+    return point;
+}
+
+Calibration::Point Calibration::computeSOLT(double f)
+{
+    Point point = computeOSL(f);
+
     // calculate forward match and transmission
     for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
         for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
@@ -1728,6 +1736,14 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
     case Type::None:
         return true; // Always possible to reset the calibration
     case Type::SOLT:
+        // through measurements between all ports
+        for(unsigned int i=1;i<=type.usedPorts.size();i++) {
+            for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
+            }
+        }
+        [[fallthrough]];
+    case Type::OSL:
         // SOL measurements for every port
         for(auto p : type.usedPorts) {
             required.push_back({.type = CalibrationMeasurement::Base::Type::Short, .port1 = p, .port2 = 0});
@@ -1738,12 +1754,6 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
             } else {
                 // not enough sliding load measurement, use normal load
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Load, .port1 = p, .port2 = 0});
-            }
-        }
-        // through measurements between all ports
-        for(unsigned int i=1;i<=type.usedPorts.size();i++) {
-            for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
-                required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
             }
         }
         break;
@@ -1817,6 +1827,7 @@ bool Calibration::compute(Calibration::CalType type)
             }
             Point p;
             switch(type.type) {
+            case Type::OSL: p = computeOSL(f); break;
             case Type::SOLT: p = computeSOLT(f); break;
             case Type::ThroughNormalization: p = computeThroughNormalization(f); break;
             case Type::TRL: p = computeTRL(f); break;
@@ -1845,6 +1856,7 @@ void Calibration::reset()
 int Calibration::minimumPorts(Calibration::Type type)
 {
     switch(type) {
+    case Type::OSL: return 1;
     case Type::SOLT: return 1;
     case Type::ThroughNormalization: return 2;
     case Type::TRL: return 2;

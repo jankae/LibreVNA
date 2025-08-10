@@ -20,6 +20,7 @@ public:
 
     enum class Type {
         None,
+        OSL,
         SOLT,
         ThroughNormalization,
         TRL,
@@ -160,6 +161,7 @@ private:
     std::vector<Point> points;
 
     Point createInitializedPoint(double f);
+    Point computeOSL(double f);
     Point computeSOLT(double f);
     Point computeThroughNormalization(double f);
     Point computeTRL(double f);
