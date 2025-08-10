@@ -7,7 +7,7 @@ ManualCalibrationDialog::ManualCalibrationDialog(const TraceModel &model, Calibr
     ui(new Ui::ManualCalibrationDialog)
 {
     ui->setupUi(this);
-    auto traceSelector = new SparamTraceSelector(model, cal->getCaltype().usedPorts);
+    auto traceSelector = new SparamTraceSelector(model, cal->getCaltype().usedPorts, true);
     ui->verticalLayout->insertWidget(1, traceSelector, 1.0);
     ui->buttonBox->setEnabled(false);
     connect(traceSelector, &SparamTraceSelector::selectionValid, ui->buttonBox, &QDialogButtonBox::setEnabled);
