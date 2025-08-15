@@ -254,6 +254,61 @@ void CalibrationViewDialog::populateScene()
         drawText(marginLeft - portSize/2, marginTop + i*portHeight - portHeight/2 + portReverseYOffset, "b"+QString::number(i), colorF, Qt::AlignRight, Qt::AlignCenter);
     }
 
-    // create the ports of the VNA
-
+    // Fill the measurement correction table
+    ui->table->clear();
+    ui->table->setRowCount(ports*ports);
+    ui->table->setColumnCount(2);
+    ui->table->setHorizontalHeaderLabels({"Parameter", "Calibration Status"});
+    for(unsigned int i=1;i<=ports;i++) {
+        for(unsigned int j=1;j<=ports;j++) {
+            auto row = (i-1)*ports+j-1;
+            // add parameter
+            ui->table->setItem(row, 0, new QTableWidgetItem("S"+QString::number(j)+QString::number(i)));
+            // check the calibration status
+            QString status = "Uncalibrated";
+            if(i == j) {
+                // check reflection parameters
+                if(cal->hasSourceMatch(i) && cal->hasDirectivity(i) && cal->hasReflectionTracking(i)) {
+                    // we are calibrated
+                    status = "Calibrated";
+                    // check if we have enhanced responses
+                    QList<int> enhanced;
+                    for(unsigned int k=1;k<=ports;k++) {
+                        if(k==i) {
+                            continue;
+                        }
+                        if(cal->hasReceiverMatch(i, k)) {
+                            enhanced.append(k);
+                        }
+                    }
+                    if(enhanced.size() == 1) {
+                        status += " with enhanced response from port "+QString::number(enhanced[0]);
+                    } else if(enhanced.size() > 1) {
+                        status += " with enhanced response from ports ";
+                        for(unsigned int k=0;k<enhanced.size();k++) {
+                            if(k == enhanced.size() - 1) {
+                                status += " and "+QString::number(enhanced[k]);
+                            } else if(k > 0) {
+                                status += ", ";
+                            }
+                            status += QString::number(enhanced[k]);
+                        }
+                    }
+                }
+            } else {
+                // check transmission calibration
+                if(cal->hasTransmissionTracking(i, j)) {
+                    // we are calibrated
+                    status = "Calibrated";
+                    // check if we have isolation terms
+                    if(cal->hasIsolation(i, j)) {
+                        status += " with isolation measurement";
+                    }
+                }
+            }
+            // add calibration status
+            ui->table->setItem(row, 1, new QTableWidgetItem(status));
+        }
+    }
+    ui->table->resizeColumnsToContents();
 }
