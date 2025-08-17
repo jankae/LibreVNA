@@ -210,7 +210,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	Si5351.Enable(SiChannel::Port1LO2);
 	Si5351.Enable(SiChannel::Port2LO2);
 	Si5351.Enable(SiChannel::RefLO2);
-	Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
+	Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource(), false);
 	Si5351.ResetPLL(Si5351C::PLL::B);
 	Si5351.WaitForLock(Si5351C::PLL::B, 10);
 
@@ -458,7 +458,7 @@ void VNA::SweepHalted() {
 			}
 
 			// need the Si5351 as Source
-			bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::A, driveStrength);
+			bool freqSuccess = Si5351.SetCLK(SiChannel::LowbandSource, frequency, Si5351C::PLL::A, driveStrength, false);
 			static bool lowbandDisabled = false;
 			if (pointCnt == 0) {
 				// First point in sweep, switch to correct source
@@ -499,7 +499,7 @@ void VNA::SweepHalted() {
 			Si5351.SetCLK(SiChannel::Source, PLLRefFreqs[sourceRefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
 			Si5351.SetCLK(SiChannel::LO1, PLLRefFreqs[LO1RefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
 			last_LO2 = HW::getIF1() - HW::getIF2();
-			Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
+			Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource(), false);
 			Si5351.ResetPLL(Si5351C::PLL::B);
 			Si5351.WaitForLock(Si5351C::PLL::B, 10);
 			HAL_Delay(2);
@@ -514,7 +514,7 @@ void VNA::SweepHalted() {
 				Si5351.SetCLK(SiChannel::LO1, PLLRefFreqs[LO1RefIndex], Si5351C::PLL::A, Si5351C::DriveStrength::mA8);
 			}
 			if(needs2LOshift(frequency, last_LO2, actualBandwidth, &last_LO2)) {
-				Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource());
+				Si5351.SetPLL(Si5351C::PLL::B, last_LO2*HW::LO2Multiplier, HW::Ref::getSource(), false);
 				Si5351.ResetPLL(Si5351C::PLL::B);
 				Si5351.WaitForLock(Si5351C::PLL::B, 10);
 				// PLL reset causes the 2.LO to turn off briefly and then ramp on back, needs delay before next point

@@ -94,7 +94,7 @@ static void StartNextSample() {
 					}
 					attenuator = amplitude.attenuator;
 					if(trackingFreq < HW::BandSwitchFrequency) {
-						Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::A, amplitude.lowBandPower);
+						Si5351.SetCLK(SiChannel::LowbandSource, trackingFreq, Si5351C::PLL::A, amplitude.lowBandPower, false);
 						FPGA::Disable(FPGA::Periphery::SourceChip);
 						FPGA::Disable(FPGA::Periphery::SourceRF);
 						trackingLowband = true;
@@ -198,8 +198,8 @@ static void StartNextSample() {
 	// only adjust LO2 PLL if necessary (if the deviation is significantly less than the RBW it does not matter)
 	if((uint32_t) abs(LO2freq - lastLO2) > actualRBW / 100) {
 //		Si5351.SetPLL(Si5351C::PLL::B, LO2freq*HW::LO2Multiplier, HW::Ref::getSource());
-		Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
-		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2);
+		Si5351.SetCLK(SiChannel::Port1LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2, false);
+		Si5351.SetCLK(SiChannel::Port2LO2, LO2freq, Si5351C::PLL::B, Si5351C::DriveStrength::mA2, false);
 		lastLO2 = LO2freq;
 	}
 	if (s.UseDFT) {
