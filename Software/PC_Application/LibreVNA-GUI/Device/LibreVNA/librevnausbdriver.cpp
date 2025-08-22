@@ -224,7 +224,7 @@ void LibreVNAUSBDriver::ReceivedLog()
         auto firstLinebreak = (uint8_t*) memchr(logBuffer->getBuffer(), '\n', logBuffer->getReceived());
         if(firstLinebreak) {
             handled_len = firstLinebreak - logBuffer->getBuffer();
-            auto line = QString::fromLatin1((const char*) logBuffer->getBuffer(), handled_len - 1);
+            auto line = QString::fromLatin1((const char*) logBuffer->getBuffer(), handled_len).trimmed();
             emit LogLineReceived(line);
             logBuffer->removeBytes(handled_len + 1);
         }
