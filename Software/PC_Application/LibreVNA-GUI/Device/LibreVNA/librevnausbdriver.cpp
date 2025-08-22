@@ -348,7 +348,7 @@ void LibreVNAUSBDriver::SearchDevices(std::function<bool (libusb_device_handle *
         if (ret > 0) {
             /* managed to read the product string */
             QString product(c_product);
-            if (product == "VNA") {
+            if (product.contains("VNA")) {
                 // this is a match
                 if(!foundCallback(handle, QString(c_serial))) {
                     // abort search

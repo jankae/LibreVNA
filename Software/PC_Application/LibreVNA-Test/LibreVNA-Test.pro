@@ -28,6 +28,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvfd.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvfe.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvff.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.cpp \
@@ -217,6 +218,7 @@ HEADERS += \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.h \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.h \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvfd.h \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvfe.h \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvff.h \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.h \
@@ -392,6 +394,7 @@ FORMS += \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/automaticamplitudedialog.ui \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvfd.ui \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvfe.ui \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvff.ui \
     ../LibreVNA-GUI/Device/LibreVNA/firmwareupdatedialog.ui \

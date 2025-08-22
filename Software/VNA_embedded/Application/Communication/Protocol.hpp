@@ -487,6 +487,17 @@ using DeviceConfig = struct _deviceconfig {
             uint8_t PLLSettlingDelay;
         } V1;
         struct {
+            uint32_t IF;
+            // Gain settings for all 4 receivers:
+            // 0-63: valid values, higher value indicate lower gain (higher attenuation)
+            // 0-254: invalid
+            // 255: autogain
+            uint8_t P1PortGain;
+            uint8_t P1RefGain;
+            uint8_t P2PortGain;
+            uint8_t P2RefGain;
+        } VFD;
+        struct {
             uint32_t ip;
             uint32_t mask;
             uint32_t gw;

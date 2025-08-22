@@ -7,6 +7,7 @@
 #include "deviceconfigurationdialogv1.h"
 #include "deviceconfigurationdialogvff.h"
 #include "deviceconfigurationdialogvfe.h"
+#include "deviceconfigurationdialogvfd.h"
 #include "firmwareupdatedialog.h"
 #include "frequencycaldialog.h"
 #include "sourcecaldialog.h"
@@ -163,6 +164,9 @@ LibreVNADriver::LibreVNADriver()
         switch(hardwareVersion) {
         case 1:
             d = new DeviceConfigurationDialogV1(*this);
+            break;
+        case 0xFD:
+            d = new DeviceConfigurationDialogVFD(*this);
             break;
         case 0xFE:
             d = new DeviceConfigurationDialogVFE(*this);
