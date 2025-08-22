@@ -1480,6 +1480,35 @@ void Marker::setNumber(int value)
     }
 }
 
+QWidget *Marker::getTraceEditor(QAbstractItemDelegate *delegate)
+{
+    auto c = new QComboBox;
+    for(auto t : model->getModel().getTraces()) {
+        c->addItem(t->name());
+        if(parentTrace == t) {
+            // select this item
+            c->setCurrentIndex(c->count() - 1);
+        }
+    }
+    connect(c, qOverload<int>(&QComboBox::currentIndexChanged), [=](int) {
+        emit delegate->commitData(c);
+    });
+    return c;
+}
+
+void Marker::updateTraceFromEditor(QWidget *w)
+{
+    QComboBox *c = (QComboBox*) w;
+    for(auto t : model->getModel().getTraces()) {
+        if(c->currentText() == t->name()) {
+            if(parentTrace != t) {
+                assignTrace(t);
+            }
+        }
+    }
+    update();
+}
+
 QWidget *Marker::getTypeEditor(QAbstractItemDelegate *delegate)
 {
     auto c = new QComboBox;

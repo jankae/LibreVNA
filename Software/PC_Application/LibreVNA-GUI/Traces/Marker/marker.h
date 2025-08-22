@@ -111,8 +111,10 @@ public:
         Last,
     };
     Type getType() const;
+    QWidget *getTraceEditor(QAbstractItemDelegate *delegate = nullptr);
+    void updateTraceFromEditor(QWidget *w);
     QWidget *getTypeEditor(QAbstractItemDelegate *delegate = nullptr);
-    void updateTypeFromEditor(QWidget *c);
+    void updateTypeFromEditor(QWidget *w);
     SIUnitEdit* getSettingsEditor();
     QWidget *getRestrictEditor();
     void adjustSettings(double value);
