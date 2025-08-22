@@ -2,6 +2,7 @@
 
 #include "stm.hpp"
 #include <cmath>
+#include <algorithm>
 
 Algorithm::RationalApproximation Algorithm::BestRationalApproximation(float ratio, uint32_t max_denom) {
 	RationalApproximation result;
@@ -41,4 +42,48 @@ Algorithm::RationalApproximation Algorithm::BestRationalApproximation(float rati
 		result.denom = b;
 	}
 	return result;
+}
+
+uint32_t gcd(uint32_t u, uint32_t v) {
+	if(u==0) {
+		return v;
+	} else if(v==0) {
+		return u;
+	}
+
+	uint8_t i = __builtin_ctz(u);
+	u >>= i;
+	uint8_t j = __builtin_ctz(v);
+	v >>= j;
+
+	uint8_t k = i < j ? i : j;
+	while(true) {
+		if(u > v) {
+			std::swap(u, v);
+		}
+		v -= u;
+		if(v==0) {
+			return u << k;
+		}
+		v >>= __builtin_ctz(v);
+	}
+}
+
+Algorithm::RationalApproximation Algorithm::BestRationalApproximation(
+		RationalApproximation ratio, uint32_t max_denom) {
+	if(ratio.denom <= max_denom) {
+		// nothing to do, we can just return the ratio as it is
+		return ratio;
+	}
+	// Try to simplify the ratio.
+	// Find greatest common divider
+	uint32_t div = gcd(ratio.num, ratio.denom);
+	ratio.num /= div;
+	ratio.denom /= div;
+	if(ratio.denom <= max_denom) {
+		// small enough now, can use as is
+		return ratio;
+	}
+	// no good, we need to approximate
+	return Algorithm::BestRationalApproximation((float) ratio.num / ratio.denom, max_denom);
 }

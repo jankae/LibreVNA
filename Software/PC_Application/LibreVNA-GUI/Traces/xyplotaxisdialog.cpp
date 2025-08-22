@@ -242,11 +242,12 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
         removeLine(index);
     });
     connect(ui->exportLines, &QPushButton::clicked, this, [=](){
-        QString filename = QFileDialog::getSaveFileName(nullptr, "Save limit lines", "", "Limit files (*.limits)", nullptr, Preferences::QFileDialogOptions());
+        QString filename = QFileDialog::getSaveFileName(nullptr, "Save limit lines", Preferences::getInstance().UISettings.Paths.limitLines, "Limit files (*.limits)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
         }
+        Preferences::getInstance().UISettings.Paths.limitLines = QFileInfo(filename).path();
         if(!filename.endsWith(".limits")) {
             filename.append(".limits");
         }
@@ -265,7 +266,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
 
     });
     connect(ui->importLines, &QPushButton::clicked, [=](){
-        QString filename = QFileDialog::getOpenFileName(nullptr, "Load limit lines", "", "Limit files (*.limits)", nullptr, Preferences::QFileDialogOptions());
+        QString filename = QFileDialog::getOpenFileName(nullptr, "Load limit lines", Preferences::getInstance().UISettings.Paths.limitLines, "Limit files (*.limits)", nullptr, Preferences::QFileDialogOptions());
         ifstream file;
         file.open(filename.toStdString());
         if(!file.is_open()) {

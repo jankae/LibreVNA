@@ -6,6 +6,7 @@ HEADERS += \
     Calibration/LibreCAL/usbdevice.h \
     Calibration/calibration.h \
     Calibration/calibrationmeasurement.h \
+    Calibration/calibrationviewdialog.h \
     Calibration/calkit.h \
     Calibration/calkitdialog.h \
     Calibration/calstandard.h \
@@ -172,6 +173,7 @@ SOURCES += \
     Calibration/LibreCAL/usbdevice.cpp \
     Calibration/calibration.cpp \
     Calibration/calibrationmeasurement.cpp \
+    Calibration/calibrationviewdialog.cpp \
     Calibration/calkit.cpp \
     Calibration/calkitdialog.cpp \
     Calibration/calstandard.cpp \
@@ -342,6 +344,7 @@ FORMS += \
     Calibration/LibreCAL/factoryUpdateDialog.ui \
     Calibration/LibreCAL/librecaldialog.ui \
     Calibration/calibrationdialogui.ui \
+    Calibration/calibrationviewdialog.ui \
     Calibration/calkitdialog.ui \
     Calibration/manualcalibrationdialog.ui \
     CustomWidgets/csvimport.ui \
@@ -419,5 +422,5 @@ QMAKE_CXXFLAGS += -Wno-deprecated -Wno-deprecated-declarations -Wno-deprecated-c
 CONFIG += c++17
 REVISION = $$system(git rev-parse HEAD)
 DEFINES += GITHASH=\\"\"$$REVISION\\"\"
-DEFINES += FW_MAJOR=1 FW_MINOR=6 FW_PATCH=3 FW_SUFFIX=""
+DEFINES += FW_MAJOR=1 FW_MINOR=6 FW_PATCH=4 FW_SUFFIX=""
 DEFINES -= _UNICODE UNICODE

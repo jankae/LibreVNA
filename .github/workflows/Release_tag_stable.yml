@@ -104,22 +104,22 @@ jobs:
           
   PC_Application_Windows:
     needs: PC_Application_Ubuntu
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: '6.2.0'
-          arch: 'win64_mingw81'
+          version: '6.2.4'
+          arch: 'win64_mingw'
       
       - name: Download libusb
         run: |
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.25/libusb-1.0.25.7z
           7z x libusb.7z -r -olibusb
-          Xcopy /E /I /Y libusb\include ..\Qt\6.2.0\mingw81_64\include
+          Xcopy /E /I /Y libusb\include %QT_ROOT_DIR%\include
           Xcopy /E /I /Y libusb\MinGW64\static\libusb-1.0.a Software\PC_Application\LibreVNA-GUI
         shell: cmd
 
@@ -145,10 +145,9 @@ jobs:
           cd Software/PC_Application/LibreVNA-GUI/release
           del *.o *.cpp
           windeployqt.exe .
-          copy ..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\libwinpthread-1.dll .
-          copy ..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\libgcc_s_seh-1.dll .
-          copy "..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\libstdc++-6.dll" .
-          copy ..\..\..\..\..\Qt\6.2.0\mingw81_64\bin\Qt6OpenGL.dll .
+          copy %QT_ROOT_DIR%\bin\libwinpthread-1.dll .
+          copy %QT_ROOT_DIR%\bin\libgcc_s_seh-1.dll .
+          copy %QT_ROOT_DIR%\bin\Qt6OpenGL.dll .
         shell: cmd
 
       - name: Zip app

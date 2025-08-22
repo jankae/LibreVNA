@@ -132,11 +132,11 @@ void MarkerModel::markerDataChanged(Marker *m)
         // only update the other columns, do not override editor data
         emit dataChanged(index(row, ColIndexData), index(row, ColIndexData));
     } else {
-        emit dataChanged(index(row, ColIndexNumber), index(row, ColIndexData));
+        emit dataChanged(index(row, ColIndexSettings), index(row, ColIndexData));
         // also update any potential helper markers
         for(unsigned int i=0;i<m->getHelperMarkers().size();i++) {
             auto modelIndex = createIndex(i, 0, m);
-            emit dataChanged(index(i, ColIndexNumber, modelIndex), index(i, ColIndexData, modelIndex));
+            emit dataChanged(index(i, ColIndexSettings, modelIndex), index(i, ColIndexData, modelIndex));
         }
     }
 }
@@ -436,41 +436,17 @@ QSize MarkerTraceDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIn
 
 QWidget *MarkerTraceDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
 {
-    auto model = (MarkerModel*) index.model();
-    auto c = new QComboBox(parent);
-    c->setMaximumHeight(rowHeight);
-    connect(c, qOverload<int>(&QComboBox::currentIndexChanged), [c](int) {
-        c->clearFocus();
-    });
-    auto traces = model->getModel().getTraces();
-    for(auto t : traces) {
-        MarkerWidgetTraceInfo info;
-        info.trace = t;
-        c->addItem(t->name(), QVariant::fromValue(info));
-    }
-    return c;
+    auto marker = static_cast<const MarkerModel*>(index.model())->markerFromIndex(index);
+    auto editor = marker->getTraceEditor(const_cast<MarkerTraceDelegate*>(this));
+    editor->setMaximumHeight(rowHeight);
+    editor->setParent(parent);
+    return editor;
 }
 
-void MarkerTraceDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+void MarkerTraceDelegate::setModelData(QWidget *editor, QAbstractItemModel *, const QModelIndex &index) const
 {
     auto marker = static_cast<const MarkerModel*>(index.model())->markerFromIndex(index);
-    auto c = (QComboBox*) editor;
-    MarkerWidgetTraceInfo markerInfo;
-    markerInfo.trace = marker->trace();
-    for(int i=0;i<c->count();i++) {
-        auto info = qvariant_cast<MarkerWidgetTraceInfo>(c->itemData(i));
-        if(info == markerInfo) {
-            c->setCurrentIndex(i);
-            return;
-        }
-    }
-}
-
-void MarkerTraceDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
-{
-    auto markerModel = (MarkerModel*) model;
-    auto c = (QComboBox*) editor;
-    markerModel->setData(index, c->itemData(c->currentIndex()));
+    marker->updateTraceFromEditor(editor);
 }
 
 QSize MarkerSettingsDelegate::sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const

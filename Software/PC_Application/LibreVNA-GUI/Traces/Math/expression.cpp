@@ -15,6 +15,7 @@ Math::Expression::Expression()
 {
     parser = new ParserX(pckCOMMON | pckUNIT | pckCOMPLEX);
     parser->DefineVar("x", Variable(&x));
+    dataType = DataType::Invalid;
     expressionChanged();
 }
 
@@ -37,10 +38,8 @@ void Math::Expression::edit()
 {
     auto d = new QDialog();
     auto ui = new Ui::ExpressionDialog;
+    d->setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(d);
-    connect(d, &QDialog::finished, [=](){
-        delete ui;
-    });
     ui->expEdit->setText(exp);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
         exp = ui->expEdit->text();
@@ -93,7 +92,7 @@ void Math::Expression::inputSamplesChanged(unsigned int begin, unsigned int end)
     data.resize(in.size());
     // sanity check input values
     if(end > 0 && end > in.size()) {
-        end = in.size() - 1;
+        end = in.size();
     }
     if(end <= begin) {
         dataMutex.unlock();
@@ -117,6 +116,14 @@ void Math::Expression::inputSamplesChanged(unsigned int begin, unsigned int end)
     }
     dataMutex.unlock();
     emit outputSamplesChanged(begin, end);
+}
+
+void Math::Expression::inputTypeChanged(DataType type)
+{
+    // call base class slot
+    TraceMath::inputTypeChanged(type);
+    // we need to evaluate the expression again to create the correct variables
+    expressionChanged();
 }
 
 void Math::Expression::expressionChanged()

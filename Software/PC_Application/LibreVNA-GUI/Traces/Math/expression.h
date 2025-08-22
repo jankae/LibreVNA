@@ -24,6 +24,7 @@ public:
 
 public slots:
     void inputSamplesChanged(unsigned int begin, unsigned int end) override;
+    virtual void inputTypeChanged(DataType type) override;
 
 private slots:
     void expressionChanged();

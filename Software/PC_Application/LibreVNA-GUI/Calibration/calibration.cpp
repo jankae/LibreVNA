@@ -301,6 +301,7 @@ QString Calibration::TypeToString(Calibration::Type type)
 {
     switch(type) {
     case Type::None: return "None";
+    case Type::OSL: return "OSL";
     case Type::SOLT: return "SOLT";
     case Type::ThroughNormalization: return "ThroughNormalization";
     case Type::TRL: return "TRL";
@@ -708,19 +709,19 @@ Calibration::Point Calibration::createInitializedPoint(double f) {
     point.frequency = f;
     // resize vectors
     point.D.resize(caltype.usedPorts.size(), 0.0);
-    point.R.resize(caltype.usedPorts.size(), 0.0);
+    point.R.resize(caltype.usedPorts.size(), 1.0);
     point.S.resize(caltype.usedPorts.size(), 0.0);
 
     point.L.resize(caltype.usedPorts.size());
     point.T.resize(caltype.usedPorts.size());
     point.I.resize(caltype.usedPorts.size());
     fill(point.L.begin(), point.L.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
-    fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
+    fill(point.T.begin(), point.T.end(), vector<complex<double>>(caltype.usedPorts.size(), 1.0));
     fill(point.I.begin(), point.I.end(), vector<complex<double>>(caltype.usedPorts.size(), 0.0));
     return point;
 }
 
-Calibration::Point Calibration::computeSOLT(double f)
+Calibration::Point Calibration::computeOSL(double f)
 {
     Point point = createInitializedPoint(f);
 
@@ -762,6 +763,13 @@ Calibration::Point Calibration::computeSOLT(double f)
         auto delta = (l_c * l_m * (o_m - s_m) + o_c * o_m * (s_m - l_m) + s_c * s_m * (l_m - o_m)) / denom;
         point.R[i] = point.D[i] * point.S[i] - delta;
     }
+    return point;
+}
+
+Calibration::Point Calibration::computeSOLT(double f)
+{
+    Point point = computeOSL(f);
+
     // calculate forward match and transmission
     for(unsigned int i=0;i<caltype.usedPorts.size();i++) {
         for(unsigned int j=0;j<caltype.usedPorts.size();j++) {
@@ -1278,6 +1286,117 @@ bool Calibration::validForDevice(QString serial) const
     }
 }
 
+bool Calibration::hasDirectivity(unsigned int port)
+{
+    unsigned int index = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), port) - caltype.usedPorts.begin();
+    if(points.size() == 0 || index >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.D[index] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasReflectionTracking(unsigned int port)
+{
+    unsigned int index = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), port) - caltype.usedPorts.begin();
+    if(points.size() == 0 || index >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(1.0, 0.0);
+    for(const auto &p : points) {
+        if(p.R[index] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasSourceMatch(unsigned int port)
+{
+    unsigned int index = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), port) - caltype.usedPorts.begin();
+    if(points.size() == 0 || index >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.S[index] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasReceiverMatch(unsigned int sourcePort, unsigned int receivePort)
+{
+    unsigned int indexSrc = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), sourcePort) - caltype.usedPorts.begin();
+    unsigned int indexRcv = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), receivePort) - caltype.usedPorts.begin();
+    if(points.size() == 0 || indexSrc >= caltype.usedPorts.size() || indexRcv >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.L[indexSrc][indexRcv] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasTransmissionTracking(unsigned int sourcePort, unsigned int receivePort)
+{
+    unsigned int indexSrc = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), sourcePort) - caltype.usedPorts.begin();
+    unsigned int indexRcv = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), receivePort) - caltype.usedPorts.begin();
+    if(points.size() == 0 || indexSrc >= caltype.usedPorts.size() || indexRcv >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(1.0, 0.0);
+    for(const auto &p : points) {
+        if(p.T[indexSrc][indexRcv] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
+bool Calibration::hasIsolation(unsigned int sourcePort, unsigned int receivePort)
+{
+    unsigned int indexSrc = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), sourcePort) - caltype.usedPorts.begin();
+    unsigned int indexRcv = std::find(caltype.usedPorts.begin(), caltype.usedPorts.end(), receivePort) - caltype.usedPorts.begin();
+    if(points.size() == 0 || indexSrc >= caltype.usedPorts.size() || indexRcv >= caltype.usedPorts.size()) {
+        // no calibration or it does not contain this port
+        return false;
+    }
+    auto def = std::complex<double>(0.0, 0.0);
+    for(const auto &p : points) {
+        if(p.I[indexSrc][indexRcv] != def) {
+            // at least one point does not match the default value -> we have a valid calibration for this
+            return true;
+        }
+    }
+    // all points still at default value
+    return false;
+}
+
 bool Calibration::hasUnsavedChanges() const
 {
     return unsavedChanges;
@@ -1487,11 +1606,12 @@ bool Calibration::toFile(QString filename)
 {
     if(filename.isEmpty()) {
         QString fn = descriptiveCalName();
-        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", fn, "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
+        filename = QFileDialog::getSaveFileName(nullptr, "Save calibration data", Preferences::getInstance().UISettings.Paths.cal + "/" + fn, "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return false;
         }
+        Preferences::getInstance().UISettings.Paths.cal = QFileInfo(filename).path();
     }
 
     if(filename.toLower().endsWith(".cal")) {
@@ -1511,11 +1631,12 @@ bool Calibration::toFile(QString filename)
 bool Calibration::fromFile(QString filename)
 {
     if(filename.isEmpty()) {
-        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", "", "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
+        filename = QFileDialog::getOpenFileName(nullptr, "Load calibration data", Preferences::getInstance().UISettings.Paths.cal, "Calibration files (*.cal)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return false;
         }
+        Preferences::getInstance().UISettings.Paths.cal = QFileInfo(filename).path();
     }
 
     // force correct file ending
@@ -1604,7 +1725,7 @@ std::vector<Calibration::Type> Calibration::getTypes()
     return types;
 }
 
-bool Calibration::canCompute(Calibration::CalType type, double *startFreq, double *stopFreq, int *points)
+bool Calibration::canCompute(Calibration::CalType type, double *startFreq, double *stopFreq, int *points, bool *isLog)
 {
     using RequiredMeasurements = struct {
         CalibrationMeasurement::Base::Type type;
@@ -1615,6 +1736,14 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
     case Type::None:
         return true; // Always possible to reset the calibration
     case Type::SOLT:
+        // through measurements between all ports
+        for(unsigned int i=1;i<=type.usedPorts.size();i++) {
+            for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
+                required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
+            }
+        }
+        [[fallthrough]];
+    case Type::OSL:
         // SOL measurements for every port
         for(auto p : type.usedPorts) {
             required.push_back({.type = CalibrationMeasurement::Base::Type::Short, .port1 = p, .port2 = 0});
@@ -1625,12 +1754,6 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
             } else {
                 // not enough sliding load measurement, use normal load
                 required.push_back({.type = CalibrationMeasurement::Base::Type::Load, .port1 = p, .port2 = 0});
-            }
-        }
-        // through measurements between all ports
-        for(unsigned int i=1;i<=type.usedPorts.size();i++) {
-            for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
-                required.push_back({.type = CalibrationMeasurement::Base::Type::Through, .port1 = i, .port2 = j});
             }
         }
         break;
@@ -1674,7 +1797,7 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
                 foundMeasurements.push_back(meas);
             }
         }
-        return hasFrequencyOverlap(foundMeasurements, startFreq, stopFreq, points);
+        return hasFrequencyOverlap(foundMeasurements, startFreq, stopFreq, points, isLog);
     }
     return false;
 }
@@ -1688,16 +1811,23 @@ bool Calibration::compute(Calibration::CalType type)
     }
     double start, stop;
     int numPoints;
-    if(!canCompute(type, &start, &stop, &numPoints)) {
+    bool isLog;
+    if(!canCompute(type, &start, &stop, &numPoints, &isLog)) {
         return false;
     }
     caltype = type;
     try {
         points.clear();
         for(int i=0;i<numPoints;i++) {
-            double f = start + (stop - start) * i / (numPoints - 1);
+            double f;
+            if(!isLog) {
+                f = start + (stop - start) * i / (numPoints - 1);
+            } else {
+                f = start * pow(10.0, i * log10(stop / start) / (numPoints - 1));
+            }
             Point p;
             switch(type.type) {
+            case Type::OSL: p = computeOSL(f); break;
             case Type::SOLT: p = computeSOLT(f); break;
             case Type::ThroughNormalization: p = computeThroughNormalization(f); break;
             case Type::TRL: p = computeTRL(f); break;
@@ -1726,6 +1856,7 @@ void Calibration::reset()
 int Calibration::minimumPorts(Calibration::Type type)
 {
     switch(type) {
+    case Type::OSL: return 1;
     case Type::SOLT: return 1;
     case Type::ThroughNormalization: return 2;
     case Type::TRL: return 2;
@@ -1850,11 +1981,13 @@ void Calibration::deleteMeasurements()
     measurements.clear();
 }
 
-bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *> m, double *startFreq, double *stopFreq, int *points)
+bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *> m, double *startFreq, double *stopFreq, int *points, bool *isLog)
 {
     double minResolution = std::numeric_limits<double>::max();
     double minFreq = 0;
     double maxFreq = std::numeric_limits<double>::max();
+    unsigned int logCount = 0;
+    unsigned int linCount = 0;
     for(auto meas : m) {
         if(meas->numPoints() < 2) {
             return false;
@@ -1869,6 +2002,38 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
         if(resolution < minResolution) {
             minResolution = resolution;
         }
+        // check whether the frequency points are more linear or more logarithmic
+        double minDiff = std::numeric_limits<double>::max();
+        double maxDiff = 0;
+        double minRatio = std::numeric_limits<double>::max();
+        double maxRatio = 0;
+        for(unsigned int i=1;i<meas->numPoints();i++) {
+            double f_prev = meas->getPointFreq(i-1);
+            double f_next = meas->getPointFreq(i);
+            double diff = f_next - f_prev;
+            double ratio = f_next / f_prev;
+            if(diff < minDiff) {
+                minDiff = diff;
+            }
+            if(diff > maxDiff) {
+                maxDiff = diff;
+            }
+            if(ratio < minRatio) {
+                minRatio = ratio;
+            }
+            if(ratio > maxRatio) {
+                maxRatio = ratio;
+            }
+        }
+        double diffVariationNormalized = (maxDiff - minDiff) / maxDiff;
+        double ratioVariationNormalized = (maxRatio - minRatio) / maxRatio;
+        if(abs(diffVariationNormalized) < abs(ratioVariationNormalized)) {
+            // more linear
+            linCount++;
+        } else {
+            // more logarithmic
+            logCount++;
+        }
     }
     if(startFreq) {
         *startFreq = minFreq;
@@ -1878,6 +2043,9 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
     }
     if(points) {
         *points = (maxFreq - minFreq) / minResolution + 1;
+    }
+    if(isLog) {
+        *isLog = logCount > linCount;
     }
     if(maxFreq > minFreq) {
         return true;

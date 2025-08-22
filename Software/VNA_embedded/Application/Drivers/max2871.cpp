@@ -189,7 +189,10 @@ bool MAX2871::SetFrequency(uint64_t f) {
 	LOG_DEBUG("Looking for best fractional match");
 	float fraction = (float) rem_f / f_PFD;
 
-	auto approx = Algorithm::BestRationalApproximation(fraction, 4095);
+	Algorithm::RationalApproximation ratio;
+	ratio.num = rem_f;
+	ratio.denom = f_PFD;
+	auto approx = Algorithm::BestRationalApproximation(ratio, 4095);
 
 	if (approx.denom == approx.num) {
 		// got an impossible result due to floating point limitations(?)

@@ -229,19 +229,21 @@ void AppWindow::SetupMenu()
     connect(ui->actionDisconnect, &QAction::triggered, this, &AppWindow::DisconnectDevice);
     connect(ui->actionQuit, &QAction::triggered, this, &AppWindow::close);
     connect(ui->actionSave_setup, &QAction::triggered, [=](){
-        auto filename = QFileDialog::getSaveFileName(nullptr, "Save setup data", "", "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getSaveFileName(nullptr, "Save setup data", Preferences::getInstance().UISettings.Paths.setup, "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
         }
+        Preferences::getInstance().UISettings.Paths.setup = QFileInfo(filename).path();
         SaveSetup(filename);
     });
     connect(ui->actionLoad_setup, &QAction::triggered, [=](){
-        auto filename = QFileDialog::getOpenFileName(nullptr, "Load setup data", "", "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getOpenFileName(nullptr, "Load setup data", Preferences::getInstance().UISettings.Paths.setup, "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
         }
+        Preferences::getInstance().UISettings.Paths.setup = QFileInfo(filename).path();
         LoadSetup(filename);
     });
     connect(ui->actionSave_image, &QAction::triggered, [=](){

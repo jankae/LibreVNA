@@ -68,7 +68,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
        ui->StartupStack->setCurrentWidget(ui->StartupPageSetupFile);
     });
     connect(ui->StartupBrowse, &QPushButton::clicked, [=](){
-       ui->StartupSetupFile->setText(QFileDialog::getOpenFileName(nullptr, "Select startup setup file", "", "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions()));
+       ui->StartupSetupFile->setText(QFileDialog::getOpenFileName(nullptr, "Select startup setup file", Preferences::getInstance().UISettings.Paths.setup, "Setup files (*.setup)", nullptr, Preferences::QFileDialogOptions()));
     });
     ui->StartupSweepStart->setUnit("Hz");
     ui->StartupSweepStart->setPrefixes(" kMG");
@@ -203,29 +203,31 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         emit p->updated();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getSaveFileName(this, "Save preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getSaveFileName(this, "Save preferences", Preferences::getInstance().UISettings.Paths.pref, "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
-           if(!filename.toLower().endsWith(".vnapref")) {
+            Preferences::getInstance().UISettings.Paths.pref = QFileInfo(filename).path();
+            if(!filename.toLower().endsWith(".vnapref")) {
                filename.append(".vnapref");
-           }
-           ofstream file;
-           file.open(filename.toStdString());
-           updateFromGUI();
-           file << setw(1) << p->toJSON();
-           file.close();
+            }
+            ofstream file;
+            file.open(filename.toStdString());
+            updateFromGUI();
+            file << setw(1) << p->toJSON();
+            file.close();
         }
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getOpenFileName(this, "Load preferences", "", "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getOpenFileName(this, "Load preferences", Preferences::getInstance().UISettings.Paths.pref, "LibreVNA preferences files (*.vnapref)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
-           ifstream file;
-           file.open(filename.toStdString());
-           nlohmann::json j;
-           file >> j;
-           file.close();
-           p->fromJSON(j);
-           setInitialGUIState();
-           emit p->updated();
+            Preferences::getInstance().UISettings.Paths.pref = QFileInfo(filename).path();
+            ifstream file;
+            file.open(filename.toStdString());
+            nlohmann::json j;
+            file >> j;
+            file.close();
+            p->fromJSON(j);
+            setInitialGUIState();
+            emit p->updated();
         }
     });
     connect(ui->AcquisitionLimitTDRCheckbox, &QCheckBox::toggled, [=](bool enabled){
@@ -274,6 +276,7 @@ void PreferencesDialog::setInitialGUIState()
 
     ui->AcquisitionAlwaysExciteBoth->setChecked(p->Acquisition.alwaysExciteAllPorts);
     ui->AcquisitionAllowSegmentedSweep->setChecked(p->Acquisition.allowSegmentedSweep);
+    ui->AcquisitionAllowCalStartWithUnstableLibreCALTemperature->setChecked(p->Acquisition.allowUseOfUnstableLibreCALTemp);
     ui->AcquisitionAveragingMode->setCurrentIndex(p->Acquisition.useMedianAveraging ? 1 : 0);
     ui->AcquisitionFullSpanBehavior->setCurrentIndex(p->Acquisition.fullSpanManual ? 1 : 0);
     ui->AcquisitionFullSpanStart->setValue(p->Acquisition.fullSpanStart);
@@ -396,6 +399,7 @@ void PreferencesDialog::updateFromGUI()
 
     p->Acquisition.alwaysExciteAllPorts = ui->AcquisitionAlwaysExciteBoth->isChecked();
     p->Acquisition.allowSegmentedSweep = ui->AcquisitionAllowSegmentedSweep->isChecked();
+    p->Acquisition.allowUseOfUnstableLibreCALTemp = ui->AcquisitionAllowCalStartWithUnstableLibreCALTemperature->isChecked();
     p->Acquisition.useMedianAveraging = ui->AcquisitionAveragingMode->currentIndex() == 1;
     p->Acquisition.fullSpanManual = ui->AcquisitionFullSpanBehavior->currentIndex() == 1;
     p->Acquisition.fullSpanStart = ui->AcquisitionFullSpanStart->value();

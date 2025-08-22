@@ -89,8 +89,9 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
         accept();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getOpenFileName(this, "Open calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getOpenFileName(this, "Open calibration kit coefficients", Preferences::getInstance().UISettings.Paths.calkit, "Calibration kit files (*.calkit)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
+            Preferences::getInstance().UISettings.Paths.calkit = QFileInfo(filename).path();
             try {
                 kit = Calkit::fromFile(filename);
             } catch (runtime_error &e) {
@@ -103,8 +104,9 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     });
 
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
-        auto filename = QFileDialog::getSaveFileName(this, "Save calibration kit coefficients", "", "Calibration kit files (*.calkit)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getSaveFileName(this, "Save calibration kit coefficients", Preferences::getInstance().UISettings.Paths.calkit, "Calibration kit files (*.calkit)", nullptr, Preferences::QFileDialogOptions());
         if(filename.length() > 0) {
+            Preferences::getInstance().UISettings.Paths.calkit = QFileInfo(filename).path();
             parseEntries();
             kit.toFile(filename);
         }

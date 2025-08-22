@@ -103,8 +103,11 @@ public:
         } SA;
     } Startup;
     struct {
+        // VNA settings
         bool alwaysExciteAllPorts;
         bool allowSegmentedSweep;
+        bool allowUseOfUnstableLibreCALTemp;
+
         bool useMedianAveraging;
 
         // Full span settings
@@ -207,6 +210,26 @@ public:
         bool saveTraceData;
         bool useNativeDialogs;
     } Debug;
+    struct {
+        struct {
+            unsigned int ports;
+            unsigned int formatIndex;
+            unsigned int unitIndex;
+            QString exportedTraceNames;
+        } TouchstoneExport;
+        struct {
+            QString setup;
+            QString cal;
+            QString calkit;
+            QString data;
+            QString image;
+            QString vnacaldata;
+            QString packetlog;
+            QString limitLines;
+            QString pref;
+            QString firmware;
+        } Paths;
+    } UISettings;
 
     bool TCPoverride; // in case of manual port specification via command line
 
@@ -257,6 +280,7 @@ private:
         {&Startup.SA.averaging, "Startup.SA.averaging", 1},
         {&Acquisition.alwaysExciteAllPorts, "Acquisition.alwaysExciteBothPorts", true},
         {&Acquisition.allowSegmentedSweep, "Acquisition.allowSegmentedSweep", true},
+        {&Acquisition.allowUseOfUnstableLibreCALTemp, "Acquisition.allowUseOfUnstableLibreCALTemp", true},
         {&Acquisition.useMedianAveraging, "Acquisition.useMedianAveraging", false},
         {&Acquisition.fullSpanManual, "Acquisition.fullSpanManual", false},
         {&Acquisition.fullSpanStart, "Acquisition.fullSpanStart", 0.0},
@@ -374,6 +398,21 @@ private:
         {&Debug.USBlogSizeLimit, "Debug.USBlogSizeLimit", 10000000.0},
         {&Debug.saveTraceData, "Debug.saveTraceData", false},
         {&Debug.useNativeDialogs, "Debug.useNativeDialogs", true},
+
+        {&UISettings.TouchstoneExport.ports, "UISettings.TouchstoneExport.ports", 2},
+        {&UISettings.TouchstoneExport.formatIndex, "UISettings.TouchstoneExport.formatIndex", 2},
+        {&UISettings.TouchstoneExport.unitIndex, "UISettings.TouchstoneExport.unitIndex", 3},
+        {&UISettings.TouchstoneExport.exportedTraceNames, "UISettings.TouchstoneExport.exportedTraceNames", ""},
+        {&UISettings.Paths.setup, "UISettings.Paths.setup", ""},
+        {&UISettings.Paths.cal, "UISettings.Paths.cal", ""},
+        {&UISettings.Paths.calkit, "UISettings.Paths.calkit", ""},
+        {&UISettings.Paths.data, "UISettings.Paths.data", ""},
+        {&UISettings.Paths.image, "UISettings.Paths.image", ""},
+        {&UISettings.Paths.vnacaldata, "UISettings.Paths.vnacaldata", ""},
+        {&UISettings.Paths.packetlog, "UISettings.Paths.packetlog", ""},
+        {&UISettings.Paths.limitLines, "UISettings.Paths.limitLines", ""},
+        {&UISettings.Paths.pref, "UISettings.Paths.pref", ""},
+        {&UISettings.Paths.firmware, "UISettings.Paths.firmware", ""},
     }};
 };
 

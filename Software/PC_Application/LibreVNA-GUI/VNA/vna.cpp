@@ -1,4 +1,4 @@
-﻿#include "vna.h"
+#include "vna.h"
 
 #include "unit.h"
 #include "CustomWidgets/toggleswitch.h"
@@ -18,6 +18,7 @@
 #include "CustomWidgets/informationbox.h"
 #include "Deembedding/manualdeembeddingdialog.h"
 #include "Calibration/manualcalibrationdialog.h"
+#include "Calibration/calibrationviewdialog.h"
 #include "Calibration/LibreCAL/librecaldialog.h"
 #include "Util/util.h"
 #include "Tools/parameters.h"
@@ -125,6 +126,16 @@ VNA::VNA(AppWindow *window, QString name)
     connect(calElectronic, &QAction::triggered, [=](){
         auto d = new LibreCALDialog(&cal);
         d->show();
+    });
+
+    calMenu->addSeparator();
+
+    auto calViewTerms = calMenu->addAction("View error term model");
+    connect(calViewTerms, &QAction::triggered, [=](){
+        auto dialog = new CalibrationViewDialog(&cal, DeviceDriver::getInfo(window->getDevice()).Limits.VNA.ports);
+        if(AppWindow::showGUI()) {
+            dialog->show();
+        }
     });
 
     calMenu->addSeparator();

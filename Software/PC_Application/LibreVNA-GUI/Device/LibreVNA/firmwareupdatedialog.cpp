@@ -52,8 +52,9 @@ bool FirmwareUpdateDialog::FirmwareUpdate(LibreVNADriver *dev, QString file)
 void FirmwareUpdateDialog::on_bFile_clicked()
 {
     ui->bStart->setEnabled(false);
-    auto filename = QFileDialog::getOpenFileName(nullptr, "Open firmware file", "", "Firmware file (*.vnafw)", nullptr, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getOpenFileName(nullptr, "Open firmware file", Preferences::getInstance().UISettings.Paths.firmware, "Firmware file (*.vnafw)", nullptr, Preferences::QFileDialogOptions());
     if (filename.length() > 0) {
+        Preferences::getInstance().UISettings.Paths.firmware = QFileInfo(filename).path();
         ui->lFile->setText(filename);
         reloadFile();
     }

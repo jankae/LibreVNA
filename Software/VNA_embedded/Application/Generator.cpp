@@ -34,7 +34,7 @@ void Generator::Setup(Protocol::GeneratorSettings g) {
 	if(g.frequency < HW::BandSwitchFrequency) {
 		bandSelect = true;
 		FPGA::Disable(FPGA::Periphery::SourceChip);
-		Si5351.SetCLK(SiChannel::LowbandSource, g.frequency, Si5351C::PLL::B,
+		Si5351.SetCLK(SiChannel::LowbandSource, g.frequency, Si5351C::PLL::A,
 				amplitude.lowBandPower);
 		Si5351.Enable(SiChannel::LowbandSource);
 	} else {

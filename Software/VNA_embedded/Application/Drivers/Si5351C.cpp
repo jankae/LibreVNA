@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include "algorithm.hpp"
 
 #define LOG_LEVEL	LOG_LEVEL_INFO
 #define LOG_MODULE	"SI5351"
@@ -50,7 +51,7 @@ bool Si5351C::ConfigureCLKIn(uint32_t clkin_freq) {
 	return success;
 }
 
-bool Si5351C::SetPLL(PLL pll, uint32_t frequency, PLLSource src) {
+bool Si5351C::SetPLL(PLL pll, uint32_t frequency, PLLSource src, bool exactFrequency) {
 	if (frequency < 600000000 || frequency > 900000000) {
 		LOG_ERR("Requested PLL frequency out of range (600-900MHz): %lu", frequency);
 		return false;
@@ -67,14 +68,14 @@ bool Si5351C::SetPLL(PLL pll, uint32_t frequency, PLLSource src) {
 		LOG_ERR("Calculated divider out of range (15-90)");
 		return false;
 	}
-	FindOptimalDivider(frequency, srcFreq, c.P1, c.P2, c.P3);
+	FindOptimalDivider(frequency, srcFreq, c.P1, c.P2, c.P3, exactFrequency);
 
 	FreqPLL[(int) pll] = frequency;
 	LOG_DEBUG("Setting PLL %c to %luHz", pll==PLL::A ? 'A' : 'B', frequency);
 	return WritePLLConfig(c, pll);
 }
 
-bool Si5351C::SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStrength strength, uint32_t PLLFreqOverride) {
+bool Si5351C::SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStrength strength, bool exactFrequency) {
 	ClkConfig c;
 	c.DivideBy4 = false;
 	c.IntegerMode = false;
@@ -84,7 +85,7 @@ bool Si5351C::SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStreng
 	c.source = source;
 	c.strength = strength;
 
-	uint32_t pllFreq = PLLFreqOverride > 0 ? PLLFreqOverride : FreqPLL[(int) source];
+	uint32_t pllFreq = FreqPLL[(int) source];
 	if (clknum > 5) {
 		// outputs 6 and 7 are integer dividers only
 		uint32_t div = pllFreq / frequency;
@@ -113,7 +114,7 @@ bool Si5351C::SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStreng
 				return false;
 			}
 		}
-		FindOptimalDivider(pllFreq, frequency * c.RDiv, c.P1, c.P2, c.P3);
+		FindOptimalDivider(pllFreq, frequency * c.RDiv, c.P1, c.P2, c.P3, exactFrequency);
 	}
 	LOG_DEBUG("Setting CLK%d to %luHz", clknum, frequency);
 	return WriteClkConfig(c, clknum);
@@ -346,13 +347,26 @@ bool Si5351C::ResetPLL(PLL pll) {
 }
 
 void Si5351C::FindOptimalDivider(uint32_t f_pll, uint32_t f, uint32_t &P1,
-		uint32_t &P2, uint32_t &P3) {
+		uint32_t &P2, uint32_t &P3, bool exact) {
 	// see https://www.silabs.com/documents/public/application-notes/AN619.pdf (page 3/6)
 	uint32_t a = f_pll / f;
 	int32_t f_rem = f_pll - f * a;
-	// always using the highest modulus divider results in less than 1Hz deviation for all frequencies, that is good enough
-	uint32_t best_c = (1UL << 20) - 1;
-	uint32_t best_b = (uint64_t) f_rem * best_c / f;
+	uint32_t best_c;
+	uint32_t best_b;
+	if(exact) {
+		// spend the effort to find the best divider possible
+		Algorithm::RationalApproximation ratio;
+		ratio.num = f_rem;
+		ratio.denom = f;
+		auto approx = Algorithm::BestRationalApproximation(ratio, (1UL << 20) - 1);
+		best_c = approx.denom;
+		best_b = approx.num;
+	} else {
+		// just use the highest denominator possible, this is good enough if no exact frequency is required
+		best_c = (1UL << 20) - 1;
+		best_b = (uint64_t) f_rem * best_c / f;
+	}
+
 	// convert to Si5351C parameters
 	uint32_t floor = 128 * best_b / best_c;
 	P1 = 128 * a + floor - 512;

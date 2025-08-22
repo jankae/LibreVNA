@@ -14,11 +14,13 @@ class Calibration : public QObject, public Savable, public SCPINode
     Q_OBJECT
 
     friend class LibreCALDialog;
+    friend class CalibrationTests;
 public:
     Calibration();
 
     enum class Type {
         None,
+        OSL,
         SOLT,
         ThroughNormalization,
         TRL,
@@ -62,7 +64,7 @@ public:
     static std::vector<Type> getTypes();
     // Checks whether all measurements for a specific calibration are available.
     // If pointer to the frequency/points variables are given, the start/stop frequency and number of points the calibration will have after the calculation is stored there
-    bool canCompute(CalType type, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr);
+    bool canCompute(CalType type, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr, bool *isLog = nullptr);
     // Resets the calibration (deletes all measurements and calculated coefficients)
     void reset();
     // Returns the minimum number of ports for a given calibration type.
@@ -98,6 +100,14 @@ public:
     QString getValidDevice() const;
     bool validForDevice(QString serial) const;
 
+    // query whether error terms coefficients are available. Port count starts at 1
+    bool hasDirectivity(unsigned int port);
+    bool hasReflectionTracking(unsigned int port);
+    bool hasSourceMatch(unsigned int port);
+    bool hasReceiverMatch(unsigned int sourcePort, unsigned int receivePort);
+    bool hasTransmissionTracking(unsigned int sourcePort, unsigned int receivePort);
+    bool hasIsolation(unsigned int sourcePort, unsigned int receivePort);
+
 public slots:
     // Call once all datapoints of the current span have been added
     void measurementsComplete();
@@ -130,7 +140,7 @@ private:
     void createDefaultMeasurements(DefaultMeasurements dm);
     void deleteMeasurements();
 
-    bool hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base*> m, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr);
+    static bool hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base*> m, double *startFreq = nullptr, double *stopFreq = nullptr, int *points = nullptr, bool *isLog = nullptr);
     // returns all measurements that match the paramaters
     std::vector<CalibrationMeasurement::Base*> findMeasurements(CalibrationMeasurement::Base::Type type, int port1 = 0, int port2 = 0);
     // returns the first measurement in the list that matches the parameters
@@ -151,6 +161,7 @@ private:
     std::vector<Point> points;
 
     Point createInitializedPoint(double f);
+    Point computeOSL(double f);
     Point computeSOLT(double f);
     Point computeThroughNormalization(double f);
     Point computeTRL(double f);

@@ -130,7 +130,7 @@ public slots:
     // some values of the input data have changed, begin/end determine which sample(s) has changed
     virtual void inputSamplesChanged(unsigned int begin, unsigned int end){Q_UNUSED(begin) Q_UNUSED(end)}
 
-    void inputTypeChanged(DataType type);
+    virtual void inputTypeChanged(DataType type);
 
 signals:
     // emit this whenever a sample changed (alternatively, if all samples are about to change, emit outputDataChanged after they have changed)

@@ -68,8 +68,9 @@ void DeviceLog::clear()
 
 void DeviceLog::on_bToFile_clicked()
 {
-    auto filename = QFileDialog::getSaveFileName(this, "Select file for device log", "", "", nullptr, Preferences::QFileDialogOptions());
+    auto filename = QFileDialog::getSaveFileName(this, "Select file for device log", Preferences::getInstance().UISettings.Paths.packetlog, "", nullptr, Preferences::QFileDialogOptions());
     if(filename.length() > 0) {
+        Preferences::getInstance().UISettings.Paths.packetlog = QFileInfo(filename).path();
         // create file
         ofstream file;
         file.open(filename.toStdString());

@@ -31,8 +31,8 @@ public:
 	};
 	bool Init(uint32_t clkin_freq = 0);
 	bool ConfigureCLKIn(uint32_t clkin_freq);
-	bool SetPLL(PLL pll, uint32_t frequency, PLLSource src);
-	bool SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStrength strength = DriveStrength::mA2, uint32_t PLLFreqOverride = 0);
+	bool SetPLL(PLL pll, uint32_t frequency, PLLSource src, bool exactFrequency=true);
+	bool SetCLK(uint8_t clknum, uint32_t frequency, PLL source, DriveStrength strength = DriveStrength::mA2, bool exactFrequency=true);
 	bool SetBypass(uint8_t clknum, PLLSource source, DriveStrength strength = DriveStrength::mA2);
 	bool SetCLKtoXTAL(uint8_t clknum);
 	bool SetCLKToCLKIN(uint8_t clknum);
@@ -48,7 +48,7 @@ public:
 	bool WriteRawCLKConfig(uint8_t clknum, const uint8_t *config);
 	bool ReadRawCLKConfig(uint8_t clknum, uint8_t *config);
 private:
-	void FindOptimalDivider(uint32_t f_pll, uint32_t f, uint32_t &P1, uint32_t &P2, uint32_t &P3);
+	void FindOptimalDivider(uint32_t f_pll, uint32_t f, uint32_t &P1, uint32_t &P2, uint32_t &P3, bool exact);
 	enum class Reg : uint8_t {
 		DeviceStatus = 0,
 		InterruptStatusSticky = 1,

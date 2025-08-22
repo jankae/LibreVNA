@@ -767,8 +767,9 @@ void MatchingComponent::mouseDoubleClickEvent(QMouseEvent *e)
     Q_UNUSED(e);
     if(type == Type::DefinedThrough || type == Type::DefinedShunt) {
         // select new touchstone file
-        auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", "", "Touchstone files (*.s2p)", nullptr, Preferences::QFileDialogOptions());
+        auto filename = QFileDialog::getOpenFileName(nullptr, "Open measurement file", Preferences::getInstance().UISettings.Paths.data, "Touchstone files (*.s2p)", nullptr, Preferences::QFileDialogOptions());
         if (!filename.isEmpty()) {
+            Preferences::getInstance().UISettings.Paths.data = QFileInfo(filename).path();
             try {
                 *touchstone = Touchstone::fromFile(filename.toStdString());
             } catch(const std::exception& e) {

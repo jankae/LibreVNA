@@ -29,11 +29,12 @@ DevicePacketLogView::DevicePacketLogView(QWidget *parent) :
         updateTree();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Save), &QPushButton::clicked, [=](){
-        QString filename = QFileDialog::getSaveFileName(nullptr, "Load LibreVNA log data", "", "LibreVNA log files (*.vnalog)", nullptr, Preferences::QFileDialogOptions());
+        QString filename = QFileDialog::getSaveFileName(nullptr, "Save LibreVNA log data", Preferences::getInstance().UISettings.Paths.packetlog, "LibreVNA log files (*.vnalog)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
         }
+        Preferences::getInstance().UISettings.Paths.packetlog = QFileInfo(filename).path();
         if(!filename.endsWith(".vnalog")) {
             filename.append(".vnalog");
         }
@@ -43,11 +44,12 @@ DevicePacketLogView::DevicePacketLogView(QWidget *parent) :
         file.close();
     });
     connect(ui->buttonBox->button(QDialogButtonBox::Open), &QPushButton::clicked, [=](){
-        QString filename = QFileDialog::getOpenFileName(nullptr, "Load LibreVNA log data", "", "LibreVNA log files (*.vnalog)", nullptr, Preferences::QFileDialogOptions());
+        QString filename = QFileDialog::getOpenFileName(nullptr, "Load LibreVNA log data", Preferences::getInstance().UISettings.Paths.packetlog, "LibreVNA log files (*.vnalog)", nullptr, Preferences::QFileDialogOptions());
         if(filename.isEmpty()) {
             // aborted selection
             return;
         }
+        Preferences::getInstance().UISettings.Paths.packetlog = QFileInfo(filename).path();
         ifstream file;
         file.open(filename.toStdString());
         if(!file.is_open()) {

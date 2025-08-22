@@ -318,6 +318,10 @@ void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::v
 {
     // remove all previous points
     for(auto m : traceSet) {
+        if(!m.second) {
+            // no trace, skip
+            continue;
+        }
         if(!deembedded) {
             m.second->clear();
         } else {
@@ -332,6 +336,10 @@ void Trace::fillFromDatapoints(std::map<QString, Trace *> traceSet, const std::v
             td.y = m.second;
             QString measurement = m.first;
             if(traceSet.count(measurement)) {
+                if(!traceSet[measurement]) {
+                    // no trace, skip
+                    continue;
+                }
                 if(!deembedded) {
                     traceSet[measurement]->addData(td, DataType::Frequency);
                 } else {
@@ -1065,16 +1073,24 @@ std::vector<DeviceDriver::VNAMeasurement> Trace::assembleDatapoints(std::map<QSt
     vector<DeviceDriver::VNAMeasurement> ret;
 
     // Sanity check traces
-    unsigned int samples = traceSet.begin()->second->size();
-    auto impedance = traceSet.begin()->second->getReferenceImpedance();
+    unsigned int samples = 0;
+    auto impedance = 0;
     vector<double> freqs;
     for(auto m : traceSet) {
         const Trace *t = m.second;
-        if(t->size() != samples) {
+        if(!t) {
+            // trace not valid, skip
+            continue;
+        }
+        if(samples == 0) {
+            samples = t->size();
+        } else if(t->size() != samples) {
             qWarning() << "Selected traces do not have the same size";
             return ret;
         }
-        if(t->getReferenceImpedance() != impedance) {
+        if(impedance == 0) {
+            impedance = t->getReferenceImpedance();
+        } else if(t->getReferenceImpedance() != impedance) {
             qWarning() << "Selected traces do not have the same reference impedance";
             return ret;
         }
@@ -1098,13 +1114,22 @@ std::vector<DeviceDriver::VNAMeasurement> Trace::assembleDatapoints(std::map<QSt
         }
     }
 
+    if(samples == 0 || freqs.size() == 0) {
+        qWarning() << "Empty trace set";
+        return ret;
+    }
+
     // Checks passed, assemble datapoints
     for(unsigned int i=0;i<samples;i++) {
         DeviceDriver::VNAMeasurement d;
         for(auto m : traceSet) {
             QString measurement = m.first;
             const Trace *t = m.second;
-            d.measurements[measurement] = t->sample(i).y;
+            if(t) {
+                d.measurements[measurement] = t->sample(i).y;
+            } else {
+                d.measurements[measurement] = 0.0;
+            }
         }
         d.pointNum = i;
         d.frequency = freqs[i];
