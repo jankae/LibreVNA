@@ -149,6 +149,7 @@ public:
 
 public slots:
     void setPosition(double freq);
+    void setToMiddleOfTrace();
     void updateContextmenu();
 signals:
     void positionChanged(double pos);

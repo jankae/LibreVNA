@@ -793,6 +793,13 @@ void Marker::setPosition(double pos)
     emit positionChanged(position);
 }
 
+void Marker::setToMiddleOfTrace()
+{
+    if(parentTrace) {
+        setPosition((parentTrace->minX() + parentTrace->maxX()) / 2);
+    }
+}
+
 void Marker::parentTraceDeleted(Trace *t)
 {
     if(t == parentTrace) {

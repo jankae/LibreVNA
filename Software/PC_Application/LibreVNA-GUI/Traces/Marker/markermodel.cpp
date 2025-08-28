@@ -77,8 +77,8 @@ Marker *MarkerModel::createDefaultMarker()
         }
     } while (used);
     auto marker = new Marker(this, number);
-    marker->setPosition(2150000000);
     marker->assignTrace(model.trace(0));
+    marker->setToMiddleOfTrace();
     return marker;
 }
 
