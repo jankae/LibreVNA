@@ -3,6 +3,7 @@
 #include "manualcontroldialogV1.h"
 #include "manualcontroldialogvff.h"
 #include "manualcontroldialogvfe.h"
+#include "manualcontroldialogVE0.h"
 #include "deviceconfigurationdialogv1.h"
 #include "deviceconfigurationdialogvff.h"
 #include "deviceconfigurationdialogvfe.h"
@@ -126,6 +127,9 @@ LibreVNADriver::LibreVNADriver()
         switch(hardwareVersion) {
         case 1:
             manualControlDialog = new ManualControlDialogV1(*this);
+            break;
+        case 0xE0:
+            manualControlDialog = new ManualControlDialogVE0(*this);
             break;
         case 0xFE:
             manualControlDialog = new ManualControlDialogVFE(*this);
@@ -769,6 +773,7 @@ QString LibreVNADriver::hardwareVersionToString(uint8_t version)
 {
     switch(version) {
     case 0x01: return "1";
+    case 0xE0: return "SAP1";
     case 0xFE: return "P2";
     case 0xFF: return "PT";
     default: return "Unknown";

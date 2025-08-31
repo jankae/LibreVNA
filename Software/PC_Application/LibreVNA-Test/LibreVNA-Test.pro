@@ -36,6 +36,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Device/LibreVNA/librevnatcpdriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogV1.cpp \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogVE0.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvfe.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvff.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.cpp \
@@ -224,6 +225,7 @@ HEADERS += \
     ../LibreVNA-GUI/Device/LibreVNA/librevnatcpdriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/librevnausbdriver.h \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogV1.h \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogVE0.h \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvfe.h \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvff.h \
     ../LibreVNA-GUI/Device/LibreVNA/receivercaldialog.h \
@@ -397,6 +399,7 @@ FORMS += \
     ../LibreVNA-GUI/Device/LibreVNA/librevnadriversettingswidget.ui \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogV1.ui \
     ../LibreVNA-GUI/Device/LibreVNA/Compound/compounddeviceeditdialog.ui \
+    ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogVE0.ui \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvfe.ui \
     ../LibreVNA-GUI/Device/LibreVNA/manualcontroldialogvff.ui \
     ../LibreVNA-GUI/Device/devicelog.ui \

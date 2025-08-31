@@ -285,6 +285,14 @@ using ManualStatus = struct _manualstatus {
             uint16_t temp_eCal; // in 1/100 °C
             uint16_t power_heater; // in mW
         } VFE;
+        struct {
+            int16_t port1min, port1max;
+            int16_t port2min, port2max;
+            int16_t refmin, refmax;
+            float port1real, port1imag;
+            float port2real, port2imag;
+            float refreal, refimag;
+        } VE0;
 	};
 };
 
@@ -367,6 +375,42 @@ using ManualControl = struct _manualControl {
             uint8_t eCal_state :2;
             uint16_t eCal_target; // in 1/100 °C
         } VFE;
+        struct {
+            // Source
+            uint32_t src1Freq;
+            uint32_t src2Freq;
+            uint8_t src1Pwr;
+            uint8_t src2Pwr;
+            uint8_t src1CE :1;
+            uint8_t src2CE :1;
+            uint8_t srcSel :2; // 0: switch off, 1: PLL1 selected, 2: PLL2 selected
+            uint8_t portSel :2; // 0: both off, 1: port 1 selected, 2: port 2 selected
+            uint8_t srcAmp :1;
+            uint8_t unused1 :1;
+            // LO
+            uint32_t LO1Freq;
+            uint32_t LO2Freq;
+            uint8_t LO1Pwr;
+            uint8_t LO2Pwr;
+            uint8_t LO1CE :1;
+            uint8_t LO2CE :1;
+            uint8_t LOSel :1; // 0: PLL1 selected, 1: PLL2 selected
+            uint8_t unused2 :5;
+            // Port 1
+            uint8_t P1PathSel :1; // 0: reflection path selected, 1: transmission path selected
+            uint8_t P1AmpOn :1;
+            uint8_t P1AmpBypass :1;
+            // Port 2
+            uint8_t P2PathSel :1; // 0: reflection path selected, 1: transmission path selected
+            uint8_t P2AmpOn :1;
+            uint8_t P2AmpBypass :1;
+            // Reference
+            uint8_t RefAmpOn :1;
+            uint8_t RefAmpBypass :1;
+            // Acquisition
+            uint32_t Samples;
+            uint8_t WindowType :2;
+        } VE0;
 	};
 };
 
