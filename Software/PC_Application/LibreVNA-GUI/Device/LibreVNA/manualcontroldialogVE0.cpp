@@ -131,8 +131,8 @@ void ManualControlDialogVE0::NewStatus(Protocol::ManualStatus status)
     auto port1db = Util::SparamTodB(port1referenced);
     auto port2db = Util::SparamTodB(port2referenced);
 
-    ui->port1referenced->setText(QString::number(port1db, 'f', 1) + "db@" + QString::number(arg(port1referenced)*180/M_PI, 'f', 0) + "°");
-    ui->port2referenced->setText(QString::number(port2db, 'f', 1) + "db@" + QString::number(arg(port2referenced)*180/M_PI, 'f', 0) + "°");
+    ui->port1referenced->setText(QString::number(port1db, 'f', 2) + "db@" + QString::number(arg(port1referenced)*180/M_PI, 'f', 2) + "°");
+    ui->port2referenced->setText(QString::number(port2db, 'f', 2) + "db@" + QString::number(arg(port2referenced)*180/M_PI, 'f', 2) + "°");
 }
 
 void ManualControlDialogVE0::UpdateDevice()
