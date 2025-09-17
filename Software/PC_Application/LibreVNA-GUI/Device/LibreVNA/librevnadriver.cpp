@@ -794,6 +794,7 @@ QString LibreVNADriver::getFirmwareMagicString()
 {
     switch(hardwareVersion) {
     case 0x01: return "VNA!";
+    case 0xE0: return "VNS1";
     case 0xFE: return "VNP2";
     case 0xFF: return "VNPT";
     default: return "XXXX";
