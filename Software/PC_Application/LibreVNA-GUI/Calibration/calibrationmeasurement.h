@@ -61,6 +61,8 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    virtual std::vector<unsigned int> getPorts() = 0;
+
     static bool canMeasureSimultaneously(std::set<Base *> measurements);
     QDateTime getTimestamp() const;
 
@@ -101,6 +103,8 @@ public:
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+    virtual std::vector<unsigned int> getPorts() override {return {port};}
 
     class Point {
     public:
@@ -222,6 +226,8 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 
+    virtual std::vector<unsigned int> getPorts() override {return {port1, port2};}
+
     class Point {
     public:
         double frequency;
@@ -297,6 +303,8 @@ public:
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
+
+    virtual std::vector<unsigned int> getPorts() override {return {};}
 
     class Point {
     public:

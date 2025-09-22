@@ -110,7 +110,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     auto calData = calMenu->addAction("Calibration Measurements");
     connect(calData, &QAction::triggered, [=](){
-        cal.edit();
+        cal.edit(&traceModel);
     });
 
     auto calEditKit = calMenu->addAction("Edit Calibration Kit");
@@ -1375,7 +1375,7 @@ void VNA::ApplyCalibration(Calibration::CalType type)
             // Not all required traces available
             InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. The calibration can be enabled after the missing measurements have been acquired.");
             DisableCalibration();
-            cal.edit();
+            cal.edit(&traceModel);
         } else {
             // Not all required traces available
             InformationBox::ShowMessageBlocking("Missing calibration measurements", "Not all calibration measurements for this type of calibration have been taken. Please switch to frequency sweep to take these measurements.");

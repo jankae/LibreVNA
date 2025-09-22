@@ -46,7 +46,7 @@ public:
     void correctTraces(std::map<QString, Trace*> traceSet);
 
     // Starts the calibration edit dialog, allowing the user to make/delete measurements
-    void edit();
+    void edit(TraceModel *traceModel = nullptr);
 
     Calkit& getKit();
 

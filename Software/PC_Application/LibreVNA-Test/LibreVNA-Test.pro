@@ -110,6 +110,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/Traces/eyediagramplot.cpp \
     ../LibreVNA-GUI/Traces/fftcomplex.cpp \
     ../LibreVNA-GUI/Traces/sparamtraceselector.cpp \
+    ../LibreVNA-GUI/Traces/sparamtraceselectordialog.cpp \
     ../LibreVNA-GUI/Traces/trace.cpp \
     ../LibreVNA-GUI/Traces/traceaxis.cpp \
     ../LibreVNA-GUI/Traces/tracecsvexport.cpp \
@@ -310,6 +311,7 @@ HEADERS += \
     ../LibreVNA-GUI/Traces/eyediagramplot.h \
     ../LibreVNA-GUI/Traces/fftcomplex.h \
     ../LibreVNA-GUI/Traces/sparamtraceselector.h \
+    ../LibreVNA-GUI/Traces/sparamtraceselectordialog.h \
     ../LibreVNA-GUI/Traces/trace.h \
     ../LibreVNA-GUI/Traces/traceaxis.h \
     ../LibreVNA-GUI/Traces/tracecsvexport.h \
@@ -425,6 +427,7 @@ FORMS += \
     ../LibreVNA-GUI/Traces/eyediagrameditdialog.ui \
     ../LibreVNA-GUI/Traces/polarchartdialog.ui \
     ../LibreVNA-GUI/Traces/smithchartdialog.ui \
+    ../LibreVNA-GUI/Traces/sparamtraceselectordialog.ui \
     ../LibreVNA-GUI/Traces/tracecsvexport.ui \
     ../LibreVNA-GUI/Traces/traceeditdialog.ui \
     ../LibreVNA-GUI/Traces/traceimportdialog.ui \

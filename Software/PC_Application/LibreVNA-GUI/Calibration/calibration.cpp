@@ -6,6 +6,7 @@
 #include "Util/util.h"
 #include "LibreCAL/librecaldialog.h"
 #include "preferences.h"
+#include "Traces/sparamtraceselectordialog.h"
 
 #include "Tools/Eigen/Dense"
 
@@ -408,7 +409,7 @@ void Calibration::correctTraces(std::map<QString, Trace *> traceSet)
     }
 }
 
-void Calibration::edit()
+void Calibration::edit(TraceModel *traceModel)
 {
     auto d = new QDialog();
     d->setAttribute(Qt::WA_DeleteOnClose);
@@ -510,6 +511,10 @@ void Calibration::edit()
         ui->bDelete->setEnabled(ui->table->currentRow() >= 0);
         ui->bMoveUp->setEnabled(ui->table->currentRow() >= 1);
         ui->bMoveDown->setEnabled(ui->table->currentRow() >= 0 && ui->table->currentRow() < ui->table->rowCount() - 1);
+        auto selected = ui->table->selectionModel()->selectedRows();
+        ui->measure->setEnabled(selected.size() > 0);
+        ui->selectMeasurement->setEnabled(traceModel && selected.size() == 1);
+        ui->clearMeasurement->setEnabled(selected.size() > 0);
     };
 
     auto updateMeasurementTable = [=](){
@@ -619,6 +624,35 @@ void Calibration::edit()
         emit startMeasurements(m);
     });
 
+    connect(ui->selectMeasurement, &QPushButton::clicked, [=](){
+        auto selected = ui->table->selectionModel()->selectedRows();
+        if(selected.size() != 1) {
+            InformationBox::ShowError("Unable to select measurement", "Exactly one measurement must be selected");
+            return;
+        }
+        // figure out which S parameters we need
+        auto meas = measurements[selected[0].row()];
+        auto ports = meas->getPorts();
+        if(ports.size() == 0) {
+            InformationBox::ShowError("Unable to select measurement", "Selecting measurements for this type of calibration measurement is not supported");
+            return;
+        }
+        auto selector = new SParamTraceSelectorDialog(*traceModel, ports);
+        connect(selector, &SParamTraceSelectorDialog::tracesSelected, d, [=](std::vector<DeviceDriver::VNAMeasurement> traceMeasurements){
+            clearMeasurements({meas});
+            for(const auto &tm : traceMeasurements) {
+                addMeasurements({meas}, tm);
+            }
+            updateMeasurementTable();
+            updateCalibrationList();
+        });
+        selector->show();
+    });
+    if(!traceModel) {
+        // can not select a measurement if no trace model is supplied
+        ui->selectMeasurement->setEnabled(false);
+    }
+
     connect(this, &Calibration::measurementsUpdated, d, [=](){
         updateMeasurementTable();
         updateCalibrationList();
@@ -665,7 +699,7 @@ void Calibration::edit()
         });
     });
 
-    QObject::connect(ui->table, &QTableWidget::currentCellChanged, updateTableEditButtons);
+    QObject::connect(ui->table, &QTableWidget::itemSelectionChanged, updateTableEditButtons);
 
     auto addMenu = new QMenu();
     for(auto t : CalibrationMeasurement::Base::availableTypes()) {
@@ -802,6 +836,7 @@ Calibration::Point Calibration::computeSOLT(double f)
             auto deltaS = Sideal.get(1,1)*Sideal.get(2,2) - Sideal.get(2,1) * Sideal.get(1,2);
             point.L[i][j] = ((S11 - point.D[i])*(1.0 - point.S[i] * Sideal.get(1,1))-Sideal.get(1,1)*point.R[i])
                     / ((S11 - point.D[i])*(Sideal.get(2,2)-point.S[i]*deltaS)-deltaS*point.R[i]);
+            point.L[i][j] = 0.0;
             point.T[i][j] = (S21 - isolation)*(1.0 - point.S[i]*Sideal.get(1,1) - point.L[i][j]*Sideal.get(2,2) + point.S[i]*point.L[i][j]*deltaS) / Sideal.get(2,1);
             point.I[i][j] = isolation;
         }

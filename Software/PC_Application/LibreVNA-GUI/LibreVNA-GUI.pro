@@ -116,6 +116,7 @@ HEADERS += \
     Traces/eyediagramplot.h \
     Traces/fftcomplex.h \
     Traces/sparamtraceselector.h \
+    Traces/sparamtraceselectordialog.h \
     Traces/trace.h \
     Traces/traceaxis.h \
     Traces/tracecsvexport.h \
@@ -271,6 +272,7 @@ SOURCES += \
     Traces/eyediagramplot.cpp \
     Traces/fftcomplex.cpp \
     Traces/sparamtraceselector.cpp \
+    Traces/sparamtraceselectordialog.cpp \
     Traces/trace.cpp \
     Traces/traceaxis.cpp \
     Traces/tracecsvexport.cpp \
@@ -389,6 +391,7 @@ FORMS += \
     Traces/eyediagrameditdialog.ui \
     Traces/smithchartdialog.ui \
     Traces/polarchartdialog.ui \
+    Traces/sparamtraceselectordialog.ui \
     Traces/tracecsvexport.ui \
     Traces/traceeditdialog.ui \
     Traces/traceimportdialog.ui \

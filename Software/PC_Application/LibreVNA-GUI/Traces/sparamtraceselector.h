@@ -16,7 +16,7 @@ public:
     SparamTraceSelector(const TraceModel &model, std::vector<unsigned int> used_ports, bool empty_allowed = false, unsigned int editablePorts = 0);
     SparamTraceSelector(const TraceModel &model, std::set<unsigned int> used_ports, bool empty_allowed = false, unsigned int editablePorts = 0);
 
-    bool isValid();
+    bool isValid() {return valid;}
 
     std::map<QString, Trace*> getTraces();
     unsigned int getPoints() { return points;}

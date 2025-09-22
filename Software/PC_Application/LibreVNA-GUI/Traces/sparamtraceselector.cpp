@@ -13,7 +13,8 @@ SparamTraceSelector::SparamTraceSelector(const TraceModel &model, std::vector<un
     : model(model),
       empty_allowed(empty_allowed),
       used_ports(used_ports),
-      editablePorts(editablePorts)
+      editablePorts(editablePorts),
+      valid(false)
 {
     createGUI();
     setInitialChoices();
@@ -140,6 +141,7 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
 
     } else if(cb->currentIndex() == 0 && points > 0) {
         if(!empty_allowed) {
+            valid = false;
             emit selectionValid(false);
         }
         // Check if all trace selections are set for none
@@ -161,7 +163,8 @@ void SparamTraceSelector::traceSelectionChanged(QComboBox *cb)
     }
     if(empty_allowed) {
         // always valid as soon as at least one trace is selected
-        emit selectionValid(points > 0);
+        valid = points > 0;
+        emit selectionValid(valid);
     } else {
         // actually need to check
         valid = true;
