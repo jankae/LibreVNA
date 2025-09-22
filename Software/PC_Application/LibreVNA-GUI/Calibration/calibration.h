@@ -22,6 +22,7 @@ public:
         None,
         OSL,
         SOLT,
+        SOLTwithoutRxMatch,
         ThroughNormalization,
         TRL,
         Last,
@@ -163,6 +164,7 @@ private:
     Point createInitializedPoint(double f);
     Point computeOSL(double f);
     Point computeSOLT(double f);
+    Point computeSOLTwithoutRxMatch(double f);
     Point computeThroughNormalization(double f);
     Point computeTRL(double f);
 

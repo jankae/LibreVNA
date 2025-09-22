@@ -304,6 +304,7 @@ QString Calibration::TypeToString(Calibration::Type type)
     case Type::None: return "None";
     case Type::OSL: return "OSL";
     case Type::SOLT: return "SOLT";
+    case Type::SOLTwithoutRxMatch: return "SOLTwithoutRxMatch";
     case Type::ThroughNormalization: return "ThroughNormalization";
     case Type::TRL: return "TRL";
     case Type::Last: return "Invalid";
@@ -836,12 +837,22 @@ Calibration::Point Calibration::computeSOLT(double f)
             auto deltaS = Sideal.get(1,1)*Sideal.get(2,2) - Sideal.get(2,1) * Sideal.get(1,2);
             point.L[i][j] = ((S11 - point.D[i])*(1.0 - point.S[i] * Sideal.get(1,1))-Sideal.get(1,1)*point.R[i])
                     / ((S11 - point.D[i])*(Sideal.get(2,2)-point.S[i]*deltaS)-deltaS*point.R[i]);
-            point.L[i][j] = 0.0;
             point.T[i][j] = (S21 - isolation)*(1.0 - point.S[i]*Sideal.get(1,1) - point.L[i][j]*Sideal.get(2,2) + point.S[i]*point.L[i][j]*deltaS) / Sideal.get(2,1);
             point.I[i][j] = isolation;
         }
     }
     return point;
+}
+
+Calibration::Point Calibration::computeSOLTwithoutRxMatch(double f) {
+    // This is very similar to SOLT but it assumes that receiver matching at the VNA is perfect.
+    // It can be used if the through calibration standard is very lossy which would result in
+    // very noisy values for the receiver match
+    auto p = computeSOLT(f);
+    for(auto &l : p.L) {
+        fill(l.begin(), l.end(), 0.0);
+    }
+    return p;
 }
 
 Calibration::Point Calibration::computeThroughNormalization(double f)
@@ -1771,6 +1782,7 @@ bool Calibration::canCompute(Calibration::CalType type, double *startFreq, doubl
     case Type::None:
         return true; // Always possible to reset the calibration
     case Type::SOLT:
+    case Type::SOLTwithoutRxMatch:
         // through measurements between all ports
         for(unsigned int i=1;i<=type.usedPorts.size();i++) {
             for(unsigned int j=i+1;j<=type.usedPorts.size();j++) {
@@ -1864,6 +1876,7 @@ bool Calibration::compute(Calibration::CalType type)
             switch(type.type) {
             case Type::OSL: p = computeOSL(f); break;
             case Type::SOLT: p = computeSOLT(f); break;
+            case Type::SOLTwithoutRxMatch: p = computeSOLTwithoutRxMatch(f); break;
             case Type::ThroughNormalization: p = computeThroughNormalization(f); break;
             case Type::TRL: p = computeTRL(f); break;
             case Type::None:
@@ -1893,6 +1906,7 @@ int Calibration::minimumPorts(Calibration::Type type)
     switch(type) {
     case Type::OSL: return 1;
     case Type::SOLT: return 1;
+    case Type::SOLTwithoutRxMatch: return 2;
     case Type::ThroughNormalization: return 2;
     case Type::TRL: return 2;
     case Type::None:
