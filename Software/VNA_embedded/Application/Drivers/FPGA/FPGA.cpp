@@ -291,6 +291,10 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	callback = cb;
 	static uint8_t cmd[40] = {0xC0, 0x00};
 	// Start data read
+	if(HAL_SPI_GetState(&FPGA_SPI) != HAL_SPI_STATE_READY) {
+		LOG_WARN("SPI abort: %d", HAL_SPI_GetState(&FPGA_SPI));
+		HAL_SPI_Abort(&FPGA_SPI);
+	}
 	Low(CS);
 	busy_reading = true;
 	if(HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 40) != HAL_OK) {

@@ -35,6 +35,7 @@ HEADERS += \
     Device/LibreVNA/librevnatcpdriver.h \
     Device/LibreVNA/librevnausbdriver.h \
     Device/LibreVNA/manualcontroldialogV1.h \
+    Device/LibreVNA/manualcontroldialogVD0.h \
     Device/LibreVNA/manualcontroldialogVE0.h \
     Device/LibreVNA/manualcontroldialogvfe.h \
     Device/LibreVNA/manualcontroldialogvff.h \
@@ -203,6 +204,7 @@ SOURCES += \
     Device/LibreVNA/librevnatcpdriver.cpp \
     Device/LibreVNA/librevnausbdriver.cpp \
     Device/LibreVNA/manualcontroldialogV1.cpp \
+    Device/LibreVNA/manualcontroldialogVD0.cpp \
     Device/LibreVNA/manualcontroldialogVE0.cpp \
     Device/LibreVNA/manualcontroldialogvfe.cpp \
     Device/LibreVNA/manualcontroldialogvff.cpp \
@@ -366,6 +368,7 @@ FORMS += \
     Device/LibreVNA/frequencycaldialog.ui \
     Device/LibreVNA/librevnadriversettingswidget.ui \
     Device/LibreVNA/manualcontroldialogV1.ui \
+    Device/LibreVNA/manualcontroldialogVD0.ui \
     Device/LibreVNA/manualcontroldialogVE0.ui \
     Device/LibreVNA/manualcontroldialogvfe.ui \
     Device/LibreVNA/manualcontroldialogvff.ui \

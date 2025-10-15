@@ -293,6 +293,16 @@ using ManualStatus = struct _manualstatus {
             float port2real, port2imag;
             float refreal, refimag;
         } VE0;
+        struct {
+            int32_t port1min, port1max;
+            int32_t port2min, port2max;
+            int32_t refmin, refmax;
+            float port1real, port1imag;
+            float port2real, port2imag;
+            float refreal, refimag;
+            uint8_t source_locked :1;
+            uint8_t LO_locked :1;
+        } VD0;
 	};
 };
 
@@ -411,6 +421,37 @@ using ManualControl = struct _manualControl {
             uint32_t Samples;
             uint8_t WindowType :2;
         } VE0;
+        struct {
+            // Highband Source
+            uint8_t SourceHighCE :1;
+            uint8_t SourceHighPower :6;
+            uint8_t SourceHighLowpass :2;
+            uint64_t SourceHighFrequency;
+            // Lowband Source
+            uint8_t SourceLowEN :1;
+            uint8_t SourceLowPower :2;
+            uint32_t SourceLowFrequency;
+            // Source signal path
+            uint8_t attenuator :7;
+            uint8_t SourceHighband :1;
+            uint8_t PortSwitch :1;
+            // Highband LO
+            uint8_t LOHighCE :1;
+            uint8_t LOHighPower :6;
+            uint64_t LOHighFrequency;
+            // Lowband LO
+            uint8_t LOLowEN :1;
+            uint8_t LOLowPower :2;
+            uint32_t LOLowFrequency;
+            // LO signal path
+            uint8_t LOHighband :1;
+            // Acquisition
+            uint8_t Port1EN :1;
+            uint8_t Port2EN :1;
+            uint8_t RefEN :1;
+            uint32_t Samples;
+            uint8_t WindowType :2;
+        } VD0;
 	};
 };
 
