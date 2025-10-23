@@ -197,6 +197,7 @@ protected slots:
     void handleReceivedPacket(const Protocol::PacketInfo& packet);
 protected:
     QString hardwareVersionToString(uint8_t version);
+    void updateActionVisibility(uint8_t hardwareVersion);
 
     bool connected;
     unsigned int protocolVersion;
@@ -227,6 +228,9 @@ protected:
     double SARBWLimitForDFT;
     bool VNASuppressInvalidPeaks;
     bool VNAAdjustPowerLevel;
+
+    // available actions per hardware version
+    QMap<uint8_t, QList<QAction*>> availableActions;
 
     QDialog *manualControlDialog;
 };

@@ -544,6 +544,11 @@ using DeviceConfig = struct _deviceconfig {
 	};
 };
 
+using PerformAction = struct _performaction {
+    uint16_t action;
+    uint8_t additional_information[128];
+};
+
 enum class PacketType : uint8_t {
 	None = 0,
 	//Datapoint = 1, // Deprecated, replaced by VNADatapoint
@@ -577,7 +582,8 @@ enum class PacketType : uint8_t {
 	ClearTrigger = 29,
 	StopStatusUpdates = 30,
 	StartStatusUpdates = 31,
-	InitiateSweep = 32
+    InitiateSweep = 32,
+    PerformAction = 33,
 };
 
 using PacketInfo = struct _packetinfo {
@@ -597,6 +603,7 @@ using PacketInfo = struct _packetinfo {
         AmplitudeCorrectionPoint amplitudePoint;
         FrequencyCorrection frequencyCorrection;
         DeviceConfig deviceConfig;
+        PerformAction performAction;
         /*
          * When encoding: Pointer may go invalid after call to EncodePacket
          * When decoding: VNADatapoint is created on heap by DecodeBuffer, freeing is up to the caller

@@ -206,9 +206,9 @@ LibreVNADriver::LibreVNADriver()
     });
     specificActions.push_back(freqcal);
 
-    sep = new QAction();
-    sep->setSeparator(true);
-    specificActions.push_back(sep);
+    auto sep2 = new QAction();
+    sep2->setSeparator(true);
+    specificActions.push_back(sep2);
 
     auto log = new QAction("View Packet Log");
     connect(log, &QAction::triggered, this, [=](){
@@ -216,6 +216,14 @@ LibreVNADriver::LibreVNADriver()
        d->show();
     });
     specificActions.push_back(log);
+
+    // set available actions for each hardware version
+    availableActions[0x01] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
+    availableActions[0xD0] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
+    availableActions[0xE0] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
+    availableActions[0xFD] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
+    availableActions[0xFE] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
+    availableActions[0xFF] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
 
     // Create driver specific commands
     specificSCPIcommands.push_back(new SCPICommand("DEVice:INFo:TEMPeratures", nullptr, [=](QStringList) -> QString {
@@ -713,6 +721,8 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         info.Limits.SA.maxdBm = (double) packet.info.limits_cdbm_max / 100;
 
         limits_maxAmplitudePoints = packet.info.limits_maxAmplitudePoints;
+
+        updateActionVisibility(hardwareVersion);
         emit InfoUpdated();
     }
         break;
@@ -781,6 +791,27 @@ QString LibreVNADriver::hardwareVersionToString(uint8_t version)
     case 0xFE: return "P2";
     case 0xFF: return "PT";
     default: return "Unknown";
+    }
+}
+
+void LibreVNADriver::updateActionVisibility(uint8_t hardwareVersion)
+{
+    // only show actions for the correct hardware version
+    if(availableActions.contains(hardwareVersion)) {
+        // hide all actions
+        for(auto a : specificActions) {
+            a->setVisible(false);
+        }
+        // show the relevant actions
+        for(auto a : availableActions[hardwareVersion]) {
+            a->setVisible(true);
+        }
+    } else {
+        // the hardware version is unknown. This should not happen but just in case
+        // we set all actions to visible
+        for(auto a : specificActions) {
+            a->setVisible(true);
+        }
     }
 }
 
