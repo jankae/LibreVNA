@@ -206,6 +206,23 @@ LibreVNADriver::LibreVNADriver()
     });
     specificActions.push_back(freqcal);
 
+    auto internalAlignment = new QAction("Run Internal Alignment");
+    connect(internalAlignment, &QAction::triggered, this, [=](){
+        emit acquireControl();
+        Protocol::PacketInfo p;
+        p.type = Protocol::PacketType::PerformAction;
+        p.performAction.action = Protocol::Action::InternalAlignment;
+        SendPacket(p, [=](TransmissionResult res){
+            if(res == TransmissionResult::Ack) {
+                InformationBox::ShowMessage("Success", "Internal alignment completed");
+            } else {
+                InformationBox::ShowError("Error", "Running internal alignment failed");
+            }
+            emit releaseControl();
+        }, 5000);
+    });
+    specificActions.push_back(internalAlignment);
+
     auto sep2 = new QAction();
     sep2->setSeparator(true);
     specificActions.push_back(sep2);
@@ -220,7 +237,7 @@ LibreVNADriver::LibreVNADriver()
     // set available actions for each hardware version
     availableActions[0x01] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xD0] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
-    availableActions[0xE0] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
+    availableActions[0xE0] = {manual, update, sep, srccal, recvcal, freqcal, internalAlignment, sep2, log};
     availableActions[0xFD] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xFE] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xFF] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};

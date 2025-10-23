@@ -544,8 +544,12 @@ using DeviceConfig = struct _deviceconfig {
 	};
 };
 
+enum class Action : uint16_t {
+    InternalAlignment = 0x0000,
+};
+
 using PerformAction = struct _performaction {
-    uint16_t action;
+    Action action;
     uint8_t additional_information[128];
 };
 
