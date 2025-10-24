@@ -310,6 +310,17 @@ std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
             ret.insert(Flag::Overload);
         }
         break;
+    case 0xD0:
+        if(!lastStatus.VD0.source_locked || !lastStatus.VD0.LO_locked) {
+            ret.insert(Flag::Unlocked);
+        }
+        if(lastStatus.VD0.unlevel) {
+            ret.insert(Flag::Unlevel);
+        }
+        if(lastStatus.VD0.ADC_overload) {
+            ret.insert(Flag::Overload);
+        }
+        break;
     case 0xFE:
         if(!lastStatus.VFE.source_locked || !lastStatus.VFE.LO_locked) {
             ret.insert(Flag::Unlocked);
@@ -351,6 +362,19 @@ QString LibreVNADriver::getStatus()
         } else {
             ret.append("Internal");
             if(lastStatus.V1.extRefAvailable) {
+                ret.append(" (External available)");
+            }
+        }
+        break;
+    case 0xD0:
+        ret.append(" Temps MCU: "+QString::number(lastStatus.VD0.temp_MCU)+"°C");
+        ret.append(" Supply: "+Unit::ToString((float) lastStatus.VD0.supply_voltage / 1000.0, "V", "m ", 3) + " " + Unit::ToString((float) lastStatus.VD0.supply_current / 1000.0, "A", "m ", 3));
+        ret.append(" Reference:");
+        if(lastStatus.VD0.extRefInUse) {
+            ret.append("External");
+        } else {
+            ret.append("Internal");
+            if(lastStatus.VD0.extRefAvailable) {
                 ret.append(" (External available)");
             }
         }
@@ -804,6 +828,7 @@ QString LibreVNADriver::hardwareVersionToString(uint8_t version)
 {
     switch(version) {
     case 0x01: return "1";
+    case 0xD0: return "HAR0";
     case 0xE0: return "SAP1";
     case 0xFE: return "P2";
     case 0xFF: return "PT";

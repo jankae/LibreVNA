@@ -249,6 +249,18 @@ using DeviceStatus = struct _deviceStatus {
             uint16_t temp_eCal; // in 1/100 °C
             uint16_t power_heater; // in mW
         } VFE;
+        struct {
+            uint8_t extRefAvailable:1;
+            uint8_t extRefInUse:1;
+            uint8_t FPGA_configured:1;
+            uint8_t source_locked:1;
+            uint8_t LO_locked:1;
+            uint8_t ADC_overload:1;
+            uint8_t unlevel:1;
+            uint8_t temp_MCU;
+            uint16_t supply_voltage;
+            uint16_t supply_current;
+        } VD0;
 	};
 };
 
