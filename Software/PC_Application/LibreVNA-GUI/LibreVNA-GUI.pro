@@ -25,6 +25,7 @@ HEADERS += \
     Device/LibreVNA/Compound/compounddriver.h \
     Device/LibreVNA/amplitudecaldialog.h \
     Device/LibreVNA/deviceconfigurationdialogv1.h \
+    Device/LibreVNA/deviceconfigurationdialogvd0.h \
     Device/LibreVNA/deviceconfigurationdialogvfe.h \
     Device/LibreVNA/deviceconfigurationdialogvff.h \
     Device/LibreVNA/devicepacketlog.h \
@@ -194,6 +195,7 @@ SOURCES += \
     Device/LibreVNA/Compound/compounddriver.cpp \
     Device/LibreVNA/amplitudecaldialog.cpp \
     Device/LibreVNA/deviceconfigurationdialogv1.cpp \
+    Device/LibreVNA/deviceconfigurationdialogvd0.cpp \
     Device/LibreVNA/deviceconfigurationdialogvfe.cpp \
     Device/LibreVNA/deviceconfigurationdialogvff.cpp \
     Device/LibreVNA/devicepacketlog.cpp \
@@ -361,6 +363,7 @@ FORMS += \
     Device/LibreVNA/amplitudecaldialog.ui \
     Device/LibreVNA/automaticamplitudedialog.ui \
     Device/LibreVNA/deviceconfigurationdialogv1.ui \
+    Device/LibreVNA/deviceconfigurationdialogvd0.ui \
     Device/LibreVNA/deviceconfigurationdialogvfe.ui \
     Device/LibreVNA/deviceconfigurationdialogvff.ui \
     Device/LibreVNA/devicepacketlogview.ui \

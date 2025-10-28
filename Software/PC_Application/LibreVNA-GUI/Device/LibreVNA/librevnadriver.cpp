@@ -8,6 +8,7 @@
 #include "deviceconfigurationdialogv1.h"
 #include "deviceconfigurationdialogvff.h"
 #include "deviceconfigurationdialogvfe.h"
+#include "deviceconfigurationdialogvd0.h"
 #include "firmwareupdatedialog.h"
 #include "frequencycaldialog.h"
 #include "sourcecaldialog.h"
@@ -161,6 +162,9 @@ LibreVNADriver::LibreVNADriver()
         case 1:
             d = new DeviceConfigurationDialogV1(*this);
             break;
+        case 0xD0:
+            d = new DeviceConfigurationDialogVD0(*this);
+            break;
         case 0xFE:
             d = new DeviceConfigurationDialogVFE(*this);
             break;
@@ -236,7 +240,7 @@ LibreVNADriver::LibreVNADriver()
 
     // set available actions for each hardware version
     availableActions[0x01] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
-    availableActions[0xD0] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
+    availableActions[0xD0] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xE0] = {manual, update, sep, srccal, recvcal, freqcal, internalAlignment, sep2, log};
     availableActions[0xFD] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xFE] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};

@@ -219,6 +219,21 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addInteger(VFE, "MCU temperature", sFE.temp_MCU);
             addDouble(VFE, "eCal temperature", (double) sFE.temp_eCal / 100.0);
             addDouble(VFE, "eCal heater power", (double) sFE.power_heater / 1000.0);
+
+            auto sD0 = e.p->status.VD0;
+            auto VD0 = new QTreeWidgetItem();
+            VD0->setData(2, Qt::DisplayRole, "VD0");
+            item->addChild(VD0);
+            addBool(VD0, "External reference available", sD0.extRefAvailable);
+            addBool(VD0, "External reference in use", sD0.extRefInUse);
+            addBool(VD0, "FPGA configured", sD0.FPGA_configured);
+            addBool(VD0, "Source locked", sD0.source_locked);
+            addBool(VD0, "LO locked", sD0.LO_locked);
+            addBool(VD0, "ADC overload", sD0.ADC_overload);
+            addBool(VD0, "Unlevel", sD0.unlevel);
+            addInteger(VD0, "MCU temperature", sD0.temp_MCU);
+            addInteger(VD0, "Supply voltage", sD0.supply_voltage);
+            addInteger(VD0, "Supply current", sD0.supply_current);
         }
             break;
         case Protocol::PacketType::DeviceInfo: {
@@ -311,6 +326,32 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addEnum(VFE, "Reference gain", s.VFE.RefGain, {"1 V/V", "10 V/V", "20 V/V", "30 V/V", "40 V/V", "60 V/V", "80 V/V", "120 V/V", "157 V/V", "0.25 V/V"});
             addEnum(VFE, "eCal state", s.VFE.eCal_state, {"Port", "Open", "Short", "Load"});
             addDouble(VFE, "eCal target temperature", (double) s.VFE.eCal_target / 100.0);
+
+            auto VD0 = new QTreeWidgetItem();
+            VD0->setData(2, Qt::DisplayRole, "VD0");
+            item->addChild(VD0);
+            addBool(VD0, "High Source chip enable", s.VD0.SourceHighCE);
+            addInteger(VD0, "High Source power", s.VD0.SourceHighPower);
+            addEnum(VD0, "High Source lowpass", s.VD0.SourceHighLowpass, {"947 MHz", "1880 MHz", "3550 MHz", "None"});
+            addDouble(VD0, "High Source frequency", s.VD0.SourceHighFrequency);
+            addBool(VD0, "Low Source enable", s.VD0.SourceLowEN);
+            addEnum(VD0, "Low Source power", s.VD0.SourceLowPower, {"2 mA", "4 mA", "6 mA", "8 mA"});
+            addDouble(VD0, "Low Source frequency", s.VD0.SourceLowFrequency);
+            addDouble(VD0, "Attenuator", s.VD0.attenuator * 0.25);
+            addEnum(VD0, "Source band selection", s.VD0.SourceHighband, {"Low Source", "High Source"});
+            addEnum(VD0, "Port switch", s.VD0.PortSwitch, {"Port 1", "Port 2"});
+            addBool(VD0, "High LO chip enable", s.VD0.LOHighCE);
+            addDouble(VD0, "High LO frequency", s.VD0.LOHighFrequency);
+            addInteger(VD0, "High LO power", s.VD0.LOHighPower);
+            addBool(VD0, "Low LO enable", s.VD0.LOLowEN);
+            addEnum(VD0, "Low LO power", s.VD0.LOLowPower, {"2 mA", "4 mA", "6 mA", "8 mA"});
+            addDouble(VD0, "Low LO frequency", s.VD0.LOLowFrequency);
+            addEnum(VD0, "LO band selection", s.VD0.LOHighband, {"Low Source", "High Source"});
+            addBool(VD0, "Port 1 receiver enable", s.VD0.Port1EN);
+            addBool(VD0, "Port 2 receiver enable", s.VD0.Port2EN);
+            addBool(VD0, "Reference receiver enable", s.VD0.RefEN);
+            addInteger(VD0, "Samples", s.VD0.Samples);
+            addEnum(VD0, "Window type", s.VD0.WindowType, {"None", "Kaiser", "Hann", "Flattop"});
         }
             break;
         case Protocol::PacketType::ManualStatus: {
@@ -364,6 +405,24 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addBool(VFE, "LO locked", s.VFE.LO_locked);
             addDouble(VFE, "eCal temperature", (double) s.VFE.temp_eCal / 100.0);
             addDouble(VFE, "eCal heater power", (double) s.VFE.power_heater / 1000.0);
+
+            auto VD0 = new QTreeWidgetItem();
+            VD0->setData(2, Qt::DisplayRole, "VD0");
+            item->addChild(VD0);
+            addInteger(VD0, "ADC port 1 minimum", s.VD0.port1min);
+            addInteger(VD0, "ADC port 1 maximum", s.VD0.port1max);
+            addInteger(VD0, "ADC port 2 minimum", s.VD0.port2min);
+            addInteger(VD0, "ADC port 2 maximum", s.VD0.port2max);
+            addInteger(VD0, "ADC reference minimum", s.VD0.refmin);
+            addInteger(VD0, "ADC reference maximum", s.VD0.refmax);
+            addDouble(VD0, "Port 1 real", s.VD0.port1real);
+            addDouble(VD0, "Port 1 imaginary", s.VD0.port1imag);
+            addDouble(VD0, "Port 2 real", s.VD0.port2real);
+            addDouble(VD0, "Port 2 imaginary", s.VD0.port2imag);
+            addDouble(VD0, "Reference real", s.VD0.refreal);
+            addDouble(VD0, "Reference imaginary", s.VD0.refimag);
+            addBool(VD0, "Source locked", s.VD0.source_locked);
+            addBool(VD0, "LO1 locked", s.VD0.LO_locked);
         }
             break;
         case Protocol::PacketType::SpectrumAnalyzerSettings: {
@@ -453,6 +512,7 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addDouble(V1, "1.IF", s1.IF1, "Hz");
             addInteger(V1, "ADC prescaler", s1.ADCprescaler);
             addInteger(V1, "DFT phase increment", s1.DFTphaseInc);
+            addInteger(V1, "PLL settling delay", s1.PLLSettlingDelay);
 
             auto sFF = e.p->deviceConfig.VFF;
             auto VFF = new QTreeWidgetItem();
@@ -473,6 +533,14 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
             addBool(VFE, "PGA autogain", sFE.autogain);
             addInteger(VFE, "Port gain", sFE.portGain);
             addInteger(VFE, "Reference gain", sFE.refGain);
+
+            auto sD0 = e.p->deviceConfig.VD0;
+            auto VD0 = new QTreeWidgetItem();
+            VD0->setData(2, Qt::DisplayRole, "VD0");
+            item->addChild(VD0);
+            addInteger(VD0, "ADC rate", sD0.ADCrate);
+            addInteger(VD0, "DFT phase increment", sD0.DFTphaseInc);
+            addInteger(VD0, "PLL settling delay", sD0.PLLSettlingDelay);
         }
             break;
         default:

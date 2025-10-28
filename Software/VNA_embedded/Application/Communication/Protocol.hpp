@@ -553,6 +553,11 @@ using DeviceConfig = struct _deviceconfig {
             uint16_t portGain :4;
             uint16_t refGain :4;
         } VFE;
+        struct {
+            uint16_t DFTphaseInc;
+            uint32_t ADCrate;
+            uint8_t PLLSettlingDelay;
+        } VD0;
 	};
 };
 
