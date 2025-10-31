@@ -914,7 +914,7 @@ void SpectrumAnalyzer::ConfigureDevice()
         average.reset(DeviceDriver::SApoints());
         UpdateAverageCount();
         traceModel.clearLiveData();
-        emit traceModel.SpanChanged(settings.freqStart, settings.freqStop);
+        traceModel.setSpan(settings.freqStart, settings.freqStop);
     } else {
         if(window->getDevice()) {
             changingSettings = true;

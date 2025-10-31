@@ -9,6 +9,8 @@ using namespace std;
 TraceModel::TraceModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
+    spanFmin = 0.0;
+    spanFmax = 6000000000.0;
     traces.clear();
     source = DataSource::Unknown;
     lastSweepPosition = 0.0;
@@ -366,6 +368,13 @@ double TraceModel::getSweepPosition() const
     } else {
         return lastSweepPosition;
     }
+}
+
+void TraceModel::setSpan(double fmin, double fmax)
+{
+    spanFmin = fmin;
+    spanFmax = fmax;
+    emit SpanChanged(fmin, fmax);
 }
 
 MarkerModel *TraceModel::getMarkerModel() const

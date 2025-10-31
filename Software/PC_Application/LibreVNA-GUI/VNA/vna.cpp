@@ -1961,7 +1961,7 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
         double start = settings.sweepType == SweepType::Frequency ? settings.Freq.start : settings.Power.start;
         double stop = settings.sweepType == SweepType::Frequency ? settings.Freq.stop : settings.Power.stop;
         int npoints = settings.npoints;
-        emit traceModel.SpanChanged(start, stop);
+        traceModel.setSpan(start, stop);
         if (settings.segments > 1) {
             // more than one segment, adjust start/stop
             npoints = ceil((double) settings.npoints / settings.segments);

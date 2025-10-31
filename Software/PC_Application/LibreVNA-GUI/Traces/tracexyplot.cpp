@@ -29,8 +29,7 @@ TraceXYPlot::TraceXYPlot(TraceModel &model, QWidget *parent)
     // Setup default axis
     setYAxis(0, YAxis::Type::Magnitude, false, false, YAxis::getDefaultLimitMin(YAxis::Type::Magnitude), YAxis::getDefaultLimitMax(YAxis::Type::Magnitude), 14, true);
     setYAxis(1, YAxis::Type::Phase, false, false, YAxis::getDefaultLimitMin(YAxis::Type::Phase), YAxis::getDefaultLimitMax(YAxis::Type::Phase), 12, true);
-    // enable autoscaling and set for full span (no information about actual span available yet)
-    updateSpan(0, 6000000000);
+
     setXAxis(XAxis::Type::Frequency, XAxisMode::UseSpan, false, 0, 6000000000, 10, true);
     initializeTraceInfo();
 }

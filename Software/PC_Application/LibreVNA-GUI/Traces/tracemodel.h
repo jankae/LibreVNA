@@ -62,6 +62,10 @@ public:
 
     double getSweepPosition() const;
 
+    void setSpan(double fmin, double fmax);
+    double getSpanStart() {return spanFmin;}
+    double getSpanStop() {return spanFmax;}
+
 signals:
     void SpanChanged(double fmin, double fmax);
     void traceAdded(Trace *t);
@@ -80,6 +84,8 @@ private:
     QDateTime lastReceivedData;
     std::vector<Trace*> traces;
     MarkerModel *markerModel;
+
+    double spanFmin, spanFmax;
 };
 
 #endif // TRACEMODEL_H
