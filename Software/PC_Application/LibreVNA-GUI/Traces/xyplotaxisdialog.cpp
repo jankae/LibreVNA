@@ -116,7 +116,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     setupYAxisConnetions(ui->Y1type, ui->Y1linear, ui->Y1log, ui->Y1auto, ui->Y1min, ui->Y1max, ui->Y1Divs, ui->Y1autoDivs);
     setupYAxisConnetions(ui->Y2type, ui->Y2linear, ui->Y2log, ui->Y2auto, ui->Y2min, ui->Y2max, ui->Y2Divs, ui->Y2autoDivs);
 
-    auto updateXenableState = [](QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs) {
+    auto updateXenableState = [](QRadioButton *linear, QRadioButton *log, QCheckBox *CBauto, SIUnitEdit *min, SIUnitEdit *max, QSpinBox *divs, QCheckBox *autoDivs, QComboBox *autoMode) {
         log->setEnabled(true);
         linear->setEnabled(true);
         CBauto->setEnabled(true);
@@ -126,6 +126,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
             max->setEnabled(false);
             divs->setEnabled(false);
             autoDivs->setEnabled(false);
+            autoMode->setEnabled(true);
         } else {
             min->setEnabled(true);
             max->setEnabled(true);
@@ -136,14 +137,15 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
                 autoDivs->setEnabled(true);
                 divs->setEnabled(!autoDivs->isChecked());
             }
+            autoMode->setEnabled(false);
         }
     };
 
     connect(ui->Xauto, &QCheckBox::toggled, [this, updateXenableState](bool) {
-        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
+        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs, ui->Xautomode);
     });
     connect(ui->XautoDivs, &QCheckBox::toggled, [this, updateXenableState](bool) {
-        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
+        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs, ui->Xautomode);
     });
 
     ui->XType->setCurrentIndex((int) plot->xAxis.getType());
@@ -159,7 +161,7 @@ XYplotAxisDialog::XYplotAxisDialog(TraceXYPlot *plot) :
     XAxisTypeChanged((int) plot->xAxis.getType());
     connect(ui->XType, qOverload<int>(&QComboBox::currentIndexChanged), this, &XYplotAxisDialog::XAxisTypeChanged);
     connect(ui->Xlog, &QCheckBox::toggled, [=](bool){
-        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs);
+        updateXenableState(ui->Xlinear, ui->Xlog, ui->Xauto, ui->Xmin, ui->Xmax, ui->XDivs, ui->XautoDivs, ui->Xautomode);
     });
 
     // Fill initial values
