@@ -1410,14 +1410,14 @@ When connected to a compound device and in VNA mode, there is no phase informati
 \end{important}
 
 \subsection{Creating a compound device}
-Compound devices must be configured in the preferences: \menu[,]{Window,Preferences,Compound Devices}
+Compound devices must be configured in the preferences:\linebreak\menu[,]{Window,Preferences,Device Drivers,LibreVNA/Compound}
 \screenshot{1.0}{CompoundDeviceList.png}
 Create and remove compound devices with the buttons on the right. Edit an existing compound device by double-clicking it:
 \screenshot{1.0}{CompoundDeviceEdit.png}
 Required steps when creating a compound device:
 \begin{enumerate}
 \item Assign a name to the new compound device
-\item Select the synchronization method between devices. At the moment, only USB synchronization is supported but future hardware versions might support faster synchronization via dedicated trigger ports
+\item Select the synchronization method between devices. At the moment, only GUI synchronization is supported but future hardware versions might support faster synchronization via dedicated trigger ports
 \item Drag-and-drop a LibreVNA symbol into the configuration area for every physical device in the compound device
 \begin{itemize}
 \item At least two physical devices must be used
