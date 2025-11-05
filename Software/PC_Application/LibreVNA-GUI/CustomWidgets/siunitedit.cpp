@@ -59,7 +59,7 @@ bool SIUnitEdit::eventFilter(QObject *, QEvent *event)
             clearFocus();
             return true;
         }
-        if(key == Qt::Key_Return) {
+        if(key == Qt::Key_Return || key == Qt::Key_Enter) {
             // use new value without prefix
            parseNewValue(1.0);
            continueEditing();
