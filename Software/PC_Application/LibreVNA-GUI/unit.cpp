@@ -68,6 +68,10 @@ QString Unit::ToString(double value, QString unit, QString prefixes, int precisi
         }
         ss << value;
         sValue.append(QString::fromStdString(ss.str()));
+        if(!unit.isEmpty() && !unit.startsWith(' ')) {
+            // add space between number and unit
+            sValue.append(' ');
+        }
         sValue.append(prefixes[prefixIndex]);
     }
     sValue.append(unit);

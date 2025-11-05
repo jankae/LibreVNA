@@ -533,8 +533,9 @@ void Calibration::edit(TraceModel *traceModel)
             ui->table->setCellWidget(i, 1, measurements[i]->createStandardWidget());
             ui->table->setCellWidget(i, 2, measurements[i]->createSettingsWidget());
             ui->table->setItem(i, 3, measurements[i]->getStatisticsItem());
-            ui->table->setItem(i, 4, new QTableWidgetItem(measurements[i]->getTimestamp().toString()));
+            ui->table->setItem(i, 4, new QTableWidgetItem(measurements[i]->getTimestamp().toLocalTime().toString()));
         }
+        ui->table->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->table->selectRow(row);
         updateTableEditButtons();
     };
@@ -623,6 +624,11 @@ void Calibration::edit(TraceModel *traceModel)
             return;
         }
         emit startMeasurements(m);
+    });
+
+    // double clicking on a row also starts the measurement
+    connect(ui->table, &QTableWidget::doubleClicked, this, [=](){
+        emit ui->measure->clicked();
     });
 
     connect(ui->selectMeasurement, &QPushButton::clicked, [=](){
@@ -1971,12 +1977,12 @@ void Calibration::createDefaultMeasurements(Calibration::DefaultMeasurements dm)
 {
     lock_guard<recursive_mutex> guard(access);
     auto createSOL = [=](int port) {
-        auto _short = new CalibrationMeasurement::Short(this);
-        _short->setPort(port);
-        measurements.push_back(_short);
         auto open = new CalibrationMeasurement::Open(this);
         open->setPort(port);
         measurements.push_back(open);
+        auto _short = new CalibrationMeasurement::Short(this);
+        _short->setPort(port);
+        measurements.push_back(_short);
         auto load = new CalibrationMeasurement::Load(this);
         load->setPort(port);
         measurements.push_back(load);
