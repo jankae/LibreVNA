@@ -1,4 +1,4 @@
-QT += testlib widgets network
+QT += testlib widgets network svg
 
 CONFIG += qt console warn_on depend_includepath testcase
 CONFIG -= app_bundle
@@ -155,6 +155,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/preferences.cpp \
     ../LibreVNA-GUI/savable.cpp \
     ../LibreVNA-GUI/scpi.cpp \
+    ../LibreVNA-GUI/screenshot.cpp \
     ../LibreVNA-GUI/tcpserver.cpp \
     ../LibreVNA-GUI/streamingserver.cpp \
     ../LibreVNA-GUI/touchstone.cpp \
@@ -359,6 +360,7 @@ HEADERS += \
     ../LibreVNA-GUI/preferences.h \
     ../LibreVNA-GUI/savable.h \
     ../LibreVNA-GUI/scpi.h \
+    ../LibreVNA-GUI/screenshot.h \
     ../LibreVNA-GUI/tcpserver.h \
     ../LibreVNA-GUI/streamingserver.h \
     ../LibreVNA-GUI/touchstone.h \

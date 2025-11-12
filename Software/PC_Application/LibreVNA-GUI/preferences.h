@@ -229,6 +229,7 @@ public:
             QString pref;
             QString firmware;
         } Paths;
+        qsizetype saveImageFilterIndex;
     } UISettings;
 
     bool TCPoverride; // in case of manual port specification via command line
@@ -413,6 +414,7 @@ private:
         {&UISettings.Paths.limitLines, "UISettings.Paths.limitLines", ""},
         {&UISettings.Paths.pref, "UISettings.Paths.pref", ""},
         {&UISettings.Paths.firmware, "UISettings.Paths.firmware", ""},
+        {&UISettings.saveImageFilterIndex, "UISettings.saveImageFilterIndex", 0},
     }};
 };
 
