@@ -20,6 +20,7 @@ public:
 private:
     void updateGUI(const Protocol::DeviceConfig &c);
     void updateDevice();
+    void resetDevice();
 
     Ui::DeviceConfigurationDialogV1 *ui;
     LibreVNADriver &dev;

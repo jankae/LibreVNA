@@ -276,6 +276,10 @@ inline void App_Process() {
 					HW::setDeviceConfig(recv_packet.deviceConfig);
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
 					break;
+				case Protocol::PacketType::ResetDeviceConfiguration:
+					HW::SetDefaultDeviceConfig();
+					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
+					break;
 				case Protocol::PacketType::SetTrigger:
 					if(Trigger::GetMode() == Trigger::Mode::USB_GUI) {
 						Trigger::SetInput(true);

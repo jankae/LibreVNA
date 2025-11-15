@@ -1,6 +1,9 @@
 #include "deviceconfigurationdialogv1.h"
 #include "ui_deviceconfigurationdialogv1.h"
 
+#include <QPushButton>
+#include "CustomWidgets/informationbox.h"
+
 DeviceConfigurationDialogV1::DeviceConfigurationDialogV1(LibreVNADriver &dev, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DeviceConfigurationDialogV1),
@@ -56,6 +59,10 @@ DeviceConfigurationDialogV1::DeviceConfigurationDialogV1(LibreVNADriver &dev, QW
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, [=](){
         reject();
     });
+    connect(ui->buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, [=](){
+        resetDevice();
+        this->dev.sendWithoutPayload(Protocol::PacketType::RequestDeviceConfiguration);
+    });
 }
 
 DeviceConfigurationDialogV1::~DeviceConfigurationDialogV1()
@@ -83,4 +90,13 @@ void DeviceConfigurationDialogV1::updateDevice()
     p.deviceConfig.V1.DFTphaseInc = ui->ADCphaseInc->value();
     p.deviceConfig.V1.PLLSettlingDelay = ui->PLLSettlingDelay->value();
     dev.SendPacket(p);
+}
+
+void DeviceConfigurationDialogV1::resetDevice()
+{
+    dev.sendWithoutPayload(Protocol::PacketType::ResetDeviceConfiguration, [=](LibreVNADriver::TransmissionResult res){
+        if(res != LibreVNADriver::TransmissionResult::Ack) {
+            InformationBox::ShowError("Error", "Failed to reset device configuration");
+        }
+    });
 }

@@ -605,6 +605,7 @@ enum class PacketType : uint8_t {
 	StartStatusUpdates = 31,
     InitiateSweep = 32,
     PerformAction = 33,
+	ResetDeviceConfiguration = 34,
 };
 
 using PacketInfo = struct _packetinfo {
