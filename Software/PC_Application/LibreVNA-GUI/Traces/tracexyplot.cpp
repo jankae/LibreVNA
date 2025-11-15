@@ -452,8 +452,8 @@ void TraceXYPlot::draw(QPainter &p)
         plotAreaWidth -= yAxisDisabledSpace;
     }
 
-    auto plotRect = QRect(plotAreaLeft, plotAreaTop, plotAreaWidth + 1, plotAreaBottom-plotAreaTop);
-    p.drawRect(plotRect);
+    auto plotRect = QRect(plotAreaLeft, plotAreaTop, plotAreaWidth + 1, plotAreaBottom-plotAreaTop + 1);
+    p.drawRect(QRect(plotAreaLeft, plotAreaTop, plotAreaWidth, plotAreaBottom-plotAreaTop));
 
     // draw axis types
     auto font = p.font();
@@ -490,7 +490,7 @@ void TraceXYPlot::draw(QPainter &p)
 
             int lastTickLabelEnd = std::numeric_limits<int>::max();
             for(unsigned int j = 0; j < yAxis[i].getTicks().size(); j++) {
-                auto yCoord = yAxis[i].transform(yAxis[i].getTicks()[j], w.height() - xAxisSpace, plotAreaTop);
+                auto yCoord = yAxis[i].transform(yAxis[i].getTicks()[j], plotAreaBottom, plotAreaTop);
                 p.setPen(QPen(pref.Graphs.Color.axis, 1));
                 // draw tickmark on axis
                 auto tickStart = i == 0 ? plotAreaLeft : plotAreaLeft + plotAreaWidth;
@@ -628,15 +628,6 @@ void TraceXYPlot::draw(QPainter &p)
                         }
                         // draw line
                         p.drawLine(p1, p2);
-                    }
-
-                    if(pref.Marker.clipToYAxis) {
-                        // clip Y coordinate of markers to visible area (always show markers, even when out of range)
-                        if(point.y() < plotRect.top()) {
-                            point.ry() = plotRect.top();
-                        } else if(point.y() > plotRect.bottom()) {
-                            point.ry() = plotRect.bottom();
-                        }
                     }
 
                     if(!plotRect.contains(point)) {
@@ -1116,8 +1107,8 @@ QPointF TraceXYPlot::traceToCoordinate(Trace *t, unsigned int sample, YAxis &yax
 QPoint TraceXYPlot::plotValueToPixel(QPointF plotValue, int Yaxis)
 {
     QPoint p;
-    p.setX(xAxis.transform(plotValue.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth));
-    p.setY(yAxis[Yaxis].transform(plotValue.y(), plotAreaBottom, plotAreaTop));
+    p.setX(round(xAxis.transform(plotValue.x(), plotAreaLeft, plotAreaLeft + plotAreaWidth)));
+    p.setY(round(yAxis[Yaxis].transform(plotValue.y(), plotAreaBottom, plotAreaTop)));
     return p;
 }
 
@@ -1156,6 +1147,14 @@ QPoint TraceXYPlot::markerToPixel(Marker *m)
     } else {
         markerPoint = traceToCoordinate(t, t->index(xPosition), yAxis[0]);
     }
+    auto &pref = Preferences::getInstance();
+    if(pref.Marker.clipToYAxis) {
+        if(markerPoint.y() > yAxis[0].getRangeMax()) {
+            markerPoint.setY(yAxis[0].getRangeMax());
+        } else if(markerPoint.y() < yAxis[0].getRangeMin()) {
+            markerPoint.setY(yAxis[0].getRangeMin());
+        }
+    }
     return plotValueToPixel(markerPoint, 0);
 }
 
@@ -1175,6 +1174,8 @@ double TraceXYPlot::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
             continue;
         }
         auto plotPoint = plotValueToPixel(point, 0);
+        // constrain to the visible Y axis range
+        Util::constrain(plotPoint.ry(), plotAreaTop, plotAreaBottom);
         QPointF diff = plotPoint - pixel;
         auto distance = diff.x() * diff.x() + diff.y() * diff.y();
         if(distance < closestDistance) {

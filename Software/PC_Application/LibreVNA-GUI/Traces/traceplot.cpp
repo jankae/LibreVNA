@@ -562,6 +562,10 @@ Marker *TracePlot::markerAtPosition(QPoint p, bool onlyMovable)
                 // invalid, skip
                 continue;
             }
+            if(!positionWithinGraphArea(markerPoint) && !Preferences::getInstance().Marker.clipToYAxis) {
+                // this marker is currently not visible on the graph, do not accept it as a valid choice
+                continue;
+            }
             auto diff = markerPoint - p;
             unsigned int distance = diff.x() * diff.x() + diff.y() * diff.y();
             if(distance < closestDistance) {

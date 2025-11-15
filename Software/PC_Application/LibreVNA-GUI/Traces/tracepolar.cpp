@@ -130,7 +130,7 @@ bool TracePolar::positionWithinGraphArea(const QPoint &p)
 
 QPoint TracePolar::dataToPixel(std::complex<double> d)
 {
-    return transform.map(QPoint(d.real() * polarCoordMax * (1.0 / edgeReflection), -d.imag() * polarCoordMax * (1.0 / edgeReflection)));
+    return transform.map(QPoint(round(d.real() * polarCoordMax * (1.0 / edgeReflection)), round(-d.imag() * polarCoordMax * (1.0 / edgeReflection))));
 }
 
 QPoint TracePolar:: dataToPixel(Trace::Data d)
@@ -165,13 +165,22 @@ std::complex<double> TracePolar::pixelToData(QPoint p)
 QPoint TracePolar::markerToPixel(Marker *m)
 {
     QPoint ret = QPoint();
-//    if(!m->isTimeDomain()) {
-        if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
-            auto d = m->getData();
-            d = dataAddOffset(d);
-            ret = dataToPixel(d);
+    if(m->getPosition() >= sweep_fmin && m->getPosition() <= sweep_fmax) {
+        auto d = m->getData();
+        d = dataAddOffset(d);
+        if(abs(d) > edgeReflection && limitToEdge) {
+            // marker position is outside of the graph
+            auto &pref = Preferences::getInstance();
+            if(pref.Marker.clipToYAxis) {
+                // we still want to show the marker but at the edge of the graph
+                d /= (abs(d) / edgeReflection);
+            } else {
+                // we do not show the marker
+                return ret;
+            }
         }
-//    }
+        ret = dataToPixel(d);
+    }
     return ret;
 }
 
@@ -188,6 +197,10 @@ double TracePolar::nearestTracePoint(Trace *t, QPoint pixel, double *distance)
             continue;
         }
         data = dataAddOffset(data);
+        if(limitToEdge && abs(data.y) > edgeReflection) {
+            // this trace point is outside of the visible range, clip to circle
+            data.y /= (abs(data.y) / edgeReflection);
+        }
         auto plotPoint = dataToPixel(data);
         if (plotPoint.isNull()) {
             // destination point outside of currently displayed range

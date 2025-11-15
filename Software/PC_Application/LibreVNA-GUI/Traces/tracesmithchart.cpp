@@ -367,14 +367,16 @@ void TraceSmithChart::draw(QPainter &p) {
                     // marker not in trace range
                     continue;
                 }
-                auto coords = m->getData();
-                coords = dataAddOffset(coords);
-
-                if (limitToEdge && abs(coords) > edgeReflection) {
-                    // outside of visible area
+                auto point = markerToPixel(m);
+                if(point.isNull()) {
+                    // marker point is invalid
                     continue;
                 }
-                auto point = dataToPixel(coords);
+
+                // if (limitToEdge && abs(pixelToData(point)) > edgeReflection) {
+                //     // outside of visible area
+                //     continue;
+                // }
                 auto symbol = m->getSymbol();
                 p.drawPixmap(point.x() - symbol.width()/2, point.y() - symbol.height(), symbol);
             }
