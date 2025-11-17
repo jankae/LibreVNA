@@ -54,7 +54,7 @@ private:
     void USBHandleThread();
     // foundCallback is called for every device that is found. If it returns true the search continues, otherwise it is aborted.
     // When the search is aborted the last found device is still opened
-    static void SearchDevices(std::function<bool(libusb_device_handle *handle, QString getSerial)> foundCallback, libusb_context *context, bool ignoreOpenError);
+    void SearchDevices(std::function<bool(libusb_device_handle *handle, QString getSerial)> foundCallback, libusb_context *context, bool ignoreOpenError);
 
     libusb_device_handle *m_handle;
     libusb_context *m_context;
@@ -82,6 +82,13 @@ private:
     QDateTime lastTimestamp;
     unsigned long byteCnt;
 
+    using USBID = struct {
+        int VID;
+        int PID;
+        QString deviceName;
+    };
+protected:
+    QList<USBID> validUSBIDs;
 };
 
 #endif // LIBREVNAUSBDRIVER_H

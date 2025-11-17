@@ -5,6 +5,7 @@
 #include "LibreVNA/Compound/compounddriver.h"
 #include "SSA3000X/ssa3000xdriver.h"
 #include "SNA5000A/sna5000adriver.h"
+#include "Harogic/harogicb60.h"
 
 DeviceDriver *DeviceDriver::activeDriver = nullptr;
 
@@ -25,6 +26,7 @@ std::vector<DeviceDriver *> DeviceDriver::getDrivers()
         ret.push_back(new CompoundDriver);
         ret.push_back(new SSA3000XDriver);
         ret.push_back(new SNA5000ADriver);
+        ret.push_back(new HarogicB60);
     }
     return ret;
 }

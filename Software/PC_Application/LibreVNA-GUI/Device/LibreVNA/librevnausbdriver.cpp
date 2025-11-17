@@ -8,16 +8,6 @@
 
 using namespace std;
 
-using USBID = struct {
-    int VID;
-    int PID;
-};
-static constexpr USBID IDs[] = {
-    {0x0483, 0x564e},
-    {0x0483, 0x4121},
-    {0x1209, 0x4121},
-};
-
 LibreVNAUSBDriver::LibreVNAUSBDriver()
     : LibreVNADriver()
 {
@@ -29,6 +19,10 @@ LibreVNAUSBDriver::LibreVNAUSBDriver()
     m_receiveThread = nullptr;
     lastTimestamp = QDateTime::currentDateTime();
     byteCnt = 0;
+
+    validUSBIDs.append({0x0483, 0x564e, "VNA"});
+    validUSBIDs.append({0x0483, 0x4121, "VNA"});
+    validUSBIDs.append({0x1209, 0x4121, "VNA"});
 
     specificSettings.push_back(Savable::SettingDescription(&captureRawReceiverValues, "LibreVNAUSBDriver.captureRawReceiverValues", false));
     specificSettings.push_back(Savable::SettingDescription(&harmonicMixing, "LibreVNAUSBDriver.harmonicMixing", false));
@@ -309,15 +303,15 @@ void LibreVNAUSBDriver::SearchDevices(std::function<bool (libusb_device_handle *
             continue;
         }
 
-        bool correctID = false;
-        int numIDs = sizeof(IDs)/sizeof(IDs[0]);
-        for(int i=0;i<numIDs;i++) {
-            if(desc.idVendor == IDs[i].VID && desc.idProduct == IDs[i].PID) {
-                correctID = true;
+        int IDindex = -1;
+        for(int i=0;i<validUSBIDs.size();i++) {
+            if(desc.idVendor == validUSBIDs[i].VID && desc.idProduct == validUSBIDs[i].PID) {
+                IDindex = i;
                 break;
             }
         }
-        if(!correctID) {
+        if(IDindex == -1) {
+            // invalid VID/PID
             continue;
         }
 
@@ -348,7 +342,7 @@ void LibreVNAUSBDriver::SearchDevices(std::function<bool (libusb_device_handle *
         if (ret > 0) {
             /* managed to read the product string */
             QString product(c_product);
-            if (product == "VNA") {
+            if (product == validUSBIDs[IDindex].deviceName) {
                 // this is a match
                 if(!foundCallback(handle, QString(c_serial))) {
                     // abort search

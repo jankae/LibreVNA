@@ -162,7 +162,7 @@ PreferencesDialog::PreferencesDialog(Preferences *pref, QWidget *parent) :
         if(!w) {
             continue;
         }
-        w->setObjectName(driver->getDriverName());
+        w->setObjectName(driver->getDriverName().replace(" ", ""));
         ui->pageWidget->addWidget(w);
         auto driverItem = new QTreeWidgetItem();
         driverItem->setText(0, driver->getDriverName());

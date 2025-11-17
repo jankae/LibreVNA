@@ -26,6 +26,7 @@ SOURCES +=  \
     ../LibreVNA-GUI/CustomWidgets/toggleswitch.cpp \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.cpp \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.cpp \
+    ../LibreVNA-GUI/Device/Harogic/harogicb60.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.cpp \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvd0.cpp \
@@ -219,6 +220,7 @@ HEADERS += \
     ../LibreVNA-GUI/CustomWidgets/toggleswitch.h \
     ../LibreVNA-GUI/CustomWidgets/touchstoneimport.h \
     ../LibreVNA-GUI/CustomWidgets/tracesetselector.h \
+    ../LibreVNA-GUI/Device/Harogic/harogicb60.h \
     ../LibreVNA-GUI/Device/LibreVNA/amplitudecaldialog.h \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogv1.h \
     ../LibreVNA-GUI/Device/LibreVNA/deviceconfigurationdialogvd0.h \
