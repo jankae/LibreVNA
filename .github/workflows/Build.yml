@@ -97,7 +97,10 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.9.3'
-      
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          
       - name: Download libusb
         run: |
           curl -o libusb.7z -L https://github.com/libusb/libusb/releases/download/v1.0.25/libusb-1.0.25.7z
