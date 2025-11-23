@@ -94,12 +94,13 @@ jobs:
       - uses: msys2/setup-msys2@v2
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@v3
         with:
-          version: '6.9.3'
+          aqtversion: '==3.1.*'
+          version: '6.8.3'
           host: 'windows'
           target: 'desktop'
-          arch: 'win64_msvc2022_64'
+          arch: 'win64_mingw'
           
       - name: Download libusb
         run: |
