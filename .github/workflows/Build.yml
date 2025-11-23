@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - master
+      - build_test
   pull_request:
     branches:
       - master
 
 jobs:
   PC_Application_Ubuntu:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -96,7 +97,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.2.4'
+          version: '6.8.3'
           arch: 'win64_mingw'
       
       - name: Download libusb
@@ -234,7 +235,7 @@ jobs:
           path: Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
   
   Embedded_Firmware:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
