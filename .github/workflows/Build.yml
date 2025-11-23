@@ -37,7 +37,7 @@ jobs:
         run: |
           cd Software/PC_Application/LibreVNA-GUI
           export QT_SELECT=qt6
-          qmake LibreVNA-GUI.pro
+          qmake6 LibreVNA-GUI.pro
           make -j9
         shell: bash
 
@@ -96,7 +96,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.8.3'
+          version: '6.8.0'
           arch: 'win64_mingw'
       
       - name: Download libusb
