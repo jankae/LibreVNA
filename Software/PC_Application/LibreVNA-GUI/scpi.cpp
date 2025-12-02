@@ -568,7 +568,7 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
                 params.back().append(cmd[i]);
             } else {
                 // not in quotes, handle splitting by space
-                if(cmd[i] == " ") {
+                if(cmd[i] == ' ') {
                     if(params.back().length() > 0)
                     params.append("");
                 } else {
