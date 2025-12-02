@@ -1256,6 +1256,7 @@ void VNA::SetLogSweep(bool log)
 {
     if(settings.Freq.logSweep != log) {
         settings.Freq.logSweep = log;
+        ConstrainAndUpdateFrequencies();
         emit logSweepChanged(log);
         SettingsChanged();
     }
@@ -1646,6 +1647,12 @@ void VNA::SetupSCPI()
 
 void VNA::ConstrainAndUpdateFrequencies()
 {
+    if(settings.sweepType == SweepType::Frequency && settings.Freq.logSweep) {
+        if(settings.Freq.start <= 0) {
+            // start frequency must be positive, force it to 1 Hz
+            settings.Freq.start = 1.0;
+        }
+    }
     if(settings.Freq.stop > DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq) {
         settings.Freq.stop = DeviceDriver::getInfo(window->getDevice()).Limits.VNA.maxFreq;
     }
