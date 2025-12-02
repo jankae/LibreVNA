@@ -69,6 +69,10 @@ VNA::VNA(AppWindow *window, QString name)
     calWaitFirst = false;
     calDialog = nullptr;
 
+    lastFreq = 0.0;
+    lastPower = 0.0;
+    lastTime = 0.0;
+
     changingSettings = false;
     settings.sweepType = SweepType::Frequency;
     settings.zerospan = false;
@@ -1015,6 +1019,10 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
         }
     }
 
+    lastFreq = m_avg.frequency;
+    lastPower = m_avg.dBm;
+    lastTime = (double) m_avg.us / 1000000;
+
     window->addStreamingData(m_avg, AppWindow::VNADataType::Raw, settings.zerospan);
 
     if(average.settled()) {
@@ -1591,6 +1599,15 @@ void VNA::SetupSCPI()
         }
     }, [=](QStringList) -> QString {
         return singleSweep ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
+    }));
+    scpi_acq->add(new SCPICommand("FREQuency", nullptr, [=](QStringList) -> QString {
+        return QString::number(lastFreq);
+    }));
+    scpi_acq->add(new SCPICommand("POWer", nullptr, [=](QStringList) -> QString {
+        return QString::number(lastPower);
+    }));
+    scpi_acq->add(new SCPICommand("TIME", nullptr, [=](QStringList) -> QString {
+        return QString::number(lastTime);
     }));
     auto scpi_stim = new SCPINode("STIMulus");
     SCPINode::add(scpi_stim);

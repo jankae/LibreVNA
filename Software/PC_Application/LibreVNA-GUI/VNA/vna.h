@@ -201,6 +201,10 @@ private:
     // Statistics for detecting missing points and sweep time
     QDateTime lastStart;
     int lastPoint;
+    // meta data from the last received datapoint
+    double lastFreq;
+    double lastPower;
+    double lastTime;
 
 signals:
     void deviceInitialized();

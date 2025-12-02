@@ -132,6 +132,10 @@ private:
     QList<QAction*> importActions;
     QList<QAction*> exportActions;
 
+    // meta data from the last received datapoint
+    double lastFreq;
+    double lastTime;
+
 signals:
     void dataChanged();
     void startFreqChanged(double freq);

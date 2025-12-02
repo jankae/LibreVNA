@@ -462,6 +462,21 @@ If single sweep is enabled, the acquisition is stopped when the required number 
 \item Issue the command again (i.e. VNA:ACQ:SINGLE TRUE always triggers a new sweep)
 \end{itemize}
 
+\subsubsection{VNA:ACQuisition:FREQuency}
+\query{Returns the current frequency of the sweep}{VNA:ACQuisition:FREQuency?}{None}{<Frequency in Hz>}
+
+This command only returns valid data when a sweep is running and the the sweep is a frequency sweep.
+
+\subsubsection{VNA:ACQuisition:POWer}
+\query{Returns the current power of the sweep}{VNA:ACQuisition:POWer?}{None}{<Power in dBm>}
+
+This command only returns valid data when a sweep is running and the the sweep is a power sweep.
+
+\subsubsection{VNA:ACQuisition:TIME}
+\query{Returns the current time of the sweep}{VNA:ACQuisition:TIME?}{None}{<Time in seconds>}
+
+This command only returns valid data when a sweep is running and the the sweep is a zero-span sweep.
+
 \subsubsection{VNA:STIMulus:LVL}
 \event{Sets the output power of the stimulus signal when sweep type is frequency}{VNA:STIMulus:LVL}{<power>, in dBm}
 \query{Queries the currently selected output power}{VNA:STIMulus:LVL?}{None}{power in dBm}
@@ -782,6 +797,16 @@ If single sweep is enabled, the acquisition is stopped when the required number 
 \subsubsection{SA:ACQuisition:SIGid}
 \event{Enables/disables signal identification}{SA:ACQuisition:SIGid}{<enabled>, option are TRUE, FALSE, 1 or 0}
 \query{Queries whether signal identification is enabled}{SA:ACQuisition:SIGid?}{None}{TRUE or FALSE}
+
+\subsubsection{SA:ACQuisition:FREQuency}
+\query{Returns the current frequency of the sweep}{SA:ACQuisition:FREQuency?}{None}{<Frequency in Hz>}
+
+This command only returns valid data when a sweep is running and the the sweep is a frequency sweep.
+
+\subsubsection{SA:ACQuisition:TIME}
+\query{Returns the current time of the sweep}{SA:ACQuisition:TIME?}{None}{<Time in seconds>}
+
+This command only returns valid data when a sweep is running and the the sweep is a zero-span sweep.
 
 \subsubsection{SA:TRACKing:ENable}
 \event{Enables/disables the tracking generator}{SA:TRACKing:ENable}{<enabled>, option are TRUE, FALSE, 1 or 0}
