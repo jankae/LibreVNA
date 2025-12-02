@@ -30,7 +30,7 @@ Calkit::Calkit()
         }
         toFile(params[0]);
         return SCPI::getResultName(SCPI::Result::Empty);
-    }, nullptr));
+    }, nullptr, false));
     add(new SCPICommand("LOAD", nullptr, [=](QStringList params) -> QString {
         if(params.size() != 1) {
             // no filename given or no calibration active
@@ -42,7 +42,7 @@ Calkit::Calkit()
         } catch (runtime_error &e) {
             return SCPI::getResultName(SCPI::Result::False);
         }
-    }));
+    }, false));
 }
 
 void Calkit::toFile(QString filename)
@@ -67,7 +67,7 @@ static QString readLine(ifstream &file) {
 
 Calkit Calkit::fromFile(QString filename)
 {
-    qDebug() << "Opening calkit to file" << filename;
+    qDebug() << "Opening calkit from file" << filename;
 
     auto c = Calkit();
     ifstream file;
