@@ -26,6 +26,7 @@ public:
         this->serialnumber = other.serialnumber;
         this->description = other.description;
         this->standards = other.standards;
+        this->filename = other.filename;
         return *this;
     }
 
@@ -58,6 +59,7 @@ public:
 private:
     void clearStandards();
     QString manufacturer, serialnumber, description;
+    QString filename;
     std::vector<CalStandard::Virtual*> standards;
 
     const std::vector<Savable::SettingDescription> descr = {{

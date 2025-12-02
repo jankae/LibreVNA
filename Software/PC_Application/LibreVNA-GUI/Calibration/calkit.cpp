@@ -19,10 +19,44 @@ Calkit::Calkit()
     : SCPINode("KIT")
 {
     // set default values
+    filename = "";
     for(auto e : descr) {
         e.var.setValue(e.def);
     }
 
+    add(new SCPICommand("MANufacturer", [=](QStringList params) -> QString {
+        if(params.size() != 1 ) {
+            // no new value given
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        manufacturer = params[0];
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        return manufacturer;
+    }, false));
+    add(new SCPICommand("SERial", [=](QStringList params) -> QString {
+        if(params.size() != 1 ) {
+            // no new value given
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        serialnumber = params[0];
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        return serialnumber;
+    }, false));
+    add(new SCPICommand("DESCription", [=](QStringList params) -> QString {
+        if(params.size() != 1 ) {
+            // no new value given
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        description = params[0];
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, [=](QStringList) -> QString {
+        return description;
+    }, false));
+    add(new SCPICommand("FILEname", nullptr, [=](QStringList) -> QString {
+        return filename;
+    }));
     add(new SCPICommand("SAVE", [=](QStringList params) -> QString {
         if(params.size() != 1 ) {
             // no filename given or no calibration active
@@ -57,6 +91,7 @@ void Calkit::toFile(QString filename)
     file.open(filename.toStdString());
     file << setw(4) << toJSON() << endl;
     file.close();
+    this->filename = filename;
 }
 
 static QString readLine(ifstream &file) {
@@ -83,6 +118,7 @@ Calkit Calkit::fromFile(QString filename)
         throw runtime_error("JSON parsing error: " + string(e.what()));
     }
     c.clearStandards();
+    c.filename = "";
     if(j.contains("standards")) {
         qDebug() << "new JSON format detected";
         c.fromJSON(j);
@@ -345,6 +381,7 @@ Calkit Calkit::fromFile(QString filename)
     }
 
     file.close();
+    c.filename = filename;
 
     return c;
 }
@@ -411,6 +448,7 @@ nlohmann::json Calkit::toJSON()
 void Calkit::fromJSON(nlohmann::json j)
 {
     clearStandards();
+    filename = "";
     Savable::parseJSON(j, descr);
     for(auto js : j["standards"]) {
         if(!js.contains("type") || !js.contains("params")) {

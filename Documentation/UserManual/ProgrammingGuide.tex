@@ -601,6 +601,9 @@ If no de-embedding is configured for the selected trace, enabling the de-embeddi
 \hspace{1cm}LOAD\\
 \hspace{1cm}THROUGH\\
 \hspace{1cm}ISOLATION\\
+\hspace{1cm}SLIDINGLOAD\\
+\hspace{1cm}REFLECT\\
+\hspace{1cm}LINE\\
 {[<standard>]}, calibration kit standard name, optional\\}
 
 \subsubsection{VNA:CALibration:TYPE}
@@ -609,7 +612,10 @@ If no de-embedding is configured for the selected trace, enabling the de-embeddi
 \hspace{1cm}SHORT\\
 \hspace{1cm}LOAD\\
 \hspace{1cm}THROUGH\\
-\hspace{1cm}ISOLATION\\}
+\hspace{1cm}ISOLATION\\
+\hspace{1cm}SLIDINGLOAD\\
+\hspace{1cm}REFLECT\\
+\hspace{1cm}LINE\\}
 
 \subsubsection{VNA:CALibration:PORT}
 \event{Sets the port for the specified measurement}{VNA:CALibration:PORT}{<measurement number> <port number>}
@@ -636,6 +642,23 @@ Important points when saving/loading calibration files through SCPI commands:
 
 \subsubsection{VNA:CALibration:LOAD}
 \query{Loads a calibration file}{VNA:CALibration:LOAD?}{<filename>}{TRUE or FALSE}
+
+\subsubsection{VNA:CALibration:KIT:MANufacturer}
+\event{Sets the manufacturer name of the calibration kit}{VNA:CALibration:KIT:MANufacturer}{<manufacturer>}
+\query{Returns the manufacturer name of the calibration kit}{VNA:CALibration:KIT:MANufacturer?}{None}{<manufacturer>}
+
+\subsubsection{VNA:CALibration:KIT:SERial}
+\event{Sets the serial number of the calibration kit}{VNA:CALibration:KIT:SERial}{<serial number>}
+\query{Returns the serial number of the calibration kit}{VNA:CALibration:KIT:SERial?}{None}{<serial number>}
+
+\subsubsection{VNA:CALibration:KIT:DESCription}
+\event{Sets the description of the calibration kit}{VNA:CALibration:KIT:DESCription}{<description>}
+\query{Returns the description of the calibration kit}{VNA:CALibration:KIT:DESCription?}{None}{<description>}
+
+\subsubsection{VNA:CALibration:KIT:FILEname}
+\query{Returns the filename of the calibration kit}{VNA:CALibration:KIT:FILEname?}{None}{<filename>}
+
+The filename is only available if the calibration kit was loaded from a dedicated file. If it was loaded as part of a calibration file or has not been loaded since the GUI started, no filename will be returned.
 
 \subsubsection{VNA:CALibration:KIT:SAVE}
 \event{Saves the active calibration kit to a file}{VNA:CALibration:KIT:SAVE}{<filename>}
