@@ -70,10 +70,9 @@ Calkit::Calkit()
             // no filename given or no calibration active
             return SCPI::getResultName(SCPI::Result::False);
         }
-        try {
-            *this = fromFile(params[0]);
+        if(this->fromFile(params[0])) {
             return SCPI::getResultName(SCPI::Result::True);
-        } catch (runtime_error &e) {
+        } else {
             return SCPI::getResultName(SCPI::Result::False);
         }
     }, false));
@@ -147,28 +146,29 @@ static QString readLine(ifstream &file) {
     return QString::fromStdString(line).simplified();
 }
 
-Calkit Calkit::fromFile(QString filename)
+bool Calkit::fromFile(QString filename)
 {
     qDebug() << "Opening calkit from file" << filename;
 
-    auto c = Calkit();
     ifstream file;
     file.open(filename.toStdString());
     if(!file.is_open()) {
-        throw runtime_error("Unable to open file");
+        qWarning() << "Unable to open file: " << filename;
+        return false;
     }
 
     json j;
     try {
         file >> j;
     } catch (exception &e) {
-        throw runtime_error("JSON parsing error: " + string(e.what()));
+        qWarning() << "JSON parsing error: " << QString(e.what());
+        return false;
     }
-    c.clearStandards();
-    c.filename = "";
+    clearStandards();
+    this->filename = "";
     if(j.contains("standards")) {
         qDebug() << "new JSON format detected";
-        c.fromJSON(j);
+        fromJSON(j);
     } else {
         // older format is used
         struct {
@@ -216,7 +216,7 @@ Calkit Calkit::fromFile(QString filename)
         if(j.contains("SOLT")) {
             qDebug() << "old JSON format detected";
             // calkit file uses json format, parse
-            Savable::parseJSON(j, c.descr);
+            Savable::parseJSON(j, descr);
             const std::vector<Savable::SettingDescription> descr_deprecated = {{
                 {&SOLT.open_m.Z0, "SOLT.Open.Param.Z0", 50.0},
                 {&SOLT.open_m.delay, "SOLT.Open.Param.Delay", 0.0},
@@ -369,7 +369,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.open_m.file.toStdString());
             open_m->setMeasurement(ts, SOLT.open_m.Sparam);
         }
-        c.addStandard(open_m);
+        addStandard(open_m);
         if(SOLT.separate_male_female) {
             auto open_f = new CalStandard::Open("Default female standard", SOLT.open_f.Z0, SOLT.open_f.delay, SOLT.open_f.loss, SOLT.open_f.C0, SOLT.open_f.C1, SOLT.open_f.C2, SOLT.open_f.C3);
             if(SOLT.open_f.useMeasurements) {
@@ -377,7 +377,7 @@ Calkit Calkit::fromFile(QString filename)
                 ts.fromFile(SOLT.open_f.file.toStdString());
                 open_m->setMeasurement(ts, SOLT.open_f.Sparam);
             }
-            c.addStandard(open_f);
+            addStandard(open_f);
         }
 
         auto short_m = new CalStandard::Short(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.short_m.Z0, SOLT.short_m.delay, SOLT.short_m.loss, SOLT.short_m.L0, SOLT.short_m.L1, SOLT.short_m.L2, SOLT.short_m.L3);
@@ -386,7 +386,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.short_m.file.toStdString());
             short_m->setMeasurement(ts, SOLT.short_m.Sparam);
         }
-        c.addStandard(short_m);
+        addStandard(short_m);
         if(SOLT.separate_male_female) {
             auto short_f = new CalStandard::Short("Default female standard", SOLT.short_f.Z0, SOLT.short_f.delay, SOLT.short_f.loss, SOLT.short_f.L0, SOLT.short_f.L1, SOLT.short_f.L2, SOLT.short_f.L3);
             if(SOLT.short_f.useMeasurements) {
@@ -394,7 +394,7 @@ Calkit Calkit::fromFile(QString filename)
                 ts.fromFile(SOLT.short_f.file.toStdString());
                 short_m->setMeasurement(ts, SOLT.short_f.Sparam);
             }
-            c.addStandard(short_f);
+            addStandard(short_f);
         }
 
         auto load_m = new CalStandard::Load(SOLT.separate_male_female ? "Default male standard" : "Default standard", SOLT.load_m.Z0, SOLT.load_m.delay, 0.0, SOLT.load_m.resistance, SOLT.load_m.Cparallel, SOLT.load_m.Lseries, SOLT.loadModelCFirst);
@@ -403,7 +403,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.load_m.file.toStdString());
             load_m->setMeasurement(ts, SOLT.load_m.Sparam);
         }
-        c.addStandard(load_m);
+        addStandard(load_m);
         if(SOLT.separate_male_female) {
             auto load_f = new CalStandard::Load("Default female standard", SOLT.load_m.Z0, SOLT.load_f.delay, 0.0, SOLT.load_f.resistance, SOLT.load_f.Cparallel, SOLT.load_f.Lseries, SOLT.loadModelCFirst);
             if(SOLT.load_f.useMeasurements) {
@@ -411,7 +411,7 @@ Calkit Calkit::fromFile(QString filename)
                 ts.fromFile(SOLT.load_f.file.toStdString());
                 load_m->setMeasurement(ts, SOLT.load_f.Sparam);
             }
-            c.addStandard(load_f);
+            addStandard(load_f);
         }
 
         auto through = new CalStandard::Through("Default standard", SOLT.Through.Z0, SOLT.Through.delay, SOLT.Through.loss);
@@ -420,7 +420,7 @@ Calkit Calkit::fromFile(QString filename)
             ts.fromFile(SOLT.Through.file.toStdString());
             through->setMeasurement(ts, SOLT.Through.Sparam1, SOLT.Through.Sparam2);
         }
-        c.addStandard(through);
+        addStandard(through);
 
         InformationBox::ShowMessage("Loading calkit file", "The file \"" + filename + "\" is stored in a deprecated"
                      " calibration kit format. Future versions of this application might not support"
@@ -428,10 +428,10 @@ Calkit Calkit::fromFile(QString filename)
     }
 
     file.close();
-    c.filename = filename;
-    c.updateSCPINames();
+    this->filename = filename;
+    updateSCPINames();
 
-    return c;
+    return true;
 }
 
 void Calkit::edit(std::function<void (void)> updateCal)
@@ -449,10 +449,9 @@ void Calkit::edit(std::function<void (void)> updateCal)
 
 void Calkit::clearStandards()
 {
-    for(auto s : standards) {
-        delete s;
+    while(standards.size() > 0) {
+        removeStandard(standards[0]);
     }
-    standards.clear();
 }
 
 void Calkit::updateSCPINames()

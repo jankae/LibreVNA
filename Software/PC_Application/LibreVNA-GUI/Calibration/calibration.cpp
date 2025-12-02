@@ -1708,10 +1708,8 @@ bool Calibration::fromFile(QString filename)
     }
     calkit_file.append(".calkit");
     qDebug() << "Associated calibration kit expected in" << calkit_file;
-    try {
-        kit = Calkit::fromFile(calkit_file);
-    } catch (runtime_error &e) {
-        qDebug() << "Parsing of calibration kit failed while opening calibration file: " << e.what() << " (ignore for calibration format >= 3)";
+    if(!kit.fromFile(calkit_file)) {
+        qDebug() << "Parsing of calibration kit failed while opening calibration file (ignore for calibration format >= 3)";
     }
 
     ifstream file;
