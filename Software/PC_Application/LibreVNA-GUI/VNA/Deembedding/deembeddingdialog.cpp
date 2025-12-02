@@ -44,12 +44,12 @@ DeembeddingDialog::DeembeddingDialog(Deembedding *d, QWidget *parent) :
     });
     connect(ui->bMoveUp, &QPushButton::clicked, [=](){
         auto index = ui->view->currentIndex();
-        d->swapOptions(index.row() - 1);
+        d->swapOptions(index.row() - 1, index.row());
         ui->view->setCurrentIndex(index.sibling(index.row() - 1, 0));
     });
     connect(ui->bMoveDown, &QPushButton::clicked, [=](){
         auto index = ui->view->currentIndex();
-        d->swapOptions(index.row());
+        d->swapOptions(index.row(), index.row() + 1);
         ui->view->setCurrentIndex(index.sibling(index.row() + 1, 0));
     });
 

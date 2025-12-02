@@ -56,6 +56,17 @@ MatchingNetwork::MatchingNetwork()
         addComponent(index, c);
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
+    add(new SCPICommand("DELete", [=](QStringList params) -> QString {
+        unsigned long long index;
+        if(!SCPI::paramToULongLong(params, 0, index)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(index < 1 || index > network.size()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        removeComponent(index-1);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     add(new SCPICommand("TYPE", nullptr, [=](QStringList params) -> QString {
         unsigned long long index = 0;
         if(!SCPI::paramToULongLong(params, 0, index)) {
@@ -267,6 +278,7 @@ void MatchingNetwork::fromJSON(nlohmann::json j)
     }
     addNetwork = j.value("addNetwork", true);
     matching.clear();
+    updateSCPINames();
 }
 
 void MatchingNetwork::clearNetwork()
@@ -643,7 +655,7 @@ MatchingComponent::MatchingComponent(Type type)
                 // failed to load file
                 return SCPI::getResultName(SCPI::Result::Error);
             }
-        }, nullptr));
+        }, nullptr, false));
         break;
     default:
         break;
@@ -787,6 +799,7 @@ void MatchingComponent::updateTouchstoneLabel()
         return;
     }
     QFont font = touchstoneLabel->font();
+    touchstoneLabel->setStyleSheet("color: black");
     font.setPointSize(10);
     touchstoneLabel->setFont(font);
     if(touchstone->points() == 0) {

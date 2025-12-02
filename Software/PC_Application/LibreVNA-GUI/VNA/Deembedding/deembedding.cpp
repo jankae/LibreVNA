@@ -127,6 +127,31 @@ Deembedding::Deembedding(TraceModel &tm)
         addOption(option);
         return SCPI::getResultName(SCPI::Result::Empty);
     }, nullptr));
+    add(new SCPICommand("DELete", [=](QStringList params) -> QString {
+        unsigned long long index;
+        if(!SCPI::paramToULongLong(params, 0, index)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(index < 1 || index > options.size()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        removeOption(index-1);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    add(new SCPICommand("SWAP", [=](QStringList params) -> QString {
+        unsigned long long index1, index2;
+        if(!SCPI::paramToULongLong(params, 0, index1)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(!SCPI::paramToULongLong(params, 1, index2)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(index1 < 1 || index1 > options.size() || index2 < 1 || index2 > options.size()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        swapOptions(index1-1, index2-1);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
     add(new SCPICommand("CLEAR", [=](QStringList params) -> QString {
         Q_UNUSED(params);
         clear();
@@ -209,12 +234,12 @@ void Deembedding::addOption(DeembeddingOption *option)
     emit optionAdded();
 }
 
-void Deembedding::swapOptions(unsigned int index)
+void Deembedding::swapOptions(unsigned int index1, unsigned int index2)
 {
-    if(index + 1 >= options.size()) {
+    if(index1 > options.size() || index2 > options.size() || index1 == index2) {
         return;
     }
-    std::swap(options[index], options[index+1]);
+    std::swap(options[index1], options[index2]);
     updateSCPINames();
 }
 

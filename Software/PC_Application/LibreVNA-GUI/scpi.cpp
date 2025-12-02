@@ -297,7 +297,7 @@ bool SCPINode::addDoubleParameter(QString name, double &param, bool gettable, bo
             return SCPI::getResultName(SCPI::Result::Error);
         }
     } : (std::function<QString(QStringList)>) nullptr;
-    auto query = gettable ? [=](QStringList params) -> QString {
+    auto query = gettable ? [&param](QStringList params) -> QString {
         Q_UNUSED(params)
         return QString::number(param);
     } : (std::function<QString(QStringList)>) nullptr;

@@ -27,7 +27,7 @@ public:
 
     void removeOption(unsigned int index);
     void addOption(DeembeddingOption* option);
-    void swapOptions(unsigned int index);
+    void swapOptions(unsigned int index1, unsigned int index2);
     void clear();
 
     bool isMeasuring();

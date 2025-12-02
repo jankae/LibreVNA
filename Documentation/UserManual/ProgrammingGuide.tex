@@ -123,6 +123,7 @@
 \usepackage{xifthen}
 \newcommand{\vna}{LibreVNA}
 \newcommand{\gui}{\vna{}-GUI}
+\newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\\\\}
 
 \newcommand{\screenshot}[2]{\begin{center}
 \includegraphics[width=#1\textwidth]{Screenshots/#2}
@@ -685,6 +686,140 @@ Important points when saving/loading calibration kit files through SCPI commands
 
 \subsubsection{VNA:CALibration:KIT:LOAD}
 \query{Loads a calibration kit file}{VNA:CALibration:KIT:LOAD?}{<filename>}{TRUE or FALSE}
+
+\subsubsection{Common Deembedding Commands}
+The VNA supports various deembedding options which can also be configured through the SCPI API. Because the deembedding system is flexible and supports any number of deembedding options at the same time, the SCPI API is also flexible. Instead of fixed commands, the available commands change depending on the configured deembedding options.
+
+A few deembedding commands are always available and they can be used to create, delete and swap deembedding options. Every created deembedding option adds their own commands. They can be accessed by including the option number in the command (shown as ``x'' in the following commands).
+
+\subsubsubsection{VNA:DEEMBedding:NUMber}
+\query{Returns the number of configured deembedding options}{VNA:DEEMBedding:NUMber?}{None}{<number of deembedding options>}
+
+\subsubsubsection{VNA:DEEMBedding:TYPE}
+\query{Returns the type of a configured deembedding option}{VNA:DEEMBedding:TYPE?}{<x> Number of deembedding option}{Type of option, one of:\\
+\hspace{1cm}Port\_Extension\\
+\hspace{1cm}2xThru\\
+\hspace{1cm}Matching\_Network\\
+\hspace{1cm}Impedance\_Renormalization\\}
+
+\subsubsubsection{VNA:DEEMBedding:NEW}
+\event{Adds a new deembedding option}{VNA:DEEMBedding:NEW}{<type> Type of option, one of:\\
+\hspace{1cm}Port\_Extension\\
+\hspace{1cm}2xThru\\
+\hspace{1cm}Matching\_Network\\
+\hspace{1cm}Impedance\_Renormalization\\}
+
+\subsubsubsection{VNA:DEEMBedding:DELete}
+\event{Removes a deembedding option}{VNA:DEEMBedding:DELete}{<x> Number of option to delete}
+
+\subsubsubsection{VNA:DEEMBedding:SWAP}
+\event{Swaps the order of two deembedding options}{VNA:DEEMBedding:SWAP}{<x1> Number of option 1 to swap\\<x2> Number of option 2 to swap}
+
+\subsubsubsection{VNA:DEEMBedding:CLEAR}
+\event{Delete all deembedding options}{VNA:DEEMBedding:CLEAR}{None}
+
+\subsubsection{Port Extension Deembedding Commands}
+The following commands are only valid for a deembedding option of type ``Port\_Extension''. The ``x'' in the command names must be replaced with the option number.
+
+\subsubsubsection{VNA:DEEMBedding:x:PORT}
+\event{Sets the port}{VNA:DEEMBedding:x:PORT}{<port>, 1...n}
+\query{Queries the selected port}{VNA:DEEMBedding:x:PORT?}{None}{<port>, 1...n}
+
+\subsubsubsection{VNA:DEEMBedding:x:DELAY}
+\event{Sets the delay of the port extension}{VNA:DEEMBedding:x:DELAY}{<delay> Delay in seconds}
+\query{Queries the delay of the port extension}{VNA:DEEMBedding:x:DELAY?}{None}{<delay> Delay in seconds}
+
+\subsubsubsection{VNA:DEEMBedding:x:DCLOSS}
+\event{Sets the DC loss of the port extension}{VNA:DEEMBedding:x:DCLOSS}{<loss> Loss at DC in dB}
+\query{Queries the DC loss of the port extension}{VNA:DEEMBedding:x:DCLOSS?}{None}{<loss> Loss at DC in dB}
+
+\subsubsubsection{VNA:DEEMBedding:x:LOSS}
+\event{Sets the loss of the port extension at the configured frequency}{VNA:DEEMBedding:x:LOSS}{<loss> Loss at frequency in dB}
+\query{Queries the loss of the port extension at the configured frequency}{VNA:DEEMBedding:x:LOSS?}{None}{<loss> Loss at frequency in dB}
+
+\subsubsubsection{VNA:DEEMBedding:x:FREQuency}
+\event{Sets the frequency for the specified loss of the port extension}{VNA:DEEMBedding:x:FREQuency}{<freq> Frequency for loss in Hz}
+\query{Queries the frequency for the specified loss of the port extension}{VNA:DEEMBedding:x:FREQuency?}{None}{<freq> Frequency for loss in Hz}
+
+\subsubsection{2xThru Deembedding Commands}
+The 2xThru deembedding does not have a SCPI API so far because it requires the user to manually make specific connections and take additional measurements.
+
+\subsubsection{Matching Network Deembedding Commands}
+The following commands are only valid for a deembedding option of type ``Matching\_Network''. The ``x'' in the command names must be replaced with the option number.
+
+Similarly to the deembedding options, the matching network itself is also flexible and requires a flexible API as well. A similar approach is used where components in the matching network are given a number. This number is shown as ``y'' in the following commands.
+
+\subsubsubsection{VNA:DEEMBedding:x:PORT}
+\event{Sets the port at which the matching network is added}{VNA:DEEMBedding:x:PORT}{<port>, 1...n}
+\query{Queries the port at which the matching network is added}{VNA:DEEMBedding:x:PORT?}{None}{<port>, 1...n}
+
+\subsubsubsection{VNA:DEEMBedding:x:ADD}
+\event{Selects whether the network is added or removed during the deembedding}{VNA:DEEMBedding:x:ADD}{TRUE if the effect of the network should be added. FALSE if the effect of the network should be subtracted}
+\query{Queries whether the network is added or removed during the deembedding}{VNA:DEEMBedding:x:ADD?}{None}{TRUE or FALSE}
+
+\subsubsubsection{VNA:DEEMBedding:x:NUMber}
+\query{Returns the number of configured matching network components}{VNA:DEEMBedding:x:NUMber?}{None}{<number of matching network components>}
+
+\subsubsubsection{VNA:DEEMBedding:x:TYPE}
+\query{Returns the type of a configured matching network component}{VNA:DEEMBedding:x:TYPE? <y>}{<y> Number of matching component}{Type of component, one of:\\
+\hspace{1cm}SeriesR\\
+\hspace{1cm}SeriesL\\
+\hspace{1cm}SeriesC\\
+\hspace{1cm}ParallelR\\
+\hspace{1cm}ParallelL\\
+\hspace{1cm}ParallelC\\
+\hspace{1cm}Touchstone\_Through\\
+\hspace{1cm}Touchstone\_Shunt\\}
+
+\subsubsubsection{VNA:DEEMBedding:x:NEW}
+\event{Adds a new matching network component}{VNA:DEEMBedding:x:NEW}{<type> Type of component, one of:\\
+\hspace{1cm}SeriesR\\
+\hspace{1cm}SeriesL\\
+\hspace{1cm}SeriesC\\
+\hspace{1cm}ParallelR\\
+\hspace{1cm}ParallelL\\
+\hspace{1cm}ParallelC\\
+\hspace{1cm}Touchstone\_Through\\
+\hspace{1cm}Touchstone\_Shunt\\
+<pos> position at which the component will be added. A value of 0 adds the\\
+\hspace{1cm}component closest to the port. This parameter is optional. If it is omitted,\\
+\hspace{1cm}the component is added closest to the DUT}
+
+\subsubsubsection{VNA:DEEMBedding:x:DELete}
+\event{Removes a matching network component}{VNA:DEEMBedding:x:DELete}{<y> Number of component to delete}
+
+\subsubsubsection{VNA:DEEMBedding:x:CLEAR}
+\event{Removes all matching network components}{VNA:DEEMBedding:x:DELete}{None}
+
+\subsubsection{Impedance Renormalization Deembedding Commands}
+The following commands are only valid for a deembedding option of type ``Impedance\_Renormalization''. The ``x'' in the command names must be replaced with the option number.
+
+\subsubsubsection{VNA:DEEMBedding:x:IMPedance}
+\event{Sets the target impedance}{VNA:DEEMBedding:x:IMPedance}{<impedance> Impedance in Ohm}
+\query{Queries the target impedance}{VNA:DEEMBedding:x:IMPedance?}{None}{<impedance> Impedance in Ohm}
+
+\subsubsubsection{VNA:DEEMBedding:x:y:VALue}
+\event{Sets the value of a matching network component}{VNA:DEEMBedding:x:y:VALue}{<value>, either in Ohm, Farad or Henry}
+\query{Queries the value of a matching network component}{VNA:DEEMBedding:x:y:VALue?}{None}{<port>, either in Ohm, Farad or Henry}
+
+This command is only available for a component of these types:
+\begin{itemize}
+\item SeriesR
+\item SeriesL
+\item SeriesC
+\item ParallelR
+\item ParallelL
+\item ParallelC
+\end{itemize}
+
+\subsubsubsection{VNA:DEEMBedding:x:y:FILE}
+\event{Loads a matching network component values from a Touchstone file}{VNA:DEEMBedding:x:y:FILE}{<filename>}
+
+This command is only available for a component of these types:
+\begin{itemize}
+\item Touchstone\_Through
+\item Touchstone\_Shunt
+\end{itemize}
 
 \subsection{Signal Generator Commands}
 These commands change or query signal generator settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the generator mode is active.
