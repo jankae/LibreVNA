@@ -548,16 +548,43 @@ QString SCPINode::parse(QString cmd, SCPINode* &lastNode)
         return SCPI::getResultName(SCPI::Result::Error);
     } else {
         // no more levels, search for command
-        auto params = cmd.split(" ");
-        auto cmd = params.front();
+        QStringList params;
+        params.append("");
+        bool inQuotes = false;
+        for(unsigned int i=0;i<cmd.length();i++) {
+            if(cmd[i] == '\\') {
+                // escape character, ignore
+                continue;
+            }
+            // check if we are starting/stopping quotes
+            if(cmd[i] == '"' || cmd[i] == '\'') {
+                // check whether quotes are escaped
+                if(i == 0 || cmd[i-1] != '\\') {
+                    inQuotes = !inQuotes;
+                    continue;
+                }
+            }
+            if(inQuotes) {
+                params.back().append(cmd[i]);
+            } else {
+                // not in quotes, handle splitting by space
+                if(cmd[i] == " ") {
+                    if(params.back().length() > 0)
+                    params.append("");
+                } else {
+                    params.back().append(cmd[i]);
+                }
+            }
+        }
+        // remove command name
         params.pop_front();
         bool isQuery = false;
-        if (cmd[cmd.size()-1]=='?') {
+        if (cmdName[cmdName.size()-1]=='?') {
             isQuery = true;
-            cmd.chop(1);
+            cmdName.chop(1);
         }
         for(auto c : commands) {
-            if(SCPI::match(c->leafName(), cmd.toUpper())) {
+            if(SCPI::match(c->leafName(), cmdName.toUpper())) {
                 // save current node in case of non-root for the next command
                 lastNode = this;
                 if(c->convertToUppercase()) {
