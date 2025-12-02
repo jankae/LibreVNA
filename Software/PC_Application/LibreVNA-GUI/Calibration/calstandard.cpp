@@ -12,6 +12,7 @@ using namespace std;
 using namespace CalStandard;
 
 Virtual::Virtual(QString name) :
+    SCPINode(name),
     name(name),
     minFreq(std::numeric_limits<double>::lowest()),
     maxFreq(std::numeric_limits<double>::max())
@@ -60,7 +61,7 @@ QString Virtual::TypeToString(Virtual::Type type)
 Virtual::Type Virtual::TypeFromString(QString s)
 {
     for(int i=0;i<(int) Type::Last;i++) {
-        if(TypeToString((Type) i) == s) {
+        if(TypeToString((Type) i).compare(s, Qt::CaseInsensitive) == 0) {
             return (Type) i;
         }
     }
@@ -99,6 +100,11 @@ QString Virtual::getName() const
 void Virtual::setName(const QString &value)
 {
     name = value;
+}
+
+void Virtual::setupSCPI()
+{
+    addStringParameter("NAME", name);
 }
 
 void OnePort::setMeasurement(const Touchstone &ts, int port)
@@ -142,10 +148,35 @@ void OnePort::fromJSON(nlohmann::json j)
     }
 }
 
+void OnePort::setupSCPI()
+{
+    add(new SCPICommand("FILE", [=](QStringList params) -> QString {
+        if(params.size() < 1) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        try {
+            auto ts = Touchstone::fromFile(params[0].toStdString());
+            unsigned long long index = 0;
+            if(params.size() == 2) {
+                if(!SCPI::paramToULongLong(params, 1, index)) {
+                    return SCPI::getResultName(SCPI::Result::Error);
+                }
+            }
+            setMeasurement(ts, index-1);
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } catch(const std::exception& e) {
+            // failed to load file
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    }, nullptr, false));
+    Virtual::setupSCPI();
+}
+
 Open::Open()
 {
     Z0 = 50.0;
     delay = loss = C0 = C1 = C2 = C3 = 0.0;
+    setupSCPI();
 }
 
 std::complex<double> Open::toS11(double freq)
@@ -263,10 +294,23 @@ void Open::fromJSON(nlohmann::json j)
     C3 = j.value("C3", 0.0);
 }
 
+void Open::setupSCPI()
+{
+    addDoubleParameter("Z0", Z0, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("DELAY", delay, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("LOSS", loss, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("C0", C0, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("C1", C1, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("C2", C2, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("C3", C3, true, true, [=](){clearMeasurement();});
+    OnePort::setupSCPI();
+}
+
 Short::Short()
 {
     Z0 = 50.0;
     delay = loss = L0 = L1 = L2 = L3 = 0.0;
+    setupSCPI();
 }
 
 std::complex<double> Short::toS11(double freq)
@@ -378,12 +422,25 @@ void Short::fromJSON(nlohmann::json j)
     L3 = j.value("L3", 0.0);
 }
 
+void Short::setupSCPI()
+{
+    addDoubleParameter("Z0", Z0, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("DELAY", delay, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("LOSS", loss, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("L0", L0, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("L1", L1, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("L2", L2, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("L3", L3, true, true, [=](){clearMeasurement();});
+    OnePort::setupSCPI();
+}
+
 Load::Load()
 {
     Z0 = 50.0;
     resistance = 50.0;
     delay = Cparallel = Lseries = 0;
     Cfirst = true;
+    setupSCPI();
 }
 
 std::complex<double> Load::toS11(double freq)
@@ -519,6 +576,18 @@ void Load::fromJSON(nlohmann::json j)
     Cfirst = j.value("Cfirst", true);
 }
 
+void Load::setupSCPI()
+{
+    addDoubleParameter("Z0", Z0, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("DELAY", delay, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("LOSS", loss, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("RESistance", resistance, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("CPARallel", Cparallel, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("LSERies", Lseries, true, true, [=](){clearMeasurement();});
+    addBoolParameter("CFIRST", Cfirst, true, true, [=](){clearMeasurement();});
+    OnePort::setupSCPI();
+}
+
 void TwoPort::setMeasurement(const Touchstone &ts, int port1, int port2)
 {
     if(!touchstone) {
@@ -560,11 +629,37 @@ void TwoPort::fromJSON(nlohmann::json j)
     }
 }
 
+void TwoPort::setupSCPI()
+{
+    add(new SCPICommand("FILE", [=](QStringList params) -> QString {
+        if(params.size() != 3) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        try {
+            auto ts = Touchstone::fromFile(params[0].toStdString());
+            unsigned long long index1, index2 = 0;
+            if(!SCPI::paramToULongLong(params, 1, index1)) {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            if(!SCPI::paramToULongLong(params, 2, index1)) {
+                return SCPI::getResultName(SCPI::Result::Error);
+            }
+            setMeasurement(ts, index1-1, index2-1);
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } catch(const std::exception& e) {
+            // failed to load file
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    }, nullptr, false));
+    Virtual::setupSCPI();
+}
+
 Through::Through()
 {
     Z0 = 50.0;
     delay = 0.0;
     loss = 0.0;
+    setupSCPI();
 }
 
 Sparam Through::toSparam(double freq)
@@ -675,9 +770,18 @@ void Through::fromJSON(nlohmann::json j)
     loss = j.value("loss", 0.0);
 }
 
+void Through::setupSCPI()
+{
+    addDoubleParameter("Z0", Z0, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("DELAY", delay, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("LOSS", loss, true, true, [=](){clearMeasurement();});
+    TwoPort::setupSCPI();
+}
+
 Reflect::Reflect()
 {
     isShort = true;
+    setupSCPI();
 }
 
 std::complex<double> Reflect::toS11(double freq)
@@ -724,10 +828,17 @@ bool Reflect::getIsShort() const
     return isShort;
 }
 
+void Reflect::setupSCPI()
+{
+    addBoolParameter("SHORT", isShort, true, true, [=](){clearMeasurement();});
+    OnePort::setupSCPI();
+}
+
 Line::Line()
 {
     Z0 = 50.0;
     setDelay(0.0);
+    setupSCPI();
 }
 
 Sparam Line::toSparam(double freq)
@@ -799,4 +910,11 @@ void Line::setDelay(double delay)
     this->delay = delay;
     minFreq = 1.0 / delay * 20 / 360;
     maxFreq = 1.0 / delay * 160 / 360;
+}
+
+void Line::setupSCPI()
+{
+    addDoubleParameter("Z0", Z0, true, true, [=](){clearMeasurement();});
+    addDoubleParameter("DELAY", delay, true, true, [=](){clearMeasurement();});
+    TwoPort::setupSCPI();
 }

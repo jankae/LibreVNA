@@ -44,6 +44,7 @@ public:
     bool addDoubleParameter(QString name, double &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
     bool addUnsignedIntParameter(QString name, unsigned int &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
     bool addBoolParameter(QString name, bool &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
+    bool addStringParameter(QString name, QString &param, bool gettable = true, bool settable = true, std::function<void(void)> setCallback = nullptr);
 
     bool changeName(QString newname);
     QString leafName() {return name.split(":").back();}

@@ -50,6 +50,7 @@ public:
 
     std::vector<CalStandard::Virtual *> getStandards() const;
     void addStandard(CalStandard::Virtual* s);
+    void removeStandard(CalStandard::Virtual* s);
 
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
@@ -58,8 +59,10 @@ public:
 
 private:
     void clearStandards();
+    void updateSCPINames();
     QString manufacturer, serialnumber, description;
     QString filename;
+    SCPINode scpi_std;
     std::vector<CalStandard::Virtual*> standards;
 
     const std::vector<Savable::SettingDescription> descr = {{

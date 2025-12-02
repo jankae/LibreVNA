@@ -27,8 +27,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
     connect(ui->bDelete, &QPushButton::clicked, [=](){
         auto row = ui->list->currentRow();
         if(row >= 0) {
-            delete kit.standards[row];
-            kit.standards.erase(kit.standards.begin() + row);
+            kit.removeStandard(kit.standards[row]);
             updateStandardList();
         }
     });
@@ -39,6 +38,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
             swap(kit.standards[row], kit.standards[row-1]);
             ui->list->setCurrentRow(row-1);
             updateStandardList();
+            kit.updateSCPINames();
         }
     });
 
@@ -48,6 +48,7 @@ CalkitDialog::CalkitDialog(Calkit &c, QWidget *parent) :
             swap(kit.standards[row], kit.standards[row+1]);
             ui->list->setCurrentRow(row+1);
             updateStandardList();
+            kit.updateSCPINames();
         }
     });
 

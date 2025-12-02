@@ -687,6 +687,208 @@ Important points when saving/loading calibration kit files through SCPI commands
 \subsubsection{VNA:CALibration:KIT:LOAD}
 \query{Loads a calibration kit file}{VNA:CALibration:KIT:LOAD?}{<filename>}{TRUE or FALSE}
 
+\subsubsection{Common calibration kit standards commands}
+The calibration kit supports an arbitrary amount of standards. This requires a flexible SCPI API which adjusts to the currently configured standards.
+
+A few calibration kit standard commands are always available and they can be used to create and delete calibration standards. Every created calibration standard adds their own commands. They can be accessed by including the calibration standard number in the command (shown as ``x'' in the following commands).
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:CLEAR}
+\event{Resets the calibration kit to default values (ideal standards)}{VNA:CALibration:KIT:STAndard:CLEAR}{None}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:NUMber}
+\query{Returns the number of configured calibration standards}{VNA:CALibration:KIT:STAndard:NUMber?}{None}{<number of calibration standards>}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:TYPE}
+\query{Returns the type of a created calibration standard}{VNA:CALibration:KIT:STAndard:TYPE?}{<x> Number of calibration standard}{Type of standard, one of:\\
+\hspace{1cm}Open\\
+\hspace{1cm}Short\\
+\hspace{1cm}Load\\
+\hspace{1cm}Reflect\\
+\hspace{1cm}Through\\
+\hspace{1cm}Line\\}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:NEW}
+\event{Adds a new calibration standard}{VNA:CALibration:KIT:STAndard:NEW}{<type> Type of calibration standard, one of:\\
+\hspace{1cm}Open\\
+\hspace{1cm}Short\\
+\hspace{1cm}Load\\
+\hspace{1cm}Reflect\\
+\hspace{1cm}Through\\
+\hspace{1cm}Line\\
+<name> User selectable name of new standard}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:DELete}
+\event{Removes a calibration standard}{VNA:CALibration:KIT:STAndard:DELete}{<x> Number of standard to delete}
+
+\subsubsection{OPEN standard commands}
+The following commands are only valid for a calibration standard of type ``Open''. The ``x'' in the command names must be replaced with the calibration standard number.
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:NAME}
+\event{Sets the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME}{<name> User selectable name}
+\query{Queries the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME?}{None}{<name> User selectable name}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:Z0}
+\event{Sets the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0}{<Z> Characteristic impedance in Ohm}
+\query{Queries the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0?}{None}{<Z> Characteristic impedance in Ohm}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:DELAY}
+\event{Sets the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY}{<delay> Delay in \unit{\pico\second}}
+\query{Queries the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY?}{None}{<delay> Delay in \unit{\pico\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:LOSS}
+\event{Sets the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS}{<loss> Loss in \unit{\giga\ohm\per\second}}
+\query{Queries the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS?}{None}{<loss> Loss in \unit{\giga\ohm\per\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:C0}
+\event{Sets the fringing capacitance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:C0}{<C0> in \num{d-15}\unit{\farad}}
+\query{Queries the fringing capacitance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:C0?}{None}{<C0> in \num{d-15}\unit{\farad}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:C1}
+\event{Sets the fringing capacitance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:C1}{<C1> in \num{d-27}\unit{\farad\per\hertz}}
+\query{Queries the fringing capacitance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:C1?}{None}{<C1> in \num{d-27}\unit{\farad\per\hertz}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:C2}
+\event{Sets the fringing capacitance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:C2}{<C2> in \num{d-36}\unit{\farad\per\hertz\squared}}
+\query{Queries the fringing capacitance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:C2?}{None}{<C2> in \num{d-36}\unit{\farad\per\hertz\squared}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:C3}
+\event{Sets the fringing capacitance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:C3}{<C3> in \num{d-45}\unit{\farad\per\hertz\cubed}}
+\query{Queries the fringing capacitance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:C3?}{None}{<C3> in \num{d-45}\unit{\farad\per\hertz\cubed}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
+\event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\<port> sets the port from the file which is used to define the standard, optional}
+
+\subsubsection{SHORT standard commands}
+The following commands are only valid for a calibration standard of type ``Short''. The ``x'' in the command names must be replaced with the calibration standard number.
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:NAME}
+\event{Sets the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME}{<name> User selectable name}
+\query{Queries the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME?}{None}{<name> User selectable name}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:Z0}
+\event{Sets the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0}{<Z> Characteristic impedance in Ohm}
+\query{Queries the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0?}{None}{<Z> Characteristic impedance in Ohm}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:DELAY}
+\event{Sets the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY}{<delay> Delay in \unit{\pico\second}}
+\query{Queries the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY?}{None}{<delay> Delay in \unit{\pico\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:LOSS}
+\event{Sets the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS}{<loss> Loss in \unit{\giga\ohm\per\second}}
+\query{Queries the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS?}{None}{<loss> Loss in \unit{\giga\ohm\per\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:L0}
+\event{Sets the residual inductance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:L0}{<L0> in \num{d-12}\unit{\henry}}
+\query{Queries the residual inductance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:L0?}{None}{<L0> in \num{d-12}\unit{\henry}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:L1}
+\event{Sets the residual inductance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:L1}{<L1> in \num{d-24}\unit{\henry\per\hertz}}
+\query{Queries the residual inductance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:L1?}{None}{<L1> in \num{d-24}\unit{\henry\per\hertz}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:L2}
+\event{Sets the residual inductance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:L2}{<L2> in \num{d-33}\unit{\henry\per\hertz\squared}}
+\query{Queries the residual inductance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:L2?}{None}{<L2> in \num{d-33}\unit{\henry\per\hertz\squared}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:L3}
+\event{Sets the residual inductance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:L3}{<L3> in \num{d-42}\unit{\henry\per\hertz\cubed}}
+\query{Queries the residual inductance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:L3?}{None}{<L3> in \num{d-42}\unit{\henry\per\hertz\cubed}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
+\event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\<port> sets the port from the file which is used to define the standard, optional}
+
+\subsubsection{LOAD standard commands}
+The following commands are only valid for a calibration standard of type ``Load''. The ``x'' in the command names must be replaced with the calibration standard number.
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:NAME}
+\event{Sets the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME}{<name> User selectable name}
+\query{Queries the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME?}{None}{<name> User selectable name}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:RESistance}
+\event{Sets the resistance of the standard}{VNA:CALibration:KIT:STAndard:x:RESistance}{<R> in \unit{\ohm}}
+\query{Queries the resistance of the standard}{VNA:CALibration:KIT:STAndard:x:RESistance?}{None}{<R> in \unit{\ohm}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:Z0}
+\event{Sets the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0}{<Z> Characteristic impedance in Ohm}
+\query{Queries the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0?}{None}{<Z> Characteristic impedance in Ohm}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:DELAY}
+\event{Sets the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY}{<delay> Delay in \unit{\pico\second}}
+\query{Queries the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY?}{None}{<delay> Delay in \unit{\pico\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:LOSS}
+\event{Sets the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS}{<loss> Loss in \unit{\giga\ohm\per\second}}
+\query{Queries the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS?}{None}{<loss> Loss in \unit{\giga\ohm\per\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:CARallel}
+\event{Sets the residual capacitance polynom of the standard}{VNA:CALibration:KIT:STAndard:x:CARallel}{<C> in \unit{\farad}}
+\query{Queries the residual capacitance of the standard}{VNA:CALibration:KIT:STAndard:x:CARallel?}{None}{<C> in \unit{\farad}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:LSERies}
+\event{Sets the residual inductance of the standard}{VNA:CALibration:KIT:STAndard:x:LSERies}{<L> in \unit{\henry}}
+\query{Queries the residual inductance of the standard}{VNA:CALibration:KIT:STAndard:x:LSERies?}{None}{<L> in \unit{\henry}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:CFIRST}
+\event{Sets the order of residual capacitance/inductance}{VNA:CALibration:KIT:STAndard:x:CFIRST}{TRUE or FALSE}
+\query{Queries the order of residual capacitance/inductance}{VNA:CALibration:KIT:STAndard:x:CFIRST?}{None}{TRUE or FALSE}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
+\event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\<port> sets the port from the file which is used to define the standard, optional}
+
+\subsubsection{REFLECT standard commands}
+The following commands are only valid for a calibration standard of type ``Reflect''. The ``x'' in the command names must be replaced with the calibration standard number.
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:NAME}
+\event{Sets the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME}{<name> User selectable name}
+\query{Queries the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME?}{None}{<name> User selectable name}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:SHORT}
+\event{Sets the type of reflection standard}{VNA:CALibration:KIT:STAndard:x:SHORT}{TRUE for short standard or FALSE for open standard}
+\query{Queries the type of reflection standard}{VNA:CALibration:KIT:STAndard:x:SHORT?}{None}{TRUE for short standard or FALSE for open standard}
+
+\subsubsection{THROUGH standard commands}
+The following commands are only valid for a calibration standard of type ``Through''. The ``x'' in the command names must be replaced with the calibration standard number.
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:NAME}
+\event{Sets the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME}{<name> User selectable name}
+\query{Queries the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME?}{None}{<name> User selectable name}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:Z0}
+\event{Sets the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0}{<Z> Characteristic impedance in Ohm}
+\query{Queries the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0?}{None}{<Z> Characteristic impedance in Ohm}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:DELAY}
+\event{Sets the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY}{<delay> Delay in \unit{\pico\second}}
+\query{Queries the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY?}{None}{<delay> Delay in \unit{\pico\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:LOSS}
+\event{Sets the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS}{<loss> Loss in \unit{\giga\ohm\per\second}}
+\query{Queries the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS?}{None}{<loss> Loss in \unit{\giga\ohm\per\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
+\event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\
+<port1> selects the first port from the file which is used to define the standard\\
+<port1> selects the second port from the file which is used to define the standard}
+
+\subsubsection{LINE standard commands}
+The following commands are only valid for a calibration standard of type ``Line''. The ``x'' in the command names must be replaced with the calibration standard number.
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:NAME}
+\event{Sets the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME}{<name> User selectable name}
+\query{Queries the name of the standard}{VNA:CALibration:KIT:STAndard:x:NAME?}{None}{<name> User selectable name}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:Z0}
+\event{Sets the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0}{<Z> Characteristic impedance in Ohm}
+\query{Queries the characteristic impedance of the standard}{VNA:CALibration:KIT:STAndard:x:Z0?}{None}{<Z> Characteristic impedance in Ohm}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:DELAY}
+\event{Sets the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY}{<delay> Delay in \unit{\pico\second}}
+\query{Queries the delay of the standard}{VNA:CALibration:KIT:STAndard:x:DELAY?}{None}{<delay> Delay in \unit{\pico\second}}
+
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
+\event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\
+<port1> selects the first port from the file which is used to define the standard\\
+<port1> selects the second port from the file which is used to define the standard}
+
 \subsubsection{Common Deembedding Commands}
 The VNA supports various deembedding options which can also be configured through the SCPI API. Because the deembedding system is flexible and supports any number of deembedding options at the same time, the SCPI API is also flexible. Instead of fixed commands, the available commands change depending on the configured deembedding options.
 
@@ -754,7 +956,8 @@ Similarly to the deembedding options, the matching network itself is also flexib
 \query{Queries the port at which the matching network is added}{VNA:DEEMBedding:x:PORT?}{None}{<port>, 1...n}
 
 \subsubsubsection{VNA:DEEMBedding:x:ADD}
-\event{Selects whether the network is added or removed during the deembedding}{VNA:DEEMBedding:x:ADD}{TRUE if the effect of the network should be added. FALSE if the effect of the network should be subtracted}
+\event{Selects whether the network is added or removed during the deembedding}{VNA:DEEMBedding:x:ADD}{TRUE if the effect of the network should be added. FALSE if the effect of the\\
+\hspace{1cm}network should be subtracted}
 \query{Queries whether the network is added or removed during the deembedding}{VNA:DEEMBedding:x:ADD?}{None}{TRUE or FALSE}
 
 \subsubsubsection{VNA:DEEMBedding:x:NUMber}

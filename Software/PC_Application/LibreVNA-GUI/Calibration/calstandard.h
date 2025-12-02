@@ -4,6 +4,7 @@
 #include "savable.h"
 #include "touchstone.h"
 #include "Tools/parameters.h"
+#include "scpi.h"
 
 #include <complex>
 #include <functional>
@@ -11,7 +12,7 @@
 namespace CalStandard
 {
 
-class Virtual : public QObject, public Savable
+class Virtual : public QObject, public Savable, public SCPINode
 {
     Q_OBJECT
 public:
@@ -53,6 +54,7 @@ signals:
     void deleted();
 
 protected:
+    void setupSCPI();
     QString name;
     double minFreq;
     double maxFreq;
@@ -75,6 +77,7 @@ public:
     virtual void fromJSON(nlohmann::json j) override;
 
 protected:
+    void setupSCPI();
     Touchstone *touchstone;
 };
 
@@ -85,7 +88,7 @@ class Open : public OnePort
 public:
     Open();
     Open(QString name, double Z0, double delay, double loss, double C0, double C1, double C2, double C3)
-        : OnePort(name), Z0(Z0), delay(delay), loss(loss), C0(C0), C1(C1), C2(C2), C3(C3){}
+        : OnePort(name), Z0(Z0), delay(delay), loss(loss), C0(C0), C1(C1), C2(C2), C3(C3){setupSCPI();}
 
     virtual std::complex<double> toS11(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -93,6 +96,7 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 private:
+    void setupSCPI();
     double Z0, delay, loss, C0, C1, C2, C3;
 };
 
@@ -101,7 +105,7 @@ class Short : public OnePort
 public:
     Short();
     Short(QString name, double Z0, double delay, double loss, double L0, double L1, double L2, double L3)
-        : OnePort(name), Z0(Z0), delay(delay), loss(loss), L0(L0), L1(L1), L2(L2), L3(L3){}
+        : OnePort(name), Z0(Z0), delay(delay), loss(loss), L0(L0), L1(L1), L2(L2), L3(L3){setupSCPI();}
 
     virtual std::complex<double> toS11(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -109,6 +113,7 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 private:
+    void setupSCPI();
     double Z0, delay, loss, L0, L1, L2, L3;
 };
 
@@ -117,7 +122,7 @@ class Load : public OnePort
 public:
     Load();
     Load(QString name, double Z0, double delay, double loss, double resistance, double Cparallel, double Lseries, bool Cfirst = true)
-        : OnePort(name), Z0(Z0), delay(delay), loss(loss), resistance(resistance), Cparallel(Cparallel), Lseries(Lseries), Cfirst(Cfirst){}
+        : OnePort(name), Z0(Z0), delay(delay), loss(loss), resistance(resistance), Cparallel(Cparallel), Lseries(Lseries), Cfirst(Cfirst){setupSCPI();}
 
     virtual std::complex<double> toS11(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -125,6 +130,7 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 private:
+    void setupSCPI();
     double Z0, delay, loss, resistance, Cparallel, Lseries;
     bool Cfirst;
 };
@@ -144,6 +150,7 @@ public:
     bool getIsShort() const;
 
 private:
+    void setupSCPI();
     bool isShort;
 };
 
@@ -164,6 +171,7 @@ public:
     virtual void fromJSON(nlohmann::json j) override;
 
 protected:
+    void setupSCPI();
     Touchstone *touchstone;
 };
 
@@ -172,7 +180,7 @@ class Through : public TwoPort
 public:
     Through();
     Through(QString name, double Z0, double delay, double loss)
-        : TwoPort(name), Z0(Z0), delay(delay), loss(loss){}
+        : TwoPort(name), Z0(Z0), delay(delay), loss(loss){setupSCPI();}
 
     virtual Sparam toSparam(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -180,6 +188,7 @@ public:
     virtual nlohmann::json toJSON() override;
     virtual void fromJSON(nlohmann::json j) override;
 private:
+    void setupSCPI();
     double Z0, delay, loss;
 };
 
@@ -188,7 +197,7 @@ class Line : public TwoPort
 public:
     Line();
     Line(QString name, double Z0, double delay)
-        : TwoPort(name), Z0(Z0), delay(delay){}
+        : TwoPort(name), Z0(Z0), delay(delay){setupSCPI();}
 
     virtual Sparam toSparam(double freq) override;
     virtual void edit(std::function<void(void)> finishedCallback = nullptr) override;
@@ -197,6 +206,7 @@ public:
     virtual void fromJSON(nlohmann::json j) override;
 private:
     void setDelay(double delay);
+    void setupSCPI();
     double Z0, delay;
 };
 

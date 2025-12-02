@@ -344,6 +344,26 @@ bool SCPINode::addBoolParameter(QString name, bool &param, bool gettable, bool s
     return add(new SCPICommand(name, cmd, query));
 }
 
+bool SCPINode::addStringParameter(QString name, QString &param, bool gettable, bool settable, std::function<void ()> setCallback)
+{
+    auto cmd = settable ? [&param, setCallback](QStringList params) -> QString {
+        if(params.size() == 1) {
+            param = params[0];
+            if(setCallback) {
+                setCallback();
+            }
+            return SCPI::getResultName(SCPI::Result::Empty);
+        } else {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+    } : (std::function<QString(QStringList)>) nullptr;
+    auto query = gettable ? [=](QStringList params) -> QString {
+        Q_UNUSED(params)
+        return param;
+    } : (std::function<QString(QStringList)>) nullptr;
+    return add(new SCPICommand(name, cmd, query));
+}
+
 bool SCPINode::changeName(QString newname)
 {
     if(newname == name) {

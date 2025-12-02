@@ -16,7 +16,7 @@ using json = nlohmann::json;
 using namespace std;
 
 Calkit::Calkit()
-    : SCPINode("KIT")
+    : SCPINode("KIT"), scpi_std("STAndard")
 {
     // set default values
     filename = "";
@@ -77,6 +77,53 @@ Calkit::Calkit()
             return SCPI::getResultName(SCPI::Result::False);
         }
     }, false));
+    scpi_std.add(new SCPICommand("CLEAR", [=](QStringList params) -> QString {
+        Q_UNUSED(params);
+        setIdealDefault();
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    scpi_std.add(new SCPICommand("NUMber", nullptr, [=](QStringList params) -> QString {
+        Q_UNUSED(params);
+        return QString::number(standards.size());
+    }));
+    scpi_std.add(new SCPICommand("NEW", [=](QStringList params) -> QString {
+        if(params.size() != 2) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto type = CalStandard::Virtual::TypeFromString(params[0]);
+        if(type == CalStandard::Virtual::Type::Last) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        auto s = CalStandard::Virtual::create(type);
+        if(!s) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        s->setName(params[1]);
+        addStandard(s);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr, false));
+    scpi_std.add(new SCPICommand("DELete", [=](QStringList params) -> QString {
+        unsigned long long index;
+        if(!SCPI::paramToULongLong(params, 0, index)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(index < 1 || index > standards.size()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        removeStandard(standards[index-1]);
+        return SCPI::getResultName(SCPI::Result::Empty);
+    }, nullptr));
+    scpi_std.add(new SCPICommand("TYPE", nullptr, [=](QStringList params) -> QString {
+        unsigned long long index = 0;
+        if(!SCPI::paramToULongLong(params, 0, index)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        if(index < 1 || index > standards.size()) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        }
+        return CalStandard::Virtual::TypeToString(standards[index-1]->getType()).replace(" ", "_");
+    }));
+    add(&scpi_std);
 }
 
 void Calkit::toFile(QString filename)
@@ -382,6 +429,7 @@ Calkit Calkit::fromFile(QString filename)
 
     file.close();
     c.filename = filename;
+    c.updateSCPINames();
 
     return c;
 }
@@ -407,6 +455,21 @@ void Calkit::clearStandards()
     standards.clear();
 }
 
+void Calkit::updateSCPINames()
+{
+    // Need to remove all standards from the subnode list first, otherwise
+    // name changes wouldn't work due to temporarily name collisions
+    for(auto &s : standards) {
+        scpi_std.remove(s);
+    }
+    unsigned int i=1;
+    for(auto &s : standards) {
+        s->changeName(QString::number(i));
+        scpi_std.add(s);
+        i++;
+    }
+}
+
 std::vector<CalStandard::Virtual *> Calkit::getStandards() const
 {
     return standards;
@@ -428,6 +491,14 @@ void Calkit::addStandard(CalStandard::Virtual *s)
         }
     }
     standards.push_back(s);
+    updateSCPINames();
+}
+
+void Calkit::removeStandard(CalStandard::Virtual *s)
+{
+    standards.erase(std::remove(standards.begin(), standards.end(), s), standards.end());
+    delete s;
+    updateSCPINames();
 }
 
 nlohmann::json Calkit::toJSON()
@@ -464,6 +535,7 @@ void Calkit::fromJSON(nlohmann::json j)
         s->fromJSON(js["params"]);
         addStandard(s);
     }
+    updateSCPINames();
 }
 
 void Calkit::setIdealDefault()
@@ -475,4 +547,5 @@ void Calkit::setIdealDefault()
     addStandard(new CalStandard::Short("Ideal Short Standard", 50.0, 0, 0, 0, 0, 0, 0));
     addStandard(new CalStandard::Load("Ideal Load Standard", 50.0, 0, 0, 50.0, 0, 0));
     addStandard(new CalStandard::Through("Ideal Through Standard", 50.0, 0, 0));
+    updateSCPINames();
 }
