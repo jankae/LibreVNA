@@ -399,6 +399,7 @@ nlohmann::json SpectrumAnalyzer::toJSON()
     freq["stop"] = settings.freqStop;
     sweep["frequency"] = freq;
     sweep["single"] = singleSweep;
+    sweep["averages"] = averages;
     nlohmann::json acq;
     acq["RBW"] = settings.RBW;
     acq["window"] = WindowToString((DeviceDriver::SASettings::Window) settings.window).toStdString();
@@ -505,6 +506,7 @@ void SpectrumAnalyzer::fromJSON(nlohmann::json j)
             EnableNormalization(correctSize);
         }
         SetSingleSweep(sweep.value("single", singleSweep));
+        SetAveraging(sweep.value("averages", averages));
     }
 }
 

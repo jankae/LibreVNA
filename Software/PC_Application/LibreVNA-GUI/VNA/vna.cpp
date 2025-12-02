@@ -884,6 +884,7 @@ nlohmann::json VNA::toJSON()
     sweep["power"] = power;
     sweep["points"] = settings.npoints;
     sweep["IFBW"] = settings.bandwidth;
+    sweep["averages"] = averages;
     j["sweep"] = sweep;
 
     j["traces"] = traceModel.toJSON();
@@ -921,6 +922,7 @@ void VNA::fromJSON(nlohmann::json j)
         // restore sweep settings, keep current value as default in case of missing entry
         SetPoints(sweep.value("points", settings.npoints));
         SetIFBandwidth(sweep.value("IFBW", settings.bandwidth));
+        SetAveraging(sweep.value("averages", averages));
         if(sweep.contains("frequency")) {
             auto freq = sweep["frequency"];
             SetStartFreq(freq.value("start", settings.Freq.start));
