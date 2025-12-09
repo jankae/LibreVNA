@@ -89,7 +89,6 @@ void Mode::activate()
 
 void Mode::deactivate()
 {
-    isActive = false;
     QSettings settings;
     // save dock/toolbar visibility
     for(auto d : docks) {
@@ -118,6 +117,7 @@ void Mode::deactivate()
     if(window->getDevice()) {
         window->getDevice()->setIdle();
     }
+    isActive = false;
 }
 
 QString Mode::TypeToName(Mode::Type t)

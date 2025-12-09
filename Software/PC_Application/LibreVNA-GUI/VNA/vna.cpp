@@ -2039,7 +2039,7 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
             changingSettings = false;
         }
     } else {
-        if(window->getDevice()) {
+        if(window->getDevice() && isActive) {
             changingSettings = true;
             window->getDevice()->setIdle([=](bool){
                 changingSettings = false;

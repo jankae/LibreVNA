@@ -924,7 +924,7 @@ void SpectrumAnalyzer::ConfigureDevice()
         traceModel.clearLiveData();
         traceModel.setSpan(settings.freqStart, settings.freqStop);
     } else {
-        if(window->getDevice()) {
+        if(window->getDevice() && isActive) {
             changingSettings = true;
             // single sweep finished
             window->getDevice()->setIdle([=](bool){
