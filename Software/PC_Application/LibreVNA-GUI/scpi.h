@@ -34,6 +34,13 @@ class SCPINode {
 public:
     SCPINode(QString name) :
         name(name), parent(nullptr), operationPending(false){}
+
+    // prevent copying and moving
+    SCPINode(const SCPINode&) = delete;
+    SCPINode& operator=(const SCPINode&) = delete;
+    SCPINode(SCPINode&&) = delete;
+    SCPINode& operator=(SCPINode&&) = delete;
+
     virtual ~SCPINode();
 
     bool add(SCPINode *node) {return addInternal(node, 0);}
