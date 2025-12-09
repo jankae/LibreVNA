@@ -462,7 +462,7 @@ void Calkit::updateSCPINames()
         scpi_std.remove(s);
     }
     unsigned int i=1;
-    for(auto &s : standards) {
+    for(auto s : standards) {
         s->changeName(QString::number(i));
         scpi_std.add(s);
         i++;

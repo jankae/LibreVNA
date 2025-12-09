@@ -318,7 +318,7 @@ bool SCPINode::addUnsignedIntParameter(QString name, unsigned int &param, bool g
             return SCPI::getResultName(SCPI::Result::Error);
         }
     } : (std::function<QString(QStringList)>) nullptr;
-    auto query = gettable ? [=](QStringList params) -> QString {
+    auto query = gettable ? [&param](QStringList params) -> QString {
         Q_UNUSED(params)
         return QString::number(param);
     } : (std::function<QString(QStringList)>) nullptr;
@@ -337,7 +337,7 @@ bool SCPINode::addBoolParameter(QString name, bool &param, bool gettable, bool s
             return SCPI::getResultName(SCPI::Result::Error);
         }
     } : (std::function<QString(QStringList)>) nullptr;
-    auto query = gettable ? [=](QStringList params) -> QString {
+    auto query = gettable ? [&param](QStringList params) -> QString {
         Q_UNUSED(params)
         return param ? SCPI::getResultName(SCPI::Result::True) : SCPI::getResultName(SCPI::Result::False);
     } : (std::function<QString(QStringList)>) nullptr;
@@ -357,11 +357,11 @@ bool SCPINode::addStringParameter(QString name, QString &param, bool gettable, b
             return SCPI::getResultName(SCPI::Result::Error);
         }
     } : (std::function<QString(QStringList)>) nullptr;
-    auto query = gettable ? [=](QStringList params) -> QString {
+    auto query = gettable ? [&param](QStringList params) -> QString {
         Q_UNUSED(params)
         return param;
     } : (std::function<QString(QStringList)>) nullptr;
-    return add(new SCPICommand(name, cmd, query));
+    return add(new SCPICommand(name, cmd, query, false));
 }
 
 bool SCPINode::changeName(QString newname)
