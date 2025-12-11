@@ -616,28 +616,6 @@ bool LibreVNADriver::setIdle(std::function<void (bool)> cb)
     });
 }
 
-QStringList LibreVNADriver::availableExtRefInSettings()
-{
-    QStringList ret;
-    if(hardwareVersion == 0x01) {
-        for(auto r : Reference::getReferencesIn()) {
-            ret.push_back(Reference::TypeToLabel(r));
-        }
-    }
-    return ret;
-}
-
-QStringList LibreVNADriver::availableExtRefOutSettings()
-{
-    QStringList ret;
-    if(hardwareVersion == 0x01) {
-        for(auto r : Reference::getOutFrequencies()) {
-            ret.push_back(Reference::OutFreqToLabel(r));
-        }
-    }
-    return ret;
-}
-
 bool LibreVNADriver::setExtRef(QString option_in, QString option_out)
 {
     auto refIn = Reference::KeyToType(option_in);
@@ -768,6 +746,7 @@ void LibreVNADriver::handleReceivedPacket(const Protocol::PacketInfo &packet)
         limits_maxAmplitudePoints = packet.info.limits_maxAmplitudePoints;
 
         updateActionVisibility(hardwareVersion);
+        updateReferenceFeatures(hardwareVersion);
         emit InfoUpdated();
     }
         break;
@@ -858,6 +837,25 @@ void LibreVNADriver::updateActionVisibility(uint8_t hardwareVersion)
         for(auto a : specificActions) {
             a->setVisible(true);
         }
+    }
+}
+
+void LibreVNADriver::updateReferenceFeatures(uint8_t hardwareVersion)
+{
+    refInOptions.clear();
+    refOutOptions.clear();
+    switch(hardwareVersion) {
+    case 0x01:
+    case 0xD0:
+        for(auto r : Reference::getReferencesIn()) {
+            refInOptions.push_back(Reference::TypeToLabel(r));
+        }
+        for(auto r : Reference::getOutFrequencies()) {
+            refOutOptions.push_back(Reference::OutFreqToLabel(r));
+        }
+        break;
+    default:
+        break;
     }
 }
 

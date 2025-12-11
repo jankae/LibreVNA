@@ -138,13 +138,13 @@ public:
      * @brief Returns the available options for the external reference input
      * @return External reference input options
      */
-    virtual QStringList availableExtRefInSettings() override;
+    virtual QStringList availableExtRefInSettings() override {return refInOptions;}
 
     /**
      * @brief Returns the available options for the external reference output
      * @return External reference output options
      */
-    virtual QStringList availableExtRefOutSettings() override;
+    virtual QStringList availableExtRefOutSettings() override {return refOutOptions;}
 
     /**
      * @brief Configures the external reference input/output
@@ -198,6 +198,7 @@ protected slots:
 protected:
     QString hardwareVersionToString(uint8_t version);
     void updateActionVisibility(uint8_t hardwareVersion);
+    void updateReferenceFeatures(uint8_t hardwareVersion);
 
     bool connected;
     unsigned int protocolVersion;
@@ -205,6 +206,7 @@ protected:
     Info info;
     uint8_t hardwareVersion;
     unsigned int limits_maxAmplitudePoints;
+    QStringList refInOptions, refOutOptions;
 
     Protocol::DeviceStatus lastStatus;
 
