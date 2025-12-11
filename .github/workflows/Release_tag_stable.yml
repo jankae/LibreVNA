@@ -211,9 +211,9 @@ jobs:
           asset_name: LibreVNA-GUI-OSX-latest-${{env.LIBREVNA_VERSION}}.zip
           asset_content_type: application/tar+gzip
 
-  PC_Application_OSX_13:
+  PC_Application_OSX_15:
     needs: PC_Application_Ubuntu
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
 
@@ -251,7 +251,7 @@ jobs:
         with:
           upload_url: ${{ needs.PC_Application_Ubuntu.outputs.upload_url }}
           asset_path: ./Software/PC_Application/LibreVNA-GUI/LibreVNA-GUI.zip
-          asset_name: LibreVNA-GUI-OSX-13.7-${{env.LIBREVNA_VERSION}}.zip
+          asset_name: LibreVNA-GUI-OSX-15-${{env.LIBREVNA_VERSION}}.zip
           asset_content_type: application/tar+gzip
           
   Embedded_Firmware:
