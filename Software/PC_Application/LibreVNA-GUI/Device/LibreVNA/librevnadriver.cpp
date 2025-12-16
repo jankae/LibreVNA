@@ -251,7 +251,13 @@ LibreVNADriver::LibreVNADriver()
         if(!connected) {
             return SCPI::getResultName(SCPI::Result::Error);
         }
-        return QString::number(lastStatus.V1.temp_source)+"/"+QString::number(lastStatus.V1.temp_LO1)+"/"+QString::number(lastStatus.V1.temp_MCU);
+        switch(hardwareVersion) {
+        case 0x01: return QString::number(lastStatus.V1.temp_source)+"/"+QString::number(lastStatus.V1.temp_LO1)+"/"+QString::number(lastStatus.V1.temp_MCU);
+        case 0xD0: return QString::number(lastStatus.VD0.temp_MCU);
+        case 0xFE: return QString::number(lastStatus.VFE.temp_MCU)+"/"+QString::number(lastStatus.VFE.temp_eCal);
+        case 0xFF: return QString::number(lastStatus.VFF.temp_MCU);
+        default: return SCPI::getResultName(SCPI::Result::Error);
+        }
     }));
 
     specificSCPIcommands.push_back(new SCPICommand("DEVice:UPDATE", [=](QStringList params) -> QString {
