@@ -137,7 +137,7 @@ void ManualControlDialogVE0::NewStatus(Protocol::ManualStatus status)
 
 void ManualControlDialogVE0::UpdateDevice()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::ManualControl;
     auto &m = p.manual.VE0;
     // Source

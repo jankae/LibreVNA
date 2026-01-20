@@ -11,7 +11,7 @@ SourceCalDialog::SourceCalDialog(LibreVNADriver *dev)
 
 void SourceCalDialog::SelectedPoint(double frequency, bool port2)
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::Generator;
 
     p.generator.frequency = frequency;

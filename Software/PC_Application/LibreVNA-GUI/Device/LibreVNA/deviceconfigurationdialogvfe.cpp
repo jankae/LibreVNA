@@ -50,7 +50,7 @@ void DeviceConfigurationDialogVFE::updateGUI(const Protocol::DeviceConfig &c)
 
 void DeviceConfigurationDialogVFE::updateDevice()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::DeviceConfiguration;
 
     p.deviceConfig.VFE.autogain = ui->autogain->isChecked() ? 1 : 0;

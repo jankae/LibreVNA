@@ -401,7 +401,7 @@ void ManualControlDialogVFF::NewStatus(Protocol::ManualStatus status)
 
 void ManualControlDialogVFF::UpdateDevice()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::ManualControl;
     auto &m = p.manual.VFF;
     // Source highband

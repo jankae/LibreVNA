@@ -230,7 +230,7 @@ void AmplitudeCalDialog::SaveToDevice()
     dev->setIdle();
     for(unsigned int i=0;i<points.size();i++) {
         auto p = points[i];
-        Protocol::PacketInfo info;
+        Protocol::PacketInfo info = {};
         info.type = pointType();
         info.amplitudePoint.freq = p.frequency / 10.0;
         info.amplitudePoint.port1 = p.correctionPort1;

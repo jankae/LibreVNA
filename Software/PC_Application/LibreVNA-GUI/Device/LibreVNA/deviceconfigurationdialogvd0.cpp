@@ -63,7 +63,7 @@ void DeviceConfigurationDialogVD0::updateGUI(const Protocol::DeviceConfig &c)
 
 void DeviceConfigurationDialogVD0::updateDevice()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::DeviceConfiguration;
     p.deviceConfig.VD0.ADCrate = ui->ADCRate->value();
     p.deviceConfig.VD0.DFTphaseInc = ui->ADCphaseInc->value();

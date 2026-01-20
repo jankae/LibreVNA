@@ -79,7 +79,7 @@ void DeviceConfigurationDialogVFF::updateGUI(const Protocol::DeviceConfig &c)
 
 void DeviceConfigurationDialogVFF::updateDevice()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::DeviceConfiguration;
     p.deviceConfig.VFF.dhcp = ui->dhcp->isChecked() ? 1 : 0;
     p.deviceConfig.VFF.ip = qToBigEndian(ip.toIPv4Address());

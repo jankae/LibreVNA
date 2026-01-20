@@ -219,7 +219,7 @@ void LibreVNATCPDriver::SSDPreceived(QUdpSocket *sock)
 void LibreVNATCPDriver::ReceivedData()
 {
     dataBuffer.append(dataSocket.readAll());
-    Protocol::PacketInfo packet;
+    Protocol::PacketInfo packet = {};
     uint16_t handled_len;
 //    qDebug() << "Received data";
     do {

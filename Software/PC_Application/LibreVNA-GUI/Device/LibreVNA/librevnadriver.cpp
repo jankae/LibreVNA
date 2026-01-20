@@ -213,7 +213,7 @@ LibreVNADriver::LibreVNADriver()
     auto internalAlignment = new QAction("Run Internal Alignment");
     connect(internalAlignment, &QAction::triggered, this, [=](){
         emit acquireControl();
-        Protocol::PacketInfo p;
+        Protocol::PacketInfo p = {};
         p.type = Protocol::PacketType::PerformAction;
         p.performAction.action = Protocol::Action::InternalAlignment;
         SendPacket(p, [=](TransmissionResult res){
@@ -613,7 +613,7 @@ bool LibreVNADriver::setSG(const DeviceDriver::SGSettings &s)
 bool LibreVNADriver::setIdle(std::function<void (bool)> cb)
 {
     isIdle = true;
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::SetIdle;
     return SendPacket(p, [=](TransmissionResult res) {
         if(cb) {
@@ -889,7 +889,7 @@ QString LibreVNADriver::getFirmwareMagicString()
 
 bool LibreVNADriver::sendWithoutPayload(Protocol::PacketType type, std::function<void(TransmissionResult)> cb)
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = type;
     return SendPacket(p, cb);
 }

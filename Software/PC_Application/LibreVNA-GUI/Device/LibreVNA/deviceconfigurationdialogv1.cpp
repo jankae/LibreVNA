@@ -83,7 +83,7 @@ void DeviceConfigurationDialogV1::updateGUI(const Protocol::DeviceConfig &c)
 
 void DeviceConfigurationDialogV1::updateDevice()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::DeviceConfiguration;
     p.deviceConfig.V1.IF1 = ui->IF1->value();
     p.deviceConfig.V1.ADCprescaler = ui->ADCpresc->value();

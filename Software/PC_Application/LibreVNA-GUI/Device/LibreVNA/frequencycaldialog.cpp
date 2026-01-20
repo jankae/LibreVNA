@@ -23,7 +23,7 @@ FrequencyCalDialog::FrequencyCalDialog(LibreVNADriver *dev, QWidget *parent) :
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [=](){
         // get value and transfer to device
-        Protocol::PacketInfo p;
+        Protocol::PacketInfo p = {};
         p.type = Protocol::PacketType::FrequencyCorrection;
         p.frequencyCorrection.ppm = ui->ppm->value();
         dev->SendPacket(p);

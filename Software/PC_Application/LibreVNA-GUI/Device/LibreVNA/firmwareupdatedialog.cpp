@@ -233,7 +233,7 @@ void FirmwareUpdateDialog::receivedNack()
 
 void FirmwareUpdateDialog::sendNextFirmwareChunk()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::FirmwarePacket;
     p.firmware.address = transferredBytes;
     file->read((char*) &p.firmware.data, PacketConstants::FW_CHUNK_SIZE);

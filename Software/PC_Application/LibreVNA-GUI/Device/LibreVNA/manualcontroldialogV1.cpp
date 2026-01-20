@@ -817,7 +817,7 @@ void ManualControlDialogV1::NewStatus(Protocol::ManualStatus status)
 
 void ManualControlDialogV1::UpdateDevice()
 {
-    Protocol::PacketInfo p;
+    Protocol::PacketInfo p = {};
     p.type = Protocol::PacketType::ManualControl;
     auto &m = p.manual.V1;
     // Source highband
