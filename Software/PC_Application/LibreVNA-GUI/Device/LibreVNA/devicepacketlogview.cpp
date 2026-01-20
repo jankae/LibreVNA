@@ -114,9 +114,14 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
                                                "ClearFlash", "PerformFirmwareUpdate", "Nack", "Reference", "Generator", "SpectrumAnalyzerSettings",
                                                "SpectrumAnalyzerResult", "RequestDeviceInfo", "RequestSourceCal", "RequestReceiverCal", "SourceCalPoint",
                                                "ReceiverCalPoint", "SetIdle", "RequestFrequencyCorrection", "FrequencyCorrection", "RequestDeviceConfiguration",
-                                               "DeviceConfiguration", "DeviceStatus", "RequestDeviceStatus", "VNADatapoint", "SetTrigger", "ClearTrigger"};
+                                               "DeviceConfiguration", "DeviceStatus", "RequestDeviceStatus", "VNADatapoint", "SetTrigger", "ClearTrigger",
+                                               "StopStatusUpdates", "StartStatusUpdates", "InitiateSweep", "PerformAction", "ResetDeviceConfiguration"};
 
-        item->setData(3, Qt::DisplayRole, "Type "+QString::number((int)e.p->type)+"("+packetNames[(int)e.p->type]+")");
+        if(int(e.p->type) < packetNames.size()) {
+            item->setData(3, Qt::DisplayRole, "Type "+QString::number((int)e.p->type)+"("+packetNames[(int)e.p->type]+")");
+        } else {
+            item->setData(3, Qt::DisplayRole, "Type "+QString::number((int)e.p->type)+"(Unknown)");
+        }
         auto addDouble = [=](QTreeWidgetItem *parent, QString name, double value, QString unit = "", int precision = 8) {
             auto subitem = new QTreeWidgetItem;
             subitem->setData(2, Qt::DisplayRole, name);
@@ -138,7 +143,11 @@ void DevicePacketLogView::addEntry(const DevicePacketLog::LogEntry &e)
         auto addEnum = [=](QTreeWidgetItem *parent, QString name, int value, QStringList names) {
             auto subitem = new QTreeWidgetItem;
             subitem->setData(2, Qt::DisplayRole, name);
-            subitem->setData(3, Qt::DisplayRole, names[value]);
+            if(value < names.size()) {
+                subitem->setData(3, Qt::DisplayRole, names[value]);
+            } else {
+                subitem->setData(3, Qt::DisplayRole, "Invalid setting (value="+QString::number(value)+")");
+            }
             parent->addChild(subitem);
         };
         auto addString = [=](QTreeWidgetItem *parent, QString name, QString value) {
