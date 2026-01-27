@@ -381,12 +381,6 @@ bool LibreVNAUSBDriver::startNextTransmission()
         qCritical() << "Error sending data: "
                                 << libusb_strerror((libusb_error) ret);
         return false;
-    } else {
-        QString data = "Sending data, length "+QString::number(length)+":";
-        for(unsigned int i=0;i<length;i++) {
-            data += " " + QString::number(buffer[i], 16);
-        }
-        qDebug() << data;
     }
     transmissionTimer.start(t.timeout);
     // qDebug() << "Transmission started (packet type" << (int) t.packet.type << "), queue at " << transmissionQueue.size();
