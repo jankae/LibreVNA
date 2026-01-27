@@ -884,6 +884,7 @@ nlohmann::json VNA::toJSON()
     sweep["power"] = power;
     sweep["points"] = settings.npoints;
     sweep["IFBW"] = settings.bandwidth;
+    sweep["dwellTime"] = settings.dwellTime;
     sweep["averages"] = averages;
     j["sweep"] = sweep;
 
@@ -922,6 +923,7 @@ void VNA::fromJSON(nlohmann::json j)
         // restore sweep settings, keep current value as default in case of missing entry
         SetPoints(sweep.value("points", settings.npoints));
         SetIFBandwidth(sweep.value("IFBW", settings.bandwidth));
+        SetDwellTime(sweep.value("dwellTime", settings.dwellTime));
         SetAveraging(sweep.value("averages", averages));
         if(sweep.contains("frequency")) {
             auto freq = sweep["frequency"];
@@ -1560,6 +1562,17 @@ void VNA::SetupSCPI()
         }
     }, [=](QStringList) -> QString {
         return QString::number(settings.bandwidth);
+    }));
+    scpi_acq->add(new SCPICommand("DWELLtime", [=](QStringList params) -> QString {
+        double newval;
+        if(!SCPI::paramToDouble(params, 0, newval)) {
+            return SCPI::getResultName(SCPI::Result::Error);
+        } else {
+            SetDwellTime(newval);
+            return SCPI::getResultName(SCPI::Result::Empty);
+        }
+    }, [=](QStringList) -> QString {
+        return QString::number(settings.dwellTime);
     }));
     scpi_acq->add(new SCPICommand("POINTS", [=](QStringList params) -> QString {
         unsigned long long newval;
