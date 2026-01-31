@@ -45,7 +45,7 @@ entity SPICommands is
            MAX2871_DEF_3 : out  STD_LOGIC_VECTOR (31 downto 0);
            MAX2871_DEF_1 : out  STD_LOGIC_VECTOR (31 downto 0);
            MAX2871_DEF_0 : out  STD_LOGIC_VECTOR (31 downto 0);
-           SWEEP_DATA : out  STD_LOGIC_VECTOR (95 downto 0);
+           SWEEP_DATA : out  STD_LOGIC_VECTOR (111 downto 0);
            SWEEP_ADDRESS : out  STD_LOGIC_VECTOR (12 downto 0);
            SWEEP_WRITE : out  STD_LOGIC_VECTOR (0 downto 0);
            SWEEP_POINTS : out  STD_LOGIC_VECTOR (12 downto 0);
@@ -113,7 +113,7 @@ architecture Behavioral of SPICommands is
 	signal spi_complete : std_logic;
 	signal spi_pre_complete : std_logic;
 	signal spi_pre_buf_out : std_logic_vector(2 downto 0);
-	signal word_cnt : integer range 0 to 19;
+	signal word_cnt : integer range 0 to 20;
 	type SPI_states is (FirstWord, WriteSweepConfig, ReadResult, WriteRegister);
 	signal state : SPI_states;
 	signal selected_register : integer range 0 to 31;
@@ -130,7 +130,7 @@ architecture Behavioral of SPICommands is
 	signal interrupt_status : std_logic_vector(15 downto 0);
 	
 	signal latched_result : std_logic_vector(287 downto 0);
-	signal sweepconfig_buffer : std_logic_vector(79 downto 0);
+	signal sweepconfig_buffer : std_logic_vector(95 downto 0);
 begin
 	SPI: spi_slave
 	GENERIC MAP(W => 16,
@@ -308,13 +308,13 @@ begin
 							end case;
 							selected_register <= selected_register + 1;
 						when WriteSweepConfig =>
-							if word_cnt = 6 then
-								-- Sweep config data is complete pass on
+							if word_cnt = 7 then
+								-- Sweep config data is complete pass on (112 bits = 96 + 16)
 								SWEEP_DATA <= sweepconfig_buffer & spi_buf_out;
 								sweep_config_write <= '1';
 							else
 								-- shift next word into buffer
-								sweepconfig_buffer <= sweepconfig_buffer(63 downto 0) & spi_buf_out;
+								sweepconfig_buffer <= sweepconfig_buffer(79 downto 0) & spi_buf_out;
 							end if;
 						-- read already handled in pre_complete, ignore
 						when ReadResult =>

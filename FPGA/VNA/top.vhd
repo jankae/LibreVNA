@@ -113,7 +113,7 @@ architecture Behavioral of top is
 		CLK : IN std_logic;
 		RESET : IN std_logic;
 		NPOINTS : IN std_logic_vector(12 downto 0);
-		CONFIG_DATA : IN std_logic_vector(95 downto 0);
+		CONFIG_DATA : IN std_logic_vector(111 downto 0);
 		USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
 		NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
 		SETTLING_TIME : in STD_LOGIC_VECTOR (19 downto 0);
@@ -124,7 +124,7 @@ architecture Behavioral of top is
 		MAX2871_DEF_1 : IN std_logic_vector(31 downto 0);
 		MAX2871_DEF_0 : IN std_logic_vector(31 downto 0);
 		PLL_RELOAD_DONE : IN std_logic;
-		PLL_LOCKED : IN std_logic; 
+		PLL_LOCKED : IN std_logic;
 		CONFIG_ADDRESS : OUT std_logic_vector(12 downto 0);
 		START_SAMPLING : OUT std_logic;
 		BAND_SELECT : out STD_LOGIC;
@@ -139,6 +139,7 @@ architecture Behavioral of top is
 		RELOAD_PLL_REGS : OUT std_logic;
 		SWEEP_HALTED : out STD_LOGIC;
 		SWEEP_RESUME : in STD_LOGIC;
+		SOURCE_PHASE_ADJUST : out STD_LOGIC;
 		SYNC_ENABLED : in STD_LOGIC;
 		SYNC_MASTER : in STD_LOGIC;
 		TRIGGER_IN : in STD_LOGIC;
@@ -226,7 +227,8 @@ architecture Behavioral of top is
 		REG3 : IN std_logic_vector(31 downto 0);
 		REG1 : IN std_logic_vector(31 downto 0);
 		REG0 : IN std_logic_vector(31 downto 0);
-		RELOAD : IN std_logic;          
+		RELOAD : IN std_logic;
+		PHASE_ADJUST : IN std_logic;
 		CLK_OUT : OUT std_logic;
 		MOSI : OUT std_logic;
 		LE : OUT std_logic;
@@ -244,13 +246,13 @@ architecture Behavioral of top is
 		SAMPLING_RESULT : IN std_logic_vector(303 downto 0);
 		ADC_MINMAX : in STD_LOGIC_VECTOR(95 downto 0);
 		SOURCE_UNLOCKED : IN std_logic;
-		LO_UNLOCKED : IN std_logic;          
+		LO_UNLOCKED : IN std_logic;
 		MISO : OUT std_logic;
 		MAX2871_DEF_4 : OUT std_logic_vector(31 downto 0);
 		MAX2871_DEF_3 : OUT std_logic_vector(31 downto 0);
 		MAX2871_DEF_1 : OUT std_logic_vector(31 downto 0);
 		MAX2871_DEF_0 : OUT std_logic_vector(31 downto 0);
-		SWEEP_DATA : OUT std_logic_vector(95 downto 0);
+		SWEEP_DATA : OUT std_logic_vector(111 downto 0);
 		SWEEP_ADDRESS : OUT std_logic_vector(12 downto 0);
 		SWEEP_WRITE : OUT std_logic_vector(0 to 0);
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
@@ -268,7 +270,7 @@ architecture Behavioral of top is
 		SOURCE_RF_EN : out STD_LOGIC;
 		LO_RF_EN : out STD_LOGIC;
 		SOURCE_CE_EN : out STD_LOGIC;
-		LO_CE_EN : out STD_LOGIC;		
+		LO_CE_EN : out STD_LOGIC;
 		PORTSWITCH_EN : out STD_LOGIC;
 		LEDS : out STD_LOGIC_VECTOR(2 downto 0);
 		WINDOW_SETTING : out STD_LOGIC_VECTOR(1 downto 0);
@@ -313,10 +315,10 @@ architecture Behavioral of top is
 		ena : IN STD_LOGIC;
 		wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
 		addra : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
-		dina : IN STD_LOGIC_VECTOR(95 DOWNTO 0);
+		dina : IN STD_LOGIC_VECTOR(111 DOWNTO 0);
 		clkb : IN STD_LOGIC;
 		addrb : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
-		doutb : OUT STD_LOGIC_VECTOR(95 DOWNTO 0)
+		doutb : OUT STD_LOGIC_VECTOR(111 DOWNTO 0)
 		);
 	END COMPONENT;
 	
@@ -385,15 +387,18 @@ architecture Behavioral of top is
 	signal sweep_sync_master : STD_LOGIC;
 	signal sweep_port1_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_port2_stage : STD_LOGIC_VECTOR (2 downto 0);
-	signal sweep_config_data : std_logic_vector(95 downto 0);
+	signal sweep_config_data : std_logic_vector(111 downto 0);
 	signal sweep_config_address : std_logic_vector(12 downto 0);
 	signal sweep_source_filter : std_logic_vector(1 downto 0);
 	signal sweep_band : std_logic;
 	signal sweep_attenuator : std_logic_vector(6 downto 0);
-	
+
 	signal sweep_config_write_address : std_logic_vector(12 downto 0);
-	signal sweep_config_write_data : std_logic_vector(95 downto 0);
+	signal sweep_config_write_data : std_logic_vector(111 downto 0);
 	signal sweep_config_write : std_logic_vector(0 downto 0);
+
+	-- Phase adjustment signal from Sweep to Source PLL
+	signal source_phase_adjust : std_logic;
 	
 	signal sweep_reset : std_logic;
 	signal sweep_halted : std_logic;
@@ -571,6 +576,7 @@ begin
 		REG1 => source_reg_1,
 		REG0 => source_reg_0,
 		RELOAD => reload_plls,
+		PHASE_ADJUST => source_phase_adjust,
 		CLK_OUT => fpga_source_SCK,
 		MOSI => fpga_source_MOSI,
 		LE => fpga_source_LE,
@@ -586,6 +592,7 @@ begin
 		REG1 => lo_reg_1,
 		REG0 => lo_reg_0,
 		RELOAD => reload_plls,
+		PHASE_ADJUST => '0',  -- No phase adjustment for LO
 		CLK_OUT => fpga_LO1_SCK,
 		MOSI => fpga_LO1_MOSI,
 		LE => fpga_LO1_LE,
@@ -716,6 +723,7 @@ begin
 		PLL_LOCKED => plls_locked,
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
+		SOURCE_PHASE_ADJUST => source_phase_adjust,
 		SYNC_ENABLED => sweep_sync_enabled,
 		SYNC_MASTER => sweep_sync_master,
 		TRIGGER_IN => sweep_trigger_in,

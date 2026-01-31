@@ -120,7 +120,8 @@ void DisableInterrupt(Interrupt i);
 void DisableAllInterrupts();
 void WriteMAX2871Default(uint32_t *DefaultRegs);
 void WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
+		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto,
+		uint16_t sourcePhase = 0);
 using ReadCallback = void(*)(const SamplingResult &result);
 bool InitiateSampleRead(ReadCallback cb);
 void SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing);

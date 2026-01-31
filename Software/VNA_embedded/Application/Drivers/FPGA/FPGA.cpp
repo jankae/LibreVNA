@@ -210,8 +210,9 @@ void FPGA::WriteMAX2871Default(uint32_t *DefaultRegs) {
 }
 
 void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt, LowpassFilter filter) {
-	uint16_t send[7];
+		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt, LowpassFilter filter,
+		uint16_t sourcePhase) {
+	uint16_t send[8];
 	// select which point this sweep config is for
 	send[0] = pointnum & 0x1FFF;
 	// assemble sweep config from required fields of PLL registers
@@ -229,39 +230,48 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 
 	uint16_t Source_Power = (SourceRegs[4] & 0x00000018) >> 3;
 
-	send[1] = LO_M >> 4;
+	// Config memory layout (112 bits):
+	// bits 111:100 - Source Phase P[11:0]
+	// bits 99:96   - Reserved
+	// bits 95:0    - Original 96-bit config
+
+	// send[1]: bits 111:96 - Source Phase (12 bits) + Reserved (4 bits)
+	send[1] = (sourcePhase & 0x0FFF) << 4;  // Phase in bits 15:4, reserved bits 3:0
+
+	// send[2]: bits 95:80 - LO_M[11:4], halt, LO_N[6], Source_N[6], samples[2:0], filter[1:0]
+	send[2] = LO_M >> 4;
 	if (halt) {
-		send[1] |= 0x8000;
+		send[2] |= 0x8000;
 	}
 	if(LO_N & 0x40) {
-		send[1] |= 0x4000;
+		send[2] |= 0x4000;
 	}
 	if(Source_N & 0x40) {
-		send[1] |= 0x2000;
+		send[2] |= 0x2000;
 	}
-	send[1] |= (int) samples << 10;
+	send[2] |= (int) samples << 10;
 	if(filter == LowpassFilter::Auto) {
 		// Select source LP filter
 		if (frequency >= 3500000000) {
-			send[1] |= (int) LowpassFilter::None << 8;
+			send[2] |= (int) LowpassFilter::None << 8;
 		} else if (frequency >= 1800000000) {
-			send[1] |= (int) LowpassFilter::M3500 << 8;
+			send[2] |= (int) LowpassFilter::M3500 << 8;
 		} else if (frequency >= 900000000) {
-			send[1] |= (int) LowpassFilter::M1880 << 8;
+			send[2] |= (int) LowpassFilter::M1880 << 8;
 		} else {
-			send[1] |= (int) LowpassFilter::M947 << 8;
+			send[2] |= (int) LowpassFilter::M947 << 8;
 		}
 	} else {
-		send[1] |= (int) filter << 8;
+		send[2] |= (int) filter << 8;
 	}
-	send[2] = (LO_M & 0x000F) << 12 | LO_FRAC;
-	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | (LO_N & 0x3F) << 1;
+	send[3] = (LO_M & 0x000F) << 12 | LO_FRAC;
+	send[4] = LO_DIV_A << 13 | LO_VCO << 7 | (LO_N & 0x3F) << 1;
 	if (lowband) {
-		send[3] |= 0x0001;
+		send[4] |= 0x0001;
 	}
-	send[4] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
-	send[5] = (Source_M & 0x001F) << 11 | Source_FRAC >> 1;
-	send[6] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | (Source_N & 0x3F);
+	send[5] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
+	send[6] = (Source_M & 0x001F) << 11 | Source_FRAC >> 1;
+	send[7] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | (Source_N & 0x3F);
 	SwitchBytes(send[0]);
 	SwitchBytes(send[1]);
 	SwitchBytes(send[2]);
@@ -269,8 +279,9 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 	SwitchBytes(send[4]);
 	SwitchBytes(send[5]);
 	SwitchBytes(send[6]);
+	SwitchBytes(send[7]);
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 14, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 16, 100);
 	High(CS);
 }
 

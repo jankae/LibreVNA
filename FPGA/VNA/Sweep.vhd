@@ -34,7 +34,7 @@ entity Sweep is
            RESET : in  STD_LOGIC;
 			  NPOINTS : in STD_LOGIC_VECTOR (12 downto 0);
            CONFIG_ADDRESS : out  STD_LOGIC_VECTOR (12 downto 0);
-           CONFIG_DATA : in  STD_LOGIC_VECTOR (95 downto 0);
+           CONFIG_DATA : in  STD_LOGIC_VECTOR (111 downto 0);
 			  USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
 			  NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
 			  SETTLING_TIME : in STD_LOGIC_VECTOR (19 downto 0);
@@ -61,28 +61,31 @@ entity Sweep is
 			  PLL_LOCKED : in STD_LOGIC;
 			  SWEEP_HALTED : out STD_LOGIC;
 			  SWEEP_RESUME : in STD_LOGIC;
-			  
+
+			  -- Phase adjustment signal for Source PLL
+			  SOURCE_PHASE_ADJUST : out STD_LOGIC;
+
 			  SYNC_ENABLED : in STD_LOGIC;
 			  SYNC_MASTER : in STD_LOGIC;
 			  TRIGGER_IN : in STD_LOGIC;
 			  TRIGGER_OUT : out STD_LOGIC;
-			  
+
 			  NEW_DATA : out STD_LOGIC;
-			  
+
 			  ATTENUATOR : out STD_LOGIC_VECTOR(6 downto 0);
 			  SOURCE_FILTER : out STD_LOGIC_VECTOR(1 downto 0);
-			  
+
 			  --SETTLING_TIME : in STD_LOGIC_VECTOR (15 downto 0);
-			  
+
 			  STAGES : in STD_LOGIC_VECTOR (2 downto 0);
 			  PORT1_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
 			  PORT2_STAGE : in STD_LOGIC_VECTOR (2 downto 0);
-			  
+
 			  PORT1_ACTIVE : out STD_LOGIC;
 			  PORT2_ACTIVE : out STD_LOGIC;
-			  
+
 			  SOURCE_CE : out STD_LOGIC;
-			  
+
 			  -- Debug signals
 			  DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0);
 			  RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0)
@@ -95,22 +98,32 @@ architecture Behavioral of Sweep is
 	signal state : Point_states;
 	signal settling_cnt : unsigned(19 downto 0);
 	signal stage_cnt : unsigned (2 downto 0);
-	signal config_reg : std_logic_vector(95 downto 0);
+	signal config_reg : std_logic_vector(111 downto 0);
 	signal source_active : std_logic;
+
+	-- Source phase value extracted from config (bits 111:100)
+	signal source_phase : std_logic_vector(11 downto 0);
 begin
-	
+
 	CONFIG_ADDRESS <= std_logic_vector(point_cnt);
-	
+
+	-- Extract source phase from config (new bits 111:100)
+	source_phase <= config_reg(111 downto 100);
+
+	-- Phase adjustment is enabled when source_phase is non-zero
+	SOURCE_PHASE_ADJUST <= '0' when source_phase = x"000" else '1';
+
 	-- assemble registers
 	-- source register 0: N divider and fractional division value
 	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(93) & config_reg(5 downto 0) & config_reg(26 downto 15) & "000";
-	-- source register 1: Modulus value
-	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(38 downto 27) & "001";
+	-- source register 1: Phase value P[11:0] and Modulus value M[11:0]
+	-- REG1 format: [31] reserved | [30:29] CPL | [28:27] CPT | [26:15] P | [14:3] M | [2:0] addr=001
+	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 27) & source_phase & config_reg(38 downto 27) & "001";
 	-- source register 3: VCO selection
 	SOURCE_REG_3 <= config_reg(11 downto 6) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- output power A from config, output B disabled
 	SOURCE_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(14 downto 12) & MAX2871_DEF_4(19 downto 9) & "000" & MAX2871_DEF_4(5) & config_reg(47 downto 46) & "100";
-	
+
 	-- LO register 0: N divider and fractional division value
 	LO_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(94) & config_reg(54 downto 49) & config_reg(75 downto 64) & "000";
 	-- LO register 1: Modulus value
@@ -119,7 +132,7 @@ begin
 	LO_REG_3 <= config_reg(60 downto 55) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- both outputs enabled at +5dbm
 	LO_REG_4 <= MAX2871_DEF_4(31 downto 23) & config_reg(63 downto 61) & MAX2871_DEF_4(19 downto 9) & "111111100";
-	
+
 	ATTENUATOR <= config_reg(45 downto 39);
 	SOURCE_FILTER <= config_reg(89 downto 88);
 	BAND_SELECT <= config_reg(48);
