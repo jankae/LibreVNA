@@ -512,6 +512,7 @@ bool LibreVNADriver::setVNA(const DeviceDriver::VNASettings &s, std::function<vo
     p.settings.suppressPeaks = VNASuppressInvalidPeaks ? 1 : 0;
     p.settings.fixedPowerSetting = VNAAdjustPowerLevel || s.dBmStart != s.dBmStop ? 0 : 1;
     p.settings.logSweep = s.logSweep ? 1 : 0;
+    p.settings.cdsPhases = s.cds ? 2 : 0;  // CDS with 180° phase offset (2 samples)
 
     zerospan = (s.freqStart == s.freqStop) && (s.dBmStart == s.dBmStop);
     p.settings.port1Stage = find(s.excitedPorts.begin(), s.excitedPorts.end(), 1) - s.excitedPorts.begin();

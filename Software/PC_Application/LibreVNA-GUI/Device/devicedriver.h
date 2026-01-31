@@ -269,6 +269,8 @@ public:
         std::vector<int> excitedPorts;
         // amount of time the source stays at each point before taking measurements. Ignore if not supported
         double dwellTime;
+        // Correlated Double Sampling: if true, take 2 samples at 0° and 180° phase and combine
+        bool cds;
     };
 
     class VNAMeasurement {

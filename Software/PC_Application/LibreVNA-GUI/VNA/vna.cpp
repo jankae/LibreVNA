@@ -482,6 +482,14 @@ VNA::VNA(AppWindow *window, QString name)
     connect(this, &VNA::dwellTimeChanged, acquisitionDwellTime, &SIUnitEdit::setValueQuiet);
     tb_acq->addWidget(acquisitionDwellTime);
 
+    auto cbCDS = new QCheckBox("CDS");
+    cbCDS->setToolTip("Correlated Double Sampling: Take 2 measurements at 180° phase offset to reduce noise");
+    connect(cbCDS, &QCheckBox::toggled, this, [=](bool checked){
+        settings.cds = checked;
+        SettingsChanged();
+    });
+    tb_acq->addWidget(cbCDS);
+
     tb_acq->addWidget(new QLabel("Averaging:"));
     lAverages = new QLabel("0/");
     tb_acq->addWidget(lAverages);
@@ -2032,6 +2040,7 @@ void VNA::ConfigureDevice(bool resetTraces, std::function<void(bool)> cb)
             s.logSweep = false;
         }
         s.dwellTime = settings.dwellTime;
+        s.cds = settings.cds;
         if(window->getDevice() && isActive) {
             window->getDevice()->setVNA(s, [=](bool res){
                 // device received command, reset traces now

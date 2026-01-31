@@ -181,6 +181,7 @@ using SweepSettings = struct _sweepSettings {
 
     int16_t cdbm_excitation_stop; // in 1/100 dbm
     uint16_t dwell_time; // in us
+    uint8_t cdsPhases; // Correlated Double Sampling: 0=disabled, 2-7=number of phase samples
 };
 
 using ReferenceSettings = struct _referenceSettings {

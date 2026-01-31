@@ -54,6 +54,16 @@ static uint32_t PLLRefFreqs[] = {HW::PLLRef, HW::PLLRef - 1000000};
 static constexpr uint8_t PLLRefFreqsNum = sizeof(PLLRefFreqs)/sizeof(PLLRefFreqs[0]);
 static uint8_t sourceRefIndex, LO1RefIndex;
 
+// Correlated Double Sampling (CDS) state
+static uint8_t cdsPhaseCount;  // Number of phase samples (0 or 2-7)
+// CDS accumulators for weighted samples, per stage (max 8 stages)
+// I and Q for each receiver: Port1, Port2, Reference
+static double cdsAccumP1I[8], cdsAccumP1Q[8];
+static double cdsAccumP2I[8], cdsAccumP2Q[8];
+static double cdsAccumRefI[8], cdsAccumRefQ[8];
+// Precomputed cosine weights for CDS
+static float cdsWeights[7];  // Max 7 phases
+
 using namespace HWHAL;
 
 static uint64_t getPointFrequency(uint16_t pointNum) {
@@ -165,8 +175,36 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	settings = s;
 	// calculate factor between adjacent points for log sweep for faster calculation when sweeping
 	logMultiplier = pow((double) settings.f_stop / settings.f_start, 1.0 / (settings.points-1));
+
+	// Initialize Correlated Double Sampling (CDS)
+	cdsPhaseCount = settings.cdsPhases >= 2 ? settings.cdsPhases : 0;
+	// Clear per-stage accumulators
+	for(uint8_t stg = 0; stg < 8; stg++) {
+		cdsAccumP1I[stg] = cdsAccumP1Q[stg] = 0;
+		cdsAccumP2I[stg] = cdsAccumP2Q[stg] = 0;
+		cdsAccumRefI[stg] = cdsAccumRefQ[stg] = 0;
+	}
+	// Precompute cosine weights: cos(2*pi*k/N)
+	if(cdsPhaseCount >= 2) {
+		for(uint8_t k = 0; k < cdsPhaseCount; k++) {
+			cdsWeights[k] = cosf(2.0f * M_PI * k / cdsPhaseCount);
+		}
+	}
+
+	// Calculate internal point count (multiply by CDS phases if enabled)
+	uint16_t internalPoints = settings.points;
+	if(cdsPhaseCount >= 2) {
+		internalPoints = settings.points * cdsPhaseCount;
+		if(internalPoints > FPGA::MaxPoints) {
+			// Reduce user points to fit
+			settings.points = FPGA::MaxPoints / cdsPhaseCount;
+			internalPoints = settings.points * cdsPhaseCount;
+			LOG_WARN("CDS: reduced points to %u to fit FPGA limit", settings.points);
+		}
+	}
+
 	// Configure sweep
-	FPGA::SetNumberOfPoints(settings.points);
+	FPGA::SetNumberOfPoints(internalPoints);
 	uint32_t samplesPerPoint = (HW::getADCRate() / s.if_bandwidth);
 	// round up to next multiple of 16 (16 samples are spread across 5 IF2 periods)
 	if(samplesPerPoint%16) {
@@ -286,9 +324,33 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 			needs_halt = true;
 		}
 
-		FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
-				LO1.GetRegisters(), attenuator, freq,
-				FPGA::Samples::SPPRegister, needs_halt);
+		// Write sweep config(s) for this user point
+		if(cdsPhaseCount >= 2) {
+			// CDS enabled: write N configs with different phases
+			// Extract Source M from PLL registers for phase calculation
+			uint32_t* sourceRegs = Source.GetRegisters();
+			uint16_t Source_M = (sourceRegs[1] & 0x00007FF8) >> 3;
+
+			for(uint8_t k = 0; k < cdsPhaseCount; k++) {
+				uint16_t internalPointNum = i * cdsPhaseCount + k;
+				// Calculate phase: sourcePhase = M * k / N
+				// This gives phase = k * 360 / N degrees
+				uint16_t sourcePhase = (uint16_t)((uint32_t)Source_M * k / cdsPhaseCount);
+
+				// Only halt on first CDS phase of each point (if needed)
+				bool pointHalt = (k == 0) ? needs_halt : false;
+
+				FPGA::WriteSweepConfig(internalPointNum, lowband, sourceRegs,
+						LO1.GetRegisters(), attenuator, freq,
+						FPGA::Samples::SPPRegister, pointHalt, FPGA::LowpassFilter::Auto,
+						sourcePhase);
+			}
+		} else {
+			// No CDS: single config per point
+			FPGA::WriteSweepConfig(i, lowband, Source.GetRegisters(),
+					LO1.GetRegisters(), attenuator, freq,
+					FPGA::Samples::SPPRegister, needs_halt);
+		}
 		last_lowband = lowband;
 	}
 	// reset a possibly changed PLL reference index
@@ -371,7 +433,71 @@ bool VNA::MeasurementDone(const FPGA::SamplingResult &result) {
 		FPGA::AbortSweep();
 		return false;
 	}
-	// normal sweep mode
+
+	if(cdsPhaseCount >= 2) {
+		// CDS mode: accumulate weighted samples per stage
+		// Internal point mapping: user_point = pointCnt / cdsPhaseCount
+		//                        cds_phase = pointCnt % cdsPhaseCount
+		uint16_t userPoint = pointCnt / cdsPhaseCount;
+		uint8_t cdsPhase = pointCnt % cdsPhaseCount;
+		float weight = cdsWeights[cdsPhase];
+
+		// Accumulate weighted values into per-stage accumulators
+		cdsAccumP1I[stageCnt] += result.P1I * weight;
+		cdsAccumP1Q[stageCnt] += result.P1Q * weight;
+		cdsAccumP2I[stageCnt] += result.P2I * weight;
+		cdsAccumP2Q[stageCnt] += result.P2Q * weight;
+		cdsAccumRefI[stageCnt] += result.RefI * weight;
+		cdsAccumRefQ[stageCnt] += result.RefQ * weight;
+
+		// Check if all stages for this internal point are complete
+		stageCnt++;
+		if(stageCnt > settings.stages) {
+			stageCnt = 0;
+
+			// Check if this was the last CDS phase for this user point
+			if(cdsPhase == cdsPhaseCount - 1) {
+				// All CDS phases complete - add combined values to data
+				for(uint8_t stg = 0; stg <= settings.stages; stg++) {
+					data.addValue((int64_t)cdsAccumP1I[stg], (int64_t)cdsAccumP1Q[stg], stg, (int) Protocol::Source::Port1);
+					data.addValue((int64_t)cdsAccumP2I[stg], (int64_t)cdsAccumP2Q[stg], stg, (int) Protocol::Source::Port2);
+					data.addValue((int64_t)cdsAccumRefI[stg], (int64_t)cdsAccumRefQ[stg], stg, (int) Protocol::Source::Port1 | (int) Protocol::Source::Port2 | (int) Protocol::Source::Reference);
+					// Reset accumulators for next user point
+					cdsAccumP1I[stg] = cdsAccumP1Q[stg] = 0;
+					cdsAccumP2I[stg] = cdsAccumP2Q[stg] = 0;
+					cdsAccumRefI[stg] = cdsAccumRefQ[stg] = 0;
+				}
+				data.pointNum = userPoint;
+
+				if(zerospan) {
+					uint64_t timestamp = HW::getLastISRTimestamp();
+					if(firstPoint) {
+						data.us = 0;
+						firstPointTime = timestamp;
+						firstPoint = false;
+					} else {
+						data.us = timestamp - firstPointTime;
+					}
+				} else {
+					data.frequency = getPointFrequency(userPoint);
+					data.cdBm = settings.cdbm_excitation_start + (settings.cdbm_excitation_stop - settings.cdbm_excitation_start) * userPoint / (settings.points - 1);
+				}
+
+				// Send data for this user point
+				STM::DispatchToInterrupt(PassOnData);
+
+				// Check if sweep is complete
+				if(userPoint >= settings.points - 1) {
+					pointCnt = 0;
+					return true;  // End of sweep
+				}
+			}
+			pointCnt++;
+		}
+		return false;
+	}
+
+	// Non-CDS mode: original behavior
 	data.addValue(result.P1I, result.P1Q, stageCnt, (int) Protocol::Source::Port1);
 	data.addValue(result.P2I, result.P2Q, stageCnt, (int) Protocol::Source::Port2);
 	data.addValue(result.RefI, result.RefQ, stageCnt, (int) Protocol::Source::Port1 | (int) Protocol::Source::Port2 | (int) Protocol::Source::Reference);

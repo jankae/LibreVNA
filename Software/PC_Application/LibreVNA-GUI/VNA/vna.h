@@ -81,6 +81,7 @@ public:
         int activeSegment;
         bool zerospan;
         double firstPointTime; // timestamp of the first point in the sweep, only use when zerospan is used
+        bool cds; // Correlated Double Sampling (180° phase shift)
     };
 
 
