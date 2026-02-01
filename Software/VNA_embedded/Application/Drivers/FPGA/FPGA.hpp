@@ -37,8 +37,9 @@ using SamplingResult = struct _samplingresult {
 	int64_t P1I, P1Q;
 	int64_t P2I, P2Q;
 	int64_t RefI, RefQ;
-	uint16_t pointNum :13;
+	uint16_t pointNum :12;
 	uint16_t stageNum :3;
+	uint16_t cdsPhase :1;  // 0 = first measurement (phase 0), 1 = second measurement (phase 180)
 };
 
 using DFTResult = struct _dftresult {
@@ -120,8 +121,8 @@ void DisableInterrupt(Interrupt i);
 void DisableAllInterrupts();
 void WriteMAX2871Default(uint32_t *DefaultRegs);
 void WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto,
-		uint16_t sourcePhase = 0);
+		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt = false, LowpassFilter filter = LowpassFilter::Auto);
+void SetCDSEnabled(bool enabled);
 using ReadCallback = void(*)(const SamplingResult &result);
 bool InitiateSampleRead(ReadCallback cb);
 void SetupDFT(uint32_t f_firstBin, uint32_t f_binSpacing);

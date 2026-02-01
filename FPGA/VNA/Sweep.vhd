@@ -34,7 +34,7 @@ entity Sweep is
            RESET : in  STD_LOGIC;
 			  NPOINTS : in STD_LOGIC_VECTOR (12 downto 0);
            CONFIG_ADDRESS : out  STD_LOGIC_VECTOR (12 downto 0);
-           CONFIG_DATA : in  STD_LOGIC_VECTOR (111 downto 0);
+           CONFIG_DATA : in  STD_LOGIC_VECTOR (95 downto 0);
 			  USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
 			  NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
 			  SETTLING_TIME : in STD_LOGIC_VECTOR (19 downto 0);
@@ -86,6 +86,9 @@ entity Sweep is
 
 			  SOURCE_CE : out STD_LOGIC;
 
+			  -- Correlated Double Sampling
+			  CDS_ENABLED : in STD_LOGIC;
+
 			  -- Debug signals
 			  DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0);
 			  RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0)
@@ -98,19 +101,31 @@ architecture Behavioral of Sweep is
 	signal state : Point_states;
 	signal settling_cnt : unsigned(19 downto 0);
 	signal stage_cnt : unsigned (2 downto 0);
-	signal config_reg : std_logic_vector(111 downto 0);
+	signal config_reg : std_logic_vector(95 downto 0);
 	signal source_active : std_logic;
 
-	-- Source phase value extracted from config (bits 111:100)
+	-- CDS phase tracking: 0 = first measurement (phase 0), 1 = second measurement (phase 180)
+	signal cds_phase : std_logic;
+
+	-- Source phase value: computed from CDS state
+	-- When CDS disabled or cds_phase=0: phase = 0
+	-- When CDS enabled and cds_phase=1: phase = M/2 (180 degrees)
 	signal source_phase : std_logic_vector(11 downto 0);
+	signal source_M : std_logic_vector(11 downto 0);
 begin
 
 	CONFIG_ADDRESS <= std_logic_vector(point_cnt);
 
-	-- Extract source phase from config (new bits 111:100)
-	source_phase <= config_reg(111 downto 100);
+	-- Extract Source M from config (bits 38:27)
+	source_M <= config_reg(38 downto 27);
 
-	-- Phase adjustment is enabled when source_phase is non-zero
+	-- Compute source phase for CDS
+	-- Phase 0: source_phase = 0
+	-- Phase 180: source_phase = M/2 (right shift by 1)
+	source_phase <= (others => '0') when (CDS_ENABLED = '0' or cds_phase = '0')
+	                else '0' & source_M(11 downto 1);  -- M/2 for 180 degree shift
+
+	-- Phase adjustment is enabled when source_phase is non-zero (i.e., CDS phase 1)
 	SOURCE_PHASE_ADJUST <= '0' when source_phase = x"000" else '1';
 
 	-- assemble registers
@@ -164,7 +179,7 @@ begin
 	DEBUG_STATUS(2) <= source_active;
 	DEBUG_STATUS(1 downto 0) <= (others => '1');
 
-	config_reg <= CONFIG_DATA;
+	config_reg <= CONFIG_DATA(95 downto 0);
 
 	process(CLK, RESET)
 	begin
@@ -172,6 +187,7 @@ begin
 			if RESET = '1' then
 				point_cnt <= (others => '0');
 				stage_cnt <= (others => '0');
+				cds_phase <= '0';
 				state <= WaitInitialLow;
 				START_SAMPLING <= '0';
 				RELOAD_PLL_REGS <= '0';
@@ -243,7 +259,9 @@ begin
 						-- wait for sampling to finish
 						START_SAMPLING <= '0';
 						if SAMPLING_BUSY = '0' then
-							RESULT_INDEX <= std_logic_vector(stage_cnt) & std_logic_vector(point_cnt);
+							-- RESULT_INDEX format: stage(2:0) & point(11:0) & cds_phase when CDS enabled
+							-- When CDS disabled, cds_phase is always 0
+							RESULT_INDEX <= std_logic_vector(stage_cnt) & std_logic_vector(point_cnt(11 downto 0)) & cds_phase;
 							state <= WaitTriggerLow;
 						end if;
 					when WaitTriggerLow =>
@@ -259,19 +277,32 @@ begin
 						NEW_DATA <= '1';
 						if stage_cnt < unsigned(STAGES) then
 							stage_cnt <= stage_cnt + 1;
-							-- can go directly to preperation for next stage
+							-- can go directly to preparation for next stage
 							state <= Settling;
 						else
-							state <= NextPoint;
+							-- All stages done for this measurement
+							-- Check if we need another CDS phase
+							if CDS_ENABLED = '1' and cds_phase = '0' then
+								-- First CDS phase done, do second phase at 180 degrees
+								cds_phase <= '1';
+								stage_cnt <= (others => '0');
+								-- Go back to reload PLL with new phase
+								state <= TriggerSetup;
+							else
+								-- CDS complete or disabled, move to next point
+								state <= NextPoint;
+							end if;
 						end if;
 						settling_cnt <= unsigned(SETTLING_TIME);
 					when NextPoint =>
 						NEW_DATA <= '0';
+						-- Reset CDS phase for next point
+						cds_phase <= '0';
 						if point_cnt < unsigned(NPOINTS) then
 							point_cnt <= point_cnt + 1;
 							stage_cnt <= (others => '0');
 							state <= TriggerSetup;
-						else 
+						else
 							point_cnt <= (others => '0');
 							state <= Done;
 							TRIGGER_OUT <= '0';

@@ -45,7 +45,7 @@ entity SPICommands is
            MAX2871_DEF_3 : out  STD_LOGIC_VECTOR (31 downto 0);
            MAX2871_DEF_1 : out  STD_LOGIC_VECTOR (31 downto 0);
            MAX2871_DEF_0 : out  STD_LOGIC_VECTOR (31 downto 0);
-           SWEEP_DATA : out  STD_LOGIC_VECTOR (111 downto 0);
+           SWEEP_DATA : out  STD_LOGIC_VECTOR (95 downto 0);
            SWEEP_ADDRESS : out  STD_LOGIC_VECTOR (12 downto 0);
            SWEEP_WRITE : out  STD_LOGIC_VECTOR (0 downto 0);
            SWEEP_POINTS : out  STD_LOGIC_VECTOR (12 downto 0);
@@ -54,6 +54,7 @@ entity SPICommands is
 			  SETTLING_TIME : out STD_LOGIC_VECTOR (19 downto 0);
 			  SYNC_ENABLED : out STD_LOGIC;
 			  SYNC_MASTER : out STD_LOGIC;
+			  CDS_ENABLED : out STD_LOGIC;
 			  PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 			  PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 			  PORT1_EN : out STD_LOGIC;
@@ -288,6 +289,7 @@ begin
 								when 5 => ADC_PHASEINC <= spi_buf_out(11 downto 0);
 								when 6 => STAGES <= spi_buf_out(15 downto 13);
 											SYNC_ENABLED <= spi_buf_out(12);
+											CDS_ENABLED <= spi_buf_out(11);
 											PORT1_STAGE <= spi_buf_out(5 downto 3);
 											PORT2_STAGE <= spi_buf_out(2 downto 0);
 								when 7 => SPI_OVERWRITE_ENABLED <= spi_buf_out(15);
@@ -308,9 +310,9 @@ begin
 							end case;
 							selected_register <= selected_register + 1;
 						when WriteSweepConfig =>
-							if word_cnt = 7 then
-								-- Sweep config data is complete pass on (112 bits = 96 + 16)
-								SWEEP_DATA <= sweepconfig_buffer & spi_buf_out;
+							if word_cnt = 5 then
+								-- Sweep config data is complete (96 bits = 6 x 16-bit words)
+								SWEEP_DATA <= sweepconfig_buffer(79 downto 0) & spi_buf_out;
 								sweep_config_write <= '1';
 							else
 								-- shift next word into buffer

@@ -113,7 +113,7 @@ architecture Behavioral of top is
 		CLK : IN std_logic;
 		RESET : IN std_logic;
 		NPOINTS : IN std_logic_vector(12 downto 0);
-		CONFIG_DATA : IN std_logic_vector(111 downto 0);
+		CONFIG_DATA : IN std_logic_vector(95 downto 0);
 		USER_NSAMPLES : in STD_LOGIC_VECTOR (12 downto 0);
 		NSAMPLES : out STD_LOGIC_VECTOR (12 downto 0);
 		SETTLING_TIME : in STD_LOGIC_VECTOR (19 downto 0);
@@ -154,11 +154,12 @@ architecture Behavioral of top is
 		PORT1_ACTIVE : out STD_LOGIC;
 		PORT2_ACTIVE : out STD_LOGIC;
 		SOURCE_CE : out STD_LOGIC;
+		CDS_ENABLED : in STD_LOGIC;
 		RESULT_INDEX : out STD_LOGIC_VECTOR (15 downto 0);
 		DEBUG_STATUS : out STD_LOGIC_VECTOR (10 downto 0)
 		);
 	END COMPONENT;
-	
+
 	COMPONENT Windowing
 	PORT(
 		CLK : IN std_logic;
@@ -252,7 +253,7 @@ architecture Behavioral of top is
 		MAX2871_DEF_3 : OUT std_logic_vector(31 downto 0);
 		MAX2871_DEF_1 : OUT std_logic_vector(31 downto 0);
 		MAX2871_DEF_0 : OUT std_logic_vector(31 downto 0);
-		SWEEP_DATA : OUT std_logic_vector(111 downto 0);
+		SWEEP_DATA : OUT std_logic_vector(95 downto 0);
 		SWEEP_ADDRESS : OUT std_logic_vector(12 downto 0);
 		SWEEP_WRITE : OUT std_logic_vector(0 to 0);
 		SWEEP_POINTS : OUT std_logic_vector(12 downto 0);
@@ -261,6 +262,7 @@ architecture Behavioral of top is
 		SETTLING_TIME : out STD_LOGIC_VECTOR (19 downto 0);
 	   SYNC_ENABLED : out STD_LOGIC;
 		SYNC_MASTER : out STD_LOGIC;
+		CDS_ENABLED : out STD_LOGIC;
 	   PORT1_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 	   PORT2_STAGE : out STD_LOGIC_VECTOR (2 downto 0);
 		PORT1_EN : out STD_LOGIC;
@@ -315,10 +317,10 @@ architecture Behavioral of top is
 		ena : IN STD_LOGIC;
 		wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
 		addra : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
-		dina : IN STD_LOGIC_VECTOR(111 DOWNTO 0);
+		dina : IN STD_LOGIC_VECTOR(95 DOWNTO 0);
 		clkb : IN STD_LOGIC;
 		addrb : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
-		doutb : OUT STD_LOGIC_VECTOR(111 DOWNTO 0)
+		doutb : OUT STD_LOGIC_VECTOR(95 DOWNTO 0)
 		);
 	END COMPONENT;
 	
@@ -387,14 +389,15 @@ architecture Behavioral of top is
 	signal sweep_sync_master : STD_LOGIC;
 	signal sweep_port1_stage : STD_LOGIC_VECTOR (2 downto 0);
 	signal sweep_port2_stage : STD_LOGIC_VECTOR (2 downto 0);
-	signal sweep_config_data : std_logic_vector(111 downto 0);
+	signal sweep_config_data : std_logic_vector(95 downto 0);
+	signal cds_enabled : std_logic;
 	signal sweep_config_address : std_logic_vector(12 downto 0);
 	signal sweep_source_filter : std_logic_vector(1 downto 0);
 	signal sweep_band : std_logic;
 	signal sweep_attenuator : std_logic_vector(6 downto 0);
 
 	signal sweep_config_write_address : std_logic_vector(12 downto 0);
-	signal sweep_config_write_data : std_logic_vector(111 downto 0);
+	signal sweep_config_write_data : std_logic_vector(95 downto 0);
 	signal sweep_config_write : std_logic_vector(0 downto 0);
 
 	-- Phase adjustment signal from Sweep to Source PLL
@@ -724,6 +727,7 @@ begin
 		SWEEP_HALTED => sweep_halted,
 		SWEEP_RESUME => sweep_resume,
 		SOURCE_PHASE_ADJUST => source_phase_adjust,
+		CDS_ENABLED => cds_enabled,
 		SYNC_ENABLED => sweep_sync_enabled,
 		SYNC_MASTER => sweep_sync_master,
 		TRIGGER_IN => sweep_trigger_in,
@@ -815,6 +819,7 @@ begin
 		SETTLING_TIME => settling_time,
 		SYNC_ENABLED => sweep_sync_enabled,
 		SYNC_MASTER => sweep_sync_master,
+		CDS_ENABLED => cds_enabled,
 		PORT1_STAGE => sweep_port1_stage,
 		PORT2_STAGE => sweep_port2_stage,
 		SPI_OVERWRITE_ENABLED => HW_overwrite_enabled,

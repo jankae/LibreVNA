@@ -13,6 +13,7 @@
 static FPGA::HaltedCallback halted_cb;
 static uint16_t SysCtrlReg = 0x0000;
 static uint16_t ISRMaskReg = 0x0000;
+static uint16_t SweepSetupReg = 0x0000;
 static uint32_t ADC_samplerate;
 static volatile bool busy_reading = false;
 
@@ -144,15 +145,25 @@ void FPGA::SetSettlingTime(uint16_t us) {
 }
 
 void FPGA::SetupSweep(uint8_t stages, uint8_t port1_stage, uint8_t port2_stage, bool synchronize, bool syncMaster) {
-	uint16_t value = 0x0000;
-	value |= (uint16_t) (stages & 0x07) << 13;
+	// Preserve CDS bit when updating sweep setup
+	SweepSetupReg = SweepSetupReg & 0x0800;  // Keep bit 11 (CDS_ENABLED)
+	SweepSetupReg |= (uint16_t) (stages & 0x07) << 13;
 	if(synchronize) {
-		value |= 0x1000;
+		SweepSetupReg |= 0x1000;
 	}
-	value |= (port1_stage & 0x07) << 3;
-	value |= (port2_stage & 0x07) << 0;
-	WriteRegister(Reg::SweepSetup, value);
+	SweepSetupReg |= (port1_stage & 0x07) << 3;
+	SweepSetupReg |= (port2_stage & 0x07) << 0;
+	WriteRegister(Reg::SweepSetup, SweepSetupReg);
 	Enable(Periphery::SyncMaster, syncMaster);
+}
+
+void FPGA::SetCDSEnabled(bool enabled) {
+	if(enabled) {
+		SweepSetupReg |= 0x0800;  // Set bit 11
+	} else {
+		SweepSetupReg &= ~0x0800;  // Clear bit 11
+	}
+	WriteRegister(Reg::SweepSetup, SweepSetupReg);
 }
 
 void FPGA::Enable(Periphery p, bool enable) {
@@ -210,9 +221,8 @@ void FPGA::WriteMAX2871Default(uint32_t *DefaultRegs) {
 }
 
 void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceRegs, uint32_t *LORegs,
-		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt, LowpassFilter filter,
-		uint16_t sourcePhase) {
-	uint16_t send[8];
+		uint8_t attenuation, uint64_t frequency, Samples samples, bool halt, LowpassFilter filter) {
+	uint16_t send[7];
 	// select which point this sweep config is for
 	send[0] = pointnum & 0x1FFF;
 	// assemble sweep config from required fields of PLL registers
@@ -230,48 +240,48 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 
 	uint16_t Source_Power = (SourceRegs[4] & 0x00000018) >> 3;
 
-	// Config memory layout (112 bits):
-	// bits 111:100 - Source Phase P[11:0]
-	// bits 99:96   - Reserved
-	// bits 95:0    - Original 96-bit config
+	// Config memory layout (96 bits):
+	// bits 95:80 - LO_M[11:4], halt, LO_N[6], Source_N[6], samples[2:0], filter[1:0]
+	// bits 79:64 - LO_M[3:0], LO_FRAC[11:0]
+	// bits 63:48 - LO_DIV_A[2:0], LO_VCO[5:0], LO_N[5:0], lowband
+	// bits 47:32 - Source_Power[1:0], attenuation[6:0], Source_M[11:5]
+	// bits 31:16 - Source_M[4:0], Source_FRAC[11:1]
+	// bits 15:0  - Source_FRAC[0], Source_DIV_A[2:0], Source_VCO[5:0], Source_N[5:0]
 
-	// send[1]: bits 111:96 - Source Phase (12 bits) + Reserved (4 bits)
-	send[1] = (sourcePhase & 0x0FFF) << 4;  // Phase in bits 15:4, reserved bits 3:0
-
-	// send[2]: bits 95:80 - LO_M[11:4], halt, LO_N[6], Source_N[6], samples[2:0], filter[1:0]
-	send[2] = LO_M >> 4;
+	// send[1]: bits 95:80
+	send[1] = LO_M >> 4;
 	if (halt) {
-		send[2] |= 0x8000;
+		send[1] |= 0x8000;
 	}
 	if(LO_N & 0x40) {
-		send[2] |= 0x4000;
+		send[1] |= 0x4000;
 	}
 	if(Source_N & 0x40) {
-		send[2] |= 0x2000;
+		send[1] |= 0x2000;
 	}
-	send[2] |= (int) samples << 10;
+	send[1] |= (int) samples << 10;
 	if(filter == LowpassFilter::Auto) {
 		// Select source LP filter
 		if (frequency >= 3500000000) {
-			send[2] |= (int) LowpassFilter::None << 8;
+			send[1] |= (int) LowpassFilter::None << 8;
 		} else if (frequency >= 1800000000) {
-			send[2] |= (int) LowpassFilter::M3500 << 8;
+			send[1] |= (int) LowpassFilter::M3500 << 8;
 		} else if (frequency >= 900000000) {
-			send[2] |= (int) LowpassFilter::M1880 << 8;
+			send[1] |= (int) LowpassFilter::M1880 << 8;
 		} else {
-			send[2] |= (int) LowpassFilter::M947 << 8;
+			send[1] |= (int) LowpassFilter::M947 << 8;
 		}
 	} else {
-		send[2] |= (int) filter << 8;
+		send[1] |= (int) filter << 8;
 	}
-	send[3] = (LO_M & 0x000F) << 12 | LO_FRAC;
-	send[4] = LO_DIV_A << 13 | LO_VCO << 7 | (LO_N & 0x3F) << 1;
+	send[2] = (LO_M & 0x000F) << 12 | LO_FRAC;
+	send[3] = LO_DIV_A << 13 | LO_VCO << 7 | (LO_N & 0x3F) << 1;
 	if (lowband) {
-		send[4] |= 0x0001;
+		send[3] |= 0x0001;
 	}
-	send[5] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
-	send[6] = (Source_M & 0x001F) << 11 | Source_FRAC >> 1;
-	send[7] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | (Source_N & 0x3F);
+	send[4] = Source_Power << 14 | (uint16_t) attenuation << 7 | Source_M >> 5;
+	send[5] = (Source_M & 0x001F) << 11 | Source_FRAC >> 1;
+	send[6] = (Source_FRAC & 0x0001) << 15 | Source_DIV_A << 12 | Source_VCO << 6 | (Source_N & 0x3F);
 	SwitchBytes(send[0]);
 	SwitchBytes(send[1]);
 	SwitchBytes(send[2]);
@@ -279,9 +289,8 @@ void FPGA::WriteSweepConfig(uint16_t pointnum, bool lowband, uint32_t *SourceReg
 	SwitchBytes(send[4]);
 	SwitchBytes(send[5]);
 	SwitchBytes(send[6]);
-	SwitchBytes(send[7]);
 	Low(CS);
-	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 16, 100);
+	HAL_SPI_Transmit(&FPGA_SPI, (uint8_t*) send, 14, 100);
 	High(CS);
 }
 
@@ -333,8 +342,10 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	result.P2Q = assembleSampleResultValue(&raw[14]);
 	result.RefI = assembleSampleResultValue(&raw[8]);
 	result.RefQ = assembleSampleResultValue(&raw[2]);
-	result.pointNum = (uint16_t)(raw[38]&0x1F) << 8 | raw[39];
+	// RESULT_INDEX format: stage[2:0] & point[11:0] & cds_phase
 	result.stageNum = (raw[38] & 0xE0) >> 5;
+	result.pointNum = ((uint16_t)(raw[38] & 0x1F) << 7) | (raw[39] >> 1);
+	result.cdsPhase = raw[39] & 0x01;
 	High(CS);
 	busy_reading = false;
 	if ((status & 0x0004) && callback) {
