@@ -107,33 +107,33 @@ architecture Behavioral of Sweep is
 	-- CDS phase tracking: 0 = first measurement (phase 0), 1 = second measurement (phase 180)
 	signal cds_phase : std_logic;
 
-	-- Source phase value: computed from CDS state
+	-- LO phase value: computed from CDS state
 	-- When CDS disabled or cds_phase=0: phase = 0
 	-- When CDS enabled and cds_phase=1: phase = M/2 (180 degrees)
-	signal source_phase : std_logic_vector(11 downto 0);
-	signal source_M : std_logic_vector(11 downto 0);
+	-- We rotate the LO phase (not Source) to avoid affecting devices connected to ports
+	signal lo_phase : std_logic_vector(11 downto 0);
+	signal lo_M : std_logic_vector(11 downto 0);
 begin
 
 	CONFIG_ADDRESS <= std_logic_vector(point_cnt);
 
-	-- Extract Source M from config (bits 38:27)
-	source_M <= config_reg(38 downto 27);
+	-- Extract LO M from config (bits 87:76)
+	lo_M <= config_reg(87 downto 76);
 
-	-- Compute source phase for CDS
-	-- Phase 0: source_phase = 0
-	-- Phase 180: source_phase = M/2 (right shift by 1)
-	source_phase <= (others => '0') when (CDS_ENABLED = '0' or cds_phase = '0')
-	                else '0' & source_M(11 downto 1);  -- M/2 for 180 degree shift
+	-- Compute LO phase for CDS
+	-- Phase 0: lo_phase = 0
+	-- Phase 180: lo_phase = M/2 (right shift by 1)
+	lo_phase <= (others => '0') when (CDS_ENABLED = '0' or cds_phase = '0')
+	            else '0' & lo_M(11 downto 1);  -- M/2 for 180 degree shift
 
-	-- Phase adjustment is enabled when source_phase is non-zero (i.e., CDS phase 1)
-	SOURCE_PHASE_ADJUST <= '0' when source_phase = x"000" else '1';
+	-- Phase adjustment output (active when LO phase is non-zero, i.e., CDS phase 1)
+	SOURCE_PHASE_ADJUST <= '0' when lo_phase = x"000" else '1';
 
 	-- assemble registers
 	-- source register 0: N divider and fractional division value
 	SOURCE_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(93) & config_reg(5 downto 0) & config_reg(26 downto 15) & "000";
-	-- source register 1: Phase value P[11:0] and Modulus value M[11:0]
-	-- REG1 format: [31] reserved | [30:29] CPL | [28:27] CPT | [26:15] P | [14:3] M | [2:0] addr=001
-	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 27) & source_phase & config_reg(38 downto 27) & "001";
+	-- source register 1: Modulus value (no phase adjustment - we adjust LO instead)
+	SOURCE_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(38 downto 27) & "001";
 	-- source register 3: VCO selection
 	SOURCE_REG_3 <= config_reg(11 downto 6) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- output power A from config, output B disabled
@@ -141,8 +141,9 @@ begin
 
 	-- LO register 0: N divider and fractional division value
 	LO_REG_0 <= MAX2871_DEF_0(31) & "000000000" & config_reg(94) & config_reg(54 downto 49) & config_reg(75 downto 64) & "000";
-	-- LO register 1: Modulus value
-	LO_REG_1 <= MAX2871_DEF_1(31 downto 15) & config_reg(87 downto 76) & "001";
+	-- LO register 1: Phase value P[11:0] and Modulus value M[11:0]
+	-- REG1 format: [31] reserved | [30:29] CPL | [28:27] CPT | [26:15] P | [14:3] M | [2:0] addr=001
+	LO_REG_1 <= MAX2871_DEF_1(31 downto 27) & lo_phase & config_reg(87 downto 76) & "001";
 	-- LO register 3: VCO selection
 	LO_REG_3 <= config_reg(60 downto 55) & MAX2871_DEF_3(25 downto 3) & "011";
 	-- both outputs enabled at +5dbm

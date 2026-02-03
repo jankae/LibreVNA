@@ -131,7 +131,7 @@ architecture Behavioral of SPICommands is
 	signal interrupt_status : std_logic_vector(15 downto 0);
 	
 	signal latched_result : std_logic_vector(287 downto 0);
-	signal sweepconfig_buffer : std_logic_vector(95 downto 0);
+	signal sweepconfig_buffer : std_logic_vector(79 downto 0);
 begin
 	SPI: spi_slave
 	GENERIC MAP(W => 16,
@@ -310,13 +310,13 @@ begin
 							end case;
 							selected_register <= selected_register + 1;
 						when WriteSweepConfig =>
-							if word_cnt = 5 then
+							if word_cnt = 6 then
 								-- Sweep config data is complete (96 bits = 6 x 16-bit words)
-								SWEEP_DATA <= sweepconfig_buffer(79 downto 0) & spi_buf_out;
+								SWEEP_DATA <= sweepconfig_buffer & spi_buf_out;
 								sweep_config_write <= '1';
 							else
 								-- shift next word into buffer
-								sweepconfig_buffer <= sweepconfig_buffer(79 downto 0) & spi_buf_out;
+								sweepconfig_buffer <= sweepconfig_buffer(63 downto 0) & spi_buf_out;
 							end if;
 						-- read already handled in pre_complete, ignore
 						when ReadResult =>
