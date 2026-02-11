@@ -180,6 +180,7 @@ private:
 
     QMenu *defaultCalMenu;
     QAction *assignDefaultCal, *removeDefaultCal;
+    QString defaultCalSerial;
     QAction *saveCal;
 
     Deembedding deembedding;

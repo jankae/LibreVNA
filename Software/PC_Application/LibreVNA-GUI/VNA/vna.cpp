@@ -804,17 +804,26 @@ void VNA::initializeDevice()
     QSettings s;
     auto key = "DefaultCalibration"+window->getDevice()->getSerial();
     if (s.contains(key)) {
-        auto filename = s.value(key).toString();
-        qDebug() << "Attempting to load default calibration file " << filename;
-        if(QFile::exists(filename)) {
-            if(cal.fromFile(filename)) {
-                qDebug() << "Calibration successful from " << filename;
+
+        // only load default calibration once per device. This allows the user to switch to a different calibration
+        // and have it persist across device initializations. Only when connecting to the device again should the
+        // default calibration be loaded
+        if(defaultCalSerial != window->getDevice()->getSerial()) {
+            // we have never loaded the default calibration for this device, do so now
+            auto filename = s.value(key).toString();
+            qDebug() << "Attempting to load default calibration file " << filename;
+            if(QFile::exists(filename)) {
+                if(cal.fromFile(filename)) {
+                    qDebug() << "Calibration successful from " << filename;
+                    defaultCalSerial = window->getDevice()->getSerial();
+                } else {
+                    qDebug() << "Calibration not successfull from: " << filename;
+                }
             } else {
-                qDebug() << "Calibration not successfull from: " << filename;
+                qDebug() << "Calibration file not found: " << filename;
             }
-        } else {
-            qDebug() << "Calibration file not found: " << filename;
         }
+
         removeDefaultCal->setEnabled(true);
     } else {
         qDebug() << "No default calibration file set for this device";
@@ -833,6 +842,8 @@ void VNA::initializeDevice()
 void VNA::deviceDisconnected()
 {
     defaultCalMenu->setEnabled(false);
+    qDebug() << "disconnected";
+    defaultCalSerial.clear();
     emit sweepStopped();
 }
 
