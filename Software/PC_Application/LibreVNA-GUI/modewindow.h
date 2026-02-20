@@ -29,6 +29,7 @@ private:
     QTabBar* tabBar;
     QWidget* cornerWidget;
     QPushButton* bAdd;
+    int lastTabBarHeight = 0;
     QMenu *menu;
     QList<QAction*> menuActions;
     QActionGroup *modeMenuGroup;
