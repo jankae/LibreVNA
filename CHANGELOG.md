@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.6.5
+Long overdue release with several small improvements:
+
+- Bugfixes:
+  - handle calibration data from log sweeps
+  - PLL algorithm improvements, fixes small frequency deviations which show up at low IF bandwidths
+  - Various UI improvements
+- Quality of life improvements:
+  - remember touchstone export settings
+  - remember load/save paths
+  - optionally prevent LibreCAL calibrations when temperature unstable
+  - Dialog for viewing the active calibration model: Calibration->View error term model
+  - Calibration can use already existing measurements (saves the user from attaching the calibrations standards again if the measurement is already available)
+  - Improve marker handling when displayed at the very edge of a graph
+  - Only load default calibration when initially connecting to a device, not when switching modes or closing dialogs
+- New features:
+  - new SOL calibration type (calibrates reflections only, possible to calibrate both ports at the same time)
+  - Experimental SVG export options for images
+  - Restore to default option for device configuration
+  - SCPI API improvements:
+    - Set/get calibration kit metadata
+    - Allow spaces in arguments (for file paths)
+    - Support lower case for calkit file names
+    - Query the position in the current sweep
+    - New commands for editing calibration kit standards
+    - New command for dwell time
+  
 ## v1.6.4
 
 Critical bugfix for the embedded firmware:
