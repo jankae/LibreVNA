@@ -1767,12 +1767,14 @@ std::vector<Calibration::CalType> Calibration::getAvailableCalibrations()
 
 std::vector<Calibration::Type> Calibration::getTypes()
 {
-    vector<Type> types;
-    // Start at index 1, skip Type::None
-    for(int i=1;i<(int) Type::Last;i++) {
-        types.push_back((Type) i);
-    }
-    return types;
+    // do not include SOLTwithoutRxMatch for now as it is not fully working
+    return {Type::OSL, Type::SOLT, Type::ThroughNormalization, Type::TRL};
+    // vector<Type> types;
+    // // Start at index 1, skip Type::None
+    // for(int i=1;i<(int) Type::Last;i++) {
+    //     types.push_back((Type) i);
+    // }
+    // return types;
 }
 
 bool Calibration::canCompute(Calibration::CalType type, double *startFreq, double *stopFreq, int *points, bool *isLog)
