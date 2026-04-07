@@ -524,7 +524,7 @@ void Trace::updateMathTracePoints()
             }
         }
     }
-    if(samples > 0 && (startX != data.front().x || stopX != data.back().x)) {
+    if(samples > 0 && (startX != data.front().x || stopX != data.back().x || mathUpdateEnd > samples)) {
         mathUpdateBegin = 0;
         mathUpdateEnd = samples;
     }
