@@ -525,6 +525,10 @@ void Trace::updateMathTracePoints()
         }
     }
     if(samples > 0 && (startX != data.front().x || stopX != data.back().x || mathUpdateEnd > samples)) {
+        // something changed in the data which affects X axis scaling, update all X values and schedule math calculation for all points
+        for(unsigned int i=0;i<samples;i++) {
+            data[i].x = startX + i * stepSize;
+        }
         mathUpdateBegin = 0;
         mathUpdateEnd = samples;
     }
