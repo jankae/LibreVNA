@@ -5,6 +5,7 @@
 #include "dft.h"
 #include "expression.h"
 #include "timegate.h"
+#include "iczt.h"
 #include "Traces/trace.h"
 #include "ui_timedomaingatingexplanationwidget.h"
 
@@ -40,6 +41,9 @@ std::vector<TraceMath *> TraceMath::createMath(TraceMath::Type type)
         ret.push_back(new Math::TDR());
         ret.push_back(new Math::TimeGate());
         ret.push_back(new Math::DFT());
+        break;
+    case Type::ICZT:
+        ret.push_back(new Math::ICZT());
         break;
     default:
         break;
@@ -80,6 +84,10 @@ TraceMath::TypeInfo TraceMath::getInfo(TraceMath::Type type)
             delete ui;
         });
     }
+        break;
+    case Type::ICZT:
+        ret.name = "ICZT (Inverse Chirp-Z TDR)";
+        ret.explanationWidget = Math::ICZT::createExplanationWidget();
         break;
     default:
         break;
