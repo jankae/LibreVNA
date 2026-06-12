@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QMenuBar>
 #include <QActionGroup>
+#include <QEvent>
 
 ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw):
     QWidget(nullptr),
@@ -15,6 +16,9 @@ ModeWindow::ModeWindow(ModeHandler* handler, AppWindow* aw):
     aw(aw)
 {
     SetupUi();
+
+    // Watch menu bar for resize events (triggered by DPI/screen changes)
+    aw->menuBar()->installEventFilter(this);
 
     connect(handler, &ModeHandler::ModeCreated, this, &ModeWindow::ModeCreated);
     connect(handler, &ModeHandler::ModeClosed, this, &ModeWindow::ModeClosed);
@@ -33,9 +37,25 @@ ModeWindow::~ModeWindow()
 {
 }
 
+bool ModeWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == aw->menuBar() && event->type() == QEvent::Resize) {
+        updateTabBarHeight();
+    }
+    return QWidget::eventFilter(obj, event);
+}
+
+void ModeWindow::updateTabBarHeight()
+{
+    int h = aw->menuBar()->height();
+    cornerWidget->setMaximumHeight(h);
+    tabBar->setStyleSheet("QTabBar::tab { height: " + QString::number(h) + "px;}");
+    bAdd->setMaximumHeight(h);
+}
+
 void ModeWindow::SetupUi()
 {
-    auto cornerWidget = new QWidget();
+    cornerWidget = new QWidget();
     cornerWidget->setLayout(new QHBoxLayout);
     cornerWidget->layout()->setSpacing(0);
     cornerWidget->layout()->setContentsMargins(0,0,0,0);
@@ -49,7 +69,7 @@ void ModeWindow::SetupUi()
         renameMode(index);
     });
 
-    auto bAdd = new QPushButton();
+    bAdd = new QPushButton();
     QIcon icon;
     QString iconThemeName = QString::fromUtf8("list-add");
 
