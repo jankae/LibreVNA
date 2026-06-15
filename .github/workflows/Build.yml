@@ -96,8 +96,9 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.2.4'
+          version: '6.8.3'
           arch: 'win64_mingw'
+          tools: 'tools_mingw1310,qt.tools.win64_mingw1310'
       
       - name: Download libusb
         run: |
@@ -126,7 +127,7 @@ jobs:
         run: |
           cd Software/PC_Application/LibreVNA-GUI
           qmake LibreVNA-GUI.pro
-          make -j9
+          mingw32-make -j9
         shell: cmd
 
       - name: Deploy application
