@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QScrollBar>
 #include <QSettings>
+#include <QMutexLocker>
 #include <functional>
 
 using namespace std;
@@ -79,9 +80,12 @@ void Trace::clear(bool force) {
     if(paused && !force) {
         return;
     }
-    data.clear();
-    deembeddingData.clear();
-    settings.valid = false;
+    {
+        QMutexLocker locker(&dataMutex);
+        data.clear();
+        deembeddingData.clear();
+        settings.valid = false;
+    }
     warning("No data");
     emit cleared(this);
     emit outputSamplesChanged(0, 0);
@@ -93,51 +97,58 @@ void Trace::addData(const Trace::Data& d, DataType domain, double reference_impe
         this->domain = domain;
         emit typeChanged(this);
     }
-    if(index >= 0) {
-        // index position specified
-        if(data.size() <= (unsigned int) index) {
-            data.resize(index + 1);
-        }
-        data[index] = d;
-    } else {
-        // no index given, determine position by X-coordinate
-
-        // add or replace data in vector while keeping it sorted with increasing frequency
-        auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
-            return lhs.x < rhs.x;
-        });
-        // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
-        index = lower - data.begin();
-        if(lower == data.end()) {
-            // highest frequency yet, add to vector
-            data.push_back(d);
-        } else if(lower->x == d.x) {
-            switch(_liveType) {
-            case LivedataType::Overwrite:
-                // replace this data element
-                *lower = d;
-                break;
-            case LivedataType::MaxHold:
-                // replace this data element
-                if(abs(d.y) > abs(lower->y)) {
-                    *lower = d;
-                }
-                break;
-            case LivedataType::MinHold:
-                // replace this data element
-                if(abs(d.y) < abs(lower->y)) {
-                    *lower = d;
-                }
-                break;
-            default: break;
+    bool referenceImpedanceChanged = false;
+    {
+        QMutexLocker locker(&dataMutex);
+        if(index >= 0) {
+            // index position specified
+            if(data.size() <= (unsigned int) index) {
+                data.resize(index + 1);
             }
+            data[index] = d;
         } else {
-            // insert at this position
-            data.insert(lower, d);
+            // no index given, determine position by X-coordinate
+
+            // add or replace data in vector while keeping it sorted with increasing frequency
+            auto lower = lower_bound(data.begin(), data.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
+                return lhs.x < rhs.x;
+            });
+            // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
+            index = lower - data.begin();
+            if(lower == data.end()) {
+                // highest frequency yet, add to vector
+                data.push_back(d);
+            } else if(lower->x == d.x) {
+                switch(_liveType) {
+                case LivedataType::Overwrite:
+                    // replace this data element
+                    *lower = d;
+                    break;
+                case LivedataType::MaxHold:
+                    // replace this data element
+                    if(abs(d.y) > abs(lower->y)) {
+                        *lower = d;
+                    }
+                    break;
+                case LivedataType::MinHold:
+                    // replace this data element
+                    if(abs(d.y) < abs(lower->y)) {
+                        *lower = d;
+                    }
+                    break;
+                default: break;
+                }
+            } else {
+                // insert at this position
+                data.insert(lower, d);
+            }
+        }
+        if(this->reference_impedance != reference_impedance) {
+            this->reference_impedance = reference_impedance;
+            referenceImpedanceChanged = true;
         }
     }
-    if(this->reference_impedance != reference_impedance) {
-        this->reference_impedance = reference_impedance;
+    if(referenceImpedanceChanged) {
         emit typeChanged(this);
     }
     success();
@@ -158,37 +169,43 @@ void Trace::addData(const Trace::Data &d, const DeviceDriver::SASettings &s, int
 
 void Trace::addDeembeddingData(const Trace::Data &d, double reference_impedance, int index)
 {
-    bool wasAvailable = deembeddingAvailable();
-    if(index >= 0) {
-        // index position specified
-        if(deembeddingData.size() <= (unsigned int) index) {
-            deembeddingData.resize(index + 1);
-        }
-        deembeddingData[index] = d;
-    } else {
-        // no index given, determine position by X-coordinate
-
-        // add or replace data in vector while keeping it sorted with increasing frequency
-        auto lower = lower_bound(deembeddingData.begin(), deembeddingData.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
-            return lhs.x < rhs.x;
-        });
-        // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
-        index = lower - deembeddingData.begin();
-        if(lower == deembeddingData.end()) {
-            // highest frequency yet, add to vector
-            deembeddingData.push_back(d);
-        } else if(lower->x == d.x) {
-            *lower = d;
+    bool wasAvailable = false;
+    bool referenceImpedanceChanged = false;
+    {
+        QMutexLocker locker(&dataMutex);
+        wasAvailable = deembeddingData.size() > 0;
+        if(index >= 0) {
+            // index position specified
+            if(deembeddingData.size() <= (unsigned int) index) {
+                deembeddingData.resize(index + 1);
+            }
+            deembeddingData[index] = d;
         } else {
-            // insert at this position
-            deembeddingData.insert(lower, d);
+            // no index given, determine position by X-coordinate
+
+            // add or replace data in vector while keeping it sorted with increasing frequency
+            auto lower = lower_bound(deembeddingData.begin(), deembeddingData.end(), d, [](const Data &lhs, const Data &rhs) -> bool {
+                return lhs.x < rhs.x;
+            });
+            // calculate index now because inserting a sample into data might lead to reallocation -> arithmetic on lower not valid anymore
+            index = lower - deembeddingData.begin();
+            if(lower == deembeddingData.end()) {
+                // highest frequency yet, add to vector
+                deembeddingData.push_back(d);
+            } else if(lower->x == d.x) {
+                *lower = d;
+            } else {
+                // insert at this position
+                deembeddingData.insert(lower, d);
+            }
+        }
+        if(deembedded_reference_impedance != reference_impedance) {
+            deembedded_reference_impedance = reference_impedance;
+            referenceImpedanceChanged = deembeddingActive;
         }
     }
-    if(deembedded_reference_impedance != reference_impedance) {
-        deembedded_reference_impedance = reference_impedance;
-        if(deembeddingActive) {
-            emit typeChanged(this);
-        }
+    if(referenceImpedanceChanged) {
+        emit typeChanged(this);
     }
     if(deembeddingActive) {
         emit outputSamplesChanged(index, index + 1);
@@ -483,7 +500,10 @@ void Trace::updateMathTracePoints()
         } else {
             if(domain != t.first->outputType()) {
                 // not all traces have the same domain, clear output and do not calculate
-                data.resize(0);
+                {
+                    QMutexLocker locker(&dataMutex);
+                    data.resize(0);
+                }
                 mathUpdateBegin = 0;
                 mathUpdateEnd = 0;
                 dataType = DataType::Invalid;
@@ -514,23 +534,26 @@ void Trace::updateMathTracePoints()
         samples = round((stopX - startX) / stepSize + 1);
     }
 //    qDebug() << "Updated trace points, now"<<samples<<"points from"<<startX<<"to"<<stopX;
-    if(samples != data.size()) {
-        auto oldSize = data.size();
-        data.resize(samples);
-        if(oldSize < samples) {
-            for(unsigned int i=oldSize;i<samples;i++) {
-                data[i].x = startX + i * stepSize;
-                data[i].y = numeric_limits<complex<double>>::quiet_NaN();
+    {
+        QMutexLocker locker(&dataMutex);
+        if(samples != data.size()) {
+            auto oldSize = data.size();
+            data.resize(samples);
+            if(oldSize < samples) {
+                for(unsigned int i=oldSize;i<samples;i++) {
+                    data[i].x = startX + i * stepSize;
+                    data[i].y = numeric_limits<complex<double>>::quiet_NaN();
+                }
             }
         }
-    }
-    if(samples > 0 && (startX != data.front().x || stopX != data.back().x || mathUpdateEnd > samples)) {
-        // something changed in the data which affects X axis scaling, update all X values and schedule math calculation for all points
-        for(unsigned int i=0;i<samples;i++) {
-            data[i].x = startX + i * stepSize;
+        if(samples > 0 && (startX != data.front().x || stopX != data.back().x || mathUpdateEnd > samples)) {
+            // something changed in the data which affects X axis scaling, update all X values and schedule math calculation for all points
+            for(unsigned int i=0;i<samples;i++) {
+                data[i].x = startX + i * stepSize;
+            }
+            mathUpdateBegin = 0;
+            mathUpdateEnd = samples;
         }
-        mathUpdateBegin = 0;
-        mathUpdateEnd = samples;
     }
 }
 
@@ -566,12 +589,26 @@ void Trace::scheduleMathCalculation(unsigned int begin, unsigned int end)
 void Trace::calculateMath()
 {
     lastMathUpdate = QTime::currentTime();
-    if(mathUpdateEnd <= mathUpdateBegin) {
+    const auto updateBegin = mathUpdateBegin;
+    const auto updateEnd = mathUpdateEnd;
+    if(updateEnd <= updateBegin) {
         // nothing to do
         return;
     }
-    if(mathUpdateBegin >= data.size() || mathUpdateEnd >= data.size() + 1) {
-        qWarning() << "Not calculating math trace, out of limits. Requested from" << mathUpdateBegin << "to" << mathUpdateEnd <<" but data is of size" << data.size();
+    unsigned int dataSize = 0;
+    vector<double> xValues;
+    {
+        QMutexLocker locker(&dataMutex);
+        dataSize = data.size();
+        if(updateBegin < dataSize && updateEnd < dataSize + 1) {
+            xValues.reserve(updateEnd - updateBegin);
+            for(unsigned int i=updateBegin;i<updateEnd;i++) {
+                xValues.push_back(data[i].x);
+            }
+        }
+    }
+    if(updateBegin >= dataSize || updateEnd >= dataSize + 1) {
+        qWarning() << "Not calculating math trace, out of limits. Requested from" << updateBegin << "to" << updateEnd <<" but data is of size" << dataSize;
         return;
     }
     if(mathFormula.isEmpty()) {
@@ -579,6 +616,7 @@ void Trace::calculateMath()
         return;
     }
     if(!isPaused()) {
+        vector<complex<double>> results(xValues.size(), numeric_limits<complex<double>>::quiet_NaN());
         try {
             ParserX parser(pckCOMMON | pckUNIT | pckCOMPLEX);
             parser.SetExpr(mathFormula.toStdString());
@@ -589,25 +627,32 @@ void Trace::calculateMath()
                 values[ts.first] = Value();
                 parser.DefineVar(ts.second.toStdString(), Variable(&values[ts.first]));
             }
-            for(unsigned int i=mathUpdateBegin;i<mathUpdateEnd;i++) {
-                x = data[i].x;
+            for(unsigned int i=0;i<xValues.size();i++) {
+                x = xValues[i];
                 for(auto &val : values) {
-                    val.second = val.first->interpolatedSample(data[i].x).y;
+                    val.second = val.first->interpolatedSample(xValues[i]).y;
                 }
                 Value res = parser.Eval();
-                data[i].y = res.GetComplex();
+                results[i] = res.GetComplex();
             }
         } catch (const ParserError &e) {
             error(QString::fromStdString(e.GetMsg()));
-            // parser error occurred
-            for(unsigned int i=mathUpdateBegin;i<mathUpdateEnd;i++) {
-                data[i].y = numeric_limits<complex<double>>::quiet_NaN();
+        }
+        {
+            QMutexLocker locker(&dataMutex);
+            for(unsigned int i=0;i<results.size();i++) {
+                if(updateBegin + i < data.size()) {
+                    data[updateBegin + i].y = results[i];
+                }
             }
         }
         success();
-        emit outputSamplesChanged(mathUpdateBegin, mathUpdateEnd + 1);
+        emit outputSamplesChanged(updateBegin, updateEnd + 1);
     }
-    mathUpdateBegin = data.size();
+    {
+        QMutexLocker locker(&dataMutex);
+        mathUpdateBegin = data.size();
+    }
     mathUpdateEnd = 0;
 }
 
@@ -847,9 +892,18 @@ nlohmann::json Trace::toJSON()
     j["reflection"] = reflection;
 
     auto &pref = Preferences::getInstance();
+    vector<Data> traceData;
+    vector<Data> deembeddingDataCopy;
+    {
+        QMutexLocker locker(&dataMutex);
+        if(pref.Debug.saveTraceData) {
+            traceData = data;
+        }
+        deembeddingDataCopy = deembeddingData;
+    }
     if(pref.Debug.saveTraceData) {
         nlohmann::json jdata;
-        for(const auto &d : data) {
+        for(const auto &d : traceData) {
             nlohmann::json jpoint;
             jpoint["x"] = d.x;
             jpoint["real"] = d.y.real();
@@ -861,7 +915,7 @@ nlohmann::json Trace::toJSON()
 
     j["deembeddingActive"] = deembeddingActive;
     nlohmann::json jdedata;
-    for(const auto &d : deembeddingData) {
+    for(const auto &d : deembeddingDataCopy) {
         nlohmann::json jpoint;
         jpoint["x"] = d.x;
         jpoint["real"] = d.y.real();
@@ -906,21 +960,27 @@ void Trace::fromJSON(nlohmann::json j)
     if(j.contains("data")) {
         // Trace data is contained in the json, load now
         clear();
-        for(auto jpoint : j["data"]) {
-            Data d;
-            d.x = jpoint.value("x", 0.0);
-            d.y = complex<double>(jpoint.value("real", 0.0), jpoint.value("imag", 0.0));
-            data.push_back(d);
+        {
+            QMutexLocker locker(&dataMutex);
+            for(auto jpoint : j["data"]) {
+                Data d;
+                d.x = jpoint.value("x", 0.0);
+                d.y = complex<double>(jpoint.value("real", 0.0), jpoint.value("imag", 0.0));
+                data.push_back(d);
+            }
         }
     }
     if(j.contains("deembeddingData")) {
         // Deembedded data is contained in the json, load now
         clearDeembedding();
-        for(auto jpoint : j["deembeddingData"]) {
-            Data d;
-            d.x = jpoint.value("x", 0.0);
-            d.y = complex<double>(jpoint.value("real", 0.0), jpoint.value("imag", 0.0));
-            deembeddingData.push_back(d);
+        {
+            QMutexLocker locker(&dataMutex);
+            for(auto jpoint : j["deembeddingData"]) {
+                Data d;
+                d.x = jpoint.value("x", 0.0);
+                d.y = complex<double>(jpoint.value("real", 0.0), jpoint.value("imag", 0.0));
+                deembeddingData.push_back(d);
+            }
         }
     }
     deembeddingActive = j.value("deembeddingActive", false);
@@ -1392,6 +1452,7 @@ bool Trace::isDeembeddingActive()
 
 bool Trace::deembeddingAvailable()
 {
+    QMutexLocker locker(&dataMutex);
     return deembeddingData.size() > 0;
 }
 
@@ -1402,11 +1463,18 @@ void Trace::setDeembeddingActive(bool active)
         return;
     }
     deembeddingActive = active;
-    if(deembeddingAvailable()) {
+    unsigned int outputSize = 0;
+    bool available = false;
+    {
+        QMutexLocker locker(&dataMutex);
+        available = deembeddingData.size() > 0;
+        outputSize = active ? deembeddingData.size() : data.size();
+    }
+    if(available) {
         if(active) {
-            emit outputSamplesChanged(0, deembeddingData.size());
+            emit outputSamplesChanged(0, outputSize);
         } else {
-            emit outputSamplesChanged(0, data.size());
+            emit outputSamplesChanged(0, outputSize);
         }
     }
     emit deembeddingChanged(this);
@@ -1414,7 +1482,10 @@ void Trace::setDeembeddingActive(bool active)
 
 void Trace::clearDeembedding()
 {
-    deembeddingData.clear();
+    {
+        QMutexLocker locker(&dataMutex);
+        deembeddingData.clear();
+    }
     setDeembeddingActive(false);
 }
 
@@ -1531,25 +1602,30 @@ Trace::Data Trace::sample(unsigned int index, bool getStepResponse) const
 
 Trace::Data Trace::getSample(unsigned int index)
 {
-    if(deembeddingActive && deembeddingAvailable()) {
-        if(index < deembeddingData.size()) {
-            return deembeddingData[index];
-        } else {
-            TraceMath::Data d;
-            d.x = 0;
-            d.y = 0;
-            return d;
+    if(deembeddingActive) {
+        QMutexLocker locker(&dataMutex);
+        if(!deembeddingData.empty()) {
+            if(index < deembeddingData.size()) {
+                return deembeddingData[index];
+            } else {
+                TraceMath::Data d;
+                d.x = 0;
+                d.y = 0;
+                return d;
+            }
         }
-    } else {
-        return TraceMath::getSample(index);
     }
+    return TraceMath::getSample(index);
 }
 
 Trace::Data Trace::getInterpolatedSample(double x)
 {
-    if(deembeddingActive && deembeddingAvailable()) {
+    if(deembeddingActive) {
+        QMutexLocker locker(&dataMutex);
         Data ret;
-        if(deembeddingData.size() == 0 || x < deembeddingData.front().x || x > deembeddingData.back().x) {
+        if(deembeddingData.empty()) {
+            // Fall back to regular trace data below, after releasing dataMutex.
+        } else if(x < deembeddingData.front().x || x > deembeddingData.back().x) {
             ret.y = std::numeric_limits<std::complex<double>>::quiet_NaN();
             ret.x = std::numeric_limits<double>::quiet_NaN();
         } else {
@@ -1568,28 +1644,35 @@ Trace::Data Trace::getInterpolatedSample(double x)
                 ret.x = x;
             }
         }
-        return ret;
+        if(!deembeddingData.empty()) {
+            return ret;
+        }
     } else {
         return TraceMath::getInterpolatedSample(x);
     }
+    return TraceMath::getInterpolatedSample(x);
 }
 
 unsigned int Trace::numSamples()
 {
-    if(deembeddingActive && deembeddingAvailable()) {
-        return deembeddingData.size();
-    } else {
-        return TraceMath::numSamples();
+    if(deembeddingActive) {
+        QMutexLocker locker(&dataMutex);
+        if(!deembeddingData.empty()) {
+            return deembeddingData.size();
+        }
     }
+    return TraceMath::numSamples();
 }
 
 std::vector<Trace::Data> Trace::getData()
 {
-    if(deembeddingActive && deembeddingAvailable()) {
-        return deembeddingData;
-    } else {
-        return TraceMath::getData();
+    if(deembeddingActive) {
+        QMutexLocker locker(&dataMutex);
+        if(!deembeddingData.empty()) {
+            return deembeddingData;
+        }
     }
+    return TraceMath::getData();
 }
 
 double Trace::getUnwrappedPhase(unsigned int index)
