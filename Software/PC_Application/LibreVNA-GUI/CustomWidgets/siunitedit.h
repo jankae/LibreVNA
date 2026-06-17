@@ -14,6 +14,7 @@ public:
     void setPrefixes(QString prefixes) { this->prefixes = prefixes; setValueQuiet(_value); }
     void setPrecision(int precision) { this->precision = precision; setValueQuiet(_value); }
     double value() { return _value; }
+    QSize sizeHint() const override;
 public slots:
     void setValue(double value);
     void setValueQuiet(double value);

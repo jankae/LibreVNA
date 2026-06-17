@@ -328,9 +328,7 @@ VNA::VNA(AppWindow *window, QString name)
     tb_sweep->addWidget(cbSweepType);
 
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
-    // calculate width required with expected string length
-    auto width = QFontMetrics(eStart->font()).horizontalAdvance("10.00000 MHz") + 15;
-    eStart->setFixedWidth(width);
+    eStart->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &VNA::SetStartFreq);
     connect(this, &VNA::startFreqChanged, eStart, &SIUnitEdit::setValueQuiet);
@@ -338,7 +336,7 @@ VNA::VNA(AppWindow *window, QString name)
     frequencySweepActions.push_back(tb_sweep->addWidget(eStart));
 
     auto eCenter = new SIUnitEdit("Hz", " kMG", 6);
-    eCenter->setFixedWidth(width);
+    eCenter->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eCenter->setToolTip("Center frequency");
     connect(eCenter, &SIUnitEdit::valueChanged, this, &VNA::SetCenterFreq);
     connect(this, &VNA::centerFreqChanged, eCenter, &SIUnitEdit::setValueQuiet);
@@ -346,7 +344,7 @@ VNA::VNA(AppWindow *window, QString name)
     frequencySweepActions.push_back(tb_sweep->addWidget(eCenter));
 
     auto eStop = new SIUnitEdit("Hz", " kMG", 6);
-    eStop->setFixedWidth(width);
+    eStop->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eStop->setToolTip("Stop frequency");
     connect(eStop, &SIUnitEdit::valueChanged, this, &VNA::SetStopFreq);
     connect(this, &VNA::stopFreqChanged, eStop, &SIUnitEdit::setValueQuiet);
@@ -354,7 +352,7 @@ VNA::VNA(AppWindow *window, QString name)
     frequencySweepActions.push_back(tb_sweep->addWidget(eStop));
 
     auto eSpan = new SIUnitEdit("Hz", " kMG", 6);
-    eSpan->setFixedWidth(width);
+    eSpan->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eSpan->setToolTip("Span");
     connect(eSpan, &SIUnitEdit::valueChanged, this, &VNA::SetSpan);
     connect(this, &VNA::spanChanged, eSpan, &SIUnitEdit::setValueQuiet);
@@ -399,8 +397,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     // power sweep widgets
     auto sbPowerLow = new QDoubleSpinBox();
-    width = QFontMetrics(sbPowerLow->font()).horizontalAdvance("-30.00dBm") + 20;
-    sbPowerLow->setFixedWidth(width);
+    sbPowerLow->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     sbPowerLow->setRange(-100.0, 100.0);
     sbPowerLow->setSingleStep(0.25);
     sbPowerLow->setSuffix("dbm");
@@ -412,8 +409,7 @@ VNA::VNA(AppWindow *window, QString name)
     powerSweepActions.push_back(tb_sweep->addWidget(sbPowerLow));
 
     auto sbPowerHigh = new QDoubleSpinBox();
-    width = QFontMetrics(sbPowerHigh->font()).horizontalAdvance("-30.00dBm") + 20;
-    sbPowerHigh->setFixedWidth(width);
+    sbPowerHigh->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     sbPowerHigh->setRange(-100.0, 100.0);
     sbPowerHigh->setSingleStep(0.25);
     sbPowerHigh->setSuffix("dbm");
@@ -425,8 +421,7 @@ VNA::VNA(AppWindow *window, QString name)
     powerSweepActions.push_back(tb_sweep->addWidget(sbPowerHigh));
 
     auto ePowerFreq = new SIUnitEdit("Hz", " kMG", 6);
-    width = QFontMetrics(ePowerFreq->font()).horizontalAdvance("3.00000GHz") + 15;
-    ePowerFreq->setFixedWidth(width);
+    ePowerFreq->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     ePowerFreq->setToolTip("Start frequency");
     connect(ePowerFreq, &SIUnitEdit::valueChanged, this, &VNA::SetPowerSweepFrequency);
     connect(this, &VNA::powerSweepFrequencyChanged, ePowerFreq, &SIUnitEdit::setValueQuiet);
@@ -439,8 +434,7 @@ VNA::VNA(AppWindow *window, QString name)
     // Acquisition toolbar
     auto tb_acq = new QToolBar("Acquisition");
     auto dbm = new QDoubleSpinBox();
-    width = QFontMetrics(dbm->font()).horizontalAdvance("-30.00dBm") + 20;
-    dbm->setFixedWidth(width);
+    dbm->setFixedWidth(QFontMetrics(dbm->font()).horizontalAdvance("-99.99 dBm") + 55);
     dbm->setRange(-100.0, 100.0);
     dbm->setSingleStep(0.25);
     dbm->setSuffix("dbm");
@@ -452,7 +446,7 @@ VNA::VNA(AppWindow *window, QString name)
     frequencySweepActions.push_back(tb_acq->addWidget(dbm));
 
     auto points = new QSpinBox();
-    points->setFixedWidth(65);
+    points->setFixedWidth(QFontMetrics(points->font()).horizontalAdvance("99999") + 55);
     points->setRange(1, UINT16_MAX);
     points->setSingleStep(100);
     points->setToolTip("Points/sweep");
@@ -467,7 +461,7 @@ VNA::VNA(AppWindow *window, QString name)
     tb_acq->addWidget(points);
 
     auto eBandwidth = new SIUnitEdit("Hz", " kM", 3);
-    eBandwidth->setFixedWidth(70);
+    eBandwidth->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eBandwidth->setToolTip("IF bandwidth");
     connect(eBandwidth, &SIUnitEdit::valueChanged, this, &VNA::SetIFBandwidth);
     connect(this, &VNA::IFBandwidthChanged, eBandwidth, &SIUnitEdit::setValueQuiet);
@@ -476,8 +470,7 @@ VNA::VNA(AppWindow *window, QString name)
 
     tb_acq->addWidget(new QLabel("Dwell time:"));
     acquisitionDwellTime = new SIUnitEdit("s", "um ", 3);
-    width = QFontMetrics(dbm->font()).horizontalAdvance("100ms") + 20;
-    acquisitionDwellTime->setFixedWidth(width);
+    acquisitionDwellTime->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     connect(acquisitionDwellTime, &SIUnitEdit::valueChanged, this, &VNA::SetDwellTime);
     connect(this, &VNA::dwellTimeChanged, acquisitionDwellTime, &SIUnitEdit::setValueQuiet);
     tb_acq->addWidget(acquisitionDwellTime);
@@ -487,7 +480,7 @@ VNA::VNA(AppWindow *window, QString name)
     tb_acq->addWidget(lAverages);
     auto sbAverages = new QSpinBox;
     sbAverages->setRange(1, 99);
-    sbAverages->setFixedWidth(40);
+    sbAverages->setFixedWidth(QFontMetrics(sbAverages->font()).horizontalAdvance("99") + 55);
     connect(sbAverages, qOverload<int>(&QSpinBox::valueChanged), this, &VNA::SetAveraging);
     connect(this, &VNA::averagingChanged, sbAverages, &QSpinBox::setValue);
     tb_acq->addWidget(sbAverages);

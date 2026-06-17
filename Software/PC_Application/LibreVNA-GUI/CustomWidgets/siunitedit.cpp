@@ -28,6 +28,28 @@ SIUnitEdit::SIUnitEdit(QWidget *parent)
 
 }
 
+QSize SIUnitEdit::sizeHint() const
+{
+    QFontMetrics fm(font());
+    int textWidth = 0;
+    // figure out text width of longest possible prefix
+    QString text = ".";
+    for(int i=0;i<precision;i++) {
+        text += "8";
+    }
+    text += " " + unit;
+    for(auto p : prefixes) {
+        int width = fm.horizontalAdvance(QString(p) + text);
+        if(width > textWidth) {
+            textWidth = width;
+        }
+    }
+
+    QSize sz = QLineEdit::sizeHint();
+    sz.setWidth(textWidth + 20); // frame
+    return sz;
+}
+
 void SIUnitEdit::setValue(double value)
 {
     if(value != _value) {

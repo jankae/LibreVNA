@@ -114,9 +114,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_sweep->addWidget(bSingle);
 
     auto eStart = new SIUnitEdit("Hz", " kMG", 6);
-    // calculate width required with expected string length
-    auto width = QFontMetrics(eStart->font()).horizontalAdvance("10.00000 MHz") + 15;
-    eStart->setFixedWidth(width);
+    eStart->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eStart->setToolTip("Start frequency");
     connect(eStart, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetStartFreq);
     connect(this, &SpectrumAnalyzer::startFreqChanged, eStart, &SIUnitEdit::setValueQuiet);
@@ -124,7 +122,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_sweep->addWidget(eStart);
 
     auto eCenter = new SIUnitEdit("Hz", " kMG", 6);
-    eCenter->setFixedWidth(width);
+    eCenter->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eCenter->setToolTip("Center frequency");
     connect(eCenter, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetCenterFreq);
     connect(this, &SpectrumAnalyzer::centerFreqChanged, eCenter, &SIUnitEdit::setValueQuiet);
@@ -132,7 +130,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_sweep->addWidget(eCenter);
 
     auto eStop = new SIUnitEdit("Hz", " kMG", 6);
-    eStop->setFixedWidth(width);
+    eStop->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eStop->setToolTip("Stop frequency");
     connect(eStop, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetStopFreq);
     connect(this, &SpectrumAnalyzer::stopFreqChanged, eStop, &SIUnitEdit::setValueQuiet);
@@ -140,7 +138,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_sweep->addWidget(eStop);
 
     auto eSpan = new SIUnitEdit("Hz", " kMG", 6);
-    eSpan->setFixedWidth(width);
+    eSpan->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eSpan->setToolTip("Span");
     connect(eSpan, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetSpan);
     connect(this, &SpectrumAnalyzer::spanChanged, eSpan, &SIUnitEdit::setValueQuiet);
@@ -176,7 +174,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     auto tb_acq = new QToolBar("Acquisition");
 
     auto eBandwidth = new SIUnitEdit("Hz", " kM", 3);
-    eBandwidth->setFixedWidth(70);
+    eBandwidth->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     eBandwidth->setToolTip("RBW");
     connect(eBandwidth, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetRBW);
     connect(this, &SpectrumAnalyzer::RBWChanged, eBandwidth, &SIUnitEdit::setValueQuiet);
@@ -214,7 +212,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     auto sbAverages = new QSpinBox;
     sbAverages->setRange(1, 100);
     sbAverages->setRange(1, 99);
-    sbAverages->setFixedWidth(40);
+    sbAverages->setFixedWidth(QFontMetrics(sbAverages->font()).horizontalAdvance("99") + 55);
     connect(sbAverages, qOverload<int>(&QSpinBox::valueChanged), this, &SpectrumAnalyzer::SetAveraging);
     connect(this, &SpectrumAnalyzer::averagingChanged, sbAverages, &QSpinBox::setValue);
     tb_acq->addWidget(sbAverages);
@@ -248,7 +246,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_trackgen->addWidget(cbTrackGenPort);
 
     auto dbm = new QDoubleSpinBox();
-    dbm->setFixedWidth(95);
+    dbm->setFixedWidth(QFontMetrics(dbm->font()).horizontalAdvance("-99.99 dBm") + 55);
     dbm->setRange(-100.0, 100.0);
     dbm->setSingleStep(0.25);
     dbm->setSuffix("dbm");
@@ -260,7 +258,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_trackgen->addWidget(dbm);
 
     tgOffset = new SIUnitEdit("Hz", " kMG", 6);
-    tgOffset->setFixedWidth(width);
+    tgOffset->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     tgOffset->setToolTip("Tracking generator offset");
     connect(tgOffset, &SIUnitEdit::valueChanged, this, &SpectrumAnalyzer::SetTGOffset);
     connect(this, &SpectrumAnalyzer::TGOffsetChanged, tgOffset, &SIUnitEdit::setValueQuiet);
@@ -271,7 +269,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(AppWindow *window, QString name)
     tb_trackgen->addWidget(normalize.enable);
     connect(normalize.enable, &QCheckBox::toggled, this, &SpectrumAnalyzer::EnableNormalization);
     normalize.Level = new SIUnitEdit("dBm", " ", 3);
-    normalize.Level->setFixedWidth(width);
+    normalize.Level->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     normalize.Level->setValue(0);
     normalize.Level->setToolTip("Level to normalize to");
     tb_trackgen->addWidget(new QLabel("To:"));
