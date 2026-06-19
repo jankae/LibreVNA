@@ -273,6 +273,29 @@ QMutex& TraceMath::mutex()
     return dataMutex;
 }
 
+std::complex<double> TraceMath::interpolatedSample(const std::vector<Data> &data, double x)
+{
+    if(data.empty() || x < data.front().x || x > data.back().x) {
+        return std::numeric_limits<std::complex<double>>::quiet_NaN();
+    }
+
+    auto it = lower_bound(data.begin(), data.end(), x, [](const TraceMath::Data &lhs, const double x) -> bool {
+        return lhs.x < x;
+    });
+    if(it == data.end()) {
+        return std::numeric_limits<std::complex<double>>::quiet_NaN();
+    }
+    if(it->x == x || it == data.begin()) {
+        return it->y;
+    }
+
+    auto high = *it;
+    it--;
+    auto low = *it;
+    double alpha = (x - low.x) / (high.x - low.x);
+    return low.y * (1 - alpha) + high.y * alpha;
+}
+
 void TraceMath::updateStepResponse(bool valid)
 {
     QMutexLocker locker(&dataMutex);

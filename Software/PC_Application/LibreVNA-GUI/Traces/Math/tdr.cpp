@@ -8,8 +8,6 @@
 
 #include <chrono>
 #include <thread>
-#include <algorithm>
-#include <limits>
 
 #include <QVBoxLayout>
 #include <QLabel>
@@ -17,29 +15,6 @@
 
 using namespace Math;
 using namespace std;
-
-static complex<double> interpolatedSample(const vector<TraceMath::Data> &data, double x)
-{
-    if(data.empty() || x < data.front().x || x > data.back().x) {
-        return numeric_limits<complex<double>>::quiet_NaN();
-    }
-
-    auto it = lower_bound(data.begin(), data.end(), x, [](const TraceMath::Data &lhs, const double x) -> bool {
-        return lhs.x < x;
-    });
-    if(it == data.end()) {
-        return numeric_limits<complex<double>>::quiet_NaN();
-    }
-    if(it->x == x || it == data.begin()) {
-        return it->y;
-    }
-
-    auto high = *it;
-    it--;
-    auto low = *it;
-    double alpha = (x - low.x) / (high.x - low.x);
-    return low.y * (1 - alpha) + high.y * alpha;
-}
 
 TDR::TDR()
 {
@@ -332,7 +307,7 @@ void TDRThread::run()
             frequencyDomain.resize(2 * steps + 1);
             // copy frequencies, use the flipped conjugate for negative part
             for(unsigned int i = 1;i<=steps;i++) {
-                auto S = interpolatedSample(inputData, stepSize * i);
+                auto S = TraceMath::interpolatedSample(inputData, stepSize * i);
                 frequencyDomain[steps - i] = conj(S);
                 frequencyDomain[steps + i] = S;
             }

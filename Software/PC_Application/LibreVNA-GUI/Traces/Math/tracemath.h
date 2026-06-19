@@ -126,6 +126,8 @@ public:
 
     QMutex& mutex();
 
+    static std::complex<double> interpolatedSample(const std::vector<TraceMath::Data> &data, double x);
+
 public slots:
     // some values of the input data have changed, begin/end determine which sample(s) has changed
     virtual void inputSamplesChanged(unsigned int begin, unsigned int end){Q_UNUSED(begin) Q_UNUSED(end)}

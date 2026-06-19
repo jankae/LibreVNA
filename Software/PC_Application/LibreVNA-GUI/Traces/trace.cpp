@@ -1770,7 +1770,7 @@ double Trace::getGroupDelay(double frequency)
 int Trace::index(double x)
 {
     int ret;
-    lastMath->dataMutex.lock();
+    QMutexLocker locker(&dataMutex);
     auto lower = lower_bound(lastMath->data.begin(), lastMath->data.end(), x, [](const Data &lhs, const double x) -> bool {
         return lhs.x < x;
     });
@@ -1779,6 +1779,5 @@ int Trace::index(double x)
         ret = lastMath->data.size() - 1;
     }
     ret = lower - lastMath->data.begin();
-    lastMath->dataMutex.unlock();
     return ret;
 }
