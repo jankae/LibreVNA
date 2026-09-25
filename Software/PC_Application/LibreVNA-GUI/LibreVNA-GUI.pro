@@ -39,6 +39,7 @@ HEADERS += \
     Device/LibreVNA/manualcontroldialogV1.h \
     Device/LibreVNA/manualcontroldialogVD0.h \
     Device/LibreVNA/manualcontroldialogVE0.h \
+    Device/LibreVNA/manualcontroldialogVE1.h \
     Device/LibreVNA/manualcontroldialogvfe.h \
     Device/LibreVNA/manualcontroldialogvff.h \
     Device/LibreVNA/receivercaldialog.h \
@@ -211,6 +212,7 @@ SOURCES += \
     Device/LibreVNA/manualcontroldialogV1.cpp \
     Device/LibreVNA/manualcontroldialogVD0.cpp \
     Device/LibreVNA/manualcontroldialogVE0.cpp \
+    Device/LibreVNA/manualcontroldialogVE1.cpp \
     Device/LibreVNA/manualcontroldialogvfe.cpp \
     Device/LibreVNA/manualcontroldialogvff.cpp \
     Device/LibreVNA/receivercaldialog.cpp \
@@ -377,6 +379,7 @@ FORMS += \
     Device/LibreVNA/manualcontroldialogV1.ui \
     Device/LibreVNA/manualcontroldialogVD0.ui \
     Device/LibreVNA/manualcontroldialogVE0.ui \
+    Device/LibreVNA/manualcontroldialogVE1.ui \
     Device/LibreVNA/manualcontroldialogvfe.ui \
     Device/LibreVNA/manualcontroldialogvff.ui \
     Device/devicelog.ui \

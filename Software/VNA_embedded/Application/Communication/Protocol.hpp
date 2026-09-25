@@ -261,6 +261,20 @@ using DeviceStatus = struct _deviceStatus {
             uint16_t supply_voltage;
             uint16_t supply_current;
         } VD0;
+        struct {
+            uint8_t source_locked:1;
+            uint8_t LO_locked:1;
+            uint8_t ADC_overload:1;
+            uint8_t unlevel:1;
+            uint8_t temp_MCU;
+        } VE0;
+        struct {
+            uint8_t source_locked:1;
+            uint8_t LO_locked:1;
+            uint8_t ADC_overload:1;
+            uint8_t unlevel:1;
+            uint8_t temp_MCU;
+        } VE1;
 	};
 };
 
@@ -305,6 +319,14 @@ using ManualStatus = struct _manualstatus {
             float port2real, port2imag;
             float refreal, refimag;
         } VE0;
+        struct {
+            int16_t port1min, port1max;
+            int16_t port2min, port2max;
+            int16_t refmin, refmax;
+            float port1real, port1imag;
+            float port2real, port2imag;
+            float refreal, refimag;
+        } VE1;
         struct {
             int32_t port1min, port1max;
             int32_t port2min, port2max;
@@ -433,6 +455,31 @@ using ManualControl = struct _manualControl {
             uint32_t Samples;
             uint8_t WindowType :2;
         } VE0;
+        struct {
+            // Source
+            uint32_t srcFreq;
+            uint8_t srcPwr;
+            uint8_t srcCE :1;
+            uint8_t portSel :2; // 0: both off, 1: port 1 selected, 2: port 2 selected
+            uint8_t unused1 :5;
+            // LO
+            uint32_t LOFreq;
+            uint8_t LOPwr;
+            uint8_t LOCE :1;
+            uint8_t LOAmp :1;
+            uint8_t unused2 :6;
+            // Port 1
+            uint8_t P1PathSel :1; // 0: reflection path selected, 1: transmission path selected
+            uint8_t P1AmpOn :1;
+            uint8_t P1AmpBypass :1;
+            // Port 2
+            uint8_t P2PathSel :1; // 0: reflection path selected, 1: transmission path selected
+            uint8_t P2AmpOn :1;
+            uint8_t P2AmpBypass :1;
+            // Acquisition
+            uint32_t Samples;
+            uint8_t WindowType :2;
+        } VE1;
         struct {
             // Highband Source
             uint8_t SourceHighCE :1;

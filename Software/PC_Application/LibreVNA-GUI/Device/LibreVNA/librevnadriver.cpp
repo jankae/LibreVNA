@@ -4,6 +4,7 @@
 #include "manualcontroldialogvff.h"
 #include "manualcontroldialogvfe.h"
 #include "manualcontroldialogVE0.h"
+#include "manualcontroldialogVE1.h"
 #include "manualcontroldialogVD0.h"
 #include "deviceconfigurationdialogv1.h"
 #include "deviceconfigurationdialogvff.h"
@@ -136,6 +137,9 @@ LibreVNADriver::LibreVNADriver()
         case 0xE0:
             manualControlDialog = new ManualControlDialogVE0(*this);
             break;
+        case 0xE1:
+            manualControlDialog = new ManualControlDialogVE1(*this);
+            break;
         case 0xFE:
             manualControlDialog = new ManualControlDialogVFE(*this);
             break;
@@ -242,6 +246,7 @@ LibreVNADriver::LibreVNADriver()
     availableActions[0x01] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xD0] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xE0] = {manual, update, sep, srccal, recvcal, freqcal, internalAlignment, sep2, log};
+    availableActions[0xE1] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xFD] = {manual, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xFE] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
     availableActions[0xFF] = {manual, config, update, sep, srccal, recvcal, freqcal, sep2, log};
@@ -254,6 +259,8 @@ LibreVNADriver::LibreVNADriver()
         switch(hardwareVersion) {
         case 0x01: return QString::number(lastStatus.V1.temp_source)+"/"+QString::number(lastStatus.V1.temp_LO1)+"/"+QString::number(lastStatus.V1.temp_MCU);
         case 0xD0: return QString::number(lastStatus.VD0.temp_MCU);
+        case 0xE0: return QString::number(lastStatus.VE0.temp_MCU);
+        case 0xE1: return QString::number(lastStatus.VE1.temp_MCU);
         case 0xFE: return QString::number(lastStatus.VFE.temp_MCU)+"/"+QString::number(lastStatus.VFE.temp_eCal);
         case 0xFF: return QString::number(lastStatus.VFF.temp_MCU);
         default: return SCPI::getResultName(SCPI::Result::Error);
@@ -331,6 +338,28 @@ std::set<DeviceDriver::Flag> LibreVNADriver::getFlags()
             ret.insert(Flag::Overload);
         }
         break;
+    case 0xE0:
+        if(!lastStatus.VE0.source_locked || !lastStatus.VE0.LO_locked) {
+            ret.insert(Flag::Unlocked);
+        }
+        if(lastStatus.VE0.unlevel) {
+            ret.insert(Flag::Unlevel);
+        }
+        if(lastStatus.VE0.ADC_overload) {
+            ret.insert(Flag::Overload);
+        }
+        break;
+    case 0xE1:
+        if(!lastStatus.VE1.source_locked || !lastStatus.VE1.LO_locked) {
+            ret.insert(Flag::Unlocked);
+        }
+        if(lastStatus.VE1.unlevel) {
+            ret.insert(Flag::Unlevel);
+        }
+        if(lastStatus.VE1.ADC_overload) {
+            ret.insert(Flag::Overload);
+        }
+        break;
     case 0xFE:
         if(!lastStatus.VFE.source_locked || !lastStatus.VFE.LO_locked) {
             ret.insert(Flag::Unlocked);
@@ -388,6 +417,12 @@ QString LibreVNADriver::getStatus()
                 ret.append(" (External available)");
             }
         }
+        break;
+    case 0xE0:
+        ret.append(" MCU Temp: "+QString::number(lastStatus.VE0.temp_MCU)+"°C");
+        break;
+    case 0xE1:
+        ret.append(" MCU Temp: "+QString::number(lastStatus.VE1.temp_MCU)+"°C");
         break;
     case 0xFE:
         ret.append(" MCU Temp: "+QString::number(lastStatus.VFE.temp_MCU)+"°C");
@@ -819,6 +854,7 @@ QString LibreVNADriver::hardwareVersionToString(uint8_t version)
     case 0x01: return "1";
     case 0xD0: return "HAR0";
     case 0xE0: return "SAP1";
+    case 0xE1: return "RSG1";
     case 0xFE: return "P2";
     case 0xFF: return "PT";
     default: return "Unknown";
@@ -881,6 +917,7 @@ QString LibreVNADriver::getFirmwareMagicString()
     case 0x01: return "VNA!";
     case 0xD0: return "VHP1";
     case 0xE0: return "VNS1";
+    case 0xE1: return "VNS2";
     case 0xFE: return "VNP2";
     case 0xFF: return "VNPT";
     default: return "XXXX";
