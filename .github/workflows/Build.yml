@@ -155,7 +155,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install qt@6 pcre
+          brew install qt@6 pcre2
           
       - name: Set Environment
         run: |
@@ -169,9 +169,9 @@ jobs:
         id: id_version
         run: |
           cd Software/PC_Application/LibreVNA-GUI
-          fw_major=`pcregrep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
-          fw_minor=`pcregrep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
-          fw_patch=`pcregrep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          fw_major=`pcre2grep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`pcre2grep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`pcre2grep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
           echo "app_version=v$fw_major.$fw_minor.$fw_patch-${{steps.id_date.outputs.timestamp}}" >> $GITHUB_OUTPUT
 
       - name: Build application
@@ -198,7 +198,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install qt@6 pcre
+          brew install qt@6 pcre2
           
       - name: Set Environment
         run: |
@@ -212,9 +212,9 @@ jobs:
         id: id_version
         run: |
           cd Software/PC_Application/LibreVNA-GUI
-          fw_major=`pcregrep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
-          fw_minor=`pcregrep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
-          fw_patch=`pcregrep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
+          fw_major=`pcre2grep -o '(?<=FW_MAJOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_minor=`pcre2grep -o '(?<=FW_MINOR=)[0-9]+' LibreVNA-GUI.pro`
+          fw_patch=`pcre2grep -o '(?<=FW_PATCH=)[0-9]+' LibreVNA-GUI.pro` 
           echo "app_version=v$fw_major.$fw_minor.$fw_patch-${{steps.id_date.outputs.timestamp}}" >> $GITHUB_OUTPUT
 
       - name: Build application
