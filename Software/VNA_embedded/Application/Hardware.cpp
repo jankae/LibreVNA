@@ -498,7 +498,7 @@ void HW::updateDeviceStatus() {
 		if(HAL_GetTick() - last_update >= 1000) {
 			last_update = HAL_GetTick();
 			HW::Ref::update();
-			Protocol::PacketInfo packet;
+			Protocol::PacketInfo packet = {};
 			packet.type = Protocol::PacketType::DeviceStatus;
 			HW::getDeviceStatus(&packet.status, true);
 			Communication::Send(packet);

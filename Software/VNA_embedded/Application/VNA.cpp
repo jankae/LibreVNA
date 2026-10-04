@@ -417,7 +417,7 @@ void VNA::Work() {
 	// the source PLL
 	FPGA::StopSweep();
 	// Compile info packet
-	Protocol::PacketInfo packet;
+	Protocol::PacketInfo packet = {};
 	packet.type = Protocol::PacketType::DeviceStatus;
 	if(HW::getStatusUpdateFlag()) {
 		HW::getDeviceStatus(&packet.status, true);

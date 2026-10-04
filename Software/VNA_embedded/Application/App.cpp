@@ -159,7 +159,7 @@ inline void App_Process() {
 					break;
 				case Protocol::PacketType::RequestDeviceInfo: {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
-					Protocol::PacketInfo p;
+					Protocol::PacketInfo p = {};
 					p.type = Protocol::PacketType::DeviceInfo;
 					p.info = HW::Info;
 					Communication::Send(p);
@@ -167,7 +167,7 @@ inline void App_Process() {
 					break;
 				case Protocol::PacketType::RequestDeviceStatus: {
 					Communication::SendWithoutPayload(Protocol::PacketType::Ack);
-					Protocol::PacketInfo p;
+					Protocol::PacketInfo p = {};
 					p.type = Protocol::PacketType::DeviceStatus;
 					HW::getDeviceStatus(&p.status);
 					Communication::Send(p);

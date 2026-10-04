@@ -107,7 +107,7 @@ Cal::Correction Cal::ReceiverCorrection(uint64_t freq) {
 static void SendCorrectionTable(const CorrectionTable& table, Protocol::PacketType type) {
 	for(uint8_t i=0;i<table.usedPoints;i++) {
 		// assemble packet
-		Protocol::PacketInfo p;
+		Protocol::PacketInfo p = {};
 		p.type = type;
 		p.amplitudePoint.totalPoints = table.usedPoints;
 		p.amplitudePoint.pointNum = i;

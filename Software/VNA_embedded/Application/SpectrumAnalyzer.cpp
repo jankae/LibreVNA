@@ -475,7 +475,7 @@ void SA::Work() {
 		if(HW::getStatusUpdateFlag() && pointCnt % 10 == 0) {
 			// send device info every nth point
 			FPGA::Enable(FPGA::Periphery::SourceChip); // needs to enable the chip to get a valid temperature reading
-			Protocol::PacketInfo packet;
+			Protocol::PacketInfo packet = {};
 			packet.type = Protocol::PacketType::DeviceStatus;
 			HW::getDeviceStatus(&packet.status, true);
 			FPGA::Disable(FPGA::Periphery::SourceChip);

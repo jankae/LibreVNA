@@ -70,7 +70,7 @@ bool Communication::SendWithoutPayload(Protocol::PacketType type) {
 		blockAcks--;
 		return true;
 	}
-	Protocol::PacketInfo p;
+	Protocol::PacketInfo p = {};
 	p.type = type;
 	return Send(p);
 }

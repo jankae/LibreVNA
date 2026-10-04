@@ -96,7 +96,7 @@ void Manual::Work() {
 	if(!active) {
 		return;
 	}
-	Protocol::PacketInfo p;
+	Protocol::PacketInfo p = {};
 	p.type = Protocol::PacketType::ManualStatus;
 	p.manualStatus = status;
 	uint16_t isr_flags = FPGA::GetStatus();
@@ -122,7 +122,7 @@ void Manual::Work() {
 	Communication::Send(p);
 	HW::Ref::update();
 	if(HW::getStatusUpdateFlag()) {
-		Protocol::PacketInfo packet;
+		Protocol::PacketInfo packet = {};
 		packet.type = Protocol::PacketType::DeviceStatus;
 		// Enable PLL chips for temperature reading
 		bool srcEn = FPGA::IsEnabled(FPGA::Periphery::SourceChip);
