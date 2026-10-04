@@ -417,7 +417,18 @@ uint8_t MAX2871::GetTemp() {
 	regs[5] |= (1UL << 18);
 	Write(5, regs[5]);
 	Write(2, regs[2]);
-	uint8_t ADC_raw = (Read() >> 16) & 0x7F;
+	uint32_t readback = Read();
+	uint8_t extraReads = 0;
+	while(!(readback & (1UL << 15)) && extraReads < 50) {
+	    Delay::us(20);
+	    readback = Read();
+	    extraReads++;
+	}
+	if(!(readback & (1UL << 15))) {
+	    // still invalid: nothing we can do, this should not happen. Just return a value
+		return 0;
+	}
+	uint8_t ADC_raw = (readback >> 16) & 0x7F;
 	LOG_DEBUG("Raw temp ADC: %d", ADC_raw);
 	// Disable ADC
 	regs[5] &= ~0x00000078;
