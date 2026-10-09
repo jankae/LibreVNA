@@ -5,6 +5,8 @@
 
 #include <QMenu>
 
+class QPushButton;
+
 class ModeWindow: public QWidget
 {
     Q_OBJECT
@@ -14,13 +16,20 @@ public:
 
     QMenu *getMenu() const;
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     ModeHandler* handler;
     void SetupUi();
+    void updateTabBarHeight();
 
     void updateMenuActions();
     AppWindow* aw;
     QTabBar* tabBar;
+    QWidget* cornerWidget;
+    QPushButton* bAdd;
+    int lastTabBarHeight = 0;
     QMenu *menu;
     QList<QAction*> menuActions;
     QActionGroup *modeMenuGroup;
