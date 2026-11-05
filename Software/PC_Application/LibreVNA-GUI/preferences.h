@@ -348,6 +348,8 @@ private:
         {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::GroupDelay], "Graphs.defaultAxisLimits.GroupDelay.min", 0.0},
         {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::ImpulseReal], "Graphs.defaultAxisLimits.ImpulseReal.max", 1.0},
         {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::ImpulseReal], "Graphs.defaultAxisLimits.ImpulseReal.min", -1.0},
+        {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::ImpulseImag], "Graphs.defaultAxisLimits.ImpulseImag.max", 1.0},
+        {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::ImpulseImag], "Graphs.defaultAxisLimits.ImpulseImag.min", -1.0},
         {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::ImpulseMag], "Graphs.defaultAxisLimits.ImpulseMag.max", 0.0},
         {&Graphs.defaultAxisLimits.min[(int) YAxis::Type::ImpulseMag], "Graphs.defaultAxisLimits.ImpulseMag.min", -100.0},
         {&Graphs.defaultAxisLimits.max[(int) YAxis::Type::Step], "Graphs.defaultAxisLimits.Step.max", 1.0},

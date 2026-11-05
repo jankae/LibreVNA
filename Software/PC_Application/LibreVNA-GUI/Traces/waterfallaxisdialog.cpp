@@ -184,6 +184,7 @@ std::set<YAxis::Type> WaterfallAxisDialog::supportedYAxis(XAxis::Type type)
         case XAxis::Type::Time:
         case XAxis::Type::Distance:
             ret.insert(YAxis::Type::ImpulseReal);
+            ret.insert(YAxis::Type::ImpulseImag);
             ret.insert(YAxis::Type::ImpulseMag);
             ret.insert(YAxis::Type::Step);
             ret.insert(YAxis::Type::Impedance);

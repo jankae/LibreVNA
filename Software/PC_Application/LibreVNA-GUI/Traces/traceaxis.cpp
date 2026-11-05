@@ -141,6 +141,8 @@ double YAxis::sampleToCoordinate(Trace::Data data, Trace *t, unsigned int sample
         return t->getGroupDelay(data.x);
     case YAxis::Type::ImpulseReal:
         return real(data.y);
+    case YAxis::Type::ImpulseImag:
+        return imag(data.y);
     case YAxis::Type::ImpulseMag:
         return Util::SparamTodB(data.y);
     case YAxis::Type::Step:
@@ -200,6 +202,7 @@ QString YAxis::TypeToName(Type type)
     case Type::QualityFactor: return "Quality Factor";
     case Type::GroupDelay: return "Group delay";
     case Type::ImpulseReal: return "Impulse Response (Real)";
+    case Type::ImpulseImag: return "Impulse Response (Imag)";
     case Type::ImpulseMag: return "Impulse Response (Magnitude)";
     case Type::Step: return "Step Response";
     case Type::Impedance: return "Impedance";
@@ -230,6 +233,7 @@ QString YAxis::Unit(Type type, TraceModel::DataSource source)
         case Type::UnwrappedPhase: return "°";
         case Type::VSWR: return "";
         case Type::ImpulseReal: return "";
+        case Type::ImpulseImag: return "";
         case Type::ImpulseMag: return "dB";
         case Type::Step: return "";
         case Type::Impedance: return "Ω";
@@ -266,6 +270,7 @@ QString YAxis::Prefixes(Type type, TraceModel::DataSource source)
         case Type::UnwrappedPhase: return " ";
         case Type::VSWR: return " ";
         case Type::ImpulseReal: return "pnum kMG";
+        case Type::ImpulseImag: return "pnum kMG";
         case Type::ImpulseMag: return " ";
         case Type::Step: return "pnum kMG";
         case Type::Impedance: return "m kM";
@@ -342,6 +347,7 @@ std::set<YAxis::Type> YAxis::getSupported(XAxis::Type type, TraceModel::DataSour
         case XAxis::Type::Time:
         case XAxis::Type::Distance:
             ret.insert(YAxis::Type::ImpulseReal);
+            ret.insert(YAxis::Type::ImpulseImag);
             ret.insert(YAxis::Type::ImpulseMag);
             ret.insert(YAxis::Type::Step);
             ret.insert(YAxis::Type::Impedance);
@@ -363,13 +369,25 @@ std::set<YAxis::Type> YAxis::getSupported(XAxis::Type type, TraceModel::DataSour
     return ret;
 }
 
-std::complex<double> YAxis::reconstructValueFromYAxisType(std::map<YAxis::Type, double> yaxistypes)
+std::complex<double> YAxis::reconstructValueFromYAxisType(std::map<YAxis::Type, double> yaxistypes, bool *success)
 {
+    bool fullyReconstructed = false;
     std::complex<double> ret = std::numeric_limits<std::complex<double>>::quiet_NaN();
     if(yaxistypes.count(Type::Real)) {
         ret.real(yaxistypes[Type::Real]);
         if(yaxistypes.count(Type::Imaginary)) {
             ret.imag(yaxistypes[Type::Imaginary]);
+            // fully restored
+            fullyReconstructed = true;
+        } else {
+            ret.imag(0.0);
+        }
+    } else if(yaxistypes.count(Type::ImpulseReal)) {
+        ret.real(yaxistypes[Type::ImpulseReal]);
+        if(yaxistypes.count(Type::ImpulseImag)) {
+            ret.imag(yaxistypes[Type::ImpulseImag]);
+            // fully restored
+            fullyReconstructed = true;
         } else {
             ret.imag(0.0);
         }
@@ -385,10 +403,14 @@ std::complex<double> YAxis::reconstructValueFromYAxisType(std::map<YAxis::Type, 
         }
         if(yaxistypes.count(Type::Phase)) {
             phase = yaxistypes[Type::Phase];
+            fullyReconstructed = true;
         } else {
             phase = 0.0;
         }
         ret = polar<double>(maglin, phase / 180.0 * M_PI);
+    }
+    if(success) {
+        *success = fullyReconstructed;
     }
     return ret;
 }

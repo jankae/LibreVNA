@@ -82,6 +82,7 @@ public:
         GroupDelay,
         // TDR options
         ImpulseReal,
+        ImpulseImag,
         ImpulseMag,
         Step,
         Impedance,
@@ -107,7 +108,7 @@ public:
 
     bool isSupported(XAxis::Type type, TraceModel::DataSource source);
     static std::set<YAxis::Type> getSupported(XAxis::Type type, TraceModel::DataSource source);
-    static std::complex<double> reconstructValueFromYAxisType(std::map<Type, double> yaxistypes);
+    static std::complex<double> reconstructValueFromYAxisType(std::map<Type, double> yaxistypes, bool *success);
     static double getDefaultLimitMax(YAxis::Type type);
     static double getDefaultLimitMin(YAxis::Type type);
     double getDefaultLimitMax();

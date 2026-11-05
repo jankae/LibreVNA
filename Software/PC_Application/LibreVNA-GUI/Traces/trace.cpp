@@ -7,6 +7,7 @@
 #include "tracemodel.h"
 #include "Math/parser/mpParser.h"
 #include "preferences.h"
+#include "CustomWidgets/informationbox.h"
 
 #include <math.h>
 #include <QDebug>
@@ -313,21 +314,34 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
     } else {
         domain = DataType::Frequency;
     }
+    bool fullReconstruction = true;
     for(unsigned int i=0;i<xColumn.size();i++) {
         std::map<YAxis::Type, double> data;
         for(auto map : columnMapping) {
             data[map.first] = csv.getColumn(map.second)[i];
         }
+        bool valueReconstructed = false;
         Data d;
         d.x = xColumn[i];
-        d.y = YAxis::reconstructValueFromYAxisType(data);
+        d.y = YAxis::reconstructValueFromYAxisType(data, &valueReconstructed);
         addData(d, domain);
+        if(!valueReconstructed) {
+            fullReconstruction = false;
+        }
     }
     reflection = false;
     clearMathSources();
     source = Source::File;
     emit typeChanged(this);
     emit outputSamplesChanged(0, data.size());
+    if(columnMapping.count(YAxis::Type::Step) || columnMapping.count(YAxis::Type::Impedance)) {
+        // the trace had a step response, update it from the underlying complex impulse response
+        updateStepResponse(true);
+    }
+    if(!fullReconstruction) {
+        InformationBox::ShowError("Failed to reconstruct", "The data for trace \""+lastTraceName+"\" could not be fully reconstructed because "
+            "the provided columns do not contain enough information to unambiguously restore the complex data. Values may be missing or wrong.");
+    }
     return lastTraceName;
 }
 

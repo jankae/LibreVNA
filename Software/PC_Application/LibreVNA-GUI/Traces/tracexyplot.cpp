@@ -272,6 +272,7 @@ bool TraceXYPlot::isTDRtype(YAxis::Type type)
 {
     switch(type) {
     case YAxis::Type::ImpulseReal:
+    case YAxis::Type::ImpulseImag:
     case YAxis::Type::ImpulseMag:
     case YAxis::Type::Step:
     case YAxis::Type::Impedance:

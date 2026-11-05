@@ -86,7 +86,7 @@ void TraceCSVExport::on_buttonBox_accepted()
     // create the first column (X data)
     vector<double> X;
     QString Xname = Trace::dataTypeToString(traces[0]->outputType());
-    auto samples = traces[0]->numSamples();
+    auto samples = traces[0]->size();
     for(unsigned int i=0;i<samples;i++) {
         X.push_back(traces[0]->sample(i).x);
     }
@@ -96,7 +96,7 @@ void TraceCSVExport::on_buttonBox_accepted()
         for(auto ytype : getSelectedYAxisTypes()) {
             auto axis = YAxis();
             axis.set(ytype, false, false, 0, 1, 10, false);
-            auto samples = trace->numSamples();
+            auto samples = trace->size();
             vector<double> values;
             for(unsigned int i=0;i<samples;i++) {
                 values.push_back(axis.sampleToCoordinate(trace->sample(i), trace, i));
