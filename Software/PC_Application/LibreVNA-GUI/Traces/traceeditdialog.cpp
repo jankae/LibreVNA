@@ -45,6 +45,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
                 ui->stack->setCurrentIndex(2);
                 ui->csvImport->setFile(t.getFilename());
                 ui->csvImport->selectTrace(t.getFileParameter());
+                ui->impedance->setEnabled(true);
             } else {
                 // attempt to parse as touchstone
                 ui->stack->setCurrentIndex(1);
