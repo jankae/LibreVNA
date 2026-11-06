@@ -257,7 +257,7 @@ void Trace::fillFromTouchstone(Touchstone &t, unsigned int parameter)
     emit outputSamplesChanged(0, data.size());
 }
 
-QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
+QString Trace::fillFromCSV(CSV &csv, unsigned int parameter, bool isReflectionTrace)
 {
     // find correct column
     int traceNum = -1;
@@ -329,7 +329,7 @@ QString Trace::fillFromCSV(CSV &csv, unsigned int parameter)
             fullReconstruction = false;
         }
     }
-    reflection = false;
+    reflection = isReflectionTrace;
     clearMathSources();
     source = Source::File;
     emit typeChanged(this);
@@ -1023,6 +1023,7 @@ void Trace::fromJSON(nlohmann::json j)
         fileParameter = j.value("parameter", 0);
         try {
             if(filename.endsWith(".csv")) {
+                // fill from CSV first without checking for reflection/transmission, that flag is set later from the JSON
                 auto csv = CSV::fromFile(filename);
                 fillFromCSV(csv, fileParameter);
             } else {

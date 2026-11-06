@@ -14,6 +14,8 @@ CSVImport::CSVImport(QWidget *parent) :
     ui->setupUi(this);
     ui->from->setPrecision(5);
     ui->to->setPrecision(5);
+    ui->from->setPrefixes("pnum kMG");
+    ui->to->setPrefixes("pnum kMG");
     ui->traces->setPrecision(0);
     ui->points->setPrecision(0);
     connect(ui->file, &QLineEdit::textChanged, this, &CSVImport::setFile);
@@ -42,12 +44,17 @@ QString CSVImport::getFilename()
 bool CSVImport::fillTrace(Trace &t)
 {
     try {
-        t.fillFromCSV(csv, ui->traceSelector->currentIndex());
+        t.fillFromCSV(csv, ui->traceSelector->currentIndex(), ui->reflectionType->currentIndex() == 0);
         return true;
     } catch (const std::exception &e) {
         qWarning() << QString("CSV import failed to fill trace: ") + e.what();
         return false;
     }
+}
+
+bool CSVImport::isReflection()
+{
+    return ui->reflectionType->currentIndex() == 0;
 }
 
 void CSVImport::setFile(QString filename)
@@ -60,6 +67,11 @@ void CSVImport::setFile(QString filename)
 void CSVImport::selectTrace(unsigned int index)
 {
     ui->traceSelector->setCurrentIndex(index);
+}
+
+void CSVImport::setReflection(bool reflection)
+{
+    ui->reflectionType->setCurrentIndex(reflection ? 0 : 1);
 }
 
 void CSVImport::on_browse_clicked()

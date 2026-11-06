@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>232</width>
-    <height>256</height>
+    <width>221</width>
+    <height>278</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -175,6 +175,27 @@
      </item>
      <item row="5" column="1">
       <widget class="QComboBox" name="traceSelector"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QComboBox" name="reflectionType">
+       <item>
+        <property name="text">
+         <string>Reflection</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Transmission</string>
+        </property>
+       </item>
+      </widget>
      </item>
     </layout>
    </item>

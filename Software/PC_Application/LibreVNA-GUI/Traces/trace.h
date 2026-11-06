@@ -51,7 +51,7 @@ public:
     void setName(QString name);
     void setVelocityFactor(double v);
     void fillFromTouchstone(Touchstone &t, unsigned int parameter);
-    QString fillFromCSV(CSV &csv, unsigned int parameter); // returns the suggested trace name (not yet set in member data)
+    QString fillFromCSV(CSV &csv, unsigned int parameter, bool isReflectionTrace = false); // returns the suggested trace name (not yet set in member data)
     static void fillFromDatapoints(std::map<QString, Trace*> traceSet, const std::vector<DeviceDriver::VNAMeasurement> &data, bool deembedded = false);
     void fromLivedata(LivedataType type, QString param);
     void fromMath();

@@ -23,6 +23,7 @@ public:
     QString getFilename();
 
     bool fillTrace(Trace &t);
+    bool isReflection();
 
 signals:
     void statusChanged(bool status);
@@ -31,6 +32,7 @@ signals:
 public slots:
     void setFile(QString filename);
     void selectTrace(unsigned int index);
+    void setReflection(bool reflection);
 
 private slots:
     void on_browse_clicked();

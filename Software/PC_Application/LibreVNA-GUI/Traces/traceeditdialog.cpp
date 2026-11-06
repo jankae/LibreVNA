@@ -45,6 +45,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
                 ui->stack->setCurrentIndex(2);
                 ui->csvImport->setFile(t.getFilename());
                 ui->csvImport->selectTrace(t.getFileParameter());
+                ui->csvImport->setReflection(t.isReflection());
                 ui->impedance->setEnabled(true);
             } else {
                 // attempt to parse as touchstone
@@ -71,7 +72,7 @@ TraceEditDialog::TraceEditDialog(Trace &t, QWidget *parent) :
     ui->GSource->setId(ui->bMath, 2);
 
     if(t.getSource() == Trace::Source::Calibration) {
-        // prevent editing imported calibration traces (and csv files for now)
+        // prevent editing imported calibration traces
         ui->bLive->setEnabled(false);
         ui->bFile->setEnabled(false);
         ui->bMath->setEnabled(false);
@@ -349,17 +350,16 @@ void TraceEditDialog::okClicked()
                 }
                 if(ui->stack->currentIndex() == 1) {
                     // touchstone page active
-                    if(ui->touchstoneImport->getFilename() != trace.getFilename()) {
-                        auto t = ui->touchstoneImport->getTouchstone();
-                        trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
-                    }
+                    auto t = ui->touchstoneImport->getTouchstone();
+                    trace.fillFromTouchstone(t, ui->CParameter->currentIndex());
                 } else {
                     // CSV page active
-                    if(ui->csvImport->getFilename() != trace.getFilename()) {
-
-                    }
                     ui->csvImport->fillTrace(trace);
                 }
+            }
+            // update reflection status for CSV traces even when the file has not changed
+            if(ui->stack->currentIndex() == 2) {
+                trace.setReflection(ui->csvImport->isReflection());
             }
         } else if(ui->bLive->isChecked()) {
             Trace::LivedataType type = Trace::LivedataType::Overwrite;
