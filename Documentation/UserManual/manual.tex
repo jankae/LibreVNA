@@ -232,8 +232,8 @@ The \vna{} application is made up of six areas containing different types of con
 \item The \textbf{Toolbars} provide access to commonly used device settings. They can be rearranged or disabled (see section~\ref{menu:window}).
 \item The \textbf{Menu} at the top left handles less common settings or more complex actions (often with additional popup windows).
 \item The \textbf{Docks} mostly provide access to display related settings such as traces and markers. They can be rearranged or disabled (see section~\ref{menu:window}).
-\item The \textbf{Statusbar} at the bottom show some basic informations about the connected device. If error conditions (e.g. ADC overload) are present, they are indicated at the bottom right corner.
-\item The \textbf{Modeswitch} at the top right allows changing the \vna{} operating mode. Although it is primarily designed as a vector network analyzer, the hardware architecture allow some other operating modes with certain limitations.
+\item The \textbf{Statusbar} at the bottom shows some basic information about the connected device. If error conditions (e.g. ADC overload) are present, they are indicated at the bottom right corner.
+\item The \textbf{Modeswitch} at the top right allows changing the \vna{} operating mode. Although it is primarily designed as a vector network analyzer, the hardware architecture allows some other operating modes with certain limitations.
 \end{itemize}
 Depending on the current operating mode, the available toolbars, docks and menu entries change. It is also possible to rearrange the docks and toolbars.
 
@@ -345,7 +345,7 @@ This section contains some details of the signal flow inside the \vna{}-Applicat
 \end{tikzpicture}
 \end{center}
 
-The central element of the signal flow is the concept of \textbf{traces}. A trace is created from a single S parameter across frequency (either measured by the \vna{} or imported from an external file). Once the data is captured in a trace, optional math operations may be applied to it (e.g. performing a TDR to transform the data into the time domain) and the result of these operations are passed on to the graphs.
+The central element of the signal flow is the concept of \textbf{traces}. A trace is created from a single S parameter across frequency (either measured by the \vna{} or imported from an external file). Once the data is captured in a trace, optional math operations may be applied to it (e.g. performing a TDR to transform the data into the time domain) and the results of these operations are passed on to the graphs.
 
 When capturing data from the \vna{}, additional operations take place before the data is fed to the traces. First, the \vna{} measures the four S parameters between its two ports. The raw measurements are transferred through USB. The first processing block is the calibration (see also section~\ref{vna:calibration}), followed by optional de-embedding procedures. After the de-embedding, the four S parameters are split into individual S parameters and the relevant traces are updated.
 
@@ -377,7 +377,7 @@ Adding/configuring traces is handled by the \textbf{Trace Dock} (by default on t
 \screenshot{0.3}{TraceDock.png}
 The list shows all available traces, by default the four S parameters S11, S12, S21 and S22. Different icons in front of the trace names indicate the state of the trace. Clicking on one of the icons toggles the state:
 \begin{itemize}
-\item \includesvg[height=8pt]{Screenshots/visible}/\includesvg[height=10pt]{Screenshots/invisible}: Enable/disable global visibility: Shows/hides the trace an all graphs it is enabled on.
+\item \includesvg[height=8pt]{Screenshots/visible}/\includesvg[height=10pt]{Screenshots/invisible}: Enable/disable global visibility: Shows/hides the trace on all graphs it is enabled on.
 \item \includesvg[height=8pt]{Screenshots/play}/\includesvg[height=8pt]{Screenshots/pause}: Play/pause. Only available when the trace is fed from live VNA data, not when it was created from a touchstone file. Pausing a trace freezes the current data, new measurements from the \vna{} will not update the trace.
 \item \includesvg[height=8pt]{Screenshots/math_enabled}/\includesvg[height=10pt]{Screenshots/math_disabled}: Enable/disable math. Only available if at least one math operation is present.
 \end{itemize}
@@ -393,7 +393,7 @@ On the left side, additional trace parameters can be changed, while the right si
 \end{itemize}
 
 \subsubsection{Trace Data Sources}
-Every trace can receive its data from one of three source:
+Every trace can receive its data from one of three sources:
 \begin{itemize}
 \item \textbf{Live Capture:} Sampled data from the LibreVNA are added to the trace in real time
 \item \textbf{From File:} Import static data from an external touchstone or CSV file
@@ -490,7 +490,7 @@ Adjustable settings:
 \item \textbf{Window:} A window is applied before performing the transformation. Available windows are:
 \begin{itemize}
 \item Rectangular
-\item Gaussion
+\item Gaussian
 \item Hann
 \item Hamming
 \item Blackman
@@ -505,12 +505,12 @@ Adjustable settings:
 \item \textbf{DC frequency:} Depending on the original source data of the input time domain data, it may have been calculated from a frequency range that does not start at DC. Transforming the time domain data back into the frequency domain will result in frequency data at and around DC. This setting allows to move the transformed frequency data to the correct frequency.
 \begin{itemize}
 \item \textbf{Automatic:} The DC frequency is determined automatically by looking at the last TDR operation that resulted in the time domain data and extracting the correct frequency from that. Usually, this results in the correct frequencies.
-\item \textbf{Automatic:} If for any reason a different frequency range must be used, the actual frequency of the DC bin can be specified manually.
+\item \textbf{Manual:} If for any reason a different frequency range must be used, the actual frequency of the DC bin can be specified manually.
 \end{itemize}
 \item \textbf{Window:} A window is applied before performing the transformation. Available windows are:
 \begin{itemize}
 \item Rectangular
-\item Gaussion
+\item Gaussian
 \item Hann
 \item Hamming
 \item Blackman
@@ -531,7 +531,7 @@ Adjustable settings:
 \item \textbf{Window:} The window function influences the filters pass- and stopband. The filter is constructed by first calculating the ideal filter coefficients in the frequency domain. Afterward, the coefficients are windowed to limit spectral leakage and finally transformed into the time domain (which is displayed in the graph).
 \begin{itemize}
 \item Rectangular
-\item Gaussion
+\item Gaussian
 \item Hann
 \item Hamming
 \item Blackman
@@ -639,14 +639,14 @@ The Through standard can either be defined by its coefficients or by a touchston
 
 \textbf{Coefficients:}
 \begin{itemize}
-\item \textbf{Z0:} Characterisitc impedance of the Through standard (fixed to \SI{50}{\ohm} for now)
+\item \textbf{Z0:} Characteristic impedance of the Through standard (fixed to \SI{50}{\ohm} for now)
 \item \textbf{Delay:} One-way length of the transmission line
 \item \textbf{Loss:} Loss/attenuation of the transmission line
 \end{itemize}
 
 \paragraph{Line Standard}
 \screenshot{0.5}{LineStandardDialog.png}
-The Line standard is an unknown standard and is not accurately defined by coefficients. The only parameter is its delay to determine the usable span when using this standard in a TLR calibration. The delay mustn't be specified with high accuracy either.
+The Line standard is an unknown standard and is not accurately defined by coefficients. The only parameter is its delay to determine the usable span when using this standard in a TRL calibration. The delay does not need to be specified with high accuracy either.
 
 
 \subsubsection{Measurements}
@@ -698,7 +698,7 @@ Each measurement has a few settings, depending on the measurement type:
 \begin{itemize}
 \item Select the calibration standard
 \item Select the ports
-\item When the Through standard is definded by a touchstone file and the port order in that file does not match the port order in the measurement, check the "Reversed" checkbox. Through standards defined by coefficients are always symmetrical and the checkbox has no effect
+\item When the Through standard is defined by a touchstone file and the port order in that file does not match the port order in the measurement, check the "Reversed" checkbox. Through standards defined by coefficients are always symmetrical and the checkbox has no effect
 \end{itemize}
 
 \paragraph{Line Measurement}
@@ -790,7 +790,7 @@ The de-embedding options are available under \menu[,]{Tools,De-embedding}. The G
 
 Just like with the math operations, a list shows the de-embedding options. Once a new option is added (or is double clicked) a window opens which allows to configure the option. Depending on the de-embedding option, there might be some user adjustable parameters (e.g. the length and attenuation of a port extension) or the option needs a measurement from the \vna{} to calculate the de-embedding parameters (e.g. take a measurement to automatically measure the port extension length). If a measurement is required at any point, a new window opens with two choices to provide the measurement data:
 \screenshot{0.9}{DeembeddingMeas.png}
-The first possibility is to click the measure button (with the \vna{} connected) which starts a new measurement. The \vna{} connections must have been setup properly before (e.g. in the case of the port extension: extension cable connected and terminated either into an open or short. The exact setup depends on the de-embedding option). The other possibilty is to provide the measurement by using traces. This is useful if the same measurement has already been taken but the physical setup has changed since then. Select the correct traces for all required S parameters and click the "OK" button.
+The first possibility is to click the measure button (with the \vna{} connected) which starts a new measurement. The \vna{} connections must have been setup properly before (e.g. in the case of the port extension: extension cable connected and terminated either into an open or short. The exact setup depends on the de-embedding option). The other possibility is to provide the measurement by using traces. This is useful if the same measurement has already been taken but the physical setup has changed since then. Select the correct traces for all required S parameters and click the "OK" button.
 
 \subsubsection{Port Extension}
 \screenshot{0.4}{DeembeddingPortExtension.png}
@@ -810,9 +810,9 @@ If a port extension is required at multiple ports, add this option once for each
 
 \subsubsection{Two Thru}
 \screenshot{1.0}{DeembeddingTwoThru.png}
-The two thru option is an advanced de-embedding option for when there are additional fixtures between the reference plane and the DUT that can't be easily calibrated out by either a SOLT calibration or a port extension. The are a few prerequisites for using this option:
+The two thru option is an advanced de-embedding option for when there are additional fixtures between the reference plane and the DUT that can't be easily calibrated out by either a SOLT calibration or a port extension. There are a few prerequisites for using this option:
 \begin{itemize}
-\item The \vna{} must be calibrated at a reference place which does not include the fixtures
+\item The \vna{} must be calibrated at a reference plane which does not include the fixtures
 \item The fixtures (everything between the reference plane and the DUT) must be identical for both ports
 \item It must be possible to connect the fixtures directly to each other as well as directly to the DUT
 \end{itemize}
@@ -840,7 +840,7 @@ Available components are:
 \item \textbf{Parallel R/L/C:} Lumped component from the signal path to GND
 \item \textbf{Defined Through:} Any two-port network as defined by a touchstone file
 \end{itemize}
-Any combination of these components can be dragged into the signal path between the port of the\vna{} and the DUT.
+Any combination of these components can be dragged into the signal path between the port of the \vna{} and the DUT.
 
 Further settings:
 \begin{itemize}
@@ -875,7 +875,7 @@ Most control elements (Frequencies, Span, Traces, Marker, ...) are identical to 
 
 For low RBWs, a faster DFT acquisition method is available. Instead of tuning the LOs to look at each frequency point by itself, several points can be measured at once by performing a DFT of the final IF. Due to limitations in the hardware and the available processing power, the DFT is limited to 96 points and can only cover up to \SI{30}{\kilo\hertz} at a time. Whether the DFT is used (and at which RBWs) can be selected in \menu[,]{Window,Preferences}
 \item \textbf{Window:} Window type used in the DFT of the final IF. If in doubt, use Flat Top.
-\item \textbf{Detector:} For every displayed point, several measurements are taken. The detector type determines which one of these measurement will be displayed:
+\item \textbf{Detector:} For every displayed point, several measurements are taken. The detector type determines which one of these measurements will be displayed:
 \begin{center}
 \begin{threeparttable}
 \begin{tabularx}{\textwidth}{L{2cm}|X}
@@ -906,7 +906,7 @@ The following example shows the effect of signal ID. For both measurements the o
 
 \subsection{Tracking Generator Toolbar}
 \screenshot{0.8}{ToolbarTrackingGenerator.png}
-A tracking generator at either port is available in the spectum analyzer. If the tracking generator is active at a port, measurements from that port are still available but meaningless. The tracking generator also includes an optional frequency offset. To get accurate results, a Source/Receiver Calibration (section~\ref{amplitude:calibration}) should have been performed when using the tracking generator.
+A tracking generator at either port is available in the spectrum analyzer. If the tracking generator is active at a port, measurements from that port are still available but meaningless. The tracking generator also includes an optional frequency offset. To get accurate results, a Source/Receiver Calibration (section~\ref{amplitude:calibration}) should have been performed when using the tracking generator.
 
 DFT acquisition is not available when the tracking generator is active. Also, due to hardware limitations, the tracking generator is unable to reach every frequency exactly. For narrow spans this could result in "drops" in the spectrum where the signal of the tracking generator is outside of the RBW filters passband. The frequency resolution is frequency dependent. A warning message appears if this could be a problem with the selected span and stop frequency.
 
@@ -942,7 +942,7 @@ For a quick enlarged view of a graph, double-click it. The graph will take up th
 When a new graph is created, it is empty by default and traces must be added to show up. There are two ways to add traces:
 \begin{itemize}
 \item Drag-and-drop traces from the trace list onto the graph
-\item Right-click on the graph and select the trace to add. Traces can also be removed be deselecting them in the context menu
+\item Right-click on the graph and select the trace to add. Traces can also be removed by deselecting them in the context menu
 \end{itemize}
 
 \subsection{Smithchart}
@@ -957,11 +957,11 @@ The left side of the dialog contains settings on how data is displayed:
 \begin{itemize}
 \item \textbf{Limit to current span:} Shows all traces only in the frequency range of the currently selected span, even when the trace contains data outside of the span
 \item \textbf{Show complete traces:} Always shows the complete trace, regardless of the selected span
-\item \textbf{Manual frequency range:} Allows selection of an abitrary frequency range to display
+\item \textbf{Manual frequency range:} Allows selection of an arbitrary frequency range to display
 \end{itemize}
 \item \textbf{Display mode (Impedance):} There are two options on how much of a trace impedance is visible:
 \begin{itemize}
-\item \textbf{Limit to visible are:} Clips the trace data at the edge of the smithchart circle
+\item \textbf{Limit to visible area:} Clips the trace data at the edge of the smithchart circle
 \item \textbf{Show complete traces:} Always shows the complete trace, even when the trace data falls outside of the smithchart circle
 \end{itemize}
 \item \textbf{Zoom:} Allows to change the center position and zoom factor of the smithchart. Zooming is also possible by using the mousewheel on the graph
@@ -1029,7 +1029,7 @@ Different types are also available for the Y-axes. The Y-axis type determines ho
     \hline
     Real & Real part of the complex S-parameter\\
     \hline
-    Imaginary & Imaginary part of the complex S-paramter\\
+    Imaginary & Imaginary part of the complex S-parameter\\
     \hline
     Series Resistance & Real part of the impedance from a reflection measurement\\
     \hline
@@ -1130,7 +1130,7 @@ On the left side, you will find limit line parameters and on the right side, you
 \begin{itemize}
 \item \textbf{Name:} The name of the limit
 \item \textbf{Color:} The color of the limit as it will appear on the graph
-\item \textbf{Axis:} The X-Axis you want to apply the limit to: Primary or Secondary
+\item \textbf{Axis:} The Y-Axis you want to apply the limit to: Primary or Secondary
 \item \textbf{Pass/Fail:} The limit behavior:
 \begin{itemize}
 \item \textbf{Dont Care:} Visual line only
@@ -1184,7 +1184,7 @@ The marker dock provides a quick overview of all markers:
 \screenshot{1.0}{MarkerDock.png}
 \begin{itemize}
 \item \textbf{Marker \#:} The marker number as shown on the graphs
-\item \includesvg[height=8pt]{Screenshots/visible}/\includesvg[height=10pt]{Screenshots/invisible}: Enable/disable global visibility: Shows/hides the marker an all graphs
+\item \includesvg[height=8pt]{Screenshots/visible}/\includesvg[height=10pt]{Screenshots/invisible}: Enable/disable global visibility: Shows/hides the marker on all graphs
 \item \includegraphics[height=8pt]{Screenshots/chainlink.png}: Indicates linked markers. Markers with the same number are linked and all of them move when one changes its position
 \item \textbf{Trace:} The trace name the marker is assigned to
 \item \textbf{Type:} Various marker types are available, see section~\ref{marker:types}
@@ -1241,7 +1241,7 @@ This marker type is only available for through measurements.
 \subsubsection{Bandpass}
 \screenshot{1.0}{MarkerBandpassGraph.png}
 \screenshot{1.0}{MarkerBandpassTable.png}
-The bandpass marker determines the center frequency and bandwidth of a highpass filter. At first the filter attenuation is calculated by finding the maximum signal amplitude. Afterward, the cutoff frequency in each direction is determined by finding the frequency at which the signal level has dropped by a specified amount. The threshold for this signal level drop can be adjusted in the "settings" column. Finally, the center frequency is set to the middle of the higher and lower cutoff frequency.
+The bandpass marker determines the center frequency and bandwidth of a bandpass filter. At first the filter attenuation is calculated by finding the maximum signal amplitude. Afterward, the cutoff frequency in each direction is determined by finding the frequency at which the signal level has dropped by a specified amount. The threshold for this signal level drop can be adjusted in the "settings" column. Finally, the center frequency is set to the middle of the higher and lower cutoff frequency.
 
 This marker type is only available for through measurements.
 \subsubsection{TOI/IP3}
@@ -1251,7 +1251,7 @@ This marker type calculates the third-order intercept point. It is only availabl
 \subsubsection{Phase noise}
 \screenshot{1.0}{MarkerPhasenoiseGraph.png}
 \screenshot{1.0}{MarkerPhasenoiseTable.png}
-This marker type calculates the phase noise of a signal. Is is only available in spectrum analyzer mode. Initially a peak search is executed to determine the signal frequency. Afterwards, a helper marker is placed at a specified offset. The offset can be configured in the "settings" column. By using the signal amplitudes from the peak and the offset marker, the phase noise is calculated.
+This marker type calculates the phase noise of a signal. It is only available in spectrum analyzer mode. Initially a peak search is executed to determine the signal frequency. Afterwards, a helper marker is placed at a specified offset. The offset can be configured in the "settings" column. By using the signal amplitudes from the peak and the offset marker, the phase noise is calculated.
 
 \subsubsection{P1dB}
 \screenshot{1.0}{MarkerP1dBGraph.png}
@@ -1403,7 +1403,7 @@ Open the marker's context menu, choose "Add to linked group" and select the link
 \end{itemize}
 
 \section{Compound Device}
-The LibreVNA supports combining multiple hardware units into a "Compound Device". When used, the configured physical LibreVNAs are combined into a virtual device with more ports. When connected to such a device, additional measurement paramaters are available (e.g. measuring S23 in VNA mode or port 3 in spectrum analyzer mode).
+The LibreVNA supports combining multiple hardware units into a "Compound Device". When used, the configured physical LibreVNAs are combined into a virtual device with more ports. When connected to such a device, additional measurement parameters are available (e.g. measuring S23 in VNA mode or port 3 in spectrum analyzer mode).
 
 \begin{important}
 When connected to a compound device and in VNA mode, there is no phase information for through measurements between different physical devices. This is a hardware limitation and the phase is set to zero in the software. Through measurements within a physical device and all reflection measurements retain their phase information.

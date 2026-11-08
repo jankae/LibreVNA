@@ -213,7 +213,7 @@ VNA:FREQ:SPAN? # Read the current span
 \section{Commands}
 \subsection{General Commands}
 \subsubsection{*IDN}
-\query{Returns the identifications string}{*IDN?}{None}{LibreVNA,LibreVNA-GUI,<serial>,<software version>}
+\query{Returns the identification string}{*IDN?}{None}{LibreVNA,LibreVNA-GUI,<serial>,<software version>}
 \begin{itemize}
 \item The serial number is the serial number from the connected LibreVNA. If none is connected, it will be set to ``Not connected''
 \item The software version is the version of the \gui{}, not the firmware version of the connected \vna{}
@@ -221,7 +221,7 @@ VNA:FREQ:SPAN? # Read the current span
 \subsubsection{*RST}
 \event{Resets the GUI (and any connected device) to the default state}{*RST}{None}
 \subsubsection{*CLS}
-\event{Clears the event status register}{*CLI}{None}
+\event{Clears the event status register}{*CLS}{None}
 \subsubsection{*ESE}
 \event{Configures the event status enable register}{*ESE}{<enabled\_bits\_decimal>}
 \query{Returns the event status enable register}{*ESE?}{None}{<enabled\_bits\_decimal>}
@@ -330,7 +330,7 @@ Important points when saving/loading setup files through SCPI commands:
 \query{Queries the output level error flag}{DEVice:STAtus:UNLEVel?}{None}{TRUE or FALSE}
 
 \subsubsection{DEVice:INFo:FWREVision}
-\query{Returns the firmware revision of the connected device}{DEVice:INFo:FWREVision?}{None}{<mayor>.<minor>.<patch>}
+\query{Returns the firmware revision of the connected device}{DEVice:INFo:FWREVision?}{None}{<major>.<minor>.<patch>}
 \begin{example}
 :DEV:INF:FWREV?
 1.0.0
@@ -373,7 +373,7 @@ B
 \query{Queries the (theoretical) maximum frequency when using harmonic mixing in VNA mode}{DEVice:INFo:LIMits:MAXHARMonicfrequency?}{None}{maximum frequency in Hz}
 
 \subsection{VNA Commands}
-These commands change or query VNA settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the VNA mode is active (e.g. it is possible to change the span while in signal generator mode but it does not effect the \vna{} until the mode is switched to VNA). Certain commands (like taking a calibration measurement) are only available in VNA mode and will return an error if another mode is active.
+These commands change or query VNA settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the VNA mode is active (e.g. it is possible to change the span while in signal generator mode but it does not affect the \vna{} until the mode is switched to VNA). Certain commands (like taking a calibration measurement) are only available in VNA mode and will return an error if another mode is active.
 
 \subsubsection{VNA:SWEEP}
 \event{Sets the type of the sweep}{VNA:SWEEP}{<type>, either FREQUENCY or POWER}
@@ -455,7 +455,7 @@ Example (assuming <averaging sweep> = 3):
 \query{Queries whether the average filter has reached a steady state (that is <acquired sweeps> = <averaging sweeps>)}{VNA:ACQuisition:FINished?}{None}{TRUE or FALSE}
 
 \subsubsection{VNA:ACQuisition:LIMit}
-\query{Queries the status of limits that maybe set up on any graph}{VNA:ACQuisition:LIMit?}{None}{PASS or FAIL}
+\query{Queries the status of limits that may be set up on any graph}{VNA:ACQuisition:LIMit?}{None}{PASS or FAIL}
 
 \subsubsection{VNA:ACQuisition:SINGLE}
 \event{Configures the VNA for single or continuous sweep}{VNA:ACQuisition:SINGLE}{TRUE or FALSE}
@@ -470,17 +470,17 @@ If single sweep is enabled, the acquisition is stopped when the required number 
 \subsubsection{VNA:ACQuisition:FREQuency}
 \query{Returns the current frequency of the sweep}{VNA:ACQuisition:FREQuency?}{None}{<Frequency in Hz>}
 
-This command only returns valid data when a sweep is running and the the sweep is a frequency sweep.
+This command only returns valid data when a sweep is running and the sweep is a frequency sweep.
 
 \subsubsection{VNA:ACQuisition:POWer}
 \query{Returns the current power of the sweep}{VNA:ACQuisition:POWer?}{None}{<Power in dBm>}
 
-This command only returns valid data when a sweep is running and the the sweep is a power sweep.
+This command only returns valid data when a sweep is running and the sweep is a power sweep.
 
 \subsubsection{VNA:ACQuisition:TIME}
 \query{Returns the current time of the sweep}{VNA:ACQuisition:TIME?}{None}{<Time in seconds>}
 
-This command only returns valid data when a sweep is running and the the sweep is a zero-span sweep.
+This command only returns valid data when a sweep is running and the sweep is a zero-span sweep.
 
 \subsubsection{VNA:STIMulus:LVL}
 \event{Sets the output power of the stimulus signal when sweep type is frequency}{VNA:STIMulus:LVL}{<power>, in dBm}
@@ -491,15 +491,15 @@ This command only returns valid data when a sweep is running and the the sweep i
 \query{Queries the currently selected frequency}{VNA:STIMulus:FREQuency?}{None}{frequency in Hz}
 
 \subsubsection{VNA:TRACe:LIST}
-\query{Lists the names of all available traces}{VNA:TRACe:LIST?}{None}{comma-separated list of trace name}
+\query{Lists the names of all available traces}{VNA:TRACe:LIST?}{None}{comma-separated list of trace names}
 \begin{example}
 VNA:TRAC:LIST?
 S11,S12,S21,S22
 \end{example}
 
 \subsubsection{VNA:TRACe:DATA}
-\query{Returns the data of a trace}{VNA:TRACe:DATA?}{<trace>, either by name or by index}{comma-separated list of tuples [x, real(y), imag(y]}
-Depending on the sweep and possible confiigured math operations, x may be either frequency, power or time.
+\query{Returns the data of a trace}{VNA:TRACe:DATA?}{<trace>, either by name or by index}{comma-separated list of tuples [x, real(y), imag(y)]}
+Depending on the sweep and possibly configured math operations, x may be either frequency, power or time.
 \begin{example}
 :VNA:TRAC:DATA? S11
 [1e+6,0.400172,0.0377869],
@@ -519,14 +519,14 @@ Depending on the sweep and possible confiigured math operations, x may be either
 \end{center}
 
 \subsubsection{VNA:TRACe:AT}
-\query{Returns the data at a specific frequency (possibly interpolated)}{VNA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{real,imag (or ``NaN,NaN'' if specified frequeny is invalid)}
+\query{Returns the data at a specific frequency (possibly interpolated)}{VNA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{real,imag (or ``NaN,NaN'' if specified frequency is invalid)}
 \begin{example}
 :VNA:TRAC:AT? S11 1200000000
 -0.0458452,-0.028729
 \end{example}
 
 \subsubsection{VNA:TRACe:TOUCHSTONE}
-\query{Returns the content of multiple trace according to the touchstone format}{VNA:TRACe:TOUCHSTONE?}{<trace1>,<trace2>,<trace3>,...}{Touchstone file content in ASCII}
+\query{Returns the content of multiple traces according to the touchstone format}{VNA:TRACe:TOUCHSTONE?}{<trace1>,<trace2>,<trace3>,...}{Touchstone file content in ASCII}
 Some additional constraints apply:
 \begin{itemize}
 \item The number of specified traces must be a square number. The number of ports in the touchstone file is inferred from that.
@@ -553,7 +553,7 @@ $$ S_{11}...S_{1n},S_{21}...S_{2n},...,S_{n1}...S_{nn} $$
 \query{Returns the highest frequency contained in the trace}{VNA:TRACe:MAXFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
 
 \subsubsection{VNA:TRACe:MINFrequency}
-\query{Returns the lowest frequency contained in the trace}{VNA:TRACe:MINFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
+\query{Returns the lowest frequency contained in the trace}{VNA:TRACe:MINFrequency?}{<trace>, either by name or by index}{minimum frequency in Hz}
 
 \subsubsection{VNA:TRACe:MAXAmplitude}
 \query{Returns the datapoint with the highest amplitude in the trace}{VNA:TRACe:MAXAmplitude?}{<trace>, either by name or by index}{<frequency>,<real>,<imag> of the highest amplitude point}
@@ -744,20 +744,20 @@ The following commands are only valid for a calibration standard of type ``Open'
 \query{Queries the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS?}{None}{<loss> Loss in \unit{\giga\ohm\per\second}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:C0}
-\event{Sets the fringing capacitance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:C0}{<C0> in \num{d-15}\unit{\farad}}
-\query{Queries the fringing capacitance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:C0?}{None}{<C0> in \num{d-15}\unit{\farad}}
+\event{Sets the fringing capacitance polynomial term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:C0}{<C0> in \num{d-15}\unit{\farad}}
+\query{Queries the fringing capacitance polynomial term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:C0?}{None}{<C0> in \num{d-15}\unit{\farad}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:C1}
-\event{Sets the fringing capacitance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:C1}{<C1> in \num{d-27}\unit{\farad\per\hertz}}
-\query{Queries the fringing capacitance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:C1?}{None}{<C1> in \num{d-27}\unit{\farad\per\hertz}}
+\event{Sets the fringing capacitance polynomial term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:C1}{<C1> in \num{d-27}\unit{\farad\per\hertz}}
+\query{Queries the fringing capacitance polynomial term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:C1?}{None}{<C1> in \num{d-27}\unit{\farad\per\hertz}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:C2}
-\event{Sets the fringing capacitance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:C2}{<C2> in \num{d-36}\unit{\farad\per\hertz\squared}}
-\query{Queries the fringing capacitance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:C2?}{None}{<C2> in \num{d-36}\unit{\farad\per\hertz\squared}}
+\event{Sets the fringing capacitance polynomial term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:C2}{<C2> in \num{d-36}\unit{\farad\per\hertz\squared}}
+\query{Queries the fringing capacitance polynomial term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:C2?}{None}{<C2> in \num{d-36}\unit{\farad\per\hertz\squared}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:C3}
-\event{Sets the fringing capacitance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:C3}{<C3> in \num{d-45}\unit{\farad\per\hertz\cubed}}
-\query{Queries the fringing capacitance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:C3?}{None}{<C3> in \num{d-45}\unit{\farad\per\hertz\cubed}}
+\event{Sets the fringing capacitance polynomial term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:C3}{<C3> in \num{d-45}\unit{\farad\per\hertz\cubed}}
+\query{Queries the fringing capacitance polynomial term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:C3?}{None}{<C3> in \num{d-45}\unit{\farad\per\hertz\cubed}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
 \event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\<port> sets the port from the file which is used to define the standard, optional}
@@ -782,20 +782,20 @@ The following commands are only valid for a calibration standard of type ``Short
 \query{Queries the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS?}{None}{<loss> Loss in \unit{\giga\ohm\per\second}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:L0}
-\event{Sets the residual inductance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:L0}{<L0> in \num{d-12}\unit{\henry}}
-\query{Queries the residual inductance polynom term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:L0?}{None}{<L0> in \num{d-12}\unit{\henry}}
+\event{Sets the residual inductance polynomial term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:L0}{<L0> in \num{d-12}\unit{\henry}}
+\query{Queries the residual inductance polynomial term 0 of the standard}{VNA:CALibration:KIT:STAndard:x:L0?}{None}{<L0> in \num{d-12}\unit{\henry}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:L1}
-\event{Sets the residual inductance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:L1}{<L1> in \num{d-24}\unit{\henry\per\hertz}}
-\query{Queries the residual inductance polynom term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:L1?}{None}{<L1> in \num{d-24}\unit{\henry\per\hertz}}
+\event{Sets the residual inductance polynomial term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:L1}{<L1> in \num{d-24}\unit{\henry\per\hertz}}
+\query{Queries the residual inductance polynomial term 1 of the standard}{VNA:CALibration:KIT:STAndard:x:L1?}{None}{<L1> in \num{d-24}\unit{\henry\per\hertz}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:L2}
-\event{Sets the residual inductance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:L2}{<L2> in \num{d-33}\unit{\henry\per\hertz\squared}}
-\query{Queries the residual inductance polynom term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:L2?}{None}{<L2> in \num{d-33}\unit{\henry\per\hertz\squared}}
+\event{Sets the residual inductance polynomial term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:L2}{<L2> in \num{d-33}\unit{\henry\per\hertz\squared}}
+\query{Queries the residual inductance polynomial term 2 of the standard}{VNA:CALibration:KIT:STAndard:x:L2?}{None}{<L2> in \num{d-33}\unit{\henry\per\hertz\squared}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:L3}
-\event{Sets the residual inductance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:L3}{<L3> in \num{d-42}\unit{\henry\per\hertz\cubed}}
-\query{Queries the residual inductance polynom term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:L3?}{None}{<L3> in \num{d-42}\unit{\henry\per\hertz\cubed}}
+\event{Sets the residual inductance polynomial term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:L3}{<L3> in \num{d-42}\unit{\henry\per\hertz\cubed}}
+\query{Queries the residual inductance polynomial term 3 of the standard}{VNA:CALibration:KIT:STAndard:x:L3?}{None}{<L3> in \num{d-42}\unit{\henry\per\hertz\cubed}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
 \event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\<port> sets the port from the file which is used to define the standard, optional}
@@ -823,9 +823,9 @@ The following commands are only valid for a calibration standard of type ``Load'
 \event{Sets the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS}{<loss> Loss in \unit{\giga\ohm\per\second}}
 \query{Queries the loss of the standard}{VNA:CALibration:KIT:STAndard:x:LOSS?}{None}{<loss> Loss in \unit{\giga\ohm\per\second}}
 
-\subsubsubsection{VNA:CALibration:KIT:STAndard:x:CARallel}
-\event{Sets the residual capacitance polynom of the standard}{VNA:CALibration:KIT:STAndard:x:CARallel}{<C> in \unit{\farad}}
-\query{Queries the residual capacitance of the standard}{VNA:CALibration:KIT:STAndard:x:CARallel?}{None}{<C> in \unit{\farad}}
+\subsubsubsection{VNA:CALibration:KIT:STAndard:x:CPARallel}
+\event{Sets the residual capacitance of the standard}{VNA:CALibration:KIT:STAndard:x:CPARallel}{<C> in \unit{\farad}}
+\query{Queries the residual capacitance of the standard}{VNA:CALibration:KIT:STAndard:x:CPARallel?}{None}{<C> in \unit{\farad}}
 
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:LSERies}
 \event{Sets the residual inductance of the standard}{VNA:CALibration:KIT:STAndard:x:LSERies}{<L> in \unit{\henry}}
@@ -871,7 +871,7 @@ The following commands are only valid for a calibration standard of type ``Throu
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
 \event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\
 <port1> selects the first port from the file which is used to define the standard\\
-<port1> selects the second port from the file which is used to define the standard}
+<port2> selects the second port from the file which is used to define the standard}
 
 \subsubsection{LINE standard commands}
 The following commands are only valid for a calibration standard of type ``Line''. The ``x'' in the command names must be replaced with the calibration standard number.
@@ -891,7 +891,7 @@ The following commands are only valid for a calibration standard of type ``Line'
 \subsubsubsection{VNA:CALibration:KIT:STAndard:x:FILE}
 \event{Loads the coefficients for the calibration standard from a touchstone file}{VNA:CALibration:KIT:STAndard:x:FILE}{<filename>\\
 <port1> selects the first port from the file which is used to define the standard\\
-<port1> selects the second port from the file which is used to define the standard}
+<port2> selects the second port from the file which is used to define the standard}
 
 \subsubsection{Common Deembedding Commands}
 The VNA supports various deembedding options which can also be configured through the SCPI API. Because the deembedding system is flexible and supports any number of deembedding options at the same time, the SCPI API is also flexible. Instead of fixed commands, the available commands change depending on the configured deembedding options.
@@ -996,18 +996,11 @@ Similarly to the deembedding options, the matching network itself is also flexib
 \event{Removes a matching network component}{VNA:DEEMBedding:x:DELete}{<y> Number of component to delete}
 
 \subsubsubsection{VNA:DEEMBedding:x:CLEAR}
-\event{Removes all matching network components}{VNA:DEEMBedding:x:DELete}{None}
-
-\subsubsection{Impedance Renormalization Deembedding Commands}
-The following commands are only valid for a deembedding option of type ``Impedance\_Renormalization''. The ``x'' in the command names must be replaced with the option number.
-
-\subsubsubsection{VNA:DEEMBedding:x:IMPedance}
-\event{Sets the target impedance}{VNA:DEEMBedding:x:IMPedance}{<impedance> Impedance in Ohm}
-\query{Queries the target impedance}{VNA:DEEMBedding:x:IMPedance?}{None}{<impedance> Impedance in Ohm}
+\event{Removes all matching network components}{VNA:DEEMBedding:x:CLEAR}{None}
 
 \subsubsubsection{VNA:DEEMBedding:x:y:VALue}
 \event{Sets the value of a matching network component}{VNA:DEEMBedding:x:y:VALue}{<value>, either in Ohm, Farad or Henry}
-\query{Queries the value of a matching network component}{VNA:DEEMBedding:x:y:VALue?}{None}{<port>, either in Ohm, Farad or Henry}
+\query{Queries the value of a matching network component}{VNA:DEEMBedding:x:y:VALue?}{None}{<value>, either in Ohm, Farad or Henry}
 
 This command is only available for a component of these types:
 \begin{itemize}
@@ -1028,11 +1021,18 @@ This command is only available for a component of these types:
 \item Touchstone\_Shunt
 \end{itemize}
 
+\subsubsection{Impedance Renormalization Deembedding Commands}
+The following commands are only valid for a deembedding option of type ``Impedance\_Renormalization''. The ``x'' in the command names must be replaced with the option number.
+
+\subsubsubsection{VNA:DEEMBedding:x:IMPedance}
+\event{Sets the target impedance}{VNA:DEEMBedding:x:IMPedance}{<impedance> Impedance in Ohm}
+\query{Queries the target impedance}{VNA:DEEMBedding:x:IMPedance?}{None}{<impedance> Impedance in Ohm}
+
 \subsection{Signal Generator Commands}
 These commands change or query signal generator settings. Although most of them are available regardless of the current device mode, they usually only have an effect once the generator mode is active.
 
 \subsubsection{GENerator:FREQuency}
-\event{Sets the output frequeny}{GENerator:FREQuency}{<frequency>, in Hz}
+\event{Sets the output frequency}{GENerator:FREQuency}{<frequency>, in Hz}
 \query{Queries the selected output frequency}{GENerator:FREQuency?}{None}{frequency in Hz}
 
 \subsubsection{GENerator:LVL}
@@ -1079,8 +1079,8 @@ These commands change or query spectrum analyzer settings. Although most of them
 \event{Puts the spectrum analyzer into stop mode (sweep inactive)}{SA:ACQuisition:STOP}{None}
 
 \subsubsection{SA:ACQuisition:RBW}
-\event{Sets the resolution bandwidth}{SA:ACQuisition:IFBW}{<resolution bandwidth>, in Hz}
-\query{Queries the currently selected resolution bandwidth}{SA:ACQuisition:IFBW?}{None}{resolution bandwidth in Hz}
+\event{Sets the resolution bandwidth}{SA:ACQuisition:RBW}{<resolution bandwidth>, in Hz}
+\query{Queries the currently selected resolution bandwidth}{SA:ACQuisition:RBW?}{None}{resolution bandwidth in Hz}
 
 \subsubsection{SA:ACQuisition:WINDow}
 \event{Sets the type of window used in the acquisition}{SA:ACQuisition:WINDow}{<windowtype>\\
@@ -1124,7 +1124,7 @@ Example (assuming <averaging sweep> = 3):
 \query{Queries whether the average filter has reached a steady state (that is <acquired sweeps> = <averaging sweeps>)}{SA:ACQuisition:FINished?}{None}{TRUE or FALSE}
 
 \subsubsection{SA:ACQuisition:LIMit}
-\query{Queries the status of limits that maybe set up on any graph}{SA:ACQuisition:LIMit?}{None}{PASS or FAIL}
+\query{Queries the status of limits that may be set up on any graph}{SA:ACQuisition:LIMit?}{None}{PASS or FAIL}
 
 \subsubsection{SA:ACQuisition:SINGLE}
 \event{Configures the spectrum analyzer for single or continuous sweep}{SA:ACQuisition:SINGLE}{TRUE or FALSE}
@@ -1136,22 +1136,18 @@ If single sweep is enabled, the acquisition is stopped when the required number 
 \item Issue the command again (i.e. SA:ACQ:SINGLE TRUE always triggers a new sweep)
 \end{itemize}
 
-\subsubsection{SA:ACQuisition:SIGid}
-\event{Enables/disables signal identification}{SA:ACQuisition:SIGid}{<enabled>, option are TRUE, FALSE, 1 or 0}
-\query{Queries whether signal identification is enabled}{SA:ACQuisition:SIGid?}{None}{TRUE or FALSE}
-
 \subsubsection{SA:ACQuisition:FREQuency}
 \query{Returns the current frequency of the sweep}{SA:ACQuisition:FREQuency?}{None}{<Frequency in Hz>}
 
-This command only returns valid data when a sweep is running and the the sweep is a frequency sweep.
+This command only returns valid data when a sweep is running and the sweep is a frequency sweep.
 
 \subsubsection{SA:ACQuisition:TIME}
 \query{Returns the current time of the sweep}{SA:ACQuisition:TIME?}{None}{<Time in seconds>}
 
-This command only returns valid data when a sweep is running and the the sweep is a zero-span sweep.
+This command only returns valid data when a sweep is running and the sweep is a zero-span sweep.
 
 \subsubsection{SA:TRACKing:ENable}
-\event{Enables/disables the tracking generator}{SA:TRACKing:ENable}{<enabled>, option are TRUE, FALSE, 1 or 0}
+\event{Enables/disables the tracking generator}{SA:TRACKing:ENable}{<enabled>, options are TRUE, FALSE, 1 or 0}
 \query{Queries whether tracking generator is enabled}{SA:TRACKing:ENable?}{None}{TRUE or FALSE}
 
 \subsubsection{SA:TRACKing:PORT}
@@ -1167,7 +1163,7 @@ This command only returns valid data when a sweep is running and the the sweep i
 \query{Queries the selected offset frequency of the tracking generator}{SA:TRACKing:OFFset?}{None}{offset in Hz}
 
 \subsubsection{SA:TRACKing:NORMalize:ENable}
-\event{Enables/disables normalization. If the span has changed since the last active normalization, a normalization measurement is also started.}{SA:TRACKing:NORMalize:ENable}{<enabled>, option are TRUE, FALSE, 1 or 0}
+\event{Enables/disables normalization. If the span has changed since the last active normalization, a normalization measurement is also started.}{SA:TRACKing:NORMalize:ENable}{<enabled>, options are TRUE, FALSE, 1 or 0}
 \query{Queries whether tracking generator normalization is enabled}{SA:TRACKing:NORMalize:ENable?}{None}{TRUE or FALSE}
 
 \subsubsection{SA:TRACKing:NORMalize:MEASure}
@@ -1178,9 +1174,9 @@ This command only returns valid data when a sweep is running and the the sweep i
 \query{Queries the selected reference level for the normalization}{SA:TRACKing:NORMalize:LVL?}{None}{normalization level in dBm}
 
 \subsubsection{SA:TRACe:LIST}
-\query{Lists the names of all available traces}{SA:TRACe:LIST?}{None}{comma-separated list of trace name}
+\query{Lists the names of all available traces}{SA:TRACe:LIST?}{None}{comma-separated list of trace names}
 \begin{example}
-VNA:TRAC:LIST?
+SA:TRAC:LIST?
 Port1,Port2
 \end{example}
 
@@ -1205,7 +1201,7 @@ Port1,Port2
 \end{center}
 
 \subsubsection{SA:TRACe:AT}
-\query{Returns the data at a specific frequency (possibly interpolated)}{SA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{<dBm> or ``NaN'' if specified frequeny is invalid)}
+\query{Returns the data at a specific frequency (possibly interpolated)}{SA:TRACe:AT?}{<trace>, either by name or by index\\<frequency>, in Hz}{<dBm> or ``NaN'' if specified frequency is invalid}
 \begin{example}
 :SA:TRAC:AT? Port1 1000000000
 -96.424
@@ -1215,7 +1211,7 @@ Port1,Port2
 \query{Returns the highest frequency contained in the trace}{SA:TRACe:MAXFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
 
 \subsubsection{SA:TRACe:MINFrequency}
-\query{Returns the lowest frequency contained in the trace}{SA:TRACe:MINFrequency?}{<trace>, either by name or by index}{maximum frequency in Hz}
+\query{Returns the lowest frequency contained in the trace}{SA:TRACe:MINFrequency?}{<trace>, either by name or by index}{minimum frequency in Hz}
 
 \subsubsection{SA:TRACe:MAXAmplitude}
 \query{Returns the datapoint with the highest amplitude in the trace}{SA:TRACe:MAXAmplitude?}{<trace>, either by name or by index}{<frequency>,<dBm> of the highest amplitude point}
@@ -1231,7 +1227,7 @@ Port1,Port2
 \event{Creates a new trace}{SA:TRACe:NEW}{<trace name>}
 
 \subsubsection{SA:TRACe:DELete}
-\event{Deletes a trace}{VNA:TRACe:DELete}{<trace>, either by name or by index}
+\event{Deletes a trace}{SA:TRACe:DELete}{<trace>, either by name or by index}
 
 \subsubsection{SA:TRACe:RENAME}
 \event{Changes the name of a trace}{SA:TRACe:RENAME}{<trace>, either by name or by index\\<new name>}
@@ -1263,7 +1259,7 @@ The following commands are available when connected to a LibreVNA (hardware vers
 
 \subsubsection{DEVice:UPDATE}
 \event{Updates the firmware of the connected device}{DEVice:UPDATE <fw\_file>}{<fw\_file> Path to the firmware file}
-Important points when saving/loading setup files through SCPI commands:
+Important points when updating the firmware through SCPI commands:
 \begin{itemize}
 \item The path must be either absolute or relative to the location of the GUI application.
 \item If the LibreVNA-GUI (and thus also the SCPI server) is running on a different machine than the SCPI client, the firmware file must be stored on the machine that runs the GUI.
@@ -1279,7 +1275,7 @@ Important points when saving/loading setup files through SCPI commands:
 \subsubsection{MANual:STArt}
 \event{Starts the manual device control dialog}{MANual:STArt}{None}
 
-The manual device control dialog allows the user to directly access all the hardware components. This can be considered as a forth mode (in addition to VNA, signal generator and spectrum analyzer). As long as it is active, it takes priority over any other mode. After starting the manual control dialog, all hardware components are disabled by default. While the manual control dialog is active, additional SCPI commands are available to configure the hardware and retrieve ADC readings.
+The manual device control dialog allows the user to directly access all the hardware components. This can be considered as a fourth mode (in addition to VNA, signal generator and spectrum analyzer). As long as it is active, it takes priority over any other mode. After starting the manual control dialog, all hardware components are disabled by default. While the manual control dialog is active, additional SCPI commands are available to configure the hardware and retrieve ADC readings.
 
 \subsubsection{MANual:STOp}
 \event{Stops the manual device control dialog}{MANual:STOp}{None}
@@ -1436,7 +1432,7 @@ Only available when the manual control dialog is active.
 Only available when the manual control dialog is active.
 
 \event{Sets the window for the DFT calculation}{MANual:WINdow}{<window>, either NONE, KAISER, HANN or FLATTOP}
-\query{Queries the window for the DFT calculatio}{MANual:WINdow?}{None}{NONE, KAISER, HANN or FLATTOP}
+\query{Queries the window for the DFT calculation}{MANual:WINdow?}{None}{NONE, KAISER, HANN or FLATTOP}
 
 \subsubsection{MANual:PORT1\_MIN}
 Only available when the manual control dialog is active.
@@ -1451,12 +1447,12 @@ Only available when the manual control dialog is active.
 \subsubsection{MANual:PORT1\_MAG}
 Only available when the manual control dialog is active.
 
-\query{Queries the observerd magnitude at port 1 in the last sampling period}{MANual:PORT1\_MAG?}{None}{port 1 magnitude (linear unit, arbitrary scale)}
+\query{Queries the observed magnitude at port 1 in the last sampling period}{MANual:PORT1\_MAG?}{None}{port 1 magnitude (linear unit, arbitrary scale)}
 
 \subsubsection{MANual:PORT1\_PHAse}
 Only available when the manual control dialog is active.
 
-\query{Queries the observed phase at port 1 in the last sampling period}{MANual:PORT1\_PHAse?}{None}{phase in degree (random value because it is relativ to an internal sampling clock)}
+\query{Queries the observed phase at port 1 in the last sampling period}{MANual:PORT1\_PHAse?}{None}{phase in degree (random value because it is relative to an internal sampling clock)}
 
 \subsubsection{MANual:PORT1\_REFerenced}
 Only available when the manual control dialog is active.
@@ -1476,12 +1472,12 @@ Only available when the manual control dialog is active.
 \subsubsection{MANual:PORT2\_MAG}
 Only available when the manual control dialog is active.
 
-\query{Queries the observerd magnitude at port 2 in the last sampling period}{MANual:PORT2\_MAG?}{None}{port 1 magnitude (linear unit, arbitrary scale)}
+\query{Queries the observed magnitude at port 2 in the last sampling period}{MANual:PORT2\_MAG?}{None}{port 2 magnitude (linear unit, arbitrary scale)}
 
 \subsubsection{MANual:PORT2\_PHAse}
 Only available when the manual control dialog is active.
 
-\query{Queries the observed phase at port 2 in the last sampling period}{MANual:PORT2\_PHAse?}{None}{phase in degree (random value because it is relativ to an internal sampling clock)}
+\query{Queries the observed phase at port 2 in the last sampling period}{MANual:PORT2\_PHAse?}{None}{phase in degree (random value because it is relative to an internal sampling clock)}
 
 \subsubsection{MANual:PORT2\_REFerenced}
 Only available when the manual control dialog is active.
@@ -1501,24 +1497,24 @@ Only available when the manual control dialog is active.
 \subsubsection{MANual:REF\_MAG}
 Only available when the manual control dialog is active.
 
-\query{Queries the observerd magnitude at the reference receiver in the last sampling period}{MANual:REF\_MAG?}{None}{port 1 magnitude (linear unit, arbitrary scale)}
+\query{Queries the observed magnitude at the reference receiver in the last sampling period}{MANual:REF\_MAG?}{None}{reference magnitude (linear unit, arbitrary scale)}
 
 \subsubsection{MANual:REF\_PHAse}
 Only available when the manual control dialog is active.
 
-\query{Queries the observed phase at the reference receiver in the last sampling period}{MANual:REF\_PHAse?}{None}{phase in degree (random value because it is relativ to an internal sampling clock)}
+\query{Queries the observed phase at the reference receiver in the last sampling period}{MANual:REF\_PHAse?}{None}{phase in degree (random value because it is relative to an internal sampling clock)}
 
 \section{Streaming data}
-The SCPI server works well for configuring the device and also for reading trace data once an acquition is done. But it isn't very well suited for reading data while the device is capturing it. For some applications (e.g. when running continuous sweeps) it may be beneficial to process the data externally as it getting captured. For this purpose, the LibreVNA-GUI supports streaming the data over dedicated ports.
+The SCPI server works well for configuring the device and also for reading trace data once an acquisition is done. But it isn't very well suited for reading data while the device is capturing it. For some applications (e.g. when running continuous sweeps) it may be beneficial to process the data externally as it getting captured. For this purpose, the LibreVNA-GUI supports streaming the data over dedicated ports.
 
-These streaming servers have to be enbled first. This can be done in \menu[,]{Window,Preferences,Streaming Servers}.
+These streaming servers have to be enabled first. This can be done in \menu[,]{Window,Preferences,Streaming Servers}.
 
 There are a total of 5 streaming servers available. They can all be enabled and used at the same time, although not all servers will output data all the time.
 
 \begin{itemize}
-\item \textbf{VNA raw data:} Outputs the raw S-parameters without any calibration applied. This output is always available, even when a calibration is enabled or de-embedding it active. Apart from averaging (if enabled) no processing is done on the data.
+\item \textbf{VNA raw data:} Outputs the raw S-parameters without any calibration applied. This output is always available, even when a calibration is enabled or de-embedding is active. Apart from averaging (if enabled) no processing is done on the data.
 \item \textbf{VNA calibrated data:} Outputs the calibrated S-parameters with the calibration applied. This output is only available when a calibration is enabled.
-\item \textbf{VNA de-embedded data:} Outputs the de-embedded S-parameters with the de-embbeding and calibration (if enabled) applied. This output is only available when de-embedding is active.
+\item \textbf{VNA de-embedded data:} Outputs the de-embedded S-parameters with the de-embedding and calibration (if enabled) applied. This output is only available when de-embedding is active.
 \item \textbf{SA raw data:} Outputs the raw (not normalized) power levels from the spectrum analyzer. This output is always available, even when normalizing is active.
 \item \textbf{SA normalized data:} Outputs the normalized power levels from the spectrum analyzer. This output is only available when normalizing is active.
 \end{itemize}
@@ -1546,6 +1542,6 @@ All servers output a newline-terminated line of json formatted data for each mea
 \end{example}
 \end{itemize}
 
-For zero span sweeps, the time in seconds since the beginning of the sweep is given instead of a frequency of power level. The time is always relative to point 0 of the current sweep and point 0 will have a time of 0.
+For zero span sweeps, the time in seconds since the beginning of the sweep is given instead of a frequency or power level. The time is always relative to point 0 of the current sweep and point 0 will have a time of 0.
 
 \end{document}
