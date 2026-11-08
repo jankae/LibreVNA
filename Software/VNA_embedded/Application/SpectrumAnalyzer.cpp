@@ -122,6 +122,10 @@ static void StartNextSample() {
 									,(uint32_t) (trackingFreq / 1000000), (uint32_t)(trackingFreq%1000000));
 							PLLRefIndex = bestIndex;
 							setPLLReference();
+						} else {
+							// The search above may have left the source configured for a different reference
+							// frequency than the one actually in use, restore it
+							Source.SetReference(PLLRefFreqs[PLLRefIndex], false, 1, false);
 						}
 						Source.SetFrequency(trackingFreq);
 						Source.SetPowerOutA(amplitude.highBandPower, true);
