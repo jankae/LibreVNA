@@ -26,7 +26,10 @@ uint32_t Protocol::CRC32(uint32_t crc, const void *data, uint32_t len) {
 }
 
 uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
-    if (!info || !len) {
+    if (!info) {
+        return 0;
+    }
+    if (!len) {
         info->type = PacketType::None;
 		return 0;
 	}
@@ -75,6 +78,12 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 			return data - buf;
 		}
 		// Valid packet, copy packet type and payload
+		if(length - 7 > sizeof(PacketInfo)) {
+			// payload does not fit into PacketInfo, ignore
+			data += 1;
+			info->type = PacketType::None;
+			return data - buf;
+		}
 		memcpy(info, &data[PCKT_TYPE_OFFSET], length - 7);
 	} else {
 		// Datapoint has the CRC set to zero
