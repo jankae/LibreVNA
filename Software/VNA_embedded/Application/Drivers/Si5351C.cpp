@@ -167,7 +167,9 @@ bool Si5351C::Disable(uint8_t clknum) {
 bool Si5351C::Locked(PLL pll) {
 	uint8_t mask = pll == PLL::A ? 0x20 : 0x40;
 	uint8_t value;
-	ReadRegister(Reg::DeviceStatus, &value);
+	if(!ReadRegister(Reg::DeviceStatus, &value)) {
+		return false;
+	}
 	LOG_DEBUG("Device status: 0x%02x", value);
 	if (value & mask) {
 		return false;
@@ -260,8 +262,8 @@ bool Si5351C::WriteClkConfig(ClkConfig config, uint8_t clknum) {
 		clkcontrol |= 0x03;
 		break;
 	}
-	// Check if integer mode is applicable
-	if(config.P2 == 0 && config.P1%128 == 0) {
+	// Check if integer mode is applicable (only for CLK0-5)
+	if(clknum <= 5 && config.P2 == 0 && config.P1%128 == 0) {
 		// Use integer mode
 		clkcontrol |= 0x40;
 	}
@@ -325,7 +327,9 @@ bool Si5351C::WriteRegisterRange(Reg start, const uint8_t *data, uint8_t len) {
 
 bool Si5351C::ExtCLKAvailable() {
 	uint8_t value;
-	ReadRegister(Reg::DeviceStatus, &value);
+	if(!ReadRegister(Reg::DeviceStatus, &value)) {
+		return false;
+	}
 	if (value & 0x10) {
 		return false;
 	} else {
