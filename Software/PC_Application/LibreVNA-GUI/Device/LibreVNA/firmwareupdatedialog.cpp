@@ -161,15 +161,17 @@ void FirmwareUpdateDialog::timerCallback()
     case State::WaitBeforeInitializing:
         // Device had enough time to initialize, indicate that rebooted device is ready
         timer.stop();
+        state = State::Idle;
         if(dev->connectDevice(serialnumber)) {
             success = true;
             if(deleteAfterUpdate) {
+                // object is gone after this, must not access any members anymore
                 delete this;
+                return;
             }
         } else {
             abortWithError("Failed to connect to updated device");
         }
-        state = State::Idle;
         break;
     default:
         abortWithError("Response timed out");
