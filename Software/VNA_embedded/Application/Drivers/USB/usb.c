@@ -147,7 +147,11 @@ static uint8_t  USBD_Class_DeInit(USBD_HandleTypeDef *pdev,
 static uint8_t USBD_Class_Setup(USBD_HandleTypeDef *pdev , USBD_SetupReqTypedef  *req) {
 	if(req->wIndex == 0x0004 && req->bRequest == USB_WCID_VENDOR_CODE && req->bmRequest == 0xC0) {
 		// This is a request for the Microsoft Compatible IF Feature Descriptor
-		USBD_CtlSendData (pdev, (uint8_t *)(void *)USBD_MicrosoftCompatibleID, req->wLength);
+		uint16_t len = req->wLength;
+		if(len > sizeof(USBD_MicrosoftCompatibleID)) {
+			len = sizeof(USBD_MicrosoftCompatibleID);
+		}
+		USBD_CtlSendData (pdev, (uint8_t *)(void *)USBD_MicrosoftCompatibleID, len);
 	}
 	return USBD_OK;
 }
