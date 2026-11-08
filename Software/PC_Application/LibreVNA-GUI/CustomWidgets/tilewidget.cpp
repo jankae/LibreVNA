@@ -203,6 +203,7 @@ void TileWidget::closeTile()
         pTile->isSplit = false;
         pTile->hasContent = false;
         delete pTile->splitter;
+        pTile->splitter = nullptr;
         pTile->ui->stack->setCurrentWidget(pTile->ui->TilePage);
     }
 }
