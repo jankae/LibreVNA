@@ -229,6 +229,7 @@ inline void App_Process() {
 						vTaskDelay(100);
 						Firmware::PerformUpdate(fw_info);
 						// should never get here
+					} else {
 						Communication::SendWithoutPayload(Protocol::PacketType::Nack);
 					}
 				}
