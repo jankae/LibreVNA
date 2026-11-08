@@ -175,7 +175,12 @@ bool MAX2871::SetFrequency(uint64_t f) {
 			if (VCOmax[vco] >= compare) {
 				break;
 			}
-		} LOG_DEBUG("Manually selected VCO %d", vco);
+		}
+		if (vco >= 64) {
+			// frequency above all mapped VCOs, use the highest one (VCO field is only 6 bits wide)
+			vco = 63;
+		}
+		LOG_DEBUG("Manually selected VCO %d", vco);
 		regs[3] &= ~0xFC000000;
 		regs[3] |= (uint32_t) vco << 26;
 	}
@@ -424,10 +429,7 @@ uint8_t MAX2871::GetTemp() {
 	    readback = Read();
 	    extraReads++;
 	}
-	if(!(readback & (1UL << 15))) {
-	    // still invalid: nothing we can do, this should not happen. Just return a value
-		return 0;
-	}
+	bool valid = readback & (1UL << 15);
 	uint8_t ADC_raw = (readback >> 16) & 0x7F;
 	LOG_DEBUG("Raw temp ADC: %d", ADC_raw);
 	// Disable ADC
@@ -437,6 +439,10 @@ uint8_t MAX2871::GetTemp() {
 	regs[5] &= ~(1UL << 18);
 	Write(5, regs[5]);
 	Write(2, regs[2]);
+	if(!valid) {
+	    // still invalid: nothing we can do, this should not happen. Just return a value
+		return 0;
+	}
 	// convert to celsius and return
 	return 95 - 1.14f * ADC_raw;
 }
