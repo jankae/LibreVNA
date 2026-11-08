@@ -20,6 +20,9 @@ TDR::TDR()
 {
     automaticDC = true;
     manualDC = 1.0;
+    DCExtrapolationPoints = 5;
+    lastDC = 0.0;
+    lastDCValid = false;
     stepResponse = true;
     mode = Mode::Lowpass;
     padding = 0;
@@ -77,19 +80,48 @@ void TDR::edit()
     ui->windowBox->layout()->addWidget(window.createEditor());
 
     auto updateEnabledWidgets = [=]() {
-        bool enable = mode == Mode::Lowpass;
-        ui->computeStepResponse->setEnabled(enable);
-        enable &= stepResponse;
+        // step response and DC point are only relevant in lowpass mode, hide them otherwise
+        bool lowpass = mode == Mode::Lowpass;
+        ui->computeStepResponse->setVisible(lowpass);
+        ui->groupBox->setVisible(lowpass);
+        bool enable = lowpass && stepResponse;
         ui->DCmanual->setEnabled(enable);
         ui->DCautomatic->setEnabled(enable);
         enable &= !automaticDC;
         ui->manualPhase->setEnabled(enable);
         ui->manualMag->setEnabled(enable);
+        enable = mode == Mode::Lowpass && stepResponse && automaticDC;
+        ui->extrapolationPoints->setEnabled(enable);
     };
+
+    // Shows the DC value in the magnitude/phase fields: the live extrapolated value when
+    // automatic extrapolation is active, the manually specified value otherwise.
+    // Uses setValueQuiet to not feed the displayed value back into manualDC
+    auto updateDCPreview = [=]() {
+        auto dc = manualDC;
+        if(automaticDC) {
+            dataMutex.lock();
+            bool valid = lastDCValid;
+            dc = lastDC;
+            dataMutex.unlock();
+            if(!valid) {
+                ui->manualMag->clear();
+                ui->manualPhase->clear();
+                return;
+            }
+        }
+        ui->manualMag->setValueQuiet(Util::SparamTodB(dc));
+        ui->manualPhase->setValueQuiet(180.0/M_PI * arg(dc));
+    };
+    auto previewConnection = connect(this, &TDR::DCValueUpdated, d, updateDCPreview);
+    connect(d, &QDialog::finished, this, [=](){
+        disconnect(previewConnection);
+    });
 
     connect(ui->mode, qOverload<int>(&QComboBox::currentIndexChanged), this, [=](int index){
         mode = (Mode) index;
         updateEnabledWidgets();
+        updateDCPreview();
         updateTDR();
     });
 
@@ -98,14 +130,16 @@ void TDR::edit()
     });
 
     connect(ui->computeStepResponse, &QCheckBox::toggled, this, [=](bool computeStep) {
-       stepResponse = computeStep;
+        stepResponse = computeStep;
         updateEnabledWidgets();
-       updateTDR();
+        updateDCPreview();
+        updateTDR();
     });
 
     connect(ui->DCmanual, &QRadioButton::toggled, this, [=](bool manual) {
         automaticDC = !manual;
         updateEnabledWidgets();
+        updateDCPreview();
         updateTDR();
     });
 
@@ -121,12 +155,17 @@ void TDR::edit()
 
     ui->padding->setValue(padding);
 
-    ui->manualMag->setUnit("dBm");
+    ui->extrapolationPoints->setValue(DCExtrapolationPoints);
+    connect(ui->extrapolationPoints, &QSpinBox::valueChanged, this, [=](int value) {
+        setDCExtrapolationPoints(value);
+    });
+    ui->manualMag->setUnit("dB");
     ui->manualMag->setPrecision(3);
-    ui->manualMag->setValue(Util::SparamTodB(manualDC));
     ui->manualPhase->setUnit("°");
     ui->manualPhase->setPrecision(4);
-    ui->manualPhase->setValue(180.0/M_PI * arg(manualDC));
+
+    updateEnabledWidgets();
+    updateDCPreview();
 
     connect(ui->manualMag, &SIUnitEdit::valueChanged, this, [=](double newval){
         manualDC = polar(pow(10, newval / 20.0), arg(manualDC));
@@ -160,6 +199,7 @@ nlohmann::json TDR::toJSON()
     j["bandpass_mode"] = mode == Mode::Bandpass;
     j["window"] = window.toJSON();
     j["padding"] = padding;
+    j["DC_extrapolation_points"] = DCExtrapolationPoints;
     if(mode == Mode::Lowpass) {
         j["step_response"] = stepResponse;
         if(stepResponse) {
@@ -179,6 +219,10 @@ void TDR::fromJSON(nlohmann::json j)
         window.fromJSON(j["window"]);
     }
     padding = j.value("padding", 0);
+    // older versions always used two points for the extrapolation and this parameter might be missing.
+    // The exact implementation of the interpolation is also different, so there is no point in keeping
+    // the old value. Just start from the default of 5 and ensure that is is at least 2
+    DCExtrapolationPoints = std::max(2, j.value("DC_extrapolation_points", 5));
     if(j.value("bandpass_mode", true)) {
         mode = Mode::Bandpass;
     } else {
@@ -250,6 +294,29 @@ const WindowFunction& TDR::getWindow() const
     return window;
 }
 
+unsigned int TDR::getDCExtrapolationPoints() const
+{
+    return DCExtrapolationPoints;
+}
+
+void TDR::setDCExtrapolationPoints(unsigned int points)
+{
+    if(points < 2) {
+        points = 2;
+    }
+    if(points == DCExtrapolationPoints) {
+        return;
+    }
+    DCExtrapolationPoints = points;
+    updateTDR();
+}
+
+std::complex<double> TDR::getDCValue()
+{
+    QMutexLocker locker(&dataMutex);
+    return lastDC;
+}
+
 TDR::Mode TDR::getMode() const
 {
     return mode;
@@ -311,14 +378,66 @@ void TDRThread::run()
                 frequencyDomain[steps - i] = conj(S);
                 frequencyDomain[steps + i] = S;
             }
+            complex<double> DC;
             if(tdr.automaticDC) {
-                // use simple extrapolation from lowest two points to extract DC value
-                auto abs_DC = 2.0 * abs(frequencyDomain[steps + 1]) - abs(frequencyDomain[steps + 2]);
-                auto phase_DC = 2.0 * arg(frequencyDomain[steps + 1]) - arg(frequencyDomain[steps + 2]);
-                frequencyDomain[steps] = polar(abs_DC, phase_DC);
+                // linear least-squares fit of magnitude and (unwrapped) phase over the lowest measured
+                // input points (at their actual frequencies), evaluated at DC. A possibly existing
+                // sample at exactly 0Hz is not used
+                vector<double> freqs, mags, phases;
+                double lastPhase = 0;
+                for(const auto &sample : inputData) {
+                    if(freqs.size() >= tdr.DCExtrapolationPoints) {
+                        break;
+                    }
+                    if(sample.x <= 0) {
+                        continue;
+                    }
+                    double phase = arg(sample.y);
+                    if(!phases.empty()) {
+                        // unwrap phase
+                        phase = lastPhase + remainder(phase - lastPhase, 2 * M_PI);
+                    }
+                    lastPhase = phase;
+                    freqs.push_back(sample.x);
+                    mags.push_back(abs(sample.y));
+                    phases.push_back(phase);
+                }
+                if(freqs.size() < 2) {
+                    // not enough points for an extrapolation, use the lowest point
+                    DC = frequencyDomain[steps + 1];
+                } else {
+                    // least-squares linear fit over magnitude and phase
+                    auto n = freqs.size();
+                    double meanF = 0, meanMag = 0, meanPhase = 0;
+                    for(unsigned int i=0;i<n;i++) {
+                        meanF += freqs[i];
+                        meanMag += mags[i];
+                        meanPhase += phases[i];
+                    }
+                    meanF /= n;
+                    meanMag /= n;
+                    meanPhase /= n;
+                    double sFF = 0, sFMag = 0, sFPhase = 0;
+                    for(unsigned int i=0;i<n;i++) {
+                        auto dF = freqs[i] - meanF;
+                        sFF += dF * dF;
+                        sFMag += dF * (mags[i] - meanMag);
+                        sFPhase += dF * (phases[i] - meanPhase);
+                    }
+                    // extrapolate to DC
+                    double abs_DC = meanMag - sFMag / sFF * meanF;
+                    double phase_DC = meanPhase - sFPhase / sFF * meanF;
+                    DC = polar(abs_DC, phase_DC);
+                }
             } else {
-                frequencyDomain[steps] = tdr.manualDC;
+                DC = tdr.manualDC;
             }
+            frequencyDomain[steps] = DC;
+            tdr.dataMutex.lock();
+            tdr.lastDC = DC;
+            tdr.lastDCValid = true;
+            tdr.dataMutex.unlock();
+            emit tdr.DCValueUpdated();
         } else {
             // bandpass mode
             // Can use input data directly, no need to extend with complex conjugate

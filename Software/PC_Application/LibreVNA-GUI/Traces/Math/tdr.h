@@ -50,6 +50,15 @@ public:
 
     unsigned int getUnpaddedInputSize() const;
 
+    unsigned int getDCExtrapolationPoints() const;
+    void setDCExtrapolationPoints(unsigned int points);
+    // returns the last calculated (extrapolated or manual) DC value
+    std::complex<double> getDCValue();
+
+signals:
+    // emitted (from the calculation thread) when a new DC value has been calculated
+    void DCValueUpdated();
+
 public slots:
     void inputSamplesChanged(unsigned int begin, unsigned int end) override;
 
@@ -63,6 +72,9 @@ private:
     bool stepResponse;
     bool automaticDC;
     std::complex<double> manualDC;
+    unsigned int DCExtrapolationPoints;
+    std::complex<double> lastDC;
+    bool lastDCValid;
     TDRThread *thread;
     bool destructing;
     QSemaphore semphr;
