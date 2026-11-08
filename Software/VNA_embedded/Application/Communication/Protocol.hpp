@@ -63,8 +63,19 @@ public:
 		return true;
 	}
     void decode(const uint8_t *buffer, uint16_t size) {
-        num_values = (size - (DPNT_FREQ_LEN + DPNT_POW_LVL_LEN + DPNT_PNT_NUM_LEN)) /
+        constexpr uint16_t headerSize = DPNT_FREQ_LEN + DPNT_POW_LVL_LEN + DPNT_PNT_NUM_LEN;
+        if(size < headerSize) {
+            clear();
+            return;
+        }
+        uint16_t values = (size - headerSize) /
         		(DPNT_REAL_PART_LEN + DPNT_IMAG_PART_LEN + DPNT_DESC_LEN);
+        if(values > s) {
+            // more values than fit into this datapoint, invalid
+            clear();
+            return;
+        }
+        num_values = values;
         memcpy(&frequency, buffer, DPNT_FREQ_LEN);
         buffer += DPNT_FREQ_LEN;
         memcpy(&cdBm, buffer, DPNT_POW_LVL_LEN);
@@ -105,7 +116,7 @@ public:
         Value v;
         v.value = 0.0;
         v.flags = 0;
-        if(index <= num_values) {
+        if(index < num_values) {
             v.value = std::complex<double>(real_values[index], imag_values[index]);
             v.flags = descr_values[index];
         }
