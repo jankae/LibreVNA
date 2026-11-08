@@ -37,7 +37,8 @@ void Delay::ms(uint32_t t) {
 }
 void Delay::us(uint16_t t) {
 	uint16_t start = TIM1->CNT;
-	while(TIM1->CNT - start < t);
+	// cast to 16 bit: handles counter wrap-around and masks the UIF bit (bit 31, UIFREMAP is enabled)
+	while((uint16_t) (TIM1->CNT - start) < t);
 }
 
 extern "C" {
