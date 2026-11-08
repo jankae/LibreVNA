@@ -356,7 +356,7 @@ void CalDevice::loadCoefficientSetsThreadSlow(QStringList names, QList<int> port
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_OPEN").toInt();
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_SHORT").toInt();
             totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+"_LOAD").toInt();
-            for(int jdx=idx+1;jdx<numPorts;jdx++) {
+            for(int jdx=idx+1;jdx<ports.size();jdx++) {
                 int j = ports[jdx];
                 totalPoints += usb->Query(":COEFF:NUM? "+name+" P"+QString::number(i)+QString::number(j)+"_THROUGH").toInt();
             }
