@@ -19,6 +19,9 @@ public:
 	bool isPresent();
 	void read(uint32_t address, uint16_t length, void *dest);
 	bool write(uint32_t address, uint16_t length, void *src);
+	// Writes data of arbitrary length to a page aligned address. The last page is padded with 0xFF
+	// (avoids reading beyond the end of src when its size is not a multiple of the page size)
+	bool writePadded(uint32_t address, uint16_t length, const void *src);
 	bool eraseChip();
 	bool eraseSector(uint32_t address);
 	bool erase32Block(uint32_t address);

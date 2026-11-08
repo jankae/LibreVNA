@@ -36,7 +36,8 @@ bool Cal::Load() {
 		LOG_WARN("Invalid version in flash, expected %u, got %u", version, cal.version);
 		SetDefault();
 		return false;
-	} else if(cal.Source.usedPoints == 0 || cal.Receiver.usedPoints == 0){
+	} else if(cal.Source.usedPoints == 0 || cal.Receiver.usedPoints == 0
+			|| cal.Source.usedPoints > maxPoints || cal.Receiver.usedPoints > maxPoints){
 		LOG_WARN("Empty amplitude calibration, resetting to default");
 		SetDefault();
 		return false;
@@ -50,12 +51,7 @@ bool Cal::Save() {
 	if(!HWHAL::flash.eraseRange(flash_address, flash_size)) {
 		return false;
 	}
-	uint32_t write_size = sizeof(cal);
-	if(write_size % Flash::PageSize != 0) {
-		// round up to next page
-		write_size += Flash::PageSize - write_size % Flash::PageSize;
-	}
-	return HWHAL::flash.write(flash_address, write_size, &cal);
+	return HWHAL::flash.writePadded(flash_address, sizeof(cal), &cal);
 }
 
 void Cal::SetDefault() {
@@ -136,7 +132,7 @@ static void addPoint(CorrectionTable& table, const Protocol::AmplitudeCorrection
 	table.port2Correction[p.pointNum] = p.port2;
 	if(p.pointNum == p.totalPoints - 1 || p.pointNum == Cal::maxPoints - 1) {
 		// this was the last point, update used points and save
-		table.usedPoints = p.totalPoints;
+		table.usedPoints = p.totalPoints <= Cal::maxPoints ? p.totalPoints : Cal::maxPoints;
 		LOG_INFO("Last point received, saving to flash");
 		Cal::Save();
 	}

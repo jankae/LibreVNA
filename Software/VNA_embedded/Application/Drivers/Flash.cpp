@@ -74,6 +74,25 @@ bool Flash::write(uint32_t address, uint16_t length, void *src) {
 	return true;
 }
 
+bool Flash::writePadded(uint32_t address, uint16_t length, const void *src) {
+	uint16_t full_pages_size = length - length % PageSize;
+	uint16_t remainder = length % PageSize;
+	if(full_pages_size > 0) {
+		if(!write(address, full_pages_size, (void*) src)) {
+			return false;
+		}
+	}
+	if(remainder > 0) {
+		uint8_t page[PageSize];
+		memset(page, 0xFF, sizeof(page));
+		memcpy(page, (const uint8_t*) src + full_pages_size, remainder);
+		if(!write(address + full_pages_size, PageSize, page)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void Flash::EnableWrite() {
 	CS(false);
 	// enable write latch
@@ -189,19 +208,25 @@ bool Flash::eraseRange(uint32_t start, uint32_t len) {
 	while(erased_len < len) {
 		uint32_t remaining = len - erased_len;
 		if(remaining >= Block64Size && start % Block64Size == 0) {
-			erase64Block(start);
+			if(!erase64Block(start)) {
+				return false;
+			}
 			erased_len += Block64Size;
 			start += Block64Size;
 			continue;
 		}
 		if(remaining >= Block32Size && start % Block32Size == 0) {
-			erase32Block(start);
+			if(!erase32Block(start)) {
+				return false;
+			}
 			erased_len += Block32Size;
 			start += Block32Size;
 			continue;
 		}
 		if(remaining >= SectorSize && start % SectorSize == 0) {
-			eraseSector(start);
+			if(!eraseSector(start)) {
+				return false;
+			}
 			erased_len += SectorSize;
 			start += SectorSize;
 			continue;

@@ -429,7 +429,7 @@ void HW::Ref::update() {
 	}
 	constexpr uint32_t lock_timeout = 100;
 	uint32_t start = HAL_GetTick();
-	while(!Si5351.Locked(Si5351C::PLL::A) || !Si5351.Locked(Si5351C::PLL::A)) {
+	while(!Si5351.Locked(Si5351C::PLL::A) || !Si5351.Locked(Si5351C::PLL::B)) {
 		if(HAL_GetTick() - start > lock_timeout) {
 			LOG_ERR("Clock distributor PLLs failed to lock");
 			return;
@@ -530,12 +530,7 @@ bool HW::SaveDeviceConfig() {
 	if(!HWHAL::flash.eraseRange(flash_address, flash_size)) {
 		return false;
 	}
-	uint32_t write_size = sizeof(deviceConfig);
-	if(write_size % Flash::PageSize != 0) {
-		// round up to next page
-		write_size += Flash::PageSize - write_size % Flash::PageSize;
-	}
-	return HWHAL::flash.write(flash_address, write_size, &deviceConfig);
+	return HWHAL::flash.writePadded(flash_address, sizeof(deviceConfig), &deviceConfig);
 }
 
 void HW::SetDefaultDeviceConfig() {
