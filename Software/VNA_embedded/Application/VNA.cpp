@@ -156,13 +156,13 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	FPGA::SetMode(FPGA::Mode::FPGA);
 	FPGA::WriteRegister(FPGA::Reg::ADCPrescaler, HW::getADCPrescaler());
 	FPGA::WriteRegister(FPGA::Reg::PhaseIncrement, HW::getDFTPhaseInc());
+	settings = s;
 	if(settings.points > FPGA::MaxPoints) {
 		settings.points = FPGA::MaxPoints;
 	}
 	if(settings.dwell_time > HW::Info.limits_maxDwellTime) {
 		settings.dwell_time = HW::Info.limits_maxDwellTime;
 	}
-	settings = s;
 	// calculate factor between adjacent points for log sweep for faster calculation when sweeping
 	logMultiplier = pow((double) settings.f_stop / settings.f_start, 1.0 / (settings.points-1));
 	// Configure sweep
@@ -176,7 +176,7 @@ bool VNA::Setup(Protocol::SweepSettings s) {
 	// has to be one less than actual number of samples
 	FPGA::SetSamplesPerPoint(samplesPerPoint);
 
-	FPGA::SetSettlingTime(s.dwell_time + HW::getPLLSettlingDelay());
+	FPGA::SetSettlingTime(settings.dwell_time + HW::getPLLSettlingDelay());
 
 	// reset unlevel flag if it was set from a previous sweep/mode
 	HW::SetOutputUnlevel(false);
