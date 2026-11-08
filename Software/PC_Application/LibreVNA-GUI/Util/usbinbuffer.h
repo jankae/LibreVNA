@@ -9,6 +9,8 @@
 #include <libusb-1.0/libusb.h>
 #endif
 #include <condition_variable>
+#include <mutex>
+#include <atomic>
 
 #include <QObject>
 
@@ -34,7 +36,8 @@ private:
     int buffer_size;
     int received_size;
     bool inCallback;
-    bool cancelling;
+    std::atomic<bool> cancelling;
+    std::mutex mtx;
     std::condition_variable cv;
 };
 

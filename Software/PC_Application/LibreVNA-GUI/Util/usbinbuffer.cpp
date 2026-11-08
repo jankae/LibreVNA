@@ -21,14 +21,13 @@ USBInBuffer::USBInBuffer(libusb_device_handle *handle, unsigned char endpoint, i
 
 USBInBuffer::~USBInBuffer()
 {
+    unique_lock<mutex> lck(mtx);
     if(transfer) {
         cancelling = true;
         libusb_cancel_transfer(transfer);
         // wait for cancellation to complete
-        mutex mtx;
-        unique_lock<mutex> lck(mtx);
         using namespace std::chrono_literals;
-        if(cv.wait_for(lck, 100ms) == cv_status::timeout) {
+        if(!cv.wait_for(lck, 100ms, [this]{ return transfer == nullptr; })) {
             qWarning() << "Timed out waiting for mutex acquisition during disconnect";
         }
     }
@@ -59,7 +58,10 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
     if(cancelling || (transfer->status == LIBUSB_TRANSFER_CANCELLED)) {
         // destructor called, do not resubmit
         libusb_free_transfer(transfer);
-        this->transfer = nullptr;
+        {
+            lock_guard<mutex> lck(mtx);
+            this->transfer = nullptr;
+        }
         cv.notify_all();
         return;
     }
@@ -76,13 +78,22 @@ void USBInBuffer::Callback(libusb_transfer *transfer)
     case LIBUSB_TRANSFER_NO_DEVICE:
         qCritical() << "LIBUSB_TRANSFER_NO_DEVICE";
         libusb_free_transfer(transfer);
+        {
+            lock_guard<mutex> lck(mtx);
+            this->transfer = nullptr;
+        }
+        cv.notify_all();
         return;
     case LIBUSB_TRANSFER_ERROR:
     case LIBUSB_TRANSFER_OVERFLOW:
     case LIBUSB_TRANSFER_STALL:
         qCritical() << "LIBUSB_ERROR" << transfer->status;
         libusb_free_transfer(transfer);
-        this->transfer = nullptr;
+        {
+            lock_guard<mutex> lck(mtx);
+            this->transfer = nullptr;
+        }
+        cv.notify_all();
         emit TransferError();
         return;
         break;
