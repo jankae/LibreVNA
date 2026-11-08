@@ -95,6 +95,9 @@ public slots:
 
 private slots:
     void NewDatapoint(DeviceDriver::VNAMeasurement m);
+private:
+    DeviceDriver::VNAMeasurement calibrationPoint(const DeviceDriver::VNAMeasurement &m);
+private slots:
     void StartImpedanceMatching();
     void StartMixedModeConversion();
     // Sweep control

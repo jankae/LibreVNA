@@ -956,6 +956,17 @@ void VNA::fromJSON(nlohmann::json j)
 
 using namespace std;
 
+DeviceDriver::VNAMeasurement VNA::calibrationPoint(const DeviceDriver::VNAMeasurement &m)
+{
+    auto ret = m;
+    if(settings.zerospan) {
+        // in zero span, the frequency field is aliased with the time (union). The calibration needs the actual frequency
+        ret.frequency = settings.Freq.start;
+        ret.dBm = settings.Freq.excitation_power;
+    }
+    return ret;
+}
+
 void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
 {
     if(isActive != true) {
@@ -1044,7 +1055,7 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
             // this is the last averaging sweep, use values for calibration
             if(!calWaitFirst || m_avg.pointNum == 0) {
                 calWaitFirst = false;
-                cal.addMeasurements(calMeasurements, m_avg);
+                cal.addMeasurements(calMeasurements, calibrationPoint(m_avg));
                 if(m_avg.pointNum == settings.npoints - 1) {
                     calMeasuring = false;
                     cal.measurementsComplete();
@@ -1055,7 +1066,14 @@ void VNA::NewDatapoint(DeviceDriver::VNAMeasurement m)
         emit calibrationMeasurementPercentage(percentage);
     }
 
-    cal.correctMeasurement(m_avg);
+    if(settings.zerospan) {
+        // frequency shares its storage with the time (us) in zero span, correct a copy with the real frequency
+        auto corrected = calibrationPoint(m_avg);
+        cal.correctMeasurement(corrected);
+        m_avg.measurements = corrected.measurements;
+    } else {
+        cal.correctMeasurement(m_avg);
+    }
 
     if(cal.getCaltype().type != Calibration::Type::None) {
         window->addStreamingData(m_avg, AppWindow::VNADataType::Calibrated, settings.zerospan);

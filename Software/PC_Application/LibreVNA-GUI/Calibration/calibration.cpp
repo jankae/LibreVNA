@@ -9,6 +9,7 @@
 #include "Traces/sparamtraceselectordialog.h"
 
 #include "Tools/Eigen/Dense"
+#include <cmath>
 
 #include <fstream>
 #include <iomanip>
@@ -336,6 +337,10 @@ void Calibration::correctMeasurement(DeviceDriver::VNAMeasurement &d)
 
     // gab point and interpolate
     Point p;
+    if(points.empty() || !std::isfinite(d.frequency)) {
+        // no usable calibration data
+        return;
+    }
     if(d.frequency <= points.front().frequency) {
         p = points.front();
     } else if(d.frequency >= points.back().frequency) {
@@ -345,6 +350,11 @@ void Calibration::correctMeasurement(DeviceDriver::VNAMeasurement &d)
         auto lower = lower_bound(points.begin(), points.end(), d.frequency, [](const Point &lhs, double rhs) -> bool {
             return lhs.frequency < rhs;
         });
+        if(lower == points.begin() || lower == points.end()) {
+            // only possible with invalid (e.g. NaN) calibration frequencies, prev(lower) would be out of bounds
+            qWarning() << "Invalid calibration point frequencies, unable to apply calibration at" << d.frequency;
+            return;
+        }
         auto highPoint = *lower;
         auto lowPoint = *prev(lower);
         double alpha = (d.frequency - lowPoint.frequency) / (highPoint.frequency - lowPoint.frequency);
@@ -1873,7 +1883,10 @@ bool Calibration::compute(Calibration::CalType type)
         points.clear();
         for(int i=0;i<numPoints;i++) {
             double f;
-            if(!isLog) {
+            if(numPoints <= 1) {
+                // single frequency calibration (e.g. measured in zero span)
+                f = start;
+            } else if(!isLog) {
                 f = start + (stop - start) * i / (numPoints - 1);
             } else {
                 f = start * pow(10.0, i * log10(stop / start) / (numPoints - 1));
@@ -2066,13 +2079,17 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
             double f_prev = meas->getPointFreq(i-1);
             double f_next = meas->getPointFreq(i);
             double diff = f_next - f_prev;
-            double ratio = f_next / f_prev;
             if(diff < minDiff) {
                 minDiff = diff;
             }
             if(diff > maxDiff) {
                 maxDiff = diff;
             }
+            if(f_prev <= 0) {
+                // ratio undefined at 0Hz, skip
+                continue;
+            }
+            double ratio = f_next / f_prev;
             if(ratio < minRatio) {
                 minRatio = ratio;
             }
@@ -2096,11 +2113,22 @@ bool Calibration::hasFrequencyOverlap(std::vector<CalibrationMeasurement::Base *
     if(stopFreq) {
         *stopFreq = maxFreq;
     }
+    if(maxFreq == minFreq) {
+        // all measurements at a single frequency (e.g. zero span), calibration is only valid at that frequency
+        if(points) {
+            *points = 1;
+        }
+        if(isLog) {
+            *isLog = false;
+        }
+        return true;
+    }
     if(points) {
         *points = (maxFreq - minFreq) / minResolution + 1;
     }
     if(isLog) {
-        *isLog = logCount > linCount;
+        // a logarithmic grid can not start at 0Hz (would result in NaN frequencies)
+        *isLog = logCount > linCount && minFreq > 0;
     }
     if(maxFreq > minFreq) {
         return true;
