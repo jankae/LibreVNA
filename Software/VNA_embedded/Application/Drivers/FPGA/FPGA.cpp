@@ -299,7 +299,9 @@ bool FPGA::InitiateSampleRead(ReadCallback cb) {
 	busy_reading = true;
 	if(HAL_SPI_TransmitReceive_DMA(&FPGA_SPI, cmd, raw, 40) != HAL_OK) {
 		LOG_ERR("Failed to start SPI DMA");
+		High(CS);
 		busy_reading = false;
+		return false;
 	}
 	return true;
 }
