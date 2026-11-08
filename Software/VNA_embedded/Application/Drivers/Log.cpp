@@ -74,7 +74,7 @@ void Log_Init() {
 	fifo_write = 0;
 	fifo_read = 0;
 	redirect = NULL;
-#ifdef LOG_USE_MUTEXES
+#ifdef LOG_USE_MUTEX
 	mutex = xSemaphoreCreateMutexStatic(&xMutex);
 #endif
 
@@ -98,8 +98,18 @@ void _log_write(const char *module, const char *level, const char *fmt, ...) {
 #endif
 	written = snprintf(&fifo[fifo_write], MAX_LINE_LENGTH, "%05lu [%6.6s,%s]: ",
 			HAL_GetTick(), module, level);
-	written += vsnprintf(&fifo[fifo_write + written], MAX_LINE_LENGTH - written,
+	if(written < 0) {
+		written = 0;
+	} else if(written > MAX_LINE_LENGTH - 3) {
+		written = MAX_LINE_LENGTH - 3;
+	}
+	int msg = vsnprintf(&fifo[fifo_write + written], MAX_LINE_LENGTH - 2 - written,
 			fmt, args);
+	va_end(args);
+	if(msg > 0) {
+		// limit to the number of characters actually written (output may have been truncated)
+		written += msg < MAX_LINE_LENGTH - 3 - written ? msg : MAX_LINE_LENGTH - 3 - written;
+	}
 	written += snprintf(&fifo[fifo_write + written], MAX_LINE_LENGTH - written,
 			"\r\n");
 	if(redirect) {
@@ -114,7 +124,7 @@ void _log_write(const char *module, const char *level, const char *fmt, ...) {
 	if (written > fifo_space()) {
 		// unable to fit line, skip
 #ifdef LOG_USE_MUTEX
-		if (!stm_in_interrupt()) {
+		if (!STM::InInterrupt()) {
 			xSemaphoreGive(mutex);
 		}
 #endif
@@ -131,7 +141,7 @@ void _log_write(const char *module, const char *level, const char *fmt, ...) {
 	CLK_ENABLE();
 	USART_BASE->CR1 |= USART_CR1_TXEIE | USART_CR1_TCIE;
 #ifdef LOG_USE_MUTEX
-	if (!stm_in_interrupt()) {
+	if (!STM::InInterrupt()) {
 		xSemaphoreGive(mutex);
 	}
 #endif
