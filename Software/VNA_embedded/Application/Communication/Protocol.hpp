@@ -192,7 +192,29 @@ using SweepSettings = struct _sweepSettings {
 
     int16_t cdbm_excitation_stop; // in 1/100 dbm
     uint16_t dwell_time; // in us
+
+	/*
+	 * Harogic VNB-60 (licensed LibreVNA derivative) extension of the sweep
+	 * settings. 0 = free running sweep, otherwise the number of trigger events
+	 * that are required for one sweep point.
+	 *
+	 * The VNB-60 firmware reads this byte at offset 31 of the payload, i.e.
+	 * directly behind the struct used by the stock firmware. Because packets
+	 * are decoded by their transmitted length, a firmware with the stock
+	 * struct simply ignores this trailing byte.
+	 *
+	 * It *must* be transmitted explicitly: if it is left out, the receiving
+	 * firmware keeps whatever a previously decoded packet left in its shared
+	 * packet buffer. A non-zero leftover makes the device wait for external
+	 * triggers that never arrive, so the sweep never produces a single point
+	 * (visible as "Timed out, last ISR was at ..." in the device log).
+	 */
+	uint8_t extTrigger;
 };
+
+// The wire format (and therefore this size) is shared with every connected
+// host and device, it must not change silently.
+static_assert(sizeof(SweepSettings) == 32, "unexpected SweepSettings size");
 
 using ReferenceSettings = struct _referenceSettings {
 	uint32_t ExtRefOuputFreq;
