@@ -78,13 +78,26 @@ uint16_t Protocol::DecodeBuffer(uint8_t *buf, uint16_t len, PacketInfo *info) {
 			return data - buf;
 		}
 		// Valid packet, copy packet type and payload
-		if(length - 7 > sizeof(PacketInfo)) {
+		const uint16_t payload_len = length - PCKT_EXCL_PAYLOAD_LEN;
+		if(payload_len > sizeof(PacketInfo) - PCKT_TYPE_LEN) {
 			// payload does not fit into PacketInfo, ignore
 			data += 1;
 			info->type = PacketType::None;
 			return data - buf;
 		}
-		memcpy(info, &data[PCKT_TYPE_OFFSET], length - 7);
+		/*
+		 * Clear the packet before copying the received payload. A peer may use a
+		 * different (e.g. newer or vendor specific) version of the structs in
+		 * this union and thus send more bytes than this side knows about - and
+		 * the other way around, a shorter payload leaves the trailing bytes of
+		 * this side's struct untouched. Without clearing first, those bytes
+		 * would silently be reused from the previously decoded packet, which
+		 * makes the interpretation of a packet depend on unrelated traffic.
+		 */
+		memset(info, 0, sizeof(*info));
+		info->type = type;
+		memcpy(reinterpret_cast<uint8_t*>(info) + PCKT_TYPE_LEN,
+				&data[PCKT_PAYLOAD_OFFSET], payload_len);
 	} else {
 		// Datapoint has the CRC set to zero
 		if(crc != 0x00000000) {
