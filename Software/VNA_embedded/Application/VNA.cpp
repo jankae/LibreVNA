@@ -131,7 +131,10 @@ static bool needs2LOshift(uint64_t f, uint32_t current2LO, uint32_t IFBW, uint32
 	uint32_t actualFirstIF = actual1LO - actualSource;
 	uint32_t actualFinalIF = actualFirstIF - current2LO;
 	uint32_t IFdeviation = abs(actualFinalIF - HW::getIF2());
-	if(IFdeviation > IFBW / 2) {
+	// Retune when the final IF is off by more than a quarter of the IF bandwidth. With the Kaiser window
+	// an offset of IFBW/2 costs about 1dB in the DFT bin (plus up to 2Hz of 2.LO rounding at low IFBW),
+	// IFBW/4 keeps it below 0.6dB for a few percent more sweep halts.
+	if(IFdeviation > IFBW / 4) {
 		*new2LO = actualFirstIF - HW::getIF2();
 		return true;
 	} else {

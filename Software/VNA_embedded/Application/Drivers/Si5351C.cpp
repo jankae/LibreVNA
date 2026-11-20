@@ -368,7 +368,8 @@ void Si5351C::FindOptimalDivider(uint32_t f_pll, uint32_t f, uint32_t &P1,
 	} else {
 		// just use the highest denominator possible, this is good enough if no exact frequency is required
 		best_c = (1UL << 20) - 1;
-		best_b = (uint64_t) f_rem * best_c / f;
+		// round to nearest: halves the worst-case error and centres it on the requested frequency
+		best_b = ((uint64_t) f_rem * best_c + f / 2) / f;
 	}
 
 	// convert to Si5351C parameters
