@@ -595,6 +595,10 @@ void TraceWidget::SetupSCPI()
            return SCPI::getResultName(SCPI::Result::Error);
         }
         auto newparam = params[1];
+        if(newparam.startsWith("RAWPORT")) {
+            // SCPI arguments arrive in uppercase, restore the case of the raw receiver names (e.g. RawPort1Stage0Ref)
+            newparam.replace("RAWPORT", "RawPort").replace("STAGE", "Stage").replace("REF", "Ref");
+        }
         if((Trace::isVNAParameter(t->liveParameter()) && Trace::isVNAParameter(newparam))
                 || (Trace::isSAParameter(t->liveParameter()) && Trace::isSAParameter(newparam))) {
             t->fromLivedata(t->liveType(), newparam);
